@@ -1,0 +1,13 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+  },
+
+  "commands": {
+    "BasicAsyncHttpServer": "BasicAsyncHttpServer"
+  },
+
+  "frameworks": {
+    "dnx451": { }
+  }
+}

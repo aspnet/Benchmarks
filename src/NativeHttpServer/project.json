@@ -1,0 +1,14 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+  },
+
+  "commands": {
+    "NativeHttpServer" : "NativeHttpServer"
+  },
+
+  "frameworks" : {
+    "dnx451": { }
+  }
+}
