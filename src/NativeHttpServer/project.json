@@ -3,12 +3,14 @@
 
   "dependencies": {
   },
-
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
   "commands": {
-    "NativeHttpServer" : "NativeHttpServer"
+    "NativeHttpServer": "NativeHttpServer"
   },
 
-  "frameworks" : {
+  "frameworks": {
     "dnx451": { }
   }
 }

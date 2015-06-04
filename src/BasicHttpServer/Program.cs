@@ -29,7 +29,7 @@ namespace BasicHttpServer
 
             while (true)
             {
-                Socket socket = ss.Accept();
+                var socket = ss.Accept();
                 ThreadPool.QueueUserWorkItem(_ => Serve(socket));
             }
         }
