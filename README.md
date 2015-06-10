@@ -29,4 +29,5 @@ For each stack, variations of the load parameters and multiple runs are tested a
 | ASP.NET 5 on IIS (Helios) (non-kernel cached) | perfsvr | Plain Text | 109,560 | 8 threads, 512 connections, no pipelining | Just app.Run() | CPU is 100%, mostly in user mode |
 | NodeJS | perfsvr | Plain Text | 96,558 | 8 threads, 1024 connections, no pipelining | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | Plain Text | 148,934 | 8 threads, 1024 connections, pipelining 15 deep | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
-
+| libuv C# | perfsvr | Plain Text | 300,507 | 12 threads, 1024 connections, no pipelining | Simple TCP server, not real HTTP yet | CPU is 54%, mostly in kernel mode |
+| libuv C# | perfsvr | Plain Text | 808,995 | 12 threads, 1024 connections, pipelining 15 deep | Simple TCP server, not real HTTP yet | CPU is 43%, mostly in kernel mode, NIC saturated |
