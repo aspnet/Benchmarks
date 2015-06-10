@@ -26,5 +26,7 @@ For each stack, variations of the load parameters and multiple runs are tested a
 | IIS Static File (non-kernel cached) | perfsvr | Plain Text | 231,609 | 8 threads, 512 connections, no pipelining | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
 | ASP.NET 5 on WebListener (kernel cached) | perfsvr | Plain Text | 264,117 | 8 threads, 512 connections, no pipelining | Just app.Run() | CPU is 36%, almost exclusively in kernel mode |
 | ASP.NET 5 on WebListener (non-kernel cached) | perfsvr | Plain Text | 107,315 | 8 threads, 512 connections, no pipelining | Just app.Run() | CPU is 100%, mostly in user mode |
+| ASP.NET 5 on IIS (Helios) (non-kernel cached) | perfsvr | Plain Text | 109,560 | 8 threads, 512 connections, no pipelining | Just app.Run() | CPU is 100%, mostly in user mode |
 | NodeJS | perfsvr | Plain Text | 96,558 | 8 threads, 1024 connections, no pipelining | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | Plain Text | 148,934 | 8 threads, 1024 connections, pipelining 15 deep | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
+
