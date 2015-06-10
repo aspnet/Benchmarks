@@ -10,7 +10,7 @@ namespace AspNet5
             app.Run(async (context) =>
             {
                 context.Response.ContentLength = 10;
-                await context.Response.WriteAsync("HelloWorld");
+                await context.Response.WriteAsync("HelloWorld").ConfigureAwait(false);
             });
         }
     }
