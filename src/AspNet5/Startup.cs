@@ -7,10 +7,10 @@ namespace AspNet5
     {
         public void Configure(IApplicationBuilder app)
         {
-            app.Run(async (context) =>
+            app.Run( (context) =>
             {
                 context.Response.ContentLength = 10;
-                await context.Response.WriteAsync("HelloWorld");
+                return context.Response.WriteAsync("HelloWorld");
             });
         }
     }
