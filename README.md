@@ -31,8 +31,8 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 | ASP.NET 5 on WebListener (kernel cached) | perfsvr |264,117 | 8 threads, 512 connections | Just app.Run() | CPU is 36%, almost exclusively in kernel mode |
 | ASP.NET 5 on WebListener (non-kernel cached) | perfsvr | 107,315 | 8 threads, 512 connections | Just app.Run() | CPU is 100%, mostly in user mode |
 | ASP.NET 5 on IIS (Helios) (non-kernel cached) | perfsvr | 109,560 | 8 threads, 512 connections | Just app.Run() | CPU is 100%, mostly in user mode |
-| NodeJS | perfsvr | 96,558 | 8 threads, 1024 connections | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| Scala | perfsvr | 204,009 | 8 threads, 1024 connections |  The actual Techempower Scala plain text app | CPU is 68%, mostly in kernel mode |
+| NodeJS | perfsvr | 96,558 | 8 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
+| Scala | perfsvr | 204,009 | 8 threads, 1024 connections |  The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
 | libuv C# | perfsvr | 300,507 | 12 threads, 1024 connections | Simple TCP server, not real HTTP yet, load spread across 12 ports (port/thread/CPU) | CPU is 54%, mostly in kernel mode | mode, NIC saturated |
 
 ## Plain Text with HTTP Pipelining
@@ -41,8 +41,8 @@ Like the Plain Text scenario above but with HTTP pipelining enabled. Only stacks
 
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
-| NodeJS | perfsvr | 148,934 | 8 threads, 1024 connections | The actual Techempower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| Scala | perfsvr | 764,775 | 8 threads, 1024 connections, pipelining 15 deep |  The actual Techempower Scala plain text app | CPU is 46%, mostly in kernel mode, NIC saturated |
+| NodeJS | perfsvr | 148,934 | 8 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
+| Scala | perfsvr | 764,775 | 8 threads, 1024 connections, pipelining 15 deep |  The actual TechEmpower Scala plain text app | CPU is 46%, mostly in kernel mode, NIC saturated |
 | libuv C# | perfsvr | 808,995 | 12 threads, 1024 connections, pipelining 15 deep | Simple TCP server, not real HTTP yet, load spread across 12 ports (port/thread/CPU) | CPU is 43%, mostly in kernel mode, NIC saturated |
 
 ## Plain Text with HTTP 2
