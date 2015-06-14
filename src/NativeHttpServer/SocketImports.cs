@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,37 +12,37 @@ namespace NativeHttpServer
     {
         const string WS2_32 = "ws2_32.dll";
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         internal static extern int WSAStartup([In] short wVersionRequested, [Out] out WSDATA lpWSAData);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern IntPtr socket([In] ADDRESS_FAMILIES af, [In] SOCKET_TYPE socket_type, [In] PROTOCOL protocol);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern ushort htons([In] ushort hostshort);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern int bind(IntPtr s, ref sockaddr_in name, int namelen);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern int listen(IntPtr s, int backlog);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern IntPtr accept(IntPtr s, IntPtr addr, int addrlen);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern int recv(IntPtr s, IntPtr buf, int len, int flags);
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern int send(IntPtr s, IntPtr buf, int len, int flags);
 
-        [DllImport(WS2_32)]
+        [DllImport(WS2_32), SuppressUnmanagedCodeSecurity]
         public static extern Int32 WSAGetLastError();
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern Int32 WSACleanup();
 
-        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport(WS2_32, SetLastError = true, CharSet = CharSet.Ansi), SuppressUnmanagedCodeSecurity]
         public static extern int closesocket(IntPtr s);
 
         public const int SOCKET_ERROR = -1;
