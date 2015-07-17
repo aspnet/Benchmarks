@@ -8,7 +8,7 @@
 		"optimize": true
 	},
 	"commands": {
-		"NativeRIOHttpServer": "NativeRIOHttpServer"
+		"ManagedRIOHttpServer": "ManagedRIOHttpServer"
 	},
 
 	"frameworks": {

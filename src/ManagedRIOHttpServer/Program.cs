@@ -5,9 +5,9 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using NativeRIOHttpServer.RegisteredIO;
+using ManagedRIOHttpServer.RegisteredIO;
 
-namespace NativeRIOHttpServer
+namespace ManagedRIOHttpServer
 {
     public class Program
     {

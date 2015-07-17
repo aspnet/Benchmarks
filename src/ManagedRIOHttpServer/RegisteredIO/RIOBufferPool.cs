@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
-namespace NativeRIOHttpServer.RegisteredIO
+namespace ManagedRIOHttpServer.RegisteredIO
 {
     public struct PooledSegment : IDisposable
     {

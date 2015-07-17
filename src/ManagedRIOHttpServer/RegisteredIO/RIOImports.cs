@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace NativeRIOHttpServer.RegisteredIO
+namespace ManagedRIOHttpServer.RegisteredIO
 {
     public class RIO
     {

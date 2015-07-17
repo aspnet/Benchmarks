@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace NativeRIOHttpServer.RegisteredIO
+namespace ManagedRIOHttpServer.RegisteredIO
 {
     public enum RIO_NOTIFICATION_COMPLETION_TYPE : int
     {

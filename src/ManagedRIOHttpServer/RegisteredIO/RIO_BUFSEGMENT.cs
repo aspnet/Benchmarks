@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NativeRIOHttpServer.RegisteredIO
+namespace ManagedRIOHttpServer.RegisteredIO
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct RIO_BUFSEGMENT

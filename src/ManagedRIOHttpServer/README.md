@@ -18,7 +18,7 @@ But looks like it can be done! :)
 
 Might need the x64 CLR
 
-```dnx . NativeRIOHttpServer```
+```dnx . ManagedRIOHttpServer```
 
 Tested on ```Microsoft .NET Execution environment CLR-x64-1.0.0-beta6-12005```
 
