@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,15 +13,33 @@ namespace ManagedRIOHttpServer
 {
     public sealed class Program
     {
-        static readonly string responseStr = "HTTP/1.1 200 OK\r\n" +
+        static readonly string responseKeepAliveStr = "HTTP/1.1 200 OK\r\n" +
             "Content-Type: text/plain;charset=UTF-8\r\n" +
             "Content-Length: 10\r\n" +
             "Connection: keep-alive\r\n" +
             "Server: -RIO-\r\n" +
             "\r\n" +
             "HelloWorld";
-        
-        private static byte[] _responseBytes = Encoding.UTF8.GetBytes(responseStr);
+
+        private static byte[] _responseBytes = Encoding.UTF8.GetBytes(responseKeepAliveStr);
+
+        static readonly string responseCloseStr = "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: text/plain;charset=UTF-8\r\n" +
+            "Content-Length: 10\r\n" +
+            "Connection: close\r\n" +
+            "Server: -RIO-\r\n" +
+            "\r\n" +
+            "HelloWorld";
+
+        private static byte[] _responseCloseBytes = Encoding.UTF8.GetBytes(responseCloseStr);
+
+        static readonly string connectionStr = "connection:";
+        private static byte[] _connectionBytes = Encoding.UTF8.GetBytes(connectionStr);
+        static readonly string keepAliveStr = "keep-alive";
+        private static byte[] _keepAliveBytes = Encoding.UTF8.GetBytes(keepAliveStr);
+
+        static readonly string dataDivisionStr = "\r\n\r\n";
+        private static byte[] _dataDivisionBytes = Encoding.UTF8.GetBytes(dataDivisionStr);
 
         static void Main(string[] args)
         {
@@ -31,10 +51,10 @@ namespace ManagedRIOHttpServer
                     return;
                 }
             }
-            
+
             // TODO: Use safehandles everywhere!
             var ss = new RIOTcpServer(5000, 127, 0, 0, 1);
-            
+
             ThreadPool.SetMinThreads(100, 100);
 
             while (true)
@@ -48,16 +68,16 @@ namespace ManagedRIOHttpServer
         static void Serve(object state)
         {
             var socket = (TcpConnection)state;
-            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             ServeSocket(socket);
-            #pragma warning restore CS4014
+#pragma warning restore CS4014
         }
 
         static async Task ServeSocket(TcpConnection socket)
         {
             try
             {
-                var sendBuffer = new ArraySegment<byte>(_responseBytes,0, _responseBytes.Length);
+                var sendBuffer = new ArraySegment<byte>(_responseBytes, 0, _responseBytes.Length);
                 var buffer0 = new byte[2048];
                 var buffer1 = new byte[2048];
                 var receiveBuffer0 = new ArraySegment<byte>(buffer0, 0, buffer0.Length);
@@ -78,34 +98,62 @@ namespace ManagedRIOHttpServer
                     }
 
                     var buffer = (loop & 1) == 0 ? buffer0 : buffer1;
+
+                    // need to handle packet splits
+
+                    var keepAlive = false;
                     var count = 0;
-                    r -= 3;
-                    if (r > 4)
+                    unsafe
                     {
-                        for (var i = 0; i < r; i++)
+                        fixed (byte* inputBuffer = buffer)
+                        fixed (byte* dataDivisionBuffer = _dataDivisionBytes)
+                        fixed (byte* connectionBuffer = _connectionBytes)
+                        fixed (byte* keepAliveBuffer = _keepAliveBytes)
                         {
-                            if (buffer[i] == 0xd && buffer[i + 1] == 0xa && buffer[i + 2] == 0xd && buffer[i + 3] == 0xa)
+                            byte* next;
+                            byte* start = inputBuffer;
+                            while ((next = memchr(start, '\r', r)) != (byte*)0)
                             {
-                                count++;
+                                r = r - (int)(next - start);
+                                if (r < 4)
+                                {
+                                    break;
+                                }
+                                if (_memicmp(next, dataDivisionBuffer, 4) == 0)
+                                {
+                                    count++;
+                                    start = next + 4;
+                                }
+                                else
+                                {
+                                    start = next + 1;
+                                }
+                                if (!keepAlive && r > 23)
+                                {
+                                    if (_memicmp(next + 2, connectionBuffer, 11) == 0)
+                                    {
+                                        next += 13;
+                                        r -= 13;
+                                        while (*next == ' ' && r > 11)
+                                        {
+                                            next++;
+                                            r--;
+                                        }
+                                        if (_memicmp(next, keepAliveBuffer, 10) == 0)
+                                        {
+                                            keepAlive = true;
+                                            start = next + 10;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    else
-                    {
-                        count = 1;
-                    }
 
-                    if (count == 1)
+                    if (count == 0)
                     {
-                        socket.SendCachedOk();
-                    }
-                    else
-                    {
-                        for (var i = 1; i < count; i++)
-                        {
-                            socket.QueueSend(sendBuffer, false);
-                        }
-                        socket.QueueSend(sendBuffer, true);
+                        socket.SendCachedBad();
+                        break;
                     }
 
                     for (var i = 1; i < count; i++)
@@ -113,7 +161,13 @@ namespace ManagedRIOHttpServer
                         socket.QueueSend(sendBuffer, false);
                     }
                     // force send if not more ready to recieve/pack
-                    socket.QueueSend(sendBuffer, !receiveTask.IsCompleted);
+                    Console.WriteLine(receiveTask.IsCompleted);
+                    socket.QueueSend(sendBuffer, (!receiveTask.IsCompleted) || (!keepAlive));
+
+                    if (!keepAlive)
+                    {
+                        break;
+                    }
 
                     loop++;
                 }
@@ -127,6 +181,12 @@ namespace ManagedRIOHttpServer
                 socket.Close();
             }
         }
+
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+        static unsafe extern int _memicmp(byte* b1, byte* b2, long count);
+        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
+        static unsafe extern byte* memchr(byte* b1, int c, long count);
     }
-}
+    
+    }
 
