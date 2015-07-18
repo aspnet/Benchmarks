@@ -23,7 +23,15 @@ namespace ManagedRIOHttpServer
 
         static void Main(string[] args)
         {
-            // TODO: Use safehandles everywhere!
+            unsafe
+            {
+                if (sizeof(IntPtr) != 8)
+                {
+                    Console.WriteLine("ManagedRIOHttpServer needs to be run in x64 mode");
+                    return;
+                }
+            }
+                // TODO: Use safehandles everywhere!
             var ss = new RIOTcpServer(5000, 127, 0, 0, 1);
             
             ThreadPool.SetMinThreads(100, 100);
