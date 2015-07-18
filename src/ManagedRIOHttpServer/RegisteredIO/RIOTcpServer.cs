@@ -71,7 +71,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             }
 
             // LISTEN
-            result = RIOImports.listen(_socket, 10);
+            result = RIOImports.listen(_socket, 120);
             if (result == RIOImports.SOCKET_ERROR)
             {
                 RIOImports.WSACleanup();
