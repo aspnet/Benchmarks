@@ -161,7 +161,6 @@ namespace ManagedRIOHttpServer
                         socket.QueueSend(sendBuffer, false);
                     }
                     // force send if not more ready to recieve/pack
-                    Console.WriteLine(receiveTask.IsCompleted);
                     socket.QueueSend(sendBuffer, (!receiveTask.IsCompleted) || (!keepAlive));
 
                     if (!keepAlive)
