@@ -9,7 +9,7 @@ using ManagedRIOHttpServer.RegisteredIO;
 
 namespace ManagedRIOHttpServer
 {
-    public class Program
+    public sealed class Program
     {
         static readonly string responseStr = "HTTP/1.1 200 OK\r\n" +
             "Content-Type: text/plain;charset=UTF-8\r\n" +
@@ -31,7 +31,8 @@ namespace ManagedRIOHttpServer
                     return;
                 }
             }
-                // TODO: Use safehandles everywhere!
+            
+            // TODO: Use safehandles everywhere!
             var ss = new RIOTcpServer(5000, 127, 0, 0, 1);
             
             ThreadPool.SetMinThreads(100, 100);
@@ -39,15 +40,23 @@ namespace ManagedRIOHttpServer
             while (true)
             {
                 var socket = ss.Accept();
-                ThreadPool.QueueUserWorkItem(async _ => await Serve(socket).ConfigureAwait(false));
+                ThreadPool.UnsafeQueueUserWorkItem(Serve, socket);
             }
         }
 
-        static async Task Serve(TcpConnection socket)
+
+        static void Serve(object state)
+        {
+            var socket = (TcpConnection)state;
+            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            ServeSocket(socket);
+            #pragma warning restore CS4014
+        }
+
+        static async Task ServeSocket(TcpConnection socket)
         {
             try
             {
-                //var x = 0;
                 var sendBuffer = new ArraySegment<byte>(_responseBytes,0, _responseBytes.Length);
                 var buffer0 = new byte[2048];
                 var buffer1 = new byte[2048];
@@ -98,6 +107,14 @@ namespace ManagedRIOHttpServer
                         }
                         socket.QueueSend(sendBuffer, true);
                     }
+
+                    for (var i = 1; i < count; i++)
+                    {
+                        socket.QueueSend(sendBuffer, false);
+                    }
+                    // force send if not more ready to recieve/pack
+                    socket.QueueSend(sendBuffer, !receiveTask.IsCompleted);
+
                     loop++;
                 }
             }

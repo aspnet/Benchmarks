@@ -113,9 +113,9 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 }
             }
         }
-        public void SendCachedOk()
+        public void SendCachedBad()
         {
-            fixed (RIO_BUFSEGMENT* pSeg = &_wb.cachedOK)
+            fixed (RIO_BUFSEGMENT* pSeg = &_wb.cachedBad)
             {
                 _rio.Send(_requestQueue, pSeg, 1, MessageEnd, RIO.CachedValue);
             }
@@ -165,8 +165,6 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 {
                     //_receiveTask.Dispose();
                 }
-                // Makes it unhappy
-                // _rio.CloseCompletionQueue(_requestQueue);
 
                 TcpConnection connection;
                 _wb.connections.TryRemove(_connectionId, out connection);

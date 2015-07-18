@@ -21,7 +21,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         public Thread thread;
 
         public RIOBufferPool bufferPool;
-        public RIO_BUFSEGMENT cachedOK;
+        public RIO_BUFSEGMENT cachedBad;
         public RIO_BUFSEGMENT cachedBusy;
     }
 
@@ -123,15 +123,14 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
         }
 
-        static readonly string okResponseStr = "HTTP/1.1 200 OK\r\n" +
+        static readonly string badResponseStr = "HTTP/1.1 400 Bad Request\r\n" +
             "Content-Type: text/plain;charset=UTF-8\r\n" +
-            "Content-Length: 10\r\n" +
+            "Content-Length: 0\r\n" +
             "Connection: keep-alive\r\n" +
             "Server: -RIO-\r\n" +
-            "\r\n" +
-            "HelloWorld";
+            "\r\n";
 
-        private static byte[] _okResponseBytes = Encoding.UTF8.GetBytes(okResponseStr);
+        private static byte[] _badResponseBytes = Encoding.UTF8.GetBytes(badResponseStr);
 
         static readonly string busyResponseStr = "HTTP/1.1 503 Service Unavailable\r\n" +
             "Content-Type: text/plain;charset=UTF-8\r\n" +
@@ -154,10 +153,10 @@ namespace ManagedRIOHttpServer.RegisteredIO
             var completionPort = worker.completionPort;
             var cq = worker.completionQueue;
 
-            PooledSegment cachedOKBuffer = worker.bufferPool.GetBuffer();
-            Buffer.BlockCopy(_okResponseBytes, 0, cachedOKBuffer.Buffer, cachedOKBuffer.Offset, _okResponseBytes.Length);
-            cachedOKBuffer.RioBuffer.Length = (uint)_okResponseBytes.Length;
-            worker.cachedOK = cachedOKBuffer.RioBuffer;
+            PooledSegment cachedBadBuffer = worker.bufferPool.GetBuffer();
+            Buffer.BlockCopy(_badResponseBytes, 0, cachedBadBuffer.Buffer, cachedBadBuffer.Offset, _badResponseBytes.Length);
+            cachedBadBuffer.RioBuffer.Length = (uint)_badResponseBytes.Length;
+            worker.cachedBad = cachedBadBuffer.RioBuffer;
 
             PooledSegment cachedBusyBuffer = worker.bufferPool.GetBuffer();
             Buffer.BlockCopy(_busyResponseBytes, 0, cachedBusyBuffer.Buffer, cachedBusyBuffer.Offset, _busyResponseBytes.Length);
@@ -208,7 +207,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     }
                 }
             }
-            cachedOKBuffer.Dispose();
+            cachedBadBuffer.Dispose();
             cachedBusyBuffer.Dispose();
         }
 
