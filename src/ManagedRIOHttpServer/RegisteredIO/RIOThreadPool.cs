@@ -162,17 +162,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     for (var i = 0; i < count; i++)
                     {
                         result = results[i];
-                        if (result.RequestCorrelation == RIO.CachedValue)
-                        {
-                            // cached send response, don't release buffer
-                        }
-                        else if (result.RequestCorrelation < 0)
-                        {
-                            // first send 2 buffers are cached responses
-                            // so should next have a 0 for a send
-                            //worker.bufferPool.ReleaseBuffer((int)-result.RequestCorrelation);
-                        }
-                        else
+                        if (result.RequestCorrelation >= 0)
                         {
                             // receive
                             RIOTcpConnection connection;
@@ -188,7 +178,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     var error = GetLastError();
                     if (error != 258)
                     {
-                        throw new Exception(String.Format("ERROR: GetQueuedCompletionStatusEx returned {0}", error));
+                        throw new Exception(string.Format("ERROR: GetQueuedCompletionStatusEx returned {0}", error));
                     }
                 }
             }

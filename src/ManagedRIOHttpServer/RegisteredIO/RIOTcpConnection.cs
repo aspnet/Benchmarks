@@ -95,7 +95,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 if (_currentOffset == RIOBufferPool.PacketSize)
                 {
                     segment.RioBuffer.Length = RIOBufferPool.PacketSize;
-                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, MessagePart, -_sendCount - 1);
+                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, (((_sendCount & SendMask) == 0) ? MessageEnd : MessagePart), -_sendCount - 1);
                     _currentOffset = 0;
                     _sendCount++;
                     segment = _sendSegments[_sendCount & SendMask];
