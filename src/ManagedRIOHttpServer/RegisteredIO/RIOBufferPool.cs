@@ -37,7 +37,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         #endregion
     }
 
-    public class RIOBufferPool : IDisposable
+    public sealed class RIOBufferPool : IDisposable
     {
         RIO_BUFSEGMENT[] _segments;
         private byte[] _underlyingBuffer;
@@ -107,7 +107,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {

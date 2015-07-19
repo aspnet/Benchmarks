@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    public struct RIOTcpServer
+    public sealed class RIOTcpServer
     {
         IntPtr _socket;
         RIO _rio;

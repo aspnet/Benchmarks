@@ -16,11 +16,9 @@ But looks like it can be done! :)
 
 # How to run
 
-Might need the x64 CLR
+Needs the x64 v4.6 CLR; compile release and run the ```ManagedRIOHttpServer.exe``` in the ```bin\Release``` folder from a command prompt.
 
-```dnx . ManagedRIOHttpServer```
-
-Tested on ```Microsoft .NET Execution environment CLR-x64-1.0.0-beta6-12005```
+Or double click on ```ManagedRIOHttpServer.exe``` from windows explorer.
 
 Listens on port 5000
 

@@ -86,6 +86,8 @@ namespace ManagedRIOHttpServer
                 var receiveTask = socket.ReceiveAsync(receiveBuffer0, CancellationToken.None);
 
                 var loop = 0;
+                //var keepAlive = false;
+                var keepAlive = true;
 
                 while (true)
                 {
@@ -101,54 +103,54 @@ namespace ManagedRIOHttpServer
 
                     // need to handle packet splits
 
-                    var keepAlive = false;
                     var count = 0;
-                    unsafe
-                    {
-                        fixed (byte* inputBuffer = buffer)
-                        fixed (byte* dataDivisionBuffer = _dataDivisionBytes)
-                        fixed (byte* connectionBuffer = _connectionBytes)
-                        fixed (byte* keepAliveBuffer = _keepAliveBytes)
-                        {
-                            byte* next;
-                            byte* start = inputBuffer;
-                            while ((next = memchr(start, '\r', r)) != (byte*)0)
-                            {
-                                r = r - (int)(next - start);
-                                if (r < 4)
-                                {
-                                    break;
-                                }
-                                if (_memicmp(next, dataDivisionBuffer, 4) == 0)
-                                {
-                                    count++;
-                                    start = next + 4;
-                                }
-                                else
-                                {
-                                    start = next + 1;
-                                }
-                                if (!keepAlive && r > 23)
-                                {
-                                    if (_memicmp(next + 2, connectionBuffer, 11) == 0)
-                                    {
-                                        next += 13;
-                                        r -= 13;
-                                        while (*next == ' ' && r > 11)
-                                        {
-                                            next++;
-                                            r--;
-                                        }
-                                        if (_memicmp(next, keepAliveBuffer, 10) == 0)
-                                        {
-                                            keepAlive = true;
-                                            start = next + 10;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    //unsafe
+                    //{
+                    //    fixed (byte* inputBuffer = buffer)
+                    //    fixed (byte* dataDivisionBuffer = _dataDivisionBytes)
+                    //    fixed (byte* connectionBuffer = _connectionBytes)
+                    //    fixed (byte* keepAliveBuffer = _keepAliveBytes)
+                    //    {
+                    //        byte* next;
+                    //        byte* start = inputBuffer;
+                    //        while ((next = memchr(start, '\r', r)) != (byte*)0)
+                    //        {
+                    //            r = r - (int)(next - start);
+                    //            if (r < 4)
+                    //            {
+                    //                break;
+                    //            }
+                    //            if (_memicmp(next, dataDivisionBuffer, 4) == 0)
+                    //            {
+                    //                count++;
+                    //                start = next + 4;
+                    //            }
+                    //            else
+                    //            {
+                    //                start = next + 1;
+                    //            }
+                    //            if (!keepAlive && r > 23)
+                    //            {
+                    //                if (_memicmp(next + 2, connectionBuffer, 11) == 0)
+                    //                {
+                    //                    next += 13;
+                    //                    r -= 13;
+                    //                    while (*next == ' ' && r > 11)
+                    //                    {
+                    //                        next++;
+                    //                        r--;
+                    //                    }
+                    //                    if (_memicmp(next, keepAliveBuffer, 10) == 0)
+                    //                    {
+                    //                        keepAlive = true;
+                    //                        start = next + 10;
+                    //                    }
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    count = 1;
 
                     if (count == 0)
                     {

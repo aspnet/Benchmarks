@@ -8,7 +8,7 @@ using System.Security;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    public class RIO
+    public sealed class RIO
     {
         public RIOImports.RIORegisterBuffer RegisterBuffer;
 

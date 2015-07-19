@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    public unsafe class TcpConnection : IDisposable
+    public unsafe sealed class TcpConnection : IDisposable
     {
         long _connectionId;
         IntPtr _socket;
@@ -63,7 +63,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         }
 
         const RIO_SEND_FLAGS MessagePart = RIO_SEND_FLAGS.DEFER | RIO_SEND_FLAGS.DONT_NOTIFY;
-        const RIO_SEND_FLAGS MessageEnd = RIO_SEND_FLAGS.NONE;
+        const RIO_SEND_FLAGS MessageEnd = RIO_SEND_FLAGS.NONE | RIO_SEND_FLAGS.DONT_NOTIFY;
 
         int _currentOffset = 0;
         public void QueueSend(ArraySegment<byte> buffer, bool isEnd)
@@ -157,7 +157,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
