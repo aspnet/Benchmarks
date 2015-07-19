@@ -7,24 +7,9 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    internal unsafe class WorkBundle
-    {
-        public int id;
-        public IntPtr completionPort;
-        public IntPtr completionQueue;
-
-        public ConcurrentDictionary<long, TcpConnection> connections;
-        public Thread thread;
-
-        public RIOBufferPool bufferPool;
-        public RIO_BUFSEGMENT cachedBad;
-        public RIO_BUFSEGMENT cachedBusy;
-    }
-
     internal class RIOThreadPool
     {
         private RIO _rio;
@@ -32,16 +17,16 @@ namespace ManagedRIOHttpServer.RegisteredIO
         private int _maxThreads;
 
         public const int MaxOpenSocketsPerThread = 1024;
-        private const int MaxOutsandingCompletions = (TcpConnection.MaxPendingReceives + TcpConnection.MaxPendingSends) * MaxOpenSocketsPerThread;
+        private const int MaxOutsandingCompletions = (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.MaxPendingSends) * MaxOpenSocketsPerThread;
 
         private IntPtr _socket;
 
-        internal WorkBundle GetWorker(long connetionId)
+        internal RIOWorkBundle GetWorker(long connetionId)
         {
             return _workers[(connetionId % _maxThreads)];
         }
 
-        private WorkBundle[] _workers;
+        private RIOWorkBundle[] _workers;
 
         public unsafe RIOThreadPool(RIO rio, IntPtr socket, CancellationToken token)
         {
@@ -51,10 +36,10 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
             _maxThreads = Environment.ProcessorCount;
 
-            _workers = new WorkBundle[_maxThreads];
+            _workers = new RIOWorkBundle[_maxThreads];
             for (var i = 0; i < _workers.Length; i++)
             {
-                var worker = new WorkBundle()
+                var worker = new RIOWorkBundle()
                 {
                     id = i,
                     bufferPool = new RIOBufferPool(_rio)
@@ -65,7 +50,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 {
                     var error = GetLastError();
                     RIOImports.WSACleanup();
-                    throw new Exception(String.Format("ERROR: CreateIoCompletionPort returned {0}", error));
+                    throw new Exception(string.Format("ERROR: CreateIoCompletionPort returned {0}", error));
                 }
 
                 var completionMethod = new RIO_NOTIFICATION_COMPLETION()
@@ -87,7 +72,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     throw new Exception(String.Format("ERROR: CreateCompletionQueue returned {0}", error));
                 }
 
-                worker.connections = new ConcurrentDictionary<long, TcpConnection>();
+                worker.connections = new ConcurrentDictionary<long, RIOTcpConnection>();
                 worker.thread = new Thread(GetThreadStart(i));
                 worker.thread.IsBackground = true;
                 _workers[i] = worker;
@@ -153,12 +138,12 @@ namespace ManagedRIOHttpServer.RegisteredIO
             var completionPort = worker.completionPort;
             var cq = worker.completionQueue;
 
-            PooledSegment cachedBadBuffer = worker.bufferPool.GetBuffer();
+            RIOPooledSegment cachedBadBuffer = worker.bufferPool.GetBuffer();
             Buffer.BlockCopy(_badResponseBytes, 0, cachedBadBuffer.Buffer, cachedBadBuffer.Offset, _badResponseBytes.Length);
             cachedBadBuffer.RioBuffer.Length = (uint)_badResponseBytes.Length;
             worker.cachedBad = cachedBadBuffer.RioBuffer;
 
-            PooledSegment cachedBusyBuffer = worker.bufferPool.GetBuffer();
+            RIOPooledSegment cachedBusyBuffer = worker.bufferPool.GetBuffer();
             Buffer.BlockCopy(_busyResponseBytes, 0, cachedBusyBuffer.Buffer, cachedBusyBuffer.Offset, _busyResponseBytes.Length);
             cachedBusyBuffer.RioBuffer.Length = (uint)_busyResponseBytes.Length;
             worker.cachedBusy = cachedBusyBuffer.RioBuffer;
@@ -190,7 +175,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                         else
                         {
                             // receive
-                            TcpConnection connection;
+                            RIOTcpConnection connection;
                             if (worker.connections.TryGetValue(result.ConnectionCorrelation, out connection))
                             {
                                 connection.CompleteReceive(result.RequestCorrelation, result.BytesTransferred);

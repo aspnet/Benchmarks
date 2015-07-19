@@ -3,9 +3,7 @@
 
 using System;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
@@ -19,13 +17,13 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
         public RIOTcpServer(ushort port, byte address1, byte address2, byte address3, byte address4)
         {
-            var version = new RIOTcpServer.Version(2, 2);
+            var version = new Version(2, 2);
             WSAData data;
             SocketError result = RIOImports.WSAStartup((short)version.Raw, out data);
             if (result != SocketError.Success)
             {
                 var error = RIOImports.WSAGetLastError();
-                throw new Exception(String.Format("ERROR: WSAStartup returned {0}", error));
+                throw new Exception(string.Format("ERROR: WSAStartup returned {0}", error));
             }
 
             _socket = RIOImports.WSASocket(ADDRESS_FAMILIES.AF_INET, SOCKET_TYPE.SOCK_STREAM, PROTOCOL.IPPROTO_TCP, IntPtr.Zero, 0, SOCKET_FLAGS.REGISTERED_IO);
@@ -33,7 +31,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             {
                 var error = RIOImports.WSAGetLastError();
                 RIOImports.WSACleanup();
-                throw new Exception(String.Format("ERROR: WSASocket returned {0}", error));
+                throw new Exception(string.Format("ERROR: WSASocket returned {0}", error));
             }
 
             _rio = RIOImports.Initalize(_socket);
@@ -78,17 +76,17 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 throw new Exception("listen failed");
             }
         }
-        public TcpConnection Accept()
+        public RIOTcpConnection Accept()
         {
             IntPtr accepted = RIOImports.accept(_socket, IntPtr.Zero, 0);
             if (accepted == new IntPtr(-1))
             {
                 var error = RIOImports.WSAGetLastError();
                 RIOImports.WSACleanup();
-                throw new Exception(String.Format("listen failed with {0}", error));
+                throw new Exception(string.Format("listen failed with {0}", error));
             }
             var connection = Interlocked.Increment(ref _connectionId);
-            return new TcpConnection(accepted, connection, _pool.GetWorker(connection), _rio);
+            return new RIOTcpConnection(accepted, connection, _pool.GetWorker(connection), _rio);
         }
 
         public void Stop()
@@ -111,7 +109,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             {
                 get
                 {
-                    UInt16 result = Raw;
+                    ushort result = Raw;
                     result >>= 8;
                     return (byte)result;
                 }
@@ -121,7 +119,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             {
                 get
                 {
-                    UInt16 result = Raw;
+                    ushort result = Raw;
                     result &= 0x00FF;
                     return (byte)result;
                 }
@@ -129,7 +127,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
             public override string ToString()
             {
-                return String.Format("{0}.{1}", Major, Minor);
+                return string.Format("{0}.{1}", Major, Minor);
             }
         }
     }

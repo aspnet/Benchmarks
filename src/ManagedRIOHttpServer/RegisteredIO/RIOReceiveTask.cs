@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-
-    public sealed class ReceiveTask : INotifyCompletion, ICriticalNotifyCompletion
+    public sealed class RIOReceiveTask : INotifyCompletion, ICriticalNotifyCompletion
     {
         private readonly static Action CALLBACK_RAN = () => { };
         private bool _isCompleted;
@@ -20,10 +16,10 @@ namespace ManagedRIOHttpServer.RegisteredIO
         private uint _bytesTransferred;
         private uint _requestCorrelation;
         private ArraySegment<byte> _buffer;
-        internal PooledSegment _segment;
-        private TcpConnection _connection;
+        internal RIOPooledSegment _segment;
+        private RIOTcpConnection _connection;
 
-        public ReceiveTask(TcpConnection connection, PooledSegment segment)
+        public RIOReceiveTask(RIOTcpConnection connection, RIOPooledSegment segment)
         {
             _segment = segment;
             _connection = connection;
@@ -52,7 +48,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             }
         }
 
-        public ReceiveTask GetAwaiter() { return this; }
+        public RIOReceiveTask GetAwaiter() { return this; }
 
         public bool IsCompleted { get { return _isCompleted; } }
 

@@ -7,43 +7,13 @@ using System.Runtime.InteropServices;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    public struct PooledSegment : IDisposable
-    {
-        public readonly byte[] Buffer;
-        internal RIO_BUFSEGMENT RioBuffer;
-        public readonly int PoolIndex;
-        private RIOBufferPool _owningPool;
-        internal PooledSegment(int index, RIOBufferPool owningPool, RIO_BUFSEGMENT segment, byte[] buffer)
-        {
-            PoolIndex = index;
-            _owningPool = owningPool;
-            RioBuffer = segment;
-            Buffer = buffer;
-        }
-        
-        public int Offset
-        {
-            get
-            {
-                return (int)RioBuffer.Offset;
-            }
-        }
-        
-        #region IDisposable Support
-        public void Dispose()
-        {
-            _owningPool.ReleaseBuffer(PoolIndex);
-        }
-        #endregion
-    }
-
     public sealed class RIOBufferPool : IDisposable
     {
         RIO_BUFSEGMENT[] _segments;
         private byte[] _underlyingBuffer;
         public const int PacketSize = 1500 - (20 + 20); // MTU - (IPv4 Header + TCP Header)
         private const int PooledPacketSize = PacketSize + 64; // 32 + PacketSize + 32 w false sharing cache guard bytes
-        private const int PerAllocationCount = RIOThreadPool.MaxOpenSocketsPerThread * (TcpConnection.MaxPendingReceives + TcpConnection.MaxPendingSends);
+        private const int PerAllocationCount = RIOThreadPool.MaxOpenSocketsPerThread * (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.MaxPendingSends);
         private const int BufferLength = (PooledPacketSize) * PerAllocationCount; // Amount to pin per alloc 9.4 MB ish; into LOH
 
         private ConcurrentQueue<int> _availableSegments;
@@ -88,12 +58,12 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
         }
 
-        public PooledSegment GetBuffer()
+        public RIOPooledSegment GetBuffer()
         {
             int bufferNo;
             if (_availableSegments.TryDequeue(out bufferNo))
             {
-                return new PooledSegment(bufferNo, this, _segments[bufferNo], _underlyingBuffer);
+                return new RIOPooledSegment(bufferNo, this, _segments[bufferNo], _underlyingBuffer);
             }
             else
             {

@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Illyriad Games. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ManagedRIOHttpServer.RegisteredIO
 {
-    public unsafe sealed class TcpConnection : IDisposable
+    public unsafe sealed class RIOTcpConnection : IDisposable
     {
         long _connectionId;
         IntPtr _socket;
         IntPtr _requestQueue;
         RIO _rio;
-        WorkBundle _wb;
+        RIOWorkBundle _wb;
 
         long _sendCount = 0;
         long _receiveRequestCount = 0;
 
-        ReceiveTask[] _receiveTasks;
-        PooledSegment[] _sendSegments;
+        RIOReceiveTask[] _receiveTasks;
+        RIOPooledSegment[] _sendSegments;
         ArraySegment<byte>[] _receiveRequestBuffers;
         public const int MaxPendingReceives = 8;
         public const int MaxPendingSends = MaxPendingReceives * 2;
         const int ReceiveMask = MaxPendingReceives - 1;
         const int SendMask = MaxPendingSends - 1;
 
-        internal TcpConnection(IntPtr socket, long connectionId, WorkBundle wb, RIO rio)
+        internal RIOTcpConnection(IntPtr socket, long connectionId, RIOWorkBundle wb, RIO rio)
         {
             _socket = socket;
             _connectionId = connectionId;
@@ -40,15 +40,15 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 throw new Exception(String.Format("ERROR: CreateRequestQueue returned {0}", error));
             }
 
-            _receiveTasks = new ReceiveTask[MaxPendingReceives];
+            _receiveTasks = new RIOReceiveTask[MaxPendingReceives];
             _receiveRequestBuffers = new ArraySegment<byte>[MaxPendingReceives];
 
             for (var i = 0; i < _receiveTasks.Length; i++)
             {
-                _receiveTasks[i] = new ReceiveTask(this, wb.bufferPool.GetBuffer());
+                _receiveTasks[i] = new RIOReceiveTask(this, wb.bufferPool.GetBuffer());
             }
 
-            _sendSegments = new PooledSegment[MaxPendingSends];
+            _sendSegments = new RIOPooledSegment[MaxPendingSends];
             for (var i = 0; i < _sendSegments.Length; i++)
             {
                 _sendSegments[i] = wb.bufferPool.GetBuffer();
@@ -161,7 +161,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             _rio.Receive(_requestQueue, ref receiveTask._segment.RioBuffer, 1, RIO_RECEIVE_FLAGS.NONE, receiveIndex);
         }
 
-        public ReceiveTask ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+        public RIOReceiveTask ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
         {
             var receiveIndex = (Interlocked.Increment(ref _receiveRequestCount) - 1) & ReceiveMask;
             var receiveTask = _receiveTasks[receiveIndex];
@@ -186,7 +186,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     //_receiveTask.Dispose();
                 }
 
-                TcpConnection connection;
+                RIOTcpConnection connection;
                 _wb.connections.TryRemove(_connectionId, out connection);
                 RIOImports.closesocket(_socket);
                 for (var i = 0; i < _receiveTasks.Length; i++)
@@ -203,7 +203,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             }
         }
 
-        ~TcpConnection()
+        ~RIOTcpConnection()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);

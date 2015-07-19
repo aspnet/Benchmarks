@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices;
-using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,13 +65,13 @@ namespace ManagedRIOHttpServer
 
         static void Serve(object state)
         {
-            var socket = (TcpConnection)state;
+            var socket = (RIOTcpConnection)state;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             ServeSocket(socket);
 #pragma warning restore CS4014
         }
 
-        static async Task ServeSocket(TcpConnection socket)
+        static async Task ServeSocket(RIOTcpConnection socket)
         {
             try
             {
