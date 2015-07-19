@@ -20,7 +20,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         ReceiveTask[] _receiveTasks;
         PooledSegment[] _sendSegments;
         ArraySegment<byte>[] _receiveRequestBuffers;
-        public const int MaxPendingReceives = 32;
+        public const int MaxPendingReceives = 8;
         public const int MaxPendingSends = MaxPendingReceives * 2;
         const int ReceiveMask = MaxPendingReceives - 1;
         const int SendMask = MaxPendingSends - 1;
@@ -66,21 +66,36 @@ namespace ManagedRIOHttpServer.RegisteredIO
         const RIO_SEND_FLAGS MessageEnd = RIO_SEND_FLAGS.NONE | RIO_SEND_FLAGS.DONT_NOTIFY;
 
         int _currentOffset = 0;
+        public void FlushSends()
+        {
+            var segment = _sendSegments[_sendCount & SendMask];
+            if (_currentOffset > 0)
+            {
+                segment.RioBuffer.Length = (uint)_currentOffset;
+                if (!_rio.Send(_requestQueue, &segment.RioBuffer, 1, MessageEnd, -_sendCount - 1))
+                {
+                    throw new ApplicationException("Send failed");
+                }
+                _currentOffset = 0;
+                _sendCount++;
+            }
+        }
         public void QueueSend(ArraySegment<byte> buffer, bool isEnd)
         {
             var segment = _sendSegments[_sendCount & SendMask];
             var count = buffer.Count;
             var offset = buffer.Offset;
 
-            while (count > 0)
+            do
             {
                 var length = count >= RIOBufferPool.PacketSize - _currentOffset ? RIOBufferPool.PacketSize - _currentOffset : count;
                 Buffer.BlockCopy(buffer.Array, offset, segment.Buffer, segment.Offset + _currentOffset, length);
+                _currentOffset += length;
 
                 if (_currentOffset == RIOBufferPool.PacketSize)
                 {
                     segment.RioBuffer.Length = RIOBufferPool.PacketSize;
-                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, MessageEnd, -_sendCount - 1);
+                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, MessagePart, -_sendCount - 1);
                     _currentOffset = 0;
                     _sendCount++;
                     segment = _sendSegments[_sendCount & SendMask];
@@ -89,25 +104,30 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 {
                     throw new Exception("Overflowed buffer");
                 }
-                else
-                {
-                    _currentOffset += length;
-                }
+
                 offset += length;
                 count -= length;
-            }
+            } while (count > 0);
+
             if (isEnd)
             {
                 if (_currentOffset > 0)
                 {
                     segment.RioBuffer.Length = (uint)_currentOffset;
-                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, MessageEnd, -_sendCount - 1);
+                    if (!_rio.Send(_requestQueue, &segment.RioBuffer, 1, MessageEnd, -_sendCount - 1))
+                    {
+                        throw new ApplicationException("Send failed");
+
+                    }
                     _currentOffset = 0;
                     _sendCount++;
                 }
                 else
                 {
-                    _rio.Send(_requestQueue, null, 1, RIO_SEND_FLAGS.COMMIT_ONLY, 0);
+                    if (!_rio.Send(_requestQueue, null, 0, RIO_SEND_FLAGS.COMMIT_ONLY, 0))
+                    {
+                        throw new ApplicationException("Send failed");
+                    }
                     _currentOffset = 0;
                     _sendCount++;
                 }

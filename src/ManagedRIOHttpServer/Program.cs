@@ -88,6 +88,8 @@ namespace ManagedRIOHttpServer
                 var loop = 0;
                 //var keepAlive = false;
                 var keepAlive = true;
+                var overflow = 0;
+                // need to check for keep alive
 
                 while (true)
                 {
@@ -96,6 +98,10 @@ namespace ManagedRIOHttpServer
 
                     if (r == 0)
                     {
+                        if (loop > 0)
+                        {
+                            socket.FlushSends();
+                        }
                         break;
                     }
 
@@ -104,53 +110,89 @@ namespace ManagedRIOHttpServer
                     // need to handle packet splits
 
                     var count = 0;
-                    //unsafe
-                    //{
-                    //    fixed (byte* inputBuffer = buffer)
-                    //    fixed (byte* dataDivisionBuffer = _dataDivisionBytes)
-                    //    fixed (byte* connectionBuffer = _connectionBytes)
-                    //    fixed (byte* keepAliveBuffer = _keepAliveBytes)
-                    //    {
-                    //        byte* next;
-                    //        byte* start = inputBuffer;
-                    //        while ((next = memchr(start, '\r', r)) != (byte*)0)
-                    //        {
-                    //            r = r - (int)(next - start);
-                    //            if (r < 4)
-                    //            {
-                    //                break;
-                    //            }
-                    //            if (_memicmp(next, dataDivisionBuffer, 4) == 0)
-                    //            {
-                    //                count++;
-                    //                start = next + 4;
-                    //            }
-                    //            else
-                    //            {
-                    //                start = next + 1;
-                    //            }
-                    //            if (!keepAlive && r > 23)
-                    //            {
-                    //                if (_memicmp(next + 2, connectionBuffer, 11) == 0)
-                    //                {
-                    //                    next += 13;
-                    //                    r -= 13;
-                    //                    while (*next == ' ' && r > 11)
-                    //                    {
-                    //                        next++;
-                    //                        r--;
-                    //                    }
-                    //                    if (_memicmp(next, keepAliveBuffer, 10) == 0)
-                    //                    {
-                    //                        keepAlive = true;
-                    //                        start = next + 10;
-                    //                    }
-                    //                }
-                    //            }
-                    //        }
-                    //    }
-                    //}
-                    count = 1;
+                    var start = 0;
+                    
+                    // pipelining check
+                    unsafe
+                    {
+
+                        fixed (byte* b = buffer)
+                        {
+                            if (overflow > 0)
+                            {
+                                // TODO: some more corner cases + better handling
+                                switch (overflow)
+                                {
+                                    case 1:
+                                        if (b[0] == 0xa && b[1] == 0xd && b[2] == 0xa)
+                                        {
+                                            count++;
+                                            start = 3;
+                                        }
+                                        break;
+                                    case 2:
+                                        if (b[0] == 0xd && b[1] == 0xa)
+                                        {
+                                            count++;
+                                            start = 2;
+                                        }
+                                        break;
+                                    case 3:
+                                        if (b[0] == 0xa)
+                                        {
+                                            count++;
+                                            start = 1;
+                                        }
+                                        break;
+                                }
+                                overflow = 0;
+                            }
+
+                            var last = start;
+
+                            for (var i = start; i < r; i++)
+                            {
+                                // overflowing cheat because buffers are larger than max possible read
+                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa)
+                                {
+                                    count++;
+                                    i += 3;
+                                    last = i + 1;
+                                }
+                            }
+                            // TODO: some more corner cases + better handling
+                            if (last < r)
+                            {
+                                // doesn't end with terminator
+                                switch (r - last)
+                                {
+                                    case 1:
+                                        if (b[r - 1] == 0xd)
+                                        {
+                                            overflow++;
+                                        }
+                                        break;
+                                    case 2:
+                                        if (b[r - 2] == 0xd && b[r - 1] == 0xa)
+                                        {
+                                            overflow += 2;
+                                        }
+                                        break;
+                                    case 3:
+                                    default:
+                                        if (b[r - 3] == 0xd && b[r - 2] == 0xa && b[r - 1] == 0xd)
+                                        {
+                                            overflow += 3;
+                                        }
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                overflow = 0;
+                            }
+                        }
+                    }
 
                     if (count == 0)
                     {
@@ -163,7 +205,8 @@ namespace ManagedRIOHttpServer
                         socket.QueueSend(sendBuffer, false);
                     }
                     // force send if not more ready to recieve/pack
-                    socket.QueueSend(sendBuffer, (!receiveTask.IsCompleted) || (!keepAlive));
+                    var nextReady = receiveTask.IsCompleted;
+                    socket.QueueSend(sendBuffer, (!nextReady) || (!keepAlive));
 
                     if (!keepAlive)
                     {
@@ -182,11 +225,6 @@ namespace ManagedRIOHttpServer
                 socket.Close();
             }
         }
-
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
-        static unsafe extern int _memicmp(byte* b1, byte* b2, long count);
-        [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
-        static unsafe extern byte* memchr(byte* b1, int c, long count);
     }
     
     }

@@ -41,9 +41,10 @@ namespace ManagedRIOHttpServer.RegisteredIO
     {
         RIO_BUFSEGMENT[] _segments;
         private byte[] _underlyingBuffer;
-        public const int PacketSize = 1500 - (20 + 60); // MTU - (IP Header + TCP Header)
+        public const int PacketSize = 1500 - (20 + 20); // MTU - (IPv4 Header + TCP Header)
+        private const int PooledPacketSize = PacketSize + 64; // 32 + PacketSize + 32 w false sharing cache guard bytes
         private const int PerAllocationCount = RIOThreadPool.MaxOpenSocketsPerThread * (TcpConnection.MaxPendingReceives + TcpConnection.MaxPendingSends);
-        private const int BufferLength = PacketSize * PerAllocationCount; // Amount to pin per alloc 9.4 MB ish; into LOH
+        private const int BufferLength = (PooledPacketSize) * PerAllocationCount; // Amount to pin per alloc 9.4 MB ish; into LOH
 
         private ConcurrentQueue<int> _availableSegments;
         private ConcurrentQueue<AllocatedBuffer> _allocatedBuffers;
@@ -77,12 +78,12 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
             _segments = new RIO_BUFSEGMENT[PerAllocationCount];
             _availableSegments = new ConcurrentQueue<int>();
-            var offset = 0u;
+            var offset = 32u;
             for (var i = 0; i < _segments.Length; i++)
             {
                 _segments[i] = new RIO_BUFSEGMENT(bufferId, offset, PacketSize);
                 _availableSegments.Enqueue(i);
-                offset += PacketSize;
+                offset += PooledPacketSize;
             }
 
         }
