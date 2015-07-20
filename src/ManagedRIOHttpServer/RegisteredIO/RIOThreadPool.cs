@@ -74,6 +74,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
                 worker.connections = new ConcurrentDictionary<long, RIOTcpConnection>();
                 worker.thread = new Thread(GetThreadStart(i));
+                worker.thread.Name = "RIOThread " + i.ToString();
                 worker.thread.IsBackground = true;
                 _workers[i] = worker;
             }
