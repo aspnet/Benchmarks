@@ -148,10 +148,11 @@ namespace ManagedRIOHttpServer
 
                             var last = start;
 
-                            for (var i = start; i < r; i++)
+                            // need to read 4 bytes to match so end loop 3 bytes earlier than count
+                            var ul = r - 3;
+                            for (var i = start; i < ul; i++)
                             {
-                                // overflowing cheat because buffers are larger than max possible read
-                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa)
+                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa )
                                 {
                                     count++;
                                     i += 3;
@@ -174,15 +175,17 @@ namespace ManagedRIOHttpServer
                                         if (b[r - 2] == 0xd && b[r - 1] == 0xa)
                                         {
                                             overflow += 2;
+                                            break;
                                         }
-                                        break;
+                                        goto case 1;
                                     case 3:
                                     default:
                                         if (b[r - 3] == 0xd && b[r - 2] == 0xa && b[r - 1] == 0xd)
                                         {
                                             overflow += 3;
+                                            break;
                                         }
-                                        break;
+                                        goto case 2;
                                 }
                             }
                             else
