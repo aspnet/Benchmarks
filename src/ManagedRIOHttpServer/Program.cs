@@ -51,7 +51,7 @@ namespace ManagedRIOHttpServer
             }
 
             // TODO: Use safehandles everywhere!
-            var ss = new RIOTcpServer(5000, 127, 0, 0, 1);
+            var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
 
             ThreadPool.SetMinThreads(100, 100);
 
