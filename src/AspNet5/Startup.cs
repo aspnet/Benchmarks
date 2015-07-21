@@ -8,7 +8,6 @@ namespace AspNet5
     public class Startup
     {
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("HelloWorld");
-        private static readonly Task _done = Task.FromResult(0);
 
         public void Configure(IApplicationBuilder app)
         {
@@ -16,9 +15,8 @@ namespace AspNet5
             {
                 context.Response.StatusCode = 200;
                 context.Response.ContentLength = _helloWorldPayload.Length;
-                context.Response.Body.Write(_helloWorldPayload, 0, _helloWorldPayload.Length);
-
-                return _done;
+                return context.Response.Body.WriteAsync(_helloWorldPayload, 0, _helloWorldPayload.Length);
+                
             });
         }
     }
