@@ -44,8 +44,13 @@ namespace ManagedRIOHttpServer.RegisteredIO
             Action continuation = _continuation ?? Interlocked.CompareExchange(ref _continuation, CALLBACK_RAN, null);
             if (continuation != null)
             {
-                continuation();
+                CompleteCallback(continuation);
             }
+        }
+
+        internal void CompleteCallback(Action continuation)
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(UnsafeCallback, continuation);
         }
 
         public RIOReceiveTask GetAwaiter() { return this; }
@@ -69,7 +74,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                     Interlocked.CompareExchange(
                         ref _continuation, continuation, null) == CALLBACK_RAN)
             {
-                ThreadPool.UnsafeQueueUserWorkItem(UnsafeCallback, continuation);
+                CompleteCallback(continuation);
             }
         }
         public uint GetResult()

@@ -28,6 +28,7 @@ namespace ManagedRIOHttpServer
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Starting Managed Registered IO Server");
             unsafe
             {
                 if (sizeof(IntPtr) != 8)
@@ -37,15 +38,20 @@ namespace ManagedRIOHttpServer
                 }
             }
 
-            // TODO: Use safehandles everywhere!
-            var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
+            try {
+                // TODO: Use safehandles everywhere!
+                var ss = new RIOTcpServer(500, 0, 0, 0, 0);
 
-            ThreadPool.SetMinThreads(100, 100);
+                ThreadPool.SetMinThreads(100, 100);
 
-            while (true)
+                while (true)
+                {
+                    var socket = ss.Accept();
+                    ThreadPool.UnsafeQueueUserWorkItem(Serve, socket);
+                }
+            } catch (Exception ex)
             {
-                var socket = ss.Accept();
-                ThreadPool.UnsafeQueueUserWorkItem(Serve, socket);
+                Console.WriteLine("Start up issue {0}", ex.Message);
             }
         }
 
@@ -140,7 +146,7 @@ namespace ManagedRIOHttpServer
                             var ul = r - 3;
                             for (var i = start; i < ul; i++)
                             {
-                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa )
+                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa)
                                 {
                                     count++;
                                     i += 3;
@@ -190,7 +196,7 @@ namespace ManagedRIOHttpServer
                     }
 
                     var date = DateTime.UtcNow.ToString("r");
-                    Encoding.UTF8.GetBytes(date,0, dateBytes.Length, dateBytes, 0);
+                    Encoding.UTF8.GetBytes(date, 0, dateBytes.Length, dateBytes, 0);
 
                     for (var i = 1; i < count; i++)
                     {
@@ -217,6 +223,6 @@ namespace ManagedRIOHttpServer
             }
         }
     }
-    
-    }
+
+}
 

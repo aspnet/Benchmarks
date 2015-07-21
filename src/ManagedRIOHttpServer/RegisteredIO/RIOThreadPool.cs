@@ -16,8 +16,8 @@ namespace ManagedRIOHttpServer.RegisteredIO
         private CancellationToken _token;
         private int _maxThreads;
 
-        public const int MaxOpenSocketsPerThread = 1024;
-        private const int MaxOutsandingCompletions = (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.MaxPendingSends) * MaxOpenSocketsPerThread;
+        public const int MaxOpenSocketsPerThread = 256;
+        private const int MaxOutsandingCompletions = (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.MaxPendingSends * 4) * MaxOpenSocketsPerThread;
 
         private IntPtr _socket;
 
@@ -169,6 +169,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
                                 RIOTcpConnection connection;
                                 if (worker.connections.TryGetValue(result.ConnectionCorrelation, out connection))
                                 {
+
                                     connection.CompleteReceive(result.RequestCorrelation, result.BytesTransferred);
                                 }
                             }
