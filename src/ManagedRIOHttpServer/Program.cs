@@ -19,12 +19,12 @@ namespace ManagedRIOHttpServer
             "Date:";
 
         private static byte[] _headersBytes = Encoding.UTF8.GetBytes(headersKeepAliveStr);
-        
+
         static readonly string bodyStr = "\r\n\r\n" +
             "Hello, World!";
 
         private static byte[] _bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
-            
+
 
         static void Main(string[] args)
         {
@@ -40,7 +40,7 @@ namespace ManagedRIOHttpServer
 
             try {
                 // TODO: Use safehandles everywhere!
-                var ss = new RIOTcpServer(500, 0, 0, 0, 0);
+                var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
 
                 ThreadPool.SetMinThreads(100, 100);
 
@@ -103,7 +103,7 @@ namespace ManagedRIOHttpServer
 
                     var count = 0;
                     var start = 0;
-                    
+
                     // pipelining check
                     unsafe
                     {
@@ -209,7 +209,7 @@ namespace ManagedRIOHttpServer
                     // force send if not more ready to recieve/pack
                     var nextReady = receiveTask.IsCompleted;
                     socket.QueueSend(bodyBuffer, (!nextReady));
-                    
+
                     loop++;
                 }
             }
