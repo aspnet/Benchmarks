@@ -11,33 +11,20 @@ namespace ManagedRIOHttpServer
 {
     public sealed class Program
     {
-        static readonly string responseKeepAliveStr = "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/plain;charset=UTF-8\r\n" +
-            "Content-Length: 10\r\n" +
-            "Connection: keep-alive\r\n" +
-            "Server: -RIO-\r\n" +
-            "\r\n" +
-            "HelloWorld";
+        static readonly string headersKeepAliveStr = "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: text/plain\r\n" +
+            "Content-Length:13\r\n" +
+            "Connection:keep-alive\r\n" +
+            "Server:-RIO-\r\n" +
+            "Date:";
 
-        private static byte[] _responseBytes = Encoding.UTF8.GetBytes(responseKeepAliveStr);
+        private static byte[] _headersBytes = Encoding.UTF8.GetBytes(headersKeepAliveStr);
+        
+        static readonly string bodyStr = "\r\n\r\n" +
+            "Hello, World!";
 
-        static readonly string responseCloseStr = "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/plain;charset=UTF-8\r\n" +
-            "Content-Length: 10\r\n" +
-            "Connection: close\r\n" +
-            "Server: -RIO-\r\n" +
-            "\r\n" +
-            "HelloWorld";
-
-        private static byte[] _responseCloseBytes = Encoding.UTF8.GetBytes(responseCloseStr);
-
-        static readonly string connectionStr = "connection:";
-        private static byte[] _connectionBytes = Encoding.UTF8.GetBytes(connectionStr);
-        static readonly string keepAliveStr = "keep-alive";
-        private static byte[] _keepAliveBytes = Encoding.UTF8.GetBytes(keepAliveStr);
-
-        static readonly string dataDivisionStr = "\r\n\r\n";
-        private static byte[] _dataDivisionBytes = Encoding.UTF8.GetBytes(dataDivisionStr);
+        private static byte[] _bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
+            
 
         static void Main(string[] args)
         {
@@ -75,7 +62,8 @@ namespace ManagedRIOHttpServer
         {
             try
             {
-                var sendBuffer = new ArraySegment<byte>(_responseBytes, 0, _responseBytes.Length);
+                var headerBuffer = new ArraySegment<byte>(_headersBytes, 0, _headersBytes.Length);
+                var bodyBuffer = new ArraySegment<byte>(_bodyBytes, 0, _bodyBytes.Length);
                 var buffer0 = new byte[2048];
                 var buffer1 = new byte[2048];
                 var receiveBuffer0 = new ArraySegment<byte>(buffer0, 0, buffer0.Length);
@@ -199,13 +187,20 @@ namespace ManagedRIOHttpServer
                         break;
                     }
 
+                    var date = DateTime.UtcNow.ToString("r");
+                    var dateBytes = Encoding.UTF8.GetBytes(date);
+
                     for (var i = 1; i < count; i++)
                     {
-                        socket.QueueSend(sendBuffer, false);
+                        socket.QueueSend(headerBuffer, false);
+                        socket.QueueSend(new ArraySegment<byte>(dateBytes), false);
+                        socket.QueueSend(bodyBuffer, false);
                     }
+                    socket.QueueSend(headerBuffer, false);
+                    socket.QueueSend(new ArraySegment<byte>(dateBytes), false);
                     // force send if not more ready to recieve/pack
                     var nextReady = receiveTask.IsCompleted;
-                    socket.QueueSend(sendBuffer, (!nextReady));
+                    socket.QueueSend(bodyBuffer, (!nextReady));
                     
                     loop++;
                 }

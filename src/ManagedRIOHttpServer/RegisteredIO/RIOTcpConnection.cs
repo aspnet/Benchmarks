@@ -63,7 +63,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         }
 
         const RIO_SEND_FLAGS MessagePart = RIO_SEND_FLAGS.DEFER | RIO_SEND_FLAGS.DONT_NOTIFY;
-        const RIO_SEND_FLAGS MessageEnd = RIO_SEND_FLAGS.NONE | RIO_SEND_FLAGS.DONT_NOTIFY;
+        const RIO_SEND_FLAGS MessageEnd = RIO_SEND_FLAGS.NONE;// | RIO_SEND_FLAGS.DONT_NOTIFY;
 
         int _currentOffset = 0;
         public void FlushSends()
@@ -95,7 +95,11 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 if (_currentOffset == RIOBufferPool.PacketSize)
                 {
                     segment.RioBuffer.Length = RIOBufferPool.PacketSize;
-                    _rio.Send(_requestQueue, &segment.RioBuffer, 1, (((_sendCount & SendMask) == 0) ? MessageEnd : MessagePart), -_sendCount - 1);
+                    if (!_rio.Send(_requestQueue, &segment.RioBuffer, 1, (((_sendCount & SendMask) == 0) ? MessageEnd : MessagePart), -_sendCount - 1))
+                    {
+                        throw new ApplicationException("Send failed");
+
+                    }
                     _currentOffset = 0;
                     _sendCount++;
                     segment = _sendSegments[_sendCount & SendMask];
