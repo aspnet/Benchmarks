@@ -71,6 +71,8 @@ namespace ManagedRIOHttpServer
 
                 var receiveTask = socket.ReceiveAsync(receiveBuffer0, CancellationToken.None);
 
+                var dateBytes = Encoding.UTF8.GetBytes("DDD, dd mmm yyyy hh:mm:ss GMT");
+
                 var loop = 0;
                 var overflow = 0;
                 // need to check for keep alive
@@ -188,7 +190,7 @@ namespace ManagedRIOHttpServer
                     }
 
                     var date = DateTime.UtcNow.ToString("r");
-                    var dateBytes = Encoding.UTF8.GetBytes(date);
+                    Encoding.UTF8.GetBytes(date,0, dateBytes.Length, dateBytes, 0);
 
                     for (var i = 1; i < count; i++)
                     {
