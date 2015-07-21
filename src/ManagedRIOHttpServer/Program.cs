@@ -51,7 +51,7 @@ namespace ManagedRIOHttpServer
             }
 
             // TODO: Use safehandles everywhere!
-            var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
+            var ss = new RIOTcpServer(80, 0, 0, 0, 0);
 
             ThreadPool.SetMinThreads(100, 100);
 
@@ -84,8 +84,6 @@ namespace ManagedRIOHttpServer
                 var receiveTask = socket.ReceiveAsync(receiveBuffer0, CancellationToken.None);
 
                 var loop = 0;
-                //var keepAlive = false;
-                var keepAlive = true;
                 var overflow = 0;
                 // need to check for keep alive
 
@@ -207,13 +205,8 @@ namespace ManagedRIOHttpServer
                     }
                     // force send if not more ready to recieve/pack
                     var nextReady = receiveTask.IsCompleted;
-                    socket.QueueSend(sendBuffer, (!nextReady) || (!keepAlive));
-
-                    if (!keepAlive)
-                    {
-                        break;
-                    }
-
+                    socket.QueueSend(sendBuffer, (!nextReady));
+                    
                     loop++;
                 }
             }

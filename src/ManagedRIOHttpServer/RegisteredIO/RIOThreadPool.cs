@@ -128,7 +128,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
         private static byte[] _busyResponseBytes = Encoding.UTF8.GetBytes(busyResponseStr);
 
-        const int maxResults = 512;
+        const int maxResults = 2048;
         private unsafe void Process(int id)
         {
             RIO_RESULT* results = stackalloc RIO_RESULT[maxResults];
