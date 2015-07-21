@@ -128,7 +128,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
 
         private static byte[] _busyResponseBytes = Encoding.UTF8.GetBytes(busyResponseStr);
 
-        const int maxResults = 2048;
+        const int maxResults = 1024;
         private unsafe void Process(int id)
         {
             RIO_RESULT* results = stackalloc RIO_RESULT[maxResults];
@@ -150,7 +150,6 @@ namespace ManagedRIOHttpServer.RegisteredIO
             worker.cachedBusy = cachedBusyBuffer.RioBuffer;
 
             uint count;
-            int ret;
             RIO_RESULT result;
             while (!_token.IsCancellationRequested)
             {
@@ -158,19 +157,27 @@ namespace ManagedRIOHttpServer.RegisteredIO
                 var sucess = GetQueuedCompletionStatus(completionPort, out bytes, out key, out overlapped, -1);
                 if (sucess)
                 {
-                    count = _rio.DequeueCompletion(cq, (IntPtr)results, maxResults);
-                    ret = _rio.Notify(cq);
-                    for (var i = 0; i < count; i++)
+                    var activatedCompletionPort = false;
+                    while ((count = _rio.DequeueCompletion(cq, (IntPtr)results, maxResults)) > 0)
                     {
-                        result = results[i];
-                        if (result.RequestCorrelation >= 0)
+                        for (var i = 0; i < count; i++)
                         {
-                            // receive
-                            RIOTcpConnection connection;
-                            if (worker.connections.TryGetValue(result.ConnectionCorrelation, out connection))
+                            result = results[i];
+                            if (result.RequestCorrelation >= 0)
                             {
-                                connection.CompleteReceive(result.RequestCorrelation, result.BytesTransferred);
+                                // receive
+                                RIOTcpConnection connection;
+                                if (worker.connections.TryGetValue(result.ConnectionCorrelation, out connection))
+                                {
+                                    connection.CompleteReceive(result.RequestCorrelation, result.BytesTransferred);
+                                }
                             }
+                        }
+
+                        if (!activatedCompletionPort)
+                        {
+                            _rio.Notify(cq);
+                            activatedCompletionPort = true;
                         }
                     }
                 }
