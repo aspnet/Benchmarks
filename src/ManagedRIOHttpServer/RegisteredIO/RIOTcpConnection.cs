@@ -22,6 +22,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         ArraySegment<byte>[] _receiveRequestBuffers;
         public const int MaxPendingReceives = 32;
         public const int MaxPendingSends = MaxPendingReceives;
+        public const int IOCPOverflowEvents = 8;
         const int ReceiveMask = MaxPendingReceives - 1;
         const int SendMask = MaxPendingSends - 1;
 
@@ -32,7 +33,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
             _rio = rio;
             _wb = wb;
 
-            _requestQueue = _rio.CreateRequestQueue(_socket, MaxPendingReceives * 2, 1, MaxPendingSends * 2, 1, wb.completionQueue, wb.completionQueue, connectionId);
+            _requestQueue = _rio.CreateRequestQueue(_socket, MaxPendingReceives + IOCPOverflowEvents, 1, MaxPendingSends + IOCPOverflowEvents, 1, wb.completionQueue, wb.completionQueue, connectionId);
             if (_requestQueue == IntPtr.Zero)
             {
                 var error = RIOImports.WSAGetLastError();
