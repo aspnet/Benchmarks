@@ -5,12 +5,14 @@
   "dependencies": {
     "Microsoft.AspNet.Server.IIS": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Kestrel": "1.0.0-*"
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Kestrel": "1.0.0-*",
+    "Newtonsoft.Json": "7.0.1"
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://*:5000",
-    "kestrel": "kestrel --server.urls http://*:5001"
+    "web": "Microsoft.AspNet.Hosting --config hosting.WebListener.ini",
+    "kestrel": "Kestrel --config hosting.Kestrel.ini"
   },
 
   "frameworks": {
