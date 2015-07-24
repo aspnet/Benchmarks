@@ -21,7 +21,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         RIOPooledSegment[] _sendSegments;
         ArraySegment<byte>[] _receiveRequestBuffers;
         public const int MaxPendingReceives = 16;
-        public const int MaxPendingSends = MaxPendingReceives * 4;
+        public const int MaxPendingSends = MaxPendingReceives * 2;
         public const int IOCPOverflowEvents = 8;
         const int ReceiveMask = MaxPendingReceives - 1;
         const int SendMask = MaxPendingSends - 1;

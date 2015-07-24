@@ -16,7 +16,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         private CancellationToken _token;
         private int _maxThreads;
 
-        public const int PreAllocSocketsPerThread = 512;
+        public const int PreAllocSocketsPerThread = 256;
         private const int MaxOutsandingCompletions = (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.IOCPOverflowEvents
                                                     + RIOTcpConnection.MaxPendingSends + RIOTcpConnection.IOCPOverflowEvents)
                                                     * PreAllocSocketsPerThread;

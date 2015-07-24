@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,10 @@ namespace ManagedRIOHttpServer
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Managed Registered IO Server");
+            Console.WriteLine("* Hardware Accelerated SIMD: {0}", Vector.IsHardwareAccelerated);
+
+
+
             unsafe
             {
                 if (sizeof(IntPtr) != 8)
@@ -38,7 +43,8 @@ namespace ManagedRIOHttpServer
                 }
             }
 
-            try {
+            try
+            {
                 // TODO: Use safehandles everywhere!
                 var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
 
@@ -49,7 +55,8 @@ namespace ManagedRIOHttpServer
                     var socket = ss.Accept();
                     ThreadPool.UnsafeQueueUserWorkItem(Serve, socket);
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine("Start up issue {0}", ex.Message);
             }
@@ -64,20 +71,30 @@ namespace ManagedRIOHttpServer
 #pragma warning restore CS4014
         }
 
+        // 17 delimiter bytes to allow offset of 1 start
+        static byte[] delimiterBytes = new byte[] {
+            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd
+        };
+        static byte[] careBytes = new byte[] {
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+        };
+
         static async Task ServeSocket(RIOTcpConnection socket)
         {
             try
             {
                 var headerBuffer = new ArraySegment<byte>(_headersBytes, 0, _headersBytes.Length);
                 var bodyBuffer = new ArraySegment<byte>(_bodyBytes, 0, _bodyBytes.Length);
-                var buffer0 = new byte[2048];
-                var buffer1 = new byte[2048];
+                var buffer0 = new byte[8192 + 64]; // max header size + cache line buffer
+                var buffer1 = new byte[8192 + 64]; // max header size + cache line buffer
                 var receiveBuffer0 = new ArraySegment<byte>(buffer0, 0, buffer0.Length);
                 var receiveBuffer1 = new ArraySegment<byte>(buffer1, 0, buffer1.Length);
 
                 var receiveTask = socket.ReceiveAsync(receiveBuffer0, CancellationToken.None);
 
                 var dateBytes = Encoding.UTF8.GetBytes("DDD, dd mmm yyyy hh:mm:ss GMT");
+
 
                 var loop = 0;
                 var overflow = 0;
@@ -105,14 +122,12 @@ namespace ManagedRIOHttpServer
                     var start = 0;
 
                     // pipelining check
-                    unsafe
+                    if (overflow > 0)
                     {
-
-                        fixed (byte* b = buffer)
+                        unsafe
                         {
-                            if (overflow > 0)
+                            fixed (byte* b = buffer)
                             {
-                                // TODO: some more corner cases + better handling
                                 switch (overflow)
                                 {
                                     case 1:
@@ -137,24 +152,73 @@ namespace ManagedRIOHttpServer
                                         }
                                         break;
                                 }
-                                overflow = 0;
                             }
+                        }
+                        overflow = 0;
+                    }
 
-                            var last = start;
+                    var last = start;
 
-                            // need to read 4 bytes to match so end loop 3 bytes earlier than count
-                            var ul = r - 3;
-                            for (var i = start; i < ul; i++)
+                    var delimStart = new Vector<byte>(0xd); // '\r'
+                    var delimNext = new Vector<byte>(0xa); // '\n'
+                    var vTrue = new Vector<byte>(careBytes, 16);
+                    var alignedDelim = Vector.AsVectorInt32(new Vector<byte>(delimiterBytes, 0));
+
+                    var ul = r - 3;
+                    var hasStart = false;
+                    
+
+                    for (var i = start; i < buffer.Length - Vector<byte>.Count; i += Vector<byte>.Count)
+                    {
+                        if (i > r)
+                        {
+                            break;
+                        }
+                        // buffer is more than 15 bytes larger than read for safety
+                        var v0 = new Vector<byte>(buffer, i);
+                        var v1 = new Vector<byte>(buffer, i + 1);
+
+                        hasStart = Vector.EqualsAny(v0, delimStart);
+                        var hasSecond = Vector.EqualsAny(v1, delimNext);
+                        if (hasStart)
+                        {
+                            if (hasSecond)
                             {
-                                if (b[i] == 0xd && b[i + 1] == 0xa && b[i + 2] == 0xd && b[i + 3] == 0xa)
+                                var v2 = new Vector<byte>(buffer, i + 2);
+                                var v3 = new Vector<byte>(buffer, i + 3);
+                                if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v0)))
                                 {
                                     count++;
-                                    i += 3;
-                                    last = i + 1;
+                                    last = i + 17; // cheat, can't be another header terminator within 16 bytes
+                                    continue;
+                                }
+                                if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v1)))
+                                {
+                                    count++;
+                                    last = i + 18; // cheat, can't be another header terminator within 16 bytes
+                                    continue;
+                                }
+                                if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v2)))
+                                {
+                                    count++;
+                                    last = i + 19; // cheat, can't be another header terminator within 16 bytes
+                                    continue;
+                                }
+                                if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v3)))
+                                {
+                                    count++;
+                                    last = i + 20; // cheat, can't be another header terminator within 16 bytes
+                                    continue;
                                 }
                             }
-                            // TODO: some more corner cases + better handling
-                            if (last < r)
+                        }
+                    }
+
+                    if (hasStart && last < r)
+                    {
+                        unsafe
+                        {
+                            fixed (byte* b = buffer)
                             {
                                 // doesn't end with terminator
                                 switch (r - last)
@@ -182,11 +246,11 @@ namespace ManagedRIOHttpServer
                                         goto case 2;
                                 }
                             }
-                            else
-                            {
-                                overflow = 0;
-                            }
                         }
+                    }
+                    else
+                    {
+                        overflow = 0;
                     }
 
                     if (count == 0)
@@ -220,6 +284,29 @@ namespace ManagedRIOHttpServer
             finally
             {
                 socket.Close();
+            }
+        }
+
+
+        public static void LowerCaseSIMD(byte[] data)
+        {
+            var A = new Vector<byte>(65); // A
+            var Z = new Vector<byte>(90); // Z
+
+            var ul = data.Length - 16;
+            for (var o = 0; o < ul; o += 16)
+            {
+                var v = new Vector<byte>(data, o);
+
+                v = Vector.ConditionalSelect(
+                    Vector.BitwiseAnd(
+                        Vector.GreaterThanOrEqual(v, A),
+                        Vector.LessThanOrEqual(v, Z)
+                    ),
+                    Vector.BitwiseOr(new Vector<byte>(0x20), v), // 0010 0000
+                    v
+                );
+                v.CopyTo(data, o);
             }
         }
     }
