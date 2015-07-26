@@ -31,22 +31,20 @@ namespace ManagedRIOHttpServer
         {
             Console.WriteLine("Starting Managed Registered IO Server");
             Console.WriteLine("* Hardware Accelerated SIMD: {0}", Vector.IsHardwareAccelerated);
-
-
-
-            unsafe
+            Console.WriteLine("* Vector<byte>.Count: {0}", Vector<byte>.Count);
+            
+            if (IntPtr.Size != 8)
             {
-                if (sizeof(IntPtr) != 8)
-                {
-                    Console.WriteLine("ManagedRIOHttpServer needs to be run in x64 mode");
-                    return;
-                }
+                Console.WriteLine("ManagedRIOHttpServer needs to be run in x64 mode");
+                return;
             }
 
             try
             {
                 // TODO: Use safehandles everywhere!
-                var ss = new RIOTcpServer(5000, 0, 0, 0, 0);
+                ushort port = 5000;
+                var ss = new RIOTcpServer(port, 0, 0, 0, 0);
+                Console.WriteLine("* Listening on port: {0}", port);
 
                 ThreadPool.SetMinThreads(100, 100);
 
@@ -73,10 +71,20 @@ namespace ManagedRIOHttpServer
 
         // 17 delimiter bytes to allow offset of 1 start
         static byte[] delimiterBytes = new byte[] {
-            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd
+            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, // SSE 128
+            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, // AVX 256
+            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa,
+            0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, 0xd, 0xa, // AVX2 512
+            0xd
         };
         static byte[] careBytes = new byte[] {
             0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
         };
 
@@ -86,8 +94,8 @@ namespace ManagedRIOHttpServer
             {
                 var headerBuffer = new ArraySegment<byte>(_headersBytes, 0, _headersBytes.Length);
                 var bodyBuffer = new ArraySegment<byte>(_bodyBytes, 0, _bodyBytes.Length);
-                var buffer0 = new byte[8192 + 64]; // max header size + cache line buffer
-                var buffer1 = new byte[8192 + 64]; // max header size + cache line buffer
+                var buffer0 = new byte[8192 + 64 + 64]; // max header size + AVX2 + cache line buffer
+                var buffer1 = new byte[8192 + 64 + 64]; // max header size + AVX2 + cache line buffer
                 var receiveBuffer0 = new ArraySegment<byte>(buffer0, 0, buffer0.Length);
                 var receiveBuffer1 = new ArraySegment<byte>(buffer1, 0, buffer1.Length);
 
@@ -161,7 +169,7 @@ namespace ManagedRIOHttpServer
 
                     var delimStart = new Vector<byte>(0xd); // '\r'
                     var delimNext = new Vector<byte>(0xa); // '\n'
-                    var vTrue = new Vector<byte>(careBytes, 16);
+                    //var vTrue = new Vector<byte>(careBytes, 64);
                     var alignedDelim = Vector.AsVectorInt32(new Vector<byte>(delimiterBytes, 0));
 
                     var ul = r - 3;
@@ -184,30 +192,36 @@ namespace ManagedRIOHttpServer
                         {
                             if (hasSecond)
                             {
+                                // contains header line terminator
+
                                 var v2 = new Vector<byte>(buffer, i + 2);
                                 var v3 = new Vector<byte>(buffer, i + 3);
                                 if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v0)))
                                 {
+                                    // contains headers terminator offset 0 bytes from Int32 start
                                     count++;
-                                    last = i + 17; // cheat, can't be another header terminator within 16 bytes
+                                    last = i + Vector<byte>.Count + 1; // cheat, can't be another header terminator within 16 bytes
                                     continue;
                                 }
                                 if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v1)))
                                 {
+                                    // contains headers terminator offset 1 bytes from Int32 start
                                     count++;
-                                    last = i + 18; // cheat, can't be another header terminator within 16 bytes
+                                    last = i + Vector<byte>.Count + 2; // cheat, can't be another header terminator within 16 bytes
                                     continue;
                                 }
                                 if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v2)))
                                 {
+                                    // contains headers terminator offset 2 bytes from Int32 start
                                     count++;
-                                    last = i + 19; // cheat, can't be another header terminator within 16 bytes
+                                    last = i + Vector<byte>.Count + 3; // cheat, can't be another header terminator within 16 bytes
                                     continue;
                                 }
                                 if (Vector.EqualsAny(alignedDelim, Vector.AsVectorInt32(v3)))
                                 {
+                                    // contains headers terminator offset 3 bytes from Int32 start
                                     count++;
-                                    last = i + 20; // cheat, can't be another header terminator within 16 bytes
+                                    last = i + Vector<byte>.Count + 2; // cheat, can't be another header terminator within 16 bytes
                                     continue;
                                 }
                             }
@@ -292,9 +306,8 @@ namespace ManagedRIOHttpServer
         {
             var A = new Vector<byte>(65); // A
             var Z = new Vector<byte>(90); // Z
-
-            var ul = data.Length - 16;
-            for (var o = 0; o < ul; o += 16)
+            
+            for (var o = 0; o < data.Length - Vector<byte>.Count; o += Vector<byte>.Count)
             {
                 var v = new Vector<byte>(data, o);
 
