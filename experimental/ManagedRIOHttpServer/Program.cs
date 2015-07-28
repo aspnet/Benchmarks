@@ -12,27 +12,48 @@ namespace ManagedRIOHttpServer
 {
     public sealed class Program
     {
+        // Number of 100ns ticks per time unit
+        private const long TicksPerMillisecond = 10000;
+        private const long TicksPerSecond = TicksPerMillisecond * 1000;
+
         static readonly string headersKeepAliveStr = "HTTP/1.1 200 OK\r\n" +
             "Content-Type: text/plain\r\n" +
             "Content-Length:13\r\n" +
             "Connection:keep-alive\r\n" +
             "Server:-RIO-\r\n" +
-            "Date:";
+            "Date:DDD, dd mmm yyyy hh:mm:ss GMT" +
+            "\r\n\r\n";
 
-        private static byte[] _headersBytes = Encoding.UTF8.GetBytes(headersKeepAliveStr);
+        private static byte[][] _headersBytesBuffers = new byte[][] {
+            Encoding.ASCII.GetBytes(headersKeepAliveStr),
+            Encoding.ASCII.GetBytes(headersKeepAliveStr)
+        };
+        private static byte[] _headersBytes;
 
-        static readonly string bodyStr = "\r\n\r\n" +
-            "Hello, World!";
+        private static readonly string bodyStr = "Hello, World!";
 
         private static byte[] _bodyBytes = Encoding.UTF8.GetBytes(bodyStr);
+        private static Timer UpdateDateTimer;
 
+        static Program()
+        {
+            var start = _headersBytesBuffers[0].Length - 33;
+            var loop = 0u;
+            UpdateDateTimer = new Timer((obj) =>
+            {
+                var date = DateTime.UtcNow.ToString("r");
+                var index = (++loop) & 1;
+                Encoding.ASCII.GetBytes(date, 0, date.Length, _headersBytesBuffers[index], start);
+                _headersBytes = _headersBytesBuffers[index];
+            }, null, 0, 1000);
+        }
 
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Managed Registered IO Server");
             Console.WriteLine("* Hardware Accelerated SIMD: {0}", Vector.IsHardwareAccelerated);
             Console.WriteLine("* Vector<byte>.Count: {0}", Vector<byte>.Count);
-            
+
             if (IntPtr.Size != 8)
             {
                 Console.WriteLine("ManagedRIOHttpServer needs to be run in x64 mode");
@@ -100,8 +121,6 @@ namespace ManagedRIOHttpServer
                 var receiveBuffer1 = new ArraySegment<byte>(buffer1, 0, buffer1.Length);
 
                 var receiveTask = socket.ReceiveAsync(receiveBuffer0, CancellationToken.None);
-
-                var dateBytes = Encoding.UTF8.GetBytes("DDD, dd mmm yyyy hh:mm:ss GMT");
 
 
                 var loop = 0;
@@ -174,7 +193,7 @@ namespace ManagedRIOHttpServer
 
                     var ul = r - 3;
                     var hasStart = false;
-                    
+
 
                     for (var i = start; i < buffer.Length - Vector<byte>.Count; i += Vector<byte>.Count)
                     {
@@ -273,17 +292,13 @@ namespace ManagedRIOHttpServer
                         break;
                     }
 
-                    var date = DateTime.UtcNow.ToString("r");
-                    Encoding.UTF8.GetBytes(date, 0, dateBytes.Length, dateBytes, 0);
 
                     for (var i = 1; i < count; i++)
                     {
                         socket.QueueSend(headerBuffer, false);
-                        socket.QueueSend(new ArraySegment<byte>(dateBytes), false);
                         socket.QueueSend(bodyBuffer, false);
                     }
                     socket.QueueSend(headerBuffer, false);
-                    socket.QueueSend(new ArraySegment<byte>(dateBytes), false);
                     // force send if not more ready to recieve/pack
                     var nextReady = receiveTask.IsCompleted;
                     socket.QueueSend(bodyBuffer, (!nextReady));
@@ -301,27 +316,30 @@ namespace ManagedRIOHttpServer
             }
         }
 
+        //public static void LowerCaseSIMD(ArraySegment<byte> data)
+        //{
+        //    if (data.Offset + data.Count + Vector<byte>.Count < data.Array.Length)
+        //    {
+        //        throw new ArgumentOutOfRangeException("Nope");
+        //    }
+        //    var A = new Vector<byte>(65); // A
+        //    var Z = new Vector<byte>(90); // Z
 
-        public static void LowerCaseSIMD(byte[] data)
-        {
-            var A = new Vector<byte>(65); // A
-            var Z = new Vector<byte>(90); // Z
-            
-            for (var o = 0; o < data.Length - Vector<byte>.Count; o += Vector<byte>.Count)
-            {
-                var v = new Vector<byte>(data, o);
+        //    for (var o = data.Offset; o < data.Count - Vector<byte>.Count; o += Vector<byte>.Count)
+        //    {
+        //        var v = new Vector<byte>(data.Array, o);
 
-                v = Vector.ConditionalSelect(
-                    Vector.BitwiseAnd(
-                        Vector.GreaterThanOrEqual(v, A),
-                        Vector.LessThanOrEqual(v, Z)
-                    ),
-                    Vector.BitwiseOr(new Vector<byte>(0x20), v), // 0010 0000
-                    v
-                );
-                v.CopyTo(data, o);
-            }
-        }
+        //        v = Vector.ConditionalSelect(
+        //            Vector.BitwiseAnd(
+        //                Vector.GreaterThanOrEqual(v, A),
+        //                Vector.LessThanOrEqual(v, Z)
+        //            ),
+        //            Vector.BitwiseOr(new Vector<byte>(0x20), v), // 0010 0000
+        //            v
+        //        );
+        //        v.CopyTo(data.Array, o);
+        //    }
+        //}
     }
 
 }
