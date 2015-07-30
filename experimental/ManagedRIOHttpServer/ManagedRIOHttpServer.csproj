@@ -70,6 +70,7 @@
     <Compile Include="RegisteredIO\RIO_RESULT.cs" />
     <Compile Include="RegisteredIO\RIOTcpConnection.cs" />
     <Compile Include="RegisteredIO\RIO_NOTIFICATION_COMPLETION_TYPE.cs" />
+    <Compile Include="RIOServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
