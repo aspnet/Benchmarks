@@ -15,7 +15,6 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseDateHeader();
             app.UsePlainText();
             app.UseJson();
             app.UseMvc();
