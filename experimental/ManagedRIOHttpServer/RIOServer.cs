@@ -26,7 +26,7 @@ namespace ManagedRIOHttpServer
         #region "Headers"
         private const string headersKeepAliveStr = "HTTP/1.1 200 OK\r\n" +
             "Server:-RIO-\r\n" +
-            "Content-Type: text/plain\r\n" +
+            "Content-Type:text/plain\r\n" +
             "Connection:keep-alive\r\n" +
             "Content-Length:13\r\n" +
             "Date:DDD, dd mmm yyyy hh:mm:ss GMT" +
