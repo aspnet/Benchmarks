@@ -11,8 +11,8 @@
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Hosting --config hosting.WebListener.ini",
-    "kestrel": "Microsoft.AspNet.Server.Kestrel --config hosting.Kestrel.ini"
+    "web": "Microsoft.AspNet.Server.WebListener --server.urls=http://*:5000",
+    "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls=http://*:5001"
   },
 
   "frameworks": {
