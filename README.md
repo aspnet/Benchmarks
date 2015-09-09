@@ -19,35 +19,39 @@ We're using [wrk](https://github.com/wg/wrk) to generate load from one of our Li
 # Results
 For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded.
 
-## Plain Text
+## Experimental Baselines
 
-Similar to the plain text benchmark in the TechEmpower tests. Intended to highlight the HTTP efficiency of the server & stack. Implementations are free to cache aggressively and remove/disable components that aren't required in order to maximize performance.
+These are server experiments that are intended to measure the non-HTTP overload of different technology stacks and approaches. These generally aren't real HTTP servers but rather TCP servers that special case replying to any HTTP-looking request with a fixed HTTP response.
 
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
-| ASP.NET 4.6 | perfsvr | 65,383 | 8 threads, 512 connections | Generic reusable handler, unused IIS modules removed | CPU is 100%, almost exclusively in user mode |
-| IIS Static File (kernel cached) | perfsvr | 276,727 | 8 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 36%, almost exclusively in kernel mode |
-| IIS Static File (non-kernel cached) | perfsvr |231,609 | 8 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on WebListener (kernel cached) | perfsvr |264,117 | 8 threads, 512 connections | Just app.Run() | CPU is 36%, almost exclusively in kernel mode |
-| ASP.NET 5 on WebListener (non-kernel cached) | perfsvr | 107,315 | 8 threads, 512 connections | Just app.Run() | CPU is 100%, mostly in user mode |
-| ASP.NET 5 on IIS (Helios) (non-kernel cached) | perfsvr | 109,560 | 8 threads, 512 connections | Just app.Run() | CPU is 100%, mostly in user mode |
-| NodeJS | perfsvr | 96,558 | 8 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| Scala | perfsvr | 204,009 | 8 threads, 1024 connections |  The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
-| libuv C# | perfsvr | 300,507 | 12 threads, 1024 connections | Simple TCP server, not real HTTP yet, load spread across 12 ports (port/thread/CPU) | CPU is 54%, mostly in kernel mode | mode, NIC saturated |
+| Hammer (raw HTTP.SYS) | perfsvr | ~280,000 | 8 threads, 512 connections | C++ directly on HTTP.SYS | CPU is 100% |
+| Hammer (raw HTTP.SYS) | perfsvr | ~460,000 | 8 threads, 256 connections, pipelining 16 deep | C++ directly on HTTP.SYS | CPU is 100% |
+| libuv C# | perfsvr | 300,507 | 12 threads, 1024 connections | Simple TCP server, load spread across 12 ports (port/thread/CPU) | CPU is 54%, mostly in kernel mode |
+| libuv C# | perfsvr | 2,379,267 | 36 threads, 288 connections, pipelining 16 deep | Simple TCP server, load spread across 12 ports (port/thread/CPU) | CPU is 100%, mostly in user mode |
+
+## Plain Text
+
+Similar to the plain text benchmark in the TechEmpower tests. Intended to highlight the HTTP efficiency of the server & stack. Implementations are free to cache the response body aggressively and remove/disable components that aren't required in order to maximize performance.
+
+| Stack | Server |  Req/sec | Load Params | Impl | Observations |
+| ----- | ------ | -------- | ----------- | ---- | ------------ |
+| ASP.NET 4.6 | perfsvr | 65,383 | 32 threads, 512 connections | Generic reusable handler, unused IIS modules removed | CPU is 100%, almost exclusively in user mode |
+| IIS Static File (kernel cached) | perfsvr | 276,727 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 36%, almost exclusively in kernel mode |
+| IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
+| NodeJS | perfsvr | 93,000 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
+| ASP.NET 5 on Kestrel | perfsvr | 127,423 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
+| Scala | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
 
 ## Plain Text with HTTP Pipelining
 
-Like the Plain Text scenario above but with HTTP pipelining enabled. Only stacks/servers that support pipelining are included.
+Like the Plain Text scenario above but with HTTP pipelining enabled at a depth of 16. Only stacks/servers that show an improvement with pipelining are included.
 
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
-| NodeJS | perfsvr | 148,934 | 8 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| Scala | perfsvr | 764,775 | 8 threads, 1024 connections, pipelining 15 deep |  The actual TechEmpower Scala plain text app | CPU is 46%, mostly in kernel mode, 1Gbps NIC saturated (need to re-run on 10GbE) |
-| libuv C# | perfsvr | 2,379,267 | 36 threads, 288 connections, pipelining 15 deep | Simple TCP server, not real HTTP yet, load spread across 12 ports (port/thread/CPU) | CPU is 100%, mostly in user mode, gets slower as test runs longer, issue somewhere |
-
-## Plain Text with HTTP 2
-
-Coming soon...
+| NodeJS | perfsvr | 144,118 | 32 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
+| ASP.NET 5 on Kestrel | perfsvr | 169,984 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
+| Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 100%, 70% in user mode |
 
 ## JSON
 Coming soon...
