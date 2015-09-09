@@ -25,10 +25,11 @@ These are server experiments that are intended to measure the non-HTTP overload 
 
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
-| Hammer (raw HTTP.SYS) | perfsvr | ~280,000 | 8 threads, 512 connections | C++ directly on HTTP.SYS | CPU is 100% |
-| Hammer (raw HTTP.SYS) | perfsvr | ~460,000 | 8 threads, 256 connections, pipelining 16 deep | C++ directly on HTTP.SYS | CPU is 100% |
+| Hammer (raw HTTP.SYS) | perfsvr | ~280,000 | 32 threads, 512 connections | C++ directly on HTTP.SYS | CPU is 100% |
+| Hammer (raw HTTP.SYS) | perfsvr | ~460,000 | 32 threads, 256 connections, pipelining 16 deep | C++ directly on HTTP.SYS | CPU is 100% |
 | libuv C# | perfsvr | 300,507 | 12 threads, 1024 connections | Simple TCP server, load spread across 12 ports (port/thread/CPU) | CPU is 54%, mostly in kernel mode |
 | libuv C# | perfsvr | 2,379,267 | 36 threads, 288 connections, pipelining 16 deep | Simple TCP server, load spread across 12 ports (port/thread/CPU) | CPU is 100%, mostly in user mode |
+| RIO C# | perfsvr | ~5,905,000 | 32 threads, 512 connections, pipelining 16 deep | Simple TCP server using Windows Registered IO (RIO) via P/Invoke from C# | CPU is 100%, 95% in user mode |
 
 ## Plain Text
 
