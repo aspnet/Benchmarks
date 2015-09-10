@@ -12,7 +12,7 @@ namespace ManagedRIOHttpServer.RegisteredIO
         RIO_BUFSEGMENT[] _segments;
         private byte[] _underlyingBuffer;
         public const int PacketSize = (1500 - (20 + 20)) * 4; // MTU - (IPv4 Header + TCP Header)
-        private const int PooledPacketSize = PacketSize + 12 * 4 + 64; // PacketSize + Round to 64 divisor + 64 w false sharing cache guard bytes
+        private const int PooledPacketSize = PacketSize + 12 + 64; // PacketSize + 12 + 64 w false sharing cache guard bytes
         private const int PerAllocationCount = RIOThreadPool.PreAllocSocketsPerThread * (RIOTcpConnection.MaxPendingReceives + RIOTcpConnection.MaxPendingSends);
         private const int BufferLength = (PooledPacketSize) * PerAllocationCount; // Amount to pin per alloc 9.4 MB ish; into LOH
 

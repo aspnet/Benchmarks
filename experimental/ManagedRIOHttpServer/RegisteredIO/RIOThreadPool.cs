@@ -112,19 +112,19 @@ namespace ManagedRIOHttpServer.RegisteredIO
         }
 
         static readonly string badResponseStr = "HTTP/1.1 400 Bad Request\r\n" +
-            "Content-Type: text/plain;charset=UTF-8\r\n" +
-            "Content-Length: 0\r\n" +
-            "Connection: keep-alive\r\n" +
-            "Server: -RIO-\r\n" +
+            "Content-Type:text/plain;charset=UTF-8\r\n" +
+            "Content-Length:0\r\n" +
+            "Connection:close\r\n" +
+            "Server:-RIO-\r\n" +
             "\r\n";
 
         private static byte[] _badResponseBytes = Encoding.UTF8.GetBytes(badResponseStr);
 
         static readonly string busyResponseStr = "HTTP/1.1 503 Service Unavailable\r\n" +
-            "Content-Type: text/plain;charset=UTF-8\r\n" +
-            "Content-Length: 4\r\n" +
-            "Connection: keep-alive\r\n" +
-            "Server: -RIO-\r\n" +
+            "Content-Type:text/plain;charset=UTF-8\r\n" +
+            "Content-Length:4\r\n" +
+            "Connection:close\r\n" +
+            "Server:-RIO-\r\n" +
             "\r\n" +
             "Busy";
 
