@@ -41,7 +41,7 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 | IIS Static File (kernel cached) | perfsvr | 276,727 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 36%, almost exclusively in kernel mode |
 | IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | 93,000 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | 127,423 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
+| ASP.NET 5 on Kestrel | perfsvr | ~90,000 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
 | Scala | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
 
 ## Plain Text with HTTP Pipelining
@@ -51,7 +51,7 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 144,118 | 32 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | 169,984 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
+| ASP.NET 5 on Kestrel | perfsvr | ~273,000 | 32 threads, 512 connections | Middleware class | CPU is 100%, 90% in user mode |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 100%, 70% in user mode |
 
 ## JSON
