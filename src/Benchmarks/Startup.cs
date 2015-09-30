@@ -21,7 +21,8 @@ namespace Benchmarks
 
             if (kestrel != null)
             {
-                kestrel.ThreadCount = Environment.ProcessorCount / 2;
+                // BUG: Multi-loop Kestrel doesn't work on Windows right now, see https://github.com/aspnet/KestrelHttpServer/issues/232
+                // kestrel.ThreadCount = 2;
             }
 
             app.UsePlainText();

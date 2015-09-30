@@ -4,7 +4,6 @@
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ActionResults;
 
 namespace Benchmarks.Controllers
 {
