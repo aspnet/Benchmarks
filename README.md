@@ -51,7 +51,7 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 144,118 | 32 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | ~391,000 | 32 threads, 512 connections | Middleware class, single IO thread | CPU is 88%, 10-15%% in kernel mode |
+| ASP.NET 5 on Kestrel | perfsvr | ~391,000 | 32 threads, 512 connections | Middleware class, single IO thread | CPU is 88%, 10-15% in kernel mode |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 100%, 70% in user mode |
 
 ## JSON
