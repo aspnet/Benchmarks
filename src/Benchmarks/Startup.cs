@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
 {
