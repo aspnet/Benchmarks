@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -24,7 +25,9 @@ namespace Benchmarks
 
         public Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.Request.Path.StartsWithSegments(_path))
+            // We check Ordinal explicitly first because it's faster than OrdinalIgnoreCase
+            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
+                httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";

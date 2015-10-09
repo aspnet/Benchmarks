@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -22,11 +23,15 @@ namespace Benchmarks
 
         public Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.Request.Path.StartsWithSegments(_path))
+            // We check Ordinal explicitly first because it's faster than OrdinalIgnoreCase
+            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
+                httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "text/plain";
-                httpContext.Response.ContentLength = _helloWorldPayload.Length;
+                // HACK: Setting the Content-Length header manually avoids the cost of serializing the int to a string.
+                //       This is instead of: httpContext.Response.ContentLength = _helloWorldPayload.Length;
+                httpContext.Response.Headers["Content-Length"] = "13";
                 return httpContext.Response.Body.WriteAsync(_helloWorldPayload, 0, _helloWorldPayload.Length);
             }
 
