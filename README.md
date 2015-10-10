@@ -7,8 +7,8 @@ We're using the following physical machines to perform these tests:
 | Name | OS | Role | CPU | RAM | NIC | Notes |
 | ---- | --- | ---- | --- | --- | --- | ----- |
 | perfsvr | Windows Server 2012 R2 | Web Server | [Xeon E5-1650](http://ark.intel.com/products/64601/Intel-Xeon-Processor-E5-1650-12M-Cache-3_20-GHz-0_0-GTs-Intel-QPI) | 32 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
-| perfsvr2 | Ubuntu 14.04 LTS | Web Server & Load Generator | [Xeon E5-1620](http://ark.intel.com/products/64621/Intel-Xeon-Processor-E5-1620-10M-Cache-3_60-GHz-0_0-GTs-Intel-QPI) | 32 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
-| perf02 | Windows Server 2012 R2 | Load Generator | [Xeon W3550](http://ark.intel.com/products/39720/Intel-Xeon-Processor-W3550-8M-Cache-3_06-GHz-4_80-GTs-Intel-QPI) | 24 GB | Broadcom NetXtreme Gigabit Ethernet (BCM5764) |
+| perfsvr2 | Ubuntu 14.04 LTS | Web Server & Load Generator | [Xeon E5-1650](http://ark.intel.com/products/64601/Intel-Xeon-Processor-E5-1650-12M-Cache-3_20-GHz-0_0-GTs-Intel-QPI) | 32 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
+| perf02 | Windows Server 2012 R2 | Load Generator | [Xeon W3550](http://ark.intel.com/products/39720/Intel-Xeon-Processor-W3550-8M-Cache-3_06-GHz-4_80-GTs-Intel-QPI) | 24 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
 | perf03 | Ubuntu 14.04 LTS | Load Generator | [Xeon W3550](http://ark.intel.com/products/39720/Intel-Xeon-Processor-W3550-8M-Cache-3_06-GHz-4_80-GTs-Intel-QPI) | 12 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
 
 The machines are connected to an 8-port [Netgear XS708E](http://www.netgear.com/business/products/switches/unmanaged-plus/10g-plus-switch.aspx) 10-Gigabit switch.
@@ -17,7 +17,7 @@ The machines are connected to an 8-port [Netgear XS708E](http://www.netgear.com/
 We're using [wrk](https://github.com/wg/wrk) to generate load from one of our Linux boxes (usually perfsvr2). We also have [WCAT](http://www.iis.net/downloads/community/2007/05/wcat-63-(x64)) set up on perf02 but it as it doesn't support HTTP pipelining we've stopped using it for now.
 
 # Results
-For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded.
+For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded. Detailed results are tracked in the [results spreadsheet](https://github.com/aspnet/benchmarks/blob/master/results/Results.xlsx).
 
 ## Experimental Baselines
 
@@ -37,11 +37,11 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
-| ASP.NET 4.6 | perfsvr | 65,383 | 32 threads, 512 connections | Generic reusable handler, unused IIS modules removed | CPU is 100%, almost exclusively in user mode |
+| ASP.NET 4.6 | perfsvr | 57,843 | 32 threads, 256 connections | Generic reusable handler, unused IIS modules removed | CPU is 100%, almost exclusively in user mode |
 | IIS Static File (kernel cached) | perfsvr | 276,727 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 36%, almost exclusively in kernel mode |
 | IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
-| NodeJS | perfsvr | 93,000 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | ~90,000 | 32 threads, 512 connections | Middleware class, multi IO threads | CPU is 100%, 90% in user mode |
+| NodeJS | perfsvr | 102,730 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
+| ASP.NET 5 on Kestrel | perfsvr | 75,632 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 50% |
 | Scala | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
 
 ## Plain Text with HTTP Pipelining
@@ -51,7 +51,7 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | Stack | Server |  Req/sec | Load Params | Impl | Observations |
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 144,118 | 32 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | ~443,000 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 88%, 15-20% in kernel mode |
+| ASP.NET 5 on Kestrel | perfsvr | 443,528 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 88%, 15-20% in kernel mode |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 100%, 70% in user mode |
 
 ## JSON
