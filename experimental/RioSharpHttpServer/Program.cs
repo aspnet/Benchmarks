@@ -9,7 +9,7 @@ namespace RioSharpHttpServer
     class Program
     {
         static RIO_BUFSEGMENT currentSegment;
-        static RioFixedBufferPool sendPool = new RioFixedBufferPool(100, 512), recivePool = new RioFixedBufferPool(100, 512);
+        static RioFixedBufferPool sendPool = new RioFixedBufferPool(4096, 256), recivePool = new RioFixedBufferPool(4096, 128);
         private static RioTcpListener listener;
 
 
