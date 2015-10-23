@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ namespace Benchmarks
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
         }
 
         public void Configure(IApplicationBuilder app)
