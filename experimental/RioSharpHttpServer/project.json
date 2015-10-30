@@ -7,7 +7,7 @@
   "licenseUrl": "",
 
   "dependencies": {
-    "RioSharp": "0.0.2-*"
+    "RioSharp": "0.0.3-*"
   },
   "compilationOptions": {
     "allowUnsafe": true,

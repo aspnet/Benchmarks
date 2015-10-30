@@ -58,12 +58,6 @@ namespace RioSharpHttpServer
             });
 
             listener.Bind(new IPEndPoint(new IPAddress(new byte[] { 0, 0, 0, 0 }), 5000));
-            listener.MaxConnections = 1024 * connections;
-            listener.MaxOutsandingCompletions = 2048 * (int)connections;
-            listener.MaxOutstandingReceive = 1024 * connections;
-            listener.MaxOutstandingSend = 1024 * connections;
-
-
             listener.Listen(1024 * (int)connections);
             while (true)
             {
@@ -72,7 +66,7 @@ namespace RioSharpHttpServer
             }
         }
 
-        static async Task ServeFixed(RioTcpConnection socket)
+        static async Task ServeFixed(RioTcpSocket socket)
         {
             try
             {
@@ -84,7 +78,7 @@ namespace RioSharpHttpServer
 
                 while (true)
                 {
-                    int r = await socket.ReadAsync(buffer, 0, buffer.Length);
+                    int r = await socket.Stream.ReadAsync(buffer, 0, buffer.Length);
                     if (r == 0)
                         break;
 
@@ -122,7 +116,7 @@ namespace RioSharpHttpServer
                         current += buffer[i];
                         current = current << 4;
                     }
-                    socket.Flush(false);
+                    socket.Stream.Flush(false);
                 }
             }
             catch (Exception ex)
@@ -135,7 +129,7 @@ namespace RioSharpHttpServer
             }
         }
 
-        static async Task Servebuff(RioTcpConnection socket)
+        static async Task Servebuff(RioTcpSocket socket)
         {
             try
             {
@@ -147,7 +141,7 @@ namespace RioSharpHttpServer
 
                 while (true)
                 {
-                    int r = await socket.ReadAsync(buffer, 0, buffer.Length);
+                    int r = await socket.Stream.ReadAsync(buffer, 0, buffer.Length);
                     if (r == 0)
                         break;
 
@@ -157,7 +151,7 @@ namespace RioSharpHttpServer
                         current += buffer[i];
                         current = current << 8;
                         if (current == endOfRequest)
-                            socket.Write(responseBytes, 0, responseBytes.Length);
+                            socket.Stream.Write(responseBytes, 0, responseBytes.Length);
                     }
 
                     leftoverLength = r % 4;
@@ -173,7 +167,7 @@ namespace RioSharpHttpServer
                             for (; start <= end; start++)
                             {
                                 if (*(uint*)start == endOfRequest)
-                                    socket.Write(responseBytes, 0, responseBytes.Length);
+                                    socket.Stream.Write(responseBytes, 0, responseBytes.Length);
                             }
                         }
                     }
@@ -185,7 +179,7 @@ namespace RioSharpHttpServer
                         current += buffer[i];
                         current = current << 4;
                     }
-                    socket.Flush();
+                    socket.Stream.Flush();
                 }
             }
             catch (Exception ex)

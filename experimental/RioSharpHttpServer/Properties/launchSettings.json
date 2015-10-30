@@ -2,7 +2,7 @@
   "profiles": {
     "RioSharpHttpServer": {
       "commandName": "RioSharpHttpServer",
-      "commandLineArgs": "-c16 -p8192",
+      "commandLineArgs": "-c256 -p16",
       "sdkVersion": "dnx-clr-win-x64.1.0.0-beta7"
     }
   }
