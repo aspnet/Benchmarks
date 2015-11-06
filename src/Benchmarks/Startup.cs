@@ -17,6 +17,7 @@ namespace Benchmarks
             // no-op version to avoid the cost.
             services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
             services.AddMvc();
+            services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
         }
 
         public void Configure(IApplicationBuilder app)
