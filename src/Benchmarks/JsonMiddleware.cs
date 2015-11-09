@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -31,10 +32,13 @@ namespace Benchmarks
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";
-                using (var sw = new StreamWriter(httpContext.Response.Body))
+                httpContext.Response.ContentLength = 30;
+
+                using (var sw = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, bufferSize: 30))
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
                 }
+
                 return _done;
             }
 

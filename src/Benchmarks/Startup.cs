@@ -25,9 +25,8 @@ namespace Benchmarks
 
             if (kestrel != null)
             {
-                // BUG: Multi-loop Kestrel doesn't work on Windows right now, see
-                // https://github.com/aspnet/KestrelHttpServer/issues/232
-                //kestrel.ThreadCount = 2;
+                // Using an I/O thread for every 2 logical CPUs appears to be a good ratio
+                kestrel.ThreadCount = Environment.ProcessorCount >> 1;
                 kestrel.NoDelay = true;
             }
 
