@@ -41,8 +41,9 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 | IIS Static File (kernel cached) | perfsvr | 276,727 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 36%, almost exclusively in kernel mode |
 | IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | 102,730 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | 75,632 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 50% |
-| Scala | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 68%, mostly in kernel mode |
+| ASP.NET 5 on Kestrel | perfsvr | 168,005 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
+| Scala - Plain | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala Plain plaintext app | CPU is 68%, mostly in kernel mode |
+| Netty | perfsvr | 447,993 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
 ## Plain Text with HTTP Pipelining
 
@@ -53,12 +54,8 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | NodeJS | perfsvr | 144,118 | 32 threads, 1024 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | ASP.NET 5 on Kestrel | perfsvr | 505,350 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 95%, 15-20% in kernel mode |
 | ASP.NET 5 on Kestrel | perfsvr2 | 409,856 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 75% |
-| Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plain text app | CPU is 100%, 70% in user mode |
-
-## JSON
-Coming soon...
-
------------------
+| Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plaintext app | CPU is 100%, 70% in user mode |
+| Netty | perfsvr | 2,808,515 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
 This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
 
