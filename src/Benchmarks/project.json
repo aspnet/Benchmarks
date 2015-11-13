@@ -13,7 +13,7 @@
 
   "commands": {
     "ef": "EntityFramework.Commands",
-    "web": "Microsoft.AspNet.Server.Kestrel",
+    "web": "Microsoft.AspNet.Server.Kestrel --server.urls=http://*:5001",
     "web-listener": "Microsoft.AspNet.Server.WebListener --server.urls=http://*:5000"
   },
 
