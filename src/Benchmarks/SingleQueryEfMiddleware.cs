@@ -3,18 +3,17 @@
 
 using System;
 using System.Threading.Tasks;
+using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
-using AspNet5.Data;
 using Newtonsoft.Json;
 
 namespace Benchmarks
 {
     public class SingleQueryEfMiddleware
     {
-        private static readonly PathString _path = new PathString("/db");
-        private static readonly JsonSerializer _json = new JsonSerializer();
+        private static readonly PathString _path = new PathString("/db/ef");
         private static readonly Random _random = new Random();
 
         private readonly RequestDelegate _next;
@@ -31,8 +30,6 @@ namespace Benchmarks
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-                var seeder = (ApplicationDbSeeder)httpContext.RequestServices.GetService(typeof(ApplicationDbSeeder));
-                seeder.Seed(db);
 
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -55,7 +52,7 @@ namespace Benchmarks
 
     public static class SingleQueryEfMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQuery(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseSingleQueryEf(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<SingleQueryEfMiddleware>();
         }

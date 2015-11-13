@@ -3,7 +3,7 @@
 
 using Microsoft.Data.Entity;
 
-namespace AspNet5.Data
+namespace Benchmarks.Data
 {
     public class ApplicationDbContext : DbContext
     {
