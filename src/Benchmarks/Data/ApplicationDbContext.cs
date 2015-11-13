@@ -7,11 +7,6 @@ namespace AspNet5.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(ApplicationDbSeeder seeder)
-        {
-            seeder.Seed(this);
-        }
-
         public DbSet<World> World { get; set; }
     }
 }
