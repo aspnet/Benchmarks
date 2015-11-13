@@ -31,8 +31,13 @@ namespace Benchmarks
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
+                var seeder = (ApplicationDbSeeder)httpContext.RequestServices.GetService(typeof(ApplicationDbSeeder));
+                seeder.Seed(db);
+
+                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
                 var id = _random.Next(1, 10001);
-                var row = await db.World.AsNoTracking().SingleAsync(w => w.Id == id);
+                var row = await db.World.SingleAsync(w => w.Id == id);
                 var result = JsonConvert.SerializeObject(row);
 
                 httpContext.Response.StatusCode = 200;
