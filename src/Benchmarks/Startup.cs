@@ -43,5 +43,7 @@ namespace Benchmarks
                 set { return; }
             }
         }
+
+        public static void Main(string[] args) => Microsoft.AspNet.Hosting.WebApplication.Run(args);
     }
 }
