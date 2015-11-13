@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace AspNet5.Data
+namespace Benchmarks.Data
 {
     public class ApplicationDbSeeder
     {

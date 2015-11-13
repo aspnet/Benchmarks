@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using AspNet5.Data;
+using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
@@ -58,10 +58,15 @@ namespace Benchmarks
             app.UseErrorHandler();
             app.UsePlainText();
             app.UseJson();
-            app.UseSingleQuery();
+            app.UseSingleQueryRaw(Configuration["Data:DefaultConnection:ConnectionString"]);
+            app.UseSingleQueryEf();
             app.UseMvc();
 
             app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
+
+            var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
+            var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
+            seeder.Seed(dbContext);
         }
         
         public class InertHttpContextAccessor : IHttpContextAccessor
