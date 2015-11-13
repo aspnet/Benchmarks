@@ -1,4 +1,4 @@
-﻿{
+{
   "webroot": "wwwroot",
   "version": "1.0.0-*",
 
@@ -10,8 +10,8 @@
   },
 
   "commands": {
-    "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls=http://*:5001",
-    "web": "Microsoft.AspNet.Server.WebListener --server.urls=http://*:5000"
+    "web": "Microsoft.AspNet.Server.Kestrel",
+    "web-listener": "Microsoft.AspNet.Server.WebListener --server.urls=http://*:5000"
   },
 
   "frameworks": {
