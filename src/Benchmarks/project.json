@@ -6,10 +6,13 @@
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "EntityFramework.Commands": "7.0.0-*",
+    "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
     "Newtonsoft.Json": "7.0.1"
   },
 
   "commands": {
+    "ef": "EntityFramework.Commands",
     "web": "Microsoft.AspNet.Server.Kestrel",
     "web-listener": "Microsoft.AspNet.Server.WebListener --server.urls=http://*:5000"
   },
