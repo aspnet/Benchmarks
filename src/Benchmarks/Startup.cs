@@ -20,14 +20,17 @@ namespace Benchmarks
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-
-            builder.AddEnvironmentVariables();
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            Configuration.Bind(StartupOptions);
         }
 
         public IConfigurationRoot Configuration { get; set; }
+
+        public Options StartupOptions { get; } = new Options();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -35,11 +38,14 @@ namespace Benchmarks
             // no-op version to avoid the cost.
             services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
 
-            services.AddSingleton<ApplicationDbSeeder>();
-            services.AddEntityFramework()
-                .AddSqlServer()
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+            if (StartupOptions.EnableDbTests)
+            {
+                services.AddSingleton<ApplicationDbSeeder>();
+                services.AddEntityFramework()
+                    .AddSqlServer()
+                    .AddDbContext<ApplicationDbContext>(options =>
+                        options.UseSqlServer(StartupOptions.ConnectionString));
+            }
 
             services.AddMvc();
         }
@@ -58,15 +64,23 @@ namespace Benchmarks
             app.UseErrorHandler();
             app.UsePlainText();
             app.UseJson();
-            app.UseSingleQueryRaw(Configuration["Data:DefaultConnection:ConnectionString"]);
-            app.UseSingleQueryEf();
+
+            if (StartupOptions.EnableDbTests)
+            {
+                app.UseSingleQueryRaw(StartupOptions.ConnectionString);
+                app.UseSingleQueryEf();
+                var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
+                var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
+                if (!seeder.Seed(dbContext))
+                {
+                    Environment.Exit(1);
+                }
+                Console.WriteLine("Database tests enabled");
+            }
+
             app.UseMvc();
 
             app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
-
-            var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
-            var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
-            seeder.Seed(dbContext);
         }
         
         public class InertHttpContextAccessor : IHttpContextAccessor
@@ -78,6 +92,11 @@ namespace Benchmarks
             }
         }
 
-        public static void Main(string[] args) => WebApplication.Run(args);
+        public class Options
+        {
+            public bool EnableDbTests { get; set; }
+
+            public string ConnectionString { get; set; }
+        }
     }
 }

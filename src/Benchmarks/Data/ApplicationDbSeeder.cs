@@ -11,7 +11,7 @@ namespace Benchmarks.Data
         private object _locker = new object();
         private bool _seeded = false;
 
-        public void Seed(ApplicationDbContext db)
+        public bool Seed(ApplicationDbContext db)
         {
             if (!_seeded)
             {
@@ -19,22 +19,41 @@ namespace Benchmarks.Data
                 {
                     if (!_seeded)
                     {
-                        var count = db.World.Count();
-
-                        if (count == 0)
+                        try
                         {
-                            var random = new Random();
-                            for (int i = 0; i < 10000; i++)
-                            {
-                                db.World.Add(new World { RandomNumber = random.Next(1, 10001) });
-                            }
-                            db.SaveChanges();
-                        }
+                            var count = db.World.Count();
 
-                        _seeded = true;
+                            if (count == 0)
+                            {
+                                var random = new Random();
+                                for (int i = 0; i < 10000; i++)
+                                {
+                                    db.World.Add(new World { RandomNumber = random.Next(1, 10001) });
+                                }
+                                db.SaveChanges();
+                                Console.WriteLine("Database successfully seeded!");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Database already seeded!");
+                            }
+
+                            _seeded = true;
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine("Error trying to seed the database. Have you run 'dnx ef database update'?");
+                            Console.Error.WriteLine(ex);
+
+                            return false;
+                        }
                     }
                 }
             }
+
+            Console.WriteLine("Database already seeded!");
+            return true;
         }
     }
 }
