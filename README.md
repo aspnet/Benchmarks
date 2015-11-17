@@ -1,7 +1,80 @@
 # Benchmarks
-A playground for experimenting with different server models.
+Benchmarks for ASP.NET 5 including (but not limited to) scenarios from the [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/).
 
-# Environment
+# Running the benchmarks
+
+The benchmark repo is set up to work against the latest sources (i.e. not packages from nuget.org) for ASP.NET 5 so make sure you read through the following details to help you get started.
+
+The ASP.NET 5 benchmarks server application itself is in the `./src/Benchmarks` folder. The `./expiremental` folder contains various experimental projects that aren't themselves part of the benchmarks.
+
+## The scenarios
+Following are the details of each of the scenarios the server application contains implementations for and thus can be benchmarked:
+
+| url | Name | Description |
+| :--- | :--- | :--- |
+| /plaintext | Plaintext | *From https://www.techempower.com/benchmarks/* This test is an exercise of the request-routing fundamentals only, designed to demonstrate the capacity of high-performance platforms in particular. Requests will be sent using HTTP pipelining. |
+| /json | JSON | *From https://www.techempower.com/benchmarks/* This test exercises the framework fundamentals including keep-alive support, request routing, request header parsing, object instantiation, JSON serialization, response header generation, and request count throughput. |
+| /mvc/plaintext | MVC Plaintext | As for the plaintext test above, but using routing & MVC. |
+| /mvc/json | MVC JSON | As for the json test above, but using routing & MVC. |
+| /mvc/view | MVC Plain View | As for the plaintext test above, but using routing & MVC plus rendering the result via a Razor view. |
+| /db/raw | Single Query Raw | *From https://www.techempower.com/benchmarks/* This test exercises the framework's object-relational mapper (ORM), random number generator, database driver, and database connection pool. |
+| /db/ef | Single Query EF | As for the single query raw test above but using Entity Framework 7 as the data-access library/ORM. |
+
+The addition of more scenarios is pending.
+
+## Setting up the web server
+You can run the benchmarks application server on Windows, OSX or Linux.
+
+1. Follow the [instructions on the ASP.NET 5 docs site](https://docs.asp.net/en/latest/getting-started/index.html) to get the appropriate runtime and tooling pieces for your chosen platform installed.
+
+1. Clone this repo to the server.
+
+1. Navigate to the `./src/Benchmarks` directory under this repo and run the following command to install the latest version of the ASP.NET 5 runtime for .NET Core CLR on x64:
+   ```
+   dnvm install latest -r coreclr -arch x64 -u
+   ```
+
+   *Note: You can also install and use flavors of the runtime for x86 (`-arch x86`) and full CLR (`-r clr`) on Windows if you so desire. Just type `dnvm` in the console for more details on installing and selecting versions of the runtime to use.*
+
+1. Run the following command to restore package depedencies for the server application:
+   ```
+   dnu restore
+   ```
+
+1. Finally, start the server application with the following command:
+   ```
+   dnx --configuration Release web
+   ```
+
+*Note: You may need to open port 5001 for external traffic in your firewall for the server to successfully run*
+
+## Generating Load
+It's best to generate load from a completely separate machine from the server if you can, to avoid resource contention during the test.
+
+We use the [wrk](https://github.com/wg/wrk) load generation tool to generate the load for our benchmark runs. It's the best tool we've found for the job and supports HTTP pipelining (used by the plaintext scenario) via its scripting interface. Wrk will only run from a Linux machine however, so if you must use Windows, try using [ab](https://httpd.apache.org/docs/2.2/programs/ab.html) (Apache Bench). You can [dowload ab for Windows from here](http://download.nextag.com/apache/httpd/binaries/win32/#down). 
+
+You'll need to clone the [wrk repo](https://github.com/wg/wrk) on your load generation machine and follow [their instructions to build it](https://github.com/wg/wrk/wiki/Installing-Wrk-on-Linux).
+
+Here's a sample wrk command to generate load for the JSON scenario. This run is using 256 connections across 32 client threads for a duration of 10 seconds.
+```
+wrk -c 256 -t 32 -d 10 http://10.0.0.100:5001/json
+```
+
+To generate pipelined load for the plaintext scenario, use the following command, assuming your CWD is the root of this repo and wrk is on your path. The final argument after the `--` is the desired pipeline depth. We always run the plaintext scenario at a pipeline depth of 16, [just like the Techempower Benchmarks](https://github.com/TechEmpower/FrameworkBenchmarks/blob/6594d32db618c6ca65e0106c5adf2671f7b63654/toolset/benchmark/framework_test.py#L640).
+```
+wrk -c 256 -t 32 -d 10 -s ./scripts/pipeline.lua http://10.0.0.100:5001/plaintext -- 16
+```
+
+*Note you may want to tweak the number of client threads (the `-t` arg) being used based on the specs of your load generation machine.*
+
+## Running the database scenarios
+The database scenarios are currently disabled in the application by default. To enable them, ensure the `EnableDbTests` configuration property is set to "true" when starting the server application. The easiest way to do this is to set an environment variable in the terminal session you're launching the application from, e.g. from PowerShell `$env:EnableDbTests="true"`.
+
+We're still building out the database scenarios including the infrastructure for running them against various database servers and using various data-access libraries. Stay tuned for more details soon.
+
+# Details of our perf lab
+
+## Environment
 We're using the following physical machines to perform these tests:
 
 | Name | OS | Role | CPU | RAM | NIC | Notes |
@@ -11,10 +84,10 @@ We're using the following physical machines to perform these tests:
 | perf02 | Windows Server 2012 R2 | Load Generator | [Xeon W3550](http://ark.intel.com/products/39720/Intel-Xeon-Processor-W3550-8M-Cache-3_06-GHz-4_80-GTs-Intel-QPI) | 24 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
 | perf03 | Ubuntu 14.04 LTS | Load Generator | [Xeon W3550](http://ark.intel.com/products/39720/Intel-Xeon-Processor-W3550-8M-Cache-3_06-GHz-4_80-GTs-Intel-QPI) | 12 GB | [Intel® Ethernet Converged Network Adapter X540-T1 10GbE](http://ark.intel.com/products/58953/Intel-Ethernet-Converged-Network-Adapter-X540-T1) |
 
-The machines are connected to an 8-port [Netgear XS708E](http://www.netgear.com/business/products/switches/unmanaged-plus/10g-plus-switch.aspx) 10-Gigabit switch.
+The machines are connected to an 8-port [Netgear XS708E](http://www.netgear.com/business/products/switches/unmanaged-plus/10g-plus-switch.aspx) 10-Gigabit switch, that is isolated from the rest of the corporate network (the machines are all [multihomed](https://en.wikipedia.org/wiki/Multihoming)).
 
-# Load Generation
-We're using [wrk](https://github.com/wg/wrk) to generate load from one of our Linux boxes (usually perfsvr2). We also have [WCAT](http://www.iis.net/downloads/community/2007/05/wcat-63-(x64)) set up on perf02 but it as it doesn't support HTTP pipelining we've stopped using it for now.
+## Load Generation
+We're using [wrk](https://github.com/wg/wrk) to generate load from one of our Linux boxes (usually perf03).
 
 # Results
 For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded. Detailed results are tracked in the [results spreadsheet](https://github.com/aspnet/benchmarks/blob/master/results/Results.xlsx).
