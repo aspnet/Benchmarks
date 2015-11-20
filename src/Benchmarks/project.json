@@ -8,7 +8,8 @@
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "EntityFramework.Commands": "7.0.0-*",
     "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
-    "Newtonsoft.Json": "7.0.1"
+    "Newtonsoft.Json": "7.0.1",
+    "Dapper": "1.50.0-*"
   },
 
   "commands": {
