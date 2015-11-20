@@ -8,6 +8,7 @@ using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks
 {
@@ -15,6 +16,10 @@ namespace Benchmarks
     {
         private static readonly PathString _path = new PathString("/db/raw");
         private static readonly Random _random = new Random();
+        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
@@ -33,7 +38,7 @@ namespace Benchmarks
             {
                 var row = await LoadRow();
 
-                var result = JsonConvert.SerializeObject(row);
+                var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";

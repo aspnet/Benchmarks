@@ -8,6 +8,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks
 {
@@ -15,7 +16,10 @@ namespace Benchmarks
     {
         private static readonly PathString _path = new PathString("/db/ef");
         private static readonly Random _random = new Random();
-
+        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
         private readonly RequestDelegate _next;
 
         public SingleQueryEfMiddleware(RequestDelegate next)
@@ -35,7 +39,7 @@ namespace Benchmarks
 
                 var id = _random.Next(1, 10001);
                 var row = await db.World.SingleAsync(w => w.Id == id);
-                var result = JsonConvert.SerializeObject(row);
+                var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";
