@@ -12,14 +12,17 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNET_ENV": "Development",
-        "EnableDbTests": "true"
+        "EnableDbTests": "true",
+        "Hosting:Environment": "Development",
+        "AspNet_Environment": "Development"
       }
     },
     "web": {
       "commandName": "web",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "EnableDbTests": "true",
+        "Hosting:Environment": "Development",
+        "AspNet_Environment": "Development"
       }
     }
   }
