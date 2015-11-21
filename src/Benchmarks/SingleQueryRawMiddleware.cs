@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Benchmarks.Data;
@@ -54,26 +55,24 @@ namespace Benchmarks
 
         private async Task<World> LoadRow()
         {
-            var row = new World();
-
             using (var db = new SqlConnection(_connectionString))
             using (var cmd = db.CreateCommand())
             {
-                var id = _random.Next(1, 10001);
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                cmd.Parameters.Add(new SqlParameter("@Id", System.Data.SqlDbType.Int) { Value = id });
+                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = _random.Next(1, 10001) });
 
                 await db.OpenAsync();
-                var rdr = await cmd.ExecuteReaderAsync();
-                await rdr.ReadAsync();
+                using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                {
+                    await rdr.ReadAsync();
 
-                row.Id = rdr.GetInt32(0);
-                row.RandomNumber = rdr.GetInt32(1);
-
-                db.Close();
+                    return new World
+                    {
+                        Id = rdr.GetInt32(0),
+                        RandomNumber = rdr.GetInt32(1)
+                    };
+                }
             }
-
-            return row;
         }
     }
 
