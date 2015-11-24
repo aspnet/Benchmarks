@@ -8,5 +8,7 @@ namespace Benchmarks.Data
     public class ApplicationDbContext : DbContext
     {
         public DbSet<World> World { get; set; }
+
+        public DbSet<Fortune> Fortunue { get; set; }
     }
 }
