@@ -78,7 +78,7 @@ namespace Benchmarks
             for (int i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
-                result[i] = await dbContext.World.SingleAsync(w => w.Id == id);
+                result[i] = await dbContext.World.FirstAsync(w => w.Id == id);
             }
 
             return result;
