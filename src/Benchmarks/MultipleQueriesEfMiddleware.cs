@@ -2,33 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Data.Entity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks
 {
-    public class MultipleQueriesRawMiddleware
+    public class MultipleQueriesEfMiddleware
     {
-        private static readonly PathString _path = new PathString("/queries/raw");
+        private static readonly PathString _path = new PathString("/queries/ef");
         private static readonly Random _random = new Random();
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-
         private readonly RequestDelegate _next;
-        private readonly string _connectionString;
 
-        public MultipleQueriesRawMiddleware(RequestDelegate next, string connectionString)
+        public MultipleQueriesEfMiddleware(RequestDelegate next)
         {
             _next = next;
-            _connectionString = connectionString;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -37,8 +33,12 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
+                var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
+
+                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
                 var count = GetQueryCount(httpContext);
-                var rows = await LoadRows(count, _connectionString);
+                var rows = await LoadRows(count, db);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -71,45 +71,25 @@ namespace Benchmarks
                     : 1;
         }
 
-        private static async Task<World[]> LoadRows(int count, string connectionString)
+        private static async Task<World[]> LoadRows(int count, ApplicationDbContext dbContext)
         {
             var result = new World[count];
 
-            using (var db = new SqlConnection(connectionString))
-            using (var cmd = db.CreateCommand())
+            for (int i = 0; i < count; i++)
             {
-                await db.OpenAsync();
-
-                cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                var id = cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int));
-
-                for (int i = 0; i < count; i++)
-                {
-                    id.Value = _random.Next(1, 10001);
-                    using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
-                    {
-                        await rdr.ReadAsync();
-
-                        result[i] = new World
-                        {
-                            Id = rdr.GetInt32(0),
-                            RandomNumber = rdr.GetInt32(1)
-                        };
-                    }
-                }
-
-                db.Close();
+                var id = _random.Next(1, 10001);
+                result[i] = await dbContext.World.SingleAsync(w => w.Id == id);
             }
 
             return result;
         }
     }
 
-    public static class MultipleQueriesRawMiddlewareExtensions
+    public static class MultipleQueriesEfMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesRaw(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseMultipleQueriesEf(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MultipleQueriesRawMiddleware>(connectionString);
+            return builder.UseMiddleware<MultipleQueriesEfMiddleware>();
         }
     }
 }

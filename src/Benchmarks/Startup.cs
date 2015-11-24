@@ -68,10 +68,12 @@ namespace Benchmarks
             if (StartupOptions.EnableDbTests)
             {
                 app.UseSingleQueryRaw(StartupOptions.ConnectionString);
-                app.UseSingleQueryEf();
                 app.UseSingleQueryDapper(StartupOptions.ConnectionString);
+                app.UseSingleQueryEf();
 
                 app.UseMultipleQueriesRaw(StartupOptions.ConnectionString);
+                app.UseMultipleQueriesDapper(StartupOptions.ConnectionString);
+                app.UseMultipleQueriesEf();
 
                 var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
                 var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
