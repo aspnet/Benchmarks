@@ -41,7 +41,7 @@ namespace Benchmarks
                 var row = await db.World.FirstAsync(w => w.Id == id);
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
-                httpContext.Response.StatusCode = 200;
+                httpContext.Response.StatusCode = StatusCodes.Status200OK;
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = result.Length;
 

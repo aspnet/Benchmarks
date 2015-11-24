@@ -45,6 +45,7 @@ namespace Benchmarks
                     .AddSqlServer()
                     .AddDbContext<ApplicationDbContext>(options =>
                         options.UseSqlServer(StartupOptions.ConnectionString));
+                services.AddWebEncoders();
             }
 
             services.AddMvc();
@@ -74,6 +75,8 @@ namespace Benchmarks
                 app.UseMultipleQueriesRaw(StartupOptions.ConnectionString);
                 app.UseMultipleQueriesDapper(StartupOptions.ConnectionString);
                 app.UseMultipleQueriesEf();
+
+                app.UseFortunesRaw(StartupOptions.ConnectionString);
 
                 var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
                 var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));

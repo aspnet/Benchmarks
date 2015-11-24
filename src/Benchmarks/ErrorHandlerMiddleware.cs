@@ -25,7 +25,7 @@ namespace Benchmarks
             }
             catch (Exception ex)
             {
-                httpContext.Response.StatusCode = 500;
+                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 httpContext.Response.ContentType = "text/html";
                 await httpContext.Response.WriteAsync($"<pre style='color:red'>{ex.ToString()}</pre>");
             }
