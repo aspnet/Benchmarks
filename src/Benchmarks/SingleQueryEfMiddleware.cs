@@ -38,7 +38,7 @@ namespace Benchmarks
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
                 var id = _random.Next(1, 10001);
-                var row = await db.World.SingleAsync(w => w.Id == id);
+                var row = await db.World.FirstAsync(w => w.Id == id);
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = 200;
