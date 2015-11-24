@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 
 namespace Benchmarks.Controllers
@@ -35,7 +36,7 @@ namespace Benchmarks.Controllers
 
             public Task ExecuteResultAsync(ActionContext context)
             {
-                context.HttpContext.Response.StatusCode = 200;
+                context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
                 context.HttpContext.Response.ContentType = "text/plain";
                 context.HttpContext.Response.ContentLength = _helloWorldPayload.Length;
                 return context.HttpContext.Response.Body.WriteAsync(_helloWorldPayload, 0, _helloWorldPayload.Length);

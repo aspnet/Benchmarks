@@ -3,7 +3,7 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
@@ -24,11 +24,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public MultipleQueriesRawMiddleware(RequestDelegate next, string connectionString)
+        public MultipleQueriesRawMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
         {
             _next = next;
             _connectionString = connectionString;
+            _dbProviderFactory = dbProviderFactory;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -38,7 +40,7 @@ namespace Benchmarks
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 var count = GetQueryCount(httpContext);
-                var rows = await LoadRows(count, _connectionString);
+                var rows = await LoadRows(count, _connectionString, _dbProviderFactory);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -71,17 +73,21 @@ namespace Benchmarks
                     : 1;
         }
 
-        private static async Task<World[]> LoadRows(int count, string connectionString)
+        private static async Task<World[]> LoadRows(int count, string connectionString, DbProviderFactory dbProviderFactory)
         {
             var result = new World[count];
 
-            using (var db = new SqlConnection(connectionString))
+            using (var db = dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
+                db.ConnectionString = connectionString;
                 await db.OpenAsync();
 
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                var id = cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int));
+                var id = cmd.CreateParameter();
+                id.ParameterName = "@Id";
+                id.DbType = DbType.Int32;
+                cmd.Parameters.Add(id);
 
                 for (int i = 0; i < count; i++)
                 {

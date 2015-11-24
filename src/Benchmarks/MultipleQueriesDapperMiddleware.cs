@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Benchmarks.Data;
@@ -25,11 +25,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public MultipleQueriesDapperMiddleware(RequestDelegate next, string connectionString)
+        public MultipleQueriesDapperMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
         {
             _next = next;
             _connectionString = connectionString;
+            _dbProviderFactory = dbProviderFactory;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -39,7 +41,7 @@ namespace Benchmarks
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
                 var count = GetQueryCount(httpContext);
-                var rows = await LoadRows(count, _connectionString);
+                var rows = await LoadRows(count, _connectionString, _dbProviderFactory);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -72,12 +74,13 @@ namespace Benchmarks
                     : 1;
         }
 
-        private static async Task<World[]> LoadRows(int count, string connectionString)
+        private static async Task<World[]> LoadRows(int count, string connectionString, DbProviderFactory dbProviderFactory)
         {
             var result = new World[count];
 
-            using (var db = new SqlConnection(connectionString))
+            using (var db = dbProviderFactory.CreateConnection())
             {
+                db.ConnectionString = connectionString;
                 await db.OpenAsync();
 
                 for (int i = 0; i < count; i++)

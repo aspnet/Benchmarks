@@ -3,7 +3,7 @@
 
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
@@ -24,11 +24,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public SingleQueryRawMiddleware(RequestDelegate next, string connectionString)
+        public SingleQueryRawMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
         {
             _next = next;
             _connectionString = connectionString;
+            _dbProviderFactory = dbProviderFactory;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -37,7 +39,7 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
-                var row = await LoadRow(_connectionString);
+                var row = await LoadRow(_connectionString, _dbProviderFactory);
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
@@ -53,15 +55,21 @@ namespace Benchmarks
             await _next(httpContext);
         }
 
-        private static async Task<World> LoadRow(string connectionString)
+        private static async Task<World> LoadRow(string connectionString, DbProviderFactory dbProviderFactory)
         {
-            using (var db = new SqlConnection(connectionString))
+            using (var db = dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = _random.Next(1, 10001) });
+                var id = cmd.CreateParameter();
+                id.ParameterName = "@Id";
+                id.DbType = DbType.Int32;
+                id.Value = _random.Next(1, 10001);
+                cmd.Parameters.Add(id);
 
+                db.ConnectionString = connectionString;
                 await db.OpenAsync();
+
                 using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     await rdr.ReadAsync();
