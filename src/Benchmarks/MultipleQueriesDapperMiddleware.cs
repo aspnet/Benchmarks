@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using Benchmarks.Data;
+using Dapper;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Newtonsoft.Json;
@@ -13,9 +14,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks
 {
-    public class SingleQueryRawMiddleware
+    public class MultipleQueriesDapperMiddleware
     {
-        private static readonly PathString _path = new PathString("/db/raw");
+        private static readonly PathString _path = new PathString("/queries/dapper");
         private static readonly Random _random = new Random();
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
@@ -25,7 +26,7 @@ namespace Benchmarks
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
 
-        public SingleQueryRawMiddleware(RequestDelegate next, string connectionString)
+        public MultipleQueriesDapperMiddleware(RequestDelegate next, string connectionString)
         {
             _next = next;
             _connectionString = connectionString;
@@ -37,9 +38,10 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
-                var row = await LoadRow(_connectionString);
+                var count = GetQueryCount(httpContext);
+                var rows = await LoadRows(count, _connectionString);
 
-                var result = JsonConvert.SerializeObject(row, _jsonSettings);
+                var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";
@@ -53,34 +55,52 @@ namespace Benchmarks
             await _next(httpContext);
         }
 
-        private static async Task<World> LoadRow(string connectionString)
+        private static int GetQueryCount(HttpContext httpContext)
         {
-            using (var db = new SqlConnection(connectionString))
-            using (var cmd = db.CreateCommand())
+            var queries = 1;
+            var queriesRaw = httpContext.Request.Query["queries"];
+
+            if (queriesRaw.Count == 1)
             {
-                cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = _random.Next(1, 10001) });
-
-                await db.OpenAsync();
-                using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                {
-                    await rdr.ReadAsync();
-
-                    return new World
-                    {
-                        Id = rdr.GetInt32(0),
-                        RandomNumber = rdr.GetInt32(1)
-                    };
-                }
+                int.TryParse(queriesRaw, out queries);
             }
+
+            return queries > 500
+                ? 500
+                : queries > 0
+                    ? queries
+                    : 1;
+        }
+
+        private static async Task<World[]> LoadRows(int count, string connectionString)
+        {
+            var result = new World[count];
+
+            using (var db = new SqlConnection(connectionString))
+            {
+                await db.OpenAsync();
+
+                for (int i = 0; i < count; i++)
+                {
+                    var world = await db.QueryAsync<World>(
+                        "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
+                        new { Id = _random.Next(1, 10001) });
+
+                    result[i] = world.First();
+                }
+
+                db.Close();
+            }
+
+            return result;
         }
     }
 
-    public static class SingleQueryRawMiddlewareExtensions
+    public static class MultipleQueriesDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQueryRaw(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseMultipleQueriesDapper(this IApplicationBuilder builder, string connectionString)
         {
-            return builder.UseMiddleware<SingleQueryRawMiddleware>(connectionString);
+            return builder.UseMiddleware<MultipleQueriesDapperMiddleware>(connectionString);
         }
     }
 }

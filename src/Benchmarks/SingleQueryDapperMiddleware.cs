@@ -38,7 +38,7 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
-                var row = await LoadRow();
+                var row = await LoadRow(_connectionString);
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
@@ -54,9 +54,9 @@ namespace Benchmarks
             await _next(httpContext);
         }
 
-        private async Task<World> LoadRow()
+        private static async Task<World> LoadRow(string connectionString)
         {
-            using (var db = new SqlConnection(_connectionString))
+            using (var db = new SqlConnection(connectionString))
             {
                 await db.OpenAsync();
 
