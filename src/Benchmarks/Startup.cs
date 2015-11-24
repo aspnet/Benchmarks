@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Data.Common;
+using System.Data.SqlClient;
 using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -41,6 +43,10 @@ namespace Benchmarks
             if (StartupOptions.EnableDbTests)
             {
                 services.AddSingleton<ApplicationDbSeeder>();
+
+                // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
+                services.AddSingleton<DbProviderFactory>(s => SqlClientFactory.Instance);
+
                 services.AddEntityFramework()
                     .AddSqlServer()
                     .AddDbContext<ApplicationDbContext>(options =>

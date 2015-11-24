@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
@@ -19,11 +19,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public FortunesDapperMiddleware(RequestDelegate next, string connectionString)
+        public FortunesDapperMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
         {
             _next = next;
             _connectionString = connectionString;
+            _dbProviderFactory = dbProviderFactory;
         }
 
         public async Task Invoke(HttpContext httpContext, HtmlEncoder htmlEncoder)
@@ -32,7 +34,7 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
                 httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
             {
-                var rows = await LoadRows(_connectionString);
+                var rows = await LoadRows(_connectionString, _dbProviderFactory);
 
                 await RenderHtml(rows, httpContext, htmlEncoder);
 
@@ -42,12 +44,13 @@ namespace Benchmarks
             await _next(httpContext);
         }
 
-        private static async Task<IEnumerable<Fortune>> LoadRows(string connectionString)
+        private static async Task<IEnumerable<Fortune>> LoadRows(string connectionString, DbProviderFactory dbProviderFactory)
         {
             var result = new List<Fortune>();
 
-            using (var db = new SqlConnection(connectionString))
+            using (var db = dbProviderFactory.CreateConnection())
             {
+                db.ConnectionString = connectionString;
                 await db.OpenAsync();
 
                 result.AddRange(await db.QueryAsync<Fortune>("SELECT [Id], [Message] FROM [Fortune]"));
