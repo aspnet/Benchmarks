@@ -77,6 +77,8 @@ namespace Benchmarks
                 app.UseMultipleQueriesEf();
 
                 app.UseFortunesRaw(StartupOptions.ConnectionString);
+                app.UseFortunesDapper(StartupOptions.ConnectionString);
+                app.UseFortunesEf();
 
                 var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
                 var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
