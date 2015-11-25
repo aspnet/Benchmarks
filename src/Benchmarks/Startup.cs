@@ -50,7 +50,7 @@ namespace Benchmarks
                 services.AddSingleton<ApplicationDbSeeder>();
 
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
-                services.AddSingleton<DbProviderFactory>(s => SqlClientFactory.Instance);
+                services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
 
                 services.AddEntityFramework()
                     .AddSqlServer()
