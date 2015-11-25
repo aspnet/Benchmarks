@@ -8,8 +8,8 @@ using Benchmarks.Data;
 namespace Benchmarks.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20151124205054_Fortunue")]
-    partial class Fortunue
+    [Migration("20151124205054_Fortune")]
+    partial class Fortune
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

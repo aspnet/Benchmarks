@@ -5,7 +5,7 @@ using Microsoft.Data.Entity.Metadata;
 
 namespace Benchmarks.Migrations
 {
-    public partial class Fortunue : Migration
+    public partial class Fortune : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
