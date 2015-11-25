@@ -24,6 +24,12 @@ namespace Benchmarks
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
+            if (env.Configuration != null)
+            {
+                // This allows passing of config values via the cmd line, e.g.: dnx web --app.EnableDbTests=true
+                builder.AddConfiguration("app.", env.Configuration);
+            }
+
             Configuration = builder.Build();
 
             Configuration.Bind(StartupOptions);
