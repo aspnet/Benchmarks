@@ -22,7 +22,7 @@ namespace Benchmarks.Data
                         try
                         {
                             var world = db.World.Count();
-                            var fortune = db.Fortunue.Count();
+                            var fortune = db.Fortune.Count();
 
                             if (world == 0 || fortune == 0)
                             {
@@ -38,18 +38,18 @@ namespace Benchmarks.Data
 
                                 if (fortune == 0)
                                 {
-                                    db.Fortunue.Add(new Fortune { Message = "fortune: No such file or directory" });
-                                    db.Fortunue.Add(new Fortune { Message = "A computer scientist is someone who fixes things that aren't broken." });
-                                    db.Fortunue.Add(new Fortune { Message = "After enough decimal places, nobody gives a damn." });
-                                    db.Fortunue.Add(new Fortune { Message = "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1" });
-                                    db.Fortunue.Add(new Fortune { Message = "A computer program does what you tell it to do, not what you want it to do." });
-                                    db.Fortunue.Add(new Fortune { Message = "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen" });
-                                    db.Fortunue.Add(new Fortune { Message = "Any program that runs right is obsolete." });
-                                    db.Fortunue.Add(new Fortune { Message = "A list is only as strong as its weakest link. — Donald Knuth" });
-                                    db.Fortunue.Add(new Fortune { Message = "Feature: A bug with seniority." });
-                                    db.Fortunue.Add(new Fortune { Message = "Computers make very fast, very accurate mistakes." });
-                                    db.Fortunue.Add(new Fortune { Message = "<script>alert(\"This should not be displayed in a browser alert box.\");</script>" });
-                                    db.Fortunue.Add(new Fortune { Message = "フレームワークのベンチマーク" });
+                                    db.Fortune.Add(new Fortune { Message = "fortune: No such file or directory" });
+                                    db.Fortune.Add(new Fortune { Message = "A computer scientist is someone who fixes things that aren't broken." });
+                                    db.Fortune.Add(new Fortune { Message = "After enough decimal places, nobody gives a damn." });
+                                    db.Fortune.Add(new Fortune { Message = "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1" });
+                                    db.Fortune.Add(new Fortune { Message = "A computer program does what you tell it to do, not what you want it to do." });
+                                    db.Fortune.Add(new Fortune { Message = "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen" });
+                                    db.Fortune.Add(new Fortune { Message = "Any program that runs right is obsolete." });
+                                    db.Fortune.Add(new Fortune { Message = "A list is only as strong as its weakest link. — Donald Knuth" });
+                                    db.Fortune.Add(new Fortune { Message = "Feature: A bug with seniority." });
+                                    db.Fortune.Add(new Fortune { Message = "Computers make very fast, very accurate mistakes." });
+                                    db.Fortune.Add(new Fortune { Message = "<script>alert(\"This should not be displayed in a browser alert box.\");</script>" });
+                                    db.Fortune.Add(new Fortune { Message = "フレームワークのベンチマーク" });
 
                                     db.SaveChanges();
                                 }

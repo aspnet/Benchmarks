@@ -9,6 +9,6 @@ namespace Benchmarks.Data
     {
         public DbSet<World> World { get; set; }
 
-        public DbSet<Fortune> Fortunue { get; set; }
+        public DbSet<Fortune> Fortune { get; set; }
     }
 }
