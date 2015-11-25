@@ -44,9 +44,7 @@ namespace Benchmarks
 
         private static async Task<IEnumerable<Fortune>> LoadRows(ApplicationDbContext dbContext)
         {
-            var result = new List<Fortune>();
-
-            result.AddRange(await dbContext.Fortune.ToListAsync());
+            var result = await dbContext.Fortune.ToListAsync();
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
             result.Sort();
