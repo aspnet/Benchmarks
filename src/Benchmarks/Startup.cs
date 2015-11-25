@@ -8,7 +8,6 @@ using Benchmarks.Data;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,15 +58,6 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            var kestrel = app.ServerFeatures[typeof(IKestrelServerInformation)] as IKestrelServerInformation;
-
-            if (kestrel != null)
-            {
-                // Using an I/O thread for every 2 logical CPUs appears to be a good ratio
-                kestrel.ThreadCount = Environment.ProcessorCount >> 1;
-                kestrel.NoDelay = true;
-            }
-
             app.UseErrorHandler();
             app.UsePlainText();
             app.UseJson();
