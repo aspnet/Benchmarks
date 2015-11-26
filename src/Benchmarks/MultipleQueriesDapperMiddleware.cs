@@ -85,11 +85,9 @@ namespace Benchmarks
 
                 for (int i = 0; i < count; i++)
                 {
-                    var world = await db.QueryAsync<World>(
+                    result[i] = await db.QueryFirstOrDefaultAsync<World>(
                         "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
                         new { Id = _random.Next(1, 10001) });
-
-                    result[i] = world.First();
                 }
 
                 db.Close();
