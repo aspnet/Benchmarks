@@ -127,7 +127,7 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 147,554 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr2 (Linux) | 173,641 | 32 threads, 512 connections | The actual TechEmpower NodeJS app | CPU is 100% |
-| ASP.NET 5 on Kestrel | perfsvr | 505,350 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 95%, 15-20% in kernel mode |
+| ASP.NET 5 on Kestrel | perfsvr | 743,123 | 32 threads, 1,024 connections | Middleware class, multi IO thread | CPU is 100% |
 | ASP.NET 5 on Kestrel | perfsvr2 (Linux) | 409,856 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 75% |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plaintext app | CPU is 100%, 70% in user mode |
 | Netty | perfsvr | 2,808,515 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
