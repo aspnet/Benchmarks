@@ -43,7 +43,7 @@ You can run the benchmarks application server on Windows, OSX or Linux.
 
 1. Finally, start the server application with the following command:
    ```
-   dnx --configuration Release web
+   dnx --configuration Release run
    ```
 
 *Note: You may need to open port 5001 for external traffic in your firewall for the server to successfully run*
