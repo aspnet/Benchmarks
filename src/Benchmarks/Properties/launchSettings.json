@@ -13,12 +13,12 @@
       "launchBrowser": true,
       "environmentVariables": {
         "EnableDbTests": "true",
-        "Hosting:Environment": "Development",
         "AspNet_Environment": "Development"
       }
     },
-    "Run": {
-      "commandName": "ef",
+    "Benchmarks": {
+      "commandName": "Benchmarks",
+      "commandLineArgs": "--app.EnableDbTests=true",
       "environmentVariables": {
         "AspNet_Environment": "Development"
       }

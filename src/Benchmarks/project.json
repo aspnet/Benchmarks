@@ -18,6 +18,7 @@
   },
 
   "commands": {
+    "Benchmarks": "Benchmarks",
     "ef": "EntityFramework.Commands"
   },
 
