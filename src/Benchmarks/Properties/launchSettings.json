@@ -17,11 +17,9 @@
         "AspNet_Environment": "Development"
       }
     },
-    "web": {
-      "commandName": "web",
+    "Run": {
+      "commandName": "ef",
       "environmentVariables": {
-        "EnableDbTests": "true",
-        "Hosting:Environment": "Development",
         "AspNet_Environment": "Development"
       }
     }
