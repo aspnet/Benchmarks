@@ -18,7 +18,9 @@
     },
     "Benchmarks": {
       "commandName": "Benchmarks",
-      "commandLineArgs": "--app.EnableDbTests=true",
+      "commandLineArgs": "--app.EnableDbTests=true --app.EnableStaticFileTests=true",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5001/",
       "environmentVariables": {
         "AspNet_Environment": "Development"
       }
