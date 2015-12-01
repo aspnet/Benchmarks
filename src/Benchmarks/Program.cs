@@ -17,6 +17,8 @@ namespace Benchmarks
         {
             var hostingConfig = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
+                .AddEnvironmentVariables()
+                .AddEnvironmentVariables(prefix: "ASPNET_")
                 .AddCommandLine(args)
                 .Build();
 

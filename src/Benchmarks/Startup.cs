@@ -93,6 +93,12 @@ namespace Benchmarks
 
             app.UseMvc();
 
+            if (StartupOptions.EnableStaticFileTests)
+            {
+                app.UseStaticFiles();
+                Console.WriteLine("Static file tests enabled");
+            }
+
             app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
         }
         
@@ -108,6 +114,8 @@ namespace Benchmarks
         public class Options
         {
             public bool EnableDbTests { get; set; }
+
+            public bool EnableStaticFileTests { get; set; }
 
             public string ConnectionString { get; set; }
         }
