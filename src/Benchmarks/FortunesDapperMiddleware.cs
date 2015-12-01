@@ -46,14 +46,13 @@ namespace Benchmarks
 
         private static async Task<IEnumerable<Fortune>> LoadRows(string connectionString, DbProviderFactory dbProviderFactory)
         {
-            var result = new List<Fortune>();
+            List<Fortune> result;
 
             using (var db = dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = connectionString;
-                await db.OpenAsync();
-
-                result.AddRange(await db.QueryAsync<Fortune>("SELECT [Id], [Message] FROM [Fortune]"));
+                // note: don't need to open connection if only doing one thing; let dapper do it
+                result = (await db.QueryAsync<Fortune>("SELECT [Id], [Message] FROM [Fortune]")).AsList();
             }
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });

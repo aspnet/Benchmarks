@@ -61,15 +61,10 @@ namespace Benchmarks
             using (var db = dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = connectionString;
-                await db.OpenAsync();
-
-                var world = await db.QueryAsync<World>(
+                // note: don't need to open connection if only doing one thing; let dapper do it
+                return await db.QueryFirstOrDefaultAsync<World>(
                     "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
                     new { Id = _random.Next(1, 10001) });
-
-                db.Close();
-
-                return world.First();
             }
         }
     }
