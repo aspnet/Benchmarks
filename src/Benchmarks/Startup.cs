@@ -99,6 +99,8 @@ namespace Benchmarks
                 Console.WriteLine("Static file tests enabled");
             }
 
+            app.UseDebugInfoPage();
+
             app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
         }
         
