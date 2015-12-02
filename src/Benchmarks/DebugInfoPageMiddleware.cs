@@ -48,16 +48,17 @@ namespace Benchmarks
                 await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
                 await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
                 await httpContext.Response.WriteAsync($"<li>Server URLs: {_hostingEnv.Configuration["server.urls"]}</li>");
+                await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Response.SupportsSendFile()}</li>");
 
-                await httpContext.Response.WriteAsync($"<li>Server features:<ol>");
+                await httpContext.Response.WriteAsync($"<li>Server features:<ul>");
+                
                 foreach (var feature in httpContext.Features)
                 {
                     await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
                 }
-                await httpContext.Response.WriteAsync($"</ol></li>");
+                await httpContext.Response.WriteAsync($"</ul></li>");
 
                 await httpContext.Response.WriteAsync("</ul>");
-
                 return;
             }
 
