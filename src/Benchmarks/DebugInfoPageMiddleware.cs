@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Benchmarks
@@ -48,7 +49,7 @@ namespace Benchmarks
                 await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
                 await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
                 await httpContext.Response.WriteAsync($"<li>Server URLs: {_hostingEnv.Configuration["server.urls"]}</li>");
-                await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Response.SupportsSendFile()}</li>");
+                await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
 
                 await httpContext.Response.WriteAsync($"<li>Server features:<ul>");
                 
