@@ -66,7 +66,8 @@ namespace Benchmarks
         {
             app.UseErrorHandler();
             app.UsePlainText();
-            app.UseJson();
+            app.UseNewtonsoftJson();
+            app.UseJilJson();
 
             if (StartupOptions.EnableDbTests)
             {
