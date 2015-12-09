@@ -62,6 +62,8 @@ namespace Benchmarks
                             Console.WriteLine();
                             Console.Write("Forcing GC...");
                             GC.Collect();
+                            GC.WaitForPendingFinalizers();
+                            GC.Collect();
                             Console.WriteLine(" done!");
                         }
                         else
