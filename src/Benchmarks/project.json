@@ -14,6 +14,7 @@
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Binder": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "Newtonsoft.Json": "7.0.1"
   },
