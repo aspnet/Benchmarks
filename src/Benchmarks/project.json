@@ -26,7 +26,11 @@
 
   "frameworks": {
     "dnx451": { },
-    "dnxcore50": { }
+    "dnxcore50": { 
+        "dependencies": {
+            "System.Runtime.Serialization.Primitives": "4.1.0-*"
+        }
+    }
   },
 
   "publishExclude": [

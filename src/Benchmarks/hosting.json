@@ -1,4 +1,5 @@
 ﻿{
   "server": "Microsoft.AspNet.Server.Kestrel",
-  "server.urls": "http://*:5001"
+  "server.urls": "http://*:5001",
+  "captureStartupErrors": true
 }
