@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Benchmarks
         private static readonly Task _done = Task.FromResult(0);
         private static readonly PathString _path = new PathString("/json");
         private static readonly JsonSerializer _json = new JsonSerializer();
+        private static readonly JsonArrayPool<char> _arrayPool = new JsonArrayPool<char>(ArrayPool<char>.Shared);
 
         private readonly RequestDelegate _next;
         
@@ -35,8 +37,11 @@ namespace Benchmarks
                 httpContext.Response.ContentLength = 30;
 
                 using (var sw = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, bufferSize: 30))
+                using (var jsonWriter = new JsonTextWriter(sw))
                 {
-                    _json.Serialize(sw, new { message = "Hello, World!" });
+                    jsonWriter.ArrayPool = _arrayPool;
+
+                    _json.Serialize(jsonWriter, new { message = "Hello, World!" });
                 }
 
                 return _done;
@@ -51,6 +56,36 @@ namespace Benchmarks
         public static IApplicationBuilder UseJson(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<JsonMiddleware>();
+        }
+    }
+
+    public class JsonArrayPool<T> : IArrayPool<T>
+    {
+        private readonly ArrayPool<T> _inner;
+
+        public JsonArrayPool(ArrayPool<T> inner)
+        {
+            if (inner == null)
+            {
+                throw new ArgumentNullException(nameof(inner));
+            }
+
+            _inner = inner;
+        }
+
+        public T[] Rent(int minimumLength)
+        {
+            return _inner.Rent(minimumLength);
+        }
+
+        public void Return(T[] array)
+        {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
+            _inner.Return(array);
         }
     }
 }
