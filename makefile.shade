@@ -1,0 +1,14 @@
+var AUTHORS='Microsoft Open Technologies, Inc.'
+
+use-standard-lifecycle
+k-standard-goals
+
+#build-compile target='compile'
+  @{
+    var projectFiles = Files
+        .Include("src/**/project.json")
+        .Include("experimental/**/project.json")
+        .ToList();
+
+    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration")));
+  }
