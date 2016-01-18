@@ -12,8 +12,8 @@ namespace Benchmarks
     {
         public static void Main(string[] args)
         {
-            var app = new WebApplicationBuilder()
-                            .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var host = new WebHostBuilder()
+                            .UseDefaultConfiguration(args)
                             .UseStartup<Startup>()
                             .Build();
 
@@ -48,7 +48,7 @@ namespace Benchmarks
             interactiveThread.IsBackground = true;
             interactiveThread.Start();
             
-            app.Run();
+            host.Run();
         }
 
         private static string GetAllocatedMemory(bool forceFullCollection = false)
