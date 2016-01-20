@@ -35,10 +35,8 @@ namespace Benchmarks
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
 
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
                 var id = _random.Next(1, 10001);
-                var row = await db.World.FirstAsync(w => w.Id == id);
+                var row = await db.World.AsNoTracking().FirstAsync(w => w.Id == id);
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
