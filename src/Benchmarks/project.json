@@ -1,36 +1,31 @@
 {
   "webroot": "wwwroot",
   "version": "1.0.0-*",
-
   "compilationOptions": {
     "emitEntryPoint": true
   },
-
   "dependencies": {
     "Dapper": "1.50.0-*",
-    "Microsoft.EntityFrameworkCore.Commands": "7.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "7.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
+    "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Binder": "1.0.0-*"
   },
-
   "commands": {
     "Benchmarks": "Benchmarks",
     "ef": "Microsoft.EntityFrameworkCore.Commands"
   },
-
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { 
-        "dependencies": {
-            "System.Runtime.Serialization.Primitives": "4.1.0-*"
-        }
+    "dnx451": {},
+    "dnxcore50": {
+      "dependencies": {
+        "System.Runtime.Serialization.Primitives": "4.1.0-*"
+      }
     }
   },
-
   "publishExclude": [
     "node_modules",
     "bower_components",
