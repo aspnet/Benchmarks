@@ -8,18 +8,18 @@
 
   "dependencies": {
     "Dapper": "1.50.0-*",
-    "EntityFramework.Commands": "7.0.0-*",
-    "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
-    "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.Commands": "7.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "7.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Binder": "1.0.0-*"
   },
 
   "commands": {
     "Benchmarks": "Benchmarks",
-    "ef": "EntityFramework.Commands"
+    "ef": "Microsoft.EntityFrameworkCore.Commands"
   },
 
   "frameworks": {
