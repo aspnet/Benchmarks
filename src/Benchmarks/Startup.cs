@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,23 +16,27 @@ namespace Benchmarks
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, Scenarios scenarios)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
+                .Include(env.Configuration)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables()
-                .AddCommandLine(Environment.GetCommandLineArgs());
+                .AddEnvironmentVariables();
 
             Configuration = builder.Build();
 
             Configuration.Bind(StartupOptions);
+
+            Scenarios = scenarios ?? new Scenarios();
         }
 
         public IConfigurationRoot Configuration { get; set; }
 
         public Options StartupOptions { get; } = new Options();
+        
+        public Scenarios Scenarios { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -43,14 +44,14 @@ namespace Benchmarks
             // no-op version to avoid the cost.
             services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
 
-            if (StartupOptions.Scenarios.Any("Db"))
+            if (Scenarios.Any("Db"))
             {
                 services.AddSingleton<ApplicationDbSeeder>();
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
                 services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
             }
 
-            if (StartupOptions.Scenarios.Any("Ef"))
+            if (Scenarios.Any("Ef"))
             {
                 services.AddEntityFramework()
                     .AddSqlServer()
@@ -58,20 +59,21 @@ namespace Benchmarks
                         options.UseSqlServer(StartupOptions.ConnectionString));
             }
 
-            if (StartupOptions.Scenarios.Any("Fortunes"))
+            if (Scenarios.Any("Fortunes"))
             {
                 services.AddWebEncoders();
             }
 
-            if (StartupOptions.Scenarios.MvcApis)
+            if (Scenarios.Any("Mvc"))
             {
-                services.AddMvcCore();
-            }
-            else if (StartupOptions.Scenarios.MvcViews)
-            {
-                services.AddMvcCore()
-                    .AddViews()
-                    .AddRazorViewEngine();
+                var mvcBuilder = services.AddMvcCore();
+                
+                if (Scenarios.MvcViews)
+                {
+                    mvcBuilder
+                        .AddViews()
+                        .AddRazorViewEngine();
+                }
             }
         }
 
@@ -79,49 +81,49 @@ namespace Benchmarks
         {
             app.UseErrorHandler();
 
-            if (StartupOptions.Scenarios.Plaintext)
+            if (Scenarios.Plaintext)
             {
                 app.UsePlainText();
             }
 
-            if (StartupOptions.Scenarios.Json)
+            if (Scenarios.Json)
             {
                 app.UseJson();
             }
 
             // Single query endpoints
-            if (StartupOptions.Scenarios.DbSingleQueryRaw)
+            if (Scenarios.DbSingleQueryRaw)
             {
                 app.UseSingleQueryRaw(StartupOptions.ConnectionString);
             }
 
-            if (StartupOptions.Scenarios.DbSingleQueryDapper)
+            if (Scenarios.DbSingleQueryDapper)
             {
                 app.UseSingleQueryDapper(StartupOptions.ConnectionString);
             }
 
-            if (StartupOptions.Scenarios.DbSingleQueryEf)
+            if (Scenarios.DbSingleQueryEf)
             {
                 app.UseSingleQueryEf();
             }
 
             // Multiple query endpoints
-            if (StartupOptions.Scenarios.DbMultiQueryRaw)
+            if (Scenarios.DbMultiQueryRaw)
             {
                 app.UseMultipleQueriesRaw(StartupOptions.ConnectionString);
             }
 
-            if (StartupOptions.Scenarios.DbMultiQueryDapper)
+            if (Scenarios.DbMultiQueryDapper)
             {
                 app.UseMultipleQueriesDapper(StartupOptions.ConnectionString);
             }
 
-            if (StartupOptions.Scenarios.DbMultiQueryEf)
+            if (Scenarios.DbMultiQueryEf)
             {
                 app.UseMultipleQueriesEf();
             }
 
-            if (StartupOptions.Scenarios.Any("Db"))
+            if (Scenarios.Any("Db"))
             {
                 var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
                 var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
@@ -131,12 +133,12 @@ namespace Benchmarks
                 }
             }
 
-            if (StartupOptions.Scenarios.Any("Mvc"))
+            if (Scenarios.Any("Mvc"))
             {
                 app.UseMvc();
             }
 
-            if (StartupOptions.Scenarios.StaticFiles)
+            if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
             }
@@ -149,50 +151,6 @@ namespace Benchmarks
         public class Options
         {
             public string ConnectionString { get; set; }
-
-            public Scenarios Scenarios { get; } = new Scenarios();
-        }
-
-        public class Scenarios
-        {
-            public bool All { get; set; }
-
-            public bool Plaintext { get; set; }
-
-            public bool Json { get; set; }
-
-            public bool StaticFiles { get; set; }
-
-            public bool MvcApis { get; set; }
-
-            public bool MvcViews { get; set; }
-
-            public bool DbSingleQueryRaw { get; set; }
-
-            public bool DbSingleQueryEf { get; set; }
-
-            public bool DbSingleQueryDapper { get; set; }
-
-            public bool DbMultiQueryRaw { get; set; }
-
-            public bool DbMultiQueryEf { get; set; }
-
-            public bool DbMultiQueryDapper { get; set; }
-
-            public bool DbFortunesRaw { get; set; }
-
-            public bool DbFortunesEf { get; set; }
-
-            public bool DbFortunesDapper { get; set; }
-
-            public bool Any(string partialName) =>
-                typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                    .Where(p => p.Name.IndexOf(partialName, StringComparison.Ordinal) >= 0 && (bool)p.GetValue(this))
-                    .Any();
-
-            public IEnumerable<string> Names =>
-                typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                    .Select(p => p.Name);
         }
 
         public class InertHttpContextAccessor : IHttpContextAccessor

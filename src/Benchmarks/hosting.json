@@ -1,5 +1,0 @@
-{
-  "server": "Microsoft.AspNetCore.Server.Kestrel",
-  "server.urls": "http://*:5001",
-  "captureStartupErrors": true
-}
