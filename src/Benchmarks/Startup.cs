@@ -145,7 +145,7 @@ namespace Benchmarks
 
             app.UseDebugInfoPage();
 
-            app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
+            app.Run(context => context.Response.WriteAsync("Try /plaintext instead, or /debug for more information"));
         }
 
         public class Options
