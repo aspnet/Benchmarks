@@ -1,13 +1,20 @@
 # Benchmarks
 Benchmarks for ASP.NET Core including (but not limited to) scenarios from the [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/).
 
-
 ##### Plaintext
 ![plaintext](https://d3renderer.azurewebsites.net/plaintext/v1)
 
-##### JSON.Net
-![json.net](https://d3renderer.azurewebsites.net/json/v1)
+##### JSON
+![json](https://d3renderer.azurewebsites.net/json/v1)
 
+##### Single Query
+![singlequery](https://d3renderer.azurewebsites.net/singlequery/v1)
+
+##### Multi Query
+![multiquery](https://d3renderer.azurewebsites.net/multiquery/v1)
+
+##### Fortunes
+![frotunes](https://d3renderer.azurewebsites.net/fortunes/v1)
 
 # Running the benchmarks
 
