@@ -3,10 +3,10 @@ Benchmarks for ASP.NET Core including (but not limited to) scenarios from the [T
 
 
 ##### Plaintext
-![plaintext](http://d3renderer.azurewebsites.net/plaintext/v1)
+![plaintext](https://d3renderer.azurewebsites.net/plaintext/v1)
 
 ##### JSON.Net
-![json.net](http://d3renderer.azurewebsites.net/json/v1)
+![json.net](https://d3renderer.azurewebsites.net/json/v1)
 
 
 # Running the benchmarks
