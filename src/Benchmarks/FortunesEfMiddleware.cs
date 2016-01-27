@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Benchmarks
 {
@@ -25,9 +25,7 @@ namespace Benchmarks
 
         public async Task Invoke(HttpContext httpContext, HtmlEncoder htmlEncoder)
         {
-            // We check Ordinal explicitly first because it's faster than OrdinalIgnoreCase
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
-                httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
+            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;

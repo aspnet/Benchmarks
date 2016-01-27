@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
@@ -8,8 +8,8 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Dapper;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace Benchmarks
 {
@@ -30,9 +30,7 @@ namespace Benchmarks
 
         public async Task Invoke(HttpContext httpContext, HtmlEncoder htmlEncoder)
         {
-            // We check Ordinal explicitly first because it's faster than OrdinalIgnoreCase
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
-                httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
+            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var rows = await LoadRows(_connectionString, _dbProviderFactory);
 

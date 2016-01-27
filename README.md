@@ -5,7 +5,7 @@ Benchmarks for ASP.NET 5 including (but not limited to) scenarios from the [Tech
 
 The benchmark repo is set up to work against the latest sources (i.e. not packages from nuget.org) for ASP.NET 5 so make sure you read through the following details to help you get started.
 
-The ASP.NET 5 benchmarks server application itself is in the `./src/Benchmarks` folder. The `./expiremental` folder contains various experimental projects that aren't themselves part of the benchmarks.
+The ASP.NET 5 benchmarks server application itself is in the `./src/Benchmarks` folder. The `./experimental` folder contains various experimental projects that aren't themselves part of the benchmarks.
 
 ## The scenarios
 Following are the details of each of the scenarios the server application contains implementations for and thus can be benchmarked:
