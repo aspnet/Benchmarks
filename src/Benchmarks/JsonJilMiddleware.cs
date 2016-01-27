@@ -7,19 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Newtonsoft.Json;
+using Jil;
 
 namespace Benchmarks
 {
-    public class JsonMiddleware
+    public class JsonJilMiddleware
     {
         private static readonly Task _done = Task.FromResult(0);
-        private static readonly PathString _path = new PathString("/json");
-        private static readonly JsonSerializer _json = new JsonSerializer();
+        private static readonly PathString _path = new PathString("/json/jil");
 
         private readonly RequestDelegate _next;
         
-        public JsonMiddleware(RequestDelegate next)
+        public JsonJilMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -36,7 +35,7 @@ namespace Benchmarks
 
                 using (var sw = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, bufferSize: 30))
                 {
-                    _json.Serialize(sw, new { message = "Hello, World!" });
+                    JSON.Serialize(new { message = "Hello, World!" }, sw);
                 }
 
                 return _done;
@@ -46,11 +45,11 @@ namespace Benchmarks
         }
     }
     
-    public static class JsonMiddlewareExtensions
+    public static class JsonJilMiddlewareExtensions
     {
-        public static IApplicationBuilder UseJson(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseJilJson(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<JsonMiddleware>();
+            return builder.UseMiddleware<JsonJilMiddleware>();
         }
     }
 }
