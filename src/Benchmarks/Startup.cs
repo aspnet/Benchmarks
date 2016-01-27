@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +46,7 @@ namespace Benchmarks
             // No scenarios covered by the benchmarks require the HttpContextAccessor so we're replacing it with a
             // no-op version to avoid the cost.
             services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
+            services.AddSingleton(typeof(IHttpContextFactory), typeof(PooledContextFactory));
 
             if (Scenarios.Any("Db"))
             {
@@ -159,6 +163,70 @@ namespace Benchmarks
             {
                 get { return null; }
                 set { return; }
+            }
+        }
+
+        public class PooledContextFactory : IHttpContextFactory
+        {
+            private IHttpContextAccessor _httpContextAccessor;
+
+            [ThreadStatic]
+            static Queue<DefaultHttpContext> _contextPool;
+
+            public PooledContextFactory() : this(httpContextAccessor: null)
+            {
+            }
+
+            public PooledContextFactory(IHttpContextAccessor httpContextAccessor)
+            {
+                _httpContextAccessor = httpContextAccessor;
+            }
+
+            private Queue<DefaultHttpContext> ContextPool
+            {
+                get
+                {
+                    if (_contextPool == null)
+                    {
+                        _contextPool = new Queue<DefaultHttpContext>(16);
+                    }
+
+                    return _contextPool;
+                }
+            }
+
+            public HttpContext Create(IFeatureCollection featureCollection)
+            {
+                var contextPool = ContextPool;
+                if (contextPool.Count > 0)
+                {
+                    var context = contextPool.Dequeue();
+                    context.Initialize(featureCollection);
+                    return context;
+                }
+
+                return new DefaultHttpContext(featureCollection);
+            }
+
+            public void Dispose(HttpContext httpContext)
+            {
+                if (_httpContextAccessor != null)
+                {
+                    _httpContextAccessor.HttpContext = null;
+                }
+
+                var context = httpContext as DefaultHttpContext;
+
+                if (context != null)
+                {
+                    context.Uninitialize();
+
+                    var contextPool = ContextPool;
+                    if (contextPool.Count < 16)
+                    {
+                        contextPool.Enqueue(context);
+                    }
+                }
             }
         }
     }
