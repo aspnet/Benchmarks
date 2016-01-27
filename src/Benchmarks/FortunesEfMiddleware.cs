@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
@@ -14,56 +13,32 @@ namespace Benchmarks
 {
     public class FortunesEfMiddleware
     {
-        private static readonly PathString _path = new PathString("/fortunes/ef");
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbFortunesEf)[0]);
 
         private readonly RequestDelegate _next;
+        private readonly HtmlEncoder _htmlEncoder;
 
-        public FortunesEfMiddleware(RequestDelegate next)
+        public FortunesEfMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
         {
             _next = next;
+            _htmlEncoder = htmlEncoder;
         }
 
-        public async Task Invoke(HttpContext httpContext, HtmlEncoder htmlEncoder)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var rows = await LoadRows(db);
+                var rows = await EfDb.LoadFortunesRows(db);
 
-                await RenderHtml(rows, httpContext, htmlEncoder);
+                await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
 
                 return;
             }
 
             await _next(httpContext);
-        }
-
-        private static async Task<IEnumerable<Fortune>> LoadRows(ApplicationDbContext dbContext)
-        {
-            var result = await dbContext.Fortune.ToListAsync();
-
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
-            result.Sort();
-
-            return result;
-        }
-
-        private static async Task RenderHtml(IEnumerable<Fortune> model, HttpContext httpContext, HtmlEncoder htmlEncoder)
-        {
-            httpContext.Response.StatusCode = StatusCodes.Status200OK;
-            httpContext.Response.ContentType = "text/html; charset=UTF-8";
-
-            await httpContext.Response.WriteAsync("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>");
-
-            foreach (var item in model)
-            {
-                await httpContext.Response.WriteAsync(
-                    $"<tr><td>{htmlEncoder.Encode(item.Id.ToString())}</td><td>{htmlEncoder.Encode(item.Message)}</td></tr>");
-            }
-
-            await httpContext.Response.WriteAsync("</table></body></html>");
         }
     }
     

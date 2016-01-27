@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -14,8 +13,7 @@ namespace Benchmarks
 {
     public class SingleQueryEfMiddleware
     {
-        private static readonly PathString _path = new PathString("/db/ef");
-        private static readonly Random _random = new Random();
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbSingleQueryEf)[0]);
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -33,10 +31,7 @@ namespace Benchmarks
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
 
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-                var id = _random.Next(1, 10001);
-                var row = await db.World.FirstAsync(w => w.Id == id);
+                var row = await EfDb.LoadSingleQueryRow(db);
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -14,8 +13,7 @@ namespace Benchmarks
 {
     public class MultipleQueriesEfMiddleware
     {
-        private static readonly PathString _path = new PathString("/queries/ef");
-        private static readonly Random _random = new Random();
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbMultiQueryEf)[0]);
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -32,10 +30,9 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var count = GetQueryCount(httpContext);
-                var rows = await LoadRows(count, db);
+                var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
+                var rows = await EfDb.LoadMultipleQueriesRows(count, db);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -49,36 +46,6 @@ namespace Benchmarks
             }
 
             await _next(httpContext);
-        }
-
-        private static int GetQueryCount(HttpContext httpContext)
-        {
-            var queries = 1;
-            var queriesRaw = httpContext.Request.Query["queries"];
-
-            if (queriesRaw.Count == 1)
-            {
-                int.TryParse(queriesRaw, out queries);
-            }
-
-            return queries > 500
-                ? 500
-                : queries > 0
-                    ? queries
-                    : 1;
-        }
-
-        private static async Task<World[]> LoadRows(int count, ApplicationDbContext dbContext)
-        {
-            var result = new World[count];
-
-            for (int i = 0; i < count; i++)
-            {
-                var id = _random.Next(1, 10001);
-                result[i] = await dbContext.World.FirstAsync(w => w.Id == id);
-            }
-
-            return result;
         }
     }
 

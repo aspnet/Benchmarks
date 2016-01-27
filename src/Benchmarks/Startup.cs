@@ -8,6 +8,7 @@ using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,8 @@ namespace Benchmarks
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<Options>(options => Configuration.Bind(options));
+
             // No scenarios covered by the benchmarks require the HttpContextAccessor so we're replacing it with a
             // no-op version to avoid the cost.
             services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
@@ -68,7 +71,12 @@ namespace Benchmarks
             {
                 var mvcBuilder = services.AddMvcCore();
                 
-                if (Scenarios.MvcViews)
+                if (Scenarios.MvcApis)
+                {
+                    mvcBuilder.AddJsonFormatters();
+                }
+
+                if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
                 {
                     mvcBuilder
                         .AddViews()
@@ -123,6 +131,22 @@ namespace Benchmarks
                 app.UseMultipleQueriesEf();
             }
 
+            // Fortunes endpoints
+            if (Scenarios.DbFortunesRaw)
+            {
+                app.UseFortunesRaw(StartupOptions.ConnectionString);
+            }
+
+            if (Scenarios.DbFortunesDapper)
+            {
+                app.UseFortunesDapper(StartupOptions.ConnectionString);
+            }
+
+            if (Scenarios.DbFortunesEf)
+            {
+                app.UseFortunesEf();
+            }
+
             if (Scenarios.Any("Db"))
             {
                 var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
@@ -143,9 +167,7 @@ namespace Benchmarks
                 app.UseStaticFiles();
             }
 
-            app.UseDebugInfoPage();
-
-            app.Run(context => context.Response.WriteAsync("Try /plaintext instead, or /debug for more information"));
+            app.RunDebugInfoPage();
         }
 
         public class Options

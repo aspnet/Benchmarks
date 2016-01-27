@@ -14,7 +14,7 @@ namespace Benchmarks
     public class JsonMiddleware
     {
         private static readonly Task _done = Task.FromResult(0);
-        private static readonly PathString _path = new PathString("/json");
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.Json)[0]);
         private static readonly JsonSerializer _json = new JsonSerializer();
 
         private readonly RequestDelegate _next;

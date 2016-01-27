@@ -3,10 +3,8 @@
 
 using System;
 using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
 using Benchmarks.Data;
-using Dapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -16,8 +14,7 @@ namespace Benchmarks
 {
     public class SingleQueryDapperMiddleware
     {
-        private static readonly PathString _path = new PathString("/db/dapper");
-        private static readonly Random _random = new Random();
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbSingleQueryDapper)[0]);
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -38,7 +35,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var row = await LoadRow(_connectionString, _dbProviderFactory);
+                var row = await DapperDb.LoadSingleQueryRow(_connectionString, _dbProviderFactory);
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
@@ -52,18 +49,6 @@ namespace Benchmarks
             }
 
             await _next(httpContext);
-        }
-
-        private static async Task<World> LoadRow(string connectionString, DbProviderFactory dbProviderFactory)
-        {
-            using (var db = dbProviderFactory.CreateConnection())
-            {
-                db.ConnectionString = connectionString;
-                // note: don't need to open connection if only doing one thing; let dapper do it
-                return await db.QueryFirstOrDefaultAsync<World>(
-                    "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
-                    new { Id = _random.Next(1, 10001) });
-            }
         }
     }
 

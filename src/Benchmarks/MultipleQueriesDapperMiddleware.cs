@@ -5,7 +5,6 @@ using System;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
-using Dapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -15,8 +14,7 @@ namespace Benchmarks
 {
     public class MultipleQueriesDapperMiddleware
     {
-        private static readonly PathString _path = new PathString("/queries/dapper");
-        private static readonly Random _random = new Random();
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbMultiQueryDapper)[0]);
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -37,8 +35,8 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var count = GetQueryCount(httpContext);
-                var rows = await LoadRows(count, _connectionString, _dbProviderFactory);
+                var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
+                var rows = await DapperDb.LoadMultipleQueriesRows(count, _connectionString, _dbProviderFactory);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -52,45 +50,6 @@ namespace Benchmarks
             }
 
             await _next(httpContext);
-        }
-
-        private static int GetQueryCount(HttpContext httpContext)
-        {
-            var queries = 1;
-            var queriesRaw = httpContext.Request.Query["queries"];
-
-            if (queriesRaw.Count == 1)
-            {
-                int.TryParse(queriesRaw, out queries);
-            }
-
-            return queries > 500
-                ? 500
-                : queries > 0
-                    ? queries
-                    : 1;
-        }
-
-        private static async Task<World[]> LoadRows(int count, string connectionString, DbProviderFactory dbProviderFactory)
-        {
-            var result = new World[count];
-
-            using (var db = dbProviderFactory.CreateConnection())
-            {
-                db.ConnectionString = connectionString;
-                await db.OpenAsync();
-
-                for (int i = 0; i < count; i++)
-                {
-                    result[i] = await db.QueryFirstOrDefaultAsync<World>(
-                        "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
-                        new { Id = _random.Next(1, 10001) });
-                }
-
-                db.Close();
-            }
-
-            return result;
         }
     }
 

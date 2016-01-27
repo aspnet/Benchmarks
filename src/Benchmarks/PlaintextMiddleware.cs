@@ -11,8 +11,8 @@ namespace Benchmarks
 {
     public class PlaintextMiddleware
     {
+        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.Plaintext)[0]);
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
-        private static readonly PathString _path = new PathString("/plaintext");
 
         private readonly RequestDelegate _next;
         

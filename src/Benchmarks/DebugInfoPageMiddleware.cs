@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Benchmarks
 {
     public class DebugInfoPageMiddleware
     {
-        private static readonly PathString _path = new PathString("/debug");
 #if DEBUG
         private static readonly string _configurationName = "Debug";
 #elif RELEASE
@@ -25,51 +25,66 @@ namespace Benchmarks
         private readonly IApplicationEnvironment _appEnv;
         private readonly IHostingEnvironment _hostingEnv;
         private readonly RequestDelegate _next;
+        private readonly Scenarios _scenarios;
+        private readonly IServerAddressesFeature _serverAddresses;
 
-        public DebugInfoPageMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IApplicationEnvironment appEnv)
+        public DebugInfoPageMiddleware(RequestDelegate next, IServerAddressesFeature serverAddresses, IHostingEnvironment hostingEnv, IApplicationEnvironment appEnv, Scenarios scenarios)
         {
             _next = next;
             _hostingEnv = hostingEnv;
             _appEnv = appEnv;
+            _scenarios = scenarios;
+            _serverAddresses = serverAddresses;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
+            httpContext.Response.ContentType = "text/html";
+
+            await httpContext.Response.WriteAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
+            await httpContext.Response.WriteAsync("<h1>ASP.NET Core Benchmarks</h1>");
+            await httpContext.Response.WriteAsync("<h2>Configuration Information</h2>");
+            await httpContext.Response.WriteAsync("<ul>");
+            await httpContext.Response.WriteAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
+            await httpContext.Response.WriteAsync($"<li>Framework: {_appEnv.RuntimeFramework.FullName}</li>");
+            await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
+            await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
+            await httpContext.Response.WriteAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
+            await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
+
+            await httpContext.Response.WriteAsync($"<li>Server features:<ul>");
+            foreach (var feature in httpContext.Features)
             {
-                httpContext.Response.ContentType = "text/html";
+                await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
+            }
+            await httpContext.Response.WriteAsync($"</ul></li>");
 
-                await httpContext.Response.WriteAsync("<h1>Application Information</h1>");
-                await httpContext.Response.WriteAsync("<ul>");
-
-                await httpContext.Response.WriteAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
-                await httpContext.Response.WriteAsync($"<li>Framework: {_appEnv.RuntimeFramework.FullName}</li>");
-                await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
-                await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
-                await httpContext.Response.WriteAsync($"<li>Server URLs: {_hostingEnv.Configuration["server.urls"]}</li>");
-                await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
-
-                await httpContext.Response.WriteAsync($"<li>Server features:<ul>");
-                
-                foreach (var feature in httpContext.Features)
+            await httpContext.Response.WriteAsync($"<li>Enabled scenarios:<ul>");
+            var enabledScenarios = _scenarios.GetEnabled();
+            var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
+            foreach (var scenario in enabledScenarios)
+            {
+                //Console.WriteLine($"  {scenario.Name.PadRight(maxNameLength)} -> {string.Join($"{Environment.NewLine}{"".PadLeft(maxNameLength + 6)}", scenario.Paths)}");
+                await httpContext.Response.WriteAsync($"<li>{scenario.Name}<ul>");
+                foreach (var path in scenario.Paths)
                 {
-                    await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
+                    await httpContext.Response.WriteAsync($"<li><a href=\"{path}\">{path}</a></li>");
                 }
                 await httpContext.Response.WriteAsync($"</ul></li>");
-
-                await httpContext.Response.WriteAsync("</ul>");
-                return;
             }
+            await httpContext.Response.WriteAsync($"</ul></li>");
 
-            await _next(httpContext);
+
+            await httpContext.Response.WriteAsync("</ul>");
+            await httpContext.Response.WriteAsync("</body></html>");
         }
     }
 
     public static class DebugInfoPageMiddlewareExtensions
     {
-        public static IApplicationBuilder UseDebugInfoPage(this IApplicationBuilder builder)
+        public static IApplicationBuilder RunDebugInfoPage(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<DebugInfoPageMiddleware>();
+            return builder.UseMiddleware<DebugInfoPageMiddleware>(builder.ServerFeatures.Get<IServerAddressesFeature>());
         }
     }
 }

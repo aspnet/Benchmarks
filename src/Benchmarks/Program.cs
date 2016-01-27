@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting;
@@ -47,13 +48,15 @@ namespace Benchmarks
                 .ToList();
 
             var scenarios = new Scenarios();
+            var enabledCount = 0;
 
             if (scenarioConfig.Count > 0)
             {
                 Console.WriteLine("Scenario configuration found in scenarios.json and/or command line args");
+
                 foreach (var scenario in scenarioConfig)
                 {
-                    scenarios.Enable(scenario.Value);
+                    enabledCount += scenarios.Enable(scenario.Value);
                 }
             }
             else
@@ -70,39 +73,39 @@ namespace Benchmarks
 
                 var choices = Console.ReadLine().Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries);
 
-                if (choices.Length == 0)
+                if (choices.Length > 0)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("No choice entered, enabling default scenarios");
-                    scenarios.EnableDefault();
-                }
-                else
-                {
-                    var count = 0;
-
                     foreach (var choice in choices)
                     {
-                        count += scenarios.Enable(choice);
-                    }
-
-                    if (count == 0)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine("No matching scenarios found, enabling defaults");
-                        scenarios.EnableDefault();
+                        enabledCount += scenarios.Enable(choice);
                     }
                 }
             }
 
-            Console.WriteLine();
-            Console.WriteLine("The following scenarios were enabled:");
-            foreach (var scenario in scenarios.GetEnabled())
+            if (enabledCount == 0)
             {
-                Console.WriteLine("  " + scenario);
+                Console.WriteLine();
+                Console.WriteLine("No matching scenarios found, enabling defaults");
+                scenarios.EnableDefault();
             }
-            Console.WriteLine();
+
+            PrintEnabledScenarios(scenarios.GetEnabled());
             
             return scenarios;
+        }
+
+        private static void PrintEnabledScenarios(IEnumerable<Scenarios.EnabledScenario> scenarios)
+        {
+            Console.WriteLine();
+            Console.WriteLine("The following scenarios were enabled:");
+
+            var maxNameLength = scenarios.Max(s => s.Name.Length);
+
+            foreach (var scenario in scenarios)
+            {
+                Console.WriteLine($"  {scenario.Name.PadRight(maxNameLength)} -> {string.Join($"{Environment.NewLine}{"".PadLeft(maxNameLength + 6)}", scenario.Paths)}");
+            }
+            Console.WriteLine();
         }
 
         private static void StartInteractiveConsoleThread()
