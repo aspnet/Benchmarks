@@ -1,11 +1,11 @@
 # Benchmarks
-Benchmarks for ASP.NET 5 including (but not limited to) scenarios from the [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/).
+Benchmarks for ASP.NET Core including (but not limited to) scenarios from the [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/).
 
 # Running the benchmarks
 
-The benchmark repo is set up to work against the latest sources (i.e. not packages from nuget.org) for ASP.NET 5 so make sure you read through the following details to help you get started.
+The benchmark repo is set up to work against the latest sources (i.e. not packages from nuget.org) for ASP.NET Core so make sure you read through the following details to help you get started.
 
-The ASP.NET 5 benchmarks server application itself is in the `./src/Benchmarks` folder. The `./experimental` folder contains various experimental projects that aren't themselves part of the benchmarks.
+The ASP.NET Core benchmarks server application itself is in the `./src/Benchmarks` folder. The `./experimental` folder contains various experimental projects that aren't themselves part of the benchmarks.
 
 ## The scenarios
 Following are the details of each of the scenarios the server application contains implementations for and thus can be benchmarked:
@@ -18,18 +18,23 @@ Following are the details of each of the scenarios the server application contai
 | /mvc/json | MVC JSON | As for the json test above, but using routing & MVC. |
 | /mvc/view | MVC Plain View | As for the plaintext test above, but using routing & MVC plus rendering the result via a Razor view. |
 | /db/raw | Single Query Raw | *From https://www.techempower.com/benchmarks/* This test exercises the framework's object-relational mapper (ORM), random number generator, database driver, and database connection pool. |
-| /db/ef | Single Query EF | As for the single query raw test above but using Entity Framework 7 as the data-access library/ORM. |
-
-The addition of more scenarios is pending.
+| /db/ef | Single Query EF | As for the single query raw test above but using Entity Framework Core as the data-access library/ORM. |
+| /db/dapper | Single Query Dapper | As for the single query raw test above but using Dapper as the data-access library/ORM. |
+| /queries/raw | Multiple Queries Raw | *From https://www.techempower.com/benchmarks/* Multiple rows are fetched to more dramatically punish the database driver and connection pool. |
+| /queries/ef | Single Query EF | As for the multiple query raw test above but using Entity Framework Core as the data-access library/ORM. |
+| /queries/dapper | Single Query Dapper | As for the multiple query raw test above but using Dapper as the data-access library/ORM. |
+| /fortunes/raw | Fortunes Raw | *From https://www.techempower.com/benchmarks/* This test exercises the ORM, database connectivity, dynamic-size collections, sorting, server-side templates, XSS countermeasures, and character encoding. |
+| /fortunes/ef | Fortunes EF | As for the Fortunes raw test above but using Entity Framework Core as the data-access library/ORM. |
+| /fortunes/dapper | Fortunes Dapper | As for the Fortunes raw test above but using Dapper as the data-access library/ORM. |
 
 ## Setting up the web server
 You can run the benchmarks application server on Windows, OSX or Linux.
 
-1. Follow the [instructions on the ASP.NET 5 docs site](https://docs.asp.net/en/latest/getting-started/index.html) to get the appropriate runtime and tooling pieces for your chosen platform installed.
+1. Follow the [instructions on the ASP.NET Core docs site](https://docs.asp.net/en/latest/getting-started/index.html) to get the appropriate runtime and tooling pieces for your chosen platform installed.
 
 1. Clone this repo to the server.
 
-1. Navigate to the `./src/Benchmarks` directory under this repo and run the following command to install the latest version of the ASP.NET 5 runtime for .NET Core CLR on x64:
+1. Navigate to the `./src/Benchmarks` directory under this repo and run the following command to install the latest version of the ASP.NET Core runtime for .NET Core CLR on x64:
    ```
    dnvm install latest -r coreclr -arch x64 -u
    ```
@@ -46,7 +51,9 @@ You can run the benchmarks application server on Windows, OSX or Linux.
    dnx --configuration Release run
    ```
 
-*Note: You may need to open port 5001 for external traffic in your firewall for the server to successfully run*
+1. If you're generating load from a separate machine (which is recommended), you'll need to change the URL Kestrel binds to as it only binds to localhost by default. You can change it via a command line argument or an environment variable, "ASPNET_SERVER.URLS" set to "http://*:5000"
+
+*Note: You may need to open port 5000 for external traffic in your firewall for the server to successfully run*
 
 ## Generating Load
 It's best to generate load from a completely separate machine from the server if you can, to avoid resource contention during the test.
@@ -65,12 +72,10 @@ To generate pipelined load for the plaintext scenario, use the following command
 wrk -c 256 -t 32 -d 10 -s ./scripts/pipeline.lua http://10.0.0.100:5001/plaintext -- 16
 ```
 
-*Note you may want to tweak the number of client threads (the `-t` arg) being used based on the specs of your load generation machine.*
+*Note: You may want to tweak the number of client threads (the `-t` arg) being used based on the specs of your load generation machine.*
 
-## Running the database scenarios
-The database scenarios are currently disabled in the application by default. To enable them, ensure the `EnableDbTests` configuration property is set to "true" when starting the server application. The easiest way to do this is to set an environment variable in the terminal session you're launching the application from, e.g. from PowerShell `$env:EnableDbTests="true"`.
-
-We're still building out the database scenarios including the infrastructure for running them against various database servers and using various data-access libraries. Stay tuned for more details soon.
+## Enabling scenarios
+The application will prompt for which scenarios you want to enable when you run it in the command line. Follow the instructions to enable the desired scenarios. You can also add a `scenarios.json` configuration file to configure them that way.
 
 # Details of our perf lab
 
@@ -115,7 +120,7 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 | IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | 106,479 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr2 (Linux) | 127,017 | 32 threads, 512 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET 5 on Kestrel | perfsvr | 168,005 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
+| ASP.NET Core on Kestrel | perfsvr | 228,062 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
 | Scala - Plain | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala Plain plaintext app | CPU is 68%, mostly in kernel mode |
 | Netty | perfsvr | 447,993 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
@@ -127,11 +132,9 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 147,554 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr2 (Linux) | 173,641 | 32 threads, 512 connections | The actual TechEmpower NodeJS app | CPU is 100% |
-| ASP.NET 5 on Kestrel | perfsvr | 743,123 | 32 threads, 1,024 connections | Middleware class, multi IO thread | CPU is 100% |
-| ASP.NET 5 on Kestrel | perfsvr2 (Linux) | 409,856 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 75% |
+| ASP.NET Core on Kestrel | perfsvr | 1,188,521 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
+| ASP.NET Core on Kestrel | perfsvr2 (Linux) | 409,856 | 32 threads, 256 connections | Middleware class, single IO thread | CPU is 75% |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plaintext app | CPU is 100%, 70% in user mode |
 | Netty | perfsvr | 2,808,515 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
-
-
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
