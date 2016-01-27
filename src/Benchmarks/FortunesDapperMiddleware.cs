@@ -30,9 +30,7 @@ namespace Benchmarks
 
         public async Task Invoke(HttpContext httpContext, HtmlEncoder htmlEncoder)
         {
-            // We check Ordinal explicitly first because it's faster than OrdinalIgnoreCase
-            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal) ||
-                httpContext.Request.Path.StartsWithSegments(_path, StringComparison.OrdinalIgnoreCase))
+            if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var rows = await LoadRows(_connectionString, _dbProviderFactory);
 
