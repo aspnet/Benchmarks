@@ -32,7 +32,6 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
                 var count = GetQueryCount(httpContext);
                 var rows = await LoadRows(count, db);
@@ -75,7 +74,7 @@ namespace Benchmarks
             for (int i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
-                result[i] = await dbContext.World.FirstAsync(w => w.Id == id);
+                result[i] = await dbContext.World.AsNoTracking().FirstAsync(w => w.Id == id);
             }
 
             return result;

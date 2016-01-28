@@ -8,8 +8,8 @@ namespace Benchmarks.Data
 {
     public class ApplicationDbSeeder
     {
-        private object _locker = new object();
-        private bool _seeded = false;
+        private readonly object _locker = new object();
+        private bool _seeded;
 
         public bool Seed(ApplicationDbContext db)
         {
