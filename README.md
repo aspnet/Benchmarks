@@ -14,7 +14,7 @@ Benchmarks for ASP.NET Core including (but not limited to) scenarios from the [T
 ![multiquery](https://d3renderer.azurewebsites.net/multiquery/v1)
 
 ##### Fortunes
-![frotunes](https://d3renderer.azurewebsites.net/fortunes/v1)
+![fortunes](https://d3renderer.azurewebsites.net/fortunes/v1)
 
 # Running the benchmarks
 
