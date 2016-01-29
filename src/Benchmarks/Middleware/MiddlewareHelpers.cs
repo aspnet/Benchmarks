@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Http;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
     public static class MiddlewareHelpers
     {

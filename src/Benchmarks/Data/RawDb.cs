@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data

@@ -4,15 +4,16 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
     public class FortunesEfMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbFortunesEf)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbFortunesEf));
 
         private readonly RequestDelegate _next;
         private readonly EfDb _db;

@@ -4,14 +4,15 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
     public class PlaintextMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.Plaintext)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Plaintext));
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         private readonly RequestDelegate _next;

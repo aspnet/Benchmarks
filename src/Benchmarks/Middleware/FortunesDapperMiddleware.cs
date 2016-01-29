@@ -4,15 +4,16 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
     public class FortunesDapperMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbFortunesDapper)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbFortunesDapper));
 
         private readonly RequestDelegate _next;
         private readonly DapperDb _db;

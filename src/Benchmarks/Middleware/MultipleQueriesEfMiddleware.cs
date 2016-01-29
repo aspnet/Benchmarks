@@ -3,27 +3,27 @@
 
 using System;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
-    public class SingleQueryRawMiddleware
+    public class MultipleQueriesEfMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbSingleQueryRaw)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiQueryEf));
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
         private readonly RequestDelegate _next;
-        private readonly string _connectionString;
-        private readonly RawDb _db;
+        private readonly EfDb _db;
 
-        public SingleQueryRawMiddleware(RequestDelegate next, RawDb db)
+        public MultipleQueriesEfMiddleware(RequestDelegate next, EfDb db)
         {
             _next = next;
             _db = db;
@@ -33,9 +33,10 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var row = await _db.LoadSingleQueryRow();
+                var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
+                var rows = await _db.LoadMultipleQueriesRows(count);
 
-                var result = JsonConvert.SerializeObject(row, _jsonSettings);
+                var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
                 httpContext.Response.ContentType = "application/json";
@@ -50,11 +51,11 @@ namespace Benchmarks
         }
     }
 
-    public static class SingleQueryRawMiddlewareExtensions
+    public static class MultipleQueriesEfMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQueryRaw(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseMultipleQueriesEf(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<SingleQueryRawMiddleware>();
+            return builder.UseMiddleware<MultipleQueriesEfMiddleware>();
         }
     }
 }

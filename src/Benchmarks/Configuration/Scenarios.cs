@@ -7,10 +7,15 @@ using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Benchmarks
+namespace Benchmarks.Configuration
 {
     public class Scenarios
     {
+        public Scenarios(IScenariosConfiguration scenariosConfiguration)
+        {
+            scenariosConfiguration.ConfigureScenarios(this);
+        }
+
         [ScenarioPath("/plaintext")]
         public bool Plaintext { get; set; }
 
@@ -85,17 +90,20 @@ namespace Benchmarks
                 .Where(p => p.Name.IndexOf(partialName, StringComparison.Ordinal) >= 0 && (bool)p.GetValue(this))
                 .Any();
 
-        public IEnumerable<string> GetNames() =>
-            typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                .Select(p => p.Name);
-
         public IEnumerable<EnabledScenario> GetEnabled() =>
             typeof(Scenarios).GetTypeInfo().DeclaredProperties
                 .Where(p => p.GetValue(this) is bool && (bool)p.GetValue(this))
                 .Select(p => new EnabledScenario(p.Name, p.GetCustomAttribute<ScenarioPathAttribute>()?.Paths));
 
+        public static IEnumerable<string> GetNames() =>
+            typeof(Scenarios).GetTypeInfo().DeclaredProperties
+                .Select(p => p.Name);
+
         public static string[] GetPaths(Expression<Func<Scenarios, bool>> scenarioExpression) =>
             scenarioExpression.GetPropertyAccess().GetCustomAttribute<ScenarioPathAttribute>().Paths;
+
+        public static string GetPath(Expression<Func<Scenarios, bool>> scenarioExpression) =>
+            GetPaths(scenarioExpression)[0];
 
         public int Enable(string partialName)
         {
@@ -115,19 +123,6 @@ namespace Benchmarks
         {
             Plaintext = true;
             Json = true;
-        }
-
-        public class EnabledScenario
-        {
-            public EnabledScenario(string name, IEnumerable<string> paths)
-            {
-                Name = name;
-                Paths = paths;
-            }
-
-            public string Name { get; }
-
-            public IEnumerable<string> Paths { get; }
         }
     }
 

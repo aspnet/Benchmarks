@@ -5,16 +5,17 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
     public class JsonMiddleware
     {
         private static readonly Task _done = Task.FromResult(0);
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.Json)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private static readonly JsonSerializer _json = new JsonSerializer();
 
         private readonly RequestDelegate _next;

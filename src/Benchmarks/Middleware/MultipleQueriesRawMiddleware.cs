@@ -3,26 +3,27 @@
 
 using System;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
-    public class MultipleQueriesEfMiddleware
+    public class MultipleQueriesRawMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbMultiQueryEf)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiQueryRaw));
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
         private readonly RequestDelegate _next;
-        private readonly EfDb _db;
+        private readonly RawDb _db;
 
-        public MultipleQueriesEfMiddleware(RequestDelegate next, EfDb db)
+        public MultipleQueriesRawMiddleware(RequestDelegate next, RawDb db)
         {
             _next = next;
             _db = db;
@@ -50,11 +51,11 @@ namespace Benchmarks
         }
     }
 
-    public static class MultipleQueriesEfMiddlewareExtensions
+    public static class MultipleQueriesRawMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesEf(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseMultipleQueriesRaw(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MultipleQueriesEfMiddleware>();
+            return builder.UseMiddleware<MultipleQueriesRawMiddleware>();
         }
     }
 }

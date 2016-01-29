@@ -3,26 +3,27 @@
 
 using System;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Benchmarks
+namespace Benchmarks.Middleware
 {
-    public class SingleQueryDapperMiddleware
+    public class SingleQueryRawMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbSingleQueryDapper)[0]);
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbSingleQueryRaw));
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
         private readonly RequestDelegate _next;
-        private readonly DapperDb _db;
+        private readonly RawDb _db;
 
-        public SingleQueryDapperMiddleware(RequestDelegate next, DapperDb db)
+        public SingleQueryRawMiddleware(RequestDelegate next, RawDb db)
         {
             _next = next;
             _db = db;
@@ -49,11 +50,11 @@ namespace Benchmarks
         }
     }
 
-    public static class SingleQueryDapperMiddlewareExtensions
+    public static class SingleQueryRawMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQueryDapper(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseSingleQueryRaw(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<SingleQueryDapperMiddleware>();
+            return builder.UseMiddleware<SingleQueryRawMiddleware>();
         }
     }
 }

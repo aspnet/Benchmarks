@@ -5,7 +5,9 @@ using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
+using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,7 @@ namespace Benchmarks
 
             Configuration = builder.Build();
 
-            Scenarios = scenarios ?? new Scenarios();
+            Scenarios = scenarios;
         }
 
         public IConfigurationRoot Configuration { get; set; }
