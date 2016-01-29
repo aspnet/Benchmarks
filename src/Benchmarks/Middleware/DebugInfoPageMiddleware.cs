@@ -65,7 +65,6 @@ namespace Benchmarks.Middleware
             var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
             foreach (var scenario in enabledScenarios)
             {
-                //Console.WriteLine($"  {scenario.Name.PadRight(maxNameLength)} -> {string.Join($"{Environment.NewLine}{"".PadLeft(maxNameLength + 6)}", scenario.Paths)}");
                 await httpContext.Response.WriteAsync($"<li>{scenario.Name}<ul>");
                 foreach (var path in scenario.Paths)
                 {

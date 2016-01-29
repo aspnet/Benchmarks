@@ -10,14 +10,16 @@ namespace Benchmarks.Data
     {
         private readonly object _locker = new object();
         private readonly IRandom _random;
+        private readonly ApplicationDbContext _dbContext;
         private bool _seeded = false;
 
-        public ApplicationDbSeeder(IRandom random)
+        public ApplicationDbSeeder(IRandom random, ApplicationDbContext dbContext)
         {
             _random = random;
+            _dbContext = dbContext;
         }
 
-        public bool Seed(ApplicationDbContext db)
+        public bool Seed()
         {
             if (!_seeded)
             {
@@ -27,8 +29,8 @@ namespace Benchmarks.Data
                     {
                         try
                         {
-                            var world = db.World.Count();
-                            var fortune = db.Fortune.Count();
+                            var world = _dbContext.World.Count();
+                            var fortune = _dbContext.Fortune.Count();
 
                             if (world == 0 || fortune == 0)
                             {
@@ -36,27 +38,27 @@ namespace Benchmarks.Data
                                 {
                                     for (int i = 0; i < 10000; i++)
                                     {
-                                        db.World.Add(new World { RandomNumber = _random.Next(1, 10001) });
+                                        _dbContext.World.Add(new World { RandomNumber = _random.Next(1, 10001) });
                                     }
-                                    db.SaveChanges();
+                                    _dbContext.SaveChanges();
                                 }
 
                                 if (fortune == 0)
                                 {
-                                    db.Fortune.Add(new Fortune { Message = "fortune: No such file or directory" });
-                                    db.Fortune.Add(new Fortune { Message = "A computer scientist is someone who fixes things that aren't broken." });
-                                    db.Fortune.Add(new Fortune { Message = "After enough decimal places, nobody gives a damn." });
-                                    db.Fortune.Add(new Fortune { Message = "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1" });
-                                    db.Fortune.Add(new Fortune { Message = "A computer program does what you tell it to do, not what you want it to do." });
-                                    db.Fortune.Add(new Fortune { Message = "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen" });
-                                    db.Fortune.Add(new Fortune { Message = "Any program that runs right is obsolete." });
-                                    db.Fortune.Add(new Fortune { Message = "A list is only as strong as its weakest link. — Donald Knuth" });
-                                    db.Fortune.Add(new Fortune { Message = "Feature: A bug with seniority." });
-                                    db.Fortune.Add(new Fortune { Message = "Computers make very fast, very accurate mistakes." });
-                                    db.Fortune.Add(new Fortune { Message = "<script>alert(\"This should not be displayed in a browser alert box.\");</script>" });
-                                    db.Fortune.Add(new Fortune { Message = "フレームワークのベンチマーク" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "fortune: No such file or directory" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "A computer scientist is someone who fixes things that aren't broken." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "After enough decimal places, nobody gives a damn." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "A computer program does what you tell it to do, not what you want it to do." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "Any program that runs right is obsolete." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "A list is only as strong as its weakest link. — Donald Knuth" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "Feature: A bug with seniority." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "Computers make very fast, very accurate mistakes." });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "<script>alert(\"This should not be displayed in a browser alert box.\");</script>" });
+                                    _dbContext.Fortune.Add(new Fortune { Message = "フレームワークのベンチマーク" });
 
-                                    db.SaveChanges();
+                                    _dbContext.SaveChanges();
                                 }
 
                                 Console.WriteLine("Database successfully seeded!");

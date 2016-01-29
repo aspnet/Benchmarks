@@ -44,21 +44,21 @@ namespace Benchmarks
             // registration done in Program.Main
             services.AddSingleton(Scenarios);
 
+            // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
+            services.AddSingleton<ApplicationDbSeeder>();
+            services.AddEntityFramework()
+                .AddSqlServer()
+                .AddDbContext<ApplicationDbContext>();
 
-            if (Scenarios.Any("Db"))
-            {
-                services.AddSingleton<ApplicationDbSeeder>();
+            if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
+            {   
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
                 services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
             }
 
             if (Scenarios.Any("Ef"))
             {
-                services.AddEntityFramework()
-                    .AddSqlServer()
-                    .AddDbContext<ApplicationDbContext>();
-
                 services.AddScoped<EfDb>();
             }
 
@@ -96,7 +96,7 @@ namespace Benchmarks
             }
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
         {
             app.UseErrorHandler();
 
@@ -160,9 +160,7 @@ namespace Benchmarks
 
             if (Scenarios.Any("Db"))
             {
-                var dbContext = (ApplicationDbContext)app.ApplicationServices.GetRequiredService(typeof(ApplicationDbContext));
-                var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetRequiredService(typeof(ApplicationDbSeeder));
-                if (!seeder.Seed(dbContext))
+                if (!dbSeeder.Seed())
                 {
                     Environment.Exit(1);
                 }
