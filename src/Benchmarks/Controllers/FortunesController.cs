@@ -4,39 +4,39 @@
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Controllers
 {
     [Route("mvc")]
     public class FortunesController : Controller
     {
-        private readonly string _connectionString;
+        private readonly RawDb _rawDb;
+        private readonly DapperDb _dapperDb;
+        private readonly EfDb _efDb;
 
-        public FortunesController(IOptions<AppSettings> appSettings)
+        public FortunesController(RawDb rawDb, DapperDb dapperDb, EfDb efDb)
         {
-            _connectionString = appSettings.Value.ConnectionString;
+            _rawDb = rawDb;
+            _dapperDb = dapperDb;
+            _efDb = efDb;
         }
 
         [HttpGet("fortunes/raw")]
-        public async Task<IActionResult> Raw([FromServices] RawDb db)
+        public async Task<IActionResult> Raw()
         {
-            return View("Fortunes", await db.LoadFortunesRows(_connectionString));
+            return View("Fortunes", await _rawDb.LoadFortunesRows());
         }
 
         [HttpGet("fortunes/dapper")]
-        public async Task<IActionResult> Dapper([FromServices] DapperDb db)
+        public async Task<IActionResult> Dapper()
         {
-            return View("Fortunes", await db.LoadFortunesRows(_connectionString));
+            return View("Fortunes", await _dapperDb.LoadFortunesRows());
         }
 
         [HttpGet("fortunes/ef")]
-        public async Task<IActionResult> Ef([FromServices] EfDb db)
+        public async Task<IActionResult> Ef()
         {
-            var dbContext = HttpContext.RequestServices.GetService<ApplicationDbContext>();
-
-            return View("Fortunes", await db.LoadFortunesRows(dbContext));
+            return View("Fortunes", await _efDb.LoadFortunesRows());
         }
     }
 }

@@ -32,10 +32,8 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-
                 var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
-                var rows = await _db.LoadMultipleQueriesRows(count, db);
+                var rows = await _db.LoadMultipleQueriesRows(count);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 

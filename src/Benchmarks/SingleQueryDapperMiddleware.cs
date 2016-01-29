@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -21,13 +20,11 @@ namespace Benchmarks
         };
 
         private readonly RequestDelegate _next;
-        private readonly string _connectionString;
         private readonly DapperDb _db;
 
-        public SingleQueryDapperMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, DapperDb db)
+        public SingleQueryDapperMiddleware(RequestDelegate next, DapperDb db)
         {
             _next = next;
-            _connectionString = appSettings.Value.ConnectionString;
             _db = db;
         }
 
@@ -35,7 +32,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var row = await _db.LoadSingleQueryRow(_connectionString);
+                var row = await _db.LoadSingleQueryRow();
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 

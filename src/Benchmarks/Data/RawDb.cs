@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
@@ -13,13 +14,15 @@ namespace Benchmarks.Data
     {
         private readonly Random _random = new Random();
         private readonly DbProviderFactory _dbProviderFactory;
+        private readonly string _connectionString;
 
-        public RawDb(DbProviderFactory dbProviderFactory)
+        public RawDb(DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
             _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
         }
 
-        public async Task<World> LoadSingleQueryRow(string connectionString)
+        public async Task<World> LoadSingleQueryRow()
         {
             using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
@@ -31,7 +34,7 @@ namespace Benchmarks.Data
                 id.Value = _random.Next(1, 10001);
                 cmd.Parameters.Add(id);
 
-                db.ConnectionString = connectionString;
+                db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
                 using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
@@ -47,14 +50,14 @@ namespace Benchmarks.Data
             }
         }
 
-        public async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString)
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
             using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
-                db.ConnectionString = connectionString;
+                db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
@@ -84,7 +87,7 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>();
 
@@ -93,7 +96,7 @@ namespace Benchmarks.Data
             {
                 cmd.CommandText = "SELECT [Id], [Message] FROM [Fortune]";
 
-                db.ConnectionString = connectionString;
+                db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
                 using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))

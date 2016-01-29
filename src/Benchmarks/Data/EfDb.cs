@@ -11,36 +11,37 @@ namespace Benchmarks.Data
     public class EfDb
     {
         private readonly Random _random = new Random();
+        private readonly ApplicationDbContext _dbContext;
 
-        public Task<World> LoadSingleQueryRow(ApplicationDbContext dbContext)
+        public EfDb(ApplicationDbContext dbContext)
         {
-            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-            var id = _random.Next(1, 10001);
-            
-            return dbContext.World.FirstAsync(w => w.Id == id);
+            _dbContext = dbContext;
+            _dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        public async Task<World[]> LoadMultipleQueriesRows(int count, ApplicationDbContext dbContext)
+        public Task<World> LoadSingleQueryRow()
         {
-            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            var id = _random.Next(1, 10001);
+            
+            return _dbContext.World.FirstAsync(w => w.Id == id);
+        }
 
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
+        {
             var result = new World[count];
 
             for (int i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
-                result[i] = await dbContext.World.FirstAsync(w => w.Id == id);
+                result[i] = await _dbContext.World.FirstAsync(w => w.Id == id);
             }
 
             return result;
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows(ApplicationDbContext dbContext)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
-            dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-            var result = await dbContext.Fortune.ToListAsync();
+            var result = await _dbContext.Fortune.ToListAsync();
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
             result.Sort();

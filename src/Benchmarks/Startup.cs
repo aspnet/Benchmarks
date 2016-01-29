@@ -4,10 +4,10 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Reflection;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,11 +36,7 @@ namespace Benchmarks
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<AppSettings>(appSettings => Configuration.Bind(appSettings));
-
-            // No scenarios covered by the benchmarks require the HttpContextAccessor so we're replacing it with a
-            // no-op version to avoid the cost.
-            services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
+            services.Configure<AppSettings>(Configuration);
 
             if (Scenarios.Any("Db"))
             {
@@ -55,17 +51,17 @@ namespace Benchmarks
                     .AddSqlServer()
                     .AddDbContext<ApplicationDbContext>();
 
-                services.AddSingleton<EfDb>();
+                services.AddScoped<EfDb>();
             }
 
             if (Scenarios.Any("Raw"))
             {
-                services.AddSingleton<RawDb>();
+                services.AddScoped<RawDb>();
             }
 
             if (Scenarios.Any("Dapper"))
             {
-                services.AddSingleton<DapperDb>();
+                services.AddScoped<DapperDb>();
             }
 
             if (Scenarios.Any("Fortunes"))
@@ -75,7 +71,8 @@ namespace Benchmarks
 
             if (Scenarios.Any("Mvc"))
             {
-                var mvcBuilder = services.AddMvcCore();
+                var mvcBuilder = services.AddMvcCore()
+                    .AddControllersAsServices(typeof(Startup).GetTypeInfo().Assembly);
                 
                 if (Scenarios.MvcApis)
                 {
@@ -155,8 +152,8 @@ namespace Benchmarks
 
             if (Scenarios.Any("Db"))
             {
-                var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
-                var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
+                var dbContext = (ApplicationDbContext)app.ApplicationServices.GetRequiredService(typeof(ApplicationDbContext));
+                var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetRequiredService(typeof(ApplicationDbSeeder));
                 if (!seeder.Seed(dbContext))
                 {
                     Environment.Exit(1);
@@ -174,15 +171,6 @@ namespace Benchmarks
             }
 
             app.RunDebugInfoPage();
-        }
-
-        public class InertHttpContextAccessor : IHttpContextAccessor
-        {
-            public HttpContext HttpContext
-            {
-                get { return null; }
-                set { return; }
-            }
         }
     }
 }

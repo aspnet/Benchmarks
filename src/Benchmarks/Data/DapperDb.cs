@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
@@ -13,31 +14,34 @@ namespace Benchmarks.Data
     {
         private readonly Random _random = new Random();
         private readonly DbProviderFactory _dbProviderFactory;
+        private readonly string _connectionString;
 
-        public DapperDb(DbProviderFactory dbProviderFactory)
+        public DapperDb(DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
             _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
         }
 
-        public async Task<World> LoadSingleQueryRow(string connectionString)
+        public async Task<World> LoadSingleQueryRow()
         {
             using (var db = _dbProviderFactory.CreateConnection())
             {
-                db.ConnectionString = connectionString;
-                // note: don't need to open connection if only doing one thing; let dapper do it
+                db.ConnectionString = _connectionString;
+
+                // Note: Don't need to open connection if only doing one thing; let dapper do it
                 return await db.QueryFirstOrDefaultAsync<World>(
                     "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
                     new { Id = _random.Next(1, 10001) });
             }
         }
 
-        public async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString)
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
-                db.ConnectionString = connectionString;
+                db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
                 for (int i = 0; i < count; i++)
@@ -53,13 +57,14 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             List<Fortune> result;
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
-                db.ConnectionString = connectionString;
+                db.ConnectionString = _connectionString;
+
                 // Note: don't need to open connection if only doing one thing; let dapper do it
                 result = (await db.QueryAsync<Fortune>("SELECT [Id], [Message] FROM [Fortune]")).AsList();
             }

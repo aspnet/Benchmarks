@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 namespace Benchmarks
 {
@@ -16,14 +15,12 @@ namespace Benchmarks
         private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbFortunesRaw)[0]);
 
         private readonly RequestDelegate _next;
-        private readonly string _connectionString;
         private readonly RawDb _db;
         private readonly HtmlEncoder _htmlEncoder;
 
-        public FortunesRawMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, RawDb db, HtmlEncoder htmlEncoder)
+        public FortunesRawMiddleware(RequestDelegate next, RawDb db, HtmlEncoder htmlEncoder)
         {
             _next = next;
-            _connectionString = appSettings.Value.ConnectionString;
             _db = db;
             _htmlEncoder = htmlEncoder;
         }
@@ -32,7 +29,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var rows = await _db.LoadFortunesRows(_connectionString);
+                var rows = await _db.LoadFortunesRows();
 
                 await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
 

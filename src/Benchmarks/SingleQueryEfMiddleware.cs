@@ -32,9 +32,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-
-                var row = await _db.LoadSingleQueryRow(db);
+                var row = await _db.LoadSingleQueryRow();
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;

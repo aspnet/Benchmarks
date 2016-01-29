@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 namespace Benchmarks
 {
@@ -30,10 +29,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-                var rows = await _db.LoadFortunesRows(db);
+                var rows = await _db.LoadFortunesRows();
 
                 await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
 
