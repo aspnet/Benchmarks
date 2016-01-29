@@ -40,6 +40,12 @@ namespace Benchmarks
         {
             services.Configure<AppSettings>(Configuration);
 
+            // We re-register the Scenarios as an instance singleton here to avoid it being created again due to the
+            // registration done in Program.Main
+            services.AddSingleton(Scenarios);
+
+            services.AddSingleton<IRandom, DefaultRandom>();
+
             if (Scenarios.Any("Db"))
             {
                 services.AddSingleton<ApplicationDbSeeder>();

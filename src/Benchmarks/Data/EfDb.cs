@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +9,12 @@ namespace Benchmarks.Data
 {
     public class EfDb
     {
-        private readonly Random _random = new Random();
+        private readonly IRandom _random;
         private readonly ApplicationDbContext _dbContext;
 
-        public EfDb(ApplicationDbContext dbContext)
+        public EfDb(IRandom random, ApplicationDbContext dbContext)
         {
+            _random = random;
             _dbContext = dbContext;
             _dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }

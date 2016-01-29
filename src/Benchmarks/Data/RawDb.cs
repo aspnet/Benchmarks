@@ -13,12 +13,13 @@ namespace Benchmarks.Data
 {
     public class RawDb
     {
-        private readonly Random _random = new Random();
+        private readonly IRandom _random;
         private readonly DbProviderFactory _dbProviderFactory;
         private readonly string _connectionString;
 
-        public RawDb(DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
+        public RawDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
+            _random = random;
             _dbProviderFactory = dbProviderFactory;
             _connectionString = appSettings.Value.ConnectionString;
         }

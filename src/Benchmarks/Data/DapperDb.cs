@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -13,12 +12,13 @@ namespace Benchmarks.Data
 {
     public class DapperDb
     {
-        private readonly Random _random = new Random();
+        private readonly IRandom _random;
         private readonly DbProviderFactory _dbProviderFactory;
         private readonly string _connectionString;
 
-        public DapperDb(DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
+        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
+            _random = random;
             _dbProviderFactory = dbProviderFactory;
             _connectionString = appSettings.Value.ConnectionString;
         }

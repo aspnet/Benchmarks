@@ -28,7 +28,6 @@ namespace Benchmarks
                 .UseStartup<Startup>()
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
-                    // BUG: These registrations are resulting in TWO of each type, not one, which is bad, mmmm-k?
                     .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
                     .AddSingleton<Scenarios>()
                 )

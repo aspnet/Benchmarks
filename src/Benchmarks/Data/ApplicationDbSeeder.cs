@@ -8,8 +8,14 @@ namespace Benchmarks.Data
 {
     public class ApplicationDbSeeder
     {
-        private object _locker = new object();
+        private readonly object _locker = new object();
+        private readonly IRandom _random;
         private bool _seeded = false;
+
+        public ApplicationDbSeeder(IRandom random)
+        {
+            _random = random;
+        }
 
         public bool Seed(ApplicationDbContext db)
         {
@@ -28,10 +34,9 @@ namespace Benchmarks.Data
                             {
                                 if (world == 0)
                                 {
-                                    var random = new Random();
                                     for (int i = 0; i < 10000; i++)
                                     {
-                                        db.World.Add(new World { RandomNumber = random.Next(1, 10001) });
+                                        db.World.Add(new World { RandomNumber = _random.Next(1, 10001) });
                                     }
                                     db.SaveChanges();
                                 }
