@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -47,6 +48,7 @@ namespace Benchmarks
 
             var interactiveThread = new Thread(() =>
             {
+                Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
                 Console.WriteLine("Press 'C' to force GC or any other key to display GC stats");
                 Console.WriteLine();
 
