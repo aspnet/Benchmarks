@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -22,20 +22,20 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
-        private readonly DbProviderFactory _dbProviderFactory;
+        private readonly DapperDb _db;
 
-        public SingleQueryDapperMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
+        public SingleQueryDapperMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, DapperDb db)
         {
             _next = next;
-            _connectionString = connectionString;
-            _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var row = await DapperDb.LoadSingleQueryRow(_connectionString, _dbProviderFactory);
+                var row = await _db.LoadSingleQueryRow(_connectionString);
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
@@ -54,9 +54,9 @@ namespace Benchmarks
 
     public static class SingleQueryDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQueryDapper(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseSingleQueryDapper(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<SingleQueryDapperMiddleware>(connectionString);
+            return builder.UseMiddleware<SingleQueryDapperMiddleware>();
         }
     }
 }

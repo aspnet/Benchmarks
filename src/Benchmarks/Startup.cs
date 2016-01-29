@@ -8,7 +8,6 @@ using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,20 +27,16 @@ namespace Benchmarks
 
             Configuration = builder.Build();
 
-            Configuration.Bind(StartupOptions);
-
             Scenarios = scenarios ?? new Scenarios();
         }
 
         public IConfigurationRoot Configuration { get; set; }
-
-        public Options StartupOptions { get; } = new Options();
         
         public Scenarios Scenarios { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<Options>(options => Configuration.Bind(options));
+            services.Configure<AppSettings>(appSettings => Configuration.Bind(appSettings));
 
             // No scenarios covered by the benchmarks require the HttpContextAccessor so we're replacing it with a
             // no-op version to avoid the cost.
@@ -58,8 +53,19 @@ namespace Benchmarks
             {
                 services.AddEntityFramework()
                     .AddSqlServer()
-                    .AddDbContext<ApplicationDbContext>(options =>
-                        options.UseSqlServer(StartupOptions.ConnectionString));
+                    .AddDbContext<ApplicationDbContext>();
+
+                services.AddSingleton<EfDb>();
+            }
+
+            if (Scenarios.Any("Raw"))
+            {
+                services.AddSingleton<RawDb>();
+            }
+
+            if (Scenarios.Any("Dapper"))
+            {
+                services.AddSingleton<DapperDb>();
             }
 
             if (Scenarios.Any("Fortunes"))
@@ -102,12 +108,12 @@ namespace Benchmarks
             // Single query endpoints
             if (Scenarios.DbSingleQueryRaw)
             {
-                app.UseSingleQueryRaw(StartupOptions.ConnectionString);
+                app.UseSingleQueryRaw();
             }
 
             if (Scenarios.DbSingleQueryDapper)
             {
-                app.UseSingleQueryDapper(StartupOptions.ConnectionString);
+                app.UseSingleQueryDapper();
             }
 
             if (Scenarios.DbSingleQueryEf)
@@ -118,12 +124,12 @@ namespace Benchmarks
             // Multiple query endpoints
             if (Scenarios.DbMultiQueryRaw)
             {
-                app.UseMultipleQueriesRaw(StartupOptions.ConnectionString);
+                app.UseMultipleQueriesRaw();
             }
 
             if (Scenarios.DbMultiQueryDapper)
             {
-                app.UseMultipleQueriesDapper(StartupOptions.ConnectionString);
+                app.UseMultipleQueriesDapper();
             }
 
             if (Scenarios.DbMultiQueryEf)
@@ -134,12 +140,12 @@ namespace Benchmarks
             // Fortunes endpoints
             if (Scenarios.DbFortunesRaw)
             {
-                app.UseFortunesRaw(StartupOptions.ConnectionString);
+                app.UseFortunesRaw();
             }
 
             if (Scenarios.DbFortunesDapper)
             {
-                app.UseFortunesDapper(StartupOptions.ConnectionString);
+                app.UseFortunesDapper();
             }
 
             if (Scenarios.DbFortunesEf)
@@ -168,11 +174,6 @@ namespace Benchmarks
             }
 
             app.RunDebugInfoPage();
-        }
-
-        public class Options
-        {
-            public string ConnectionString { get; set; }
         }
 
         public class InertHttpContextAccessor : IHttpContextAccessor

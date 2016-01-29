@@ -9,13 +9,19 @@ using System.Threading.Tasks;
 
 namespace Benchmarks.Data
 {
-    public static class RawDb
+    public class RawDb
     {
-        private static readonly Random _random = new Random();
+        private readonly Random _random = new Random();
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public static async Task<World> LoadSingleQueryRow(string connectionString, DbProviderFactory dbProviderFactory)
+        public RawDb(DbProviderFactory dbProviderFactory)
         {
-            using (var db = dbProviderFactory.CreateConnection())
+            _dbProviderFactory = dbProviderFactory;
+        }
+
+        public async Task<World> LoadSingleQueryRow(string connectionString)
+        {
+            using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
@@ -41,11 +47,11 @@ namespace Benchmarks.Data
             }
         }
 
-        public static async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString, DbProviderFactory dbProviderFactory)
+        public async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString)
         {
             var result = new World[count];
 
-            using (var db = dbProviderFactory.CreateConnection())
+            using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
                 db.ConnectionString = connectionString;
@@ -78,11 +84,11 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public static async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString, DbProviderFactory dbProviderFactory)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString)
         {
             var result = new List<Fortune>();
 
-            using (var db = dbProviderFactory.CreateConnection())
+            using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
                 cmd.CommandText = "SELECT [Id], [Message] FROM [Fortune]";

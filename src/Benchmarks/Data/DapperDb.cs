@@ -9,13 +9,19 @@ using Dapper;
 
 namespace Benchmarks.Data
 {
-    public static class DapperDb
+    public class DapperDb
     {
-        private static readonly Random _random = new Random();
+        private readonly Random _random = new Random();
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public static async Task<World> LoadSingleQueryRow(string connectionString, DbProviderFactory dbProviderFactory)
+        public DapperDb(DbProviderFactory dbProviderFactory)
         {
-            using (var db = dbProviderFactory.CreateConnection())
+            _dbProviderFactory = dbProviderFactory;
+        }
+
+        public async Task<World> LoadSingleQueryRow(string connectionString)
+        {
+            using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = connectionString;
                 // note: don't need to open connection if only doing one thing; let dapper do it
@@ -25,11 +31,11 @@ namespace Benchmarks.Data
             }
         }
 
-        public static async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString, DbProviderFactory dbProviderFactory)
+        public async Task<World[]> LoadMultipleQueriesRows(int count, string connectionString)
         {
             var result = new World[count];
 
-            using (var db = dbProviderFactory.CreateConnection())
+            using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = connectionString;
                 await db.OpenAsync();
@@ -47,11 +53,11 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public static async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString, DbProviderFactory dbProviderFactory)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows(string connectionString)
         {
             List<Fortune> result;
 
-            using (var db = dbProviderFactory.CreateConnection())
+            using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = connectionString;
                 // Note: don't need to open connection if only doing one thing; let dapper do it

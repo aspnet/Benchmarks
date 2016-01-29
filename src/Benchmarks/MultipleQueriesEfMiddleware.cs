@@ -18,11 +18,14 @@ namespace Benchmarks
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-        private readonly RequestDelegate _next;
 
-        public MultipleQueriesEfMiddleware(RequestDelegate next)
+        private readonly RequestDelegate _next;
+        private readonly EfDb _db;
+
+        public MultipleQueriesEfMiddleware(RequestDelegate next, EfDb db)
         {
             _next = next;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -32,7 +35,7 @@ namespace Benchmarks
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
 
                 var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
-                var rows = await EfDb.LoadMultipleQueriesRows(count, db);
+                var rows = await _db.LoadMultipleQueriesRows(count, db);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 

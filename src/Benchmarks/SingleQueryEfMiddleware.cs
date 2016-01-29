@@ -18,11 +18,14 @@ namespace Benchmarks
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-        private readonly RequestDelegate _next;
 
-        public SingleQueryEfMiddleware(RequestDelegate next)
+        private readonly RequestDelegate _next;
+        private readonly EfDb _db;
+
+        public SingleQueryEfMiddleware(RequestDelegate next, EfDb db)
         {
             _next = next;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -31,7 +34,7 @@ namespace Benchmarks
             {
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
 
-                var row = await EfDb.LoadSingleQueryRow(db);
+                var row = await _db.LoadSingleQueryRow(db);
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;

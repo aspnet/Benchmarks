@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -22,13 +22,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
-        private readonly DbProviderFactory _dbProviderFactory;
+        private readonly RawDb _db;
 
-        public MultipleQueriesRawMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
+        public MultipleQueriesRawMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, RawDb db)
         {
             _next = next;
-            _connectionString = connectionString;
-            _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -36,7 +36,7 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
-                var rows = await RawDb.LoadMultipleQueriesRows(count, _connectionString, _dbProviderFactory);
+                var rows = await _db.LoadMultipleQueriesRows(count, _connectionString);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -55,9 +55,9 @@ namespace Benchmarks
 
     public static class MultipleQueriesRawMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesRaw(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseMultipleQueriesRaw(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MultipleQueriesRawMiddleware>(connectionString);
+            return builder.UseMiddleware<MultipleQueriesRawMiddleware>();
         }
     }
 }

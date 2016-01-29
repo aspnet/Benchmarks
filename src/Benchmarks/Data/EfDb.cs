@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Benchmarks.Data
 {
-    public static class EfDb
+    public class EfDb
     {
-        private static readonly Random _random = new Random();
+        private readonly Random _random = new Random();
 
-        public static Task<World> LoadSingleQueryRow(ApplicationDbContext dbContext)
+        public Task<World> LoadSingleQueryRow(ApplicationDbContext dbContext)
         {
             dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -21,7 +21,7 @@ namespace Benchmarks.Data
             return dbContext.World.FirstAsync(w => w.Id == id);
         }
 
-        public static async Task<World[]> LoadMultipleQueriesRows(int count, ApplicationDbContext dbContext)
+        public async Task<World[]> LoadMultipleQueriesRows(int count, ApplicationDbContext dbContext)
         {
             dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -36,7 +36,7 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public static async Task<IEnumerable<Fortune>> LoadFortunesRows(ApplicationDbContext dbContext)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows(ApplicationDbContext dbContext)
         {
             dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 

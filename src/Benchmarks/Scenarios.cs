@@ -53,23 +53,23 @@ namespace Benchmarks
         [ScenarioPath("/mvc/view")]
         public bool MvcViews { get; set; }
 
-        [ScenarioPath("/mvc/db/raw")]
-        public bool MvcDbSingleQueryRaw { get; set; }
+        //[ScenarioPath("/mvc/db/raw")]
+        //public bool MvcDbSingleQueryRaw { get; set; }
 
-        [ScenarioPath("/mvc/db/dapper")]
-        public bool MvcDbSingleQueryDapper { get; set; }
+        //[ScenarioPath("/mvc/db/dapper")]
+        //public bool MvcDbSingleQueryDapper { get; set; }
 
-        [ScenarioPath("/mvc/db/ef")]
-        public bool MvcDbSingleQueryEf { get; set; }
+        //[ScenarioPath("/mvc/db/ef")]
+        //public bool MvcDbSingleQueryEf { get; set; }
 
-        [ScenarioPath("/mvc/queries/raw")]
-        public bool MvcDbMultiQueryRaw { get; set; }
+        //[ScenarioPath("/mvc/queries/raw")]
+        //public bool MvcDbMultiQueryRaw { get; set; }
 
-        [ScenarioPath("/mvc/queries/dapper")]
-        public bool MvcDbMultiQueryDapper { get; set; }
+        //[ScenarioPath("/mvc/queries/dapper")]
+        //public bool MvcDbMultiQueryDapper { get; set; }
 
-        [ScenarioPath("/mvc/queries/ef")]
-        public bool MvcDbMultiQueryEf { get; set; }
+        //[ScenarioPath("/mvc/queries/ef")]
+        //public bool MvcDbMultiQueryEf { get; set; }
 
         [ScenarioPath("/mvc/fortunes/raw")]
         public bool MvcDbFortunesRaw { get; set; }

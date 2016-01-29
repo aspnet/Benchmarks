@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data.Common;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Benchmarks
 {
@@ -17,18 +17,14 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
-        private readonly DbProviderFactory _dbProviderFactory;
+        private readonly DapperDb _db;
         private readonly HtmlEncoder _htmlEncoder;
 
-        public FortunesDapperMiddleware(
-            RequestDelegate next,
-            string connectionString,
-            DbProviderFactory dbProviderFactory,
-            HtmlEncoder htmlEncoder)
+        public FortunesDapperMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, DapperDb db, HtmlEncoder htmlEncoder)
         {
             _next = next;
-            _connectionString = connectionString;
-            _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
+            _db = db;
             _htmlEncoder = htmlEncoder;
         }
 
@@ -36,7 +32,7 @@ namespace Benchmarks
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var rows = await DapperDb.LoadFortunesRows(_connectionString, _dbProviderFactory);
+                var rows = await _db.LoadFortunesRows(_connectionString);
 
                 await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
 
@@ -49,9 +45,9 @@ namespace Benchmarks
     
     public static class FortunesDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseFortunesDapper(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseFortunesDapper(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<FortunesDapperMiddleware>(connectionString);
+            return builder.UseMiddleware<FortunesDapperMiddleware>();
         }
     }
 }

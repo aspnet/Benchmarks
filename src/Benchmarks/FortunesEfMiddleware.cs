@@ -16,11 +16,13 @@ namespace Benchmarks
         private static readonly PathString _path = new PathString(Scenarios.GetPaths(s => s.DbFortunesEf)[0]);
 
         private readonly RequestDelegate _next;
+        private readonly EfDb _db;
         private readonly HtmlEncoder _htmlEncoder;
 
-        public FortunesEfMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
+        public FortunesEfMiddleware(RequestDelegate next, EfDb db, HtmlEncoder htmlEncoder)
         {
             _next = next;
+            _db = db;
             _htmlEncoder = htmlEncoder;
         }
 
@@ -31,7 +33,7 @@ namespace Benchmarks
                 var db = (ApplicationDbContext)httpContext.RequestServices.GetService(typeof(ApplicationDbContext));
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var rows = await EfDb.LoadFortunesRows(db);
+                var rows = await _db.LoadFortunesRows(db);
 
                 await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
 

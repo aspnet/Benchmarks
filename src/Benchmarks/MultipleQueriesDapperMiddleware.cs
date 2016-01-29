@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Data.Common;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -22,13 +22,13 @@ namespace Benchmarks
 
         private readonly RequestDelegate _next;
         private readonly string _connectionString;
-        private readonly DbProviderFactory _dbProviderFactory;
+        private readonly DapperDb _db;
 
-        public MultipleQueriesDapperMiddleware(RequestDelegate next, string connectionString, DbProviderFactory dbProviderFactory)
+        public MultipleQueriesDapperMiddleware(RequestDelegate next, IOptions<AppSettings> appSettings, DapperDb db)
         {
             _next = next;
-            _connectionString = connectionString;
-            _dbProviderFactory = dbProviderFactory;
+            _connectionString = appSettings.Value.ConnectionString;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -36,7 +36,7 @@ namespace Benchmarks
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
-                var rows = await DapperDb.LoadMultipleQueriesRows(count, _connectionString, _dbProviderFactory);
+                var rows = await _db.LoadMultipleQueriesRows(count, _connectionString);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -55,9 +55,9 @@ namespace Benchmarks
 
     public static class MultipleQueriesDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesDapper(this IApplicationBuilder builder, string connectionString)
+        public static IApplicationBuilder UseMultipleQueriesDapper(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MultipleQueriesDapperMiddleware>(connectionString);
+            return builder.UseMiddleware<MultipleQueriesDapperMiddleware>();
         }
     }
 }
