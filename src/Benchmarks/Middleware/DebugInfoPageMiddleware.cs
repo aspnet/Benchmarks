@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System.Linq;
+using System.Runtime;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -48,6 +49,7 @@ namespace Benchmarks.Middleware
             await httpContext.Response.WriteAsync("<ul>");
             await httpContext.Response.WriteAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
             await httpContext.Response.WriteAsync($"<li>Framework: {_appEnv.RuntimeFramework.FullName}</li>");
+            await httpContext.Response.WriteAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
             await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
             await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
             await httpContext.Response.WriteAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
@@ -59,7 +61,7 @@ namespace Benchmarks.Middleware
                 await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
             }
             await httpContext.Response.WriteAsync($"</ul></li>");
-
+            
             await httpContext.Response.WriteAsync($"<li>Enabled scenarios:<ul>");
             var enabledScenarios = _scenarios.GetEnabled();
             var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
