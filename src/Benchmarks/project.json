@@ -19,14 +19,14 @@
     "ef": "Microsoft.EntityFrameworkCore.Commands"
   },
   "frameworks": {
-    "net451": {},
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-*",
         "System.Runtime.Serialization.Primitives": "4.1.0-*"
       }
-    }
+    },
+    "net451": {}
   },
   "publishExclude": [
     "node_modules",

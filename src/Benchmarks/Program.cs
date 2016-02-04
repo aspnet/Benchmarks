@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
@@ -22,9 +23,12 @@ namespace Benchmarks
             Console.WriteLine("ASP.NET Core Benchmarks");
             Console.WriteLine("-----------------------");
 
+            Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
+
             var webHost = new WebHostBuilder()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseCaptureStartupErrors(false)
+                .UseApplicationBasePath(Directory.GetCurrentDirectory())
                 .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
                 .ConfigureServices(services => services

@@ -13,18 +13,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Benchmarks
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, Scenarios scenarios)
+        public Startup(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, Scenarios scenarios)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .Include(env.Configuration)
+                .SetBasePath(appEnv.ApplicationBasePath)
+                .Include(hostingEnv.Configuration)
                 .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile($"appsettings.{hostingEnv.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
