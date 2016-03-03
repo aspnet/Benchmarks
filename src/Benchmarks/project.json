@@ -2,7 +2,8 @@
   "webroot": "wwwroot",
   "version": "1.0.0-*",
   "compilationOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "dependencies": {
     "Dapper": "1.50.0-*",
@@ -14,19 +15,18 @@
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*"
   },
-  "commands": {
-    "Benchmarks": "Benchmarks",
-    "ef": "Microsoft.EntityFrameworkCore.Commands"
-  },
   "frameworks": {
-    "dnxcore50": {
-      "imports": "portable-net451+win8",
+    "netstandardapp1.5": {
+      "imports": [ "portable-net451+win8", "dnxcore50" ],
       "dependencies": {
         "NETStandard.Library": "1.0.0-*",
         "System.Runtime.Serialization.Primitives": "4.1.0-*"
       }
     },
-    "net451": {}
+    "net451": { }
+  },
+  "tools": {
+    "dotnet-ef": "1.0.0-*"
   },
   "content": [ "appsettings.json" ],
   "publishExclude": [

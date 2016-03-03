@@ -1,13 +1,11 @@
 ﻿{
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "dependencies": {
   },
-
-  "commands": {
-    "BasicAsyncHttpServer": "BasicAsyncHttpServer"
-  },
-
   "frameworks": {
-    "dnx451": { }
+    "net451": { }
   }
 }

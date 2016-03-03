@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Data.Common;
@@ -34,7 +34,7 @@ namespace Benchmarks
         }
 
         public IConfigurationRoot Configuration { get; set; }
-        
+
         public Scenarios Scenarios { get; }
 
         public void ConfigureServices(IServiceCollection services)
@@ -52,7 +52,7 @@ namespace Benchmarks
                 .AddDbContext<ApplicationDbContext>();
 
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
-            {   
+            {
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
                 services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
             }
@@ -81,7 +81,7 @@ namespace Benchmarks
             {
                 var mvcBuilder = services.AddMvcCore()
                     .AddControllersAsServices(typeof(Startup).GetTypeInfo().Assembly);
-                
+
                 if (Scenarios.MvcApis)
                 {
                     mvcBuilder.AddJsonFormatters();
@@ -96,7 +96,7 @@ namespace Benchmarks
             }
         }
 
-        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
+        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, ApplicationDbContext dbContext)
         {
             app.UseErrorHandler();
 
@@ -160,6 +160,8 @@ namespace Benchmarks
 
             if (Scenarios.Any("Db"))
             {
+                dbContext.Database.EnsureCreated();
+
                 if (!dbSeeder.Seed())
                 {
                     Environment.Exit(1);
