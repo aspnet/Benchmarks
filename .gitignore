@@ -35,3 +35,5 @@ version.h
 
 # Profiler result files, just in case they are left lying around :)
 /.vs/
+.testPublish/
+.build/

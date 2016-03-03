@@ -1,16 +1,12 @@
 ﻿{
   "version": "1.0.0-*",
-
-  "dependencies": {
-  },
   "compilationOptions": {
+    "emitEntryPoint": true,
     "allowUnsafe": true
   },
-  "commands": {
-    "NativeHttpServer": "NativeHttpServer"
+  "dependencies": {
   },
-
   "frameworks": {
-    "dnx451": { }
+    "net451": { }
   }
 }

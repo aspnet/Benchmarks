@@ -1,19 +1,11 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "",
-  "authors": [ "" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
-
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "dependencies": {
   },
-
-  "commands": {
-    "BasicHttpServer" : "BasicHttpServer"
-  },
-
-  "frameworks" : {
-    "dnx451": { }
+  "frameworks": {
+    "net451": { }
   }
 }
