@@ -14,6 +14,7 @@ namespace Benchmarks
     public class Program
     {
         public static string[] Args;
+        public static string Server;
         
         public static void Main(string[] args)
         {
@@ -25,18 +26,21 @@ namespace Benchmarks
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
 
-            var webHost = new WebHostBuilder()
+            var webHostBuilder = new WebHostBuilder()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseCaptureStartupErrors(false)
-                .UseApplicationBasePath(Directory.GetCurrentDirectory())
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
                     .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
                     .AddSingleton<Scenarios>()
-                )
-                .Build();
+                );
+
+            Server = webHostBuilder.GetSetting(WebHostDefaults.ServerKey);
+
+            var webHost = webHostBuilder.Build();
 
             StartInteractiveConsoleThread();
 

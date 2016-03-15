@@ -28,6 +28,7 @@
     },
     "net451": {}
   },
+  "content": [ "appsettings.json" ],
   "publishExclude": [
     "node_modules",
     "bower_components",

@@ -51,7 +51,7 @@ namespace Benchmarks.Middleware
             await httpContext.Response.WriteAsync($"<li>Framework: {_appEnv.RuntimeFramework.FullName}</li>");
             await httpContext.Response.WriteAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
             await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
-            await httpContext.Response.WriteAsync($"<li>Server: {_hostingEnv.Configuration["server"]}</li>");
+            await httpContext.Response.WriteAsync($"<li>Server: {Program.Server}</li>");
             await httpContext.Response.WriteAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
             await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
 
