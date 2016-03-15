@@ -49,8 +49,7 @@ namespace Benchmarks
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
             services.AddSingleton<ApplicationDbSeeder>();
-            services.AddEntityFramework()
-                .AddSqlServer()
+            services.AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>();
 
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
