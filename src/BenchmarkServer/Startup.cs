@@ -71,6 +71,8 @@ namespace BenchmarkServer
                 {
                     if (job.State == State.Waiting)
                     {
+                        // TODO: Race condition if DELETE is called during this code
+
                         Log($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
                         job.State = State.Starting;
 
