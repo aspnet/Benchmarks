@@ -158,7 +158,7 @@ namespace BenchmarkServer
             {
                 StartInfo = {
                     FileName = "dotnet",
-                    Arguments = $"run -- --scenario {job.Scenario}",
+                    Arguments = $"run -- --scenario {job.Scenario} --server.urls http://*:5000",
                     WorkingDirectory = Path.Combine(benchmarksRepo, @"src\Benchmarks")
                 }
             };
