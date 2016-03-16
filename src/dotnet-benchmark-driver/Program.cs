@@ -54,6 +54,7 @@ namespace BenchmarkDriver
             var serverJobs = new Uri(serverUri, "/jobs");
 
             var content = $"{{'scenario': '{scenario}'}}";
+            Log($"Starting scenario {scenario} on benchmark server...");
             LogVerbose($"POST {serverJobs} {content}...");
             var response = await _httpClient.PostAsync(serverJobs, new StringContent(content, Encoding.UTF8, "application/json"));
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -81,6 +82,10 @@ namespace BenchmarkDriver
                 }
             }
 
+            Log($"Scenario {scenario} running on benchmark server");
+
+            Log($"Starting scenario {scenario} on benchmark client...");
+
             // TODO: Replace with call to BenchmarkClient
             var benchmarkUri = new Uri($"http://localhost:5000/{scenario}");
             LogVerbose($"GET {benchmarkUri}...");
@@ -88,6 +93,10 @@ namespace BenchmarkDriver
             responseContent = await response.Content.ReadAsStringAsync();
             LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
             response.EnsureSuccessStatusCode();
+
+            Log($"Results: ");
+
+            Log($"Stopping scenario {scenario} on benchmark server...");
 
             LogVerbose($"DELETE {serverJob}...");
             response = _httpClient.DeleteAsync(serverJob).Result;
