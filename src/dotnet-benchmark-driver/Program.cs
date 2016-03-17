@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace BenchmarkDriver
 {
@@ -93,8 +94,6 @@ namespace BenchmarkDriver
                     }
                 }
 
-                Log($"Scenario {scenario} running on benchmark server");
-
                 Uri clientJobUri = null;
                 try
                 {
@@ -102,10 +101,8 @@ namespace BenchmarkDriver
 
                     var clientJobsUri = new Uri(clientUri, "/jobs");
 
-                    // wrk -c 256 -t 32 -d 10 -s benchmarks/scripts/pipeline.lua http://mharder-desk:5000/plaintext
-                    var clientContent = JsonConvert.SerializeObject(
-                        new ClientJob() { Filename = "curl", Arguments = $"-v {serverBenchmarkUri}/{scenario}" });
-
+                    var clientContent = JsonConvert.SerializeObject(new ClientJob() {
+                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext" });
 
                     LogVerbose($"POST {clientJobsUri} {clientContent}...");
                     response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
@@ -135,8 +132,6 @@ namespace BenchmarkDriver
                         }
                     }
 
-                    Log($"Scenario {scenario} running on benchmark client");
-
                     while (true)
                     {
                         LogVerbose($"GET {clientJobUri}...");
@@ -150,8 +145,17 @@ namespace BenchmarkDriver
                         if (clientJob.State == ClientState.Completed)
                         {
                             Log($"Scenario {scenario} completed on benchmark client");
-                            Log($"Output: {clientJob.Output}");
-                            Log($"Error: {clientJob.Error}");
+                            LogVerbose($"Output: {clientJob.Output}");
+                            LogVerbose($"Error: {clientJob.Error}");
+
+                            double rps = -1;
+                            var match = Regex.Match(clientJob.Output, @"Requests/sec:\s*([\d.]*)");
+                            if (match.Success && match.Groups.Count == 2)
+                            {
+                                double.TryParse(match.Groups[1].Value, out rps);
+                            }
+
+                            Log($"RPS: {rps}");
                             break;
                         }
                         else

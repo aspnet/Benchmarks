@@ -122,19 +122,19 @@ namespace BenchmarkClient
                     {
                         // TODO: Race condition if DELETE is called during this code
 
-                        Log($"Starting job '{job.Id}' with command '{job.Filename} {job.Arguments}'");
+                        Log($"Starting job '{job.Id}' with command '{job.Command}'");
                         job.State = State.Starting;
 
                         Debug.Assert(process == null);
 
-                        Log($"Running job '{job.Id}' with command '{job.Filename} {job.Arguments}'");
+                        Log($"Running job '{job.Id}' with command '{job.Command}'");
                         job.State = State.Running;
 
                         process = StartProcess(benchmarksRepo, job);
                     }
                     else if (job.State == State.Deleting)
                     {
-                        Log($"Deleting job '{job.Id}' with command '{job.Filename} {job.Arguments}'");
+                        Log($"Deleting job '{job.Id}' with command '{job.Command}'");
 
                         Debug.Assert(process != null);
 
@@ -153,11 +153,13 @@ namespace BenchmarkClient
         {
             var tcs = new TaskCompletionSource<bool>();
 
+            var command = job.Command.Replace("$BENCHMARKS_REPO", benchmarksRepo);
+
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = job.Filename,
-                    Arguments = job.Arguments,
+                    FileName = "stdbuf",
+                    Arguments = $"-oL {command}",
                     WorkingDirectory = benchmarksRepo,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true

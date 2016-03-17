@@ -11,9 +11,7 @@ namespace BenchmarkDriver
     {
         public int Id { get; set; }
 
-        public string Filename { get; set; }
-
-        public string Arguments { get; set; }
+        public string Command { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ClientState State { get; set; }
