@@ -53,58 +53,125 @@ namespace BenchmarkDriver
         private static async Task<int> Run(string scenario, Uri serverUri, Uri clientUri)
         {
             var serverJobsUri = new Uri(serverUri, "/jobs");
-
-            var content = $"{{'scenario': '{scenario}'}}";
-            Log($"Starting scenario {scenario} on benchmark server...");
-            LogVerbose($"POST {serverJobsUri} {content}...");
-            var response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
-            var responseContent = await response.Content.ReadAsStringAsync();
-            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-            response.EnsureSuccessStatusCode();
-
-            var serverJobUri = new Uri(serverUri, response.Headers.Location);
-
-            var serverBenchmarkUri = string.Empty;
-            while (true)
-            {
-                LogVerbose($"GET {serverJobUri}...");
-                response = await _httpClient.GetAsync(serverJobUri);
-                responseContent = await response.Content.ReadAsStringAsync();
-
-                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                var serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                if (serverJob.State == ServerState.Running)
-                {
-                    serverBenchmarkUri = serverJob.Url;
-                    break;
-                }
-                else
-                {
-                    await Task.Delay(1000);
-                }
-            }
-
-            Log($"Scenario {scenario} running on benchmark server");
-
-            Console.WriteLine("Press ENTER to continue");
-            Console.ReadLine();
+            Uri serverJobUri = null;
+            HttpResponseMessage response = null;
+            string responseContent = null;
 
             try
             {
-                Log($"Starting scenario {scenario} on benchmark client...");
+                Log($"Starting scenario {scenario} on benchmark server...");
 
-                // wrk -c 256 -t 32 -d 10 -s benchmarks/scripts/pipeline.lua http://mharder-desk:5000/plaintext
-                // TODO: Replace with call to BenchmarkClient
-                var benchmarkUri = new Uri(new Uri(serverBenchmarkUri), $"/{scenario}");
-                LogVerbose($"GET {benchmarkUri}...");
-                response = await _httpClient.GetAsync(benchmarkUri);
+                var content = JsonConvert.SerializeObject(new ServerJob() { Scenario = "plaintext" });
+                LogVerbose($"POST {serverJobsUri} {content}...");
+
+                response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
                 responseContent = await response.Content.ReadAsStringAsync();
-                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
-                Log($"Results: ");
+                serverJobUri = new Uri(serverUri, response.Headers.Location);
+
+                var serverBenchmarkUri = string.Empty;
+                while (true)
+                {
+                    LogVerbose($"GET {serverJobUri}...");
+                    response = await _httpClient.GetAsync(serverJobUri);
+                    responseContent = await response.Content.ReadAsStringAsync();
+
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                    var serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                    if (serverJob.State == ServerState.Running)
+                    {
+                        serverBenchmarkUri = serverJob.Url;
+                        break;
+                    }
+                    else
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
+
+                Log($"Scenario {scenario} running on benchmark server");
+
+                Uri clientJobUri = null;
+                try
+                {
+                    Log($"Starting scenario {scenario} on benchmark client...");
+
+                    var clientJobsUri = new Uri(clientUri, "/jobs");
+
+                    // wrk -c 256 -t 32 -d 10 -s benchmarks/scripts/pipeline.lua http://mharder-desk:5000/plaintext
+                    var clientContent = JsonConvert.SerializeObject(
+                        new ClientJob() { Filename = "curl", Arguments = $"-v {serverBenchmarkUri}/{scenario}" });
+
+
+                    LogVerbose($"POST {clientJobsUri} {clientContent}...");
+                    response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
+                    responseContent = await response.Content.ReadAsStringAsync();
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    response.EnsureSuccessStatusCode();
+
+                    clientJobUri = new Uri(clientUri, response.Headers.Location);
+
+                    while (true)
+                    {
+                        LogVerbose($"GET {clientJobUri}...");
+                        response = await _httpClient.GetAsync(clientJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        var clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+
+                        if (clientJob.State == ClientState.Running)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            await Task.Delay(1000);
+                        }
+                    }
+
+                    Log($"Scenario {scenario} running on benchmark client");
+
+                    while (true)
+                    {
+                        LogVerbose($"GET {clientJobUri}...");
+                        response = await _httpClient.GetAsync(clientJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        var clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+
+                        if (clientJob.State == ClientState.Completed)
+                        {
+                            Log($"Scenario {scenario} completed on benchmark client");
+                            Log($"Output: {clientJob.Output}");
+                            Log($"Error: {clientJob.Error}");
+                            break;
+                        }
+                        else
+                        {
+                            await Task.Delay(1000);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (clientJobUri != null)
+                    {
+                        Log($"Stopping scenario {scenario} on benchmark client...");
+
+                        LogVerbose($"DELETE {clientJobUri}...");
+                        response = _httpClient.DeleteAsync(clientJobUri).Result;
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
             }
             finally
             {
