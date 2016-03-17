@@ -130,6 +130,8 @@ namespace BenchmarkServer
 
                         Log($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                         job.State = State.Running;
+
+                        job.Url = $"http://{Environment.MachineName.ToLowerInvariant()}:5000";
                     }
                     else if (job.State == State.Deleting)
                     {
