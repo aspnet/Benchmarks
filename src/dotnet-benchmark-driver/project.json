@@ -12,7 +12,9 @@
   "dependencies": {
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
-    "Microsoft.Net.Http.Client": "1.0.0-*"
+    "Microsoft.Net.Http.Client": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3",
+    "System.Runtime.Serialization.Primitives": "4.1.0-*"
   },
   "frameworks": {
     "netstandardapp1.5": {

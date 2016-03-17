@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 
 namespace BenchmarkDriver
 {
@@ -51,29 +52,32 @@ namespace BenchmarkDriver
 
         private static async Task<int> Run(string scenario, Uri serverUri, Uri clientUri)
         {
-            var serverJobs = new Uri(serverUri, "/jobs");
+            var serverJobsUri = new Uri(serverUri, "/jobs");
 
             var content = $"{{'scenario': '{scenario}'}}";
             Log($"Starting scenario {scenario} on benchmark server...");
-            LogVerbose($"POST {serverJobs} {content}...");
-            var response = await _httpClient.PostAsync(serverJobs, new StringContent(content, Encoding.UTF8, "application/json"));
+            LogVerbose($"POST {serverJobsUri} {content}...");
+            var response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
             var responseContent = await response.Content.ReadAsStringAsync();
             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
             response.EnsureSuccessStatusCode();
 
-            var serverJob = new Uri(serverUri, response.Headers.Location);
+            var serverJobUri = new Uri(serverUri, response.Headers.Location);
 
+            var serverBenchmarkUri = string.Empty;
             while (true)
             {
-                LogVerbose($"GET {serverJob}...");
-                response = await _httpClient.GetAsync(serverJob);
+                LogVerbose($"GET {serverJobUri}...");
+                response = await _httpClient.GetAsync(serverJobUri);
                 responseContent = await response.Content.ReadAsStringAsync();
 
                 LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                // TODO: Replace with JSON.NET
-                if (responseContent.Contains("\"State\":2"))
+                var serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                if (serverJob.State == ServerState.Running)
                 {
+                    serverBenchmarkUri = serverJob.Url;
                     break;
                 }
                 else
@@ -84,24 +88,33 @@ namespace BenchmarkDriver
 
             Log($"Scenario {scenario} running on benchmark server");
 
-            Log($"Starting scenario {scenario} on benchmark client...");
+            Console.WriteLine("Press ENTER to continue");
+            Console.ReadLine();
 
-            // TODO: Replace with call to BenchmarkClient
-            var benchmarkUri = new Uri($"http://localhost:5000/{scenario}");
-            LogVerbose($"GET {benchmarkUri}...");
-            response = await _httpClient.GetAsync(benchmarkUri);
-            responseContent = await response.Content.ReadAsStringAsync();
-            LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                Log($"Starting scenario {scenario} on benchmark client...");
 
-            Log($"Results: ");
+                // wrk -c 256 -t 32 -d 10 -s benchmarks/scripts/pipeline.lua http://mharder-desk:5000/plaintext
+                // TODO: Replace with call to BenchmarkClient
+                var benchmarkUri = new Uri(new Uri(serverBenchmarkUri), $"/{scenario}");
+                LogVerbose($"GET {benchmarkUri}...");
+                response = await _httpClient.GetAsync(benchmarkUri);
+                responseContent = await response.Content.ReadAsStringAsync();
+                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                response.EnsureSuccessStatusCode();
 
-            Log($"Stopping scenario {scenario} on benchmark server...");
+                Log($"Results: ");
+            }
+            finally
+            {
+                Log($"Stopping scenario {scenario} on benchmark server...");
 
-            LogVerbose($"DELETE {serverJob}...");
-            response = _httpClient.DeleteAsync(serverJob).Result;
-            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-            response.EnsureSuccessStatusCode();
+                LogVerbose($"DELETE {serverJobUri}...");
+                response = _httpClient.DeleteAsync(serverJobUri).Result;
+                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                response.EnsureSuccessStatusCode();
+            }
 
             return 0;
         }
