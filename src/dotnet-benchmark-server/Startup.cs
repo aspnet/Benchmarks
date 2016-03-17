@@ -19,7 +19,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private const string _defaultUrl = "http://localhost:5001";
+        private const string _defaultUrl = "http://*:5001";
 
         private static readonly IJobRepository _jobs = new InMemoryJobRepository();
 
