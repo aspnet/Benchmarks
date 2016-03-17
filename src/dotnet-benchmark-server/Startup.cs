@@ -31,8 +31,7 @@ namespace BenchmarkServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // TODO: Why do I now need to manually add the assembly?  Is it because the namespace and assembly don't match?
-            services.AddMvc(); // .AddControllersAsServices(Assembly.GetEntryAssembly());
+            services.AddMvc();
 
             services.AddSingleton(_jobs);
         }
