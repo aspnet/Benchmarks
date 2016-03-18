@@ -166,10 +166,11 @@ namespace BenchmarkServer
                     Arguments = arguments,
                     WorkingDirectory = Path.Combine(benchmarksRepo, @"src\Benchmarks"),
                     RedirectStandardOutput = true,
-                    UseShellExecute = false
+                    UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
             };
+            process.StartInfo.Environment.Add("COREHOST_SERVER_GC", "1");
 
             process.OutputDataReceived += (_, e) =>
             {
