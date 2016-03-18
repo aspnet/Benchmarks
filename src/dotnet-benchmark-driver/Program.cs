@@ -102,7 +102,7 @@ namespace BenchmarkDriver
                     var clientJobsUri = new Uri(clientUri, "/jobs");
 
                     var clientContent = JsonConvert.SerializeObject(new ClientJob() {
-                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext" });
+                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext -- 16" });
 
                     LogVerbose($"POST {clientJobsUri} {clientContent}...");
                     response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
@@ -179,6 +179,9 @@ namespace BenchmarkDriver
             }
             finally
             {
+                Console.WriteLine("press enter to continue");
+                Console.ReadLine();
+
                 Log($"Stopping scenario {scenario} on benchmark server...");
 
                 LogVerbose($"DELETE {serverJobUri}...");
