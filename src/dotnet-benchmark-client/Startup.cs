@@ -163,11 +163,9 @@ namespace BenchmarkClient
                     WorkingDirectory = benchmarksRepo,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
-                }
+                },
+                EnableRaisingEvents = true
             };
-            process.EnableRaisingEvents = true;
-
-            var resultBuilder = new StringBuilder();
 
             process.OutputDataReceived += (_, e) =>
             {
