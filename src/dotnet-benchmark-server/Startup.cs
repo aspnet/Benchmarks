@@ -20,6 +20,7 @@ namespace BenchmarkServer
     public class Startup
     {
         private const string _defaultUrl = "http://*:5001";
+        private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
         private static readonly IJobRepository _jobs = new InMemoryJobRepository();
 
@@ -52,12 +53,17 @@ namespace BenchmarkServer
 
             app.HelpOption("-?|-h|--help");
 
-            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default value is {_defaultUrl}.", CommandOptionType.SingleValue);
-            var benchmarksRepoOption = app.Option("-b|--benchmarksRepo", "Local path of benchmarks repo.", CommandOptionType.SingleValue);
+            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default value is {_defaultUrl}.",
+                CommandOptionType.SingleValue);
+            var hostnameOption = app.Option("-n|--hostname", $"Hostname for benchmark server.  Default value is {_defaultHostname}.",
+                CommandOptionType.SingleValue);
+            var benchmarksRepoOption = app.Option("-b|--benchmarksRepo", "Local path of benchmarks repo.",
+                CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
                 var url = urlOption.Value();
+                var hostname = hostnameOption.Value();
                 var benchmarksRepo = benchmarksRepoOption.Value();
 
                 if (string.IsNullOrWhiteSpace(benchmarksRepo))
@@ -67,18 +73,16 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(url))
-                    {
-                        url = _defaultUrl;
-                    }
-                    return Run(url, benchmarksRepo).Result;
+                    url = string.IsNullOrWhiteSpace(url) ? _defaultUrl : url;
+                    hostname = string.IsNullOrWhiteSpace(hostname) ? _defaultHostname : hostname;
+                    return Run(url, hostname, benchmarksRepo).Result;
                 }
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string benchmarksRepo)
+        private static async Task<int> Run(string url, string hostname, string benchmarksRepo)
         {
             var hostTask = Task.Run(() =>
             {
@@ -93,7 +97,7 @@ namespace BenchmarkServer
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(benchmarksRepo, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, benchmarksRepo, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -107,7 +111,7 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string benchmarksRepo, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, string benchmarksRepo, CancellationToken cancellationToken)
         {
             Process process = null;
 
@@ -125,12 +129,7 @@ namespace BenchmarkServer
                         job.State = State.Starting;
 
                         Debug.Assert(process == null);
-                        process = StartProcess(benchmarksRepo, job);
-
-                        Log($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.State = State.Running;
-
-                        job.Url = $"http://{Environment.MachineName.ToLowerInvariant()}:5000";
+                        process = StartProcess(hostname, benchmarksRepo, job);
                     }
                     else if (job.State == State.Deleting)
                     {
@@ -151,20 +150,43 @@ namespace BenchmarkServer
             }
         }
 
-        private static Process StartProcess(string benchmarksRepo, Job job)
+        private static Process StartProcess(string hostname, string benchmarksRepo, Job job)
         {
             var tcs = new TaskCompletionSource<bool>();
+
+            var filename = "dotnet";
+            var arguments = $"run -c Release -- --scenario {job.Scenario} --server.urls http://{hostname}:5000";
+
+            Log($"Starting process '{filename} {arguments}'");
 
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = "dotnet",
-                    Arguments = $"run -- --scenario {job.Scenario} --server.urls http://*:5000",
-                    WorkingDirectory = Path.Combine(benchmarksRepo, @"src\Benchmarks")
-                }
+                    FileName = filename,
+                    Arguments = arguments,
+                    WorkingDirectory = Path.Combine(benchmarksRepo, @"src\Benchmarks"),
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false
+                },
+                EnableRaisingEvents = true
+            };
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null || e.Data != null) {
+                    Log(e.Data);
+
+                    if (job.State == State.Starting && e.Data.Contains("Application started"))
+                    {
+                        job.State = State.Running;
+                        job.Url = $"http://{hostname}:5000";
+                        Log($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                    }
+                }                
             };
 
             process.Start();
+            process.BeginOutputReadLine();
 
             return process;
         }
