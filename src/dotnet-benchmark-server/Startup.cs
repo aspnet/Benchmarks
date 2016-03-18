@@ -1,17 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BenchmarkServer.Models;
+using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Repository;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +22,7 @@ namespace BenchmarkServer
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
-        private static readonly IJobRepository _jobs = new InMemoryJobRepository();
+        private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
 
         private IApplicationEnvironment _env;
         public Startup(IApplicationEnvironment environment)
@@ -121,17 +121,17 @@ namespace BenchmarkServer
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    if (job.State == State.Waiting)
+                    if (job.State == ServerState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
 
                         Log($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.State = State.Starting;
+                        job.State = ServerState.Starting;
 
                         Debug.Assert(process == null);
                         process = StartProcess(hostname, benchmarksRepo, job);
                     }
-                    else if (job.State == State.Deleting)
+                    else if (job.State == ServerState.Deleting)
                     {
                         Log($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
@@ -150,7 +150,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, Job job)
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -177,9 +177,9 @@ namespace BenchmarkServer
                 if (e != null || e.Data != null) {
                     Log(e.Data);
 
-                    if (job.State == State.Starting && e.Data.Contains("Application started"))
+                    if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
-                        job.State = State.Running;
+                        job.State = ServerState.Running;
                         job.Url = $"http://{hostname}:5000";
                         Log($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                     }

@@ -14,7 +14,10 @@
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Net.Http.Client": "1.0.0-*",
     "Newtonsoft.Json": "8.0.3",
-    "System.Runtime.Serialization.Primitives": "4.1.0-*"
+    "System.Runtime.Serialization.Primitives": "4.1.0-*",
+    "Repository": "1.0.0-*",
+    "Benchmarks.ClientJob": "1.0.0-*",
+    "Benchmarks.ServerJob": "1.0.0-*"
   },
   "frameworks": {
     "netstandardapp1.5": {

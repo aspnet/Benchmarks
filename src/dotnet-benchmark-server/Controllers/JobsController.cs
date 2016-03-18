@@ -1,5 +1,6 @@
-﻿using BenchmarkServer.Models;
+﻿using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
+using Repository;
 using System.Collections.Generic;
 using System.Net;
 
@@ -8,14 +9,14 @@ namespace BenchmarkServer.Controllers
     [Route("[controller]")]
     public class JobsController : Controller
     {
-        private readonly IJobRepository _jobs;
+        private readonly IRepository<ServerJob> _jobs;
 
-        public JobsController(IJobRepository jobs)
+        public JobsController(IRepository<ServerJob> jobs)
         {
             _jobs = jobs;
         }
 
-        public IEnumerable<Job> GetAll()
+        public IEnumerable<ServerJob> GetAll()
         {
             return _jobs.GetAll();
         }
@@ -35,9 +36,9 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] Job job)
+        public IActionResult Create([FromBody] ServerJob job)
         {
-            if (job == null || job.Id != 0 || job.State != State.Waiting)
+            if (job == null || job.Id != 0 || job.State != ServerState.Waiting)
             {
                 return BadRequest();
             }
@@ -54,7 +55,7 @@ namespace BenchmarkServer.Controllers
             try
             {
                 var job = _jobs.Find(id);
-                job.State = State.Deleting;
+                job.State = ServerState.Deleting;
                 _jobs.Update(job);
 
                 Response.Headers["Location"] = $"/jobs/{job.Id}";

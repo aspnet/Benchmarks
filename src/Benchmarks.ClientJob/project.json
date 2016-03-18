@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0-*",
+  "description": "Benchmarks.ClientJob",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AspNet/Benchmarks"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Repository": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3"
+  },
+  "frameworks": {
+    "netstandardapp1.5": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ],
+      "dependencies": {
+        "NETStandard.Library": "1.0.0-*"
+      }
+    }
+  }
+}

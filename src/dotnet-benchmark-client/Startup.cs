@@ -1,18 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BenchmarkClient.Models;
+using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Repository;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +20,7 @@ namespace BenchmarkClient
     {
         private const string _defaultUrl = "http://*:5002";
 
-        private static readonly IJobRepository _jobs = new InMemoryJobRepository();
+        private static readonly IRepository<ClientJob> _jobs = new InMemoryRepository<ClientJob>();
 
         private IApplicationEnvironment _env;
         public Startup(IApplicationEnvironment environment)
@@ -118,21 +116,21 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    if (job.State == State.Waiting)
+                    if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
 
                         Log($"Starting job '{job.Id}' with command '{job.Command}'");
-                        job.State = State.Starting;
+                        job.State = ClientState.Starting;
 
                         Debug.Assert(process == null);
 
                         Log($"Running job '{job.Id}' with command '{job.Command}'");
-                        job.State = State.Running;
+                        job.State = ClientState.Running;
 
                         process = StartProcess(benchmarksRepo, job);
                     }
-                    else if (job.State == State.Deleting)
+                    else if (job.State == ClientState.Deleting)
                     {
                         Log($"Deleting job '{job.Id}' with command '{job.Command}'");
 
@@ -149,7 +147,7 @@ namespace BenchmarkClient
             }
         }
 
-        private static Process StartProcess(string benchmarksRepo, Job job)
+        private static Process StartProcess(string benchmarksRepo, ClientJob job)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -181,7 +179,7 @@ namespace BenchmarkClient
 
             process.Exited += (_, __) =>
             {
-                job.State = State.Completed;
+                job.State = ClientState.Completed;
             };
 
             process.Start();

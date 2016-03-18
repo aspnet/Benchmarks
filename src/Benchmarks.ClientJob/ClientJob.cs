@@ -1,20 +1,17 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Repository;
 
-namespace BenchmarkClient.Models
+namespace Benchmarks.ClientJob
 {
-    public class Job
+    public class ClientJob : IIdentifiable
     {
         public int Id { get; set; }
 
         public string Command { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public State State { get; set; }
+        public ClientState State { get; set; }
 
         public string Output { get; set; }
 

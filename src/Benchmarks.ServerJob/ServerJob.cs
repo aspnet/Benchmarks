@@ -1,20 +1,17 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Repository;
 
-namespace BenchmarkServer.Models
+namespace Benchmarks.ServerJob
 {
-    public class Job
+    public class ServerJob : IIdentifiable
     {
         public int Id { get; set; }
 
         public string Scenario { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public State State { get; set; }
+        public ServerState State { get; set; }
 
         public string Url { get; set; }
     }
