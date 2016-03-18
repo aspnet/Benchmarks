@@ -179,9 +179,6 @@ namespace BenchmarkDriver
             }
             finally
             {
-                Console.WriteLine("press enter to continue");
-                Console.ReadLine();
-
                 Log($"Stopping scenario {scenario} on benchmark server...");
 
                 LogVerbose($"DELETE {serverJobUri}...");
