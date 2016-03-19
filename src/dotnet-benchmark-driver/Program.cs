@@ -30,12 +30,20 @@ namespace BenchmarkDriver
             app.HelpOption("-?|-h|--help");
 
             var scenarioOption = app.Option("-n|--scenario", "Benchmark scenario to run", CommandOptionType.SingleValue);
+            var pullRequestOption = app.Option("-p|--pullRequest", "ID of pull request to test", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server", "URL of benchmark server", CommandOptionType.SingleValue);
             var clientOption = app.Option("-c|--client", "URL of benchmark client", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
                 var scenario = scenarioOption.Value();
+
+                var pullRequest = 0;
+                if (!string.IsNullOrWhiteSpace(pullRequestOption.Value()))
+                {
+                    pullRequest = int.Parse(pullRequestOption.Value());
+                }
+
                 var server = serverOption.Value();
                 var client = clientOption.Value();
 
@@ -46,14 +54,14 @@ namespace BenchmarkDriver
                 }
                 else
                 {
-                    return Run(scenario, new Uri(server), new Uri(client)).Result;
+                    return Run(scenario, pullRequest, new Uri(server), new Uri(client)).Result;
                 }
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string scenario, Uri serverUri, Uri clientUri)
+        private static async Task<int> Run(string scenario, int pullRequest, Uri serverUri, Uri clientUri)
         {
             var serverJobsUri = new Uri(serverUri, "/jobs");
             Uri serverJobUri = null;
@@ -64,7 +72,11 @@ namespace BenchmarkDriver
             {
                 Log($"Starting scenario {scenario} on benchmark server...");
 
-                var content = JsonConvert.SerializeObject(new ServerJob() { Scenario = "plaintext" });
+                var content = JsonConvert.SerializeObject(new ServerJob()
+                {
+                    Scenario = "plaintext",
+                    PullRequest = pullRequest,
+                });
                 LogVerbose($"POST {serverJobsUri} {content}...");
 
                 response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
@@ -107,8 +119,10 @@ namespace BenchmarkDriver
 
                     var clientJobsUri = new Uri(clientUri, "/jobs");
 
-                    var clientContent = JsonConvert.SerializeObject(new ClientJob() {
-                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext -- 16" });
+                    var clientContent = JsonConvert.SerializeObject(new ClientJob()
+                    {
+                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext -- 16"
+                    });
 
                     LogVerbose($"POST {clientJobsUri} {clientContent}...");
                     response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
