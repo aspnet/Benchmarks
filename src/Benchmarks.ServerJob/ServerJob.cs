@@ -8,6 +8,8 @@ namespace Benchmarks.ServerJob
     {
         public int Id { get; set; }
 
+        public int PullRequest { get; set; }
+
         public string Scenario { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

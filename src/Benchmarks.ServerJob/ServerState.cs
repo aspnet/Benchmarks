@@ -5,6 +5,7 @@
         Waiting,
         Starting,
         Running,
+        Failed,
         Deleting
     }
 }

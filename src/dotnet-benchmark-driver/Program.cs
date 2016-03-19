@@ -90,6 +90,10 @@ namespace BenchmarkDriver
                         serverBenchmarkUri = serverJob.Url;
                         break;
                     }
+                    else if (serverJob.State == ServerState.Failed)
+                    {
+                        throw new InvalidOperationException("Server job failed");
+                    }
                     else
                     {
                         await Task.Delay(1000);

@@ -115,6 +115,10 @@ namespace BenchmarkServer
         {
             Process process = null;
 
+            GitCommands git = new GitCommands(benchmarksRepo);
+            string oldBranch = null;
+            string newBranch = null;
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 var allJobs = _jobs.GetAll();
@@ -125,23 +129,53 @@ namespace BenchmarkServer
                     {
                         // TODO: Race condition if DELETE is called during this code
 
-                        Log($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
+                        Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
                         job.State = ServerState.Starting;
+
+                        if (job.PullRequest != 0)
+                        {
+                            Debug.Assert(oldBranch == null && newBranch == null);
+
+                            oldBranch = git.GetCurrentBranch();                            
+                            try
+                            {
+                                newBranch = git.Fetch(job.PullRequest);
+                                git.Checkout(newBranch);
+                                git.Merge("dev");
+                            }
+                            catch
+                            {
+                                job.State = ServerState.Failed;
+                                continue;
+                            }
+                        }
 
                         Debug.Assert(process == null);
                         process = StartProcess(hostname, benchmarksRepo, job);
                     }
                     else if (job.State == ServerState.Deleting)
                     {
-                        Log($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
+                        Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
                         Debug.Assert(process != null);
 
                         // TODO: Replace with managed xplat version of kill process tree
                         Process.Start("taskkill.exe", $"/f /t /pid {process.Id}").WaitForExit();
-                        
+
                         process.Dispose();
                         process = null;
+
+                        if (oldBranch != null)
+                        {
+                            git.Checkout(oldBranch);
+                            oldBranch = null;
+
+                            if (newBranch != null)
+                            {
+                                git.DeleteBranch(newBranch);
+                                newBranch = null;
+                            }
+                        }
 
                         _jobs.Remove(job.Id);
                     }
@@ -152,12 +186,10 @@ namespace BenchmarkServer
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
-            var tcs = new TaskCompletionSource<bool>();
-
             var filename = "dotnet";
             var arguments = $"run -c Release -- --scenario {job.Scenario} --server.urls http://{hostname}:5000";
 
-            Log($"Starting process '{filename} {arguments}'");
+            Log.WriteLine($"Starting process '{filename} {arguments}'");
 
             var process = new Process()
             {
@@ -174,28 +206,23 @@ namespace BenchmarkServer
 
             process.OutputDataReceived += (_, e) =>
             {
-                if (e != null || e.Data != null) {
-                    Log(e.Data);
+                if (e != null || e.Data != null)
+                {
+                    Log.WriteLine(e.Data);
 
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
                         job.State = ServerState.Running;
                         job.Url = $"http://{hostname}:5000";
-                        Log($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                        Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                     }
-                }                
+                }
             };
 
             process.Start();
             process.BeginOutputReadLine();
 
             return process;
-        }
-
-        private static void Log(string message)
-        {
-            var time = DateTime.Now.ToString("hh:mm:ss.fff");
-            Console.WriteLine($"[{time}] {message}");
         }
     }
 }
