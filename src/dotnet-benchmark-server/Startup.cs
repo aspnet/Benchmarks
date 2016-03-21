@@ -117,7 +117,6 @@ namespace BenchmarkServer
 
             GitCommands git = new GitCommands(benchmarksRepo);
             string oldBranch = null;
-            string newBranch = null;
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -132,15 +131,15 @@ namespace BenchmarkServer
                         Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
                         job.State = ServerState.Starting;
 
-                        if (job.PullRequest != 0)
+                        if (!string.IsNullOrEmpty(job.BenchmarksBranch))
                         {
-                            Debug.Assert(oldBranch == null && newBranch == null);
+                            Debug.Assert(oldBranch == null);
 
                             oldBranch = git.GetCurrentBranch();                            
                             try
                             {
-                                newBranch = git.Fetch(job.PullRequest);
-                                git.Checkout(newBranch);
+                                git.Fetch(job.BenchmarksBranch);
+                                git.Checkout(job.BenchmarksBranch);
                                 git.Merge("dev");
                             }
                             catch
@@ -149,6 +148,8 @@ namespace BenchmarkServer
                                 continue;
                             }
                         }
+
+                        ProcessUtil.Run("dotnet", "restore", workingDirectory: benchmarksRepo);
 
                         Debug.Assert(process == null);
                         process = StartProcess(hostname, benchmarksRepo, job);
@@ -160,7 +161,7 @@ namespace BenchmarkServer
                         Debug.Assert(process != null);
 
                         // TODO: Replace with managed xplat version of kill process tree
-                        Process.Start("taskkill.exe", $"/f /t /pid {process.Id}").WaitForExit();
+                        ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
 
                         process.Dispose();
                         process = null;
@@ -169,12 +170,7 @@ namespace BenchmarkServer
                         {
                             git.Checkout(oldBranch);
                             oldBranch = null;
-
-                            if (newBranch != null)
-                            {
-                                git.DeleteBranch(newBranch);
-                                newBranch = null;
-                            }
+                            git.DeleteBranch(job.BenchmarksBranch, throwOnError: false);
                         }
 
                         _jobs.Remove(job.Id);
@@ -206,7 +202,7 @@ namespace BenchmarkServer
 
             process.OutputDataReceived += (_, e) =>
             {
-                if (e != null || e.Data != null)
+                if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
 

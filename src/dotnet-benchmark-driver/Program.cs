@@ -72,11 +72,16 @@ namespace BenchmarkDriver
             {
                 Log($"Starting scenario {scenario} on benchmark server...");
 
-                var content = JsonConvert.SerializeObject(new ServerJob()
+                var serverJob = new ServerJob()
                 {
                     Scenario = "plaintext",
-                    PullRequest = pullRequest,
-                });
+                };
+                if (pullRequest != 0)
+                {
+                    serverJob.BenchmarksBranch = $"pull/{pullRequest}/head";
+                }
+
+                var content = JsonConvert.SerializeObject(serverJob);
                 LogVerbose($"POST {serverJobsUri} {content}...");
 
                 response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
@@ -95,7 +100,7 @@ namespace BenchmarkDriver
 
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                    var serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                     if (serverJob.State == ServerState.Running)
                     {

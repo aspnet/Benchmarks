@@ -22,11 +22,9 @@ namespace BenchmarkServer
             return Regex.Match(output, @"## (.*)\.\.\.").Groups[1].Value;
         }
 
-        public string Fetch(int pullRequest)
+        public void Fetch(string branch)
         {
-            var newBranch = $"pull/{pullRequest}";
-            RunGitCommand($"fetch origin pull/{pullRequest}/head:{newBranch}");
-            return newBranch;
+            RunGitCommand($"fetch origin {branch}:{branch}");
         }
 
         public void Checkout(string branch)
@@ -39,36 +37,14 @@ namespace BenchmarkServer
             RunGitCommand($"merge {fromBranch}");
         }
 
-        public void DeleteBranch(string branch)
+        public void DeleteBranch(string branch, bool throwOnError = true)
         {
-            RunGitCommand($"branch -D {branch}");
+            RunGitCommand($"branch -D {branch}", throwOnError);
         }
 
-        private string RunGitCommand(string command)
+        private string RunGitCommand(string command, bool throwOnError = true)
         {
-            Log.WriteLine($"git {command}");
-
-            var process = new Process()
-            {
-                StartInfo =
-                {
-                    FileName = "git",
-                    Arguments = command,
-                    WorkingDirectory = _repo,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                },
-            };
-
-            process.Start();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                throw new InvalidOperationException($"Git command {command} returned exit code {process.ExitCode}");
-            }
-
-            return process.StandardOutput.ReadToEnd();
+            return ProcessUtil.Run("git", command, workingDirectory: _repo, throwOnError: throwOnError);
         }
     }
 }
