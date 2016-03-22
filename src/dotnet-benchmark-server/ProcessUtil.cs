@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace BenchmarkServer
 {
@@ -12,7 +10,8 @@ namespace BenchmarkServer
         public static string Run(string filename, string arguments, string workingDirectory = null,
             bool throwOnError = true)
         {
-            Log.WriteLine($"[{workingDirectory ?? Directory.GetCurrentDirectory()}] {filename} {arguments}");
+            var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
+            Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
 
             var process = new Process()
             {
@@ -21,6 +20,7 @@ namespace BenchmarkServer
                     FileName = filename,
                     Arguments = arguments,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                 },
             };
@@ -30,7 +30,21 @@ namespace BenchmarkServer
                 process.StartInfo.WorkingDirectory = workingDirectory;
             }
 
+            var outputBuilder = new StringBuilder();
+            process.OutputDataReceived += (_, e) =>
+            {
+                outputBuilder.AppendLine(e.Data);
+                Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
+            };
+
+            process.ErrorDataReceived += (_, e) =>
+            {
+                Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
+            };
+
             process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
             process.WaitForExit();
 
             if (throwOnError && process.ExitCode != 0)
@@ -38,7 +52,7 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
             }
 
-            return process.StandardOutput.ReadToEnd();
+            return outputBuilder.ToString();
         }
     }
 }
