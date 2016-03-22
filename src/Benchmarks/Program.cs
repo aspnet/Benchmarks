@@ -28,9 +28,8 @@ namespace Benchmarks
 
             var webHostBuilder = new WebHostBuilder()
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
-                .UseCaptureStartupErrors(false)
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultConfiguration(args)
+                .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
