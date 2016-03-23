@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using System;
+using System.Data.SqlClient;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,6 +34,7 @@ namespace BenchmarkDriver
             var pullRequestOption = app.Option("-p|--pullRequest", "ID of pull request to test", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server", "URL of benchmark server", CommandOptionType.SingleValue);
             var clientOption = app.Option("-c|--client", "URL of benchmark client", CommandOptionType.SingleValue);
+            var sqlConnectionStringOption = app.Option("-q|--sql", "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -46,6 +48,7 @@ namespace BenchmarkDriver
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
+                var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 if (string.IsNullOrWhiteSpace(scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
                 {
@@ -54,14 +57,14 @@ namespace BenchmarkDriver
                 }
                 else
                 {
-                    return Run(scenario, pullRequest, new Uri(server), new Uri(client)).Result;
+                    return Run(scenario, pullRequest, new Uri(server), new Uri(client), sqlConnectionString).Result;
                 }
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string scenario, int pullRequest, Uri serverUri, Uri clientUri)
+        private static async Task<int> Run(string scenario, int pullRequest, Uri serverUri, Uri clientUri, string sqlConnectionString)
         {
             var serverJobsUri = new Uri(serverUri, "/jobs");
             Uri serverJobUri = null;
@@ -120,13 +123,20 @@ namespace BenchmarkDriver
                 Uri clientJobUri = null;
                 try
                 {
+                    var threads = 32;
+                    var connections = 256;
+                    var duration = 10;
+                    var pipelineDepth = 16;
+                    var command = $"wrk -c {connections} -t {threads} -d {duration} -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/{scenario} -- {pipelineDepth}";
+
                     Log($"Starting scenario {scenario} on benchmark client...");
+                    Log($"Command: {command}");
 
                     var clientJobsUri = new Uri(clientUri, "/jobs");
 
                     var clientContent = JsonConvert.SerializeObject(new ClientJob()
                     {
-                        Command = $"wrk -c 256 -t 32 -d 10 -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/plaintext -- 16"
+                        Command = command
                     });
 
                     LogVerbose($"POST {clientJobsUri} {clientContent}...");
@@ -181,6 +191,12 @@ namespace BenchmarkDriver
                             }
 
                             Log($"RPS: {rps}");
+
+                            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+                            {
+                                await WriteResultsToSql(sqlConnectionString, scenario, threads, connections, duration, pipelineDepth, rps);
+                            }
+
                             break;
                         }
                         else
@@ -213,6 +229,33 @@ namespace BenchmarkDriver
             }
 
             return 0;
+        }
+
+        private static async Task WriteResultsToSql(string connectionString, string scenario, int threads, int connections, int duration, int? pipelineDepth, double rps)
+        {
+            Log("Writing results to SQL...");
+
+            const string cmdText =
+                "INSERT INTO AspNetBenchmarks " +
+                "(DateTime, Scenario, Threads, Connections, Duration, PipelineDepth, RequestsPerSecond) " +
+                "VALUES " +
+                "(@DateTime, @Scenario, @Threads, @Connections, @Duration, @PipelineDepth, @RequestsPerSecond)";
+
+            using (var connection = new SqlConnection(connectionString))
+            using (var command = new SqlCommand(cmdText, connection))
+            {
+                var p = command.Parameters;
+                p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                p.AddWithValue("@Scenario", scenario);
+                p.AddWithValue("@Threads", threads);
+                p.AddWithValue("@Connections", connections);
+                p.AddWithValue("@Duration", duration);
+                p.AddWithValue("@PipelineDepth", ((object)pipelineDepth) ?? DBNull.Value);
+                p.AddWithValue("@RequestsPerSecond", rps);
+
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+            }
         }
 
         private static void Log(string message)

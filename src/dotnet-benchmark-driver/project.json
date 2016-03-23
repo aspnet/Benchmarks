@@ -17,7 +17,8 @@
     "System.Runtime.Serialization.Primitives": "4.1.0-*",
     "Repository": "1.0.0-*",
     "Benchmarks.ClientJob": "1.0.0-*",
-    "Benchmarks.ServerJob": "1.0.0-*"
+    "Benchmarks.ServerJob": "1.0.0-*",
+    "System.Data.SqlClient": "4.0.0-*"
   },
   "frameworks": {
     "netstandardapp1.5": {
