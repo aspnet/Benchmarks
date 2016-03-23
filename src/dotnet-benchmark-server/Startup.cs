@@ -209,7 +209,7 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
                         job.State = ServerState.Running;
-                        job.Url = $"http://{hostname}:5000";
+                        job.Url = $"http://{hostname}:5000/{job.Scenario.ToString().ToLower()}";
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                     }
                 }
