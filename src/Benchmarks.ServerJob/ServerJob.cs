@@ -10,7 +10,8 @@ namespace Benchmarks.ServerJob
 
         public string BenchmarksBranch { get; set; }
 
-        public string Scenario { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Scenario Scenario { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ServerState State { get; set; }

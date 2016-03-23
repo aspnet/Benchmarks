@@ -11,6 +11,7 @@ using Repository;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -116,23 +117,25 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
+                    var jobLogText = $"'{job.Id}' [Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Pipeline:{job.PipelineDepth}";
+
                     if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
 
-                        Log($"Starting job '{job.Id}' with command '{job.Command}'");
+                        Log($"Starting job '{jobLogText}");
                         job.State = ClientState.Starting;
 
                         Debug.Assert(process == null);
 
-                        Log($"Running job '{job.Id}' with command '{job.Command}'");
+                        Log($"Running job '{jobLogText}");
                         job.State = ClientState.Running;
 
                         process = StartProcess(benchmarksRepo, job);
                     }
                     else if (job.State == ClientState.Deleting)
                     {
-                        Log($"Deleting job '{job.Id}' with command '{job.Command}'");
+                        Log($"Deleting job '{jobLogText}'");
 
                         Debug.Assert(process != null);
 
@@ -151,7 +154,16 @@ namespace BenchmarkClient
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            var command = job.Command.Replace("$BENCHMARKS_REPO", benchmarksRepo);
+            var command = $"wrk -c {job.Connections} -t {job.Threads} -d {job.Duration}";
+            if (job.PipelineDepth > 0)
+            {
+                command += $" -s {benchmarksRepo}/scripts/pipeline.lua";
+            }
+            command += $" {job.ServerBenchmarkUri}";
+            if (job.PipelineDepth > 0)
+            {
+                command += $" -- {job.PipelineDepth}";
+            }
 
             var process = new Process()
             {
@@ -179,6 +191,14 @@ namespace BenchmarkClient
 
             process.Exited += (_, __) =>
             {
+                double rps = -1;
+                var match = Regex.Match(job.Output, @"Requests/sec:\s*([\d.]*)");
+                if (match.Success && match.Groups.Count == 2)
+                {
+                    double.TryParse(match.Groups[1].Value, out rps);
+                }
+                job.RequestsPerSecond = rps;
+
                 job.State = ClientState.Completed;
             };
 

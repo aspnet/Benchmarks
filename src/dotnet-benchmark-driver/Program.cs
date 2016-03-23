@@ -7,10 +7,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BenchmarkDriver
@@ -18,6 +18,13 @@ namespace BenchmarkDriver
     public class Program
     {
         private static readonly HttpClient _httpClient = new HttpClient();
+
+        private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
+            new Dictionary<Scenario, ClientJob>()
+            {
+                { Scenario.Plaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16} },
+                { Scenario.Json, new ClientJob() { Connections = 256, Threads = 32, Duration = 10} },
+            };
 
         public static int Main(string[] args)
         {
@@ -30,15 +37,19 @@ namespace BenchmarkDriver
 
             app.HelpOption("-?|-h|--help");
 
-            var scenarioOption = app.Option("-n|--scenario", "Benchmark scenario to run", CommandOptionType.SingleValue);
-            var pullRequestOption = app.Option("-p|--pullRequest", "ID of pull request to test", CommandOptionType.SingleValue);
-            var serverOption = app.Option("-s|--server", "URL of benchmark server", CommandOptionType.SingleValue);
-            var clientOption = app.Option("-c|--client", "URL of benchmark client", CommandOptionType.SingleValue);
-            var sqlConnectionStringOption = app.Option("-q|--sql", "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
+            var scenarioOption = app.Option("-n|--scenario",
+                "Benchmark scenario to run", CommandOptionType.SingleValue);
+            var pullRequestOption = app.Option("-p|--pullRequest",
+                "ID of pull request to test", CommandOptionType.SingleValue);
+            var serverOption = app.Option("-s|--server",
+                "URL of benchmark server", CommandOptionType.SingleValue);
+            var clientOption = app.Option("-c|--client",
+                "URL of benchmark client", CommandOptionType.SingleValue);
+            var sqlConnectionStringOption = app.Option("-q|--sql",
+                "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
-                var scenario = scenarioOption.Value();
 
                 var pullRequest = 0;
                 if (!string.IsNullOrWhiteSpace(pullRequestOption.Value()))
@@ -50,7 +61,8 @@ namespace BenchmarkDriver
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
-                if (string.IsNullOrWhiteSpace(scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
+                Scenario scenario;
+                if (!Enum.TryParse(scenarioOption.Value(), out scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
                 {
                     app.ShowHelp();
                     return 2;
@@ -64,7 +76,7 @@ namespace BenchmarkDriver
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string scenario, int pullRequest, Uri serverUri, Uri clientUri, string sqlConnectionString)
+        private static async Task<int> Run(Scenario scenario, int pullRequest, Uri serverUri, Uri clientUri, string sqlConnectionString)
         {
             var serverJobsUri = new Uri(serverUri, "/jobs");
             Uri serverJobUri = null;
@@ -77,7 +89,7 @@ namespace BenchmarkDriver
 
                 var serverJob = new ServerJob()
                 {
-                    Scenario = "plaintext",
+                    Scenario = scenario,
                 };
                 if (pullRequest != 0)
                 {
@@ -123,21 +135,12 @@ namespace BenchmarkDriver
                 Uri clientJobUri = null;
                 try
                 {
-                    var threads = 32;
-                    var connections = 256;
-                    var duration = 10;
-                    var pipelineDepth = 16;
-                    var command = $"wrk -c {connections} -t {threads} -d {duration} -s $BENCHMARKS_REPO/scripts/pipeline.lua {serverBenchmarkUri}/{scenario} -- {pipelineDepth}";
-
                     Log($"Starting scenario {scenario} on benchmark client...");
-                    Log($"Command: {command}");
 
                     var clientJobsUri = new Uri(clientUri, "/jobs");
 
-                    var clientContent = JsonConvert.SerializeObject(new ClientJob()
-                    {
-                        Command = command
-                    });
+                    var clientJob = new ClientJob(_clientJobs[scenario]) { ServerBenchmarkUri = serverBenchmarkUri };
+                    var clientContent = JsonConvert.SerializeObject(clientJob);
 
                     LogVerbose($"POST {clientJobsUri} {clientContent}...");
                     response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
@@ -155,7 +158,7 @@ namespace BenchmarkDriver
 
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                        var clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+                        clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
                         if (clientJob.State == ClientState.Running)
                         {
@@ -175,7 +178,7 @@ namespace BenchmarkDriver
 
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                        var clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+                        clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
                         if (clientJob.State == ClientState.Completed)
                         {
@@ -183,18 +186,12 @@ namespace BenchmarkDriver
                             LogVerbose($"Output: {clientJob.Output}");
                             LogVerbose($"Error: {clientJob.Error}");
 
-                            double rps = -1;
-                            var match = Regex.Match(clientJob.Output, @"Requests/sec:\s*([\d.]*)");
-                            if (match.Success && match.Groups.Count == 2)
-                            {
-                                double.TryParse(match.Groups[1].Value, out rps);
-                            }
-
-                            Log($"RPS: {rps}");
+                            Log($"RPS: {clientJob.RequestsPerSecond}");
 
                             if (!string.IsNullOrWhiteSpace(sqlConnectionString))
                             {
-                                await WriteResultsToSql(sqlConnectionString, scenario, threads, connections, duration, pipelineDepth, rps);
+                                await WriteResultsToSql(sqlConnectionString, scenario, clientJob.Threads,
+                                    clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
                             }
 
                             break;
@@ -231,7 +228,7 @@ namespace BenchmarkDriver
             return 0;
         }
 
-        private static async Task WriteResultsToSql(string connectionString, string scenario, int threads, int connections, int duration, int? pipelineDepth, double rps)
+        private static async Task WriteResultsToSql(string connectionString, Scenario scenario, int threads, int connections, int duration, int? pipelineDepth, double rps)
         {
             Log("Writing results to SQL...");
 
@@ -285,7 +282,7 @@ namespace BenchmarkDriver
                 {
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
-                    p.AddWithValue("@Scenario", scenario);
+                    p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
