@@ -10,5 +10,5 @@ k-standard-goals
         .Include("experimental/**/project.json")
         .ToList();
 
-    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration")));
+    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration"), E("KOREBUILD_BUILD_FRAMEWORK")));
   }
