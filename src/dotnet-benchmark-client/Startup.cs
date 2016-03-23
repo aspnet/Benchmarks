@@ -117,25 +117,25 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    var jobLogText = $"'{job.Id}' [Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Pipeline:{job.PipelineDepth}";
+                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Pipeline:{job.PipelineDepth}]";
 
                     if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
 
-                        Log($"Starting job '{jobLogText}");
+                        Log($"Starting job {jobLogText}");
                         job.State = ClientState.Starting;
 
                         Debug.Assert(process == null);
 
-                        Log($"Running job '{jobLogText}");
+                        Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
 
                         process = StartProcess(benchmarksRepo, job);
                     }
                     else if (job.State == ClientState.Deleting)
                     {
-                        Log($"Deleting job '{jobLogText}'");
+                        Log($"Deleting job {jobLogText}'");
 
                         Debug.Assert(process != null);
 
