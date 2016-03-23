@@ -62,7 +62,7 @@ namespace BenchmarkDriver
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 Scenario scenario;
-                if (!Enum.TryParse(scenarioOption.Value(), out scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
+                if (!Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
                 {
                     app.ShowHelp();
                     return 2;
