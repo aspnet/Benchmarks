@@ -235,26 +235,65 @@ namespace BenchmarkDriver
         {
             Log("Writing results to SQL...");
 
-            const string cmdText =
-                "INSERT INTO AspNetBenchmarks " +
-                "(DateTime, Scenario, Threads, Connections, Duration, PipelineDepth, RequestsPerSecond) " +
-                "VALUES " +
-                "(@DateTime, @Scenario, @Threads, @Connections, @Duration, @PipelineDepth, @RequestsPerSecond)";
+            const string createCmd =
+                @"
+                IF OBJECT_ID(N'dbo.AspNetBenchmarks', N'U') IS NULL
+                BEGIN
+                    CREATE TABLE [dbo].[AspNetBenchmarks](
+                        [Id] [int] IDENTITY(1,1) NOT NULL,
+                        [DateTime] [datetimeoffset](7) NOT NULL,
+                        [Scenario] [nvarchar](max) NOT NULL,
+                        [Threads] [int] NOT NULL,
+                        [Connections] [int] NOT NULL,
+                        [Duration] [int] NOT NULL,
+                        [PipelineDepth] [int] NULL,
+                        [RequestsPerSecond] [float] NOT NULL
+                    )
+                END
+                ";
+
+            const string insertCmd =
+                @"
+                INSERT INTO [dbo].[AspNetBenchmarks]
+                           ([DateTime]
+                           ,[Scenario]
+                           ,[Threads]
+                           ,[Connections]
+                           ,[Duration]
+                           ,[PipelineDepth]
+                           ,[RequestsPerSecond])
+                     VALUES
+                           (@DateTime
+                           ,@Scenario
+                           ,@Threads
+                           ,@Connections
+                           ,@Duration
+                           ,@PipelineDepth
+                           ,@RequestsPerSecond)
+                ";
 
             using (var connection = new SqlConnection(connectionString))
-            using (var command = new SqlCommand(cmdText, connection))
             {
-                var p = command.Parameters;
-                p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
-                p.AddWithValue("@Scenario", scenario);
-                p.AddWithValue("@Threads", threads);
-                p.AddWithValue("@Connections", connections);
-                p.AddWithValue("@Duration", duration);
-                p.AddWithValue("@PipelineDepth", ((object)pipelineDepth) ?? DBNull.Value);
-                p.AddWithValue("@RequestsPerSecond", rps);
-
                 await connection.OpenAsync();
-                await command.ExecuteNonQueryAsync();
+
+                using (var command = new SqlCommand(createCmd, connection))
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                using (var command = new SqlCommand(insertCmd, connection))
+                {
+                    var p = command.Parameters;
+                    p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@Scenario", scenario);
+                    p.AddWithValue("@Threads", threads);
+                    p.AddWithValue("@Connections", connections);
+                    p.AddWithValue("@Duration", duration);
+                    p.AddWithValue("@PipelineDepth", ((object)pipelineDepth) ?? DBNull.Value);
+                    p.AddWithValue("@RequestsPerSecond", rps);
+
+                    await command.ExecuteNonQueryAsync();
+                }
             }
         }
 
