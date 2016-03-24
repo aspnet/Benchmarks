@@ -13,7 +13,7 @@ k-standard-goals
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration"), E("KOREBUILD_BUILD_FRAMEWORK")));
   }
 
-#benchmark-tests
+#benchmark-tests .compile
   @{
     Dotnet(String.Format("-v run -- -n plaintext -s {0} -c {1}", E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT")), "src/dotnet-benchmark-driver");
   }
