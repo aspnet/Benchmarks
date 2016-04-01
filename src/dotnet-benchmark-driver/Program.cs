@@ -106,7 +106,7 @@ namespace BenchmarkDriver
 
                 serverJobUri = new Uri(serverUri, response.Headers.Location);
 
-                var serverBenchmarkUri = string.Empty;
+                var serverBenchmarkUri = (string)null;
                 while (true)
                 {
                     LogVerbose($"GET {serverJobUri}...");
@@ -217,12 +217,15 @@ namespace BenchmarkDriver
             }
             finally
             {
-                Log($"Stopping scenario {scenario} on benchmark server...");
+                if (serverJobUri != null)
+                {
+                    Log($"Stopping scenario {scenario} on benchmark server...");
 
-                LogVerbose($"DELETE {serverJobUri}...");
-                response = _httpClient.DeleteAsync(serverJobUri).Result;
-                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                response.EnsureSuccessStatusCode();
+                    LogVerbose($"DELETE {serverJobUri}...");
+                    response = _httpClient.DeleteAsync(serverJobUri).Result;
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
 
             return 0;
