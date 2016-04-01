@@ -84,7 +84,7 @@ namespace BenchmarkClient
             {
                 var host = new WebHostBuilder()
                     .UseDefaultHostingConfiguration()
-                    .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                    .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .Build();
