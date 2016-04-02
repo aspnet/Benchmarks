@@ -79,8 +79,10 @@ namespace Benchmarks
 
             if (Scenarios.Any("Mvc"))
             {
-                var mvcBuilder = services.AddMvcCore()
-                    .AddControllersAsServices(typeof(Startup).GetTypeInfo().Assembly);
+                var mvcBuilder = services
+                    .AddMvcCore()
+                    //.AddApplicationPart(typeof(Startup).GetTypeInfo().Assembly)
+                    .AddControllersAsServices();
 
                 if (Scenarios.MvcApis)
                 {
