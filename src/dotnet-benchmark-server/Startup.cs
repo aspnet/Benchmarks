@@ -149,7 +149,7 @@ namespace BenchmarkServer
                             }
                         }
 
-                        ProcessUtil.Run("dotnet", "restore", workingDirectory: benchmarksRepo);
+                        ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: benchmarksRepo);
 
                         Debug.Assert(process == null);
                         process = StartProcess(hostname, benchmarksRepo, job);
