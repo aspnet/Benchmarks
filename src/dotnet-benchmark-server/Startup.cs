@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Repository;
 using System;
 using System.Diagnostics;
@@ -19,6 +21,14 @@ namespace BenchmarkServer
 {
     public class Startup
     {
+        private const string _benchmarksDir = "Benchmarks";
+        private const string _defaultBenchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
+
+        private const string _kestrelDir = "KestrelHttpServer";
+        private const string _defaultKestrelRepoUrl = "https://github.com/aspnet/KestrelHttpServer.git";
+
+        private const string _defaultBranch = "dev";
+
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
@@ -53,36 +63,22 @@ namespace BenchmarkServer
 
             app.HelpOption("-?|-h|--help");
 
-            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default value is {_defaultUrl}.",
+            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default is '{_defaultUrl}'.",
                 CommandOptionType.SingleValue);
-            var hostnameOption = app.Option("-n|--hostname", $"Hostname for benchmark server.  Default value is {_defaultHostname}.",
-                CommandOptionType.SingleValue);
-            var benchmarksRepoOption = app.Option("-b|--benchmarksRepo", "Local path of benchmarks repo.",
+            var hostnameOption = app.Option("-n|--hostname", $"Hostname for benchmark server.  Default is '{_defaultHostname}'.",
                 CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
-                var url = urlOption.Value();
-                var hostname = hostnameOption.Value();
-                var benchmarksRepo = benchmarksRepoOption.Value();
-
-                if (string.IsNullOrWhiteSpace(benchmarksRepo))
-                {
-                    app.ShowHelp();
-                    return 2;
-                }
-                else
-                {
-                    url = string.IsNullOrWhiteSpace(url) ? _defaultUrl : url;
-                    hostname = string.IsNullOrWhiteSpace(hostname) ? _defaultHostname : hostname;
-                    return Run(url, hostname, benchmarksRepo).Result;
-                }
+                var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
+                var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
+                return Run(url, hostname).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string hostname, string benchmarksRepo)
+        private static async Task<int> Run(string url, string hostname)
         {
             var hostTask = Task.Run(() =>
             {
@@ -97,7 +93,7 @@ namespace BenchmarkServer
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, benchmarksRepo, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -111,12 +107,11 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string hostname, string benchmarksRepo, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
         {
             Process process = null;
 
-            GitCommands git = new GitCommands(benchmarksRepo);
-            string oldBranch = null;
+            string tempDir = null;
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -127,56 +122,118 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
-
-                        Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.State = ServerState.Starting;
-
-                        if (!string.IsNullOrEmpty(job.BenchmarksBranch))
+                        try
                         {
-                            Debug.Assert(oldBranch == null);
+                            Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
+                            job.State = ServerState.Starting;
 
-                            oldBranch = git.GetCurrentBranch();                            
-                            try
-                            {
-                                git.Fetch(job.BenchmarksBranch);
-                                git.Checkout(job.BenchmarksBranch);
-                                git.Merge("dev");
-                            }
-                            catch
-                            {
-                                job.State = ServerState.Failed;
-                                continue;
-                            }
+                            Debug.Assert(tempDir == null);
+                            tempDir = GetTempDir();
+
+                            CloneAndRestore(tempDir, job);
+
+                            Debug.Assert(process == null);
+                            process = StartProcess(hostname, Path.Combine(tempDir, _benchmarksDir), job);
                         }
+                        catch (Exception e)
+                        {
+                            Log.WriteLine($"Error starting job '{job.Id}': {e}");
 
-                        ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: benchmarksRepo);
+                            if (tempDir != null)
+                            {
+                                DeleteDir(tempDir);
+                                tempDir = null;
+                            }
 
-                        Debug.Assert(process == null);
-                        process = StartProcess(hostname, benchmarksRepo, job);
+                            job.State = ServerState.Failed;
+                            continue;
+                        }
                     }
                     else if (job.State == ServerState.Deleting)
                     {
                         Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
-                        Debug.Assert(process != null);
-
-                        // TODO: Replace with managed xplat version of kill process tree
-                        ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
-
-                        process.Dispose();
-                        process = null;
-
-                        if (oldBranch != null)
+                        if (process != null)
                         {
-                            git.Checkout(oldBranch);
-                            oldBranch = null;
-                            git.DeleteBranch(job.BenchmarksBranch, throwOnError: false);
+                            // TODO: Replace with managed xplat version of kill process tree
+                            ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
+                            process.Dispose();
+                            process = null;
+                        }
+
+                        if (tempDir != null)
+                        {
+                            DeleteDir(tempDir);
+                            tempDir = null;
                         }
 
                         _jobs.Remove(job.Id);
                     }
                 }
                 await Task.Delay(100);
+            }
+        }
+
+        private static void CloneAndRestore(string path, ServerJob job)
+        {
+            var benchmarksRepoUrl = string.IsNullOrEmpty(job.BenchmarksRepoUrl) ? _defaultBenchmarksRepoUrl : job.BenchmarksRepoUrl;
+            var benchmarksBranch = string.IsNullOrEmpty(job.BenchmarksBranch) ? _defaultBranch : job.BenchmarksBranch;
+            Git.Clone(path, benchmarksRepoUrl, benchmarksBranch, _benchmarksDir);
+
+            if (!string.IsNullOrEmpty(job.KestrelBranch))
+            {
+                var kestrelRepoUrl = string.IsNullOrEmpty(job.KestrelRepoUrl) ? _defaultKestrelRepoUrl : job.KestrelRepoUrl;
+                var kestrelBranch = string.IsNullOrEmpty(job.KestrelBranch) ? _defaultBranch : job.KestrelBranch;
+                Git.Clone(path, kestrelRepoUrl, kestrelBranch, _kestrelDir);
+
+                ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, _kestrelDir));
+
+                // Configure Benchmarks to use Kestrel from sources rather than packages
+                var benchmarksGlobalJson = Path.Combine(path, _benchmarksDir, "global.json");
+                dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(benchmarksGlobalJson));
+                globalJson["projects"].Add(Path.Combine("..", _kestrelDir, "src"));
+                File.WriteAllText(benchmarksGlobalJson, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
+
+                // Add references to libuv (required until https://github.com/aspnet/KestrelHttpServer/pull/731)
+                var benchmarksProjectJson = Path.Combine(path, _benchmarksDir, "src", "Benchmarks", "project.json");
+                dynamic projectJson = JsonConvert.DeserializeObject(File.ReadAllText(benchmarksProjectJson));
+                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"] = new JObject();
+                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["version"] = "1.0.0-*";
+                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["type"] = "build";
+                File.WriteAllText(benchmarksProjectJson, JsonConvert.SerializeObject(projectJson, Formatting.Indented));
+            }
+
+            ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, _benchmarksDir));
+        }
+
+        private static string GetTempDir()
+        {
+            var temp = Path.GetTempFileName();
+            File.Delete(temp);
+            Directory.CreateDirectory(temp);
+
+            Log.WriteLine($"Created temp dir {temp}");
+
+            return temp;
+        }
+
+        private static void DeleteDir(string path, int retries = 60, int retryDelay = 1000)
+        {
+            // TODO: Handle read-only files.
+
+            for (var i=1; i <= retries; i++)
+            {
+                try
+                {
+                    Log.WriteLine($"Deleting dir {path} (attempt {i})");
+                    Directory.Delete(path, recursive: true);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine(e.ToString());
+                }
+                Thread.Sleep(retryDelay);
             }
         }
 

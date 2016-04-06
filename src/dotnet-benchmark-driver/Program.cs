@@ -39,8 +39,6 @@ namespace BenchmarkDriver
 
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
-            var pullRequestOption = app.Option("-p|--pullRequest",
-                "ID of pull request to test", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server",
                 "URL of benchmark server", CommandOptionType.SingleValue);
             var clientOption = app.Option("-c|--client",
@@ -48,15 +46,19 @@ namespace BenchmarkDriver
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
+            var benchmarksBranchOption = app.Option("--benchmarksBranch",
+                "Benchmarks branch.  Default is 'dev'.", CommandOptionType.SingleValue);
+            var benchmarksRepoUrlOption = app.Option("--benchmarksRepoUrl",
+                "URL of Benchmarks repo.  Default is 'https://github.com/aspnet/benchmarks.git'.", CommandOptionType.SingleValue);
+
+            var kestrelBranchOption = app.Option("--kestrelBranch",
+                "Kestrel branch.  If specified, Benchmarks is configured to use Kestrel from sources rather than packages.",
+                CommandOptionType.SingleValue);
+            var kestrelRepoUrlOption = app.Option("--kestrelRepoUrl",
+                "URL of Kestrel repo.  Default is 'https://github.com/aspnet/KestrelHttpServer.git'.", CommandOptionType.SingleValue);
+
             app.OnExecute(() =>
             {
-
-                var pullRequest = 0;
-                if (!string.IsNullOrWhiteSpace(pullRequestOption.Value()))
-                {
-                    pullRequest = int.Parse(pullRequestOption.Value());
-                }
-
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
@@ -69,15 +71,25 @@ namespace BenchmarkDriver
                 }
                 else
                 {
-                    return Run(scenario, pullRequest, new Uri(server), new Uri(client), sqlConnectionString).Result;
+                    var serverJob = new ServerJob()
+                    {
+                        Scenario = scenario,
+                        BenchmarksBranch = benchmarksBranchOption.Value(),
+                        BenchmarksRepoUrl = benchmarksRepoUrlOption.Value(),
+                        KestrelBranch = kestrelBranchOption.Value(),
+                        KestrelRepoUrl = kestrelRepoUrlOption.Value(),
+                    };
+
+                    return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
                 }
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(Scenario scenario, int pullRequest, Uri serverUri, Uri clientUri, string sqlConnectionString)
+        private static async Task<int> Run(Uri serverUri, Uri clientUri, string sqlConnectionString, ServerJob serverJob)
         {
+            var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
             Uri serverJobUri = null;
             HttpResponseMessage response = null;
@@ -86,15 +98,6 @@ namespace BenchmarkDriver
             try
             {
                 Log($"Starting scenario {scenario} on benchmark server...");
-
-                var serverJob = new ServerJob()
-                {
-                    Scenario = scenario,
-                };
-                if (pullRequest != 0)
-                {
-                    serverJob.BenchmarksBranch = $"pull/{pullRequest}/head";
-                }
 
                 var content = JsonConvert.SerializeObject(serverJob);
                 LogVerbose($"POST {serverJobsUri} {content}...");
