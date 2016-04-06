@@ -53,32 +53,17 @@ namespace BenchmarkClient
             app.HelpOption("-?|-h|--help");
 
             var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default is '{_defaultUrl}'.", CommandOptionType.SingleValue);
-            var benchmarksRepoOption = app.Option("-b|--benchmarksRepo", "Local path of benchmarks repo.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
-                var url = urlOption.Value();
-                var benchmarksRepo = benchmarksRepoOption.Value();
-
-                if (string.IsNullOrWhiteSpace(benchmarksRepo))
-                {
-                    app.ShowHelp();
-                    return 2;
-                }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(url))
-                    {
-                        url = _defaultUrl;
-                    }
-                    return Run(url, benchmarksRepo).Result;
-                }
+                var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
+                return Run(url).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string benchmarksRepo)
+        private static async Task<int> Run(string url)
         {
             var hostTask = Task.Run(() =>
             {
@@ -93,7 +78,7 @@ namespace BenchmarkClient
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(benchmarksRepo, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -107,7 +92,7 @@ namespace BenchmarkClient
             return 0;
         }
 
-        private static async Task ProcessJobs(string benchmarksRepo, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(CancellationToken cancellationToken)
         {
             Process process = null;
 
@@ -131,7 +116,7 @@ namespace BenchmarkClient
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
 
-                        process = StartProcess(benchmarksRepo, job);
+                        process = StartProcess(job);
                     }
                     else if (job.State == ClientState.Deleting)
                     {
@@ -150,14 +135,14 @@ namespace BenchmarkClient
             }
         }
 
-        private static Process StartProcess(string benchmarksRepo, ClientJob job)
+        private static Process StartProcess(ClientJob job)
         {
             var tcs = new TaskCompletionSource<bool>();
 
             var command = $"wrk -c {job.Connections} -t {job.Threads} -d {job.Duration}";
             if (job.PipelineDepth > 0)
             {
-                command += $" -s {benchmarksRepo}/scripts/pipeline.lua";
+                command += $" -s scripts/pipeline.lua";
             }
             command += $" {job.ServerBenchmarkUri}";
             if (job.PipelineDepth > 0)
@@ -170,7 +155,6 @@ namespace BenchmarkClient
                 StartInfo = {
                     FileName = "stdbuf",
                     Arguments = $"-oL {command}",
-                    WorkingDirectory = benchmarksRepo,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 },

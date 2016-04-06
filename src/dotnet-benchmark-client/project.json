@@ -29,5 +29,8 @@
         "portable-net451+win8"
       ]
     }
-  }
+  },
+  "content": [
+    "../../scripts/pipeline.lua"
+  ]
 }
