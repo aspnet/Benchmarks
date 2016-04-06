@@ -212,29 +212,21 @@ namespace BenchmarkServer
             File.Delete(temp);
             Directory.CreateDirectory(temp);
 
-            Log.WriteLine($"Created temp dir {temp}");
+            Log.WriteLine($"Created temp directory '{temp}'");
 
             return temp;
         }
 
-        private static void DeleteDir(string path, int retries = 60, int retryDelay = 1000)
+        private static void DeleteDir(string path)
         {
-            // TODO: Handle read-only files.
+            Log.WriteLine($"Deleting directory '{path}'");
 
-            for (var i=1; i <= retries; i++)
+            var dir = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+            foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
             {
-                try
-                {
-                    Log.WriteLine($"Deleting dir {path} (attempt {i})");
-                    Directory.Delete(path, recursive: true);
-                    break;
-                }
-                catch (Exception e)
-                {
-                    Log.WriteLine(e.ToString());
-                }
-                Thread.Sleep(retryDelay);
+                info.Attributes = FileAttributes.Normal;
             }
+            dir.Delete(recursive: true);
         }
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
