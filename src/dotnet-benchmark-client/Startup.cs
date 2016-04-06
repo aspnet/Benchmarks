@@ -10,7 +10,9 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Repository;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -155,6 +157,7 @@ namespace BenchmarkClient
                 StartInfo = {
                     FileName = "stdbuf",
                     Arguments = $"-oL {command}",
+                    WorkingDirectory = Path.GetDirectoryName(typeof(Startup).GetTypeInfo().Assembly.Location),
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 },
