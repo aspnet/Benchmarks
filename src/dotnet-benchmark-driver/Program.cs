@@ -48,13 +48,13 @@ namespace BenchmarkDriver
 
             var benchmarksBranchOption = app.Option("--benchmarksBranch",
                 "Benchmarks branch.  Default is 'dev'.", CommandOptionType.SingleValue);
-            var benchmarksRepoUrlOption = app.Option("--benchmarksRepoUrl",
+            var benchmarksRepoOption = app.Option("--benchmarksRepo",
                 "URL of Benchmarks repo.  Default is 'https://github.com/aspnet/benchmarks.git'.", CommandOptionType.SingleValue);
 
             var kestrelBranchOption = app.Option("--kestrelBranch",
                 "Kestrel branch.  If specified, Benchmarks is configured to use Kestrel from sources rather than packages.",
                 CommandOptionType.SingleValue);
-            var kestrelRepoUrlOption = app.Option("--kestrelRepoUrl",
+            var kestrelRepoOption = app.Option("--kestrelRepo",
                 "URL of Kestrel repo.  Default is 'https://github.com/aspnet/KestrelHttpServer.git'.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
@@ -75,9 +75,9 @@ namespace BenchmarkDriver
                     {
                         Scenario = scenario,
                         BenchmarksBranch = benchmarksBranchOption.Value(),
-                        BenchmarksRepoUrl = benchmarksRepoUrlOption.Value(),
+                        BenchmarksRepo = benchmarksRepoOption.Value(),
                         KestrelBranch = kestrelBranchOption.Value(),
-                        KestrelRepoUrl = kestrelRepoUrlOption.Value(),
+                        KestrelRepo = kestrelRepoOption.Value(),
                     };
 
                     return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;

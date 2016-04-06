@@ -176,13 +176,13 @@ namespace BenchmarkServer
 
         private static void CloneAndRestore(string path, ServerJob job)
         {
-            var benchmarksRepoUrl = string.IsNullOrEmpty(job.BenchmarksRepoUrl) ? _defaultBenchmarksRepoUrl : job.BenchmarksRepoUrl;
+            var benchmarksRepoUrl = string.IsNullOrEmpty(job.BenchmarksRepo) ? _defaultBenchmarksRepoUrl : job.BenchmarksRepo;
             var benchmarksBranch = string.IsNullOrEmpty(job.BenchmarksBranch) ? _defaultBranch : job.BenchmarksBranch;
             Git.Clone(path, benchmarksRepoUrl, benchmarksBranch, _benchmarksDir);
 
             if (!string.IsNullOrEmpty(job.KestrelBranch))
             {
-                var kestrelRepoUrl = string.IsNullOrEmpty(job.KestrelRepoUrl) ? _defaultKestrelRepoUrl : job.KestrelRepoUrl;
+                var kestrelRepoUrl = string.IsNullOrEmpty(job.KestrelRepo) ? _defaultKestrelRepoUrl : job.KestrelRepo;
                 var kestrelBranch = string.IsNullOrEmpty(job.KestrelBranch) ? _defaultBranch : job.KestrelBranch;
                 Git.Clone(path, kestrelRepoUrl, kestrelBranch, _kestrelDir);
 
