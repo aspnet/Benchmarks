@@ -40,5 +40,10 @@
     "wwwroot",
     "node_modules",
     "bower_components"
-  ]
+  ],
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  }
 }
