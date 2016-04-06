@@ -52,7 +52,7 @@ namespace BenchmarkClient
 
             app.HelpOption("-?|-h|--help");
 
-            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default value is {_defaultUrl}.", CommandOptionType.SingleValue);
+            var urlOption = app.Option("-u|--url", $"URL for Rest APIs.  Default is '{_defaultUrl}'.", CommandOptionType.SingleValue);
             var benchmarksRepoOption = app.Option("-b|--benchmarksRepo", "Local path of benchmarks repo.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
