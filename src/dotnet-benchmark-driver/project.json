@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Driver for ASP.NET Core Benchmarks",
+  "description": "Schedules benchmark jobs on both the server and client.",
   "repository": {
     "type": "git",
     "url": "git://github.com/AspNet/Benchmarks"

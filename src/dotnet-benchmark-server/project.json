@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "REST APIs to run ASP.NET benchmark server",
+  "description": "REST APIs to run ASP.NET benchmark server.",
   "repository": {
     "type": "git",
     "url": "git://github.com/AspNet/Benchmarks"

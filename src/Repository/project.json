@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Repository",
+  "description": "Repository to hold objects which can be identified by an integer.",
   "repository": {
     "type": "git",
     "url": "git://github.com/AspNet/Benchmarks"

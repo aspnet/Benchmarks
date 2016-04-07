@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Benchmarks.ClientJob",
+  "description": "Class to transfer data to/from the benchmark client.",
   "repository": {
     "type": "git",
     "url": "git://github.com/AspNet/Benchmarks"
