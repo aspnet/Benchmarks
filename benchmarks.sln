@@ -23,11 +23,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PureNativeHttpServer", "exp
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks", "src\Benchmarks\Benchmarks.xproj", "{EC62ACF4-8B19-41C2-B699-D75CAB7763DF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-benchmark-driver", "src\dotnet-benchmark-driver\dotnet-benchmark-driver.xproj", "{81C74B7C-B9E3-4F01-9C39-6894E81B193A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksDriver", "src\BenchmarksDriver\BenchmarksDriver.xproj", "{81C74B7C-B9E3-4F01-9C39-6894E81B193A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-benchmark-server", "src\dotnet-benchmark-server\dotnet-benchmark-server.xproj", "{73F095D2-D0BD-4D03-BC17-D7A5EF0C0191}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksServer", "src\BenchmarksServer\BenchmarksServer.xproj", "{73F095D2-D0BD-4D03-BC17-D7A5EF0C0191}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-benchmark-client", "src\dotnet-benchmark-client\dotnet-benchmark-client.xproj", "{75A5E20D-37CD-49DA-BD74-1F730C353517}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksClient", "src\BenchmarksClient\BenchmarksClient.xproj", "{75A5E20D-37CD-49DA-BD74-1F730C353517}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Repository", "src\Repository\Repository.xproj", "{716F7F93-BC1D-4B2C-BF1C-20051CAF7BB7}"
 EndProject

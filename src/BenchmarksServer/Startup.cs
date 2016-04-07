@@ -56,7 +56,7 @@ namespace BenchmarkServer
         {
             var app = new CommandLineApplication()
             {
-                Name = "benchmark-server",
+                Name = "BenchmarksServer",
                 FullName = "ASP.NET Benchmark Server",
                 Description = "REST APIs to run ASP.NET benchmark server"
             };

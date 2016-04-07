@@ -47,7 +47,7 @@ namespace BenchmarkClient
         {
             var app = new CommandLineApplication()
             {
-                Name = "benchmark-client",
+                Name = "BenchmarksClient",
                 FullName = "ASP.NET Benchmark Client",
                 Description = "REST APIs to run ASP.NET benchmark client"
             };

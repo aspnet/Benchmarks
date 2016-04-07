@@ -30,7 +30,7 @@ namespace BenchmarkDriver
         {
             var app = new CommandLineApplication()
             {
-                Name = "benchmark-driver",
+                Name = "BenchmarksDriver",
                 FullName = "ASP.NET Benchmark Driver",
                 Description = "Driver for ASP.NET Benchmarks"
             };
