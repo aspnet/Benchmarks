@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,13 +22,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private const string _benchmarksDir = "Benchmarks";
-        private const string _defaultBenchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
-
-        private const string _kestrelDir = "KestrelHttpServer";
-        private const string _defaultKestrelRepoUrl = "https://github.com/aspnet/KestrelHttpServer.git";
-
-        private const string _defaultBranch = "dev";
+        private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
@@ -130,10 +125,10 @@ namespace BenchmarkServer
                             Debug.Assert(tempDir == null);
                             tempDir = GetTempDir();
 
-                            CloneAndRestore(tempDir, job);
+                            var benchmarksDir = CloneAndRestore(tempDir, job);
 
                             Debug.Assert(process == null);
-                            process = StartProcess(hostname, Path.Combine(tempDir, _benchmarksDir), job);
+                            process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job);
                         }
                         catch (Exception e)
                         {
@@ -174,36 +169,46 @@ namespace BenchmarkServer
             }
         }
 
-        private static void CloneAndRestore(string path, ServerJob job)
+        private static string CloneAndRestore(string path, ServerJob job)
         {
-            var benchmarksRepoUrl = string.IsNullOrEmpty(job.BenchmarksRepo) ? _defaultBenchmarksRepoUrl : job.BenchmarksRepo;
-            var benchmarksBranch = string.IsNullOrEmpty(job.BenchmarksBranch) ? _defaultBranch : job.BenchmarksBranch;
-            Git.Clone(path, benchmarksRepoUrl, benchmarksBranch, _benchmarksDir);
+            var benchmarksDir = Git.Clone(path, _benchmarksRepoUrl);
 
-            if (!string.IsNullOrEmpty(job.KestrelBranch))
+            // Clone
+            var dirs = new List<string>();
+            foreach (var source in job.Sources)
             {
-                var kestrelRepoUrl = string.IsNullOrEmpty(job.KestrelRepo) ? _defaultKestrelRepoUrl : job.KestrelRepo;
-                var kestrelBranch = string.IsNullOrEmpty(job.KestrelBranch) ? _defaultBranch : job.KestrelBranch;
-                Git.Clone(path, kestrelRepoUrl, kestrelBranch, _kestrelDir);
+                var dir = Git.Clone(path, source.Repository, source.Branch);
+                dirs.Add(dir);
+            }
 
-                ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, _kestrelDir));
+            // Modify benchmarks\src\global.json to reference source dirs
+            var globalJsonPath = Path.Combine(path, benchmarksDir, "global.json");
+            dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(globalJsonPath));
+            foreach (var dir in dirs)
+            {
+                globalJson["projects"].Add(Path.Combine("..", dir, "src"));
+            }
+            File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
 
-                // Configure Benchmarks to use Kestrel from sources rather than packages
-                var benchmarksGlobalJson = Path.Combine(path, _benchmarksDir, "global.json");
-                dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(benchmarksGlobalJson));
-                globalJson["projects"].Add(Path.Combine("..", _kestrelDir, "src"));
-                File.WriteAllText(benchmarksGlobalJson, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
-
-                // Add references to libuv (required until https://github.com/aspnet/KestrelHttpServer/pull/731)
-                var benchmarksProjectJson = Path.Combine(path, _benchmarksDir, "src", "Benchmarks", "project.json");
-                dynamic projectJson = JsonConvert.DeserializeObject(File.ReadAllText(benchmarksProjectJson));
+            // If any dir named "KestrelHttpServer", add libuv reference to Benchmarks
+            // (required until https://github.com/aspnet/KestrelHttpServer/pull/731)
+            if (dirs.Any(dir => dir.Equals("KestrelHttpServer", StringComparison.OrdinalIgnoreCase)))
+            {
+                var projectJsonPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks", "project.json");
+                dynamic projectJson = JsonConvert.DeserializeObject(File.ReadAllText(projectJsonPath));
                 projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"] = new JObject();
                 projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["version"] = "1.0.0-*";
                 projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["type"] = "build";
-                File.WriteAllText(benchmarksProjectJson, JsonConvert.SerializeObject(projectJson, Formatting.Indented));
+                File.WriteAllText(projectJsonPath, JsonConvert.SerializeObject(projectJson, Formatting.Indented));
             }
 
-            ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, _benchmarksDir));
+            // Restore in each dir (including benchmarks)
+            foreach (var dir in Enumerable.Append(dirs, benchmarksDir))
+            {
+                ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, dir));
+            }
+
+            return benchmarksDir;
         }
 
         private static string GetTempDir()

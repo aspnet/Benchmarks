@@ -10,7 +10,7 @@ namespace BenchmarkServer
 {
     public static class ProcessUtil
     {
-        public static string Run(string filename, string arguments, string workingDirectory = null,
+        public static ProcessResult Run(string filename, string arguments, string workingDirectory = null,
             bool throwOnError = true)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
@@ -40,8 +40,10 @@ namespace BenchmarkServer
                 Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
             };
 
+            var errorBuilder = new StringBuilder();
             process.ErrorDataReceived += (_, e) =>
             {
+                errorBuilder.AppendLine(e.Data);
                 Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
             };
 
@@ -55,7 +57,7 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
             }
 
-            return outputBuilder.ToString();
+            return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
         }
     }
 }

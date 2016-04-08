@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,8 @@ namespace BenchmarkServer.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] ServerJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ServerState.Waiting)
+            if (job == null || job.Id != 0 || job.State != ServerState.Waiting ||
+                job.Sources.Any(source => string.IsNullOrEmpty(source.Repository)))
             {
                 return BadRequest();
             }
