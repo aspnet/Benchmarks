@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0-*",
+  "description": "Repository to hold objects which can be identified by an integer.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AspNet/Benchmarks"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+  },
+  "frameworks": {
+    "netstandardapp1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-*"
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
+    }
+  }
+}

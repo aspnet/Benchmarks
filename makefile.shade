@@ -12,3 +12,13 @@ k-standard-goals
 
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration"), E("KOREBUILD_BUILD_FRAMEWORK")));
   }
+
+#benchmark-tests .compile
+  @{
+    var sql = string.IsNullOrEmpty(E("BENCHMARK_SQL")) ? string.Empty : "-q " + E("BENCHMARK_SQL");
+    var scenarios = new string[] { "plaintext", "json" };
+    foreach (var scenario in scenarios) {
+      Dotnet(String.Format("-v run -- -n {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
+        "src/BenchmarksDriver");
+    }
+  }
