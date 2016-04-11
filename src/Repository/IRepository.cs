@@ -12,6 +12,5 @@ namespace Repository
         T Find(int id);
         T Remove(int id);
         void Update(T item);
-
     }
 }

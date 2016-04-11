@@ -46,16 +46,10 @@ namespace BenchmarkDriver
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
-            var benchmarksBranchOption = app.Option("--benchmarksBranch",
-                "Benchmarks branch.  Default is 'dev'.", CommandOptionType.SingleValue);
-            var benchmarksRepoOption = app.Option("--benchmarksRepo",
-                "URL of Benchmarks repo.  Default is 'https://github.com/aspnet/benchmarks.git'.", CommandOptionType.SingleValue);
-
-            var kestrelBranchOption = app.Option("--kestrelBranch",
-                "Kestrel branch.  If specified, Benchmarks is configured to use Kestrel from sources rather than packages.",
-                CommandOptionType.SingleValue);
-            var kestrelRepoOption = app.Option("--kestrelRepo",
-                "URL of Kestrel repo.  Default is 'https://github.com/aspnet/KestrelHttpServer.git'.", CommandOptionType.SingleValue);
+            var sourceOption = app.Option("-o|--source",
+                "Source dependency. Format is 'repo@branchOrCommit'. " +
+                "Repo can be a full URL, or a short name under https://github.com/aspnet.",
+                CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
             {
@@ -74,11 +68,23 @@ namespace BenchmarkDriver
                     var serverJob = new ServerJob()
                     {
                         Scenario = scenario,
-                        BenchmarksBranch = benchmarksBranchOption.Value(),
-                        BenchmarksRepo = benchmarksRepoOption.Value(),
-                        KestrelBranch = kestrelBranchOption.Value(),
-                        KestrelRepo = kestrelRepoOption.Value(),
                     };
+
+                    var sources = new List<Source>();
+                    foreach (var source in sourceOption.Values)
+                    {
+                        var split = source.IndexOf('@');
+                        var repository = (split == -1) ? source : source.Substring(0, split);
+                        var branch = (split == -1) ? null : source.Substring(split + 1);
+
+                        if (!repository.Contains(":"))
+                        {
+                            repository = $"https://github.com/aspnet/{repository}.git";
+                        }
+
+                        sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                    }
+                    serverJob.Sources = sources;
 
                     return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
                 }
