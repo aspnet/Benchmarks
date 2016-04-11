@@ -47,7 +47,7 @@ namespace BenchmarkDriver
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
             var sourceOption = app.Option("-o|--source",
-                "Source dependency. Format is 'repo:branch'. " +
+                "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
 
