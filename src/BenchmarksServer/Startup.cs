@@ -177,7 +177,11 @@ namespace BenchmarkServer
             var dirs = new List<string>();
             foreach (var source in job.Sources)
             {
-                var dir = Git.Clone(path, source.Repository, source.Branch);
+                var dir = Git.Clone(path, source.Repository);
+                if (!string.IsNullOrEmpty(source.BranchOrCommit))
+                {
+                    Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
+                }
                 dirs.Add(dir);
             }
 

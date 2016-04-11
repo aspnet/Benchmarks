@@ -5,7 +5,7 @@ namespace Benchmarks.ServerJob
 {
     public class Source
     {
-        public string Branch { get; set; }
+        public string BranchOrCommit { get; set; }
         public string Repository { get; set; }
     }
 }

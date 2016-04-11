@@ -25,6 +25,11 @@ namespace BenchmarkServer
             }
         }
 
+        public static void Checkout(string path, string branchOrCommit)
+        {
+            RunGitCommand(path, $"checkout {branchOrCommit}");
+        }
+
         private static ProcessResult RunGitCommand(string path, string command, bool throwOnError = true)
         {
             return ProcessUtil.Run("git", command, workingDirectory: path, throwOnError: throwOnError);

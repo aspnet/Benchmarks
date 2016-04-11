@@ -73,16 +73,16 @@ namespace BenchmarkDriver
                     var sources = new List<Source>();
                     foreach (var source in sourceOption.Values)
                     {
-                        var split = source.LastIndexOf(':');
-                        var repository = source.Substring(0, split);
-                        var branch = source.Substring(split + 1);
+                        var split = source.IndexOf('@');
+                        var repository = (split == -1) ? source : source.Substring(0, split);
+                        var branch = (split == -1) ? null : source.Substring(split + 1);
 
                         if (!repository.Contains(":"))
                         {
                             repository = $"https://github.com/aspnet/{repository}.git";
                         }
 
-                        sources.Add(new Source() { Branch = branch, Repository = repository });
+                        sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                     }
                     serverJob.Sources = sources;
 
