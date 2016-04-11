@@ -1,5 +1,4 @@
 {
-  "webroot": "wwwroot",
   "version": "1.0.0-*",
   "compilationOptions": {
     "emitEntryPoint": true,
@@ -28,18 +27,10 @@
   "tools": {
     "dotnet-ef": "1.0.0-*"
   },
-  "content": [ "appsettings.json" ],
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
-  ],
-  "exclude": [
+  "content": [
+    "appsettings.json",
     "wwwroot",
-    "node_modules",
-    "bower_components"
+    "Views"
   ],
   "runtimeOptions": {
     "configProperties": {
