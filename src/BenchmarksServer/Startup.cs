@@ -190,18 +190,6 @@ namespace BenchmarkServer
             }
             File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
 
-            // If any dir named "KestrelHttpServer", add libuv reference to Benchmarks
-            // (required until https://github.com/aspnet/KestrelHttpServer/pull/731)
-            if (dirs.Any(dir => dir.Equals("KestrelHttpServer", StringComparison.OrdinalIgnoreCase)))
-            {
-                var projectJsonPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks", "project.json");
-                dynamic projectJson = JsonConvert.DeserializeObject(File.ReadAllText(projectJsonPath));
-                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"] = new JObject();
-                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["version"] = "1.0.0-*";
-                projectJson["dependencies"]["Microsoft.AspNetCore.Internal.libuv-Windows"]["type"] = "build";
-                File.WriteAllText(projectJsonPath, JsonConvert.SerializeObject(projectJson, Formatting.Indented));
-            }
-
             // Restore in each dir (including benchmarks)
             foreach (var dir in Enumerable.Append(dirs, benchmarksDir))
             {
