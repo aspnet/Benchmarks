@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Benchmarks.Configuration
 {
