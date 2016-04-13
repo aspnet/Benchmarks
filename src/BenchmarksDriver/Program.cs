@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -141,87 +142,16 @@ namespace BenchmarkDriver
                     }
                 }
 
-                Uri clientJobUri = null;
-                try
+                Log("Warmup");
+                await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+
+                Log("Benchmark");
+                var clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+
+                if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    Log($"Starting scenario {scenario} on benchmark client...");
-
-                    var clientJobsUri = new Uri(clientUri, "/jobs");
-
-                    var clientJob = new ClientJob(_clientJobs[scenario]) { ServerBenchmarkUri = serverBenchmarkUri };
-                    var clientContent = JsonConvert.SerializeObject(clientJob);
-
-                    LogVerbose($"POST {clientJobsUri} {clientContent}...");
-                    response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
-                    responseContent = await response.Content.ReadAsStringAsync();
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                    response.EnsureSuccessStatusCode();
-
-                    clientJobUri = new Uri(clientUri, response.Headers.Location);
-
-                    while (true)
-                    {
-                        LogVerbose($"GET {clientJobUri}...");
-                        response = await _httpClient.GetAsync(clientJobUri);
-                        responseContent = await response.Content.ReadAsStringAsync();
-
-                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                        clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
-
-                        if (clientJob.State == ClientState.Running)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(1000);
-                        }
-                    }
-
-                    while (true)
-                    {
-                        LogVerbose($"GET {clientJobUri}...");
-                        response = await _httpClient.GetAsync(clientJobUri);
-                        responseContent = await response.Content.ReadAsStringAsync();
-
-                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                        clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
-
-                        if (clientJob.State == ClientState.Completed)
-                        {
-                            Log($"Scenario {scenario} completed on benchmark client");
-                            LogVerbose($"Output: {clientJob.Output}");
-                            LogVerbose($"Error: {clientJob.Error}");
-
-                            Log($"RPS: {clientJob.RequestsPerSecond}");
-
-                            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
-                            {
-                                await WriteResultsToSql(sqlConnectionString, scenario, clientJob.Threads,
-                                    clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
-                            }
-
-                            break;
-                        }
-                        else
-                        {
-                            await Task.Delay(1000);
-                        }
-                    }
-                }
-                finally
-                {
-                    if (clientJobUri != null)
-                    {
-                        Log($"Stopping scenario {scenario} on benchmark client...");
-
-                        LogVerbose($"DELETE {clientJobUri}...");
-                        response = _httpClient.DeleteAsync(clientJobUri).Result;
-                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                        response.EnsureSuccessStatusCode();
-                    }
+                    await WriteResultsToSql(sqlConnectionString, scenario, clientJob.Threads,
+                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
                 }
             }
             finally
@@ -238,6 +168,86 @@ namespace BenchmarkDriver
             }
 
             return 0;
+        }
+
+        private static async Task<ClientJob> RunClientJob(Scenario scenario, Uri clientUri, string serverBenchmarkUri)
+        {
+            var clientJob = new ClientJob(_clientJobs[scenario]) { ServerBenchmarkUri = serverBenchmarkUri };
+
+            Uri clientJobUri = null;
+            try
+            {
+                Log($"Starting scenario {scenario} on benchmark client...");
+
+                var clientJobsUri = new Uri(clientUri, "/jobs");
+                var clientContent = JsonConvert.SerializeObject(clientJob);
+
+                LogVerbose($"POST {clientJobsUri} {clientContent}...");
+                var response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
+                var responseContent = await response.Content.ReadAsStringAsync();
+                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                response.EnsureSuccessStatusCode();
+
+                clientJobUri = new Uri(clientUri, response.Headers.Location);
+
+                while (true)
+                {
+                    LogVerbose($"GET {clientJobUri}...");
+                    response = await _httpClient.GetAsync(clientJobUri);
+                    responseContent = await response.Content.ReadAsStringAsync();
+
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                    clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+
+                    if (clientJob.State == ClientState.Running)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
+
+                while (true)
+                {
+                    LogVerbose($"GET {clientJobUri}...");
+                    response = await _httpClient.GetAsync(clientJobUri);
+                    responseContent = await response.Content.ReadAsStringAsync();
+
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                    clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+
+                    if (clientJob.State == ClientState.Completed)
+                    {
+                        Log($"Scenario {scenario} completed on benchmark client");
+                        LogVerbose($"Output: {clientJob.Output}");
+                        LogVerbose($"Error: {clientJob.Error}");
+                        Log($"RPS: {clientJob.RequestsPerSecond}");
+                        break;
+                    }
+                    else
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
+            }
+            finally
+            {
+                if (clientJobUri != null)
+                {
+                    Log($"Stopping scenario {scenario} on benchmark client...");
+
+                    LogVerbose($"DELETE {clientJobUri}...");
+                    var response = _httpClient.DeleteAsync(clientJobUri).Result;
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    response.EnsureSuccessStatusCode();
+                }
+            }
+
+            return clientJob;
         }
 
         private static async Task WriteResultsToSql(string connectionString, Scenario scenario, int threads, int connections, int duration, int? pipelineDepth, double rps)
