@@ -148,8 +148,7 @@ namespace BenchmarkDriver
                 Log("Benchmark");
                 var clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
 
-                Debug.Assert(clientJob.State == ClientState.Completed);
-                if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+                if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
                     await WriteResultsToSql(sqlConnectionString, scenario, clientJob.Threads,
                         clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
