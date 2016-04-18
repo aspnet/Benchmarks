@@ -27,7 +27,8 @@ namespace Benchmarks
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
 
             var webHostBuilder = new WebHostBuilder()
-                .UseKestrel()
+                // Use the name rather than UseKestrel so we can override it from the command line
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseDefaultHostingConfiguration(args)
                 .UseStartup<Startup>()
