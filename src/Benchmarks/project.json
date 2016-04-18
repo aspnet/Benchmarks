@@ -25,7 +25,13 @@
     "net451": { }
   },
   "tools": {
-    "dotnet-ef": "1.0.0-*"
+    "dotnet-ef": {
+      "version": "1.0.0-*",
+      "imports": [
+        "dnxcore50",
+        "portable-net452+win81"
+      ]
+    }
   },
   "content": [
     "appsettings.json",
