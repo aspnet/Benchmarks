@@ -84,7 +84,7 @@ namespace Benchmarks
                     //.AddApplicationPart(typeof(Startup).GetTypeInfo().Assembly)
                     .AddControllersAsServices();
 
-                if (Scenarios.MvcApis)
+                if (Scenarios.MvcJson)
                 {
                     mvcBuilder.AddJsonFormatters();
                 }
