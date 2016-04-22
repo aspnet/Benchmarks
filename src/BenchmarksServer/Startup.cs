@@ -177,13 +177,15 @@ namespace BenchmarkServer
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.Sources.Reverse(), SourceRepoComparer.Instance);
+            var repos = new HashSet<Source>(job.Sources, SourceRepoComparer.Instance);
+
+            // This will no-op if 'benchmarks' was specified by the user.
             repos.Add(new Source() { Repository = _benchmarksRepoUrl });
 
             // Clone
             string benchmarksDir = null;
             var dirs = new List<string>();
-            foreach (var source in job.Sources)
+            foreach (var source in repos)
             {
                 var dir = Git.Clone(path, source.Repository);
                 if (string.Equals(source.Repository, _benchmarksRepoUrl, StringComparison.OrdinalIgnoreCase))
