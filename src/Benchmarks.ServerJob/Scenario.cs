@@ -6,6 +6,8 @@ namespace Benchmarks.ServerJob
     public enum Scenario
     {
         Plaintext,
-        Json
+        Json,
+        MvcPlaintext,
+        MvcJson,
     }
 }

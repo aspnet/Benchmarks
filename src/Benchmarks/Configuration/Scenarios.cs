@@ -53,8 +53,11 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/fortunes/dapper")]
         public bool DbFortunesDapper { get; set; }
 
-        [ScenarioPath("/mvc/plaintext", "/mvc/json")]
-        public bool MvcApis { get; set; }
+        [ScenarioPath("/mvc/plaintext")]
+        public bool MvcPlaintext { get; set; }
+
+        [ScenarioPath("/mvc/json")]
+        public bool MvcJson { get; set; }
 
         [ScenarioPath("/mvc/view")]
         public bool MvcViews { get; set; }
