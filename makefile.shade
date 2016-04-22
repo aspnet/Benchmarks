@@ -16,7 +16,7 @@ k-standard-goals
 #benchmark-tests .compile
   @{
     var sql = string.IsNullOrEmpty(E("BENCHMARK_SQL")) ? string.Empty : "-q " + E("BENCHMARK_SQL");
-    var scenarios = new string[] { "plaintext", "json" };
+    var scenarios = new string[] { "plaintext", "json", "mvcplaintext", "mvcjson" };
     foreach (var scenario in scenarios) {
       Dotnet(String.Format("-v run -- -n {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
         "src/BenchmarksDriver");
