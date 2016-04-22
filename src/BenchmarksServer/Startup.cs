@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
@@ -171,19 +172,33 @@ namespace BenchmarkServer
 
         private static string CloneAndRestore(string path, ServerJob job)
         {
-            var benchmarksDir = Git.Clone(path, _benchmarksRepoUrl);
+            // It's possible that the user specified a custom branch/commit for the benchmarks repo,
+            // so we need to add that to the set of sources to restore if it's not already there.
+            //
+            // Note that this is also going to de-dupe the repos if the same one was specified twice at
+            // the command-line (last first to support overrides).
+            var repos = new HashSet<Source>(job.Sources.Reverse(), SourceRepoComparer.Instance);
+            repos.Add(new Source() { Repository = _benchmarksRepoUrl });
 
             // Clone
+            string benchmarksDir = null;
             var dirs = new List<string>();
             foreach (var source in job.Sources)
             {
                 var dir = Git.Clone(path, source.Repository);
+                if (string.Equals(source.Repository, _benchmarksRepoUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    benchmarksDir = dir;
+                }
+
                 if (!string.IsNullOrEmpty(source.BranchOrCommit))
                 {
                     Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
                 }
                 dirs.Add(dir);
             }
+
+            Debug.Assert(benchmarksDir != null);
 
             // Modify benchmarks\src\global.json to reference source dirs
             var globalJsonPath = Path.Combine(path, benchmarksDir, "global.json");
@@ -194,8 +209,8 @@ namespace BenchmarkServer
             }
             File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
 
-            // Restore in each dir (including benchmarks)
-            foreach (var dir in Enumerable.Append(dirs, benchmarksDir))
+            // Restore in each dir
+            foreach (var dir in dirs)
             {
                 ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, dir));
             }
@@ -255,7 +270,7 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
                         job.State = ServerState.Running;
-                        job.Url = $"http://{hostname}:5000/{job.Scenario.ToString().ToLower()}";
+                        job.Url = ComputeServerUrl(hostname, job.Scenario);
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                     }
                 }
@@ -265,6 +280,36 @@ namespace BenchmarkServer
             process.BeginOutputReadLine();
 
             return process;
+        }
+
+        private static string ComputeServerUrl(string hostname, Scenario scenario)
+        {
+            var scenarioName = scenario.ToString();
+            var path = scenarioName;
+
+            var field = scenario.GetType().GetTypeInfo().GetField(scenarioName);
+            var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
+            if (pathAttribute != null)
+            {
+                path = pathAttribute.Paths.First().Trim('/');
+            }
+
+            return $"http://{hostname}:5000/{path.ToLower()}";
+        }
+
+        private class SourceRepoComparer : IEqualityComparer<Source>
+        {
+            public static readonly SourceRepoComparer Instance = new SourceRepoComparer();
+
+            public bool Equals(Source x, Source y)
+            {
+                return string.Equals(x.Repository, y.Repository);
+            }
+
+            public int GetHashCode(Source obj)
+            {
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Repository);
+            }
         }
     }
 }
