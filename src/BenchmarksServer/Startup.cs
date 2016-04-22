@@ -24,6 +24,7 @@ namespace BenchmarkServer
     public class Startup
     {
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
+        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
@@ -180,7 +181,7 @@ namespace BenchmarkServer
             var repos = new HashSet<Source>(job.Sources, SourceRepoComparer.Instance);
 
             // This will no-op if 'benchmarks' was specified by the user.
-            repos.Add(new Source() { Repository = _benchmarksRepoUrl });
+            repos.Add(_benchmarksSource);
 
             // Clone
             string benchmarksDir = null;
@@ -188,7 +189,7 @@ namespace BenchmarkServer
             foreach (var source in repos)
             {
                 var dir = Git.Clone(path, source.Repository);
-                if (string.Equals(source.Repository, _benchmarksRepoUrl, StringComparison.OrdinalIgnoreCase))
+                if (SourceRepoComparer.Instance.Equals(source, _benchmarksSource))
                 {
                     benchmarksDir = dir;
                 }
@@ -207,6 +208,12 @@ namespace BenchmarkServer
             dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(globalJsonPath));
             foreach (var dir in dirs)
             {
+                if (dir == benchmarksDir)
+                {
+                    // No need to add benchmarks to its own global.json
+                    continue;
+                }
+
                 globalJson["projects"].Add(Path.Combine("..", dir, "src"));
             }
             File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
@@ -299,18 +306,38 @@ namespace BenchmarkServer
             return $"http://{hostname}:5000/{path.ToLower()}";
         }
 
+        private static string GetRepoName(Source source)
+        {
+            // Attempt to parse a string like 
+            // - http://<host>.com/<user>/<repo>.git OR
+            // - http://<host>.com/<user>/<repo>
+            var repository = source.Repository;
+            var lastSlash = repository.LastIndexOf('/');
+            var dot = repository.LastIndexOf('.');
+
+            if (lastSlash == -1)
+            {
+                throw new InvalidOperationException($"Couldn't parse repository name from {source.Repository}");
+            }
+
+            var start = lastSlash + 1; // +1 to skip over the slash.
+            var name = dot > lastSlash ? repository.Substring(start, dot - start) : repository.Substring(start);
+            return name;
+        }
+
+        // Compares just the repository name
         private class SourceRepoComparer : IEqualityComparer<Source>
         {
             public static readonly SourceRepoComparer Instance = new SourceRepoComparer();
 
             public bool Equals(Source x, Source y)
             {
-                return string.Equals(x.Repository, y.Repository);
+                return string.Equals(GetRepoName(x), GetRepoName(y), StringComparison.OrdinalIgnoreCase);
             }
 
             public int GetHashCode(Source obj)
             {
-                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Repository);
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(GetRepoName(obj));
             }
         }
     }
