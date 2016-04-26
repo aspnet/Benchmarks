@@ -221,7 +221,7 @@ namespace BenchmarkServer
             // Restore in each dir
             foreach (var dir in dirs)
             {
-                ProcessUtil.Run("dotnet", "restore --infer-runtimes", workingDirectory: Path.Combine(path, dir));
+                ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir));
             }
 
             return benchmarksDir;
