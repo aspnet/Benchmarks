@@ -23,7 +23,7 @@ namespace Benchmarks.Middleware
 #else
         private static readonly string _configurationName = "";
 #endif
-        
+
         private readonly IHostingEnvironment _hostingEnv;
         private readonly RequestDelegate _next;
         private readonly Scenarios _scenarios;
@@ -59,7 +59,7 @@ namespace Benchmarks.Middleware
                 await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
             }
             await httpContext.Response.WriteAsync($"</ul></li>");
-            
+
             await httpContext.Response.WriteAsync($"<li>Enabled scenarios:<ul>");
             var enabledScenarios = _scenarios.GetEnabled();
             var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
