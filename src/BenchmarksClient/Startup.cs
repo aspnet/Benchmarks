@@ -25,12 +25,6 @@ namespace BenchmarkClient
 
         private static readonly IRepository<ClientJob> _jobs = new InMemoryRepository<ClientJob>();
 
-        private IApplicationEnvironment _env;
-        public Startup(IApplicationEnvironment environment)
-        {
-            _env = environment;
-        }
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();

@@ -14,9 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Repository;
 
 namespace BenchmarkServer
@@ -30,12 +28,6 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
-
-        private IApplicationEnvironment _env;
-        public Startup(IApplicationEnvironment environment)
-        {
-            _env = environment;
-        }
 
         public void ConfigureServices(IServiceCollection services)
         {

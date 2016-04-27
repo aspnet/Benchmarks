@@ -23,18 +23,16 @@ namespace Benchmarks.Middleware
 #else
         private static readonly string _configurationName = "";
 #endif
-
-        private readonly IApplicationEnvironment _appEnv;
+        
         private readonly IHostingEnvironment _hostingEnv;
         private readonly RequestDelegate _next;
         private readonly Scenarios _scenarios;
         private readonly IServerAddressesFeature _serverAddresses;
 
-        public DebugInfoPageMiddleware(RequestDelegate next, IServerAddressesFeature serverAddresses, IHostingEnvironment hostingEnv, IApplicationEnvironment appEnv, Scenarios scenarios)
+        public DebugInfoPageMiddleware(RequestDelegate next, IServerAddressesFeature serverAddresses, IHostingEnvironment hostingEnv, Scenarios scenarios)
         {
             _next = next;
             _hostingEnv = hostingEnv;
-            _appEnv = appEnv;
             _scenarios = scenarios;
             _serverAddresses = serverAddresses;
         }
@@ -48,7 +46,7 @@ namespace Benchmarks.Middleware
             await httpContext.Response.WriteAsync("<h2>Configuration Information</h2>");
             await httpContext.Response.WriteAsync("<ul>");
             await httpContext.Response.WriteAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
-            await httpContext.Response.WriteAsync($"<li>Framework: {_appEnv.RuntimeFramework.FullName}</li>");
+            await httpContext.Response.WriteAsync($"<li>Framework: {PlatformServices.Default.Application.RuntimeFramework.FullName}</li>");
             await httpContext.Response.WriteAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
             await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
             await httpContext.Response.WriteAsync($"<li>Server: {Program.Server}</li>");
