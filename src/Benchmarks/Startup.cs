@@ -18,11 +18,11 @@ namespace Benchmarks
 {
     public class Startup
     {
-        public Startup(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, Scenarios scenarios)
+        public Startup(IHostingEnvironment hostingEnv, Scenarios scenarios)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(appEnv.ApplicationBasePath)
+                .SetBasePath(PlatformServices.Default.Application.ApplicationBasePath)
                 .AddCommandLine(Program.Args)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{hostingEnv.EnvironmentName}.json", optional: true)
