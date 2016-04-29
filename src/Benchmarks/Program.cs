@@ -7,6 +7,7 @@ using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
@@ -26,11 +27,17 @@ namespace Benchmarks
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
 
+            var config = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .AddJsonFile("hosting.json", optional: true)
+                .Build();
+
             var webHostBuilder = new WebHostBuilder()
                 // Use the name rather than UseKestrel so we can override it from the command line
                 .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseDefaultHostingConfiguration(args)
+                .UseConfiguration(config)
                 .UseStartup<Startup>()
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
