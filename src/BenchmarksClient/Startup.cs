@@ -64,7 +64,6 @@ namespace BenchmarkClient
             var hostTask = Task.Run(() =>
             {
                 var host = new WebHostBuilder()
-                    .UseDefaultHostingConfiguration()
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
