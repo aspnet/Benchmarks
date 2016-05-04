@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +54,15 @@ namespace BenchmarkDriver
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
 
+            var connectionsOption = app.Option("--connections",
+                "Number of connections used by client", CommandOptionType.SingleValue);
+            var threadsOption = app.Option("--threads",
+                "Number of threads used by client", CommandOptionType.SingleValue);
+            var durationOption = app.Option("--duration",
+                "Duration of test in seconds", CommandOptionType.SingleValue);
+            var pipelineDepthOption = app.Option("--pipelineDepth",
+                "Depth of pipeline used by client", CommandOptionType.SingleValue);
+
             app.OnExecute(() =>
             {
                 var server = serverOption.Value();
@@ -88,6 +97,24 @@ namespace BenchmarkDriver
                         sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                     }
                     serverJob.Sources = sources;
+
+                    // Override default ClientJob settings if options are set
+                    if (connectionsOption.HasValue())
+                    {
+                        _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
+                    }
+                    if (threadsOption.HasValue())
+                    {
+                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(connectionsOption.Value()));
+                    }
+                    if (durationOption.HasValue())
+                    {
+                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(durationOption.Value()));
+                    }
+                    if (pipelineDepthOption.HasValue())
+                    {
+                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(pipelineDepthOption.Value()));
+                    }
 
                     return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
                 }
