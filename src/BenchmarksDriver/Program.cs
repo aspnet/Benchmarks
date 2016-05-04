@@ -109,11 +109,11 @@ namespace BenchmarkDriver
                     }
                     if (durationOption.HasValue())
                     {
-                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(durationOption.Value()));
+                        _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
                     }
                     if (pipelineDepthOption.HasValue())
                     {
-                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(pipelineDepthOption.Value()));
+                        _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
                     }
 
                     return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
