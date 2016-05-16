@@ -6,8 +6,11 @@
   },
   "dependencies": {
     "Dapper": "1.50.0-*",
-    "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
@@ -31,7 +34,7 @@
     "net451": { }
   },
   "tools": {
-    "dotnet-ef": {
+    "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.0.0-*",
       "imports": [
         "dnxcore50",
