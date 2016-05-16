@@ -105,7 +105,7 @@ namespace BenchmarkDriver
                     }
                     if (threadsOption.HasValue())
                     {
-                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(connectionsOption.Value()));
+                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
                     }
                     if (durationOption.HasValue())
                     {
