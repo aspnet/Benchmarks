@@ -1,125 +1,185 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using Benchmarks.Configuration;
 using Benchmarks.Data;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
+using Benchmarks.Middleware;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Benchmarks
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment hostingEnv, Scenarios scenarios)
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
+                .SetBasePath(PlatformServices.Default.Application.ApplicationBasePath)
+                .AddCommandLine(Program.Args)
                 .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile($"appsettings.{hostingEnv.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-
-            if (env.Configuration != null)
-            {
-                // This allows passing of config values via the cmd line, e.g.: dnx web --app.EnableDbTests=true
-                builder.AddConfiguration("app.", env.Configuration);
-            }
 
             Configuration = builder.Build();
 
-            Configuration.Bind(StartupOptions);
+            Scenarios = scenarios;
         }
 
         public IConfigurationRoot Configuration { get; set; }
 
-        public Options StartupOptions { get; } = new Options();
+        public Scenarios Scenarios { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // No scenarios covered by the benchmarks require the HttpContextAccessor so we're replacing it with a
-            // no-op version to avoid the cost.
-            services.AddSingleton(typeof(IHttpContextAccessor), typeof(InertHttpContextAccessor));
+            services.Configure<AppSettings>(Configuration);
 
-            if (StartupOptions.EnableDbTests)
+            // We re-register the Scenarios as an instance singleton here to avoid it being created again due to the
+            // registration done in Program.Main
+            services.AddSingleton(Scenarios);
+
+            // Common DB services
+            services.AddSingleton<IRandom, DefaultRandom>();
+            services.AddSingleton<ApplicationDbSeeder>();
+            services.AddEntityFrameworkSqlServer()
+                .AddDbContext<ApplicationDbContext>();
+
+            if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
-                services.AddSingleton<ApplicationDbSeeder>();
-
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
                 services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
+            }
 
-                services.AddEntityFramework()
-                    .AddSqlServer()
-                    .AddDbContext<ApplicationDbContext>(options =>
-                        options.UseSqlServer(StartupOptions.ConnectionString));
+            if (Scenarios.Any("Ef"))
+            {
+                services.AddScoped<EfDb>();
+            }
+
+            if (Scenarios.Any("Raw"))
+            {
+                services.AddScoped<RawDb>();
+            }
+
+            if (Scenarios.Any("Dapper"))
+            {
+                services.AddScoped<DapperDb>();
+            }
+
+            if (Scenarios.Any("Fortunes"))
+            {
                 services.AddWebEncoders();
             }
 
-            services.AddMvc();
+            if (Scenarios.Any("Mvc"))
+            {
+                var mvcBuilder = services
+                    .AddMvcCore()
+                    //.AddApplicationPart(typeof(Startup).GetTypeInfo().Assembly)
+                    .AddControllersAsServices();
+
+                if (Scenarios.MvcJson)
+                {
+                    mvcBuilder.AddJsonFormatters();
+                }
+
+                if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
+                {
+                    mvcBuilder
+                        .AddViews()
+                        .AddRazorViewEngine();
+                }
+            }
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, ApplicationDbContext dbContext)
         {
             app.UseErrorHandler();
-            app.UsePlainText();
-            app.UseJson();
 
-            if (StartupOptions.EnableDbTests)
+            if (Scenarios.Plaintext)
             {
-                app.UseSingleQueryRaw(StartupOptions.ConnectionString);
-                app.UseSingleQueryDapper(StartupOptions.ConnectionString);
+                app.UsePlainText();
+            }
+
+            if (Scenarios.Json)
+            {
+                app.UseJson();
+            }
+
+            // Single query endpoints
+            if (Scenarios.DbSingleQueryRaw)
+            {
+                app.UseSingleQueryRaw();
+            }
+
+            if (Scenarios.DbSingleQueryDapper)
+            {
+                app.UseSingleQueryDapper();
+            }
+
+            if (Scenarios.DbSingleQueryEf)
+            {
                 app.UseSingleQueryEf();
+            }
 
-                app.UseMultipleQueriesRaw(StartupOptions.ConnectionString);
-                app.UseMultipleQueriesDapper(StartupOptions.ConnectionString);
+            // Multiple query endpoints
+            if (Scenarios.DbMultiQueryRaw)
+            {
+                app.UseMultipleQueriesRaw();
+            }
+
+            if (Scenarios.DbMultiQueryDapper)
+            {
+                app.UseMultipleQueriesDapper();
+            }
+
+            if (Scenarios.DbMultiQueryEf)
+            {
                 app.UseMultipleQueriesEf();
+            }
 
-                app.UseFortunesRaw(StartupOptions.ConnectionString);
-                app.UseFortunesDapper(StartupOptions.ConnectionString);
+            // Fortunes endpoints
+            if (Scenarios.DbFortunesRaw)
+            {
+                app.UseFortunesRaw();
+            }
+
+            if (Scenarios.DbFortunesDapper)
+            {
+                app.UseFortunesDapper();
+            }
+
+            if (Scenarios.DbFortunesEf)
+            {
                 app.UseFortunesEf();
+            }
 
-                var dbContext = (ApplicationDbContext)app.ApplicationServices.GetService(typeof(ApplicationDbContext));
-                var seeder = (ApplicationDbSeeder)app.ApplicationServices.GetService(typeof(ApplicationDbSeeder));
-                if (!seeder.Seed(dbContext))
+            if (Scenarios.Any("Db"))
+            {
+                dbContext.Database.EnsureCreated();
+
+                if (!dbSeeder.Seed())
                 {
                     Environment.Exit(1);
                 }
-                Console.WriteLine("Database tests enabled");
             }
 
-            app.UseMvc();
+            if (Scenarios.Any("Mvc"))
+            {
+                app.UseMvc();
+            }
 
-            if (StartupOptions.EnableStaticFileTests)
+            if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
-                Console.WriteLine("Static file tests enabled");
             }
 
-            app.UseDebugInfoPage();
-
-            app.Run(context => context.Response.WriteAsync("Try /plaintext instead"));
-        }
-        
-        public class InertHttpContextAccessor : IHttpContextAccessor
-        {
-            public HttpContext HttpContext
-            {
-                get { return null; }
-                set { return; }
-            }
-        }
-
-        public class Options
-        {
-            public bool EnableDbTests { get; set; }
-
-            public bool EnableStaticFileTests { get; set; }
-
-            public string ConnectionString { get; set; }
+            app.RunDebugInfoPage();
         }
     }
 }

@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Runtime;
 using System.Threading;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
+using Benchmarks.Configuration;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,83 +14,87 @@ namespace Benchmarks
 {
     public class Program
     {
+        public static string[] Args;
+        public static string Server;
+
         public static void Main(string[] args)
         {
-            var hostingConfig = new ConfigurationBuilder()
-                .AddJsonFile("hosting.json", optional: true)
-                .AddEnvironmentVariables()
-                .AddEnvironmentVariables(prefix: "ASPNET_")
+            Args = args;
+
+            Console.WriteLine();
+            Console.WriteLine("ASP.NET Core Benchmarks");
+            Console.WriteLine("-----------------------");
+
+            Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
+
+            var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                .AddJsonFile("hosting.json", optional: true)
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(hostingConfig, captureStartupErrors: true);
-            hostBuilder.UseStartup(typeof(Startup));
+            var webHostBuilder = new WebHostBuilder()
+                // Use the name rather than UseKestrel so we can override it from the command line
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseConfiguration(config)
+                .UseStartup<Startup>()
+                .ConfigureServices(services => services
+                    .AddSingleton(new ConsoleArgs(args))
+                    .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
+                    .AddSingleton<Scenarios>()
+                );
 
-            var host = hostBuilder.Build();
+            Server = webHostBuilder.GetSetting(WebHostDefaults.ServerKey);
 
-            using (var app = host.Start())
+            var webHost = webHostBuilder.Build();
+
+            StartInteractiveConsoleThread();
+
+            webHost.Run();
+        }
+
+        private static void StartInteractiveConsoleThread()
+        {
+            // Run the interaction on a separate thread as we don't have Console.KeyAvailable on .NET Core so can't
+            // do a pre-emptive check before we call Console.ReadKey (which blocks, hard)
+
+            var started = new ManualResetEvent(false);
+
+            var interactiveThread = new Thread(() =>
             {
-                // Echo out the addresses we're listening on
-                var hostingEnv = app.Services.GetRequiredService<IHostingEnvironment>();
-                Console.WriteLine("Hosting environment: " + hostingEnv.EnvironmentName);
+                Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
+                Console.WriteLine("Press 'C' to force GC or any other key to display GC stats");
+                Console.WriteLine();
 
-                var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
-                if (serverAddresses != null)
+                started.Set();
+
+                while (true)
                 {
-                    foreach (var address in serverAddresses.Addresses)
+                    var key = Console.ReadKey(intercept: true);
+
+                    if (key.Key == ConsoleKey.C)
                     {
-                        Console.WriteLine("Now listening on: " + address);
+                        Console.WriteLine();
+                        Console.Write("Forcing GC...");
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        GC.Collect();
+                        Console.WriteLine(" done!");
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine($"Allocated: {GetAllocatedMemory()}");
+                        Console.WriteLine($"Gen 0: {GC.CollectionCount(0)}, Gen 1: {GC.CollectionCount(1)}, Gen 2: {GC.CollectionCount(2)}");
                     }
                 }
+            });
 
-                Console.WriteLine("Application started. Press Ctrl+C to shut down.");
+            interactiveThread.IsBackground = true;
+            interactiveThread.Start();
 
-                var appLifetime = app.Services.GetRequiredService<IApplicationLifetime>();
-
-                // Run the interaction on a separate thread as we don't have Console.KeyAvailable on .NET Core so can't
-                // do a pre-emptive check before we call Console.ReadKey (which blocks, hard)
-                var interactiveThread = new Thread(() =>
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Press 'C' to force GC or any other key to display GC stats");
-
-                    while (true)
-                    {
-                        var key = Console.ReadKey(intercept: true);
-
-                        if (key.Key == ConsoleKey.C)
-                        {
-                            Console.WriteLine();
-                            Console.Write("Forcing GC...");
-                            GC.Collect();
-                            GC.WaitForPendingFinalizers();
-                            GC.Collect();
-                            Console.WriteLine(" done!");
-                        }
-                        else
-                        {
-                            Console.WriteLine();
-                            Console.WriteLine($"Allocated: {GetAllocatedMemory()}");
-                            Console.WriteLine($"Gen 0: {GC.CollectionCount(0)}, Gen 1: {GC.CollectionCount(1)}, Gen 2: {GC.CollectionCount(2)}");
-                        }
-                    }
-                });
-
-                // Handle Ctrl+C in order to gracefully shutdown the web server
-                Console.CancelKeyPress += (sender, eventArgs) =>
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Shutting down application...");
-
-                    appLifetime.StopApplication();
-
-                    eventArgs.Cancel = true;
-                };
-
-                interactiveThread.Start();
-
-                appLifetime.ApplicationStopping.WaitHandle.WaitOne();
-            }
+            started.WaitOne();
         }
 
         private static string GetAllocatedMemory(bool forceFullCollection = false)
@@ -100,3 +105,4 @@ namespace Benchmarks
         }
     }
 }
+

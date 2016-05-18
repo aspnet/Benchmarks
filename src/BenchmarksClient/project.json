@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0-*",
+  "description": "REST APIs to run ASP.NET benchmark client.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AspNet/Benchmarks"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "System.Diagnostics.Process": "4.1.0-*",
+    "Newtonsoft.Json": "8.0.*",
+    "Repository": "1.0.0-*",
+    "Benchmarks.ClientJob": "1.0.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
+    }
+  },
+  "content": [
+    "../../scripts/pipeline.lua"
+  ]
+}

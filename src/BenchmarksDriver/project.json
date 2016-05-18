@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0-*",
+  "description": "Schedules benchmark jobs on both the server and client.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AspNet/Benchmarks"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3",
+    "Repository": "1.0.0-*",
+    "Benchmarks.ClientJob": "1.0.0-*",
+    "Benchmarks.ServerJob": "1.0.0-*",
+    "System.Data.SqlClient": "4.1.0-*",
+    "System.Runtime.Serialization.Primitives": "4.1.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
+    }
+  }
+}
