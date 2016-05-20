@@ -120,7 +120,7 @@ Similar to the plain text benchmark in the TechEmpower tests. Intended to highli
 | IIS Static File (non-kernel cached) | perfsvr |231,609 | 32 threads, 512 connections | hello.html containing "HelloWorld" | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr | 106,479 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr2 (Linux) | 127,017 | 32 threads, 512 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
-| ASP.NET Core on Kestrel | perfsvr | 228,062 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
+| ASP.NET Core on Kestrel | perfsvr | 313,001 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
 | Scala - Plain | perfsvr | 176,509 | 32 threads, 1024 connections | The actual TechEmpower Scala Plain plaintext app | CPU is 68%, mostly in kernel mode |
 | Netty | perfsvr | 447,993 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
@@ -132,7 +132,7 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | ----- | ------ | -------- | ----------- | ---- | ------------ |
 | NodeJS | perfsvr | 147,554 | 32 threads, 256 connections | The actual TechEmpower NodeJS app | CPU is 100%, almost exclusively in user mode |
 | NodeJS | perfsvr2 (Linux) | 173,641 | 32 threads, 512 connections | The actual TechEmpower NodeJS app | CPU is 100% |
-| ASP.NET Core on Kestrel | perfsvr | 1,188,521 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
+| ASP.NET Core on Kestrel | perfsvr | 1,102,471 | 32 threads, 256 connections | Middleware class, multi IO thread | CPU is 100% |
 | ASP.NET Core on Kestrel | perfsvr2 (Linux) | 928,023 | 32 threads, 256 connections | Middleware class, single IO thread | |
 | Scala | perfsvr | 1,514,942 | 32 threads, 1024 connections | The actual TechEmpower Scala plaintext app | CPU is 100%, 70% in user mode |
 | Netty | perfsvr | 2,808,515 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
