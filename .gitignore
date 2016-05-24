@@ -32,6 +32,7 @@ project.lock.json
 version.h
 .build/
 *.VC.opendb
+*.VC.db
 
 # Profiler result files, just in case they are left lying around :)
 /.vs/

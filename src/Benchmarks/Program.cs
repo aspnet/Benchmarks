@@ -34,8 +34,7 @@ namespace Benchmarks
                 .Build();
 
             var webHostBuilder = new WebHostBuilder()
-                // Use the name rather than UseKestrel so we can override it from the command line
-                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 .UseStartup<Startup>()
@@ -45,7 +44,7 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                 );
 
-            Server = webHostBuilder.GetSetting(WebHostDefaults.ServerKey);
+            Server = "kestrel";
 
             var webHost = webHostBuilder.Build();
 
