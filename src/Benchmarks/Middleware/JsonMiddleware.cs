@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
 namespace Benchmarks.Middleware
@@ -31,9 +32,8 @@ namespace Benchmarks.Middleware
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";
-                httpContext.Response.ContentLength = 30;
 
-                using (var sw = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, bufferSize: 30))
+                using (var sw = new HttpResponseStreamWriter(httpContext.Response.Body, Encoding.UTF8))
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
                 }

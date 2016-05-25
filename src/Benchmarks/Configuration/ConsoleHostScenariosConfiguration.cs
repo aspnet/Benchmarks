@@ -22,19 +22,17 @@ namespace Benchmarks.Configuration
             var scenarioConfig = new ConfigurationBuilder()
                 .AddJsonFile("scenarios.json", optional: true)
                 .AddCommandLine(_args)
-                .Build()
-                .GetChildren()
-                .ToList();
+                .Build();
 
             var enabledCount = 0;
-
-            if (scenarioConfig.Count > 0)
+            var configuredScenarios = scenarioConfig["scenarios"];
+            if (!string.IsNullOrWhiteSpace(configuredScenarios))
             {
                 Console.WriteLine("Scenario configuration found in scenarios.json and/or command line args");
-
-                foreach (var scenario in scenarioConfig)
+                var choices = configuredScenarios.Split(',');
+                foreach (var choice in choices)
                 {
-                    enabledCount += scenarios.Enable(scenario.Value);
+                    enabledCount += scenarios.Enable(choice);
                 }
             }
             else

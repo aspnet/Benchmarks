@@ -247,7 +247,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -- --scenario {job.Scenario} --server.urls http://{hostname}:5000";
+            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server.urls http://{hostname}:5000";
 
             Log.WriteLine($"Starting process '{filename} {arguments}'");
 

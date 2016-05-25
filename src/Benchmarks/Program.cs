@@ -33,8 +33,9 @@ namespace Benchmarks
                 .AddJsonFile("hosting.json", optional: true)
                 .Build();
 
+            Server = config["server"] ?? "Kestrel";
+
             var webHostBuilder = new WebHostBuilder()
-                .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 .UseStartup<Startup>()
@@ -44,11 +45,36 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                 );
 
-            Server = "kestrel";
+            if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
+            {
+                var threads = GetThreadCount(config);
+                webHostBuilder = webHostBuilder.UseKestrel((options) =>
+                {
+                    if (threads > 0)
+                    {
+                        options.ThreadCount = threads;
+                    }
+                });
+            }
+            else if (String.Equals(Server, "WebListener", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseWebListener();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unknown server value: {Server}");
+            }
 
             var webHost = webHostBuilder.Build();
 
-            StartInteractiveConsoleThread();
+            Console.WriteLine($"Using server {Server}");
+            Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
+
+            var nonInteractiveValue = config["NonInteractive"];
+            if (nonInteractiveValue == null || !bool.Parse(nonInteractiveValue))
+            {
+                StartInteractiveConsoleThread();
+            }
 
             webHost.Run();
         }
@@ -62,7 +88,6 @@ namespace Benchmarks
 
             var interactiveThread = new Thread(() =>
             {
-                Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
                 Console.WriteLine("Press 'C' to force GC or any other key to display GC stats");
                 Console.WriteLine();
 
@@ -101,6 +126,12 @@ namespace Benchmarks
             double bytes = GC.GetTotalMemory(forceFullCollection);
 
             return $"{((bytes / 1024d) / 1024d).ToString("N2")} MB";
+        }
+
+        private static int GetThreadCount(IConfigurationRoot config)
+        {
+            var threadCountValue = config["threadCount"];
+            return threadCountValue == null ? -1 : int.Parse(threadCountValue);
         }
     }
 }
