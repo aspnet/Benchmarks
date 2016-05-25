@@ -111,6 +111,12 @@ namespace Benchmarks.Configuration
 
         public int Enable(string partialName)
         {
+            if(string.Equals(partialName, "[default]", StringComparison.OrdinalIgnoreCase))
+            {
+                EnableDefault();
+                return 2;
+            }
+            
             var props = typeof(Scenarios).GetTypeInfo().DeclaredProperties
                 .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf(partialName, StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
