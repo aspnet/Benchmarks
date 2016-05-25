@@ -47,8 +47,15 @@ namespace Benchmarks
             Server = "kestrel";
 
             var webHost = webHostBuilder.Build();
+            Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
+            
+            bool nonInteractive;
+            bool.TryParse(webHostBuilder.GetSetting("NonInteractive"), out nonInteractive);
 
-            StartInteractiveConsoleThread();
+            if(!nonInteractive)
+            {
+                StartInteractiveConsoleThread();
+            }
 
             webHost.Run();
         }
@@ -62,7 +69,6 @@ namespace Benchmarks
 
             var interactiveThread = new Thread(() =>
             {
-                Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
                 Console.WriteLine("Press 'C' to force GC or any other key to display GC stats");
                 Console.WriteLine();
 
