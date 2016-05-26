@@ -194,20 +194,23 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
-            // Modify benchmarks\src\global.json to reference source dirs
-            var globalJsonPath = Path.Combine(path, benchmarksDir, "global.json");
-            dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(globalJsonPath));
-            foreach (var dir in dirs)
+            // Modify all global.json to reference source dirs
+            foreach (var repoDir in dirs)
             {
-                if (dir == benchmarksDir)
+                var globalJsonPath = Path.Combine(path, repoDir, "global.json");
+                dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(globalJsonPath));
+                foreach (var sourceDir in dirs)
                 {
-                    // No need to add benchmarks to its own global.json
-                    continue;
-                }
+                    if (sourceDir == benchmarksDir)
+                    {
+                        // No need to add benchmarks to global.json, since nothing should depend on it
+                        continue;
+                    }
 
-                globalJson["projects"].Add(Path.Combine("..", dir, "src"));
+                    globalJson["projects"].Add(Path.Combine("..", sourceDir, "src"));
+                }
+                File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
             }
-            File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
 
             // Restore in each dir
             foreach (var dir in dirs)
