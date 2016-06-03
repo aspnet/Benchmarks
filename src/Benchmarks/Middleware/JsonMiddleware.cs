@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
 namespace Benchmarks.Middleware
@@ -18,6 +17,8 @@ namespace Benchmarks.Middleware
         private static readonly Task _done = Task.FromResult(0);
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private static readonly JsonSerializer _json = new JsonSerializer();
+        private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
+        private const int _bufferSize = 27;
 
         private readonly RequestDelegate _next;
         
@@ -32,8 +33,9 @@ namespace Benchmarks.Middleware
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "application/json";
+                httpContext.Response.ContentLength = _bufferSize;
 
-                using (var sw = new HttpResponseStreamWriter(httpContext.Response.Body, Encoding.UTF8))
+                using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
                 }
