@@ -1,26 +1,24 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "Class to transfer data to/from the benchmark client.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/AspNet/Benchmarks"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/AspNet/Benchmarks"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Repository": "1.0.0-*",
-    "Newtonsoft.Json": "9.0.1-beta1"
+    "Repository": "1.1.0-*",
+    "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-*"
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+        "NETStandard.Library": "1.6.0"
+      }
     }
   }
 }

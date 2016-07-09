@@ -1,22 +1,23 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "REST APIs to run ASP.NET benchmark server.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/AspNet/Benchmarks"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/AspNet/Benchmarks"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
-    "System.Diagnostics.Process": "4.1.0-*",
-    "Repository": "1.0.0-*",
-    "Benchmarks.ServerJob": "1.0.0-*"
+    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Repository": "1.1.0-*",
+    "Benchmarks.ServerJob": "1.1.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -25,11 +26,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         }
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
