@@ -26,16 +26,30 @@ namespace Benchmarks.Data
             return _dbContext.World.FirstAsync(w => w.Id == id);
         }
 
-        public async Task<World[]> LoadMultipleQueriesRows(int count)
+        public async Task<World[]> LoadMultipleQueriesRows(int count, bool withTracking = false)
         {
             var result = new World[count];
 
             for (int i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
-                result[i] = await _dbContext.World.FirstAsync(w => w.Id == id);
+                var world = withTracking ? _dbContext.World.AsTracking() : _dbContext.World;
+                result[i] = await world.FirstAsync(w => w.Id == id);
             }
 
+            return result;
+        }
+
+        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+        {
+            var result = await LoadMultipleQueriesRows(count, true);
+
+            for (int i = 0; i < count; i++)
+            {
+                result[i].RandomNumber = _random.Next(1, 10001);
+            }
+
+            await _dbContext.SaveChangesAsync();
             return result;
         }
 

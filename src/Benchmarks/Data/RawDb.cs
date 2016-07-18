@@ -88,6 +88,45 @@ namespace Benchmarks.Data
             return result;
         }
 
+        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+        {
+            var result = await LoadMultipleQueriesRows(count);
+
+            using (var db = _dbProviderFactory.CreateConnection())
+            using (var cmd = db.CreateCommand())
+            {
+                db.ConnectionString = _connectionString;
+                await db.OpenAsync();
+
+                cmd.CommandText = "UPDATE world SET randomNumber = @Random WHERE id = @Id";
+                var id = cmd.CreateParameter();
+                id.ParameterName = "@Id";
+                id.DbType = DbType.Int32;
+                cmd.Parameters.Add(id);
+
+                var random = cmd.CreateParameter();
+                random.ParameterName = "@Random";
+                id.DbType = DbType.Int32;
+                cmd.Parameters.Add(random);
+
+                for (int i = 0; i < count; i++)
+                {
+                    id.Value = result[i].Id;
+                    var randomNumber = _random.Next(1, 10001);
+                    random.Value = randomNumber;
+                    using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
+                    {
+                        await rdr.ReadAsync();
+                        result[i].RandomNumber = randomNumber;
+                    }
+                }
+
+                db.Close();
+            }
+
+            return result;
+        }
+
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>();

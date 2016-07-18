@@ -4,56 +4,11 @@
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Controllers
 {
-    [Route("mvc")]
-    public class FortunesController : Controller
+    public class FortunesController : DbControllerBase
     {
-        private RawDb _rawDb;
-        private DapperDb _dapperDb;
-        private EfDb _efDb;
-
-        private RawDb RawDb
-        {
-            get
-            {
-                if (_rawDb == null)
-                {
-                    _rawDb = HttpContext.RequestServices.GetRequiredService<RawDb>();
-                }
-
-                return _rawDb;
-            }
-        }
-
-        private DapperDb DapperDb
-        {
-            get
-            {
-                if (_dapperDb == null)
-                {
-                    _dapperDb = HttpContext.RequestServices.GetRequiredService<DapperDb>();
-                }
-
-                return _dapperDb;
-            }
-        }
-
-        private EfDb EfDb
-        {
-            get
-            {
-                if (_efDb == null)
-                {
-                    _efDb = HttpContext.RequestServices.GetRequiredService<EfDb>();
-                }
-
-                return _efDb;
-            }
-        }
-
         [HttpGet("fortunes/raw")]
         public async Task<IActionResult> Raw()
         {

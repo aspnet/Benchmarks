@@ -58,6 +58,28 @@ namespace Benchmarks.Data
             return result;
         }
 
+        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+        {
+            var result = await LoadMultipleQueriesRows(count);
+
+            using (var db = _dbProviderFactory.CreateConnection())
+            {
+                db.ConnectionString = _connectionString;
+                await db.OpenAsync();
+
+                for (int i = 0; i < count; i++)
+                {
+                    var randomNumber = _random.Next(1, 10001);
+                    await db.ExecuteAsync("UPDATE world SET randomNumber = @Random WHERE id = @Id", new { Random = randomNumber, Id = result[i].Id });
+                    result[i].RandomNumber = randomNumber;
+                }
+
+                db.Close();
+            }
+
+            return result;
+        }
+
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             List<Fortune> result;
