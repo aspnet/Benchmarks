@@ -7,34 +7,34 @@ using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class MultipleQueriesEfMiddleware
+    public class MultipleUpdatesDapperMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiQueryEf));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiUpdateDapper));
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
         private readonly RequestDelegate _next;
+        private readonly DapperDb _db;
 
-        public MultipleQueriesEfMiddleware(RequestDelegate next)
+        public MultipleUpdatesDapperMiddleware(RequestDelegate next, DapperDb db)
         {
             _next = next;
+            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var db = httpContext.RequestServices.GetService<EfDb>();
                 var count = MiddlewareHelpers.GetMultipleQueriesQueryCount(httpContext);
-                var rows = await db.LoadMultipleQueriesRows(count);
+                var rows = await _db.LoadMultipleUpdatesRows(count);
 
                 var result = JsonConvert.SerializeObject(rows, _jsonSettings);
 
@@ -51,11 +51,11 @@ namespace Benchmarks.Middleware
         }
     }
 
-    public static class MultipleQueriesEfMiddlewareExtensions
+    public static class MultipleUpdatesDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesEf(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseMultipleUpdatesDapper(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MultipleQueriesEfMiddleware>();
+            return builder.UseMiddleware<MultipleUpdatesDapperMiddleware>();
         }
     }
 }

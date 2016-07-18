@@ -4,6 +4,8 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Benchmarks.Middleware;
@@ -49,7 +51,7 @@ namespace Benchmarks
             services.AddSingleton<ApplicationDbSeeder>();
             services.AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>();
-
+            
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
@@ -73,7 +75,12 @@ namespace Benchmarks
 
             if (Scenarios.Any("Fortunes"))
             {
-                services.AddWebEncoders();
+                var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+                settings.AllowCharacter('\u2014');  // allow EM DASH through
+                services.AddWebEncoders((options) =>
+                {
+                    options.TextEncoderSettings = settings;
+                });
             }
 
             if (Scenarios.Any("Mvc"))
@@ -83,7 +90,7 @@ namespace Benchmarks
                     //.AddApplicationPart(typeof(Startup).GetTypeInfo().Assembly)
                     .AddControllersAsServices();
 
-                if (Scenarios.MvcJson)
+                if (Scenarios.MvcJson || Scenarios.Any("MvcDbSingle") || Scenarios.Any("MvcDbMulti"))
                 {
                     mvcBuilder.AddJsonFormatters();
                 }
@@ -141,6 +148,22 @@ namespace Benchmarks
             if (Scenarios.DbMultiQueryEf)
             {
                 app.UseMultipleQueriesEf();
+            }
+
+            // Multiple update endpoints
+            if (Scenarios.DbMultiUpdateRaw)
+            {
+                app.UseMultipleUpdatesRaw();
+            }
+
+            if (Scenarios.DbMultiUpdateDapper)
+            {
+                app.UseMultipleUpdatesDapper();
+            }
+
+            if (Scenarios.DbMultiUpdateEf)
+            {
+                app.UseMultipleUpdatesEf();
             }
 
             // Fortunes endpoints
