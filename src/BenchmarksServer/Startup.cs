@@ -247,7 +247,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server.urls http://{hostname}:5000";
+            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server.urls {job.Scheme}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
@@ -278,7 +278,7 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
                         job.State = ServerState.Running;
-                        job.Url = ComputeServerUrl(hostname, job.Scenario);
+                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                     }
                 }
@@ -290,7 +290,7 @@ namespace BenchmarkServer
             return process;
         }
 
-        private static string ComputeServerUrl(string hostname, Scenario scenario)
+        private static string ComputeServerUrl(string hostname, string scheme, Scenario scenario)
         {
             var scenarioName = scenario.ToString();
             var path = scenarioName;
@@ -302,7 +302,7 @@ namespace BenchmarkServer
                 path = pathAttribute.Paths.First().Trim('/');
             }
 
-            return $"http://{hostname}:5000/{path.ToLower()}";
+            return $"{scheme}://{hostname}:5000/{path.ToLower()}";
         }
 
         private static string GetRepoName(Source source)

@@ -61,6 +61,8 @@ namespace Benchmarks
                     {
                         options.ThreadCount = threads;
                     }
+
+                    options.UseHttps("testCert.pfx", "testPassword");
                 });
             }
             else if (String.Equals(Server, "WebListener", StringComparison.OrdinalIgnoreCase))
