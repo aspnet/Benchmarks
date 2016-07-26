@@ -54,7 +54,7 @@ namespace BenchmarkDriver
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
             var schemeOption = app.Option("-m|--scheme",
-                "Scheme (http or https)", CommandOptionType.SingleValue);
+                "Scheme (http or https).  Default is http.", CommandOptionType.SingleValue);
             var sourceOption = app.Option("-o|--source",
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
@@ -72,7 +72,7 @@ namespace BenchmarkDriver
 
             app.OnExecute(() =>
             {
-                var scheme = schemeOption.Value();
+                var scheme = schemeOption.Value() ?? "http";
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
