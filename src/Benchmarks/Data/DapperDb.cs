@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class DapperDb
+    public class DapperDb : IDb
     {
         private readonly IRandom _random;
         private readonly DbProviderFactory _dbProviderFactory;

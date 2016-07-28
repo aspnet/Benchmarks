@@ -4,30 +4,38 @@
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Controllers
 {
-    public class SingleQueryController : DbControllerBase
+    [Route("mvc/db")]
+    public class SingleQueryController : Controller
     {
-        [HttpGet("db/raw")]
+        [HttpGet("raw")]
         [Produces("application/json")]
-        public async Task<object> Raw()
+        public Task<World> Raw()
         {
-            return await RawDb.LoadSingleQueryRow();
+            return ExecuteQuery<RawDb>();
         }
 
-        [HttpGet("db/dapper")]
+        [HttpGet("dapper")]
         [Produces("application/json")]
-        public async Task<object> Dapper()
+        public Task<World> Dapper()
         {
-            return await DapperDb.LoadSingleQueryRow();
+            return ExecuteQuery<DapperDb>();
         }
 
-        [HttpGet("db/ef")]
+        [HttpGet("ef")]
         [Produces("application/json")]
-        public async Task<object> Ef()
+        public Task<World> Ef()
         {
-            return await EfDb.LoadSingleQueryRow();
+            return ExecuteQuery<EfDb>();
+        }
+
+        private Task<World> ExecuteQuery<T>() where T : IDb
+        {
+            var db = HttpContext.RequestServices.GetRequiredService<T>();
+            return db.LoadSingleQueryRow();
         }
     }
 }

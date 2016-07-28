@@ -8,8 +8,9 @@ namespace Benchmarks.Data
 {
     public class DefaultRandom : IRandom
     {
+        private static int nextSeed = 0;
         // Random isn't thread safe
-        private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => new Random());
+        private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref nextSeed)));
 
         public int Next(int minValue, int maxValue)
         {

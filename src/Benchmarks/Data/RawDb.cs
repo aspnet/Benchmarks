@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class RawDb
+    public class RawDb : IDb
     {
         private readonly IRandom _random;
         private readonly DbProviderFactory _dbProviderFactory;
@@ -26,7 +26,14 @@ namespace Benchmarks.Data
         public async Task<World> LoadSingleQueryRow()
         {
             using (var db = _dbProviderFactory.CreateConnection())
-            using (var cmd = db.CreateCommand())
+            {
+                return await ReadSingleRow(db);
+            }
+        }
+
+        private async Task<World> ReadSingleRow(DbConnection connection)
+        {
+            using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
                 var id = cmd.CreateParameter();
@@ -35,8 +42,8 @@ namespace Benchmarks.Data
                 id.Value = _random.Next(1, 10001);
                 cmd.Parameters.Add(id);
 
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
+                connection.ConnectionString = _connectionString;
+                await connection.OpenAsync();
 
                 using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
@@ -56,33 +63,12 @@ namespace Benchmarks.Data
             var result = new World[count];
 
             using (var db = _dbProviderFactory.CreateConnection())
-            using (var cmd = db.CreateCommand())
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
-
-                cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
-                var id = cmd.CreateParameter();
-                id.ParameterName = "@Id";
-                id.DbType = DbType.Int32;
-                cmd.Parameters.Add(id);
-
                 for (int i = 0; i < count; i++)
                 {
-                    id.Value = _random.Next(1, 10001);
-                    using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
-                    {
-                        await rdr.ReadAsync();
-
-                        result[i] = new World
-                        {
-                            Id = rdr.GetInt32(0),
-                            RandomNumber = rdr.GetInt32(1)
-                        };
-                    }
+                    result[i] = await ReadSingleRow(db);
                 }
 
-                db.Close();
             }
 
             return result;

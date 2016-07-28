@@ -50,7 +50,7 @@ namespace Benchmarks
             services.AddSingleton<IRandom, DefaultRandom>();
             services.AddSingleton<ApplicationDbSeeder>();
             services.AddEntityFrameworkSqlServer()
-                .AddDbContext<ApplicationDbContext>(ServiceLifetime.Transient);
+                .AddDbContext<ApplicationDbContext>();
 
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
@@ -60,7 +60,7 @@ namespace Benchmarks
 
             if (Scenarios.Any("Ef"))
             {
-                services.AddTransient<EfDb>();
+                services.AddScoped<EfDb>();
             }
 
             if (Scenarios.Any("Raw"))

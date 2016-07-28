@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Benchmarks.Data
 {
-    public class EfDb
+    public class EfDb : IDb
     {
         private readonly IRandom _random;
         private readonly ApplicationDbContext _dbContext;
@@ -26,15 +26,14 @@ namespace Benchmarks.Data
             return _dbContext.World.FirstAsync(w => w.Id == id);
         }
 
-        public async Task<World[]> LoadMultipleQueriesRows(int count, bool withTracking = false)
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
             for (int i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
-                var world = withTracking ? _dbContext.World.AsTracking() : _dbContext.World;
-                result[i] = await world.FirstAsync(w => w.Id == id);
+                result[i] = await _dbContext.World.FirstAsync(w => w.Id == id);
             }
 
             return result;
@@ -42,7 +41,7 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var result = await LoadMultipleQueriesRows(count, true);
+            var result = await LoadMultipleQueriesRows(count);
 
             for (int i = 0; i < count; i++)
             {

@@ -4,33 +4,39 @@
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Controllers
 {
-    public class MultipleUpdatesController : DbControllerBase
+    [Route("mvc/updates")]
+    public class MultipleUpdatesController : Controller
     {
-        [HttpGet("updates/raw")]
+        [HttpGet("raw")]
         [Produces("application/json")]
-        public async Task<object> Raw(int queries = 1)
+        public Task<World[]> Raw(int queries = 1)
         {
-            var count = ValidateQueries(queries);
-            return await RawDb.LoadMultipleUpdatesRows(count);
+            return ExecuteQuery<RawDb>(queries);
         }
 
-        [HttpGet("updates/dapper")]
+        [HttpGet("dapper")]
         [Produces("application/json")]
-        public async Task<object> Dapper(int queries = 1)
+        public Task<World[]> Dapper(int queries = 1)
         {
-            var count = ValidateQueries(queries);
-            return await DapperDb.LoadMultipleUpdatesRows(count);
+            return ExecuteQuery<DapperDb>(queries);
         }
 
-        [HttpGet("updates/ef")]
+        [HttpGet("ef")]
         [Produces("application/json")]
-        public async Task<object> Ef(int queries = 1)
+        public Task<World[]> Ef(int queries = 1)
         {
-            var count = ValidateQueries(queries);
-            return await EfDb.LoadMultipleUpdatesRows(count);
+            return ExecuteQuery<EfDb>(queries);
+        }
+
+        private Task<World[]> ExecuteQuery<T>(int queries) where T : IDb
+        {
+            queries = queries < 1 ? 1 : queries > 500 ? 500 : queries;
+            var db = HttpContext.RequestServices.GetRequiredService<T>();
+            return db.LoadMultipleUpdatesRows(queries);
         }
     }
 }

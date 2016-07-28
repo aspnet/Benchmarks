@@ -4,27 +4,32 @@
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Controllers
 {
-    public class FortunesController : DbControllerBase
+    [Route("mvc/fortunes")]
+    public class FortunesController : Controller
     {
-        [HttpGet("fortunes/raw")]
+        [HttpGet("raw")]
         public async Task<IActionResult> Raw()
         {
-            return View("Fortunes", await RawDb.LoadFortunesRows());
+            var db = HttpContext.RequestServices.GetRequiredService<RawDb>();
+            return View("Fortunes", await db.LoadFortunesRows());
         }
 
-        [HttpGet("fortunes/dapper")]
+        [HttpGet("dapper")]
         public async Task<IActionResult> Dapper()
         {
-            return View("Fortunes", await DapperDb.LoadFortunesRows());
+            var db = HttpContext.RequestServices.GetRequiredService<DapperDb>();
+            return View("Fortunes", await db.LoadFortunesRows());
         }
 
-        [HttpGet("fortunes/ef")]
+        [HttpGet("ef")]
         public async Task<IActionResult> Ef()
         {
-            return View("Fortunes", await EfDb.LoadFortunesRows());
+            var db = HttpContext.RequestServices.GetRequiredService<EfDb>();
+            return View("Fortunes", await db.LoadFortunesRows());
         }
     }
 }
