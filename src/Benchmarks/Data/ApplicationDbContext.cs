@@ -1,9 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System.Linq;
 using Benchmarks.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
+using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Data
 {
@@ -22,7 +27,34 @@ namespace Benchmarks.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_appSettings.ConnectionString);
+            var extension = GetOrCreateExtension(optionsBuilder);
+            extension.ConnectionString = _appSettings.ConnectionString;
+            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+        }
+
+        private static SqlServerOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
+        {
+            var existing = optionsBuilder.Options.FindExtension<NoTxSqlServerOptionsExtension>();
+            return existing != null
+                ? new NoTxSqlServerOptionsExtension(existing)
+                : new NoTxSqlServerOptionsExtension();
+        }
+
+        private class NoTxSqlServerOptionsExtension : SqlServerOptionsExtension
+        {
+            public NoTxSqlServerOptionsExtension()
+            {
+            }
+
+            public NoTxSqlServerOptionsExtension(NoTxSqlServerOptionsExtension copyFrom) : base(copyFrom)
+            {
+            }
+            public override void ApplyServices(IServiceCollection services)
+            {
+                base.ApplyServices(services);
+                services.Remove(services.First((sd) => sd.ServiceType == typeof(ISqlServerConnection)));
+                services.AddScoped<ISqlServerConnection, NoTransactionSqlServerConnection>();
+            }
         }
     }
 }

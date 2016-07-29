@@ -51,7 +51,7 @@ namespace Benchmarks
             services.AddSingleton<ApplicationDbSeeder>();
             services.AddEntityFrameworkSqlServer()
                 .AddDbContext<ApplicationDbContext>();
-
+            
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
                 // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
