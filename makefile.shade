@@ -19,7 +19,7 @@ k-standard-goals
     var scenarios = new string[]
     {
       "-n plaintext",
-      "-n plaintext --connectionFilter Microsoft.AspNetCore.Server.Kestrel.Filter.NoOpConnectionFilter,Microsoft.AspNetCore.Server.Kestrel",
+      "-n plaintext --connectionFilter Benchmarks.PassthroughConnectionFilter",
       "-n json",
       "-n mvcplaintext",
       "-n mvcjson"
