@@ -309,7 +309,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
-                        [ConnectionFilter] [nvarchar](max) NOT NULL,
+                        [ConnectionFilter] [nvarchar](max),
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
