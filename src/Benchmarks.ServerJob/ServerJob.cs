@@ -13,6 +13,8 @@ namespace Benchmarks.ServerJob
     {
         public int Id { get; set; }
 
+        public string ConnectionFilter { get; set; }
+
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

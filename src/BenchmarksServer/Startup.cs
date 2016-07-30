@@ -249,6 +249,11 @@ namespace BenchmarkServer
             var filename = "dotnet";
             var arguments = $"run -c Release -- --scenarios {job.Scenario} --server.urls http://{hostname}:5000";
 
+            if (!String.IsNullOrEmpty(job.ConnectionFilter))
+            {
+                arguments += $" --connectionFilter {job.ConnectionFilter}";
+            }
+
             Log.WriteLine($"Starting process '{filename} {arguments}'");
 
             var process = new Process()

@@ -16,9 +16,16 @@ k-standard-goals
 #benchmark-tests .compile
   @{
     var sql = string.IsNullOrEmpty(E("BENCHMARK_SQL")) ? string.Empty : "-q " + E("BENCHMARK_SQL");
-    var scenarios = new string[] { "plaintext", "json", "mvcplaintext", "mvcjson" };
+    var scenarios = new string[]
+    {
+      "-n plaintext",
+      "-n plaintext --connectionFilter Microsoft.AspNetCore.Server.Kestrel.Filter.NoOpConnectionFilter,Microsoft.AspNetCore.Server.Kestrel",
+      "-n json",
+      "-n mvcplaintext",
+      "-n mvcjson"
+    };
     foreach (var scenario in scenarios) {
-      Dotnet(String.Format("-v run -- -n {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
+      Dotnet(String.Format("-v run -- {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
         "src/BenchmarksDriver");
     }
   }
