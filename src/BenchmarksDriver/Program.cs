@@ -309,7 +309,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
-                        [ConnectionFilter] [nvarchar](max),
+                        [ConnectionFilter] [nvarchar](max) NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
@@ -355,11 +355,11 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
-                    p.AddWithValue("@ConnectionFilter", connectionFilter);
+                    p.AddWithValue("@ConnectionFilter", (object)connectionFilter ?? DBNull.Value);
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
-                    p.AddWithValue("@PipelineDepth", ((object)pipelineDepth) ?? DBNull.Value);
+                    p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();
