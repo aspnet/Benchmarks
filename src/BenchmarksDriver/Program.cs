@@ -355,7 +355,8 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
-                    p.AddWithValue("@ConnectionFilter", (object)connectionFilter ?? DBNull.Value);
+                    p.AddWithValue("@ConnectionFilter",
+                        String.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
