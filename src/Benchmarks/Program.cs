@@ -144,7 +144,7 @@ namespace Benchmarks
         private static IConnectionFilter GetConnectionFilter(IConfigurationRoot config, IConnectionFilter prevFilter)
         {
             var connectionFilterValue = config["connectionFilter"];
-            if (String.IsNullOrEmpty(connectionFilterValue))
+            if (string.IsNullOrEmpty(connectionFilterValue))
             {
                 return null;
             }
