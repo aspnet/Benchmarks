@@ -7,9 +7,9 @@ using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
 
 namespace Benchmarks
 {
