@@ -40,8 +40,7 @@ namespace BenchmarkDriver
 
             app.HelpOption("-?|-h|--help");
 
-            var scenarioOption = app.Option("-n|--scenario",
-                "Benchmark scenario to run", CommandOptionType.SingleValue);
+            // Driver Options
             var serverOption = app.Option("-s|--server",
                 "URL of benchmark server", CommandOptionType.SingleValue);
             var clientOption = app.Option("-c|--client",
@@ -49,19 +48,25 @@ namespace BenchmarkDriver
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
+            // ServerJob Options
+            var connectionFilterOption = app.Option("--connectionFilter",
+                "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
+            var scenarioOption = app.Option("-n|--scenario",
+                "Benchmark scenario to run", CommandOptionType.SingleValue);
             var sourceOption = app.Option("-o|--source",
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
 
+            // ClientJob Options
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client", CommandOptionType.SingleValue);
-            var threadsOption = app.Option("--threads",
-                "Number of threads used by client", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
                 "Duration of test in seconds", CommandOptionType.SingleValue);
             var pipelineDepthOption = app.Option("--pipelineDepth",
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
+            var threadsOption = app.Option("--threads",
+                "Number of threads used by client", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -81,6 +86,11 @@ namespace BenchmarkDriver
                     {
                         Scenario = scenario,
                     };
+
+                    if (connectionFilterOption.HasValue())
+                    {
+                        serverJob.ConnectionFilter = connectionFilterOption.Value();
+                    }
 
                     var sources = new List<Source>();
                     foreach (var source in sourceOption.Values)
@@ -179,7 +189,7 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, clientJob.Threads,
+                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.ConnectionFilter, clientJob.Threads,
                         clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
                 }
             }
@@ -279,7 +289,15 @@ namespace BenchmarkDriver
             return clientJob;
         }
 
-        private static async Task WriteResultsToSql(string connectionString, Scenario scenario, int threads, int connections, int duration, int? pipelineDepth, double rps)
+        private static async Task WriteResultsToSql(
+            string connectionString,
+            Scenario scenario,
+            string connectionFilter,
+            int threads,
+            int connections,
+            int duration,
+            int? pipelineDepth,
+            double rps)
         {
             Log("Writing results to SQL...");
 
@@ -291,6 +309,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
+                        [ConnectionFilter] [nvarchar](max) NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
@@ -305,6 +324,7 @@ namespace BenchmarkDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Scenario]
+                           ,[ConnectionFilter]
                            ,[Threads]
                            ,[Connections]
                            ,[Duration]
@@ -313,6 +333,7 @@ namespace BenchmarkDriver
                      VALUES
                            (@DateTime
                            ,@Scenario
+                           ,@ConnectionFilter
                            ,@Threads
                            ,@Connections
                            ,@Duration
@@ -334,10 +355,12 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
+                    p.AddWithValue("@ConnectionFilter",
+                        string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
-                    p.AddWithValue("@PipelineDepth", ((object)pipelineDepth) ?? DBNull.Value);
+                    p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();

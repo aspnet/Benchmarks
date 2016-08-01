@@ -7,6 +7,7 @@ using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +51,12 @@ namespace Benchmarks
                 var threads = GetThreadCount(config);
                 webHostBuilder = webHostBuilder.UseKestrel((options) =>
                 {
+                    var connectionFilter = GetConnectionFilter(config, options.ConnectionFilter);
+                    if (connectionFilter != null)
+                    {
+                        options.ConnectionFilter = connectionFilter;
+                    }
+
                     if (threads > 0)
                     {
                         options.ThreadCount = threads;
@@ -133,6 +140,21 @@ namespace Benchmarks
             var threadCountValue = config["threadCount"];
             return threadCountValue == null ? -1 : int.Parse(threadCountValue);
         }
+
+        private static IConnectionFilter GetConnectionFilter(IConfigurationRoot config, IConnectionFilter prevFilter)
+        {
+            var connectionFilterValue = config["connectionFilter"];
+            if (string.IsNullOrEmpty(connectionFilterValue))
+            {
+                return null;
+            }
+            else
+            {
+                var connectionFilterType = Type.GetType(connectionFilterValue, throwOnError: true);
+                return (IConnectionFilter)Activator.CreateInstance(connectionFilterType, prevFilter ?? new NoOpConnectionFilter());
+            }
+        }
+
     }
 }
 
