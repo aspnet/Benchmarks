@@ -21,6 +21,7 @@ k-standard-goals
       "-n plaintext",
       "-n plaintext --connectionFilter Benchmarks.PassthroughConnectionFilter",
       "-n json",
+      "-n json --connectionFilter Benchmarks.PassthroughConnectionFilter",
       "-n mvcplaintext",
       "-n mvcjson"
     };
