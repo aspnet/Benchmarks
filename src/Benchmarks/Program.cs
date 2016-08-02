@@ -62,7 +62,7 @@ namespace Benchmarks
                         options.ThreadCount = threads;
                     }
 
-                    if (config["server.urls"].IndexOf("https://", StringComparison.OrdinalIgnoreCase) > -1)
+                    if (config["server.urls"]?.IndexOf("https://", StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         options.UseHttps("testCert.pfx", "testPassword");
                     }
