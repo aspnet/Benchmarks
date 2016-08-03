@@ -28,7 +28,8 @@ namespace Benchmarks.ServerJob
             }
         }
 
-        public string Scheme { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Scheme Scheme { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scenario Scenario { get; set; }

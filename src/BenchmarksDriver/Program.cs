@@ -72,66 +72,73 @@ namespace BenchmarkDriver
 
             app.OnExecute(() =>
             {
-                var scheme = schemeOption.Value() ?? "http";
+                var schemeValue = schemeOption.Value();
+                if (string.IsNullOrEmpty(schemeValue))
+                {
+                    schemeValue = "http";
+                }
+
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
+                Scheme scheme;
                 Scenario scenario;
-                if (!Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
+                if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out scheme) ||
+                    !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) ||
+                    string.IsNullOrWhiteSpace(server) ||
+                    string.IsNullOrWhiteSpace(client))
                 {
                     app.ShowHelp();
                     return 2;
                 }
-                else
+
+                var serverJob = new ServerJob()
                 {
-                    var serverJob = new ServerJob()
-                    {
-                        Scheme = scheme,
-                        Scenario = scenario,
-                    };
+                    Scheme = scheme,
+                    Scenario = scenario,
+                };
 
-                    if (connectionFilterOption.HasValue())
-                    {
-                        serverJob.ConnectionFilter = connectionFilterOption.Value();
-                    }
-
-                    var sources = new List<Source>();
-                    foreach (var source in sourceOption.Values)
-                    {
-                        var split = source.IndexOf('@');
-                        var repository = (split == -1) ? source : source.Substring(0, split);
-                        var branch = (split == -1) ? null : source.Substring(split + 1);
-
-                        if (!repository.Contains(":"))
-                        {
-                            repository = $"https://github.com/aspnet/{repository}.git";
-                        }
-
-                        sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
-                    }
-                    serverJob.Sources = sources;
-
-                    // Override default ClientJob settings if options are set
-                    if (connectionsOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
-                    }
-                    if (threadsOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
-                    }
-                    if (durationOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
-                    }
-                    if (pipelineDepthOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
-                    }
-
-                    return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
+                if (connectionFilterOption.HasValue())
+                {
+                    serverJob.ConnectionFilter = connectionFilterOption.Value();
                 }
+
+                var sources = new List<Source>();
+                foreach (var source in sourceOption.Values)
+                {
+                    var split = source.IndexOf('@');
+                    var repository = (split == -1) ? source : source.Substring(0, split);
+                    var branch = (split == -1) ? null : source.Substring(split + 1);
+
+                    if (!repository.Contains(":"))
+                    {
+                        repository = $"https://github.com/aspnet/{repository}.git";
+                    }
+
+                    sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                }
+                serverJob.Sources = sources;
+
+                // Override default ClientJob settings if options are set
+                if (connectionsOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
+                }
+                if (threadsOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
+                }
+                if (durationOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
+                }
+                if (pipelineDepthOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
+                }
+
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
             });
 
             return app.Execute(args);
