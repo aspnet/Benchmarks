@@ -49,10 +49,12 @@ namespace BenchmarkDriver
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
             // ServerJob Options
-            var connectionFilterOption = app.Option("--connectionFilter",
+            var connectionFilterOption = app.Option("-f|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
+            var schemeOption = app.Option("-m|--scheme",
+                "Scheme (http or https).  Default is http.", CommandOptionType.SingleValue);
             var sourceOption = app.Option("-o|--source",
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
@@ -70,64 +72,73 @@ namespace BenchmarkDriver
 
             app.OnExecute(() =>
             {
+                var schemeValue = schemeOption.Value();
+                if (string.IsNullOrEmpty(schemeValue))
+                {
+                    schemeValue = "http";
+                }
+
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
+                Scheme scheme;
                 Scenario scenario;
-                if (!Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) || string.IsNullOrWhiteSpace(server) || string.IsNullOrWhiteSpace(client))
+                if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out scheme) ||
+                    !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) ||
+                    string.IsNullOrWhiteSpace(server) ||
+                    string.IsNullOrWhiteSpace(client))
                 {
                     app.ShowHelp();
                     return 2;
                 }
-                else
+
+                var serverJob = new ServerJob()
                 {
-                    var serverJob = new ServerJob()
-                    {
-                        Scenario = scenario,
-                    };
+                    Scheme = scheme,
+                    Scenario = scenario,
+                };
 
-                    if (connectionFilterOption.HasValue())
-                    {
-                        serverJob.ConnectionFilter = connectionFilterOption.Value();
-                    }
-
-                    var sources = new List<Source>();
-                    foreach (var source in sourceOption.Values)
-                    {
-                        var split = source.IndexOf('@');
-                        var repository = (split == -1) ? source : source.Substring(0, split);
-                        var branch = (split == -1) ? null : source.Substring(split + 1);
-
-                        if (!repository.Contains(":"))
-                        {
-                            repository = $"https://github.com/aspnet/{repository}.git";
-                        }
-
-                        sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
-                    }
-                    serverJob.Sources = sources;
-
-                    // Override default ClientJob settings if options are set
-                    if (connectionsOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
-                    }
-                    if (threadsOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
-                    }
-                    if (durationOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
-                    }
-                    if (pipelineDepthOption.HasValue())
-                    {
-                        _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
-                    }
-
-                    return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
+                if (connectionFilterOption.HasValue())
+                {
+                    serverJob.ConnectionFilter = connectionFilterOption.Value();
                 }
+
+                var sources = new List<Source>();
+                foreach (var source in sourceOption.Values)
+                {
+                    var split = source.IndexOf('@');
+                    var repository = (split == -1) ? source : source.Substring(0, split);
+                    var branch = (split == -1) ? null : source.Substring(split + 1);
+
+                    if (!repository.Contains(":"))
+                    {
+                        repository = $"https://github.com/aspnet/{repository}.git";
+                    }
+
+                    sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                }
+                serverJob.Sources = sources;
+
+                // Override default ClientJob settings if options are set
+                if (connectionsOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
+                }
+                if (threadsOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
+                }
+                if (durationOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
+                }
+                if (pipelineDepthOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
+                }
+
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
             });
 
             return app.Execute(args);
@@ -189,7 +200,7 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.ConnectionFilter, clientJob.Threads,
+                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter, clientJob.Threads,
                         clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
                 }
             }
@@ -292,6 +303,7 @@ namespace BenchmarkDriver
         private static async Task WriteResultsToSql(
             string connectionString,
             Scenario scenario,
+            Scheme scheme,
             string connectionFilter,
             int threads,
             int connections,
@@ -309,6 +321,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
+                        [Scheme] [nvarchar](max) NOT NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
@@ -324,6 +337,7 @@ namespace BenchmarkDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Scenario]
+                           ,[Scheme]
                            ,[ConnectionFilter]
                            ,[Threads]
                            ,[Connections]
@@ -333,6 +347,7 @@ namespace BenchmarkDriver
                      VALUES
                            (@DateTime
                            ,@Scenario
+                           ,@Scheme
                            ,@ConnectionFilter
                            ,@Threads
                            ,@Connections
@@ -355,6 +370,7 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
+                    p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@Threads", threads);

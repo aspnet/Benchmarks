@@ -61,6 +61,11 @@ namespace Benchmarks
                     {
                         options.ThreadCount = threads;
                     }
+
+                    if (UrlContainsHttps(config))
+                    {
+                        options.UseHttps("testCert.pfx", "testPassword");
+                    }
                 });
             }
             else if (String.Equals(Server, "WebListener", StringComparison.OrdinalIgnoreCase))
@@ -155,6 +160,23 @@ namespace Benchmarks
             }
         }
 
+        // Copied from https://github.com/aspnet/Hosting/blob/dev/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs
+        private static bool UrlContainsHttps(IConfiguration config)
+        {
+            var urls = config["urls"] ?? config["server.urls"];
+
+            if (!string.IsNullOrEmpty(urls))
+            {
+                foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 }
 

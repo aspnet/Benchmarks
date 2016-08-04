@@ -20,6 +20,7 @@
     },
     "Microsoft.AspNetCore.Mvc": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0-*",
@@ -45,6 +46,7 @@
   "publishOptions": {
     "include": [
       "appsettings.json",
+      "testCert.pfx",
       "wwwroot",
       "Views"
     ]
