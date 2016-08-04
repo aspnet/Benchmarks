@@ -19,9 +19,9 @@ k-standard-goals
     var scenarios = new string[]
     {
       "-n plaintext",
-      "-n plaintext --connectionFilter Benchmarks.PassthroughConnectionFilter",
+      "-n plaintext -f Benchmarks.PassthroughConnectionFilter",
       "-n json",
-      "-n json --connectionFilter Benchmarks.PassthroughConnectionFilter",
+      "-n json -f Benchmarks.PassthroughConnectionFilter",
       "-n mvcplaintext",
       "-n mvcjson"
     };

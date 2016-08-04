@@ -49,7 +49,7 @@ namespace BenchmarkDriver
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
 
             // ServerJob Options
-            var connectionFilterOption = app.Option("--connectionFilter",
+            var connectionFilterOption = app.Option("-f|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
