@@ -200,7 +200,7 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.ConnectionFilter, clientJob.Threads,
+                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter, clientJob.Threads,
                         clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
                 }
             }
@@ -303,6 +303,7 @@ namespace BenchmarkDriver
         private static async Task WriteResultsToSql(
             string connectionString,
             Scenario scenario,
+            Scheme scheme,
             string connectionFilter,
             int threads,
             int connections,
@@ -320,6 +321,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
+                        [Scheme] [nvarchar](max) NOT NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
@@ -335,6 +337,7 @@ namespace BenchmarkDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Scenario]
+                           ,[Scheme]
                            ,[ConnectionFilter]
                            ,[Threads]
                            ,[Connections]
@@ -344,6 +347,7 @@ namespace BenchmarkDriver
                      VALUES
                            (@DateTime
                            ,@Scenario
+                           ,@Scheme
                            ,@ConnectionFilter
                            ,@Threads
                            ,@Connections
@@ -366,6 +370,7 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
+                    p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@Threads", threads);
