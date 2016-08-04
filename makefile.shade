@@ -20,8 +20,10 @@ k-standard-goals
     {
       "-n plaintext",
       "-n plaintext -f Benchmarks.PassthroughConnectionFilter",
+      "-n plaintext -m https",
       "-n json",
       "-n json -f Benchmarks.PassthroughConnectionFilter",
+      "-n json -m https",
       "-n mvcplaintext",
       "-n mvcjson"
     };
