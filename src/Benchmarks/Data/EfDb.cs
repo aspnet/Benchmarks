@@ -41,15 +41,19 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var result = await LoadMultipleQueriesRows(count);
+            var results = new World[count];
 
             for (int i = 0; i < count; i++)
             {
-                result[i].RandomNumber = _random.Next(1, 10001);
-            }
+                var result = await LoadSingleQueryRow();
 
+                result.RandomNumber = _random.Next(1, 10001);
+                _dbContext.Update(result);
+                results[i] = result;
+            }
+                
             await _dbContext.SaveChangesAsync();
-            return result;
+            return results;
         }
 
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()

@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Dynamic;
+using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Dapper;
@@ -30,16 +32,20 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
 
                 // Note: Don't need to open connection if only doing one thing; let dapper do it
-                return await db.QueryFirstOrDefaultAsync<World>(
+                return await ReadSingleRow(db);
+            }
+        }
+
+        async Task<World> ReadSingleRow(DbConnection db)
+        {
+            return await db.QueryFirstOrDefaultAsync<World>(
                     "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
                     new { Id = _random.Next(1, 10001) });
-            }
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            var result = new World[count];
-
+            var results = new World[count];
             using (var db = _dbProviderFactory.CreateConnection())
             {
                 db.ConnectionString = _connectionString;
@@ -47,20 +53,18 @@ namespace Benchmarks.Data
 
                 for (int i = 0; i < count; i++)
                 {
-                    result[i] = await db.QueryFirstOrDefaultAsync<World>(
-                        "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
-                        new { Id = _random.Next(1, 10001) });
+                    results[i] = await ReadSingleRow(db);
                 }
-
-                db.Close();
             }
 
-            return result;
+            return results;
         }
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var result = await LoadMultipleQueriesRows(count);
+            var results = new World[count];
+            IDictionary<string, object> parameters = new ExpandoObject();
+            var updateCommand = new StringBuilder(count);
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
@@ -69,15 +73,19 @@ namespace Benchmarks.Data
 
                 for (int i = 0; i < count; i++)
                 {
+                    results[i] = await ReadSingleRow(db);
                     var randomNumber = _random.Next(1, 10001);
-                    await db.ExecuteAsync("UPDATE world SET randomNumber = @Random WHERE id = @Id", new { Random = randomNumber, Id = result[i].Id });
-                    result[i].RandomNumber = randomNumber;
+                    parameters[BatchUpdateString.Strings[i].Random] = randomNumber;
+                    parameters[BatchUpdateString.Strings[i].Id] = results[i].Id;
+
+                    results[i].RandomNumber = randomNumber;
+                    updateCommand.Append(BatchUpdateString.Strings[i].UpdateQuery);
                 }
 
-                db.Close();
+                await db.ExecuteAsync(updateCommand.ToString(), parameters);
             }
 
-            return result;
+            return results;
         }
 
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
