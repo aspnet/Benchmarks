@@ -40,7 +40,7 @@ namespace Benchmarks
 
         public Scenarios Scenarios { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppSettings>(Configuration);
 
@@ -119,6 +119,8 @@ namespace Benchmarks
             {
                 services.AddMemoryResponseCacheStore();
             }
+
+            return services.BuildServiceProvider(validateScopes: true);
         }
 
         public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, ApplicationDbContext dbContext)
