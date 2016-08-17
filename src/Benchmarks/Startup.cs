@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Npgsql;
 
 namespace Benchmarks
 {
@@ -54,8 +55,15 @@ namespace Benchmarks
             
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
-                // TODO: Add support for plugging in different DbProviderFactory implementations via configuration
-                services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
+                var database = Configuration["database"] ?? "sqlserver";
+                if (database.ToLower() == "postgresql")
+                {
+                    services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
+                }
+                else
+                {
+                    services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
+                }
             }
 
             if (Scenarios.Any("Ef"))

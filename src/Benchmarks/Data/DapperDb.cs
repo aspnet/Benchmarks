@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Dynamic;
@@ -39,7 +40,7 @@ namespace Benchmarks.Data
         async Task<World> ReadSingleRow(DbConnection db)
         {
             return await db.QueryFirstOrDefaultAsync<World>(
-                    "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id",
+                    "SELECT Id, RandomNumber FROM World WHERE Id = @Id",
                     new { Id = _random.Next(1, 10001) });
         }
 
@@ -74,6 +75,13 @@ namespace Benchmarks.Data
                 for (int i = 0; i < count; i++)
                 {
                     results[i] = await ReadSingleRow(db);
+                }
+
+                // postgres has problems with deadlocks when these aren't sorted
+                Array.Sort<World>(results, (a, b) => a.Id.CompareTo(b.Id));
+
+                for (int i = 0; i < count; i++)
+                {
                     var randomNumber = _random.Next(1, 10001);
                     parameters[BatchUpdateString.Strings[i].Random] = randomNumber;
                     parameters[BatchUpdateString.Strings[i].Id] = results[i].Id;
@@ -97,7 +105,7 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
 
                 // Note: don't need to open connection if only doing one thing; let dapper do it
-                result = (await db.QueryAsync<Fortune>("SELECT [Id], [Message] FROM [Fortune]")).AsList();
+                result = (await db.QueryAsync<Fortune>("SELECT Id, Message FROM Fortune")).AsList();
             }
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
