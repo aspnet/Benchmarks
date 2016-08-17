@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -27,22 +28,15 @@ namespace Benchmarks.Data
         public async Task<World> LoadSingleQueryRow()
         {
             using (var db = _dbProviderFactory.CreateConnection())
+            using (var cmd = CreateReadCommand(db))
             {
                 db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
-                return await ReadSingleRow(db);
+                return await ReadSingleRow(db, cmd);
             }
         }
-
-        Task<World> ReadSingleRow(DbConnection connection)
-        {
-            using (var cmd = CreateReadCommand(connection))
-            {
-                return ReadSingleRow(connection, cmd);
-            }
-        }
-
+        
         async Task<World> ReadSingleRow(DbConnection connection, DbCommand cmd)
         {
             using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
@@ -60,7 +54,7 @@ namespace Benchmarks.Data
         DbCommand CreateReadCommand(DbConnection connection)
         {
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT [Id], [RandomNumber] FROM [World] WHERE [Id] = @Id";
+            cmd.CommandText = "SELECT Id, RandomNumber FROM World WHERE Id = @Id";
             var id = cmd.CreateParameter();
             id.ParameterName = "@Id";
             id.DbType = DbType.Int32;
@@ -92,6 +86,7 @@ namespace Benchmarks.Data
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
+           
             var updateCommand = new StringBuilder(count);
 
             using (var db = _dbProviderFactory.CreateConnection())
@@ -102,6 +97,15 @@ namespace Benchmarks.Data
                 await db.OpenAsync();
 
                 for (int i = 0; i < count; i++)
+                {
+                    results[i] = await ReadSingleRow(db, queryCmd);
+                    queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
+                }
+
+                // postgres has problems with deadlocks when these aren't sorted
+                Array.Sort<World>(results, (a, b) => a.Id.CompareTo(b.Id));
+
+                for(int i = 0; i < count; i++)
                 {
                     var id = updateCmd.CreateParameter();
                     id.ParameterName = BatchUpdateString.Strings[i].Id;
@@ -114,14 +118,11 @@ namespace Benchmarks.Data
                     updateCmd.Parameters.Add(random);
 
                     var randomNumber = _random.Next(1, 10001);
-                    var result = await ReadSingleRow(db, queryCmd);
-                    id.Value = result.Id;
+                    id.Value = results[i].Id;
                     random.Value = randomNumber;
+                    results[i].RandomNumber = randomNumber;
+
                     updateCommand.Append(BatchUpdateString.Strings[i].UpdateQuery);
-                    
-                    result.RandomNumber = randomNumber;
-                    results[i] = result;
-                    queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                 }
 
                 updateCmd.CommandText = updateCommand.ToString();
@@ -138,7 +139,7 @@ namespace Benchmarks.Data
             using (var db = _dbProviderFactory.CreateConnection())
             using (var cmd = db.CreateCommand())
             {
-                cmd.CommandText = "SELECT [Id], [Message] FROM [Fortune]";
+                cmd.CommandText = "SELECT Id, Message FROM Fortune";
 
                 db.ConnectionString = _connectionString;
                 await db.OpenAsync();

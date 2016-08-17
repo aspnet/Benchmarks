@@ -25,11 +25,26 @@ namespace Benchmarks.Data
 
         public DbSet<Fortune> Fortune { get; set; }
 
+        public bool UseBatchUpdate 
+        { 
+            get
+            {
+                return _appSettings.Database != DatabaseServer.PostgreSql;
+            }
+        } 
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var extension = GetOrCreateExtension(optionsBuilder);
-            extension.ConnectionString = _appSettings.ConnectionString;
-            ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+            if (_appSettings.Database == DatabaseServer.PostgreSql)
+            {
+                optionsBuilder.UseNpgsql(_appSettings.ConnectionString);
+            }
+            else
+            {
+                var extension = GetOrCreateExtension(optionsBuilder);
+                extension.ConnectionString = _appSettings.ConnectionString;
+                ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+            }
         }
 
         private static SqlServerOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
