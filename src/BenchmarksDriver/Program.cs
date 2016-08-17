@@ -318,7 +318,7 @@ namespace BenchmarkDriver
                 IF OBJECT_ID(N'dbo.AspNetBenchmarks', N'U') IS NULL
                 BEGIN
                     CREATE TABLE [dbo].[AspNetBenchmarks](
-                        [Id] [int] IDENTITY(1,1) NOT NULL,
+                        [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
