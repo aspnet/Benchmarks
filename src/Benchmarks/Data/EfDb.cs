@@ -22,7 +22,6 @@ namespace Benchmarks.Data
         public Task<World> LoadSingleQueryRow()
         {
             var id = _random.Next(1, 10001);
-            
             return _dbContext.World.FirstAsync(w => w.Id == id);
         }
 
@@ -45,10 +44,10 @@ namespace Benchmarks.Data
 
             for (int i = 0; i < count; i++)
             {
-                var result = await LoadSingleQueryRow();
+                var id = _random.Next(1, 10001);
+                var result = await _dbContext.World.AsTracking().FirstAsync(w => w.Id == id);
 
                 result.RandomNumber = _random.Next(1, 10001);
-                _dbContext.Update(result);
                 results[i] = result;
             }
                 
