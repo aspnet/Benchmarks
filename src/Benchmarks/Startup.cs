@@ -106,8 +106,6 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, ApplicationDbContext dbContext)
         {
-            app.UseErrorHandler();
-
             if (Scenarios.Plaintext)
             {
                 app.UsePlainText();
