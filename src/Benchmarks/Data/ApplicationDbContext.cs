@@ -19,18 +19,23 @@ namespace Benchmarks.Data
         public ApplicationDbContext(IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
-            UseBatchUpdate = _appSettings.Database != "postgresql";
         }
 
         public DbSet<World> World { get; set; }
 
         public DbSet<Fortune> Fortune { get; set; }
 
-        public bool UseBatchUpdate { get; } 
+        public bool UseBatchUpdate 
+        { 
+            get
+            {
+                return _appSettings.Database != DatabaseServer.PostgreSql;
+            }
+        } 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (_appSettings.Database == "postgresql")
+            if (_appSettings.Database == DatabaseServer.PostgreSql)
             {
                 optionsBuilder.UseNpgsql(_appSettings.ConnectionString);
             }

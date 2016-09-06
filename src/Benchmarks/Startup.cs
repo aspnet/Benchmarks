@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Npgsql;
 
@@ -55,15 +56,18 @@ namespace Benchmarks
             
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
-                var database = Configuration["database"] ?? "sqlserver";
-                if (database.ToLower() == "postgresql")
-                {
-                    services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
-                }
-                else
-                {
-                    services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
-                }
+                services.AddSingleton<DbProviderFactory>((provider) => {
+                    var settings = provider.GetRequiredService<IOptions<AppSettings>>().Value;
+
+                    if (settings.Database == DatabaseServer.PostgreSql)
+                    {
+                        return NpgsqlFactory.Instance;
+                    }
+                    else
+                    {
+                        return SqlClientFactory.Instance;
+                    }
+                });
             }
 
             if (Scenarios.Any("Ef"))
