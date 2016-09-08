@@ -49,13 +49,13 @@ namespace Benchmarks.Data
 
                 result.RandomNumber = _random.Next(1, 10001);
                 results[i] = result;
-                if(!_dbContext.UseBatchUpdate)
+                if (!_dbContext.UseBatchUpdate)
                 {
                     await _dbContext.SaveChangesAsync();
                 }
             }
             
-            if(_dbContext.UseBatchUpdate)
+            if (_dbContext.UseBatchUpdate)
             {
                 await _dbContext.SaveChangesAsync();
             }
