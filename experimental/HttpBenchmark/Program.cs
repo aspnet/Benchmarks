@@ -1,16 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics;
-using Microsoft.Extensions.CommandLineUtils;
 using System;
-using System.Text;
-using System.Net.Sockets;
-using System.Net;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace HttpBenchmark
 {
