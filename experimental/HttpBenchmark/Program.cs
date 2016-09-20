@@ -241,9 +241,6 @@ namespace HttpBenchmark
         {
             var response = Encoding.ASCII.GetString(buffer, 0, count);
 
-            // TEMP
-            Console.WriteLine(response);
-
             // Determine if response uses Content-Length or Chunked
             int? contentLength = null;
             bool chunked = false;
