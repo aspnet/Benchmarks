@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25029.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 EndProject
@@ -34,6 +34,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ClientJob", "src\Benchmarks.ClientJob\Benchmarks.ClientJob.xproj", "{FFE0CFA5-ADCB-4E63-9B2D-DBC48A3C8364}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ServerJob", "src\Benchmarks.ServerJob\Benchmarks.ServerJob.xproj", "{0748A92D-3AC6-4406-B09C-0BF07A030DD5}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HttpBenchmark", "experimental\HttpBenchmark\HttpBenchmark.xproj", "{174DC3AC-F883-4B85-BE90-EA5B7BB01961}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +131,14 @@ Global
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5}.Release|x86.ActiveCfg = Release|Any CPU
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5}.Release|x86.Build.0 = Release|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Debug|x86.Build.0 = Debug|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.ActiveCfg = Release|Any CPU
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,5 +155,6 @@ Global
 		{716F7F93-BC1D-4B2C-BF1C-20051CAF7BB7} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{FFE0CFA5-ADCB-4E63-9B2D-DBC48A3C8364} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
+		{174DC3AC-F883-4B85-BE90-EA5B7BB01961} = {C2EB60CC-CA5A-4E49-A3F8-4432FB117869}
 	EndGlobalSection
 EndGlobal
