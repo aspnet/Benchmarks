@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -38,6 +39,8 @@ namespace HttpBenchmark
                 CommandOptionType.SingleValue);
             var keepaliveOption = app.Option("-k|--keepalive", "Reuse connections for multiple requests.  Default is TRUE.",
                 CommandOptionType.SingleValue);
+            var methodOption = app.Option("-m|--method", "Request method.  Default is GET.", CommandOptionType.SingleValue);
+            var bodyOption = app.Option("-b|--body", "Request body.", CommandOptionType.SingleValue);
 
             var urlArgument = app.Argument("url", "URL to benchmark");
 
@@ -67,6 +70,15 @@ namespace HttpBenchmark
                     keepaliveValue = "true";
                 }
 
+                var method = methodOption.Value();
+                if (string.IsNullOrEmpty(method))
+                {
+                    method = "GET";
+                }
+                method = method.ToUpperInvariant();
+
+                var body = bodyOption.Value();
+
                 var url = urlArgument.Value;
 
                 int connections;
@@ -88,21 +100,28 @@ namespace HttpBenchmark
                     return 2;
                 }
 
-                return Run(connections, TimeSpan.FromSeconds(duration), pipeline, keepalive, uri);
+                return Run(connections, TimeSpan.FromSeconds(duration), pipeline, keepalive, method, body, uri);
             });
 
             return app.Execute(args);
         }
 
-        private static int Run(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
+        private static int Run(int connections, TimeSpan duration, int pipeline, bool keepalive, string method, string body, Uri uri)
         {
             Init(connections, duration, pipeline, keepalive, uri);
 
             var requestString =
-                $"GET {uri.PathAndQuery} HTTP/1.1\r\n" +
+                $"{method} {uri.PathAndQuery} HTTP/1.1\r\n" +
                 $"Host: {uri.Host}:{uri.Port}\r\n" +
                 $"Accept: */*\r\n" +
-                $"\r\n";
+                $"\r\n" +
+                body;
+
+            if (!string.IsNullOrEmpty(body))
+            {
+                requestString = requestString.Insert(requestString.IndexOf("Accept: */*\r\n"),
+                    $"Content-Length: {Encoding.ASCII.GetBytes(body).Length}\r\n");
+            }
 
             var requestBytes = Encoding.ASCII.GetBytes(requestString);
 
@@ -111,8 +130,9 @@ namespace HttpBenchmark
             // Calculate response length
             using (var socket = CreateSocket(uri).Result)
             {
-                var requestStringWithConnectionClose = requestString.Replace("Host:", "Connection: Close\r\nHost:");
-                socket.Send(Encoding.ASCII.GetBytes(requestStringWithConnectionClose));
+                Console.WriteLine("Request:");
+                Console.Write(requestString);
+                socket.Send(requestBytes);
 
                 var responseBuffer = new byte[1024];
                 int bytesReceived = 0;
@@ -122,6 +142,10 @@ namespace HttpBenchmark
                     if (b > 0)
                     {
                         bytesReceived += b;
+                        if (ResponseComplete(responseBuffer, bytesReceived))
+                        {
+                            break;
+                        }
                     }
                     else
                     {
@@ -129,13 +153,14 @@ namespace HttpBenchmark
                     }
                 }
 
-                responseLength = bytesReceived - "Connection: close\r\n".Length;
+                responseLength = bytesReceived;
 
-                Console.WriteLine($"Response Length: {responseLength}");
+                Console.WriteLine("Response:");
+                Console.WriteLine(Encoding.ASCII.GetString(responseBuffer, 0, responseLength));
+                Console.WriteLine();
 
-                Console.WriteLine($"Response:");
-                Console.WriteLine(Encoding.ASCII.GetString(responseBuffer, 0, bytesReceived)
-                    .Replace("Connection: close\r\n", String.Empty));
+                Console.WriteLine("Response Length:");
+                Console.WriteLine(responseLength);
                 Console.WriteLine();
             }
 
@@ -194,6 +219,50 @@ namespace HttpBenchmark
             }
 
             return 0;
+        }
+
+        private static bool ResponseComplete(byte[] buffer, int count)
+        {
+            var response = Encoding.ASCII.GetString(buffer, 0, count);
+
+            // TEMP
+            Console.WriteLine(response);
+
+            // Determine if response uses Content-Length or Chunked
+            int? contentLength = null;
+            bool chunked = false;
+            using (var reader = new StringReader(response))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (line.StartsWith("Content-Length: "))
+                    {
+                        contentLength = int.Parse(line.Substring("Content-Length: ".Length));
+                        break;
+                    }
+                    else if (line == "Transfer-Encoding: chunked")
+                    {
+                        chunked = true;
+                        break;
+                    }
+                }
+            }
+
+            if (contentLength != null)
+            {
+                var bodyDelimiter = response.IndexOf("\r\n\r\n");
+                return count == (bodyDelimiter + 4 + contentLength);
+            }
+            else if (chunked)
+            {
+                // Shortcut which handles most chunked responses without parsing all the chunks
+                return response.EndsWith("\r\n0\r\n\r\n");
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
