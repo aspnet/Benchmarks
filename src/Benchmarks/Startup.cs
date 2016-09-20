@@ -128,6 +128,11 @@ namespace Benchmarks
                 app.UseJson();
             }
 
+            if (Scenarios.Copy)
+            {
+                app.UseCopyToAsync();
+            }
+
             // Single query endpoints
             if (Scenarios.DbSingleQueryRaw)
             {

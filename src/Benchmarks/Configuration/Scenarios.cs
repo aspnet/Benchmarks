@@ -26,6 +26,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         public bool StaticFiles { get; set; }
 
+        [ScenarioPath("/copy")]
+        public bool Copy { get; set; }
+
         [ScenarioPath("/db/raw")]
         public bool DbSingleQueryRaw { get; set; }
 

@@ -17,7 +17,7 @@
       }
     },
     "Benchmarks": {
-      "commandName": "Benchmarks",
+      "commandName": "Project",
       "launchUrl": "http://localhost:5000/",
       "environmentVariables": {
         "AspNet_Environment": "Development"
