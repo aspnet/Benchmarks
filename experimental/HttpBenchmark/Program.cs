@@ -31,8 +31,8 @@ namespace HttpBenchmark
 
             app.HelpOption("-?|-h|--help");
 
-            var connectionsOption = app.Option("-c|--connections", "Number of connections", CommandOptionType.SingleValue);
-            var durationOption = app.Option("-d|--duration", "Duration of test in seconds", CommandOptionType.SingleValue);
+            var connectionsOption = app.Option("-c|--connections", "Number of connections.  Default is 256.", CommandOptionType.SingleValue);
+            var durationOption = app.Option("-d|--duration", "Duration of test in seconds.  Default is 10.", CommandOptionType.SingleValue);
             var pipelineOption = app.Option("-p|--pipeline",
                 "Number of HTTP requests to pipeline in a single network roundtrip.  Default is 1 (no pipelining).",
                 CommandOptionType.SingleValue);
@@ -46,7 +46,7 @@ namespace HttpBenchmark
                 var connectionsValue = connectionsOption.Value();
                 if (string.IsNullOrEmpty(connectionsValue))
                 {
-                    connectionsValue = "1";
+                    connectionsValue = "256";
                 }
 
                 var durationValue = durationOption.Value();
@@ -96,7 +96,7 @@ namespace HttpBenchmark
 
         private static int Run(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
         {
-            Init(duration);
+            Init(connections, duration, pipeline, keepalive, uri);
 
             var requestString =
                 $"GET {uri.PathAndQuery} HTTP/1.1\r\n" +
@@ -196,7 +196,7 @@ namespace HttpBenchmark
             return 0;
         }
 
-        private static void Init(TimeSpan duration)
+        private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
         {
 #if DEBUG
             Console.WriteLine($"Configuration: Debug");
@@ -206,6 +206,12 @@ namespace HttpBenchmark
 
             var gc = GCSettings.IsServerGC ? "server" : "client";
             Console.WriteLine($"GC: {gc}");
+
+            Console.WriteLine($"Connections: {connections}");
+            Console.WriteLine($"Duration: {duration}");
+            Console.WriteLine($"Pipeline: {pipeline}");
+            Console.WriteLine($"Keepalive: {keepalive}");
+            Console.WriteLine($"Uri: {uri}");
 
             Console.WriteLine();
 
