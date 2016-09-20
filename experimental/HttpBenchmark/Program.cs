@@ -21,6 +21,12 @@ namespace HttpBenchmark
         private static long _requests;
         private static long _connections;
 
+        private const int _defaultConnections = 256;
+        private const int _defaultDuration = 10;
+        private const int _defaultPipeline = 1;
+        private const bool _defaultKeepalive = true;
+        private const string _defaultMethod = "GET";
+
         public static int Main(string[] args)
         {
             var app = new CommandLineApplication()
@@ -32,75 +38,85 @@ namespace HttpBenchmark
 
             app.HelpOption("-?|-h|--help");
 
-            var connectionsOption = app.Option("-c|--connections", "Number of connections.  Default is 256.", CommandOptionType.SingleValue);
-            var durationOption = app.Option("-d|--duration", "Duration of test in seconds.  Default is 10.", CommandOptionType.SingleValue);
+            var connectionsOption = app.Option("-c|--connections",
+                $"Number of connections.  Default is {_defaultConnections}.",
+                CommandOptionType.SingleValue);
+            var durationOption = app.Option("-d|--duration",
+                $"Duration of test in seconds.  Default is {_defaultDuration}.",
+                CommandOptionType.SingleValue);
             var pipelineOption = app.Option("-p|--pipeline",
-                "Number of HTTP requests to pipeline in a single network roundtrip.  Default is 1 (no pipelining).",
+                $"Number of HTTP requests to pipeline in a single network roundtrip.  Default is {_defaultPipeline} (no pipelining).",
                 CommandOptionType.SingleValue);
-            var keepaliveOption = app.Option("-k|--keepalive", "Reuse connections for multiple requests.  Default is TRUE.",
+            var keepaliveOption = app.Option("-k|--keepalive",
+                $"Reuse connections for multiple requests.  Default is {_defaultKeepalive}.",
                 CommandOptionType.SingleValue);
-            var methodOption = app.Option("-m|--method", "Request method.  Default is GET.", CommandOptionType.SingleValue);
+            var methodOption = app.Option("-m|--method",
+                $"Request method.  Default is {_defaultMethod}.",
+                CommandOptionType.SingleValue);
             var bodyOption = app.Option("-b|--body", "Request body.", CommandOptionType.SingleValue);
 
             var urlArgument = app.Argument("url", "URL to benchmark");
 
             app.OnExecute(() =>
             {
-                var connectionsValue = connectionsOption.Value();
-                if (string.IsNullOrEmpty(connectionsValue))
+                try
                 {
-                    connectionsValue = "256";
+                    var connections = _defaultConnections;
+                    if (connectionsOption.HasValue())
+                    {
+                        connections = int.Parse(connectionsOption.Value());
+                    }
+
+                    var duration = _defaultDuration;
+                    if (durationOption.HasValue())
+                    {
+                        duration = int.Parse(durationOption.Value());
+                    }
+
+                    var pipeline = _defaultPipeline;
+                    if (pipelineOption.HasValue())
+                    {
+                        pipeline = int.Parse(pipelineOption.Value());
+                    }
+
+                    var keepalive = _defaultKeepalive;
+                    if (keepaliveOption.HasValue())
+                    {
+                        keepalive = bool.Parse(keepaliveOption.Value());
+                    }
+
+                    var method = _defaultMethod;
+                    if (methodOption.HasValue())
+                    {
+                        method = methodOption.Value();
+                    }
+                    method = method.ToUpperInvariant();
+
+                    var body = bodyOption.Value();
+
+                    Uri uri = null;
+                    if (!string.IsNullOrWhiteSpace(urlArgument.Value))
+                    {
+                        uri = new Uri(urlArgument.Value);
+                    }
+
+                    if (connections <= 0 ||
+                        duration <= 0 ||
+                        pipeline <= 0 ||
+                        uri == null)
+                    {
+                        app.ShowHelp();
+                        return 2;
+                    }
+
+                    return Run(connections, TimeSpan.FromSeconds(duration), pipeline, keepalive, method, body, uri);
                 }
-
-                var durationValue = durationOption.Value();
-                if (string.IsNullOrEmpty(durationValue))
-                {
-                    durationValue = "10";
-                }
-
-                var pipelineValue = pipelineOption.Value();
-                if (string.IsNullOrEmpty(pipelineValue))
-                {
-                    pipelineValue = "1";
-                }
-
-                var keepaliveValue = keepaliveOption.Value();
-                if (string.IsNullOrEmpty(keepaliveValue))
-                {
-                    keepaliveValue = "true";
-                }
-
-                var method = methodOption.Value();
-                if (string.IsNullOrEmpty(method))
-                {
-                    method = "GET";
-                }
-                method = method.ToUpperInvariant();
-
-                var body = bodyOption.Value();
-
-                var url = urlArgument.Value;
-
-                int connections;
-                int duration;
-                int pipeline;
-                bool keepalive;
-                Uri uri;
-
-                if (!int.TryParse(connectionsValue, out connections) ||
-                    !int.TryParse(durationValue, out duration) ||
-                    !int.TryParse(pipelineValue, out pipeline) ||
-                    !bool.TryParse(keepaliveValue, out keepalive) ||
-                    !Uri.TryCreate(url, UriKind.Absolute, out uri) ||
-                    connections <= 0 ||
-                    duration <= 0 ||
-                    pipeline <= 0)
+                catch (Exception e)
                 {
                     app.ShowHelp();
+                    Console.WriteLine(e);
                     return 2;
                 }
-
-                return Run(connections, TimeSpan.FromSeconds(duration), pipeline, keepalive, method, body, uri);
             });
 
             return app.Execute(args);
