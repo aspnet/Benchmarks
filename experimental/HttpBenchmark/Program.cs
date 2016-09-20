@@ -344,8 +344,11 @@ namespace HttpBenchmark
 
                 WriteResult(_requests, currentRequests, currentElapsed);
 
-                if (_stopwatch.Elapsed > duration)
+                if (elapsed > duration)
                 {
+                    Console.WriteLine();
+                    Console.WriteLine($"Average RPS: {Math.Round(_requests / elapsed.TotalSeconds)}");
+
                     Environment.Exit(0);
                 }
             }
