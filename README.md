@@ -34,24 +34,17 @@ You can run the benchmarks application server on Windows, OSX or Linux.
 
 1. Clone this repo to the server.
 
-1. Navigate to the `./src/Benchmarks` directory under this repo and run the following command to install the latest version of the ASP.NET Core runtime for .NET Core CLR on x64:
+1. Navigate to the `./src/Benchmarks` directory under this repo and run the following command to restore the latest version of the ASP.NET Core runtime and dependencies for the server application:
    ```
-   dnvm install latest -r coreclr -arch x64 -u
-   ```
-
-   *Note: You can also install and use flavors of the runtime for x86 (`-arch x86`) and full CLR (`-r clr`) on Windows if you so desire. Just type `dnvm` in the console for more details on installing and selecting versions of the runtime to use.*
-
-1. Run the following command to restore package depedencies for the server application:
-   ```
-   dnu restore
+   dotnet restore
    ```
 
 1. Finally, start the server application with the following command:
    ```
-   dnx --configuration Release run
+   dotnet run --configuration Release
    ```
 
-1. If you're generating load from a separate machine (which is recommended), you'll need to change the URL Kestrel binds to as it only binds to localhost by default. You can change it via a command line argument or an environment variable, "ASPNET_SERVER.URLS" set to "http://*:5000"
+1. If you're generating load from a separate machine (which is recommended), you'll need to change the URL Kestrel binds to as it only binds to localhost by default. You can change it via a command line argument or an environment variable, "ASPNETCORE_URLS" set to "http://*:5000"
 
 *Note: You may need to open port 5000 for external traffic in your firewall for the server to successfully run*
 
@@ -64,12 +57,12 @@ You'll need to clone the [wrk repo](https://github.com/wg/wrk) on your load gene
 
 Here's a sample wrk command to generate load for the JSON scenario. This run is using 256 connections across 32 client threads for a duration of 10 seconds.
 ```
-wrk -c 256 -t 32 -d 10 http://10.0.0.100:5001/json
+wrk -c 256 -t 32 -d 10 http://10.0.0.100:5000/json
 ```
 
 To generate pipelined load for the plaintext scenario, use the following command, assuming your CWD is the root of this repo and wrk is on your path. The final argument after the `--` is the desired pipeline depth. We always run the plaintext scenario at a pipeline depth of 16, [just like the Techempower Benchmarks](https://github.com/TechEmpower/FrameworkBenchmarks/blob/6594d32db618c6ca65e0106c5adf2671f7b63654/toolset/benchmark/framework_test.py#L640).
 ```
-wrk -c 256 -t 32 -d 10 -s ./scripts/pipeline.lua http://10.0.0.100:5001/plaintext -- 16
+wrk -c 256 -t 32 -d 10 -s ./scripts/pipeline.lua http://10.0.0.100:5000/plaintext -- 16
 ```
 
 *Note: You may want to tweak the number of client threads (the `-t` arg) being used based on the specs of your load generation machine.*
@@ -138,3 +131,4 @@ Like the Plain Text scenario above but with HTTP pipelining enabled at a depth o
 | Netty | perfsvr | 2,808,515 | 32 threads, 256 connections | The actual TechEmpower Netty app | CPU is 100% |
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+ 
