@@ -14,7 +14,7 @@ namespace Benchmarks.Data
                       {
                           Id = $"Id_{i}",
                           Random = $"Random_{i}",
-                          UpdateQuery = $"UPDATE world SET randomNumber = @Random_{i} WHERE id = @Id_{i};"
+                          UpdateQuery = $"UPDATE world SET randomnumber = @Random_{i} WHERE id = @Id_{i};"
                       }).ToArray();
                         
         public string Id { get; set; }
