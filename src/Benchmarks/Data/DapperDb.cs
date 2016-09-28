@@ -40,7 +40,7 @@ namespace Benchmarks.Data
         async Task<World> ReadSingleRow(DbConnection db)
         {
             return await db.QueryFirstOrDefaultAsync<World>(
-                    "SELECT Id, RandomNumber FROM World WHERE Id = @Id",
+                    "SELECT id, randomnumber FROM world WHERE Id = @Id",
                     new { Id = _random.Next(1, 10001) });
         }
 
@@ -105,7 +105,7 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
 
                 // Note: don't need to open connection if only doing one thing; let dapper do it
-                result = (await db.QueryAsync<Fortune>("SELECT Id, Message FROM Fortune")).AsList();
+                result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
             }
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });

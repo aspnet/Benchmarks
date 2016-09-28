@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Benchmarks.Data
 {
+    [Table("world")]
     public class World
     {
         [Column("id")]
