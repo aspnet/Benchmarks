@@ -249,7 +249,16 @@ namespace HttpBenchmark
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (line.StartsWith("Content-Length: "))
+                    if (line.StartsWith("HTTP") && line.Length >= 12)
+                    {
+                        var statusCode = int.Parse(line.Substring(9, 3));
+                        if (statusCode < 200 || statusCode >= 400)
+                        {
+                            Console.WriteLine($"Response status code was not 2XX or 3XX");
+                            Environment.Exit(1);
+                        }
+                    }
+                    else if (line.StartsWith("Content-Length: "))
                     {
                         contentLength = int.Parse(line.Substring("Content-Length: ".Length));
                         break;
