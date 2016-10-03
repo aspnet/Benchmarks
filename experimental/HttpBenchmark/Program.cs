@@ -124,7 +124,11 @@ namespace HttpBenchmark
 
         private static int Run(int connections, TimeSpan duration, int pipeline, bool keepalive, string method, string body, Uri uri)
         {
-            Init(connections, duration, pipeline, keepalive, uri);
+            var cancellationToken = (new CancellationTokenSource(duration)).Token;
+
+            Init(connections, duration, pipeline, keepalive, uri, cancellationToken);
+
+            var writeResultsTask = WriteResults(cancellationToken);
 
             var requestString =
                 $"{method} {uri.PathAndQuery} HTTP/1.1\r\n" +
@@ -198,7 +202,7 @@ namespace HttpBenchmark
                         {
                             Interlocked.Increment(ref _connections);
 
-                            while (true)
+                            while (!cancellationToken.IsCancellationRequested)
                             {
                                 SendReceive(socket, requestBytes, responseLength, responseBuffer);
                                 Interlocked.Add(ref _requests, pipeline);
@@ -207,7 +211,7 @@ namespace HttpBenchmark
                     }
                     else
                     {
-                        while (true)
+                        while (!cancellationToken.IsCancellationRequested)
                         {
                             using (var socket = CreateSocket(uri).Result)
                             {
@@ -233,6 +237,8 @@ namespace HttpBenchmark
             {
                 threadObjects[i].Join();
             }
+
+            writeResultsTask.Wait();
 
             return 0;
         }
@@ -287,7 +293,8 @@ namespace HttpBenchmark
             }
         }
 
-        private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
+        private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri,
+            CancellationToken cancellationToken)
         {
 #if DEBUG
             Console.WriteLine($"Configuration: Debug");
@@ -305,10 +312,6 @@ namespace HttpBenchmark
             Console.WriteLine($"Uri: {uri}");
 
             Console.WriteLine();
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            WriteResults(duration);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         private static async Task<Socket> CreateSocket(Uri uri)
@@ -348,12 +351,12 @@ namespace HttpBenchmark
             }
         }
 
-        private static async Task WriteResults(TimeSpan duration)
+        private static async Task WriteResults(CancellationToken cancellationToken)
         {
             var lastRequests = (long)0;
             var lastElapsed = TimeSpan.Zero;
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
@@ -365,15 +368,10 @@ namespace HttpBenchmark
                 lastElapsed = elapsed;
 
                 WriteResult(_requests, currentRequests, currentElapsed);
-
-                if (elapsed > duration)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine($"Average RPS: {Math.Round(_requests / elapsed.TotalSeconds)}");
-
-                    Environment.Exit(0);
-                }
             }
+
+            Console.WriteLine();
+            Console.WriteLine($"Average RPS: {Math.Round(_requests / _stopwatch.Elapsed.TotalSeconds)}");
         }
 
         private static void WriteResult(long totalRequests, long currentRequests, TimeSpan elapsed)
