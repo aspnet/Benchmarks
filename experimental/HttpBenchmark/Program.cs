@@ -124,10 +124,9 @@ namespace HttpBenchmark
 
         private static int Run(int connections, TimeSpan duration, int pipeline, bool keepalive, string method, string body, Uri uri)
         {
+            Init(connections, duration, pipeline, keepalive, uri);
+
             var cancellationToken = (new CancellationTokenSource(duration)).Token;
-
-            Init(connections, duration, pipeline, keepalive, uri, cancellationToken);
-
             var writeResultsTask = WriteResults(cancellationToken);
 
             var requestString =
@@ -293,8 +292,7 @@ namespace HttpBenchmark
             }
         }
 
-        private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri,
-            CancellationToken cancellationToken)
+        private static void Init(int connections, TimeSpan duration, int pipeline, bool keepalive, Uri uri)
         {
 #if DEBUG
             Console.WriteLine($"Configuration: Debug");
