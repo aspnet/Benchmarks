@@ -150,7 +150,7 @@ namespace HttpBenchmark
                 Console.Write(requestString);
                 socket.Send(requestBytes);
 
-                var responseBuffer = new byte[1024];
+                var responseBuffer = new byte[1024 * 1024];
                 int bytesReceived = 0;
                 while (true)
                 {
