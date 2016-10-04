@@ -22,5 +22,8 @@ namespace Benchmarks.ServerJob
 
         [ScenarioPath("/cached/plaintext")]
         CachedPlaintext,
+
+        [ScenarioPath("/cached/plaintext/nocache")]
+        CachedPlaintextNocache,
     }
 }

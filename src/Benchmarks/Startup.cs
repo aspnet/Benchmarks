@@ -222,7 +222,7 @@ namespace Benchmarks
                 app.UseStaticFiles();
             }
 
-            if (Scenarios.CachedPlaintext)
+            if (Scenarios.Any("CachedPlaintext"))
             {
                 app.UseCachedPlaintext();
             }
