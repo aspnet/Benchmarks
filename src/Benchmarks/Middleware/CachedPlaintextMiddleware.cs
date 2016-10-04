@@ -13,7 +13,6 @@ namespace Benchmarks.Middleware
     public class CachedPlaintextMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.CachedPlaintext));
-        private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         private readonly RequestDelegate _next;
 
