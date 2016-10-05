@@ -20,10 +20,10 @@ namespace Benchmarks.ServerJob
         [ScenarioPath("/mvc/json")]
         MvcJson,
 
-        [ScenarioPath("/cached/plaintext")]
-        CachedPlaintext,
+        [ScenarioPath("/responsecaching/plaintext")]
+        ResponseCachingPlaintext,
 
-        [ScenarioPath("/cached/plaintext/nocache")]
-        CachedPlaintextNocache,
+        [ScenarioPath("/responsecaching/plaintext/nocache")]
+        ResponseCachingPlaintextNocache,
     }
 }

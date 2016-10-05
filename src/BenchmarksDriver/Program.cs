@@ -27,8 +27,8 @@ namespace BenchmarkDriver
                 { Scenario.Json, new ClientJob() { Connections = 256, Threads = 32, Duration = 10 } },
                 { Scenario.MvcPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
                 { Scenario.MvcJson, new ClientJob() { Connections = 256, Threads = 32, Duration = 10} },
-                { Scenario.CachedPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.CachedPlaintextNocache, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
+                { Scenario.ResponseCachingPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
+                { Scenario.ResponseCachingPlaintextNocache, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
             };
 
         public static int Main(string[] args)

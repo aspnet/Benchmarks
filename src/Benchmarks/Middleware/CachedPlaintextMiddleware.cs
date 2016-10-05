@@ -11,8 +11,8 @@ namespace Benchmarks.Middleware
 {
     public class CachedPlaintextMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.CachedPlaintext));
-        private static readonly PathString _nocachePath = new PathString(Scenarios.GetPath(s => s.CachedPlaintextNocache));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.ResponseCachingPlaintext));
+        private static readonly PathString _nocachePath = new PathString(Scenarios.GetPath(s => s.ResponseCachingPlaintextNocache));
 
         private readonly RequestDelegate _next;
 
