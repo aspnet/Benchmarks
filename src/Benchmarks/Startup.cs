@@ -114,6 +114,11 @@ namespace Benchmarks
                         .AddRazorViewEngine();
                 }
             }
+
+            if (Scenarios.Any("ResponseCaching"))
+            {
+                services.AddMemoryResponseCacheStore();
+            }
         }
 
         public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, ApplicationDbContext dbContext)
@@ -215,6 +220,16 @@ namespace Benchmarks
             if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
+            }
+
+            if (Scenarios.Any("ResponseCaching"))
+            {
+                app.UseResponseCache();
+            }
+
+            if (Scenarios.Any("ResponseCachingPlaintext"))
+            {
+                app.UseResponseCachingPlaintext();
             }
 
             app.RunDebugInfoPage();

@@ -20,6 +20,12 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/plaintext")]
         public bool Plaintext { get; set; }
 
+        [ScenarioPath("/responsecaching/plaintext")]
+        public bool ResponseCachingPlaintext { get; set; }
+
+        [ScenarioPath("/responsecaching/plaintext/nocache")]
+        public bool ResponseCachingPlaintextNocache { get; set; }
+
         [ScenarioPath("/json")]
         public bool Json { get; set; }
 
