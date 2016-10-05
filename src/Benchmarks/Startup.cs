@@ -115,7 +115,7 @@ namespace Benchmarks
                 }
             }
 
-            if (Scenarios.Any("Cached"))
+            if (Scenarios.Any("ResponseCaching"))
             {
                 services.AddMemoryResponseCacheStore();
             }
@@ -220,6 +220,11 @@ namespace Benchmarks
             if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
+            }
+
+            if (Scenarios.Any("ResponseCaching"))
+            {
+                app.UseResponseCache();
             }
 
             if (Scenarios.Any("ResponseCachingPlaintext"))

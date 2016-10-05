@@ -41,7 +41,7 @@ namespace Benchmarks.Middleware
     {
         public static IApplicationBuilder UseResponseCachingPlaintext(this IApplicationBuilder builder)
         {
-            return builder.UseResponseCache().UseMiddleware<ResponseCachingPlaintextMiddleware>();
+            return builder.UseMiddleware<ResponseCachingPlaintextMiddleware>();
         }
     }
 }
