@@ -23,13 +23,30 @@ namespace BenchmarkDriver
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
-                { Scenario.Plaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.Json, new ClientJob() { Connections = 256, Threads = 32, Duration = 10 } },
-                { Scenario.MvcPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.MvcJson, new ClientJob() { Connections = 256, Threads = 32, Duration = 10} },
-                { Scenario.MemoryCachePlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.ResponseCachingPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.ResponseCachingPlaintextNocache, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
+                { Scenario.Plaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.Json, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10
+                } },
+                { Scenario.MvcPlaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.MvcJson, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10
+                } },
+                { Scenario.MemoryCachePlaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextHit, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextMiss, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextNocache, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16, Headers = new string[] { "Cache-Control: no-cache" }
+                } },
             };
 
         public static int Main(string[] args)

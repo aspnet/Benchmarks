@@ -20,6 +20,7 @@ namespace Benchmarks.ClientJob
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
             PipelineDepth = clientJob.PipelineDepth;
+            Headers = clientJob.Headers;
             ServerBenchmarkUri = clientJob.ServerBenchmarkUri;
             State = clientJob.State;
             RequestsPerSecond = clientJob.RequestsPerSecond;
@@ -36,6 +37,8 @@ namespace Benchmarks.ClientJob
         public int Duration { get; set; }
 
         public int PipelineDepth { get; set; }
+
+        public string[] Headers { get; set; }
 
         public string ServerBenchmarkUri { get; set; }
 

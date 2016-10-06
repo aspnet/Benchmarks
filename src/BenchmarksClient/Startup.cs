@@ -97,7 +97,13 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Pipeline:{job.PipelineDepth}]";
+                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} " +
+                        $"Duration:{job.Duration} Pipeline:{job.PipelineDepth}";
+
+                    if (job.Headers != null)
+                    {
+                        jobLogText += $" Headers:{PP(job.Headers)}";
+                    }
 
                     if (job.State == ClientState.Waiting)
                     {
@@ -135,11 +141,22 @@ namespace BenchmarkClient
             var tcs = new TaskCompletionSource<bool>();
 
             var command = $"wrk -c {job.Connections} -t {job.Threads} -d {job.Duration}";
+
+            if (job.Headers != null)
+            {
+                foreach (var header in job.Headers)
+                {
+                    command += $" -H \"{header}\"";
+                }
+            }
+
             if (job.PipelineDepth > 0)
             {
                 command += $" -s scripts/pipeline.lua";
             }
+
             command += $" {job.ServerBenchmarkUri}";
+
             if (job.PipelineDepth > 0)
             {
                 command += $" -- {job.PipelineDepth}";
@@ -193,6 +210,11 @@ namespace BenchmarkClient
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        private static string PP(string[] args)
+        {
+            return args == null ? "null" : $"[{String.Join(", ", args.Select(s => $"\"{s}\""))}]";
         }
     }
 }
