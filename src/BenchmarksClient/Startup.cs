@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 using Repository;
 
 namespace BenchmarkClient
@@ -105,6 +104,8 @@ namespace BenchmarkClient
                         jobLogText += $" Headers:{PP(job.Headers)}";
                     }
 
+                    jobLogText += "]";
+
                     if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
@@ -121,7 +122,7 @@ namespace BenchmarkClient
                     }
                     else if (job.State == ClientState.Deleting)
                     {
-                        Log($"Deleting job {jobLogText}'");
+                        Log($"Deleting job {jobLogText}");
 
                         Debug.Assert(process != null);
 
