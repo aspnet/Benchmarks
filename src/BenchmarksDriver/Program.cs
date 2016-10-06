@@ -89,7 +89,7 @@ namespace BenchmarkDriver
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
             var threadsOption = app.Option("--threads",
                 "Number of threads used by client", CommandOptionType.SingleValue);
-            var headerOption = app.Option("-h|--header",
+            var headerOption = app.Option("--header",
                 "Header added to request", CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
