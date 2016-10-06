@@ -45,7 +45,8 @@ namespace BenchmarkDriver
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
                 { Scenario.ResponseCachingPlaintextNocache, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16, Headers = new string[] { "Cache-Control: no-cache" }
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
+                    Headers = new string[] { "Cache-Control: no-cache" }
                 } },
             };
 
