@@ -34,8 +34,10 @@ namespace Benchmarks.Middleware
                 {
                     payload = Encoding.UTF8.GetBytes("Hello, World!");
 
-                    var cacheEntry = _memoryCache.CreateEntry(_key);
-                    cacheEntry.Value = payload;
+                    using (var cacheEntry = _memoryCache.CreateEntry(_key))
+                    {
+                        cacheEntry.SetValue(payload).SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
+                    }
                 }
 
                 httpContext.Response.StatusCode = 200;
