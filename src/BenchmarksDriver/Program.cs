@@ -89,6 +89,8 @@ namespace BenchmarkDriver
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
             var threadsOption = app.Option("--threads",
                 "Number of threads used by client", CommandOptionType.SingleValue);
+            var headerOption = app.Option("-h|--header",
+                "Header added to request", CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
             {
@@ -156,6 +158,10 @@ namespace BenchmarkDriver
                 if (pipelineDepthOption.HasValue())
                 {
                     _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
+                }
+                if (headerOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
                 }
 
                 return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
