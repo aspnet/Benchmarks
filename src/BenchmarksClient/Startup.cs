@@ -215,7 +215,7 @@ namespace BenchmarkClient
 
         private static string PP(string[] args)
         {
-            return args == null ? "null" : $"[{String.Join(", ", args.Select(s => $"\"{s}\""))}]";
+            return $"[{String.Join(", ", args.Select(s => $"\"{s}\""))}]";
         }
     }
 }
