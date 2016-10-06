@@ -227,7 +227,7 @@ namespace BenchmarkDriver
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
                     await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter, clientJob.Threads,
-                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
+                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.Headers, clientJob.RequestsPerSecond);
                 }
             }
             finally
@@ -335,6 +335,7 @@ namespace BenchmarkDriver
             int connections,
             int duration,
             int? pipelineDepth,
+            string[] headers,
             double rps)
         {
             Log("Writing results to SQL...");
@@ -353,6 +354,7 @@ namespace BenchmarkDriver
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
+                        [Headers] [nvarchar](max) NULL,
                         [RequestsPerSecond] [float] NOT NULL
                     )
                 END
@@ -369,6 +371,7 @@ namespace BenchmarkDriver
                            ,[Connections]
                            ,[Duration]
                            ,[PipelineDepth]
+                           ,[Headers]
                            ,[RequestsPerSecond])
                      VALUES
                            (@DateTime
@@ -379,6 +382,7 @@ namespace BenchmarkDriver
                            ,@Connections
                            ,@Duration
                            ,@PipelineDepth
+                           ,@Headers
                            ,@RequestsPerSecond)
                 ";
 
@@ -403,6 +407,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
+                    p.AddWithValue("@Headers", headers == null ? (object)DBNull.Value : PP(headers));
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();
@@ -424,6 +429,11 @@ namespace BenchmarkDriver
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             reporter.WriteLine($"[{time}] {message}");
+        }
+
+        private static string PP(string[] args)
+        {
+            return $"[{String.Join(", ", args.Select(s => $"\"{s}\""))}]";
         }
     }
 }
