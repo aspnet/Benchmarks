@@ -18,14 +18,18 @@ k-standard-goals
     var sql = string.IsNullOrEmpty(E("BENCHMARK_SQL")) ? string.Empty : "-q " + E("BENCHMARK_SQL");
     var scenarios = new string[]
     {
-      "-n plaintext",
-      "-n plaintext -f Benchmarks.PassthroughConnectionFilter",
-      "-n plaintext -m https",
-      "-n json",
-      "-n json -f Benchmarks.PassthroughConnectionFilter",
-      "-n json -m https",
-      "-n mvcplaintext",
-      "-n mvcjson"
+      "-n Plaintext",
+      "-n Plaintext -f Benchmarks.PassthroughConnectionFilter",
+      "-n Plaintext -m https",
+      "-n Json",
+      "-n Json -f Benchmarks.PassthroughConnectionFilter",
+      "-n Json -m https",
+      "-n MvcPlaintext",
+      "-n MvcJson",
+      "-n MemoryCachePlaintext",
+      "-n ResponseCachingPlaintextCached",
+      "-n ResponseCachingPlaintextResponseNoCache",
+      "-n ResponseCachingPlaintextRequestNoCache",
     };
     foreach (var scenario in scenarios) {
       Dotnet(String.Format("-v run -- {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
