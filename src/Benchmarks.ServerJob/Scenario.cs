@@ -23,11 +23,11 @@ namespace Benchmarks.ServerJob
         [ScenarioPath("/memorycache/plaintext")]
         MemoryCachePlaintext,
 
-        [ScenarioPath("/responsecaching/plaintext/servecached")]
-        ResponseCachingPlaintextServeCached,
+        [ScenarioPath("/responsecaching/plaintext/cached")]
+        ResponseCachingPlaintextCached,
 
-        [ScenarioPath("/responsecaching/plaintext/nevercached")]
-        ResponseCachingPlaintextNeverCached,
+        [ScenarioPath("/responsecaching/plaintext/responsenocache")]
+        ResponseCachingPlaintextResponseNoCache,
 
         [ScenarioPath("/responsecaching/plaintext/requestnocache")]
         ResponseCachingPlaintextRequestNoCache,

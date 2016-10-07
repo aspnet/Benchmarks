@@ -232,14 +232,14 @@ namespace Benchmarks
                 app.UseMemoryCachePlaintext();
             }
 
-            if (Scenarios.ResponseCachingPlaintextServeCached)
+            if (Scenarios.ResponseCachingPlaintextCached)
             {
-                app.UseResponseCachingPlaintextServeCached();
+                app.UseResponseCachingPlaintextCached();
             }
 
-            if (Scenarios.ResponseCachingPlaintextNeverCached)
+            if (Scenarios.ResponseCachingPlaintextResponseNoCache)
             {
-                app.UseResponseCachingPlaintextNeverCached();
+                app.UseResponseCachingPlaintextResponseNoCache();
             }
 
             if (Scenarios.ResponseCachingPlaintextRequestNoCache)
