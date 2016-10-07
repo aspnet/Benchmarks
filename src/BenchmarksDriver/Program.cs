@@ -38,10 +38,10 @@ namespace BenchmarkDriver
                 { Scenario.MemoryCachePlaintext, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
-                { Scenario.ResponseCachingPlaintextServeCached, new ClientJob() {
+                { Scenario.ResponseCachingPlaintextCached, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
-                { Scenario.ResponseCachingPlaintextNeverCached, new ClientJob() {
+                { Scenario.ResponseCachingPlaintextResponseNoCache, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
                 { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob() {
