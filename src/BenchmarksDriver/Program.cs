@@ -23,13 +23,31 @@ namespace BenchmarkDriver
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
-                { Scenario.Plaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.Json, new ClientJob() { Connections = 256, Threads = 32, Duration = 10 } },
-                { Scenario.MvcPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.MvcJson, new ClientJob() { Connections = 256, Threads = 32, Duration = 10} },
-                { Scenario.MemoryCachePlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.ResponseCachingPlaintext, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
-                { Scenario.ResponseCachingPlaintextNocache, new ClientJob() { Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16 } },
+                { Scenario.Plaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.Json, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10
+                } },
+                { Scenario.MvcPlaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.MvcJson, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10
+                } },
+                { Scenario.MemoryCachePlaintext, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextServeCached, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextNeverCached, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
+                { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
+                    Headers = new string[] { "Cache-Control: no-cache" }
+                } },
             };
 
         public static int Main(string[] args)
@@ -72,6 +90,8 @@ namespace BenchmarkDriver
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
             var threadsOption = app.Option("--threads",
                 "Number of threads used by client", CommandOptionType.SingleValue);
+            var headerOption = app.Option("--header",
+                "Header added to request", CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
             {
@@ -140,6 +160,10 @@ namespace BenchmarkDriver
                 {
                     _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
                 }
+                if (headerOption.HasValue())
+                {
+                    _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
+                }
 
                 return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
             });
@@ -204,7 +228,7 @@ namespace BenchmarkDriver
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
                     await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter, clientJob.Threads,
-                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.RequestsPerSecond);
+                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.Headers, clientJob.RequestsPerSecond);
                 }
             }
             finally
@@ -312,6 +336,7 @@ namespace BenchmarkDriver
             int connections,
             int duration,
             int? pipelineDepth,
+            string[] headers,
             double rps)
         {
             Log("Writing results to SQL...");
@@ -330,6 +355,7 @@ namespace BenchmarkDriver
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
+                        [Headers] [nvarchar](max) NULL,
                         [RequestsPerSecond] [float] NOT NULL
                     )
                 END
@@ -346,6 +372,7 @@ namespace BenchmarkDriver
                            ,[Connections]
                            ,[Duration]
                            ,[PipelineDepth]
+                           ,[Headers]
                            ,[RequestsPerSecond])
                      VALUES
                            (@DateTime
@@ -356,6 +383,7 @@ namespace BenchmarkDriver
                            ,@Connections
                            ,@Duration
                            ,@PipelineDepth
+                           ,@Headers
                            ,@RequestsPerSecond)
                 ";
 
@@ -380,6 +408,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
+                    p.AddWithValue("@Headers", headers == null ? (object)DBNull.Value : headers.ToContentString());
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();

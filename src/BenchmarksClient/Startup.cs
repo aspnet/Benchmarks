@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.PlatformAbstractions;
 using Repository;
 
 namespace BenchmarkClient
@@ -97,7 +96,15 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Pipeline:{job.PipelineDepth}]";
+                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} " +
+                        $"Duration:{job.Duration} Pipeline:{job.PipelineDepth}";
+
+                    if (job.Headers != null)
+                    {
+                        jobLogText += $" Headers:{job.Headers.ToContentString()}";
+                    }
+
+                    jobLogText += "]";
 
                     if (job.State == ClientState.Waiting)
                     {
@@ -115,7 +122,7 @@ namespace BenchmarkClient
                     }
                     else if (job.State == ClientState.Deleting)
                     {
-                        Log($"Deleting job {jobLogText}'");
+                        Log($"Deleting job {jobLogText}");
 
                         Debug.Assert(process != null);
 
@@ -135,11 +142,22 @@ namespace BenchmarkClient
             var tcs = new TaskCompletionSource<bool>();
 
             var command = $"wrk -c {job.Connections} -t {job.Threads} -d {job.Duration}";
+
+            if (job.Headers != null)
+            {
+                foreach (var header in job.Headers)
+                {
+                    command += $" -H \"{header}\"";
+                }
+            }
+
             if (job.PipelineDepth > 0)
             {
                 command += $" -s scripts/pipeline.lua";
             }
+
             command += $" {job.ServerBenchmarkUri}";
+
             if (job.PipelineDepth > 0)
             {
                 command += $" -- {job.PipelineDepth}";
