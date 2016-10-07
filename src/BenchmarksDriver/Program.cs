@@ -408,7 +408,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
-                    p.AddWithValue("@Headers", headers == null ? (object)DBNull.Value : PP(headers));
+                    p.AddWithValue("@Headers", headers == null ? (object)DBNull.Value : headers.ToContentString());
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();
@@ -430,11 +430,6 @@ namespace BenchmarkDriver
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             reporter.WriteLine($"[{time}] {message}");
-        }
-
-        private static string PP(string[] args)
-        {
-            return $"[{string.Join(", ", args.Select(s => $"\"{s}\""))}]";
         }
     }
 }

@@ -101,7 +101,7 @@ namespace BenchmarkClient
 
                     if (job.Headers != null)
                     {
-                        jobLogText += $" Headers:{PP(job.Headers)}";
+                        jobLogText += $" Headers:{job.Headers.ToContentString()}";
                     }
 
                     jobLogText += "]";
@@ -211,11 +211,6 @@ namespace BenchmarkClient
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
-        }
-
-        private static string PP(string[] args)
-        {
-            return $"[{string.Join(", ", args.Select(s => $"\"{s}\""))}]";
         }
     }
 }
