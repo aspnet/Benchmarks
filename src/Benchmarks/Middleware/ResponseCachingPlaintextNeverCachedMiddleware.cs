@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace Benchmarks.Middleware
 {
-    public class ResponseCachingPlaintextHitMiddleware
+    public class ResponseCachingPlaintextNeverCachedMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.ResponseCachingPlaintextHit));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.ResponseCachingPlaintextNeverCached));
 
         private readonly RequestDelegate _next;
 
-        public ResponseCachingPlaintextHitMiddleware(RequestDelegate next)
+        public ResponseCachingPlaintextNeverCachedMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -24,7 +24,6 @@ namespace Benchmarks.Middleware
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                httpContext.Response.Headers["cache-control"] = "public, max-age=1";
                 return PlaintextMiddleware.WriteResponse(httpContext.Response);
             }
 
@@ -32,11 +31,11 @@ namespace Benchmarks.Middleware
         }
     }
 
-    public static class ResponseCachingPlaintextHitMiddlewareExtensions
+    public static class ResponseCachingPlaintextNeverCachedMiddlewareExtensions
     {
-        public static IApplicationBuilder UseResponseCachingPlaintextHit(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseResponseCachingPlaintextNeverCached(this IApplicationBuilder builder)
         {
-            return builder.UseResponseCache().UseMiddleware<ResponseCachingPlaintextHitMiddleware>();
+            return builder.UseResponseCache().UseMiddleware<ResponseCachingPlaintextNeverCachedMiddleware>();
         }
     }
 }

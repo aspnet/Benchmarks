@@ -38,13 +38,13 @@ namespace BenchmarkDriver
                 { Scenario.MemoryCachePlaintext, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
-                { Scenario.ResponseCachingPlaintextHit, new ClientJob() {
+                { Scenario.ResponseCachingPlaintextServeCached, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
-                { Scenario.ResponseCachingPlaintextMiss, new ClientJob() {
+                { Scenario.ResponseCachingPlaintextNeverCached, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
-                { Scenario.ResponseCachingPlaintextNocache, new ClientJob() {
+                { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
                     Headers = new string[] { "Cache-Control: no-cache" }
                 } },
