@@ -48,6 +48,10 @@ namespace BenchmarkDriver
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
                     Headers = new string[] { "Cache-Control: no-cache" }
                 } },
+                { Scenario.ResponseCachingPlaintextVaryByCached, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
+                    Headers = new string[] { "Accept: text/plain" }
+                } },
             };
 
         public static int Main(string[] args)

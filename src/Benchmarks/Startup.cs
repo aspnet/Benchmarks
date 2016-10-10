@@ -247,6 +247,11 @@ namespace Benchmarks
                 app.UseResponseCachingPlaintextRequestNoCache();
             }
 
+            if (Scenarios.ResponseCachingPlaintextVaryByCached)
+            {
+                app.UseResponseCachingPlaintextVaryByCached();
+            }
+
             app.RunDebugInfoPage();
         }
     }
