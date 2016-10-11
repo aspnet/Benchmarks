@@ -241,7 +241,19 @@ namespace BenchmarkServer
             {
                 info.Attributes = FileAttributes.Normal;
             }
-            dir.Delete(recursive: true);
+
+            for (var i = 0; i < 3; i++)
+            {
+                try
+                {
+                    dir.Delete(recursive: true);
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    Log.WriteLine($"Failed to delete directory : {exception.Message}");
+                }
+            }
         }
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
