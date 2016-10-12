@@ -236,29 +236,36 @@ namespace BenchmarkServer
         {
             Log.WriteLine($"Deleting directory '{path}'");
 
-            var dir = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
-            foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            // Delete occasionally fails with the following exception:
+            // 
+            // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
+            // 
+            // If delete fails, retry once every second up to 10 times.
+            for (var i=0; i < 10; i++)
             {
-                info.Attributes = FileAttributes.Normal;
-            }
+                try
+                {
+                    var dir = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+                    foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        info.Attributes = FileAttributes.Normal;
+                    }
+                    dir.Delete(recursive: true);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine($"Error deleting directory: {e.ToString()}");
 
-            try
-            {
-                dir.Delete(recursive: true);
-            }
-            catch
-            {
-                // DirectoryInfo.Delete() is occasionally failing with the following exception, which suggests a file may
-                // be either in-use or read-only.
-                // 
-                //   Unhandled Exception: System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
-                // 
-                // This should be impossible, since the process using the file should have been killed, and all files should
-                // be set to FileAttributes.Normal.  The following processes generate logs which might help determine
-                // the root cause.
-                ProcessUtil.Run("handle.exe", path);
-                ProcessUtil.Run("attrib.exe", "/s", workingDirectory: path);
-                throw;
+                    if (i < 9)
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
         }
 
