@@ -236,12 +236,37 @@ namespace BenchmarkServer
         {
             Log.WriteLine($"Deleting directory '{path}'");
 
-            var dir = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
-            foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            // Delete occasionally fails with the following exception:
+            // 
+            // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
+            // 
+            // If delete fails, retry once every second up to 10 times.
+            for (var i=0; i < 10; i++)
             {
-                info.Attributes = FileAttributes.Normal;
+                try
+                {
+                    var dir = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+                    foreach (var info in dir.GetFileSystemInfos("*", SearchOption.AllDirectories))
+                    {
+                        info.Attributes = FileAttributes.Normal;
+                    }
+                    dir.Delete(recursive: true);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Log.WriteLine($"Error deleting directory: {e.ToString()}");
+
+                    if (i < 9)
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
-            dir.Delete(recursive: true);
         }
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
