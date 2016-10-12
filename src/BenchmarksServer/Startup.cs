@@ -241,25 +241,7 @@ namespace BenchmarkServer
             {
                 info.Attributes = FileAttributes.Normal;
             }
-
-            try
-            {
-                dir.Delete(recursive: true);
-            }
-            catch
-            {
-                // DirectoryInfo.Delete() is occasionally failing with the following exception, which suggests a file may
-                // be either in-use or read-only.
-                // 
-                //   Unhandled Exception: System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
-                // 
-                // This should be impossible, since the process using the file should have been killed, and all files should
-                // be set to FileAttributes.Normal.  The following processes generate logs which might help determine
-                // the root cause.
-                ProcessUtil.Run("handle.exe", path);
-                ProcessUtil.Run("attrib.exe", "/s", workingDirectory: path);
-                throw;
-            }
+            dir.Delete(recursive: true);
         }
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
