@@ -7,6 +7,7 @@ using Benchmarks.Configuration;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -21,19 +22,18 @@ namespace Benchmarks.Middleware
         };
 
         private readonly RequestDelegate _next;
-        private readonly RawDb _db;
 
-        public SingleQueryRawMiddleware(RequestDelegate next, RawDb db)
+        public SingleQueryRawMiddleware(RequestDelegate next)
         {
             _next = next;
-            _db = db;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
-                var row = await _db.LoadSingleQueryRow();
+                var db = httpContext.RequestServices.GetService<RawDb>();
+                var row = await db.LoadSingleQueryRow();
 
                 var result = JsonConvert.SerializeObject(row, _jsonSettings);
 
