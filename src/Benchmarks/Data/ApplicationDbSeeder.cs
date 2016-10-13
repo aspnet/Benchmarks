@@ -81,7 +81,7 @@ namespace Benchmarks.Data
                         }
                         catch (Exception ex)
                         {
-                            Console.Error.WriteLine("Error trying to seed the database. Have you run 'dnx ef database update'?");
+                            Console.Error.WriteLine("Error trying to seed the database");
                             Console.Error.WriteLine(ex);
 
                             return false;
