@@ -122,7 +122,7 @@ namespace Benchmarks
 
             if (Scenarios.Any("ResponseCaching"))
             {
-                services.AddMemoryResponseCacheStore();
+                services.AddResponseCaching();
             }
 
             return services.BuildServiceProvider(validateScopes: true);

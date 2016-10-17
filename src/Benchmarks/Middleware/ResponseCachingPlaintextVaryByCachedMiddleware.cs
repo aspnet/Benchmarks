@@ -37,7 +37,7 @@ namespace Benchmarks.Middleware
     {
         public static IApplicationBuilder UseResponseCachingPlaintextVaryByCached(this IApplicationBuilder builder)
         {
-            return builder.UseResponseCache().UseMiddleware<ResponseCachingPlaintextVaryByCachedMiddleware>();
+            return builder.UseResponseCaching().UseMiddleware<ResponseCachingPlaintextVaryByCachedMiddleware>();
         }
     }
 }
