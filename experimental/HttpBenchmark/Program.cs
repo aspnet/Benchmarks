@@ -263,12 +263,12 @@ namespace HttpBenchmark
                             Environment.Exit(1);
                         }
                     }
-                    else if (line.StartsWith("Content-Length: "))
+                    else if (line.StartsWith("Content-Length: ", StringComparison.OrdinalIgnoreCase))
                     {
                         contentLength = int.Parse(line.Substring("Content-Length: ".Length));
                         break;
                     }
-                    else if (line == "Transfer-Encoding: chunked")
+                    else if (line.Equals("Transfer-Encoding: chunked", StringComparison.OrdinalIgnoreCase))
                     {
                         chunked = true;
                         break;
