@@ -38,6 +38,9 @@ namespace BenchmarkDriver
                 { Scenario.MemoryCachePlaintext, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },
+                { Scenario.MemoryCachePlaintextSetRemove, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                } },
                 { Scenario.ResponseCachingPlaintextCached, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
                 } },

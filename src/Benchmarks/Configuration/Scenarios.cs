@@ -35,6 +35,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/memorycache/plaintext")]
         public bool MemoryCachePlaintext { get; set; }
 
+        [ScenarioPath("/memorycache/plaintext/setremove")]
+        public bool MemoryCachePlaintextSetRemove { get; set; }
+
         [ScenarioPath("/json")]
         public bool Json { get; set; }
 

@@ -23,6 +23,9 @@ namespace Benchmarks.ServerJob
         [ScenarioPath("/memorycache/plaintext")]
         MemoryCachePlaintext,
 
+        [ScenarioPath("/memorycache/plaintext/setremove")]
+        MemoryCachePlaintextSetRemove,
+
         [ScenarioPath("/responsecaching/plaintext/cached")]
         ResponseCachingPlaintextCached,
 

@@ -227,9 +227,14 @@ namespace Benchmarks
                 app.UseStaticFiles();
             }
 
-            if (Scenarios.Any("MemoryCachePlaintext"))
+            if (Scenarios.MemoryCachePlaintext)
             {
                 app.UseMemoryCachePlaintext();
+            }
+
+            if (Scenarios.MemoryCachePlaintextSetRemove)
+            {
+                app.UseMemoryCachePlaintextSetRemove();
             }
 
             if (Scenarios.ResponseCachingPlaintextCached)

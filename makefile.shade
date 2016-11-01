@@ -27,6 +27,7 @@ k-standard-goals
       "-n MvcPlaintext",
       "-n MvcJson",
       "-n MemoryCachePlaintext",
+      "-n MemoryCachePlaintextSetRemove",
       "-n ResponseCachingPlaintextCached",
       "-n ResponseCachingPlaintextResponseNoCache",
       "-n ResponseCachingPlaintextRequestNoCache",
