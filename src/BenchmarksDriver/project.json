@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.2.0-*",
     "Repository": "1.1.0-*",
     "Benchmarks.ClientJob": "1.1.0-*",
     "Benchmarks.ServerJob": "1.1.0-*",
@@ -21,10 +21,10 @@
     "System.Runtime.Serialization.Primitives": "4.1.1"
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         }
       }
