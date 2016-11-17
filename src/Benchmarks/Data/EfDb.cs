@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
@@ -11,12 +13,14 @@ namespace Benchmarks.Data
     {
         private readonly IRandom _random;
         private readonly ApplicationDbContext _dbContext;
+        private readonly bool _useBatchUpdate;
 
-        public EfDb(IRandom random, ApplicationDbContext dbContext)
+        public EfDb(IRandom random, ApplicationDbContext dbContext, IOptions<AppSettings> appSettings)
         {
             _random = random;
             _dbContext = dbContext;
             _dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            _useBatchUpdate = appSettings.Value.Database != DatabaseServer.PostgreSql;
         }
 
         public Task<World> LoadSingleQueryRow()
@@ -29,7 +33,7 @@ namespace Benchmarks.Data
         {
             var result = new World[count];
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
                 result[i] = await _dbContext.World.FirstAsync(w => w.Id == id);
@@ -42,20 +46,21 @@ namespace Benchmarks.Data
         {
             var results = new World[count];
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var id = _random.Next(1, 10001);
                 var result = await _dbContext.World.AsTracking().FirstAsync(w => w.Id == id);
 
                 result.RandomNumber = _random.Next(1, 10001);
                 results[i] = result;
-                if (!_dbContext.UseBatchUpdate)
+
+                if (!_useBatchUpdate)
                 {
                     await _dbContext.SaveChangesAsync();
                 }
             }
             
-            if (_dbContext.UseBatchUpdate)
+            if (_useBatchUpdate)
             {
                 await _dbContext.SaveChangesAsync();
             }

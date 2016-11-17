@@ -11,6 +11,7 @@ using Benchmarks.Data;
 using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -51,8 +52,22 @@ namespace Benchmarks
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
             services.AddSingleton<ApplicationDbSeeder>();
-            services.AddEntityFrameworkSqlServer()
-                .AddDbContext<ApplicationDbContext>();
+
+            services
+                .AddEntityFrameworkSqlServer()
+                .AddDbContextPool<ApplicationDbContext>((sp, ob) =>
+                {
+                    var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
+
+                    if (appSettings.Database == DatabaseServer.PostgreSql)
+                    {
+                        ob.UseNpgsql(appSettings.ConnectionString);
+                    }
+                    else
+                    {
+                        ob.UseSqlServer(appSettings.ConnectionString);
+                    }
+                });
 
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
