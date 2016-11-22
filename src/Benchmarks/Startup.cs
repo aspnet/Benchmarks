@@ -71,17 +71,13 @@ namespace Benchmarks
 
             if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
             {
-                services.AddSingleton<DbProviderFactory>((provider) => {
+                services.AddSingleton(provider =>
+                {
                     var settings = provider.GetRequiredService<IOptions<AppSettings>>().Value;
 
-                    if (settings.Database == DatabaseServer.PostgreSql)
-                    {
-                        return NpgsqlFactory.Instance;
-                    }
-                    else
-                    {
-                        return SqlClientFactory.Instance;
-                    }
+                    return settings.Database == DatabaseServer.PostgreSql
+                        ? (DbProviderFactory) NpgsqlFactory.Instance
+                        : SqlClientFactory.Instance;
                 });
             }
 
@@ -104,7 +100,7 @@ namespace Benchmarks
             {
                 var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
                 settings.AllowCharacter('\u2014');  // allow EM DASH through
-                services.AddWebEncoders((options) =>
+                services.AddWebEncoders(options =>
                 {
                     options.TextEncoderSettings = settings;
                 });
