@@ -33,6 +33,7 @@ version.h
 .build/
 *.VC.opendb
 *.VC.db
+.idea/
 
 # Profiler result files, just in case they are left lying around :)
 /.vs/
