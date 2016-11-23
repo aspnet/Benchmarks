@@ -32,6 +32,13 @@ namespace Benchmarks.Controllers
             return ExecuteQuery<EfDb>();
         }
 
+        [HttpGet("efsql")]
+        [Produces("application/json")]
+        public Task<World> EfSql()
+        {
+            return ExecuteQuery<EfDb>();
+        }
+
         private Task<World> ExecuteQuery<T>() where T : IDb
         {
             var db = HttpContext.RequestServices.GetRequiredService<T>();

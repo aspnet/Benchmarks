@@ -32,6 +32,13 @@ namespace Benchmarks.Controllers
             return ExecuteQuery<EfDb>(queries);
         }
 
+        [HttpGet("efsql")]
+        [Produces("application/json")]
+        public Task<World[]> EfSql(int queries = 1)
+        {
+            return ExecuteQuery<EfSqlDb>(queries);
+        }
+
         private Task<World[]> ExecuteQuery<T>(int queries) where T : IDb
         {
             queries = queries < 1 ? 1 : queries > 500 ? 500 : queries;

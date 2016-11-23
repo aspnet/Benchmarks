@@ -37,7 +37,7 @@ namespace Benchmarks.Data
             }
         }
 
-        async Task<World> ReadSingleRow(DbConnection db)
+        private async Task<World> ReadSingleRow(DbConnection db)
         {
             return await db.QueryFirstOrDefaultAsync<World>(
                     "SELECT id, randomnumber FROM world WHERE Id = @Id",
@@ -52,7 +52,7 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     results[i] = await ReadSingleRow(db);
                 }
@@ -72,15 +72,15 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     results[i] = await ReadSingleRow(db);
                 }
 
                 // postgres has problems with deadlocks when these aren't sorted
-                Array.Sort<World>(results, (a, b) => a.Id.CompareTo(b.Id));
+                Array.Sort(results, (a, b) => a.Id.CompareTo(b.Id));
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     var randomNumber = _random.Next(1, 10001);
                     parameters[BatchUpdateString.Strings[i].Random] = randomNumber;
