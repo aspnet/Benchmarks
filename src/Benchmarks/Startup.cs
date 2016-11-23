@@ -86,6 +86,11 @@ namespace Benchmarks
                 services.AddScoped<EfDb>();
             }
 
+            if (Scenarios.Any("EfSql"))
+            {
+                services.AddScoped<EfSqlDb>();
+            }
+
             if (Scenarios.Any("Raw"))
             {
                 services.AddScoped<RawDb>();
@@ -141,6 +146,8 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
         {
+            //app.UseDeveloperExceptionPage();
+
             if (Scenarios.Plaintext)
             {
                 app.UsePlainText();
@@ -172,6 +179,11 @@ namespace Benchmarks
                 app.UseSingleQueryEf();
             }
 
+            if (Scenarios.DbSingleQueryEfSql)
+            {
+                app.UseSingleQueryEfSql();
+            }
+
             // Multiple query endpoints
             if (Scenarios.DbMultiQueryRaw)
             {
@@ -186,6 +198,11 @@ namespace Benchmarks
             if (Scenarios.DbMultiQueryEf)
             {
                 app.UseMultipleQueriesEf();
+            }
+
+            if (Scenarios.DbMultiQueryEfSql)
+            {
+                app.UseMultipleQueriesEfSql();
             }
 
             // Multiple update endpoints
@@ -204,6 +221,11 @@ namespace Benchmarks
                 app.UseMultipleUpdatesEf();
             }
 
+            if (Scenarios.DbMultiUpdateEfSql)
+            {
+                app.UseMultipleUpdatesEfSql();
+            }
+
             // Fortunes endpoints
             if (Scenarios.DbFortunesRaw)
             {
@@ -218,6 +240,11 @@ namespace Benchmarks
             if (Scenarios.DbFortunesEf)
             {
                 app.UseFortunesEf();
+            }
+
+            if (Scenarios.DbFortunesEfSql)
+            {
+                app.UseFortunesEfSql();
             }
 
             if (Scenarios.Any("Db"))

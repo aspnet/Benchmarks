@@ -53,6 +53,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/db/ef")]
         public bool DbSingleQueryEf { get; set; }
 
+        [ScenarioPath("/db/efsql")]
+        public bool DbSingleQueryEfSql { get; set; }
+
         [ScenarioPath("/db/dapper")]
         public bool DbSingleQueryDapper { get; set; }
 
@@ -61,6 +64,9 @@ namespace Benchmarks.Configuration
 
         [ScenarioPath("/queries/ef")]
         public bool DbMultiQueryEf { get; set; }
+
+        [ScenarioPath("/queries/efsql")]
+        public bool DbMultiQueryEfSql { get; set; }
 
         [ScenarioPath("/queries/dapper")]
         public bool DbMultiQueryDapper { get; set; }
@@ -71,6 +77,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/updates/ef")]
         public bool DbMultiUpdateEf { get; set; }
 
+        [ScenarioPath("/updates/efsql")]
+        public bool DbMultiUpdateEfSql { get; set; }
+
         [ScenarioPath("/updates/dapper")]
         public bool DbMultiUpdateDapper { get; set; }
 
@@ -79,6 +88,9 @@ namespace Benchmarks.Configuration
 
         [ScenarioPath("/fortunes/ef")]
         public bool DbFortunesEf { get; set; }
+
+        [ScenarioPath("/fortunes/efsql")]
+        public bool DbFortunesEfSql { get; set; }
 
         [ScenarioPath("/fortunes/dapper")]
         public bool DbFortunesDapper { get; set; }
@@ -101,6 +113,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/mvc/db/ef")]
         public bool MvcDbSingleQueryEf { get; set; }
 
+        [ScenarioPath("/mvc/db/efsql")]
+        public bool MvcDbSingleQueryEfSql { get; set; }
+
         [ScenarioPath("/mvc/queries/raw")]
         public bool MvcDbMultiQueryRaw { get; set; }
 
@@ -109,6 +124,9 @@ namespace Benchmarks.Configuration
 
         [ScenarioPath("/mvc/queries/ef")]
         public bool MvcDbMultiQueryEf { get; set; }
+
+        [ScenarioPath("/mvc/queries/efsql")]
+        public bool MvcDbMultiQueryEfSql { get; set; }
 
         [ScenarioPath("/mvc/updates/raw")]
         public bool MvcDbMultiUpdateRaw { get; set; }
@@ -119,19 +137,24 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/mvc/updates/ef")]
         public bool MvcDbMultiUpdateEf { get; set; }
 
+        [ScenarioPath("/mvc/updates/efsql")]
+        public bool MvcDbMultiUpdateEfSql { get; set; }
+
         [ScenarioPath("/mvc/fortunes/raw")]
         public bool MvcDbFortunesRaw { get; set; }
 
         [ScenarioPath("/mvc/fortunes/ef")]
         public bool MvcDbFortunesEf { get; set; }
 
+        [ScenarioPath("/mvc/fortunes/efsql")]
+        public bool MvcDbFortunesEfSql { get; set; }
+
         [ScenarioPath("/mvc/fortunes/dapper")]
         public bool MvcDbFortunesDapper { get; set; }
 
         public bool Any(string partialName) =>
             typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                .Where(p => p.Name.IndexOf(partialName, StringComparison.Ordinal) >= 0 && (bool)p.GetValue(this))
-                .Any();
+                .Any(p => p.Name.IndexOf(partialName, StringComparison.Ordinal) >= 0 && (bool)p.GetValue(this));
 
         public IEnumerable<EnabledScenario> GetEnabled() =>
             typeof(Scenarios).GetTypeInfo().DeclaredProperties
@@ -157,7 +180,8 @@ namespace Benchmarks.Configuration
             }
 
             var props = typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.StartsWith(partialName, StringComparison.OrdinalIgnoreCase))
+                .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase)
+                            || p.Name.StartsWith(partialName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var p in props)

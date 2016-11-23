@@ -31,5 +31,12 @@ namespace Benchmarks.Controllers
             var db = HttpContext.RequestServices.GetRequiredService<EfDb>();
             return View("Fortunes", await db.LoadFortunesRows());
         }
+
+        [HttpGet("efsql")]
+        public async Task<IActionResult> EfSql()
+        {
+            var db = HttpContext.RequestServices.GetRequiredService<EfSqlDb>();
+            return View("Fortunes", await db.LoadFortunesRows());
+        }
     }
 }

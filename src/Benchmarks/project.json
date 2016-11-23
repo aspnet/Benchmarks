@@ -18,6 +18,7 @@
       "type": "build",
       "version": "1.2.0-*"
     },
+    "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
     "Microsoft.AspNetCore.ResponseCaching": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
