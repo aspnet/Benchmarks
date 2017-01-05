@@ -14,17 +14,23 @@
   "dependencies": {
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.2.0-*",
-    "Repository": "1.1.0-*",
-    "Benchmarks.ClientJob": "1.1.0-*",
-    "Benchmarks.ServerJob": "1.1.0-*",
-    "System.Data.SqlClient": "4.1.0",
-    "System.Runtime.Serialization.Primitives": "4.1.1"
+    "Repository": {
+      "target": "project"
+    },
+    "Benchmarks.ClientJob": {
+      "target": "project"
+    },
+    "Benchmarks.ServerJob": {
+      "target": "project"
+    },
+    "System.Data.SqlClient": "4.4.0-*",
+    "System.Runtime.Serialization.Primitives": "4.4.0-*"
   },
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.2.0-*",
           "type": "platform"
         }
       }
