@@ -1,27 +1,34 @@
-﻿using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Benchmarks
 {
-    public class PassthroughConnectionFilter : IConnectionFilter
+    public class PassthroughConnectionFilter : IConnectionAdapter
     {
-        private readonly IConnectionFilter _previous;
-
-        public PassthroughConnectionFilter(IConnectionFilter previous)
+        public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
         {
-            _previous = previous;
+            var adapted = new AdaptedConnection(new PassthroughStream(context.ConnectionStream));
+            return Task.FromResult<IAdaptedConnection>(adapted);
         }
 
-        public async Task OnConnectionAsync(ConnectionFilterContext context)
+        private class AdaptedConnection : IAdaptedConnection
         {
-            await _previous.OnConnectionAsync(context);
+            public AdaptedConnection(Stream stream)
+            {
+                ConnectionStream = stream;
+            }
 
-            context.Connection = new PassthroughStream(context.Connection);
+            public Stream ConnectionStream { get; }
+
+            public void PrepareRequest(IFeatureCollection requestFeatures)
+            {
+            }
         }
 
         private class PassthroughStream : Stream

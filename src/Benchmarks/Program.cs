@@ -3,11 +3,13 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Runtime;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,25 +50,31 @@ namespace Benchmarks
 
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
-                var threads = GetThreadCount(config);
-                webHostBuilder = webHostBuilder.UseKestrel((options) =>
+                webHostBuilder = webHostBuilder.UseKestrel(options =>
                 {
-                    var connectionFilter = GetConnectionFilter(config, options.ConnectionFilter);
-                    if (connectionFilter != null)
+                    var urls = config["urls"] ?? config["server.urls"];
+
+                    if (!string.IsNullOrEmpty(urls))
                     {
-                        options.ConnectionFilter = connectionFilter;
+                        foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            Listen(options, config, value);
+                        }
                     }
+                    else
+                    {
+                        Listen(options, config, "http://localhost:5000/");
+                    }
+
+                    var threads = GetThreadCount(config);
 
                     if (threads > 0)
                     {
                         options.ThreadCount = threads;
                     }
-
-                    if (UrlContainsHttps(config))
-                    {
-                        options.UseHttps("testCert.pfx", "testPassword");
-                    }
                 });
+
+                webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
             }
             else if (String.Equals(Server, "WebListener", StringComparison.OrdinalIgnoreCase))
             {
@@ -146,7 +154,7 @@ namespace Benchmarks
             return threadCountValue == null ? -1 : int.Parse(threadCountValue);
         }
 
-        private static IConnectionFilter GetConnectionFilter(IConfigurationRoot config, IConnectionFilter prevFilter)
+        private static IConnectionAdapter GetConnectionFilter(IConfigurationRoot config)
         {
             var connectionFilterValue = config["connectionFilter"];
             if (string.IsNullOrEmpty(connectionFilterValue))
@@ -156,27 +164,27 @@ namespace Benchmarks
             else
             {
                 var connectionFilterType = Type.GetType(connectionFilterValue, throwOnError: true);
-                return (IConnectionFilter)Activator.CreateInstance(connectionFilterType, prevFilter ?? new NoOpConnectionFilter());
+                return (IConnectionAdapter)Activator.CreateInstance(connectionFilterType);
             }
         }
 
-        // Copied from https://github.com/aspnet/Hosting/blob/dev/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs
-        private static bool UrlContainsHttps(IConfiguration config)
+        private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
         {
-            var urls = config["urls"] ?? config["server.urls"];
-
-            if (!string.IsNullOrEmpty(urls))
+            var uri = new Uri(url);
+            
+            options.Listen(IPAddress.Loopback, uri.Port, listenOptions =>
             {
-                foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                var connectionFilter = GetConnectionFilter(config);
+                if (connectionFilter != null)
                 {
-                    if (value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) {
-                        return true;
-                    }
+                    listenOptions.ConnectionAdapters.Add(connectionFilter);
                 }
-            }
 
-            return false;
+                if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    listenOptions.UseHttps("testCert.pfx", "testPassword");
+                }
+            });
         }
     }
 }
-
