@@ -171,8 +171,9 @@ namespace Benchmarks
         private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
         {
             var uri = new Uri(url);
+            var endpoint =  CreateIPEndPoint(uri);
             
-            options.Listen(IPAddress.Loopback, uri.Port, listenOptions =>
+            options.Listen(endpoint, listenOptions =>
             {
                 var connectionFilter = GetConnectionFilter(config);
                 if (connectionFilter != null)
@@ -185,6 +186,22 @@ namespace Benchmarks
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
             });
+        }
+
+        private static IPEndPoint CreateIPEndPoint(Uri uri)
+        {
+            IPAddress ip;
+
+            if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                ip = IPAddress.Loopback;
+            }
+            else if (!IPAddress.TryParse(uri.Host, out ip))
+            {
+                ip = IPAddress.IPv6Any;
+            }
+
+            return new IPEndPoint(ip, uri.Port);
         }
     }
 }
