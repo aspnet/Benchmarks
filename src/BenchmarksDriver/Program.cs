@@ -87,6 +87,10 @@ namespace BenchmarkDriver
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
+            var webHostOption = app.Option(
+                "-w|--webHost",
+                "WebHost (Kestrel or HttpSys). Default is Kestrel.",
+                CommandOptionType.SingleValue);
 
             // ClientJob Options
             var connectionsOption = app.Option("--connections",
@@ -108,14 +112,22 @@ namespace BenchmarkDriver
                     schemeValue = "http";
                 }
 
+                var webHostValue = webHostOption.Value();
+                if (string.IsNullOrEmpty(webHostValue))
+                {
+                    webHostValue = "Kestrel";
+                }
+
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 Scheme scheme;
                 Scenario scenario;
+                WebHost webHost;
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out scheme) ||
                     !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) ||
+                    !Enum.TryParse(webHostValue, ignoreCase: true, result: out webHost) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -127,6 +139,7 @@ namespace BenchmarkDriver
                 {
                     Scheme = scheme,
                     Scenario = scenario,
+                    WebHost = webHost,
                 };
 
                 if (connectionFilterOption.HasValue())
@@ -234,8 +247,10 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter, clientJob.Threads,
-                        clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth, clientJob.Headers, clientJob.RequestsPerSecond);
+                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter,
+                        serverJob.WebHost,
+                        clientJob.Threads, clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth,
+                        clientJob.Headers, clientJob.RequestsPerSecond);
                 }
             }
             finally
@@ -339,6 +354,7 @@ namespace BenchmarkDriver
             Scenario scenario,
             Scheme scheme,
             string connectionFilter,
+            WebHost webHost,
             int threads,
             int connections,
             int duration,
@@ -358,6 +374,7 @@ namespace BenchmarkDriver
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
+                        [WebHost] [nvarchar](max) NOT NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
@@ -375,6 +392,7 @@ namespace BenchmarkDriver
                            ,[Scenario]
                            ,[Scheme]
                            ,[ConnectionFilter]
+                           ,[WebHost]
                            ,[Threads]
                            ,[Connections]
                            ,[Duration]
@@ -386,6 +404,7 @@ namespace BenchmarkDriver
                            ,@Scenario
                            ,@Scheme
                            ,@ConnectionFilter
+                           ,@WebHost
                            ,@Threads
                            ,@Connections
                            ,@Duration
@@ -411,6 +430,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
+                    p.AddWithValue("@WebHost", webHost.ToString());
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);

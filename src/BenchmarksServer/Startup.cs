@@ -237,9 +237,9 @@ namespace BenchmarkServer
             Log.WriteLine($"Deleting directory '{path}'");
 
             // Delete occasionally fails with the following exception:
-            // 
+            //
             // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
-            // 
+            //
             // If delete fails, retry once every second up to 10 times.
             for (var i=0; i < 10; i++)
             {
@@ -272,7 +272,8 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
+            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server {job.WebHost} " +
+                $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
@@ -332,7 +333,7 @@ namespace BenchmarkServer
 
         private static string GetRepoName(Source source)
         {
-            // Attempt to parse a string like 
+            // Attempt to parse a string like
             // - http://<host>.com/<user>/<repo>.git OR
             // - http://<host>.com/<user>/<repo>
             var repository = source.Repository;

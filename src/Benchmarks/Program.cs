@@ -76,9 +76,9 @@ namespace Benchmarks
 
                 webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
             }
-            else if (String.Equals(Server, "WebListener", StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseWebListener();
+                webHostBuilder = webHostBuilder.UseHttpSys();
             }
             else
             {
@@ -172,7 +172,7 @@ namespace Benchmarks
         {
             var uri = new Uri(url);
             var endpoint =  CreateIPEndPoint(uri);
-            
+
             options.Listen(endpoint, listenOptions =>
             {
                 var connectionFilter = GetConnectionFilter(config);
