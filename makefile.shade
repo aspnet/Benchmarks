@@ -19,11 +19,15 @@ k-standard-goals
     var scenarios = new string[]
     {
       "-n Plaintext",
+      "-n Plaintext --webHost WebListener",
       "-n Plaintext -f Benchmarks.PassthroughConnectionFilter",
       "-n Plaintext -m https",
+      "-n Plaintext -m https --webHost WebListener",
       "-n Json",
+      "-n Json --webHost WebListener",
       "-n Json -f Benchmarks.PassthroughConnectionFilter",
       "-n Json -m https",
+      "-n Json -m https --webHost WebListener",
       "-n MvcPlaintext",
       "-n MvcJson",
       "-n MemoryCachePlaintext",

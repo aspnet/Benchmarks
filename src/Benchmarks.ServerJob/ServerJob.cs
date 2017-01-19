@@ -38,5 +38,8 @@ namespace Benchmarks.ServerJob
         public ServerState State { get; set; }
 
         public string Url { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public WebHost WebHost { get; set; }
     }
 }
