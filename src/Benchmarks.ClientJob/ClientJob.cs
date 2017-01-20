@@ -26,6 +26,7 @@ namespace Benchmarks.ClientJob
             RequestsPerSecond = clientJob.RequestsPerSecond;
             Output = clientJob.Output;
             Error = clientJob.Error;
+            Method = clientJob.Method;
         }
 
         public int Id { get; set; }
@@ -50,5 +51,7 @@ namespace Benchmarks.ClientJob
         public string Output { get; set; }
 
         public string Error { get; set; }
+
+        public string Method { get; set; } = "GET";
     }
 }

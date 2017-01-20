@@ -97,7 +97,7 @@ namespace BenchmarkClient
                 if (job != null)
                 {
                     var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} " +
-                        $"Duration:{job.Duration} Pipeline:{job.PipelineDepth}";
+                        $"Duration:{job.Duration} Pipeline:{job.PipelineDepth} Method:{job.Method}";
 
                     if (job.Headers != null)
                     {
@@ -161,6 +161,11 @@ namespace BenchmarkClient
             if (job.PipelineDepth > 0)
             {
                 command += $" -- {job.PipelineDepth}";
+
+                if (job.Method != "GET")
+                {
+                    command += $" {job.Method}";
+                }
             }
 
             var process = new Process()

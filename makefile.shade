@@ -38,6 +38,7 @@ default DOTNET_ARGUMENT='-v '
       "-n MemoryCachePlaintext",
       "-n MemoryCachePlaintextSetRemove",
       "-n ResponseCachingPlaintextCached",
+      "-n ResponseCachingPlaintextCached --method DELETE",
       "-n ResponseCachingPlaintextResponseNoCache",
       "-n ResponseCachingPlaintextRequestNoCache",
       "-n ResponseCachingPlaintextVaryByCached",
