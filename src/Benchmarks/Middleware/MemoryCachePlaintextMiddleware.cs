@@ -40,12 +40,12 @@ namespace Benchmarks.Middleware
                     }
                 }
 
-                httpContext.Response.StatusCode = 200;
-                httpContext.Response.ContentType = "text/plain";
-                // HACK: Setting the Content-Length header manually avoids the cost of serializing the int to a string.
-                //       This is instead of: httpContext.Response.ContentLength = payload.Length;
-                httpContext.Response.Headers["Content-Length"] = "13";
-                return httpContext.Response.Body.WriteAsync(payload, 0, payload.Length);
+                var payloadLength = payload.Length;
+                var response = httpContext.Response;
+                response.StatusCode = 200;
+                response.ContentType = "text/plain";
+                response.ContentLength = payloadLength;
+                return response.Body.WriteAsync(payload, 0, payloadLength);
             }
 
             return _next(httpContext);
