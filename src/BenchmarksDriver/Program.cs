@@ -88,8 +88,8 @@ namespace BenchmarkDriver
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
             var webHostOption = app.Option(
-                "--webHost",
-                "WebHost (Kestrel or WebListener). Default is Kestrel.",
+                "-w|--webHost",
+                "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
 
             // ClientJob Options

@@ -6,6 +6,6 @@ namespace Benchmarks.ServerJob
     public enum WebHost
     {
         Kestrel,
-        WebListener,
+        HttpSys,
     }
 }
