@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
@@ -28,6 +29,7 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
+        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -112,6 +114,14 @@ namespace BenchmarkServer
                         // TODO: Race condition if DELETE is called during this code
                         try
                         {
+                            if (!_isWindows && job.WebHost != WebHost.Kestrel)
+                            {
+                                Log.WriteLine($"Failing job '{job.Id}' with scenario '{job.Scenario}'.");
+                                Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
+                                job.State = ServerState.Failed;
+                                continue;
+                            }
+
                             Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
                             job.State = ServerState.Starting;
 
@@ -144,7 +154,14 @@ namespace BenchmarkServer
                         if (process != null)
                         {
                             // TODO: Replace with managed xplat version of kill process tree
-                            ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
+                            if (_isWindows)
+                            {
+                                ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
+                            }
+                            else
+                            {
+                                ProcessUtil.Run("pkill", "--signal SIGINT --full Benchmarks.dll", throwOnError: false);
+                            }
                             process.Dispose();
                             process = null;
                         }
@@ -287,7 +304,7 @@ namespace BenchmarkServer
                 StartInfo = {
                     FileName = filename,
                     Arguments = arguments,
-                    WorkingDirectory = Path.Combine(benchmarksRepo, @"src\Benchmarks"),
+                    WorkingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks"),
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
