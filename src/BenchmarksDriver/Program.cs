@@ -233,6 +233,11 @@ namespace BenchmarkDriver
                     {
                         throw new InvalidOperationException("Server job failed");
                     }
+                    else if (serverJob.State == ServerState.NotSupported)
+                    {
+                        Log("Server does not support this job configuration.");
+                        return 0;
+                    }
                     else
                     {
                         await Task.Delay(1000);
