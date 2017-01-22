@@ -231,7 +231,8 @@ namespace BenchmarkDriver
                     }
                     else if (serverJob.State == ServerState.Failed)
                     {
-                        throw new InvalidOperationException("Server job failed");
+                        LogVerbose("Server job failed");
+                        return 1;
                     }
                     else
                     {

@@ -3,6 +3,8 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 use-standard-lifecycle
 k-standard-goals
 
+default DOTNET_ARGUMENT='-v '
+
 #build-compile target='compile'
   @{
     var projectFiles = Files
@@ -12,6 +14,9 @@ k-standard-goals
 
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, E("Configuration"), E("KOREBUILD_BUILD_FRAMEWORK")));
   }
+
+#benchmark-quiet target='--quiet'
+  -DOTNET_ARGUMENT='';
 
 #benchmark-tests .compile
   @{
@@ -37,8 +42,26 @@ k-standard-goals
       "-n ResponseCachingPlaintextRequestNoCache",
       "-n ResponseCachingPlaintextVaryByCached",
     };
+
+    // Expect failures with HttpSys if BenchmarksServer is running on Linux. Never expect two failures in a row.
+    var lastFailed = false;
     foreach (var scenario in scenarios) {
-      Dotnet(String.Format("-v run -- {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql),
-        "src/BenchmarksDriver");
+      try
+      {
+        Dotnet(
+          String.Format("{4}run -- {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql,
+            DOTNET_ARGUMENT),
+          "src/BenchmarksDriver");
+        lastFailed = false;
+      }
+      catch
+      {
+        if (lastFailed)
+        {
+          throw;
+        }
+
+        lastFailed = true;
+      }
     }
   }
