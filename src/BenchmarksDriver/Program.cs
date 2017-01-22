@@ -284,7 +284,7 @@ namespace BenchmarkDriver
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
-                    if (clientJob.State == ClientState.Running)
+                    if (clientJob.State == ClientState.Running || clientJob.State == ClientState.Completed)
                     {
                         break;
                     }
