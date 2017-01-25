@@ -12,7 +12,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
     "Microsoft.Extensions.CommandLineUtils": "1.2.0-*",
     "Repository": {
       "target": "project"
