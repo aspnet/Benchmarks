@@ -29,6 +29,10 @@
     "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.2.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.2.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "type": "build",
+      "version": "1.2.0-*"
+    },
     "Npgsql": "3.2.0-*",
     "Npgsql.EntityFrameworkCore.PostgreSQL": "1.0.2-*"
   },
