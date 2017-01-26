@@ -12,7 +12,7 @@
     }
   },
   "dependencies": {
-    "Dapper": "1.50.0-*",
+    "Dapper": "1.*",
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
     "Microsoft.AspNetCore.ResponseCaching": "1.2.0-*",
     "Microsoft.AspNetCore.Server.HttpSys": "1.2.0-*",
@@ -33,8 +33,10 @@
       "type": "build",
       "version": "1.2.0-*"
     },
+    // Once Npgsql 3.2.0 or later is stable, the required version should be changed to "3.*".
+    // For now, we need to use "3.2.0-*" since there's no way to float the latest pre-release version.
     "Npgsql": "3.2.0-*",
-    "Npgsql.EntityFrameworkCore.PostgreSQL": "1.0.2-*"
+    "Npgsql.EntityFrameworkCore.PostgreSQL": "1.*"
   },
   "frameworks": {
     "netcoreapp1.1": {
