@@ -116,9 +116,9 @@ namespace BenchmarkServer
                         {
                             if (!_isWindows && job.WebHost != WebHost.Kestrel)
                             {
-                                Log.WriteLine($"Failing job '{job.Id}' with scenario '{job.Scenario}'.");
+                                Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                 Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
-                                job.State = ServerState.Failed;
+                                job.State = ServerState.NotSupported;
                                 continue;
                             }
 

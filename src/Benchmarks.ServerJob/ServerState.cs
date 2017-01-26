@@ -9,6 +9,7 @@ namespace Benchmarks.ServerJob
         Starting,
         Running,
         Failed,
-        Deleting
+        Deleting,
+        NotSupported,
     }
 }

@@ -231,8 +231,12 @@ namespace BenchmarkDriver
                     }
                     else if (serverJob.State == ServerState.Failed)
                     {
-                        LogVerbose("Server job failed");
-                        return 1;
+                        throw new InvalidOperationException("Server job failed");
+                    }
+                    else if (serverJob.State == ServerState.NotSupported)
+                    {
+                        Log("Server does not support this job configuration.");
+                        return 0;
                     }
                     else
                     {
