@@ -11,6 +11,8 @@ namespace Benchmarks.Data
             : base(options)
         {
             Database.AutoTransactionsEnabled = false;
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public DbSet<World> World { get; set; }
