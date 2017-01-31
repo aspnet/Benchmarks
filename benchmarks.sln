@@ -1,41 +1,40 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26117.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BAF239DE-04E9-428E-A6D6-98D4C6CFB9E3}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "experimental", "experimental", "{C2EB60CC-CA5A-4E49-A3F8-4432FB117869}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicAsyncHttpServer", "experimental\BasicAsyncHttpServer\BasicAsyncHttpServer.xproj", "{07773C38-B3F3-4D6C-B318-29C88F016AA9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicAsyncHttpServer", "experimental\BasicAsyncHttpServer\BasicAsyncHttpServer.csproj", "{07773C38-B3F3-4D6C-B318-29C88F016AA9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicHttpServer", "experimental\BasicHttpServer\BasicHttpServer.xproj", "{1AE4BE9E-0E15-4B91-A32C-46DB4E1710BF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicHttpServer", "experimental\BasicHttpServer\BasicHttpServer.csproj", "{1AE4BE9E-0E15-4B91-A32C-46DB4E1710BF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NativeHttpServer", "experimental\NativeHttpServer\NativeHttpServer.xproj", "{4A829ECA-062D-4C1F-BE88-E72E7BC972C3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NativeHttpServer", "experimental\NativeHttpServer\NativeHttpServer.csproj", "{4A829ECA-062D-4C1F-BE88-E72E7BC972C3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PureNativeHttpServer", "experimental\PureNativeHttpServer\PureNativeHttpServer.vcxproj", "{A27BFB9B-3CA6-4A26-A7BD-66854399BED3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks", "src\Benchmarks\Benchmarks.xproj", "{EC62ACF4-8B19-41C2-B699-D75CAB7763DF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks", "src\Benchmarks\Benchmarks.csproj", "{EC62ACF4-8B19-41C2-B699-D75CAB7763DF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksDriver", "src\BenchmarksDriver\BenchmarksDriver.xproj", "{81C74B7C-B9E3-4F01-9C39-6894E81B193A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksDriver", "src\BenchmarksDriver\BenchmarksDriver.csproj", "{81C74B7C-B9E3-4F01-9C39-6894E81B193A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksServer", "src\BenchmarksServer\BenchmarksServer.xproj", "{73F095D2-D0BD-4D03-BC17-D7A5EF0C0191}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksServer", "src\BenchmarksServer\BenchmarksServer.csproj", "{73F095D2-D0BD-4D03-BC17-D7A5EF0C0191}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksClient", "src\BenchmarksClient\BenchmarksClient.xproj", "{75A5E20D-37CD-49DA-BD74-1F730C353517}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BenchmarksClient", "src\BenchmarksClient\BenchmarksClient.csproj", "{75A5E20D-37CD-49DA-BD74-1F730C353517}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Repository", "src\Repository\Repository.xproj", "{716F7F93-BC1D-4B2C-BF1C-20051CAF7BB7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Repository", "src\Repository\Repository.csproj", "{716F7F93-BC1D-4B2C-BF1C-20051CAF7BB7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ClientJob", "src\Benchmarks.ClientJob\Benchmarks.ClientJob.xproj", "{FFE0CFA5-ADCB-4E63-9B2D-DBC48A3C8364}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ClientJob", "src\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj", "{FFE0CFA5-ADCB-4E63-9B2D-DBC48A3C8364}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ServerJob", "src\Benchmarks.ServerJob\Benchmarks.ServerJob.xproj", "{0748A92D-3AC6-4406-B09C-0BF07A030DD5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Benchmarks.ServerJob", "src\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj", "{0748A92D-3AC6-4406-B09C-0BF07A030DD5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HttpBenchmark", "experimental\HttpBenchmark\HttpBenchmark.xproj", "{174DC3AC-F883-4B85-BE90-EA5B7BB01961}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HttpBenchmark", "experimental\HttpBenchmark\HttpBenchmark.csproj", "{174DC3AC-F883-4B85-BE90-EA5B7BB01961}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

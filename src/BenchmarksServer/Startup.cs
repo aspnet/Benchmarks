@@ -211,28 +211,13 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
-            // Modify all global.json to reference source dirs
-            foreach (var repoDir in dirs)
-            {
-                var globalJsonPath = Path.Combine(path, repoDir, "global.json");
-                dynamic globalJson = JsonConvert.DeserializeObject(File.ReadAllText(globalJsonPath));
-                foreach (var sourceDir in dirs)
-                {
-                    if (sourceDir == benchmarksDir)
-                    {
-                        // No need to add benchmarks to global.json, since nothing should depend on it
-                        continue;
-                    }
-
-                    globalJson["projects"].Add(Path.Combine("..", sourceDir, "src"));
-                }
-                File.WriteAllText(globalJsonPath, JsonConvert.SerializeObject(globalJson, Formatting.Indented));
-            }
+            // TODO: add project references to checked out repos
+            // https://github.com/aspnet/benchmarks/issues/185
 
             // Restore in each dir
             foreach (var dir in dirs)
             {
-                ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir, "src"));
+                ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir));
             }
 
             return benchmarksDir;
@@ -289,7 +274,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -- --scenarios {job.Scenario} --server {job.WebHost} " +
+            var arguments = $"run -c Release -f netcoreapp1.1 -- --scenarios {job.Scenario} --server {job.WebHost} " +
                 $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
