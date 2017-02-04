@@ -39,7 +39,7 @@ namespace Benchmarks.Middleware
                 response.StatusCode = 200;
                 response.ContentType = "text/plain";
                 response.ContentLength = payloadLength;
-                return httpContext.Response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
+                return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
             }
 
             return _next(httpContext);
