@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>net451</TargetFramework>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
