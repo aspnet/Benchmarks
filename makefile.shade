@@ -3,7 +3,7 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 use-standard-lifecycle
 k-standard-goals
 
-default DOTNET_ARGUMENT='-v '
+default DOTNET_ARGUMENT='-d '
 
 #benchmark-quiet target='--quiet'
   -DOTNET_ARGUMENT='';
