@@ -219,7 +219,7 @@ namespace BenchmarkServer
                 UpdateDependencies(path, dir, builtPackages);
 
                 ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir));
-                ProcessUtil.Run("cmd", "/c build.cmd build-pack", workingDirectory: Path.Combine(path, dir),
+                ProcessUtil.Run("cmd", "/c build.cmd --for-ci build-pack", workingDirectory: Path.Combine(path, dir),
                     environmentVariables: new Dictionary<string, string>
                     {
                         ["KOREBUILD_SKIP_RUNTIME_INSTALL"] = "1"
