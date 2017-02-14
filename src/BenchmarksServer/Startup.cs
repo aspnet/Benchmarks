@@ -10,12 +10,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+using NuGet.Packaging;
 using Repository;
 
 namespace BenchmarkServer
@@ -128,7 +130,7 @@ namespace BenchmarkServer
                             Debug.Assert(tempDir == null);
                             tempDir = GetTempDir();
 
-                            var benchmarksDir = CloneAndRestore(tempDir, job);
+                            var benchmarksDir = CloneRestoreBuild(tempDir, job);
 
                             Debug.Assert(process == null);
                             process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job);
@@ -179,17 +181,14 @@ namespace BenchmarkServer
             }
         }
 
-        private static string CloneAndRestore(string path, ServerJob job)
+        private static string CloneRestoreBuild(string path, ServerJob job)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.Sources, SourceRepoComparer.Instance);
-
-            // This will no-op if 'benchmarks' was specified by the user.
-            repos.Add(_benchmarksSource);
+            var repos = job.Sources.Append(_benchmarksSource).Distinct(SourceRepoComparer.Instance);
 
             // Clone
             string benchmarksDir = null;
@@ -211,16 +210,124 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
-            // TODO: add project references to checked out repos
-            // https://github.com/aspnet/benchmarks/issues/185
+            var builtDirs = new List<string>();
+            var builtPackages = new List<BuiltPackage>();
 
-            // Restore in each dir
-            foreach (var dir in dirs)
+            foreach (var dir in dirs.Except(new[] { benchmarksDir }))
             {
+                UpdateNuGetConfig(path, dir, builtDirs);
+                UpdateDependencies(path, dir, builtPackages);
+
                 ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir));
+                ProcessUtil.Run("cmd", "/c build.cmd --for-ci build-pack", workingDirectory: Path.Combine(path, dir),
+                    environmentVariables: new Dictionary<string, string>
+                    {
+                        ["KOREBUILD_SKIP_RUNTIME_INSTALL"] = "1"
+                    });
+
+                builtDirs.Add(dir);
+
+                builtPackages.AddRange(Directory.EnumerateFiles(Path.Combine(path, dir, "artifacts", "build"), "*.nupkg")
+                    .Select(packageFile => new PackageArchiveReader(packageFile))
+                    .Select(packageReader =>
+                    {
+                        var builtPackage = new BuiltPackage(
+                            name: packageReader.NuspecReader.GetId(),
+                            version: packageReader.NuspecReader.GetVersion().ToFullString(),
+                            targetFrameworks: packageReader.NuspecReader.GetDependencyGroups().Select(dependencyGroup => dependencyGroup.TargetFramework.Framework));
+
+                        packageReader.Dispose();
+
+                        return builtPackage;
+                    }));
             }
 
+            UpdateNuGetConfig(path, benchmarksDir, builtDirs);
+            UpdateProjectDependencies(Path.Combine(path, benchmarksDir, "src", "Benchmarks", "Benchmarks.csproj"), builtPackages);            
+            ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, benchmarksDir));
+
             return benchmarksDir;
+        }
+
+        private static void UpdateNuGetConfig(string path, string dir, IEnumerable<string> builtDirs)
+        {
+            var nugetConfig = Path.Combine(path, dir, "NuGet.config");
+            var nugetConfigDoc = XDocument.Load(nugetConfig);
+            var packageSources = nugetConfigDoc.Root.Element("packageSources");
+
+            foreach (var builtDir in builtDirs)
+            {
+                packageSources.AddFirst(new XElement("add", new[]
+                {
+                    new XAttribute("key", builtDir),
+                    new XAttribute("value", Path.Combine(path, builtDir, "artifacts", "build").Replace(@"\", @"\\"))
+                }));
+            }
+
+            using (var writer = XmlWriter.Create(nugetConfig, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
+            {
+                nugetConfigDoc.Save(writer);
+            }
+        }
+
+        private static void UpdateDependencies(string path, string dir, IEnumerable<BuiltPackage> builtPackages)
+        {
+            foreach (var srcProject in Directory.EnumerateFiles(Path.Combine(path, dir, "src"), "*.csproj", SearchOption.AllDirectories))
+            {
+                UpdateProjectDependencies(srcProject, builtPackages);
+            }
+        }
+
+        private static void UpdateProjectDependencies(string srcProject, IEnumerable<BuiltPackage> builtPackages)
+        {
+            var projectDocument = XDocument.Load(srcProject);
+
+            foreach (var reference in projectDocument.Descendants("PackageReference").ToList())
+            {
+                if (builtPackages.Any(package => package.Name == reference.Attribute("Include").Value))
+                {
+                    reference.Remove();
+                }
+            }
+
+            var commonReferences = new XElement("ItemGroup");
+            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net451' "));
+            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp1.1' "));
+
+            foreach (var builtPackage in builtPackages)
+            {
+                var reference = new XElement("PackageReference", new XAttribute[]
+                {
+                    new XAttribute("Include", builtPackage.Name),
+                    new XAttribute("Version", builtPackage.Version)
+                });
+
+                if (builtPackage.TargetFrameworks.Count() > 1)
+                {
+                    commonReferences.Add(reference);
+                }
+                else if (builtPackage.TargetFrameworks.First().StartsWith(".NETFramework"))
+                {
+                    netFrameworkReferences.Add(reference);
+                }
+                else if (builtPackage.TargetFrameworks.First().StartsWith(".NETStandard"))
+                {
+                    netCoreReferences.Add(reference);
+                }
+                else
+                {
+                    // TODO
+                }
+            }
+
+            projectDocument.Root.AddFirst(netCoreReferences);
+            projectDocument.Root.AddFirst(netFrameworkReferences);
+            projectDocument.Root.AddFirst(commonReferences);
+
+            using (var writer = XmlWriter.Create(srcProject, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
+            {
+                projectDocument.Save(writer);
+            }
         }
 
         private static string GetTempDir()
@@ -243,7 +350,7 @@ namespace BenchmarkServer
             // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
             //
             // If delete fails, retry once every second up to 10 times.
-            for (var i=0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 try
                 {
@@ -366,6 +473,20 @@ namespace BenchmarkServer
             {
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(GetRepoName(obj));
             }
+        }
+
+        private class BuiltPackage
+        {
+            public BuiltPackage(string name, string version, IEnumerable<string> targetFrameworks)
+            {
+                Name = name;
+                Version = version;
+                TargetFrameworks = targetFrameworks;
+            }
+
+            public string Name { get; }
+            public string Version { get; }
+            public IEnumerable<string> TargetFrameworks { get; }
         }
     }
 }
