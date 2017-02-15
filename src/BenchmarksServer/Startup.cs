@@ -10,12 +10,13 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Repository;
 
 namespace BenchmarkServer
@@ -211,16 +212,60 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
-            // TODO: add project references to checked out repos
-            // https://github.com/aspnet/benchmarks/issues/185
+            AddSourceDependencies(path, benchmarksDir, dirs);
 
-            // Restore in each dir
-            foreach (var dir in dirs)
-            {
-                ProcessUtil.Run("dotnet", "restore", workingDirectory: Path.Combine(path, dir));
-            }
+            // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
+            // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
+            // higher than packages references by the same name.
+            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: Path.Combine(path, benchmarksDir));
 
             return benchmarksDir;
+        }
+
+        private static void AddSourceDependencies(string path, string benchmarksDir, IEnumerable<string> dirs)
+        {
+            var benchmarksProjectPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks", "Benchmarks.csproj");
+            var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
+
+            var commonReferences = new XElement("ItemGroup");
+            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net451' "));
+            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp1.1' "));
+
+            foreach (var dir in dirs.Except(new[] { benchmarksDir }))
+            {
+                var projects = Directory.EnumerateFiles(Path.Combine(path, dir, "src"), "*.csproj", SearchOption.AllDirectories);
+
+                foreach (var project in projects)
+                {
+                    var projectDocument = XDocument.Load(project);
+                    var targetFrameworks = projectDocument.Root.Descendants("TargetFrameworks").FirstOrDefault();
+                    var targetFramework = projectDocument.Root.Descendants("TargetFramework").FirstOrDefault();
+
+                    var reference = new XElement("ProjectReference", new XAttribute("Include", project));
+
+                    if (targetFrameworks != null)
+                    {
+                        commonReferences.Add(reference);
+                    }
+                    else if (targetFramework.Value.StartsWith("net4"))
+                    {
+                        netFrameworkReferences.Add(reference);
+                    }
+                    else if (targetFramework.Value.StartsWith("netstandard"))
+                    {
+                        netCoreReferences.Add(reference);
+                    }
+                }
+            }
+
+            benchmarksProjectDocument.Root.Add(commonReferences);
+            benchmarksProjectDocument.Root.Add(netFrameworkReferences);
+            benchmarksProjectDocument.Root.Add(netCoreReferences);
+
+            using (var writer = XmlWriter.Create(benchmarksProjectPath, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
+            {
+                benchmarksProjectDocument.Save(writer);
+            }
         }
 
         private static string GetTempDir()
