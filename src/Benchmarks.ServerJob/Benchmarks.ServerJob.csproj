@@ -5,11 +5,13 @@
   <PropertyGroup>
     <Description>Class to transfer data to/from the benchmark server.</Description>
     <TargetFramework>netstandard1.0</TargetFramework>
-    <WarningsAsErrors>true</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
 

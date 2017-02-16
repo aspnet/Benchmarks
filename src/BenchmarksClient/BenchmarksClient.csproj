@@ -5,8 +5,6 @@
   <PropertyGroup>
     <Description>REST APIs to run ASP.NET benchmark client.</Description>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <WarningsAsErrors>true</WarningsAsErrors>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 

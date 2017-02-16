@@ -5,17 +5,19 @@
   <PropertyGroup>
     <Description>Schedules benchmark jobs on both the server and client.</Description>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <WarningsAsErrors>true</WarningsAsErrors>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-003121" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.2.0-*" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0-*" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.4.0-*" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
