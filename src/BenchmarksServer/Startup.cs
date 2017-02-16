@@ -264,7 +264,8 @@ namespace BenchmarkServer
             benchmarksProjectDocument.Root.Add(netFrameworkReferences);
             benchmarksProjectDocument.Root.Add(netCoreReferences);
 
-            using (var writer = XmlWriter.Create(benchmarksProjectPath, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
+            using (var stream = File.OpenWrite(benchmarksProjectPath))
+            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
             {
                 benchmarksProjectDocument.Save(writer);
             }
