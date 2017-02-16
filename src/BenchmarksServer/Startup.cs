@@ -324,7 +324,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"bin/Release/netcoreapp1.1/Benchmarks.dll -- --scenarios {job.Scenario} --server {job.WebHost} " +
+            var arguments = $"bin/Release/netcoreapp1.1/Benchmarks.dll --scenarios {job.Scenario} --server {job.WebHost} " +
                 $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
