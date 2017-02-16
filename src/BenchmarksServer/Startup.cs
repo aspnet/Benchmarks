@@ -129,7 +129,7 @@ namespace BenchmarkServer
                             Debug.Assert(tempDir == null);
                             tempDir = GetTempDir();
 
-                            var benchmarksDir = CloneAndRestore(tempDir, job);
+                            var benchmarksDir = CloneRestoreAndBuild(tempDir, job);
 
                             Debug.Assert(process == null);
                             process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job);
@@ -180,7 +180,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static string CloneAndRestore(string path, ServerJob job)
+        private static string CloneRestoreAndBuild(string path, ServerJob job)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
@@ -218,6 +218,8 @@ namespace BenchmarkServer
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
             ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: Path.Combine(path, benchmarksDir));
+
+            ProcessUtil.Run("dotnet", "build -c Release -f netcoreapp1.1");
 
             return benchmarksDir;
         }
@@ -319,7 +321,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -f netcoreapp1.1 -- --scenarios {job.Scenario} --server {job.WebHost} " +
+            var arguments = $"bin/Release/netcoreapp1.1/Benchmarks.dll -- --scenarios {job.Scenario} --server {job.WebHost} " +
                 $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
