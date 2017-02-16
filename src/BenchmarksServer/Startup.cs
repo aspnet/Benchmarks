@@ -214,7 +214,7 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            var benchmarksPath = Path.Combine(path, benchmarksDir);
+            var benchmarksPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks");
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
