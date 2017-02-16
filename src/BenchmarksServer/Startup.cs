@@ -129,7 +129,7 @@ namespace BenchmarkServer
                             Debug.Assert(tempDir == null);
                             tempDir = GetTempDir();
 
-                            var benchmarksDir = CloneAndRestore(tempDir, job);
+                            var benchmarksDir = CloneRestoreAndBuild(tempDir, job);
 
                             Debug.Assert(process == null);
                             process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job);
@@ -180,7 +180,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static string CloneAndRestore(string path, ServerJob job)
+        private static string CloneRestoreAndBuild(string path, ServerJob job)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
@@ -214,10 +214,14 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
+            var benchmarksPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks");
+
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: Path.Combine(path, benchmarksDir));
+            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksPath);
+
+            ProcessUtil.Run("dotnet", "build -c Release -f netcoreapp1.1", workingDirectory: benchmarksPath);
 
             return benchmarksDir;
         }
@@ -262,7 +266,8 @@ namespace BenchmarkServer
             benchmarksProjectDocument.Root.Add(netFrameworkReferences);
             benchmarksProjectDocument.Root.Add(netCoreReferences);
 
-            using (var writer = XmlWriter.Create(benchmarksProjectPath, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
+            using (var stream = File.OpenWrite(benchmarksProjectPath))
+            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
             {
                 benchmarksProjectDocument.Save(writer);
             }
@@ -319,7 +324,7 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
             var filename = "dotnet";
-            var arguments = $"run -c Release -f netcoreapp1.1 -- --scenarios {job.Scenario} --server {job.WebHost} " +
+            var arguments = $"bin/Release/netcoreapp1.1/Benchmarks.dll --scenarios {job.Scenario} --server {job.WebHost} " +
                 $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
