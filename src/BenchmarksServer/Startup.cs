@@ -214,12 +214,14 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
+            var benchmarksPath = Path.Combine(path, benchmarksDir);
+
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: Path.Combine(path, benchmarksDir));
+            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksPath);
 
-            ProcessUtil.Run("dotnet", "build -c Release -f netcoreapp1.1");
+            ProcessUtil.Run("dotnet", "build -c Release -f netcoreapp1.1", workingDirectory: benchmarksPath);
 
             return benchmarksDir;
         }
