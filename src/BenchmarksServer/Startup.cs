@@ -332,9 +332,9 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
-            if (job.ThreadCount.HasValue)
+            if (job.KestrelThreadCount.HasValue)
             {
-                arguments += $" --threadCount {job.ThreadCount.Value}";
+                arguments += $" --threadCount {job.KestrelThreadCount.Value}";
             }
 
             Log.WriteLine($"Starting process '{filename} {arguments}'");
