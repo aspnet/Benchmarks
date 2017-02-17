@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 
@@ -18,6 +17,8 @@ namespace BenchmarkDriver
 {
     public class Program
     {
+        private static bool _verbose;
+
         private static readonly HttpClient _httpClient = new HttpClient();
 
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
@@ -75,6 +76,8 @@ namespace BenchmarkDriver
                 "URL of benchmark client", CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
+            var verboseOption = app.Option("-v|--verbose",
+                "Verbose output", CommandOptionType.NoValue);
 
             // ServerJob Options
             var connectionFilterOption = app.Option("-f|--connectionFilter",
@@ -108,6 +111,8 @@ namespace BenchmarkDriver
 
             app.OnExecute(() =>
             {
+                _verbose = verboseOption.HasValue();
+
                 var schemeValue = schemeOption.Value();
                 if (string.IsNullOrEmpty(schemeValue))
                 {
@@ -461,18 +466,16 @@ namespace BenchmarkDriver
 
         private static void Log(string message)
         {
-            Log(message, Reporter.Output);
+            var time = DateTime.Now.ToString("hh:mm:ss.fff");
+            Console.WriteLine($"[{time}] {message}");
         }
 
         private static void LogVerbose(string message)
         {
-            Log(message, Reporter.Verbose);
-        }
-
-        private static void Log(string message, Reporter reporter)
-        {
-            var time = DateTime.Now.ToString("hh:mm:ss.fff");
-            reporter.WriteLine($"[{time}] {message}");
+            if (_verbose)
+            {
+                Log(message);
+            }
         }
     }
 }
