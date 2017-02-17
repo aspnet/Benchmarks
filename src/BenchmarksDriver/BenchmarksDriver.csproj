@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-003121" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.2.0-*" />
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(CoreFxVersion)" />
