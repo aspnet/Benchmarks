@@ -3,10 +3,10 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 use-standard-lifecycle
 k-standard-goals
 
-default DOTNET_ARGUMENT='-d '
+default VERBOSE_ARGUMENT='-v'
 
 #benchmark-quiet target='--quiet'
-  -DOTNET_ARGUMENT='';
+  -VERBOSE_ARGUMENT='';
 
 #benchmark-tests .compile
   @{
@@ -36,8 +36,8 @@ default DOTNET_ARGUMENT='-d '
 
     foreach (var scenario in scenarios) {
       Dotnet(
-        String.Format("{4}run -- {0} -s {1} -c {2} {3}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql,
-          DOTNET_ARGUMENT),
+        String.Format("run -- {0} -s {1} -c {2} {3} {4}", scenario, E("BENCHMARK_SERVER"), E("BENCHMARK_CLIENT"), sql,
+          VERBOSE_ARGUMENT),
         "src/BenchmarksDriver");
     }
   }
