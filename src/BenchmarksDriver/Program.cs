@@ -90,6 +90,9 @@ namespace BenchmarkDriver
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
+            var threadCountOption = app.Option("-t|--threadCount",
+                "Kestrel ThreadCount.",
+                CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
@@ -152,6 +155,11 @@ namespace BenchmarkDriver
                 if (connectionFilterOption.HasValue())
                 {
                     serverJob.ConnectionFilter = connectionFilterOption.Value();
+                }
+
+                if (threadCountOption.HasValue())
+                {
+                    serverJob.ThreadCount = int.Parse(threadCountOption.Value());
                 }
 
                 var sources = new List<Source>();
@@ -264,7 +272,7 @@ namespace BenchmarkDriver
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
                     await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter,
-                        serverJob.WebHost,
+                        serverJob.WebHost, serverJob.ThreadCount,
                         clientJob.Threads, clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth,
                         clientJob.Method, clientJob.Headers, clientJob.RequestsPerSecond);
                 }
@@ -371,6 +379,7 @@ namespace BenchmarkDriver
             Scheme scheme,
             string connectionFilter,
             WebHost webHost,
+            int? threadCount,
             int threads,
             int connections,
             int duration,
@@ -392,6 +401,7 @@ namespace BenchmarkDriver
                         [Scheme] [nvarchar](max) NOT NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [WebHost] [nvarchar](max) NOT NULL,
+                        [ThreadCount] [int] NULL,
                         [Threads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
@@ -411,6 +421,7 @@ namespace BenchmarkDriver
                            ,[Scheme]
                            ,[ConnectionFilter]
                            ,[WebHost]
+                           ,[ThreadCount]
                            ,[Threads]
                            ,[Connections]
                            ,[Duration]
@@ -424,6 +435,7 @@ namespace BenchmarkDriver
                            ,@Scheme
                            ,@ConnectionFilter
                            ,@WebHost
+                           ,@ThreadCount
                            ,@Threads
                            ,@Connections
                            ,@Duration
@@ -451,6 +463,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
+                    p.AddWithValue("@ThreadCount", (object)threadCount ?? DBNull.Value);
                     p.AddWithValue("@Threads", threads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);

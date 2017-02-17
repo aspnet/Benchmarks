@@ -332,6 +332,11 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
+            if (job.ThreadCount.HasValue)
+            {
+                arguments += $" --threadCount {job.ThreadCount}";
+            }
+
             Log.WriteLine($"Starting process '{filename} {arguments}'");
 
             var process = new Process()
