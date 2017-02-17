@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BAF239DE-04E9-428E-A6D6-98D4C6CFB9E3}"
 	ProjectSection(SolutionItems) = preProject
-		makefile.shade = makefile.shade
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
