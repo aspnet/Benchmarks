@@ -105,7 +105,7 @@ namespace BenchmarkDriver
                 "Duration of test in seconds", CommandOptionType.SingleValue);
             var pipelineDepthOption = app.Option("--pipelineDepth",
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
-            var threadsOption = app.Option("--threads",
+            var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client", CommandOptionType.SingleValue);
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
@@ -183,9 +183,9 @@ namespace BenchmarkDriver
                 {
                     _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
                 }
-                if (threadsOption.HasValue())
+                if (clientThreadsOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(threadsOption.Value()));
+                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(clientThreadsOption.Value()));
                 }
                 if (durationOption.HasValue())
                 {
@@ -380,7 +380,7 @@ namespace BenchmarkDriver
             string connectionFilter,
             WebHost webHost,
             int? kestrelThreadCount,
-            int threads,
+            int clientThreads,
             int connections,
             int duration,
             int? pipelineDepth,
@@ -402,7 +402,7 @@ namespace BenchmarkDriver
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [WebHost] [nvarchar](max) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
-                        [Threads] [int] NOT NULL,
+                        [ClientThreads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
@@ -422,7 +422,7 @@ namespace BenchmarkDriver
                            ,[ConnectionFilter]
                            ,[WebHost]
                            ,[KestrelThreadCount]
-                           ,[Threads]
+                           ,[ClientThreads]
                            ,[Connections]
                            ,[Duration]
                            ,[PipelineDepth]
@@ -436,7 +436,7 @@ namespace BenchmarkDriver
                            ,@ConnectionFilter
                            ,@WebHost
                            ,@KestrelThreadCount
-                           ,@Threads
+                           ,@ClientThreads
                            ,@Connections
                            ,@Duration
                            ,@PipelineDepth
@@ -464,7 +464,7 @@ namespace BenchmarkDriver
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
                     p.AddWithValue("@KestrelThreadCount", (object)kestrelThreadCount ?? DBNull.Value);
-                    p.AddWithValue("@Threads", threads);
+                    p.AddWithValue("@ClientThreads", clientThreads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
