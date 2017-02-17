@@ -334,7 +334,7 @@ namespace BenchmarkServer
 
             if (job.ThreadCount.HasValue)
             {
-                arguments += $" --threadCount {job.ThreadCount}";
+                arguments += $" --threadCount {job.ThreadCount.Value}";
             }
 
             Log.WriteLine($"Starting process '{filename} {arguments}'");
