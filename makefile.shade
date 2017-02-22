@@ -13,6 +13,10 @@ default VERBOSE_ARGUMENT='-v'
     var sql = string.IsNullOrEmpty(E("BENCHMARK_SQL")) ? string.Empty : "-q " + E("BENCHMARK_SQL");
     var scenarios = new string[]
     {
+      "-n Plaintext -o Kestrel@dev",
+      "-n Plaintext -o Kestrel@dev-si",
+      "-n Json -o Kestrel@dev",
+      "-n Json -o Kestrel@dev-si",
       "-n Plaintext",
       "-n Plaintext --webHost HttpSys",
       "-n Plaintext -f Benchmarks.PassthroughConnectionFilter",
