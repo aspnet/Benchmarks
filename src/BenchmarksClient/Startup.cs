@@ -165,6 +165,8 @@ namespace BenchmarkClient
                 }
             }
 
+            Log(command);
+
             var process = new Process()
             {
                 StartInfo = {
