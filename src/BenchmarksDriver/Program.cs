@@ -271,8 +271,8 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.ConnectionFilter,
-                        serverJob.WebHost, serverJob.KestrelThreadCount,
+                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.Sources,
+                        serverJob.ConnectionFilter, serverJob.WebHost, serverJob.KestrelThreadCount,
                         clientJob.Threads, clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth,
                         clientJob.Method, clientJob.Headers, clientJob.RequestsPerSecond);
                 }
@@ -377,6 +377,7 @@ namespace BenchmarkDriver
             string connectionString,
             Scenario scenario,
             Scheme scheme,
+            IEnumerable<Source> sources,
             string connectionFilter,
             WebHost webHost,
             int? kestrelThreadCount,
@@ -399,6 +400,7 @@ namespace BenchmarkDriver
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
+                        [Sources] [nvarchar](max) NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [WebHost] [nvarchar](max) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
@@ -419,6 +421,7 @@ namespace BenchmarkDriver
                            ([DateTime]
                            ,[Scenario]
                            ,[Scheme]
+                           ,[Sources]
                            ,[ConnectionFilter]
                            ,[WebHost]
                            ,[KestrelThreadCount]
@@ -433,6 +436,7 @@ namespace BenchmarkDriver
                            (@DateTime
                            ,@Scenario
                            ,@Scheme
+                           ,@Sources
                            ,@ConnectionFilter
                            ,@WebHost
                            ,@KestrelThreadCount
@@ -460,6 +464,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
+                    p.AddWithValue("@Sources", sources.Any() ? (object)ConvertToSqlString(sources) : DBNull.Value);
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
@@ -474,6 +479,38 @@ namespace BenchmarkDriver
 
                     await command.ExecuteNonQueryAsync();
                 }
+            }
+        }
+
+        private static string ConvertToSqlString(IEnumerable<Source> sources)
+        {
+            return string.Join(",", sources.Select(s => ConvertToSqlString(s)));
+        }
+
+        private static string ConvertToSqlString(Source source)
+        {
+            const string aspnetPrefix = "https://github.com/aspnet/";
+            const string gitSuffix = ".git";
+
+            var shortRepository = source.Repository;
+
+            if (shortRepository.StartsWith(aspnetPrefix))
+            {
+                shortRepository = shortRepository.Substring(aspnetPrefix.Length);
+            }
+
+            if (shortRepository.EndsWith(gitSuffix))
+            {
+                shortRepository = shortRepository.Substring(0, shortRepository.Length - gitSuffix.Length);
+            }
+
+            if (string.IsNullOrEmpty(source.BranchOrCommit))
+            {
+                return shortRepository;
+            }
+            else
+            {
+                return shortRepository + "@" + source.BranchOrCommit;
             }
         }
 
