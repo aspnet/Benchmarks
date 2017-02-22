@@ -141,7 +141,7 @@ namespace BenchmarkClient
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            var command = $"wrk";
+            var command = "wrk";
 
             if (job.Headers != null)
             {
@@ -151,7 +151,7 @@ namespace BenchmarkClient
                 }
             }
 
-            command += " --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}";
+            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}";
 
             command += $" {job.ServerBenchmarkUri}";
 
