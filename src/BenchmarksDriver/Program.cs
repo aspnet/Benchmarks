@@ -21,40 +21,54 @@ namespace BenchmarkDriver
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
+        private static readonly IEnumerable<string> _commonHeaders = new string[]
+        {
+            "Host: localhost",
+            "Accept: {0}",
+            "Connection: keep-alive"
+        };
+
+        private static readonly IEnumerable<string> _plaintextHeaders =
+            _commonHeaders.Select(h => string.Format(h,
+                "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"));
+
+        private static readonly IEnumerable<string> _jsonHeaders =
+            _commonHeaders.Select(h => string.Format(h,
+                "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"));
+
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
                 { Scenario.Plaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.Json, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10
+                    Connections = 256, Threads = 32, Duration = 15, Headers = _jsonHeaders
                 } },
                 { Scenario.MvcPlaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.MvcJson, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10
+                    Connections = 256, Threads = 32, Duration = 15, Headers = _jsonHeaders
                 } },
                 { Scenario.MemoryCachePlaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.MemoryCachePlaintextSetRemove, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextCached, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextResponseNoCache, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
-                    Headers = new string[] { "Cache-Control: no-cache" }
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16,
+                    Headers = _plaintextHeaders.Append("Cache-Control: no-cache")
                 } },
                 { Scenario.ResponseCachingPlaintextVaryByCached, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 10, PipelineDepth = 16,
-                    Headers = new string[] { "Accept: text/plain" }
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
             };
 
@@ -386,7 +400,7 @@ namespace BenchmarkDriver
             int duration,
             int? pipelineDepth,
             string method,
-            string[] headers,
+            IEnumerable<string> headers,
             double rps)
         {
             Log("Writing results to SQL...");
@@ -474,7 +488,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
-                    p.AddWithValue("@Headers", headers == null ? (object)DBNull.Value : headers.ToContentString());
+                    p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
                     p.AddWithValue("@RequestsPerSecond", rps);
 
                     await command.ExecuteNonQueryAsync();

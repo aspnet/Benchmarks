@@ -141,7 +141,7 @@ namespace BenchmarkClient
         {
             var tcs = new TaskCompletionSource<bool>();
 
-            var command = $"wrk -c {job.Connections} -t {job.Threads} -d {job.Duration}";
+            var command = "wrk";
 
             if (job.Headers != null)
             {
@@ -151,22 +151,21 @@ namespace BenchmarkClient
                 }
             }
 
-            if (job.PipelineDepth > 0)
-            {
-                command += $" -s scripts/pipeline.lua";
-            }
+            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}";
 
             command += $" {job.ServerBenchmarkUri}";
 
             if (job.PipelineDepth > 0)
             {
-                command += $" -- {job.PipelineDepth}";
+                command += $" -s scripts/pipeline.lua -- {job.PipelineDepth}";
 
                 if (job.Method != "GET")
                 {
                     command += $" {job.Method}";
                 }
             }
+
+            Log(command);
 
             var process = new Process()
             {
