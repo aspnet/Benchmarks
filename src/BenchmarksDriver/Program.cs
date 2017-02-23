@@ -111,6 +111,9 @@ namespace BenchmarkDriver
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
+            var frameworkOption = app.Option("-r|--framework",
+                "Framework (Core or Desktop). Default is Core.",
+                CommandOptionType.SingleValue);
 
             // ClientJob Options
             var connectionsOption = app.Option("--connections",
@@ -142,6 +145,12 @@ namespace BenchmarkDriver
                     webHostValue = "Kestrel";
                 }
 
+                var frameworkValue = frameworkOption.Value();
+                if (string.IsNullOrEmpty(frameworkValue))
+                {
+                    frameworkValue = "Core";
+                }
+
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
@@ -149,9 +158,11 @@ namespace BenchmarkDriver
                 Scheme scheme;
                 Scenario scenario;
                 WebHost webHost;
+                Framework framework;
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out scheme) ||
                     !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out scenario) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out webHost) ||
+                    !Enum.TryParse(frameworkValue, ignoreCase: true, result: out framework) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -164,6 +175,7 @@ namespace BenchmarkDriver
                     Scheme = scheme,
                     Scenario = scenario,
                     WebHost = webHost,
+                    Framework = framework,
                 };
 
                 if (connectionFilterOption.HasValue())
@@ -285,10 +297,22 @@ namespace BenchmarkDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(sqlConnectionString, scenario, serverJob.Scheme, serverJob.Sources,
-                        serverJob.ConnectionFilter, serverJob.WebHost, serverJob.KestrelThreadCount,
-                        clientJob.Threads, clientJob.Connections, clientJob.Duration, clientJob.PipelineDepth,
-                        clientJob.Method, clientJob.Headers, clientJob.RequestsPerSecond);
+                    await WriteResultsToSql(
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        framework: serverJob.Framework,
+                        scheme: serverJob.Scheme,
+                        sources: serverJob.Sources,
+                        connectionFilter: serverJob.ConnectionFilter,
+                        webHost: serverJob.WebHost,
+                        kestrelThreadCount: serverJob.KestrelThreadCount,
+                        clientThreads: clientJob.Threads,
+                        connections: clientJob.Connections,
+                        duration: clientJob.Duration,
+                        pipelineDepth: clientJob.PipelineDepth,
+                        method: clientJob.Method,
+                        headers: clientJob.Headers,
+                        rps: clientJob.RequestsPerSecond);
                 }
             }
             finally
@@ -390,6 +414,7 @@ namespace BenchmarkDriver
         private static async Task WriteResultsToSql(
             string connectionString,
             Scenario scenario,
+            Framework framework,
             Scheme scheme,
             IEnumerable<Source> sources,
             string connectionFilter,
@@ -413,6 +438,7 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
+                        [Framework] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
                         [Sources] [nvarchar](max) NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
@@ -434,6 +460,7 @@ namespace BenchmarkDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Scenario]
+                           ,[Framework]
                            ,[Scheme]
                            ,[Sources]
                            ,[ConnectionFilter]
@@ -449,6 +476,7 @@ namespace BenchmarkDriver
                      VALUES
                            (@DateTime
                            ,@Scenario
+                           ,@Framework
                            ,@Scheme
                            ,@Sources
                            ,@ConnectionFilter
@@ -477,6 +505,7 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
+                    p.AddWithValue("@Framework", framework.ToString());
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@Sources", sources.Any() ? (object)ConvertToSqlString(sources) : DBNull.Value);
                     p.AddWithValue("@ConnectionFilter",

@@ -220,8 +220,7 @@ namespace BenchmarkServer
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
             ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksPath);
-
-            ProcessUtil.Run("dotnet", "build -c Release -f netcoreapp1.1", workingDirectory: benchmarksPath);
+            ProcessUtil.Run("dotnet", $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksPath);
 
             return benchmarksDir;
         }
@@ -323,9 +322,13 @@ namespace BenchmarkServer
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
         {
-            var filename = "dotnet";
-            var arguments = $"bin/Release/netcoreapp1.1/Benchmarks.dll --scenarios {job.Scenario} --server {job.WebHost} " +
-                $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
+            var workingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks");
+            var benchmarksBinaryName = $"Benchmarks{GetBinaryExtension(job.Framework)}";
+            var benchmarksBinaryRelativePath = Path.Combine("bin", "Release", GetTFM(job.Framework), benchmarksBinaryName);
+            var filename = job.Framework == Framework.Core ? "dotnet" : Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
+            var arguments = (job.Framework == Framework.Core ? $"{benchmarksBinaryRelativePath} " : "") +
+                    $"--scenarios {job.Scenario} --server {job.WebHost} " +
+                    $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
@@ -344,7 +347,7 @@ namespace BenchmarkServer
                 StartInfo = {
                     FileName = filename,
                     Arguments = arguments,
-                    WorkingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks"),
+                    WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -405,6 +408,16 @@ namespace BenchmarkServer
             var start = lastSlash + 1; // +1 to skip over the slash.
             var name = dot > lastSlash ? repository.Substring(start, dot - start) : repository.Substring(start);
             return name;
+        }
+
+        private static string GetTFM(Framework framework)
+        {
+            return framework == Framework.Core ? "netcoreapp1.1" : "net451";
+        }
+
+        private static string GetBinaryExtension(Framework framework)
+        {
+            return framework == Framework.Core ? ".dll" : ".exe";
         }
 
         // Compares just the repository name

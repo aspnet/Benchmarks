@@ -43,5 +43,8 @@ namespace Benchmarks.ServerJob
 
         [JsonConverter(typeof(StringEnumConverter))]
         public WebHost WebHost { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Framework Framework { get; set; }
     }
 }
