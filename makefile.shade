@@ -14,9 +14,9 @@ default VERBOSE_ARGUMENT='-v'
     var scenarios = new string[]
     {
       "-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 1",
-      "-n Plaintext -o KestrelHttpServer@dev-si --kestrelThreadCount 2",
+      "-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2",
       "-n Json -o KestrelHttpServer@dev",
-      "-n Json -o KestrelHttpServer@dev-si",
+      "-n Json -o KestrelHttpServer@feature/dev-si",
       "-n Plaintext",
       "-n Plaintext --webHost HttpSys",
       "-n Plaintext -f Benchmarks.PassthroughConnectionFilter",
