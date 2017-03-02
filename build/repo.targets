@@ -1,0 +1,71 @@
+<Project>
+  <ItemGroup>
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 1" />
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2" />
+    <Scenarios Include="-n Json -o KestrelHttpServer@dev" />
+    <Scenarios Include="-n Json -o KestrelHttpServer@feature/dev-si" />
+    <Scenarios Include="-n Plaintext" />
+    <Scenarios Include="-n Plaintext -r Desktop" />
+    <Scenarios Include="-n Plaintext --webHost HttpSys" />
+    <Scenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter" />
+    <Scenarios Include="-n Plaintext -m https" />
+    <Scenarios Include="-n Plaintext -m https -r Desktop" />
+    <Scenarios Include="-n Plaintext -m https --webHost HttpSys" />
+    <Scenarios Include="-n Json" />
+    <Scenarios Include="-n Json -r Desktop" />
+    <Scenarios Include="-n Json --webHost HttpSys" />
+    <Scenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter" />
+    <Scenarios Include="-n Json -m https" />
+    <Scenarios Include="-n Json -m https -r Desktop" />
+    <Scenarios Include="-n Json -m https --webHost HttpSys" />
+    <Scenarios Include="-n MvcPlaintext" />
+    <Scenarios Include="-n MvcPlaintext -r Desktop" />
+    <Scenarios Include="-n MvcJson" />
+    <Scenarios Include="-n MvcJson -r Desktop" />
+    <Scenarios Include="-n MemoryCachePlaintext" />
+    <Scenarios Include="-n MemoryCachePlaintextSetRemove" />
+    <Scenarios Include="-n ResponseCachingPlaintextCached" />
+    <Scenarios Include="-n ResponseCachingPlaintextCached --method DELETE" />
+    <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache" />
+    <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache" />
+    <Scenarios Include="-n ResponseCachingPlaintextVaryByCached" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BenchmarksDependsOn Condition="'$(NoBuild)' != 'true'">Compile</BenchmarksDependsOn>
+  </PropertyGroup>
+
+  <Target Name="TestBenchmarks" DependsOnTargets="$(BenchmarksDependsOn)">
+    <Error Text="BENCHMARK_SERVER must be set" Condition="'$(BENCHMARK_SERVER)' == ''" />
+    <Error Text="BENCHMARK_CLIENT must be set" Condition="'$(BENCHMARK_CLIENT)' == ''" />
+
+    <MSBuild Projects="$(RepositoryRoot)src\BenchmarksDriver\BenchmarksDriver.csproj"
+      Targets="GetOutputPath"
+      Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" PropertyName="DriverOutputPath" />
+    </MSBuild>
+
+    <GetDotNetHost>
+      <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
+    </GetDotNetHost>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="RunBenchmark"
+      Properties="Scenario=%(Scenarios.Identity);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
+  </Target>
+
+  <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
+    <PropertyGroup>
+      <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
+      <RunArgs>$(DriverOutputPath) $(Scenario) </RunArgs>
+      <RunArgs>$(RunArgs) -s $(BENCHMARK_SERVER)</RunArgs>
+      <RunArgs>$(RunArgs) -c $(BENCHMARK_CLIENT)</RunArgs>
+      <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
+      <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
+    </PropertyGroup>
+
+    <Message Text="Running: $(RunArgs)" Importance="High" />
+    <Exec Command="&quot;$(DotNetPath)&quot; $(RunArgs)" WorkingDirectory="$(RepositoryRoot)src\BenchmarksDriver\" />
+  </Target>
+
+</Project>
