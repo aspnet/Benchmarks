@@ -1,0 +1,40 @@
+<Project>
+  <ItemGroup>
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 1"/>
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2"/>
+    <Scenarios Include="-n Json -o KestrelHttpServer@dev"/>
+    <Scenarios Include="-n Json -o KestrelHttpServer@feature/dev-si"/>
+    <Scenarios Include="-n Plaintext"/>
+    <Scenarios Include="-n Plaintext -r Desktop"/>
+    <Scenarios Include="-n Plaintext --webHost HttpSys"/>
+    <Scenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter"/>
+    <Scenarios Include="-n Plaintext -m https"/>
+    <Scenarios Include="-n Plaintext -m https -r Desktop"/>
+    <Scenarios Include="-n Plaintext -m https --webHost HttpSys"/>
+    <Scenarios Include="-n Json"/>
+    <Scenarios Include="-n Json -r Desktop"/>
+    <Scenarios Include="-n Json --webHost HttpSys"/>
+    <Scenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter"/>
+    <Scenarios Include="-n Json -m https"/>
+    <Scenarios Include="-n Json -m https -r Desktop"/>
+    <Scenarios Include="-n Json -m https --webHost HttpSys"/>
+    <Scenarios Include="-n MvcPlaintext"/>
+    <Scenarios Include="-n MvcPlaintext -r Desktop"/>
+    <Scenarios Include="-n MvcJson"/>
+    <Scenarios Include="-n MvcJson -r Desktop"/>
+    <Scenarios Include="-n MemoryCachePlaintext"/>
+    <Scenarios Include="-n MemoryCachePlaintextSetRemove"/>
+    <Scenarios Include="-n ResponseCachingPlaintextCached"/>
+    <Scenarios Include="-n ResponseCachingPlaintextCached --method DELETE"/>
+    <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache"/>
+    <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache"/>
+    <Scenarios Include="-n ResponseCachingPlaintextVaryByCached"/>
+  </ItemGroup>
+  <Target Name="TestBenchmarks" DependsOnTargets="Test">
+    <PropertyGroup>
+        <BenchmarkSqlArgument Condition="'$(BENCHMARK_SQL)' != ''">-q $(BENCHMARK_SQL)</BenchmarkSqlArgument>
+        <BenchmarkVerbosityArgument Condition="'$(BENCHMARK_VERBOSE)' == 'true'">-v</BenchmarkVerbosityArgument>
+    </PropertyGroup>
+    <Exec Command="dotnet run -- %(Scenarios.Identity) -s $(BENCHMARK_SERVER) -c $(BENCHMARK_CLIENT) $(BenchmarkSqlArgument) $(BenchmarkVerbosityArgument)" WorkingDirectory="$(MSBuildThisFileDirectory)..\src\BenchmarksDriver\" />
+  </Target>
+</Project>
