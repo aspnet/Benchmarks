@@ -107,6 +107,9 @@ namespace BenchmarkDriver
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
                 "Maps to KestrelServerOptions.ThreadCount.",
                 CommandOptionType.SingleValue);
+            var kestrelThreadPoolDispatchingOption = app.Option("--kestrelThreadPoolDispatching",
+                "Maps to InternalKestrelServerOptions.ThreadPoolDispatching",
+                CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
@@ -186,6 +189,11 @@ namespace BenchmarkDriver
                 if (kestrelThreadCountOption.HasValue())
                 {
                     serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
+                }
+
+                if (kestrelThreadPoolDispatchingOption.HasValue())
+                {
+                    serverJob.KestrelThreadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingOption.Value());
                 }
 
                 var sources = new List<Source>();
@@ -306,6 +314,7 @@ namespace BenchmarkDriver
                         connectionFilter: serverJob.ConnectionFilter,
                         webHost: serverJob.WebHost,
                         kestrelThreadCount: serverJob.KestrelThreadCount,
+                        kestrelThreadPoolDispatching: serverJob.KestrelThreadPoolDispatching,
                         clientThreads: clientJob.Threads,
                         connections: clientJob.Connections,
                         duration: clientJob.Duration,
@@ -420,6 +429,7 @@ namespace BenchmarkDriver
             string connectionFilter,
             WebHost webHost,
             int? kestrelThreadCount,
+            bool? kestrelThreadPoolDispatching,
             int clientThreads,
             int connections,
             int duration,
@@ -444,6 +454,7 @@ namespace BenchmarkDriver
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [WebHost] [nvarchar](max) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
+                        [KestrelThreadPoolDispatching] [int] NULL,
                         [ClientThreads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
@@ -466,6 +477,7 @@ namespace BenchmarkDriver
                            ,[ConnectionFilter]
                            ,[WebHost]
                            ,[KestrelThreadCount]
+                           ,[KestrelThreadPoolDispatching]
                            ,[ClientThreads]
                            ,[Connections]
                            ,[Duration]
@@ -482,6 +494,7 @@ namespace BenchmarkDriver
                            ,@ConnectionFilter
                            ,@WebHost
                            ,@KestrelThreadCount
+                           ,@KestrelThreadPoolDispatching
                            ,@ClientThreads
                            ,@Connections
                            ,@Duration
@@ -512,6 +525,7 @@ namespace BenchmarkDriver
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
                     p.AddWithValue("@KestrelThreadCount", (object)kestrelThreadCount ?? DBNull.Value);
+                    p.AddWithValue("@KestrelThreadPoolDispatching", (object)kestrelThreadPoolDispatching ?? DBNull.Value);
                     p.AddWithValue("@ClientThreads", clientThreads);
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
