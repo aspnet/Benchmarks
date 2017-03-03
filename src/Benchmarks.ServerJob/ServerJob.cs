@@ -39,6 +39,8 @@ namespace Benchmarks.ServerJob
 
         public int? KestrelThreadCount { get; set; }
 
+        public bool? KestrelThreadPoolDispatching { get; set; }
+
         public string Url { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

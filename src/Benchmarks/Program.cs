@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Benchmarks
 {
@@ -94,6 +95,13 @@ namespace Benchmarks
             if (nonInteractiveValue == null || !bool.Parse(nonInteractiveValue))
             {
                 StartInteractiveConsoleThread();
+            }
+
+            var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
+            if (kestrelThreadPoolDispatchingValue != null)
+            {
+                webHost.ServerFeatures.Get<InternalKestrelServerOptions>().ThreadPoolDispatching =
+                    bool.Parse(kestrelThreadPoolDispatchingValue);
             }
 
             webHost.Run();
