@@ -108,7 +108,7 @@ namespace BenchmarkDriver
                 "Maps to KestrelServerOptions.ThreadCount.",
                 CommandOptionType.SingleValue);
             var kestrelThreadPoolDispatchingOption = app.Option("--kestrelThreadPoolDispatching",
-                "Maps to InternalKestrelServerOptions.ThreadPoolDispatching",
+                "Maps to InternalKestrelServerOptions.ThreadPoolDispatching.",
                 CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
