@@ -1,9 +1,13 @@
 <Project>
   <ItemGroup>
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 1" />
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 1 --kestrelThreadPoolDispatch false" />
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2" />
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2 --kestrelThreadPoolDispatch false" />
     <Scenarios Include="-n Json -o KestrelHttpServer@dev" />
+    <Scenarios Include="-n Json -o KestrelHttpServer@dev --kestrelThreadPoolDispatch false" />
     <Scenarios Include="-n Json -o KestrelHttpServer@feature/dev-si" />
+    <Scenarios Include="-n Json -o KestrelHttpServer@feature/dev-si --kestrelThreadPoolDispatch false" />
     <Scenarios Include="-n Plaintext" />
     <Scenarios Include="-n Plaintext -r Desktop" />
     <Scenarios Include="-n Plaintext --webHost HttpSys" />
