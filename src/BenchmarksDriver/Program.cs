@@ -454,7 +454,7 @@ namespace BenchmarkDriver
                         [ConnectionFilter] [nvarchar](max) NULL,
                         [WebHost] [nvarchar](max) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
-                        [KestrelThreadPoolDispatching] [bool] NULL,
+                        [KestrelThreadPoolDispatching] [bit] NULL,
                         [ClientThreads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
