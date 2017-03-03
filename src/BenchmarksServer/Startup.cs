@@ -326,9 +326,11 @@ namespace BenchmarkServer
             var benchmarksBinaryName = $"Benchmarks{GetBinaryExtension(job.Framework)}";
             var benchmarksBinaryRelativePath = Path.Combine("bin", "Release", GetTFM(job.Framework), benchmarksBinaryName);
             var filename = job.Framework == Framework.Core ? "dotnet" : Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
-            var arguments = (job.Framework == Framework.Core ? $"{benchmarksBinaryRelativePath} " : "") +
-                    $"--scenarios {job.Scenario} --server {job.WebHost} " +
-                    $"--server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
+            var arguments = (job.Framework == Framework.Core ? $"{benchmarksBinaryRelativePath}" : "") +
+                    $" --nonInteractive true" +
+                    $" --scenarios {job.Scenario}" +
+                    $" --server {job.WebHost}" +
+                    $" --server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
