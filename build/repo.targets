@@ -3,7 +3,7 @@
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 2" />
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 16 --kestrelThreadPoolDispatching false" />
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 2" />
-    <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 16 --kestrelThreadPoolDispatching false" />
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@feature/dev-si --kestrelThreadCount 32 --kestrelThreadPoolDispatching false" />
     <Scenarios Include="-n Json -o KestrelHttpServer@dev" />
     <Scenarios Include="-n Json -o KestrelHttpServer@feature/dev-si" />
     <Scenarios Include="-n Plaintext" />
