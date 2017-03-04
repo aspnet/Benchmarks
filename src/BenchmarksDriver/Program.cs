@@ -84,10 +84,10 @@ namespace BenchmarkDriver
             app.HelpOption("-?|-h|--help");
 
             // Driver Options
-            var serverOption = app.Option("-s|--server",
-                "URL of benchmark server", CommandOptionType.SingleValue);
             var clientOption = app.Option("-c|--client",
                 "URL of benchmark client", CommandOptionType.SingleValue);
+            var serverOption = app.Option("-s|--server",
+                "URL of benchmark server", CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
             var verboseOption = app.Option("-v|--verbose",
@@ -96,6 +96,15 @@ namespace BenchmarkDriver
             // ServerJob Options
             var connectionFilterOption = app.Option("-f|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
+            var frameworkOption = app.Option("-r|--framework",
+                "Framework (Core or Desktop). Default is Core.",
+                CommandOptionType.SingleValue);
+            var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
+                "Maps to KestrelServerOptions.ThreadCount.",
+                CommandOptionType.SingleValue);
+            var kestrelThreadPoolDispatchingOption = app.Option("--kestrelThreadPoolDispatching",
+                "Maps to InternalKestrelServerOptions.ThreadPoolDispatching.",
+                CommandOptionType.SingleValue);
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
             var schemeOption = app.Option("-m|--scheme",
@@ -104,33 +113,24 @@ namespace BenchmarkDriver
                 "Source dependency. Format is 'repo@branchOrCommit'. " +
                 "Repo can be a full URL, or a short name under https://github.com/aspnet.",
                 CommandOptionType.MultipleValue);
-            var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
-                "Maps to KestrelServerOptions.ThreadCount.",
-                CommandOptionType.SingleValue);
-            var kestrelThreadPoolDispatchingOption = app.Option("--kestrelThreadPoolDispatching",
-                "Maps to InternalKestrelServerOptions.ThreadPoolDispatching.",
-                CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
-            var frameworkOption = app.Option("-r|--framework",
-                "Framework (Core or Desktop). Default is Core.",
-                CommandOptionType.SingleValue);
 
             // ClientJob Options
+            var clientThreadsOption = app.Option("--clientThreads",
+                "Number of threads used by client", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
                 "Duration of test in seconds", CommandOptionType.SingleValue);
-            var pipelineDepthOption = app.Option("--pipelineDepth",
-                "Depth of pipeline used by client", CommandOptionType.SingleValue);
-            var clientThreadsOption = app.Option("--clientThreads",
-                "Number of threads used by client", CommandOptionType.SingleValue);
-            var methodOption = app.Option("--method",
-                "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
                 "Header added to request", CommandOptionType.MultipleValue);
+            var methodOption = app.Option("--method",
+                "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
+            var pipelineDepthOption = app.Option("--pipelineDepth",
+                "Depth of pipeline used by client", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
