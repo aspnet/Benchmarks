@@ -190,7 +190,7 @@ namespace Benchmarks
                     listenOptions.ConnectionAdapters.Add(connectionFilter);
                 }
 
-                if (urlPrefix.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                if (urlPrefix.IsHttps)
                 {
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
