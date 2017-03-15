@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
 using Npgsql;
 
 namespace Benchmarks
@@ -143,8 +143,14 @@ namespace Benchmarks
             return services.BuildServiceProvider(validateScopes: true);
         }
 
-        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
+        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, IOptions<AppSettings> appSettings,
+            ILoggerFactory loggerFactory)
         {
+            if (appSettings.Value.LogLevel != LogLevel.None)
+            {
+                loggerFactory.AddConsole(appSettings.Value.LogLevel);
+            }
+
             if (Scenarios.Plaintext)
             {
                 app.UsePlainText();
