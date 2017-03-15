@@ -146,9 +146,9 @@ namespace Benchmarks
         public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder, IOptions<AppSettings> appSettings,
             ILoggerFactory loggerFactory)
         {
-            if (appSettings.Value.LogLevel != LogLevel.None)
+            if (appSettings.Value.LogLevel.HasValue)
             {
-                loggerFactory.AddConsole(appSettings.Value.LogLevel);
+                loggerFactory.AddConsole(appSettings.Value.LogLevel.Value);
             }
 
             if (Scenarios.Plaintext)

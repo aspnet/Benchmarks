@@ -11,6 +11,6 @@ namespace Benchmarks.Configuration
 
         public DatabaseServer Database { get; set; } = DatabaseServer.SqlServer;
 
-        public LogLevel LogLevel { get; set; } = LogLevel.None;
+        public LogLevel? LogLevel { get; set; }
     }
 }
