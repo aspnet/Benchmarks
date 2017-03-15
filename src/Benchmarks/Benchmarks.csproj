@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <!--
