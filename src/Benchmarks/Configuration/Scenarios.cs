@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Benchmarks.Configuration
@@ -41,8 +41,19 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/json")]
         public bool Json { get; set; }
 
-        [ScenarioPath("/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
+        [ScenarioPath("/mvc/plaintext")]
+        public bool MvcPlaintext { get; set; }
+
+        [ScenarioPath("/mvc/json")]
+        public bool MvcJson { get; set; }
+
+        [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         public bool StaticFiles { get; set; }
+
+        //**
+        // Scenarios below this point are not currently automated. They are available for use when starting up the
+        // Benchmarks application manually.
+        //**
 
         [ScenarioPath("/copy")]
         public bool Copy { get; set; }
@@ -82,12 +93,6 @@ namespace Benchmarks.Configuration
 
         [ScenarioPath("/fortunes/dapper")]
         public bool DbFortunesDapper { get; set; }
-
-        [ScenarioPath("/mvc/plaintext")]
-        public bool MvcPlaintext { get; set; }
-
-        [ScenarioPath("/mvc/json")]
-        public bool MvcJson { get; set; }
 
         [ScenarioPath("/mvc/view")]
         public bool MvcViews { get; set; }

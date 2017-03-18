@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
@@ -70,6 +72,9 @@ namespace BenchmarkDriver
                 { Scenario.ResponseCachingPlaintextVaryByCached, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
+                { Scenario.StaticFiles, new ClientJob {
+                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                } },
             };
 
         public static int Main(string[] args)
@@ -131,6 +136,10 @@ namespace BenchmarkDriver
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var pipelineDepthOption = app.Option("--pipelineDepth",
                 "Depth of pipeline used by client", CommandOptionType.SingleValue);
+            var pathOption = app.Option(
+                "--path",
+                "Relative URL where the client should send requests.",
+                CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -171,6 +180,42 @@ namespace BenchmarkDriver
                 {
                     app.ShowHelp();
                     return 2;
+                }
+
+                string path = null;
+                var scenarioName = scenario.ToString();
+                var field = typeof(Scenario).GetTypeInfo().GetField(scenarioName);
+                var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
+                if (pathAttribute != null)
+                {
+                    Debug.Assert(pathAttribute.Paths.Length > 0);
+                    if (pathAttribute.Paths.Length == 1)
+                    {
+                        if (pathOption.HasValue())
+                        {
+                            Console.WriteLine($"Scenario '{scenarioName}' does not support the {pathOption.LongName} option.");
+                            return 4;
+                        }
+                    }
+                    else
+                    {
+                        if (!pathOption.HasValue())
+                        {
+                            Console.WriteLine($"Scenario '{scenarioName}' requires one of the following {pathOption.LongName} options:");
+                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
+                            return 5;
+                        }
+
+                        path = pathOption.Value();
+
+                        if (!pathAttribute.Paths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) &&
+                            !pathAttribute.Paths.Any(p => string.Equals(p, "/" + path, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
+                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
+                            return 6;
+                        }
+                    }
                 }
 
                 var serverJob = new ServerJob()
@@ -238,13 +283,18 @@ namespace BenchmarkDriver
                     _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(Uri serverUri, Uri clientUri, string sqlConnectionString, ServerJob serverJob)
+        private static async Task<int> Run(
+            Uri serverUri,
+            Uri clientUri,
+            string sqlConnectionString,
+            ServerJob serverJob,
+            string path)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -297,6 +347,11 @@ namespace BenchmarkDriver
                     }
                 }
 
+                if (path != null)
+                {
+                    serverBenchmarkUri += path.Trim('/');
+                }
+
                 Log("Warmup");
                 await RunClientJob(scenario, clientUri, serverBenchmarkUri);
 
@@ -319,6 +374,7 @@ namespace BenchmarkDriver
                         connections: clientJob.Connections,
                         duration: clientJob.Duration,
                         pipelineDepth: clientJob.PipelineDepth,
+                        path: path,
                         method: clientJob.Method,
                         headers: clientJob.Headers,
                         rps: clientJob.RequestsPerSecond);
@@ -434,6 +490,7 @@ namespace BenchmarkDriver
             int connections,
             int duration,
             int? pipelineDepth,
+            string path,
             string method,
             IEnumerable<string> headers,
             double rps)
@@ -459,6 +516,7 @@ namespace BenchmarkDriver
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
+                        [Path] [nvarchar](max) NULL,
                         [Method] [nvarchar](max) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
                         [RequestsPerSecond] [float] NOT NULL
@@ -482,6 +540,7 @@ namespace BenchmarkDriver
                            ,[Connections]
                            ,[Duration]
                            ,[PipelineDepth]
+                           ,[Path]
                            ,[Method]
                            ,[Headers]
                            ,[RequestsPerSecond])
@@ -499,6 +558,7 @@ namespace BenchmarkDriver
                            ,@Connections
                            ,@Duration
                            ,@PipelineDepth
+                           ,@Path
                            ,@Method
                            ,@Headers
                            ,@RequestsPerSecond)
@@ -530,6 +590,7 @@ namespace BenchmarkDriver
                     p.AddWithValue("@Connections", connections);
                     p.AddWithValue("@Duration", duration);
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
+                    p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
                     p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
                     p.AddWithValue("@RequestsPerSecond", rps);

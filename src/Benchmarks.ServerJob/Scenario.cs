@@ -37,5 +37,8 @@ namespace Benchmarks.ServerJob
 
         [ScenarioPath("/responsecaching/plaintext/varybycached")]
         ResponseCachingPlaintextVaryByCached,
+
+        [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
+        StaticFiles,
     }
 }
