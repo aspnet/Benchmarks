@@ -10,6 +10,16 @@ namespace Benchmarks.ServerJob
     {
         public ScenarioPathAttribute(params string[] paths)
         {
+            if (paths == null)
+            {
+                throw new ArgumentNullException(nameof(paths));
+            }
+
+            if (paths.Length == 0)
+            {
+                throw new ArgumentException("Do not use this attribute without at least one path.", nameof(paths));
+            }
+
             Paths = paths;
         }
 

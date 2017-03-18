@@ -392,7 +392,17 @@ namespace BenchmarkServer
             var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
             if (pathAttribute != null)
             {
-                path = pathAttribute.Paths.First().Trim('/');
+                Debug.Assert(pathAttribute.Paths.Length > 0);
+                if (pathAttribute.Paths.Length == 1)
+                {
+                    path = pathAttribute.Paths[0].Trim('/');
+                }
+                else
+                {
+                    // Driver will choose between paths when more than one is available. The scenario name is not
+                    // necessarily even one of the choices.
+                    path = string.Empty;
+                }
             }
 
             return $"{scheme.ToString().ToLowerInvariant()}://{hostname}:5000/{path.ToLower()}";

@@ -151,7 +151,12 @@ namespace Benchmarks
                 loggerFactory.AddConsole(appSettings.Value.LogLevel.Value);
             }
 
-            if (Scenarios.Plaintext)
+            if (Scenarios.StaticFiles)
+            {
+                app.UseStaticFiles();
+            }
+
+            if (Scenarios.StaticFiles || Scenarios.Plaintext)
             {
                 app.UsePlainText();
             }
@@ -241,11 +246,6 @@ namespace Benchmarks
             if (Scenarios.Any("Mvc"))
             {
                 app.UseMvc();
-            }
-
-            if (Scenarios.StaticFiles)
-            {
-                app.UseStaticFiles();
             }
 
             if (Scenarios.MemoryCachePlaintext)
