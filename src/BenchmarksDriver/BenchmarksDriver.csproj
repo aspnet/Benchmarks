@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <Description>Schedules benchmark jobs on both the server and client.</Description>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
