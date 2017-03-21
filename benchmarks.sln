@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26117.0
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 EndProject
@@ -35,6 +35,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.ServerJob", "src\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj", "{0748A92D-3AC6-4406-B09C-0BF07A030DD5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpBenchmark", "experimental\HttpBenchmark\HttpBenchmark.csproj", "{174DC3AC-F883-4B85-BE90-EA5B7BB01961}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419-FB9D-4A20-AD4B-C02C13636BA8}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+		build\repo.targets = build\repo.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,5 +162,6 @@ Global
 		{FFE0CFA5-ADCB-4E63-9B2D-DBC48A3C8364} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961} = {C2EB60CC-CA5A-4E49-A3F8-4432FB117869}
+		{E07EF419-FB9D-4A20-AD4B-C02C13636BA8} = {BAF239DE-04E9-428E-A6D6-98D4C6CFB9E3}
 	EndGlobalSection
 EndGlobal
