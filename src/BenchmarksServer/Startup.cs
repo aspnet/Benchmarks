@@ -231,8 +231,8 @@ namespace BenchmarkServer
             var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
 
             var commonReferences = new XElement("ItemGroup");
-            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net451' "));
-            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp1.1' "));
+            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net46' "));
+            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp2.0' "));
 
             foreach (var dir in dirs.Except(new[] { benchmarksDir }))
             {
@@ -429,7 +429,7 @@ namespace BenchmarkServer
 
         private static string GetTFM(Framework framework)
         {
-            return framework == Framework.Core ? "netcoreapp1.1" : "net451";
+            return framework == Framework.Core ? "netcoreapp2.0" : "net46";
         }
 
         private static string GetBinaryExtension(Framework framework)
