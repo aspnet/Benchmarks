@@ -32,6 +32,9 @@ namespace BenchmarkServer
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
+        // Use custom install dir to avoid changing the default install,  which is impossible if other processes
+        // are already using it.  Custom install is located under default install, so deleting the default
+        // install will delete both.
         private static readonly string _dotnetInstallDir = _isWindows ?
             Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Microsoft", "dotnet", "BenchmarksServer") :
             Path.Combine("~", ".dotnet", "BenchmarksServer");
@@ -221,9 +224,10 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            // Install latest SDK and runtime to custom install dir.  This avoids changing the default install folder,
-            // which is impossible if other processes are already using it
-
+            // Install latest SDK and runtime
+            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
+            //   are already using it.  Custom install is located under default install, so deleting the default
+            //   install will delete both.
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
             ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot,
                 environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", _dotnetInstallDir } });
