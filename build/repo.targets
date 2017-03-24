@@ -34,8 +34,11 @@
   <PropertyGroup>
     <BenchmarksDependsOn Condition="'$(NoBuild)' != 'true'">Compile</BenchmarksDependsOn>
   </PropertyGroup>
-  
-  <!-- Used by BenchmarksServer to install latest SDK and runtime but do nothing else -->
+
+  <!--
+    BenchmarksServer calls "build /t:noop" to install the latest SDK and runtime as quickly as possible.
+    The default target would compile benchmarks.sln which takes much longer.
+  -->
   <Target Name="NoOp" />
 
   <Target Name="TestBenchmarks" DependsOnTargets="$(BenchmarksDependsOn)">
