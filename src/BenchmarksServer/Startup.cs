@@ -221,7 +221,9 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            // Install latest SDK and runtime to custom install dir
+            // Install latest SDK and runtime to custom install dir.  This avoids changing the default install folder,
+            // which is impossible if other processes are already using it
+
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
             ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot,
                 environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", _dotnetInstallDir } });
