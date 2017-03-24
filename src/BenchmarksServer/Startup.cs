@@ -235,7 +235,6 @@ namespace BenchmarkServer
 
             // Build and Restore
             var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
-
             var dotnetExecutable = Path.Combine(dotnetInstallDir, "dotnet");
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
