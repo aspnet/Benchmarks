@@ -34,6 +34,9 @@
   <PropertyGroup>
     <BenchmarksDependsOn Condition="'$(NoBuild)' != 'true'">Compile</BenchmarksDependsOn>
   </PropertyGroup>
+  
+  <!-- Used by BenchmarksServer to install latest SDK and runtime but do nothing else -->
+  <Target Name="NoOp" />
 
   <Target Name="TestBenchmarks" DependsOnTargets="$(BenchmarksDependsOn)">
     <Error Text="BENCHMARK_SERVER must be set" Condition="'$(BENCHMARK_SERVER)' == ''" />

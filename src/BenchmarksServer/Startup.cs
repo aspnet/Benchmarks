@@ -214,13 +214,18 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            var benchmarksPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks");
+            // Install latest SDK and runtime
+            var benchmarksRoot = Path.Combine(path, benchmarksDir);
+            ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot);
+
+            // Build and Restore
+            var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksPath);
-            ProcessUtil.Run("dotnet", $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksPath);
+            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
+            ProcessUtil.Run("dotnet", $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksApp);
 
             return benchmarksDir;
         }
