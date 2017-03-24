@@ -32,6 +32,11 @@ namespace BenchmarkServer
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
+        private static readonly string _dotnetInstallDir = _isWindows ?
+            Path.Combine(Environment.GetEnvironmentVariable("LOCALAPPDATA"), "Microsoft", "dotnet", "BenchmarksServer") :
+            Path.Combine("~", ".dotnet", "BenchmarksServer");
+        private static readonly string _dotnetExecutable = Path.Combine(_dotnetInstallDir, "dotnet");
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
@@ -72,6 +77,8 @@ namespace BenchmarkServer
 
         private static async Task<int> Run(string url, string hostname)
         {
+            Console.WriteLine($"DOTNET_INSTALL_DIR: {_dotnetInstallDir}");
+
             var hostTask = Task.Run(() =>
             {
                 var host = new WebHostBuilder()
@@ -214,9 +221,10 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            // Install latest SDK and runtime
+            // Install latest SDK and runtime to custom install dir
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
-            ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot);
+            ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot,
+                environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", _dotnetInstallDir } });
 
             // Build and Restore
             var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
@@ -224,8 +232,8 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
-            ProcessUtil.Run("dotnet", $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksApp);
+            ProcessUtil.Run(_dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
+            ProcessUtil.Run(_dotnetExecutable, $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksApp);
 
             return benchmarksDir;
         }
@@ -303,7 +311,7 @@ namespace BenchmarkServer
             // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
             //
             // If delete fails, retry once every second up to 10 times.
-            for (var i=0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 try
                 {
@@ -336,7 +344,7 @@ namespace BenchmarkServer
             var workingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks");
             var benchmarksBinaryName = $"Benchmarks{GetBinaryExtension(job.Framework)}";
             var benchmarksBinaryRelativePath = Path.Combine("bin", "Release", GetTFM(job.Framework), benchmarksBinaryName);
-            var filename = job.Framework == Framework.Core ? "dotnet" : Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
+            var filename = job.Framework == Framework.Core ? _dotnetExecutable : Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
             var arguments = (job.Framework == Framework.Core ? $"{benchmarksBinaryRelativePath}" : "") +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +

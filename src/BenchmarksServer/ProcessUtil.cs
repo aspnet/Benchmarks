@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -11,7 +12,7 @@ namespace BenchmarkServer
     public static class ProcessUtil
     {
         public static ProcessResult Run(string filename, string arguments, string workingDirectory = null,
-            bool throwOnError = true)
+            bool throwOnError = true, IDictionary<string, string> environmentVariables = null)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
             Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
@@ -31,6 +32,14 @@ namespace BenchmarkServer
             if (workingDirectory != null)
             {
                 process.StartInfo.WorkingDirectory = workingDirectory;
+            }
+
+            if (environmentVariables != null)
+            {
+                foreach (var kvp in environmentVariables)
+                {
+                    process.StartInfo.Environment.Add(kvp);
+                }
             }
 
             var outputBuilder = new StringBuilder();
