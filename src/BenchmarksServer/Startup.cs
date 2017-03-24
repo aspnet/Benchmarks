@@ -228,8 +228,7 @@ namespace BenchmarkServer
 
             // Install latest SDK and runtime
             // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
-            //   are already using it.  Custom install is located under default install, so deleting the default
-            //   install will delete both.
+            //   are already using it.
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
             ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot,
                 environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", dotnetInstallDir } });
