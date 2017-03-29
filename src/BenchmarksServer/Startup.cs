@@ -244,6 +244,12 @@ namespace BenchmarkServer
                     var targetFrameworks = projectDocument.Root.Descendants("TargetFrameworks").FirstOrDefault();
                     var targetFramework = projectDocument.Root.Descendants("TargetFramework").FirstOrDefault();
 
+                    if (targetFrameworks == null && targetFramework == null)
+                    {
+                        Log.WriteLine($"Project '{project}' not added as a source reference because it has no target frameworks.");
+                        continue;
+                    }
+
                     var reference = new XElement("ProjectReference", new XAttribute("Include", project));
 
                     if (targetFrameworks != null)
