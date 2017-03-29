@@ -67,7 +67,8 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-
+                }).UseLibuv(options =>
+                {
                     var threads = GetThreadCount(config);
 
                     if (threads > 0)
