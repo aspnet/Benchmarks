@@ -7,6 +7,9 @@
     <RepositoryUrl>https://github.com/aspnet/Benchmarks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+
+    <!-- Repo contains only test code -->
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
