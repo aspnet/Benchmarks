@@ -100,43 +100,76 @@ namespace BenchmarkServer
 
         private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
         {
-            Process process = null;
-
-            string tempDir = null;
-
-            while (!cancellationToken.IsCancellationRequested)
+            string dotnetInstallDir = null;
+            try
             {
-                var allJobs = _jobs.GetAll();
-                var job = allJobs.FirstOrDefault();
-                if (job != null)
+                dotnetInstallDir = GetTempDir();
+
+                Process process = null;
+                string tempDir = null;
+
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (job.State == ServerState.Waiting)
+                    var allJobs = _jobs.GetAll();
+                    var job = allJobs.FirstOrDefault();
+                    if (job != null)
                     {
-                        // TODO: Race condition if DELETE is called during this code
-                        try
+                        if (job.State == ServerState.Waiting)
                         {
-                            if (!_isWindows && job.WebHost != WebHost.Kestrel)
+                            // TODO: Race condition if DELETE is called during this code
+                            try
                             {
-                                Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
-                                Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
-                                job.State = ServerState.NotSupported;
+                                if (!_isWindows && job.WebHost != WebHost.Kestrel)
+                                {
+                                    Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
+                                    Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
+                                    job.State = ServerState.NotSupported;
+                                    continue;
+                                }
+
+                                Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
+                                job.State = ServerState.Starting;
+
+                                Debug.Assert(tempDir == null);
+                                tempDir = GetTempDir();
+
+                                var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetInstallDir);
+
+                                Debug.Assert(process == null);
+                                process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetInstallDir);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.WriteLine($"Error starting job '{job.Id}': {e}");
+
+                                if (tempDir != null)
+                                {
+                                    DeleteDir(tempDir);
+                                    tempDir = null;
+                                }
+
+                                job.State = ServerState.Failed;
                                 continue;
                             }
-
-                            Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
-                            job.State = ServerState.Starting;
-
-                            Debug.Assert(tempDir == null);
-                            tempDir = GetTempDir();
-
-                            var benchmarksDir = CloneRestoreAndBuild(tempDir, job);
-
-                            Debug.Assert(process == null);
-                            process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job);
                         }
-                        catch (Exception e)
+                        else if (job.State == ServerState.Deleting)
                         {
-                            Log.WriteLine($"Error starting job '{job.Id}': {e}");
+                            Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
+
+                            if (process != null)
+                            {
+                                // TODO: Replace with managed xplat version of kill process tree
+                                if (_isWindows)
+                                {
+                                    ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
+                                }
+                                else
+                                {
+                                    ProcessUtil.Run("pkill", "--signal SIGINT --full Benchmarks.dll", throwOnError: false);
+                                }
+                                process.Dispose();
+                                process = null;
+                            }
 
                             if (tempDir != null)
                             {
@@ -144,43 +177,22 @@ namespace BenchmarkServer
                                 tempDir = null;
                             }
 
-                            job.State = ServerState.Failed;
-                            continue;
+                            _jobs.Remove(job.Id);
                         }
                     }
-                    else if (job.State == ServerState.Deleting)
-                    {
-                        Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
-
-                        if (process != null)
-                        {
-                            // TODO: Replace with managed xplat version of kill process tree
-                            if (_isWindows)
-                            {
-                                ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
-                            }
-                            else
-                            {
-                                ProcessUtil.Run("pkill", "--signal SIGINT --full Benchmarks.dll", throwOnError: false);
-                            }
-                            process.Dispose();
-                            process = null;
-                        }
-
-                        if (tempDir != null)
-                        {
-                            DeleteDir(tempDir);
-                            tempDir = null;
-                        }
-
-                        _jobs.Remove(job.Id);
-                    }
+                    await Task.Delay(100);
                 }
-                await Task.Delay(100);
+            }
+            finally
+            {
+                if (dotnetInstallDir != null)
+                {
+                    DeleteDir(dotnetInstallDir);
+                }
             }
         }
 
-        private static string CloneRestoreAndBuild(string path, ServerJob job)
+        private static string CloneRestoreAndBuild(string path, ServerJob job, string dotnetInstallDir)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
@@ -214,13 +226,30 @@ namespace BenchmarkServer
 
             AddSourceDependencies(path, benchmarksDir, dirs);
 
-            var benchmarksPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks");
+            // Install latest SDK and runtime
+            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
+            //   are already using it.
+            var benchmarksRoot = Path.Combine(path, benchmarksDir);
+            var env = new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", dotnetInstallDir } };
+            if (_isWindows)
+            {
+                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot, environmentVariables: env);
+            }
+            else
+            {
+                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop", workingDirectory: benchmarksRoot,
+                    environmentVariables: env);
+            }
+
+            // Build and Restore
+            var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
+            var dotnetExecutable = Path.Combine(dotnetInstallDir, "dotnet");
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run("dotnet", "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksPath);
-            ProcessUtil.Run("dotnet", $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksPath);
+            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release -f {GetTFM(job.Framework)}", workingDirectory: benchmarksApp);
 
             return benchmarksDir;
         }
@@ -298,7 +327,7 @@ namespace BenchmarkServer
             // System.UnauthorizedAccessException: Access to the path 'Benchmarks.dll' is denied.
             //
             // If delete fails, retry once every second up to 10 times.
-            for (var i=0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 try
                 {
@@ -326,12 +355,14 @@ namespace BenchmarkServer
             }
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job)
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetInstallDir)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks");
             var benchmarksBinaryName = $"Benchmarks{GetBinaryExtension(job.Framework)}";
             var benchmarksBinaryRelativePath = Path.Combine("bin", "Release", GetTFM(job.Framework), benchmarksBinaryName);
-            var filename = job.Framework == Framework.Core ? "dotnet" : Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
+            var filename = job.Framework == Framework.Core ?
+                Path.Combine(dotnetInstallDir, "dotnet") :
+                Path.Combine(workingDirectory, benchmarksBinaryRelativePath);
             var arguments = (job.Framework == Framework.Core ? $"{benchmarksBinaryRelativePath}" : "") +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
