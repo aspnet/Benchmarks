@@ -230,15 +230,15 @@ namespace BenchmarkServer
             // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
             //   are already using it.
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
+            var env = new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", dotnetInstallDir } };
             if (_isWindows)
             {
-                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot,
-                    environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", dotnetInstallDir } });
+                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot, environmentVariables: env);
             }
             else
             {
                 ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop", workingDirectory: benchmarksRoot,
-                    environmentVariables: new Dictionary<string, string> { { "DOTNET_INSTALL_DIR", dotnetInstallDir } });
+                    environmentVariables: env);
             }
 
             // Build and Restore
