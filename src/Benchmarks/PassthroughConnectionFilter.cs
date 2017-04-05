@@ -4,7 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Benchmarks
