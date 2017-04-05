@@ -15,9 +15,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="2.0.0-*" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
