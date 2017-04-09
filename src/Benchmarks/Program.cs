@@ -50,8 +50,15 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                 );
 
+            var threadPoolDispatching = true;
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
+                var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
+                if (kestrelThreadPoolDispatchingValue != null)
+                {
+                    threadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingValue);
+                }
+
                 webHostBuilder = webHostBuilder.UseKestrel(options =>
                 {
                     var urls = config["urls"] ?? config["server.urls"];
@@ -74,6 +81,11 @@ namespace Benchmarks
                     if (threads > 0)
                     {
                         options.ThreadCount = threads;
+                    }
+                    else if (!threadPoolDispatching)
+                    {
+                        // If thread pool dispatching is off then use 2 * number of cores
+                        options.ThreadCount = Environment.ProcessorCount * 2;
                     }
                 });
 
@@ -99,11 +111,10 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
-            if (kestrelThreadPoolDispatchingValue != null)
+            var internalOptions = webHost.ServerFeatures.Get<InternalKestrelServerOptions>();
+            if (internalOptions != null)
             {
-                webHost.ServerFeatures.Get<InternalKestrelServerOptions>().ThreadPoolDispatching =
-                    bool.Parse(kestrelThreadPoolDispatchingValue);
+                internalOptions.ThreadPoolDispatching = threadPoolDispatching;
             }
 
             webHost.Run();
@@ -181,7 +192,7 @@ namespace Benchmarks
         private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
         {
             var urlPrefix = UrlPrefix.Create(url);
-            var endpoint =  CreateIPEndPoint(urlPrefix);
+            var endpoint = CreateIPEndPoint(urlPrefix);
 
             options.Listen(endpoint, listenOptions =>
             {
