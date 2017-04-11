@@ -50,7 +50,7 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                 );
 
-            var threadPoolDispatching = true;
+            bool? threadPoolDispatching = null;
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
                 var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
@@ -82,9 +82,10 @@ namespace Benchmarks
                     {
                         options.ThreadCount = threads;
                     }
-                    else if (!threadPoolDispatching)
+                    else if (threadPoolDispatching == false)
                     {
-                        // If thread pool dispatching is off then use 2 * number of cores
+                        // If thread pool dispatching is explicitly set to false
+                        // and the thread count wasn't specified then use 2 * number of logical cores
                         options.ThreadCount = Environment.ProcessorCount * 2;
                     }
                 });
@@ -111,10 +112,13 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            var internalOptions = webHost.ServerFeatures.Get<InternalKestrelServerOptions>();
-            if (internalOptions != null)
+            if (threadPoolDispatching != null)
             {
-                internalOptions.ThreadPoolDispatching = threadPoolDispatching;
+                var internalOptions = webHost.ServerFeatures.Get<InternalKestrelServerOptions>();
+                if (internalOptions != null)
+                {
+                    internalOptions.ThreadPoolDispatching = threadPoolDispatching.Value;
+                }
             }
 
             webHost.Run();
