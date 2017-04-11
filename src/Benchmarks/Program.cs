@@ -50,8 +50,15 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                 );
 
+            bool? threadPoolDispatching = null;
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
+                var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
+                if (kestrelThreadPoolDispatchingValue != null)
+                {
+                    threadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingValue);
+                }
+
                 webHostBuilder = webHostBuilder.UseKestrel(options =>
                 {
                     var urls = config["urls"] ?? config["server.urls"];
@@ -74,6 +81,12 @@ namespace Benchmarks
                     if (threads > 0)
                     {
                         options.ThreadCount = threads;
+                    }
+                    else if (threadPoolDispatching == false)
+                    {
+                        // If thread pool dispatching is explicitly set to false
+                        // and the thread count wasn't specified then use 2 * number of logical cores
+                        options.ThreadCount = Environment.ProcessorCount * 2;
                     }
                 });
 
@@ -99,11 +112,13 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
-            if (kestrelThreadPoolDispatchingValue != null)
+            if (threadPoolDispatching != null)
             {
-                webHost.ServerFeatures.Get<InternalKestrelServerOptions>().ThreadPoolDispatching =
-                    bool.Parse(kestrelThreadPoolDispatchingValue);
+                var internalOptions = webHost.ServerFeatures.Get<InternalKestrelServerOptions>();
+                if (internalOptions != null)
+                {
+                    internalOptions.ThreadPoolDispatching = threadPoolDispatching.Value;
+                }
             }
 
             webHost.Run();
@@ -181,7 +196,7 @@ namespace Benchmarks
         private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
         {
             var urlPrefix = UrlPrefix.Create(url);
-            var endpoint =  CreateIPEndPoint(urlPrefix);
+            var endpoint = CreateIPEndPoint(urlPrefix);
 
             options.Listen(endpoint, listenOptions =>
             {
