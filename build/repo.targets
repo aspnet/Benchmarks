@@ -2,7 +2,9 @@
   <ItemGroup>
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadCount 2" />
     <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelThreadPoolDispatching false" />
+    <Scenarios Include="-n Plaintext -o KestrelHttpServer@dev --kestrelTransport Sockets" />
     <Scenarios Include="-n Json -o KestrelHttpServer@dev" />
+    <Scenarios Include="-n Json -o KestrelHttpServer@dev --kestrelTransport Sockets" />
     <Scenarios Include="-n Plaintext" />
     <Scenarios Include="-n StaticFiles --path plaintext" />
     <Scenarios Include="-n Plaintext -r Desktop" />

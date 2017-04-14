@@ -21,6 +21,7 @@ namespace Benchmarks
     {
         public static string[] Args;
         public static string Server;
+        public static string Transport;
 
         public static void Main(string[] args)
         {
@@ -39,6 +40,7 @@ namespace Benchmarks
                 .Build();
 
             Server = config["server"] ?? "Kestrel";
+            Transport = config["transport"] ?? "Libuv";
 
             var webHostBuilder = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -74,21 +76,34 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-                }).UseLibuv(options =>
-                {
-                    var threads = GetThreadCount(config);
-
-                    if (threads > 0)
-                    {
-                        options.ThreadCount = threads;
-                    }
-                    else if (threadPoolDispatching == false)
-                    {
-                        // If thread pool dispatching is explicitly set to false
-                        // and the thread count wasn't specified then use 2 * number of logical cores
-                        options.ThreadCount = Environment.ProcessorCount * 2;
-                    }
                 });
+
+                if (string.Equals(Transport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                {
+                    webHostBuilder.UseLibuv(options =>
+                    {
+                        var threads = GetThreadCount(config);
+
+                        if (threads > 0)
+                        {
+                            options.ThreadCount = threads;
+                        }
+                        else if (threadPoolDispatching == false)
+                        {
+                            // If thread pool dispatching is explicitly set to false
+                            // and the thread count wasn't specified then use 2 * number of logical cores
+                            options.ThreadCount = Environment.ProcessorCount * 2;
+                        }
+                    });
+                }
+                else if (string.Equals(Transport, "Sockets", StringComparison.OrdinalIgnoreCase))
+                {
+                    webHostBuilder.UseSockets();
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unknown transport {Transport}");
+                }
 
                 webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
             }

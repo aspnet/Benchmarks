@@ -384,6 +384,11 @@ namespace BenchmarkServer
                 arguments += $" --kestrelThreadPoolDispatching {job.KestrelThreadPoolDispatching.Value}";
             }
 
+            if (!string.IsNullOrEmpty(job.KestrelTransport))
+            {
+                arguments += $" --transport {job.KestrelTransport}";
+            }
+
             Log.WriteLine($"Starting process '{filename} {arguments}'");
 
             var process = new Process()
