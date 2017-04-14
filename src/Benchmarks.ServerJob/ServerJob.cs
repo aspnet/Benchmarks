@@ -22,7 +22,8 @@ namespace Benchmarks.ServerJob
 
         public bool? KestrelThreadPoolDispatching { get; set; }
 
-        public string KestrelTransport { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KestrelTransport? KestrelTransport { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scenario Scenario { get; set; }

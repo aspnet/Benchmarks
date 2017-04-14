@@ -21,7 +21,6 @@ namespace Benchmarks
     {
         public static string[] Args;
         public static string Server;
-        public static string Transport;
 
         public static void Main(string[] args)
         {
@@ -40,7 +39,6 @@ namespace Benchmarks
                 .Build();
 
             Server = config["server"] ?? "Kestrel";
-            Transport = config["transport"] ?? "Libuv";
 
             var webHostBuilder = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -78,15 +76,16 @@ namespace Benchmarks
                     }
                 });
 
-                if (string.Equals(Transport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                var threadCount = GetThreadCount(config);
+                var kestrelTransport = config["KestrelTransport"];
+
+                if (threadCount > 0 || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseLibuv(options =>
                     {
-                        var threads = GetThreadCount(config);
-
-                        if (threads > 0)
+                        if (threadCount > 0)
                         {
-                            options.ThreadCount = threads;
+                            options.ThreadCount = threadCount;
                         }
                         else if (threadPoolDispatching == false)
                         {
@@ -96,13 +95,13 @@ namespace Benchmarks
                         }
                     });
                 }
-                else if (string.Equals(Transport, "Sockets", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseSockets();
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unknown transport {Transport}");
+                    throw new InvalidOperationException($"Unknown transport {kestrelTransport}");
                 }
 
                 webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);

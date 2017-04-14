@@ -374,6 +374,11 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
+            if (job.KestrelTransport.HasValue)
+            {
+                arguments += $" --kestrelTransport {job.KestrelTransport.Value}";
+            }
+
             if (job.KestrelThreadCount.HasValue)
             {
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
@@ -382,11 +387,6 @@ namespace BenchmarkServer
             if (job.KestrelThreadPoolDispatching.HasValue)
             {
                 arguments += $" --kestrelThreadPoolDispatching {job.KestrelThreadPoolDispatching.Value}";
-            }
-
-            if (!string.IsNullOrEmpty(job.KestrelTransport))
-            {
-                arguments += $" --transport {job.KestrelTransport}";
             }
 
             Log.WriteLine($"Starting process '{filename} {arguments}'");
