@@ -374,6 +374,11 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
+            if (job.KestrelTransport.HasValue)
+            {
+                arguments += $" --kestrelTransport {job.KestrelTransport.Value}";
+            }
+
             if (job.KestrelThreadCount.HasValue)
             {
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";

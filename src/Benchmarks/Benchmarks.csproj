@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <Import Project="..\..\build\common.props" />
 
@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="2.0.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="2.0.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.0.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0-*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0-*" PrivateAssets="All" />
