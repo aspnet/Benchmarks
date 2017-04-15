@@ -79,7 +79,8 @@ namespace Benchmarks
                 var threadCount = GetThreadCount(config);
                 var kestrelTransport = config["KestrelTransport"];
 
-                if (threadCount > 0 || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                if (threadCount > 0 || threadPoolDispatching == false ||
+                    string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseLibuv(options =>
                     {
@@ -98,6 +99,10 @@ namespace Benchmarks
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseSockets();
+                }
+                else if (string.IsNullOrEmpty(kestrelTransport))
+                {
+                    // Use default transport
                 }
                 else
                 {
