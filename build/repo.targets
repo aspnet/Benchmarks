@@ -1,6 +1,8 @@
 <Project>
   <ItemGroup>
+    <!-- Optimal ThreadCount for current hardware -->
     <Scenarios Include="-n Plaintext --kestrelThreadCount 2" />
+    
     <Scenarios Include="-n Plaintext --kestrelTransport Sockets" />
     <Scenarios Include="-n Plaintext -r Desktop" />
     <Scenarios Include="-n Plaintext --webHost HttpSys" />
@@ -11,8 +13,9 @@
     <Scenarios Include="-n Plaintext -m https -r Desktop" />
     <Scenarios Include="-n Plaintext -m https --webHost HttpSys" />
 
-    <!-- TODO: Optimize threadcount -->
+    <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <Scenarios Include="-n Json" />
+    
     <Scenarios Include="-n Json --kestrelTransport Sockets" />
     <Scenarios Include="-n Json -r Desktop" />
     <Scenarios Include="-n Json --webHost HttpSys" />
