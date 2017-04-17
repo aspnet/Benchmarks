@@ -53,12 +53,6 @@ namespace Benchmarks
             bool? threadPoolDispatching = null;
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
-                var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
-                if (kestrelThreadPoolDispatchingValue != null)
-                {
-                    threadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingValue);
-                }
-
                 webHostBuilder = webHostBuilder.UseKestrel(options =>
                 {
                     var urls = config["urls"] ?? config["server.urls"];
@@ -73,6 +67,13 @@ namespace Benchmarks
                     else
                     {
                         Listen(options, config, "http://localhost:5000/");
+                    }
+
+                    var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
+                    if (kestrelThreadPoolDispatchingValue != null)
+                    {
+                        // Dispatching to the thread pool means we don't want to use the transport thread
+                        options.UseTransportThread = !bool.Parse(kestrelThreadPoolDispatchingValue);
                     }
                 });
 
@@ -129,15 +130,6 @@ namespace Benchmarks
             if (nonInteractiveValue == null || !bool.Parse(nonInteractiveValue))
             {
                 StartInteractiveConsoleThread();
-            }
-
-            if (threadPoolDispatching != null)
-            {
-                var internalOptions = webHost.ServerFeatures.Get<InternalKestrelServerOptions>();
-                if (internalOptions != null)
-                {
-                    internalOptions.ThreadPoolDispatching = threadPoolDispatching.Value;
-                }
             }
 
             webHost.Run();
