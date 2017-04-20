@@ -41,4 +41,8 @@
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.Dotnet" Version="2.0.0-*" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
+    <PackageReference Include="RedHatX.AspNetCore.Server.Kestrel.Transport.Linux" Version="0.1.0-*" />
+  </ItemGroup>
+
 </Project>

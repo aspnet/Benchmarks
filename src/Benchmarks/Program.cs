@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RedHatX.AspNetCore.Server.Kestrel.Transport.Linux;
 
 namespace Benchmarks
 {
@@ -75,13 +77,13 @@ namespace Benchmarks
                         // Dispatching to the thread pool means we don't want to use the transport thread
                         options.UseTransportThread = !bool.Parse(kestrelThreadPoolDispatchingValue);
                     }
+                    threadPoolDispatching = !options.UseTransportThread;
                 });
 
                 var threadCount = GetThreadCount(config);
                 var kestrelTransport = config["KestrelTransport"];
 
-                if (threadCount > 0 || threadPoolDispatching == false ||
-                    string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseLibuv(options =>
                     {
@@ -97,9 +99,27 @@ namespace Benchmarks
                         }
                     });
                 }
-                else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase)
+                         && threadPoolDispatching != true)
                 {
                     webHostBuilder.UseSockets();
+                }
+                else if (string.Equals(kestrelTransport, "RHLinux", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        throw new PlatformNotSupportedException("RHLinux Transport requires Linux");
+                    }
+#if NETCOREAPP2_0
+                    webHostBuilder.UseLinuxTransport(options =>
+                    {
+                        if (threadCount > 0)
+                        {
+                            options.ThreadCount = threadCount;
+                        }
+                        options.SetThreadAffinity = true;
+                    });
+#endif
                 }
                 else if (string.IsNullOrEmpty(kestrelTransport))
                 {

@@ -1,9 +1,11 @@
 <Project>
   <ItemGroup>
     <!-- Optimal ThreadCount for current hardware -->
-    <Scenarios Include="-n Plaintext --kestrelThreadCount 2" />
-    
+    <Scenarios Include="-n Plaintext --kestrelTransport Libuv --kestrelThreadCount 2" />
+    <Scenarios Include="-n Plaintext --kestrelTransport RHLinux --kestrelThreadCount 2" />
+
     <Scenarios Include="-n Plaintext --kestrelTransport Sockets" />
+    <Scenarios Include="-n Plaintext --kestrelTransport RHLinux" />
     <Scenarios Include="-n Plaintext -r Desktop" />
     <Scenarios Include="-n Plaintext --webHost HttpSys" />
     <Scenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter" />

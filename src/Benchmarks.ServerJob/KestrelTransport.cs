@@ -3,6 +3,7 @@
     public enum KestrelTransport
     {
         Libuv,
-        Sockets
+        Sockets,
+        RHLinux
     }
 }
