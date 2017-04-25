@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -72,8 +73,14 @@ namespace Benchmarks
                     var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
                     if (kestrelThreadPoolDispatchingValue != null)
                     {
-                        // Dispatching to the thread pool means we don't want to use the transport thread
-                        options.UseTransportThread = !bool.Parse(kestrelThreadPoolDispatchingValue);
+                        if (bool.Parse(kestrelThreadPoolDispatchingValue))
+                        {
+                            options.ApplicationSchedulingMode = SchedulingMode.ThreadPool;
+                        }
+                        else
+                        {
+                            options.ApplicationSchedulingMode = SchedulingMode.Inline;
+                        }
                     }
                 });
 
