@@ -31,6 +31,7 @@
     -->
     <PackageReference Include="Npgsql" Version="3.2.0-*" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="1.*" />
+    <PackageReference Include="RedHatX.AspNetCore.Server.Kestrel.Transport.Linux" Version="0.1.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('netcoreapp'))">
@@ -39,10 +40,6 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.Dotnet" Version="2.0.0-*" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
-    <PackageReference Include="RedHatX.AspNetCore.Server.Kestrel.Transport.Linux" Version="0.1.0-*" />
   </ItemGroup>
 
 </Project>

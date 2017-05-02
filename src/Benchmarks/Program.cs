@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Runtime;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -106,11 +105,6 @@ namespace Benchmarks
                 }
                 else if (string.Equals(kestrelTransport, "RHLinux", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        throw new PlatformNotSupportedException("RHLinux Transport requires Linux");
-                    }
-#if NETCOREAPP2_0
                     webHostBuilder.UseLinuxTransport(options =>
                     {
                         if (threadCount > 0)
@@ -119,7 +113,6 @@ namespace Benchmarks
                         }
                         options.SetThreadAffinity = true;
                     });
-#endif
                 }
                 else if (string.IsNullOrEmpty(kestrelTransport))
                 {
