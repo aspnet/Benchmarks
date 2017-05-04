@@ -42,38 +42,40 @@ namespace BenchmarkDriver
             new Dictionary<Scenario, ClientJob>()
             {
                 { Scenario.Plaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.Json, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 15, Headers = _jsonHeaders
                 } },
+                { Scenario.Copy, new ClientJob() {
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "post", PipelineDepth = 16, Headers = _plaintextHeaders
+                } },
                 { Scenario.MvcPlaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.MvcJson, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 15, Headers = _jsonHeaders
                 } },
                 { Scenario.MemoryCachePlaintext, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.MemoryCachePlaintextSetRemove, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextCached, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextResponseNoCache, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16,
-                    Headers = _plaintextHeaders.Append("Cache-Control: no-cache")
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders.Append("Cache-Control: no-cache")
                 } },
                 { Scenario.ResponseCachingPlaintextVaryByCached, new ClientJob() {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.StaticFiles, new ClientJob {
-                    Connections = 256, Threads = 32, Duration = 15, PipelineDepth = 16, Headers = _plaintextHeaders
+                    Connections = 256, Threads = 32, Duration = 15, ScriptName = "pipeline", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
             };
 

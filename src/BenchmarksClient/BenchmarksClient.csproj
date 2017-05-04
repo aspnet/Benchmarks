@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <Content Include="..\..\scripts\pipeline.lua" CopyToOutputDirectory="PreserveNewest" Link="scripts\pipeline.lua" />
+    <Content Include="..\..\scripts\post.lua" CopyToOutputDirectory="PreserveNewest" Link="scripts\post.lua" />
+    <Content Include="..\..\scripts\data.txt" CopyToOutputDirectory="PreserveNewest" Link="scripts\data.txt" />
   </ItemGroup>
 
   <ItemGroup>

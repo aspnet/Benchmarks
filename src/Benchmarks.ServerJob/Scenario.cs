@@ -13,6 +13,7 @@ namespace Benchmarks.ServerJob
     {
         Plaintext,
         Json,
+        Copy,
 
         [ScenarioPath("/mvc/plaintext")]
         MvcPlaintext,

@@ -96,8 +96,13 @@ namespace BenchmarkClient
                 var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    var jobLogText = $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} " +
-                        $"Duration:{job.Duration} Pipeline:{job.PipelineDepth} Method:{job.Method}";
+                    var jobLogText =
+                        $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method}";
+
+                    if (!string.IsNullOrEmpty(job.ScriptName) && job.PipelineDepth > 0)
+                    {
+                        jobLogText += $" Script:{job.ScriptName} Pipeline:{job.PipelineDepth} ";
+                    }
 
                     if (job.Headers != null)
                     {
@@ -155,9 +160,9 @@ namespace BenchmarkClient
 
             command += $" {job.ServerBenchmarkUri}";
 
-            if (job.PipelineDepth > 0)
+            if (!string.IsNullOrEmpty(job.ScriptName) && job.PipelineDepth > 0)
             {
-                command += $" -s scripts/pipeline.lua -- {job.PipelineDepth}";
+                command += $" -s scripts/{job.ScriptName}.lua -- {job.PipelineDepth}";
 
                 if (job.Method != "GET")
                 {
