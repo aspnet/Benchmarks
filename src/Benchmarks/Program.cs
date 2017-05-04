@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Benchmarks
 {
@@ -45,6 +47,17 @@ namespace Benchmarks
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 .UseStartup<Startup>()
+                .ConfigureLogging(loggerFactory =>
+                {
+                    if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
+                    {
+                        loggerFactory.AddFilter(new Dictionary<string, LogLevel>
+                        {
+                            ["Default"] = logLevel
+                        });
+                        loggerFactory.AddConsole();
+                    }
+                })
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
                     .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()

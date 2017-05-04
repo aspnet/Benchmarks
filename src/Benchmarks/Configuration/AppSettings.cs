@@ -10,7 +10,5 @@ namespace Benchmarks.Configuration
         public string ConnectionString { get; set; }
 
         public DatabaseServer Database { get; set; } = DatabaseServer.SqlServer;
-
-        public LogLevel? LogLevel { get; set; }
     }
 }
