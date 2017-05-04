@@ -111,10 +111,6 @@ namespace Benchmarks
                         {
                             options.ThreadCount = threadCount;
                         }
-                        else
-                        {
-                            options.SetThreadAffinity = true;
-                        }
                     });
                 }
                 else if (string.IsNullOrEmpty(kestrelTransport))
