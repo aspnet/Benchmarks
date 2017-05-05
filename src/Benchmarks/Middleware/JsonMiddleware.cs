@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Newtonsoft.Json;
 
 namespace Benchmarks.Middleware
@@ -40,7 +39,7 @@ namespace Benchmarks.Middleware
                     _json.Serialize(sw, new { message = "Hello, World!" });
                 }
 
-                return TaskCache.CompletedTask;
+                return Task.CompletedTask;
             }
 
             return _next(httpContext);
