@@ -15,9 +15,6 @@ namespace Benchmarks.ServerJob
 
         public string ConnectionFilter { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Framework Framework { get; set; }
-
         public int? KestrelThreadCount { get; set; }
 
         public bool? KestrelThreadPoolDispatching { get; set; }
