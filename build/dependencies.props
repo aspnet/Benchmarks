@@ -1,7 +1,19 @@
 <Project>
   <PropertyGroup>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <DapperVersion>1.*</DapperVersion>
+    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
+
+    <!--
+      * Once Npgsql 3.2.0 or later is stable, the required version should be changed to "3.*".
+      * For now, we need to use "3.2.0-*" since there's no way to float the latest pre-release version.
+    -->
+    <NpgsqlVersion>3.2.0-*</NpgsqlVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>1.*</NpgsqlEntityFrameworkCorePostgreSQLVersion>
 
     <!--
       * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
@@ -9,8 +21,5 @@
       * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
     -->
     <SqlClientVersion>4.4.0-*</SqlClientVersion>
-
-    <CoreFxVersion>4.3.0</CoreFxVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
   </PropertyGroup>
 </Project>
