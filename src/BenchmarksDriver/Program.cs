@@ -47,7 +47,7 @@ namespace BenchmarkDriver
                 { Scenario.Json, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 15, Headers = _jsonHeaders
                 } },
-                { Scenario.Copy, new ClientJob() {
+                { Scenario.CopyToAsync, new ClientJob() {
                     Connections = 256, Threads = 32, Duration = 15, ScriptName = "post", PipelineDepth = 16, Headers = _plaintextHeaders
                 } },
                 { Scenario.MvcPlaintext, new ClientJob() {

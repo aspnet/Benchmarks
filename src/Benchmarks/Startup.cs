@@ -161,7 +161,7 @@ namespace Benchmarks
                 app.UseJson();
             }
 
-            if (Scenarios.Copy)
+            if (Scenarios.CopyToAsync)
             {
                 app.UseCopyToAsync();
             }

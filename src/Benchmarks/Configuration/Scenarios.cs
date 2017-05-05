@@ -56,7 +56,7 @@ namespace Benchmarks.Configuration
         //**
 
         [ScenarioPath("/copy")]
-        public bool Copy { get; set; }
+        public bool CopyToAsync { get; set; }
 
         [ScenarioPath("/db/raw")]
         public bool DbSingleQueryRaw { get; set; }

@@ -11,7 +11,7 @@ namespace Benchmarks.Middleware
 {
     public class CopyToAsyncMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Copy));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.CopyToAsync));
 
         private readonly RequestDelegate _next;
 
