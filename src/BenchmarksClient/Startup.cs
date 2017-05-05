@@ -99,9 +99,16 @@ namespace BenchmarkClient
                     var jobLogText =
                         $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method}";
 
-                    if (!string.IsNullOrEmpty(job.ScriptName) && job.PipelineDepth > 0)
+                    Debug.Assert(job.PipelineDepth <= 0 || job.ScriptName != null, "A script name must be present when the pipeline depth is larger than 0.");
+
+                    if (!string.IsNullOrEmpty(job.ScriptName))
                     {
-                        jobLogText += $" Script:{job.ScriptName} Pipeline:{job.PipelineDepth} ";
+                        jobLogText += $" Script:{job.ScriptName}";
+                    }
+
+                    if (job.PipelineDepth > 0)
+                    {
+                        jobLogText += $" Pipeline:{job.PipelineDepth}";
                     }
 
                     if (job.Headers != null)
@@ -156,13 +163,16 @@ namespace BenchmarkClient
                 }
             }
 
-            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}";
+            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}  {job.ServerBenchmarkUri}";
 
-            command += $" {job.ServerBenchmarkUri}";
-
-            if (!string.IsNullOrEmpty(job.ScriptName) && job.PipelineDepth > 0)
+            if (!string.IsNullOrEmpty(job.ScriptName))
             {
-                command += $" -s scripts/{job.ScriptName}.lua -- {job.PipelineDepth}";
+                command += $" -s scripts/{job.ScriptName}.lua --";
+                
+                if (job.PipelineDepth > 0)
+                {
+                    command += $" {job.PipelineDepth}";
+                }
 
                 if (job.Method != "GET")
                 {
