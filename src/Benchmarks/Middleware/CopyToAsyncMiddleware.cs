@@ -21,17 +21,18 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "text/plain";
 
-                return httpContext.Request.Body.CopyToAsync(new MemoryStream());
+                await httpContext.Request.Body.CopyToAsync(new MemoryStream());
+                await httpContext.Response.WriteAsync("Hello World!");
             }
 
-            return _next(httpContext);
+            await _next(httpContext);
         }
     }
 
