@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -27,7 +28,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "text/plain";
 
-                return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
+                return httpContext.Request.Body.CopyToAsync(new MemoryStream());
             }
 
             return _next(httpContext);
