@@ -31,6 +31,10 @@ namespace Benchmarks
             public void PrepareRequest(IFeatureCollection requestFeatures)
             {
             }
+
+            public void Dispose()
+            {
+            }
         }
 
         private class PassthroughStream : Stream
