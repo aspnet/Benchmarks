@@ -28,7 +28,14 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "text/plain";
 
-                await httpContext.Request.Body.CopyToAsync(new MemoryStream());
+                using (var ms = new MemoryStream())
+                {
+                    // Don't copy to response stream, so this measures just
+                    // the time to copy the body and not copying plus writing
+                    // the response.
+                    await httpContext.Request.Body.CopyToAsync(ms);
+                }
+
                 await httpContext.Response.WriteAsync("Hello World!");
             }
 
