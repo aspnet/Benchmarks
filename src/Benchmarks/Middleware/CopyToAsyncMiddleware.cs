@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -11,7 +12,7 @@ namespace Benchmarks.Middleware
 {
     public class CopyToAsyncMiddleware
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Copy));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.CopyToAsync));
 
         private readonly RequestDelegate _next;
 
@@ -20,17 +21,27 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentType = "text/plain";
 
-                return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
-            }
+                using (var ms = new MemoryStream())
+                {
+                    // Don't copy to response stream, so this measures just
+                    // the time to copy the body and not copying plus writing
+                    // the response.
+                    await httpContext.Request.Body.CopyToAsync(ms);
+                }
 
-            return _next(httpContext);
+                await httpContext.Response.WriteAsync("Hello World!");
+            }
+            else
+            {
+                await _next(httpContext);
+            }
         }
     }
 
