@@ -38,8 +38,10 @@ namespace Benchmarks.Middleware
 
                 await httpContext.Response.WriteAsync("Hello World!");
             }
-
-            await _next(httpContext);
+            else
+            {
+                await _next(httpContext);
+            }
         }
     }
 
