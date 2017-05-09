@@ -1,6 +1,21 @@
 # Benchmarks
 Benchmarks for ASP.NET Core including (but not limited to) scenarios from the [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/).
 
+##### Plaintext
+![plaintext](https://d3renderer.azurewebsites.net/plaintext/v1)
+
+##### JSON
+![json](https://d3renderer.azurewebsites.net/json/v1)
+
+##### Single Query
+![singlequery](https://d3renderer.azurewebsites.net/singlequery/v1)
+
+##### Multi Query
+![multiquery](https://d3renderer.azurewebsites.net/multiquery/v1)
+
+##### Fortunes
+![fortunes](https://d3renderer.azurewebsites.net/fortunes/v1)
+
 # Running the benchmarks
 
 The benchmark repo is set up to work against the latest sources (i.e. not packages from nuget.org) for ASP.NET Core so make sure you read through the following details to help you get started.
