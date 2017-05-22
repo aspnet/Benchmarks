@@ -155,7 +155,7 @@ namespace Benchmarks.Configuration
 
         public int Enable(string partialName)
         {
-            if(string.Equals(partialName, "[default]", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(partialName, "[default]", StringComparison.OrdinalIgnoreCase))
             {
                 EnableDefault();
                 return 2;

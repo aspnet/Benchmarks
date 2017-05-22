@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,7 @@ namespace Benchmarks.Data
         async Task<World> ReadSingleRow(DbConnection db)
         {
             return await db.QueryFirstOrDefaultAsync<World>(
-                    "SELECT id, randomnumber FROM world WHERE Id = @Id",
+                    "SELECT id, randomnumber FROM world WHERE id = @Id",
                     new { Id = _random.Next(1, 10001) });
         }
 

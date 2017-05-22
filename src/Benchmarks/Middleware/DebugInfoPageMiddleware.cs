@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -24,13 +24,7 @@ namespace Benchmarks.Middleware
         private static readonly string _configurationName = "";
 #endif
 
-#if NET46
-        private static readonly string _targetFrameworkName = AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName;
-#elif NETCOREAPP2_0
         private static readonly string _targetFrameworkName = AppContext.TargetFrameworkName;
-#else
-#error the target framework needs to be updated.                    
-#endif
 
         private readonly IHostingEnvironment _hostingEnv;
         private readonly RequestDelegate _next;

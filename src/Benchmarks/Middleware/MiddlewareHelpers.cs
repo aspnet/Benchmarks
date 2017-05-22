@@ -51,7 +51,6 @@ namespace Benchmarks.Middleware
             // fortunes includes multibyte characters so response.Length is incorrect
             httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(response);
             await httpContext.Response.WriteAsync(response);
-
         }
     }
 }

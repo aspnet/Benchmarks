@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Text;
@@ -16,7 +16,7 @@ namespace Benchmarks.Middleware
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         private readonly RequestDelegate _next;
-        
+
         public PlaintextMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -41,7 +41,7 @@ namespace Benchmarks.Middleware
             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
         }
     }
-    
+
     public static class PlaintextMiddlewareExtensions
     {
         public static IApplicationBuilder UsePlainText(this IApplicationBuilder builder)

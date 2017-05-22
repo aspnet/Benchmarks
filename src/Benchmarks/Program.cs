@@ -189,9 +189,11 @@ namespace Benchmarks
                         Console.WriteLine($"Gen 0: {GC.CollectionCount(0)}, Gen 1: {GC.CollectionCount(1)}, Gen 2: {GC.CollectionCount(2)}");
                     }
                 }
-            });
+            })
+            {
+                IsBackground = true
+            };
 
-            interactiveThread.IsBackground = true;
             interactiveThread.Start();
 
             started.WaitOne();
