@@ -37,11 +37,7 @@ namespace Benchmarks.Middleware
             var payloadLength = _helloWorldPayload.Length;
             response.StatusCode = 200;
             response.ContentType = "text/plain";
-
-            // HACK: Setting the Content-Length header manually avoids the cost of serializing the int to a string.
-            //       This is instead of: httpContext.Response.ContentLength = payloadLength;
-            response.Headers["Content-Length"] = "13";
-
+            response.ContentLength = payloadLength;
             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
         }
     }

@@ -162,7 +162,7 @@ namespace Benchmarks.Configuration
             }
 
             var props = typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.IndexOf(partialName, StringComparison.OrdinalIgnoreCase) >= 0)
+                .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.StartsWith(partialName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var p in props)
