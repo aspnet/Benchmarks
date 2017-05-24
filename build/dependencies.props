@@ -3,7 +3,7 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <DapperVersion>1.*</DapperVersion>
-    <InternalAspNetCoreSdkVersion>2.0.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
 
