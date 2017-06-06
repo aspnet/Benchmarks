@@ -10,12 +10,12 @@ namespace Benchmarks.Data
         public ApplicationDbContext(DbContextOptions options)
             : base(options)
         {
-            Database.AutoTransactionsEnabled = false;
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public DbSet<World> World { get; set; }
+
         public DbSet<Fortune> Fortune { get; set; }
     }
 }

@@ -1,24 +1,23 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
-    <CoreFxVersion>4.3.0</CoreFxVersion>
-    <DapperVersion>1.*</DapperVersion>
+    <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
+    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
 
     <!--
-      * Once Npgsql 3.2.0 or later is stable, the required version should be changed to "3.*".
-      * For now, we need to use "3.2.0-*" since there's no way to float the latest pre-release version.
+      Following properties are specific to src/Benchmarks/Benchmarks.csproj.
+      Separate to ease testing of earlier releases.
     -->
-    <NpgsqlVersion>3.2.0-*</NpgsqlVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>1.*</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-
-    <!--
-      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
-        * https://github.com/dotnet/corefx/issues/18406
-      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
-    -->
-    <SqlClientVersion>4.4.0-*</SqlClientVersion>
+    <BenchmarksAspNetCoreVersion>$(AspNetCoreVersion)</BenchmarksAspNetCoreVersion>
+    <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
+    <BenchmarksNETStandardLibraryNETFrameworkVersion>$(NETStandardLibraryNETFrameworkVersion)</BenchmarksNETStandardLibraryNETFrameworkVersion>
+    <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
+    <DapperVersion>1.*</DapperVersion>
+    <NpgsqlVersion>3.*</NpgsqlVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>2.0.0-*</NpgsqlEntityFrameworkCorePostgreSQLVersion>
   </PropertyGroup>
 </Project>

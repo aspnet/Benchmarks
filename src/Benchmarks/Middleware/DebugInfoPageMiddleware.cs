@@ -42,6 +42,7 @@ namespace Benchmarks.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             httpContext.Response.ContentType = "text/html";
+            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
 
             await httpContext.Response.WriteAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
             await httpContext.Response.WriteAsync("<h1>ASP.NET Core Benchmarks</h1>");
