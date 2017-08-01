@@ -100,10 +100,10 @@ namespace BenchmarkServer
 
         private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
         {
-            string dotnetInstallDir = null;
+            string dotnetHome = null;
             try
             {
-                dotnetInstallDir = GetTempDir();
+                dotnetHome = GetTempDir();
 
                 Process process = null;
                 string tempDir = null;
@@ -133,10 +133,10 @@ namespace BenchmarkServer
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
 
-                                var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetInstallDir);
+                                var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
                                 Debug.Assert(process == null);
-                                process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetInstallDir);
+                                process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
                             }
                             catch (Exception e)
                             {
@@ -185,14 +185,14 @@ namespace BenchmarkServer
             }
             finally
             {
-                if (dotnetInstallDir != null)
+                if (dotnetHome != null)
                 {
-                    DeleteDir(dotnetInstallDir);
+                    DeleteDir(dotnetHome);
                 }
             }
         }
 
-        private static string CloneRestoreAndBuild(string path, ServerJob job, string dotnetInstallDir)
+        private static string CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
@@ -233,9 +233,9 @@ namespace BenchmarkServer
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
-                ["DOTNET_HOME"] = dotnetInstallDir,
+                ["DOTNET_HOME"] = dotnetHome,
                 // for backward compatibility with aspnet/KoreBuild
-                ["DOTNET_INSTALL_DIR"] = dotnetInstallDir,
+                ["DOTNET_INSTALL_DIR"] = dotnetHome,
             };
 
             if (_isWindows)
@@ -250,7 +250,7 @@ namespace BenchmarkServer
 
             // Build and Restore
             var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
-            var dotnetExecutable = Path.Combine(dotnetInstallDir, "dotnet");
+            var dotnetExecutable = GetDotNetExecutable(dotnetHome);
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
@@ -362,9 +362,16 @@ namespace BenchmarkServer
             }
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetInstallDir)
+        private static string GetDotNetExecutable(string dotnetHome)
         {
-            var filename = Path.Combine(dotnetInstallDir, "dotnet");
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? Path.Combine(dotnetHome, RuntimeInformation.ProcessArchitecture.ToString(), "dotnet.exe")
+                : Path.Combine(dotnetHome, "dotnet");
+        }
+
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
+        {
+            var filename = GetDotNetExecutable(dotnetHome);
             var arguments = "bin/Release/netcoreapp2.0/Benchmarks.dll" +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +

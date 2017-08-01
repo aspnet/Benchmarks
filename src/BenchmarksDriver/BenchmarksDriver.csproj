@@ -18,6 +18,4 @@
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
-  <Target Name="GetOutputPath" Returns="$(OutputPath)$(AssemblyName).dll" />
-
 </Project>
