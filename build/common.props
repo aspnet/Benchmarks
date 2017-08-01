@@ -7,6 +7,8 @@
     <RepositoryUrl>https://github.com/aspnet/Benchmarks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <!-- this repo does not produce NuGet packages -->
+    <IsPackable>false</IsPackable>
 
     <!-- Repo contains only test code -->
     <EnableApiCheck>false</EnableApiCheck>
@@ -14,10 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
   </ItemGroup>
 
 </Project>
