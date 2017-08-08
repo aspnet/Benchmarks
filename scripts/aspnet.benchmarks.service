@@ -1,0 +1,19 @@
+[Unit]
+Description=ASP.NET Core Benchmarks Server
+
+# Start after network starts initializing; stop before network is stopped
+After=network.target
+
+[Service]
+Environment=NUGET_PACKAGES=/home/aspnet/.nuget/packages
+Environment=NUGET_HTTP_CACHE_PATH=/home/aspnet/.local/share/NuGet/v3-cache
+ExecStart=/home/aspnet/.dotnet/dotnet bin/Debug/netcoreapp2.0/BenchmarksServer.dll --hostname 10.0.0.102
+
+Restart=on-failure
+RestartSec=5
+
+User=aspnet
+WorkingDirectory=/home/aspnet/src/benchmarks/src/BenchmarksServer
+
+[Install]
+WantedBy=multi-user.target
