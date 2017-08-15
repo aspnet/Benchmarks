@@ -1,9 +1,8 @@
 [Unit]
-Description=ASP.NET Benchmarks Server
+Description=ASP.NET Core Benchmarks Server
 
-# Start after network has at least a bound IP address; stop before network is stopped
+# Start after network starts initializing; stop before network is stopped
 After=network.target
-After=network-online.target
 
 [Service]
 Environment=NUGET_PACKAGES=/home/aspnet/.nuget/packages
