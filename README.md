@@ -88,7 +88,7 @@ The machines are connected to an 8-port [Netgear XS708E](http://www.netgear.com/
 We're using [wrk](https://github.com/wg/wrk) to generate load from one of our Linux boxes (usually perf03).
 
 # Results
-For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded. Detailed results are tracked in the [results spreadsheet](https://github.com/aspnet/benchmarks/blob/master/results/Results.xlsx).
+For each stack, variations of the load parameters and multiple runs are tested and the highest result is recorded. Detailed results are tracked at https://aka.ms/aspnet/benchmarks.
 
 ## Experimental Baselines
 
