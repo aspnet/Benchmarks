@@ -12,6 +12,6 @@ docker run \
     --network host \
     benchmarks \
     /root/.dotnet/dotnet \
-    /Benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
+    /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
     -n $server_ip \
     | tee /tmp/benchmarks-server.log

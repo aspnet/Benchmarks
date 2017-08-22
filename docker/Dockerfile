@@ -2,11 +2,10 @@
 # wrk 4.0.2-2 is available in debian:stable
 FROM debian:testing
 
+# .NET Core dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
-        \
-# .NET Core dependencies
         libc6 \
         libcurl3 \
         libgcc1 \
@@ -22,18 +21,18 @@ RUN apt-get update \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        git \
 # KoreBuild dependencies
         unzip \
         wget \
 # BenchmarksClient dependencies
         wrk \
-#BenchmarksServer dependencies (pkill)
+# BenchmarksServer dependencies
+        git \
         procps \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/aspnet/Benchmarks
-
 ENV KOREBUILD_SKIP_OLD_RUNTIME_INSTALL 1
 
-RUN /Benchmarks/build.sh
+WORKDIR /benchmarks
+COPY . .
+RUN /benchmarks/build.sh
