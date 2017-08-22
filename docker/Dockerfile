@@ -1,12 +1,15 @@
-FROM microsoft/dotnet-nightly:2.1.0-preview1-runtime-deps-jessie
+FROM microsoft/dotnet-nightly:2.1.0-preview1-runtime-deps-stretch
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
         unzip \
         wget \
+        wrk \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/aspnet/Benchmarks
+
+ENV KOREBUILD_SKIP_OLD_RUNTIME_INSTALL 1
 
 RUN /Benchmarks/build.sh
