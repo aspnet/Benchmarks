@@ -10,5 +10,3 @@ RUN apt-get update \
 RUN git clone https://github.com/aspnet/Benchmarks
 
 RUN /Benchmarks/build.sh
-
-ENTRYPOINT ["/root/.dotnet/dotnet", "/Benchmarks/src/BenchmarksClient/bin/Debug/netcoreapp2.0/BenchmarksClient.dll"]
