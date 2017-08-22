@@ -1,1 +1,1 @@
-docker build -t benchmarks .
+docker build "$@" -t benchmarks .
