@@ -5,16 +5,13 @@ RUN apt-get update \
     expect \
     && rm -rf /var/lib/apt/lists/*
 
-ADD fortunesbench.sh /
+ADD fortunesbench.sh fortunes.sql /
 RUN chmod +x /fortunesbench.sh
 
-ADD fortunes.sql /
-
-ENV PGBENCH_HOST localhost
-ENV PGBENCH_THREADS 1
-ENV PGBENCH_CONNECTIONS 1
-
-ENV PGBENCH_DURATION 10
-ENV PGBENCH_QUERYMODE prepared
+ENV PGBENCH_HOST=localhost \
+    PGBENCH_THREADS 1 \
+    PGBENCH_CONNECTIONS 1 \
+    PGBENCH_DURATION 10 \
+    PGBENCH_QUERYMODE prepared
 
 ENTRYPOINT ["/fortunesbench.sh"]
