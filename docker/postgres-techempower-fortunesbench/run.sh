@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-#echo on
-set -x
-
 if (( $# != 1 ))
 then
     echo "Usage: run.sh server-name-or-ip"
@@ -12,6 +9,9 @@ fi
 host=$1
 threads=$(nproc --all)
 connections=$(($threads * 8))
+
+#echo on
+set -x
 
 docker run \
     -it \
