@@ -17,4 +17,4 @@ ENV PGBENCH_CONNECTIONS 1
 ENV PGBENCH_DURATION 10
 ENV PGBENCH_QUERYMODE prepared
 
-CMD ["/fortunesbench.sh"]
+ENTRYPOINT ["/fortunesbench.sh"]
