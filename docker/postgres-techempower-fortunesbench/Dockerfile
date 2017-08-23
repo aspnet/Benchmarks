@@ -9,9 +9,9 @@ ADD fortunesbench.sh fortunes.sql /
 RUN chmod +x /fortunesbench.sh
 
 ENV PGBENCH_HOST=localhost \
-    PGBENCH_THREADS 1 \
-    PGBENCH_CONNECTIONS 1 \
-    PGBENCH_DURATION 10 \
-    PGBENCH_QUERYMODE prepared
+    PGBENCH_THREADS=1 \
+    PGBENCH_CONNECTIONS=1 \
+    PGBENCH_DURATION=10 \
+    PGBENCH_QUERYMODE=prepared
 
 ENTRYPOINT ["/fortunesbench.sh"]
