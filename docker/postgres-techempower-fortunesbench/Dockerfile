@@ -1,6 +1,9 @@
 FROM postgres
 
-RUN apt-get update && apt-get install -y --no-install-recommends expect && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    expect \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD fortunesbench.sh /
 RUN chmod +x /fortunesbench.sh
