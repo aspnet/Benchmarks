@@ -12,5 +12,4 @@ docker run \
     --restart always \
     benchmarks \
     /root/.dotnet/dotnet \
-    /benchmarks/src/BenchmarksClient/bin/Debug/netcoreapp2.0/BenchmarksClient.dll \
-    | tee /tmp/benchmarks-client.log
+    /benchmarks/src/BenchmarksClient/bin/Debug/netcoreapp2.0/BenchmarksClient.dll
