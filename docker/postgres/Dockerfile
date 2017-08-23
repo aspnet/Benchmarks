@@ -1,4 +1,4 @@
-FROM postgres:latest
+FROM postgres
 
 ENV POSTGRES_USER benchmarkdbuser
 ENV POSTGRES_PASSWORD benchmarkdbpass
