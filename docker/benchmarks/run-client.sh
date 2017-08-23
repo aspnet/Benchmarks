@@ -4,10 +4,10 @@
 set -x
 
 docker run \
-    -it \
-    --rm \
-    --mount type=bind,source=/mnt,target=/tmp \
+    -d \
+    --name benchmarks-client \
     --network host \
+    --restart always \
     benchmarks \
     /root/.dotnet/dotnet \
     /benchmarks/src/BenchmarksClient/bin/Debug/netcoreapp2.0/BenchmarksClient.dll \

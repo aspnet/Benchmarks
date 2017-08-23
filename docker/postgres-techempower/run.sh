@@ -4,8 +4,8 @@
 set -x
 
 docker run \
-    -it \
-    --rm \
-    --mount type=bind,source=/mnt,target=/tmp \
+    -d \
+    --name postgres-techempower \
     --network host \
+    --restart always \
     postgres-techempower

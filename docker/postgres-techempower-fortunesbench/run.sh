@@ -16,7 +16,6 @@ set -x
 docker run \
     -it \
     --rm \
-    --mount type=bind,source=/mnt,target=/tmp \
     --network host \
     -e PGBENCH_HOST=$host \
     -e PGBENCH_THREADS=$threads \
