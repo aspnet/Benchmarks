@@ -6,6 +6,7 @@ set -x
 if (( $# != 1 ))
 then
     echo "Usage: run.sh server-name-or-ip"
+    exit 1
 fi
 
 host=$1
