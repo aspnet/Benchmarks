@@ -6,9 +6,9 @@
 
 FROM debian:buster
 
-# .NET Core dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+# .NET Core dependencies
         ca-certificates \
         libc6 \
         libcurl3 \
@@ -21,10 +21,6 @@ RUN apt-get update \
         libunwind8 \
         libuuid1 \
         zlib1g \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
 # KoreBuild dependencies
         unzip \
         wget \
