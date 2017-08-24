@@ -35,7 +35,7 @@ RUN apt-get update \
         procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Runtimes prior to 2.0.0 are not supported on Debian Stretch, but they should also
+# Runtimes prior to 2.0.0 are not supported on debian:stretch (or later), but they should
 # not be required for Benchmarks
 ENV KOREBUILD_SKIP_OLD_RUNTIME_INSTALL 1
 
