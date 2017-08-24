@@ -375,8 +375,8 @@ namespace BenchmarksDriver
                     await WriteResultsToSql(
                         connectionString: sqlConnectionString,
                         scenario: scenario,
-                        hardware: serverJob.Hardware,
-                        operatingSystem: serverJob.OperatingSystem,
+                        hardware: serverJob.Hardware.Value,
+                        operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
                         sources: serverJob.Sources,
                         connectionFilter: serverJob.ConnectionFilter,
