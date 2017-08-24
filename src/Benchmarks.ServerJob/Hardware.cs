@@ -1,4 +1,4 @@
-﻿namespace BenchmarksDriver
+﻿namespace Benchmarks.ServerJob
 {
     public enum Hardware
     {

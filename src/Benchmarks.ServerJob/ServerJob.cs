@@ -15,6 +15,12 @@ namespace Benchmarks.ServerJob
 
         public string ConnectionFilter { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Hardware Hardware { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public OperatingSystem OperatingSystem { get; set; }
+
         public int? KestrelThreadCount { get; set; }
 
         public bool? KestrelThreadPoolDispatching { get; set; }

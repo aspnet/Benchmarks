@@ -1,19 +1,49 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
+
+using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
 
 namespace BenchmarkServer.Controllers
 {
     [Route("[controller]")]
     public class JobsController : Controller
     {
+        private static readonly Hardware _hardware;
+        private static readonly OperatingSystem _operatingSystem;
+
         private readonly IRepository<ServerJob> _jobs;
+
+        static JobsController()
+        {
+            var azureLogFile = (string)null;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                _operatingSystem = OperatingSystem.Linux;
+                azureLogFile = Path.Combine("var", "log", "waagent.log");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _operatingSystem = OperatingSystem.Windows;
+                azureLogFile = Path.Combine("%HOMEDRIVE%", "WindowsAzure", "Logs", "WaAppAgent.log");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
+            }
+
+            _hardware = System.IO.File.Exists(azureLogFile) ? Hardware.Cloud : Hardware.Physical;
+        }
 
         public JobsController(IRepository<ServerJob> jobs)
         {
@@ -48,6 +78,8 @@ namespace BenchmarkServer.Controllers
                 return BadRequest();
             }
 
+            job.Hardware = _hardware;
+            job.OperatingSystem = _operatingSystem;
             job = _jobs.Add(job);
 
             Response.Headers["Location"] = $"/jobs/{job.Id}";
