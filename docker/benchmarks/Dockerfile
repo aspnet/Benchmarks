@@ -1,6 +1,8 @@
-# wrk is currently broken in debian:stretch (4.0.2-1+b1), but fixed in debian:buster (4.0.2-2).
-# This requires us to start from debian:buster and manually install the .NET Core dependencies,
-# since there is currently no "2.1.0-preview1-runtime-deps" image based on debian:buster.
+# The ideal base image would be "microsoft/dotnet-nightly:2.1.0-preview1-runtime-deps-stretch".
+# However, the wrk package is currently broken in "debian:stretch" (4.0.2-1+b1), but fixed in
+# "debian:buster" (4.0.2-2).  For now, it's easier to use "debian:buster" as the base image and 
+# manually install the .NET Core dependencies, rather than using "microsoft/dotnet-nightly" and
+# compiling wrk from source.
 
 FROM debian:buster
 
