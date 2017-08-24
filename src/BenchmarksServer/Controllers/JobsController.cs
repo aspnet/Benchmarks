@@ -30,12 +30,12 @@ namespace BenchmarkServer.Controllers
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 _operatingSystem = OperatingSystem.Linux;
-                azureLogFile = Path.Combine("var", "log", "waagent.log");
+                azureLogFile = @"/var/log/waagent.log";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _operatingSystem = OperatingSystem.Windows;
-                azureLogFile = Path.Combine("%HOMEDRIVE%", "WindowsAzure", "Logs", "WaAppAgent.log");
+                azureLogFile = @"%HOMEDRIVE%\WindowsAzure\Logs\WaAppAgent.log";
             }
             else
             {
