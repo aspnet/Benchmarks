@@ -25,7 +25,7 @@ namespace BenchmarkServer.Controllers
 
         static JobsController()
         {
-            var azureLogFile = (string)null;
+            string azureLogFile;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
