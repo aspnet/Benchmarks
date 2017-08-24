@@ -1,4 +1,4 @@
-# Benchmarks\Docker
+# Benchmarks in Docker
 
 ## BenchmarksClient (Load Generator)
 ```
