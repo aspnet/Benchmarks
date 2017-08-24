@@ -15,7 +15,7 @@ using Benchmarks.ServerJob;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 
-namespace BenchmarkDriver
+namespace BenchmarksDriver
 {
     public class Program
     {
@@ -97,6 +97,8 @@ namespace BenchmarkDriver
                 "URL of benchmark server", CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
+            var hardwareOption = app.Option("--hardware",
+                $"Hardware (Physical or Cloud).  Required if --{sqlConnectionStringOption.LongName} is set.", CommandOptionType.SingleValue);
             var verboseOption = app.Option("-v|--verbose",
                 "Verbose output", CommandOptionType.NoValue);
 
@@ -162,6 +164,26 @@ namespace BenchmarkDriver
                 var server = serverOption.Value();
                 var client = clientOption.Value();
                 var sqlConnectionString = sqlConnectionStringOption.Value();
+
+                if (sqlConnectionStringOption.HasValue() && !hardwareOption.HasValue())
+                {
+                    Console.WriteLine($"Option --{sqlConnectionStringOption.LongName} requires option --{hardwareOption.LongName}.");
+                    return 2;
+                }
+
+                var hardware = (Hardware?)null;
+                if (hardwareOption.HasValue())
+                {
+                    if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardwareResult))
+                    {
+                        hardware = hardwareResult;
+                    }
+                    else
+                    {
+                        app.ShowHelp();
+                        return 2;
+                    }
+                }
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
                     !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out Scenario scenario) ||
@@ -283,7 +305,7 @@ namespace BenchmarkDriver
                     _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, hardware, serverJob, path).Result;
             });
 
             return app.Execute(args);
@@ -293,6 +315,7 @@ namespace BenchmarkDriver
             Uri serverUri,
             Uri clientUri,
             string sqlConnectionString,
+            Hardware? hardware,
             ServerJob serverJob,
             string path)
         {
@@ -362,6 +385,7 @@ namespace BenchmarkDriver
                 {
                     await WriteResultsToSql(
                         connectionString: sqlConnectionString,
+                        hardware: hardware.Value,
                         scenario: scenario,
                         scheme: serverJob.Scheme,
                         sources: serverJob.Sources,
@@ -478,6 +502,7 @@ namespace BenchmarkDriver
 
         private static async Task WriteResultsToSql(
             string connectionString,
+            Hardware hardware,
             Scenario scenario,
             Scheme scheme,
             IEnumerable<Source> sources,
@@ -504,6 +529,7 @@ namespace BenchmarkDriver
                     CREATE TABLE [dbo].[AspNetBenchmarks](
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [DateTime] [datetimeoffset](7) NOT NULL,
+                        [Hardware] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
@@ -529,6 +555,7 @@ namespace BenchmarkDriver
                 @"
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
+                           ,[Hardware]
                            ,[Scenario]
                            ,[Framework]
                            ,[Scheme]
@@ -548,6 +575,7 @@ namespace BenchmarkDriver
                            ,[RequestsPerSecond])
                      VALUES
                            (@DateTime
+                           ,@Hardware
                            ,@Scenario
                            ,@Framework
                            ,@Scheme
@@ -580,6 +608,7 @@ namespace BenchmarkDriver
                 {
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
