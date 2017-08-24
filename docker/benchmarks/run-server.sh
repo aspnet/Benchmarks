@@ -23,5 +23,5 @@ docker run \
     benchmarks \
     /root/.dotnet/dotnet \
     /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
-    -n $server_ip
+    -n $server_ip \
     --hardware $hardware
