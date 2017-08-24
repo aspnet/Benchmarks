@@ -16,10 +16,10 @@ namespace Benchmarks.ServerJob
         public string ConnectionFilter { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Hardware Hardware { get; set; }
+        public Hardware? Hardware { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public OperatingSystem OperatingSystem { get; set; }
+        public OperatingSystem? OperatingSystem { get; set; }
 
         public int? KestrelThreadCount { get; set; }
 

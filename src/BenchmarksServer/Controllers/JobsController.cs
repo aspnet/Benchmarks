@@ -11,39 +11,12 @@ using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 
-using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
-
 namespace BenchmarkServer.Controllers
 {
     [Route("[controller]")]
     public class JobsController : Controller
     {
-        private static readonly Hardware _hardware;
-        private static readonly OperatingSystem _operatingSystem;
-
         private readonly IRepository<ServerJob> _jobs;
-
-        static JobsController()
-        {
-            string azureLogFile;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                _operatingSystem = OperatingSystem.Linux;
-                azureLogFile = @"/var/log/waagent.log";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                _operatingSystem = OperatingSystem.Windows;
-                azureLogFile = @"%HOMEDRIVE%\WindowsAzure\Logs\WaAppAgent.log";
-            }
-            else
-            {
-                throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
-            }
-
-            _hardware = System.IO.File.Exists(azureLogFile) ? Hardware.Cloud : Hardware.Physical;
-        }
 
         public JobsController(IRepository<ServerJob> jobs)
         {
@@ -78,8 +51,8 @@ namespace BenchmarkServer.Controllers
                 return BadRequest();
             }
 
-            job.Hardware = _hardware;
-            job.OperatingSystem = _operatingSystem;
+            job.Hardware = Startup.Hardware;
+            job.OperatingSystem = Startup.OperatingSystem;
             job = _jobs.Add(job);
 
             Response.Headers["Location"] = $"/jobs/{job.Id}";

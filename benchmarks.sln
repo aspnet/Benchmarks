@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26820.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 EndProject
@@ -33,6 +33,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\repo.targets = build\repo.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B27-3CBA-4581-893A-7F6DB5527371}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{01457A29-0D92-45A3-A37A-A6381E766D67}"
+	ProjectSection(SolutionItems) = preProject
+		docker\benchmarks\build.sh = docker\benchmarks\build.sh
+		docker\benchmarks\Dockerfile = docker\benchmarks\Dockerfile
+		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
+		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
 	EndProjectSection
 EndProject
 Global
@@ -121,5 +131,9 @@ Global
 		{0748A92D-3AC6-4406-B09C-0BF07A030DD5} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961} = {C2EB60CC-CA5A-4E49-A3F8-4432FB117869}
 		{E07EF419-FB9D-4A20-AD4B-C02C13636BA8} = {BAF239DE-04E9-428E-A6D6-98D4C6CFB9E3}
+		{01457A29-0D92-45A3-A37A-A6381E766D67} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
 	EndGlobalSection
 EndGlobal

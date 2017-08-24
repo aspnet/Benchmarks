@@ -19,6 +19,8 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
 
+using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
+
 namespace BenchmarkServer
 {
     public class Startup
@@ -30,7 +32,25 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
-        private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        public static OperatingSystem OperatingSystem { get; private set; }
+        public static Hardware Hardware { get; private set; }
+
+        static Startup()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                OperatingSystem = OperatingSystem.Linux;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                OperatingSystem = OperatingSystem.Windows;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
+            }
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -59,9 +79,17 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hostnameOption = app.Option("-n|--hostname", $"Hostname for benchmark server.  Default is '{_defaultHostname}'.",
                 CommandOptionType.SingleValue);
+            var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
+                CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
+                if (!Enum.TryParse(hardwareOption.Value(), out Hardware Hardware))
+                {
+                    Console.WriteLine($"Option --{hardwareOption.LongName} is required.");
+                    return 2;
+                }
+
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
                 return Run(url, hostname).Result;
@@ -119,7 +147,7 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (!_isWindows && job.WebHost != WebHost.Kestrel)
+                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.Kestrel)
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
@@ -159,7 +187,7 @@ namespace BenchmarkServer
                             if (process != null)
                             {
                                 // TODO: Replace with managed xplat version of kill process tree
-                                if (_isWindows)
+                                if (OperatingSystem == OperatingSystem.Windows)
                                 {
                                     ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
                                 }
@@ -238,7 +266,7 @@ namespace BenchmarkServer
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
             };
 
-            if (_isWindows)
+            if (OperatingSystem == OperatingSystem.Windows)
             {
                 ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot, environmentVariables: env);
             }

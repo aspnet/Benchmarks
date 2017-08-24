@@ -5,6 +5,13 @@ set -x
 
 server_ip=$(ip route get 1 | awk '{print $NF;exit}')
 
+if [ -e /var/log/waagent.log ]
+then
+    hardware=Cloud
+else
+    hardware=Physical
+fi
+
 docker run \
     -d \
     --log-opt max-size=10m \
@@ -17,3 +24,4 @@ docker run \
     /root/.dotnet/dotnet \
     /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
     -n $server_ip
+    --hardware $hardware

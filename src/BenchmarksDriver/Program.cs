@@ -329,6 +329,16 @@ namespace BenchmarksDriver
 
                     serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                    if (!serverJob.Hardware.HasValue)
+                    {
+                        throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
+                    }
+
+                    if (!serverJob.OperatingSystem.HasValue)
+                    {
+                        throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
+                    }
+
                     if (serverJob.State == ServerState.Running)
                     {
                         serverBenchmarkUri = serverJob.Url;
