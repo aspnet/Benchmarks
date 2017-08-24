@@ -36,6 +36,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B27-3CBA-4581-893A-7F6DB5527371}"
+	ProjectSection(SolutionItems) = preProject
+		docker\README.md = docker\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{01457A29-0D92-45A3-A37A-A6381E766D67}"
 	ProjectSection(SolutionItems) = preProject
@@ -43,6 +46,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 		docker\benchmarks\Dockerfile = docker\benchmarks\Dockerfile
 		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
 		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower", "postgres-techempower", "{8520802B-DCBB-42DE-866C-C7F533129071}"
+	ProjectSection(SolutionItems) = preProject
+		docker\postgres-techempower\build.sh = docker\postgres-techempower\build.sh
+		docker\postgres-techempower\create-postgres.sql = docker\postgres-techempower\create-postgres.sql
+		docker\postgres-techempower\Dockerfile = docker\postgres-techempower\Dockerfile
+		docker\postgres-techempower\max_connections.sh = docker\postgres-techempower\max_connections.sh
+		docker\postgres-techempower\run.sh = docker\postgres-techempower\run.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower-fortunesbench", "postgres-techempower-fortunesbench", "{6B2BF265-7141-40E2-9BEC-DAFB9547B942}"
+	ProjectSection(SolutionItems) = preProject
+		docker\postgres-techempower-fortunesbench\build.sh = docker\postgres-techempower-fortunesbench\build.sh
+		docker\postgres-techempower-fortunesbench\Dockerfile = docker\postgres-techempower-fortunesbench\Dockerfile
+		docker\postgres-techempower-fortunesbench\fortunes.sql = docker\postgres-techempower-fortunesbench\fortunes.sql
+		docker\postgres-techempower-fortunesbench\fortunesbench.sh = docker\postgres-techempower-fortunesbench\fortunesbench.sh
+		docker\postgres-techempower-fortunesbench\run.sh = docker\postgres-techempower-fortunesbench\run.sh
 	EndProjectSection
 EndProject
 Global
@@ -132,6 +153,8 @@ Global
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961} = {C2EB60CC-CA5A-4E49-A3F8-4432FB117869}
 		{E07EF419-FB9D-4A20-AD4B-C02C13636BA8} = {BAF239DE-04E9-428E-A6D6-98D4C6CFB9E3}
 		{01457A29-0D92-45A3-A37A-A6381E766D67} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{8520802B-DCBB-42DE-866C-C7F533129071} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{6B2BF265-7141-40E2-9BEC-DAFB9547B942} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
