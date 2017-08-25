@@ -33,7 +33,7 @@ namespace BenchmarkServer
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
 
-        public static OperatingSystem OperatingSystem { get; private set; }
+        public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
 
         static Startup()
