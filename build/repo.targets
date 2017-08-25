@@ -1,41 +1,46 @@
 <Project>
   <ItemGroup>
+    <CloudScenarios Include="-n Plaintext" />
+    <CloudScenarios Include="-n Json" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <!-- Optimal ThreadCount for current hardware -->
-    <Scenarios Include="-n Plaintext --kestrelThreadCount 2" />
+    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2" />
 
-    <Scenarios Include="-n Plaintext --kestrelTransport Sockets" />
-    <Scenarios Include="-n Plaintext --webHost HttpSys" />
-    <Scenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter" />
+    <PhysicalScenarios Include="-n Plaintext --kestrelTransport Sockets" />
+    <PhysicalScenarios Include="-n Plaintext --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter" />
 
-    <Scenarios Include="-n Plaintext -m https" />
-    <Scenarios Include="-n Plaintext -m https --kestrelTransport Sockets" />
-    <Scenarios Include="-n Plaintext -m https --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Plaintext -m https" />
+    <PhysicalScenarios Include="-n Plaintext -m https --kestrelTransport Sockets" />
+    <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys" />
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
-    <Scenarios Include="-n Json" />
+    <PhysicalScenarios Include="-n Json" />
 
-    <Scenarios Include="-n Json --kestrelTransport Sockets" />
-    <Scenarios Include="-n Json --webHost HttpSys" />
-    <Scenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter" />
+    <PhysicalScenarios Include="-n Json --kestrelTransport Sockets" />
+    <PhysicalScenarios Include="-n Json --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter" />
 
-    <Scenarios Include="-n Json -m https" />
-    <Scenarios Include="-n Json -m https --kestrelTransport Sockets" />
-    <Scenarios Include="-n Json -m https --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Json -m https" />
+    <PhysicalScenarios Include="-n Json -m https --kestrelTransport Sockets" />
+    <PhysicalScenarios Include="-n Json -m https --webHost HttpSys" />
 
-    <Scenarios Include="-n StaticFiles --path plaintext" />
+    <PhysicalScenarios Include="-n StaticFiles --path plaintext" />
 
-    <Scenarios Include="-n MvcPlaintext" />
+    <PhysicalScenarios Include="-n MvcPlaintext" />
 
-    <Scenarios Include="-n MvcJson" />
+    <PhysicalScenarios Include="-n MvcJson" />
 
-    <Scenarios Include="-n MemoryCachePlaintext" />
-    <Scenarios Include="-n MemoryCachePlaintextSetRemove" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintext" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove" />
 
-    <Scenarios Include="-n ResponseCachingPlaintextCached" />
-    <Scenarios Include="-n ResponseCachingPlaintextCached --method DELETE" />
-    <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache" />
-    <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache" />
-    <Scenarios Include="-n ResponseCachingPlaintextVaryByCached" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --method DELETE" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -43,9 +48,6 @@
   </PropertyGroup>
 
   <Target Name="TestBenchmarks" DependsOnTargets="$(BenchmarksDependsOn)">
-    <Error Text="BENCHMARK_SERVER must be set" Condition="'$(BENCHMARK_SERVER)' == ''" />
-    <Error Text="BENCHMARK_CLIENT must be set" Condition="'$(BENCHMARK_CLIENT)' == ''" />
-
     <MSBuild Projects="$(RepositoryRoot)src\BenchmarksDriver\BenchmarksDriver.csproj"
       Targets="GetTargetPath"
       Properties="Configuration=$(Configuration)">
@@ -57,16 +59,20 @@
     </GetDotNetHost>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Condition="'$(BENCHMARK_SERVER_CLOUD)' != '' AND '$(BENCHMARK_CLIENT_CLOUD)' != ''"
       Targets="RunBenchmark"
-      Properties="Scenario=%(Scenarios.Identity);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
+      Properties="Scenario=%(CloudScenarios.Identity);Server=$(BENCHMARK_SERVER_CLOUD);Client=$(BENCHMARK_CLIENT_CLOUD);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Condition="'$(BENCHMARK_SERVER_PHYSICAL)' != '' AND '$(BENCHMARK_CLIENT_PHYSICAL)' != ''"
+      Targets="RunBenchmark"
+      Properties="Scenario=%(PhysicalScenarios.Identity);Server=$(BENCHMARK_SERVER_PHYSICAL);Client=$(BENCHMARK_CLIENT_PHYSICAL);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
   </Target>
 
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) </RunArgs>
-      <RunArgs>$(RunArgs) -s $(BENCHMARK_SERVER)</RunArgs>
-      <RunArgs>$(RunArgs) -c $(BENCHMARK_CLIENT)</RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>

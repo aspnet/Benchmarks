@@ -15,7 +15,9 @@ using Benchmarks.ServerJob;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 
-namespace BenchmarkDriver
+using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
+
+namespace BenchmarksDriver
 {
     public class Program
     {
@@ -327,6 +329,16 @@ namespace BenchmarkDriver
 
                     serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                    if (!serverJob.Hardware.HasValue)
+                    {
+                        throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
+                    }
+
+                    if (!serverJob.OperatingSystem.HasValue)
+                    {
+                        throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
+                    }
+
                     if (serverJob.State == ServerState.Running)
                     {
                         serverBenchmarkUri = serverJob.Url;
@@ -363,6 +375,8 @@ namespace BenchmarkDriver
                     await WriteResultsToSql(
                         connectionString: sqlConnectionString,
                         scenario: scenario,
+                        hardware: serverJob.Hardware.Value,
+                        operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
                         sources: serverJob.Sources,
                         connectionFilter: serverJob.ConnectionFilter,
@@ -479,6 +493,8 @@ namespace BenchmarkDriver
         private static async Task WriteResultsToSql(
             string connectionString,
             Scenario scenario,
+            Hardware hardware,
+            OperatingSystem operatingSystem,
             Scheme scheme,
             IEnumerable<Source> sources,
             string connectionFilter,
@@ -505,6 +521,8 @@ namespace BenchmarkDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
+                        [Hardware] [nvarchar](max) NOT NULL,
+                        [OperatingSystem] [nvarchar](max) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
                         [Sources] [nvarchar](max) NULL,
@@ -530,6 +548,8 @@ namespace BenchmarkDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Scenario]
+                           ,[Hardware]
+                           ,[OperatingSystem]
                            ,[Framework]
                            ,[Scheme]
                            ,[Sources]
@@ -549,6 +569,8 @@ namespace BenchmarkDriver
                      VALUES
                            (@DateTime
                            ,@Scenario
+                           ,@Hardware
+                           ,@OperatingSystem
                            ,@Framework
                            ,@Scheme
                            ,@Sources
@@ -581,6 +603,8 @@ namespace BenchmarkDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Scenario", scenario.ToString());
+                    p.AddWithValue("@Hardware", hardware.ToString());
+                    p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@Sources", sources.Any() ? (object)ConvertToSqlString(sources) : DBNull.Value);

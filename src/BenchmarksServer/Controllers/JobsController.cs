@@ -1,9 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
@@ -48,6 +51,8 @@ namespace BenchmarkServer.Controllers
                 return BadRequest();
             }
 
+            job.Hardware = Startup.Hardware;
+            job.OperatingSystem = Startup.OperatingSystem;
             job = _jobs.Add(job);
 
             Response.Headers["Location"] = $"/jobs/{job.Id}";
