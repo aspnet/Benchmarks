@@ -81,6 +81,8 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
+            var sqlConnectionStringOption = app.Option("-q|--sql",
+                "Connection string of SQL Database used by Benchmarks app", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -96,13 +98,13 @@ namespace BenchmarkServer
 
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
-                return Run(url, hostname).Result;
+                return Run(url, hostname, sqlConnectionStringOption.Value()).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string hostname)
+        private static async Task<int> Run(string url, string hostname, string sqlConnectionString)
         {
             var hostTask = Task.Run(() =>
             {
@@ -116,7 +118,7 @@ namespace BenchmarkServer
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, sqlConnectionString, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -130,7 +132,7 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, string sqlConnectionString, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
             try
@@ -168,7 +170,8 @@ namespace BenchmarkServer
                                 var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
                                 Debug.Assert(process == null);
-                                process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
+                                process = StartProcess(hostname, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
+                                    job, dotnetHome);
                             }
                             catch (Exception e)
                             {
@@ -401,7 +404,8 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
+        private static Process StartProcess(string hostname, string sqlConnectionString, string benchmarksRepo,
+            ServerJob job, string dotnetHome)
         {
             var filename = GetDotNetExecutable(dotnetHome);
             var arguments = "bin/Release/netcoreapp2.0/Benchmarks.dll" +
@@ -444,6 +448,11 @@ namespace BenchmarkServer
                 EnableRaisingEvents = true
             };
             process.StartInfo.Environment.Add("COREHOST_SERVER_GC", "1");
+
+            if (!string.IsNullOrEmpty(sqlConnectionString))
+            {
+                process.StartInfo.Environment.Add("ConnectionString", sqlConnectionString);
+            }
 
             process.OutputDataReceived += (_, e) =>
             {

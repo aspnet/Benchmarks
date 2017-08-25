@@ -52,6 +52,15 @@ namespace BenchmarksDriver
             },
         };
 
+        private static readonly ClientJob _htmlJob = new ClientJob(_baseJob)
+        {
+            Headers = new string[] {
+                "Host: localhost",
+                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Connection: keep-alive"
+            },
+        };
+
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
@@ -71,6 +80,12 @@ namespace BenchmarksDriver
                 } },
                 { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
                 { Scenario.StaticFiles, _plaintextJob },
+                { Scenario.DbFortunesRaw, new ClientJob(_htmlJob) },
+                { Scenario.DbFortunesDapper, new ClientJob(_htmlJob) },
+                { Scenario.DbFortunesEf, new ClientJob(_htmlJob) },
+                { Scenario.MvcDbFortunesRaw, new ClientJob(_htmlJob) },
+                { Scenario.MvcDbFortunesDapper, new ClientJob(_htmlJob) },
+                { Scenario.MvcDbFortunesEf, new ClientJob(_htmlJob) },
             };
 
         public static int Main(string[] args)
