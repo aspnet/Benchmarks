@@ -1,7 +1,11 @@
 <Project>
   <ItemGroup>
+    <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext" />
+    <CloudScenarios Include="-n MvcPlaintext" />
+    
     <CloudScenarios Include="-n Json" />
+    <CloudScenarios Include="-n MvcJson" />
   </ItemGroup>
   
   <ItemGroup>
