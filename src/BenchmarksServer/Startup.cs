@@ -84,7 +84,11 @@ namespace BenchmarkServer
 
             app.OnExecute(() =>
             {
-                if (!Enum.TryParse(hardwareOption.Value(), out Hardware Hardware))
+                if (Enum.TryParse(hardwareOption.Value(), out Hardware hardware))
+                {
+                    Hardware = hardware;
+                }
+                else
                 {
                     Console.WriteLine($"Option --{hardwareOption.LongName} is required.");
                     return 2;
