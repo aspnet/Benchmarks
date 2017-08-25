@@ -47,7 +47,7 @@ namespace BenchmarksDriver
         {
             Headers = new string[] {
                 "Host: localhost",
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept: application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
                 "Connection: keep-alive"
             },
         };
