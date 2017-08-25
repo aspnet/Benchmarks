@@ -12,9 +12,9 @@ else
     hardware=Physical
 fi
 
-if [ -v $DBHOST ]
+if [[ -v DBHOST ]]
 then
-    sql=--sql "Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true"
+    sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
 fi
 
 docker run \
