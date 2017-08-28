@@ -81,6 +81,8 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
+            var databaseOption = app.Option("-d|--database", "Database (PostgreSQL or SqlServer).",
+                CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
                 "Connection string of SQL Database used by Benchmarks app", CommandOptionType.SingleValue);
 
@@ -98,13 +100,29 @@ namespace BenchmarkServer
 
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
-                return Run(url, hostname, sqlConnectionStringOption.Value()).Result;
+
+                Database? database = null;
+                if (databaseOption.HasValue())
+                {
+                    if (Enum.TryParse(databaseOption.Value(), out Database databaseValue))
+                    {
+                        database = databaseValue;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid value for option --{databaseOption.LongName}: '{databaseOption.Value()}'");
+                        return 2;
+                    }
+                }
+
+
+                return Run(url, hostname, database, sqlConnectionStringOption.Value()).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string hostname, string sqlConnectionString)
+        private static async Task<int> Run(string url, string hostname, Database? database, string sqlConnectionString)
         {
             var hostTask = Task.Run(() =>
             {
@@ -118,7 +136,7 @@ namespace BenchmarkServer
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, sqlConnectionString, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, database, sqlConnectionString, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -132,7 +150,7 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string hostname, string sqlConnectionString, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, Database? database, string sqlConnectionString, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
             try
@@ -170,7 +188,7 @@ namespace BenchmarkServer
                                 var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
                                 Debug.Assert(process == null);
-                                process = StartProcess(hostname, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
+                                process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
                             }
                             catch (Exception e)
@@ -404,7 +422,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string sqlConnectionString, string benchmarksRepo,
+        private static Process StartProcess(string hostname, Database? database, string sqlConnectionString, string benchmarksRepo,
             ServerJob job, string dotnetHome)
         {
             var filename = GetDotNetExecutable(dotnetHome);
@@ -448,6 +466,11 @@ namespace BenchmarkServer
                 EnableRaisingEvents = true
             };
             process.StartInfo.Environment.Add("COREHOST_SERVER_GC", "1");
+
+            if (database.HasValue)
+            {
+                process.StartInfo.Environment.Add("Database", database.Value.ToString());
+            }
 
             if (!string.IsNullOrEmpty(sqlConnectionString))
             {
