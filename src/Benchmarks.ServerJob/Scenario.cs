@@ -41,5 +41,23 @@ namespace Benchmarks.ServerJob
 
         [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         StaticFiles,
+
+        [ScenarioPath("/fortunes/raw")]
+        DbFortunesRaw,
+
+        [ScenarioPath("/fortunes/dapper")]
+        DbFortunesDapper,
+
+        [ScenarioPath("/fortunes/ef")]
+        DbFortunesEf,
+
+        [ScenarioPath("/mvc/fortunes/raw")]
+        MvcDbFortunesRaw,
+
+        [ScenarioPath("/mvc/fortunes/dapper")]
+        MvcDbFortunesDapper,
+
+        [ScenarioPath("/mvc/fortunes/ef")]
+        MvcDbFortunesEf,
     }
 }
