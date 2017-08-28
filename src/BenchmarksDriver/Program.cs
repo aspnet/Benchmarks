@@ -80,12 +80,12 @@ namespace BenchmarksDriver
                 } },
                 { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
                 { Scenario.StaticFiles, _plaintextJob },
-                { Scenario.DbFortunesRaw, new ClientJob(_htmlJob) },
-                { Scenario.DbFortunesDapper, new ClientJob(_htmlJob) },
-                { Scenario.DbFortunesEf, new ClientJob(_htmlJob) },
-                { Scenario.MvcDbFortunesRaw, new ClientJob(_htmlJob) },
-                { Scenario.MvcDbFortunesDapper, new ClientJob(_htmlJob) },
-                { Scenario.MvcDbFortunesEf, new ClientJob(_htmlJob) },
+                { Scenario.DbFortunesRaw, _htmlJob },
+                { Scenario.DbFortunesDapper, _htmlJob },
+                { Scenario.DbFortunesEf, _htmlJob },
+                { Scenario.MvcDbFortunesRaw, _htmlJob },
+                { Scenario.MvcDbFortunesDapper, _htmlJob },
+                { Scenario.MvcDbFortunesEf, _htmlJob },
             };
 
         public static int Main(string[] args)
