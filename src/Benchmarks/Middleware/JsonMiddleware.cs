@@ -9,13 +9,13 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Benchmarks.Middleware
 {
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
-        private static readonly JsonSerializer _json = new JsonSerializer();
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
         private const int _bufferSize = 27;
 
@@ -35,8 +35,14 @@ namespace Benchmarks.Middleware
                 httpContext.Response.ContentLength = _bufferSize;
 
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
+                using (var jw = new JsonTextWriter(sw))
                 {
-                    _json.Serialize(sw, new { message = "Hello, World!" });
+                    var obj = new JObject
+                    {
+                        { "message", new JValue("Hello, World!") }
+                    };
+
+                    obj.WriteTo(jw);
                 }
 
                 return Task.CompletedTask;
