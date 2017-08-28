@@ -55,22 +55,22 @@ namespace BenchmarksDriver
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
-                { Scenario.Plaintext, new ClientJob(_plaintextJob) },
-                { Scenario.Json, new ClientJob(_jsonJob) },
+                { Scenario.Plaintext, _plaintextJob },
+                { Scenario.Json, _jsonJob },
                 { Scenario.CopyToAsync, new ClientJob(_plaintextJob) {
                     ScriptName = "post",
                 } },
-                { Scenario.MvcPlaintext, new ClientJob(_plaintextJob) },
-                { Scenario.MvcJson, new ClientJob(_jsonJob) },
-                { Scenario.MemoryCachePlaintext, new ClientJob(_plaintextJob) },
-                { Scenario.MemoryCachePlaintextSetRemove, new ClientJob(_plaintextJob) },
-                { Scenario.ResponseCachingPlaintextCached, new ClientJob(_plaintextJob) },
-                { Scenario.ResponseCachingPlaintextResponseNoCache, new ClientJob(_plaintextJob) },
+                { Scenario.MvcPlaintext, _plaintextJob },
+                { Scenario.MvcJson, _jsonJob },
+                { Scenario.MemoryCachePlaintext, _plaintextJob },
+                { Scenario.MemoryCachePlaintextSetRemove, _plaintextJob },
+                { Scenario.ResponseCachingPlaintextCached, _plaintextJob },
+                { Scenario.ResponseCachingPlaintextResponseNoCache, _plaintextJob },
                 { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob(_plaintextJob) {
                     Headers = _plaintextJob.Headers.Append("Cache-Control: no-cache")
                 } },
-                { Scenario.ResponseCachingPlaintextVaryByCached, new ClientJob(_plaintextJob) },
-                { Scenario.StaticFiles, new ClientJob(_plaintextJob) },
+                { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
+                { Scenario.StaticFiles, _plaintextJob },
             };
 
         public static int Main(string[] args)
