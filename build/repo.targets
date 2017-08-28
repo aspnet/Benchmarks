@@ -6,6 +6,13 @@
     
     <CloudScenarios Include="-n Json" />
     <CloudScenarios Include="-n MvcJson" />
+
+    <CloudScenarios Include="-n DbFortunesRaw" />
+    <CloudScenarios Include="-n DbFortunesDapper" />
+    <CloudScenarios Include="-n DbFortunesEf" />
+    <CloudScenarios Include="-n MvcDbFortunesRaw" />
+    <CloudScenarios Include="-n MvcDbFortunesDapper" />
+    <CloudScenarios Include="-n MvcDbFortunesEf" />
   </ItemGroup>
   
   <ItemGroup>
