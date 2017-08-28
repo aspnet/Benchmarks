@@ -9,6 +9,7 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Benchmarks.Middleware
 {
