@@ -14,7 +14,7 @@ fi
 
 if [[ -v DBHOST ]]
 then
-    sql="Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true"
+    sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
 fi
 
 docker run \
@@ -26,8 +26,9 @@ docker run \
     --network host \
     --restart always \
     benchmarks \
-    /root/.dotnet/dotnet \
+    bash -c \
+    "/root/.dotnet/dotnet \
     /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
     -n $server_ip \
     --hardware $hardware \
-    --sql "$sql"
+    $sql"
