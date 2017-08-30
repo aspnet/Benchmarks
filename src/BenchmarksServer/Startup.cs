@@ -88,13 +88,17 @@ namespace BenchmarkServer
 
             app.OnExecute(() =>
             {
-                if (Enum.TryParse(hardwareOption.Value(), out Hardware hardware))
+                if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
                     Hardware = hardware;
                 }
                 else
                 {
-                    Console.WriteLine($"Option --{hardwareOption.LongName} is required.");
+                    Console.WriteLine($"Option --{hardwareOption.LongName} <TYPE> is required. Available types:");
+                    foreach (Hardware type in Enum.GetValues(typeof(Hardware)))
+                    {
+                        Console.WriteLine($"  {type}");
+                    }
                     return 2;
                 }
 
@@ -277,12 +281,6 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
-            AddSourceDependencies(path, benchmarksDir, dirs);
-
-            // Install latest SDK and runtime
-            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
-            //   are already using it.
-            var benchmarksRoot = Path.Combine(path, benchmarksDir);
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
@@ -290,6 +288,13 @@ namespace BenchmarkServer
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
             };
+
+            AddSourceDependencies(path, benchmarksDir, dirs, env);
+
+            // Install latest SDK and runtime
+            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
+            //   are already using it.
+            var benchmarksRoot = Path.Combine(path, benchmarksDir);
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
@@ -314,7 +319,7 @@ namespace BenchmarkServer
             return benchmarksDir;
         }
 
-        private static void AddSourceDependencies(string path, string benchmarksDir, IEnumerable<string> dirs)
+        private static void AddSourceDependencies(string path, string benchmarksDir, IEnumerable<string> dirs, IDictionary<string, string> env)
         {
             var benchmarksProjectPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks", "Benchmarks.csproj");
             var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
@@ -325,7 +330,8 @@ namespace BenchmarkServer
 
             foreach (var dir in dirs.Except(new[] { benchmarksDir }))
             {
-                var projects = Directory.EnumerateFiles(Path.Combine(path, dir, "src"), "*.csproj", SearchOption.AllDirectories);
+                var repoRoot = Path.Combine(path, dir);
+                var projects = Directory.EnumerateFiles(Path.Combine(repoRoot, "src"), "*.csproj", SearchOption.AllDirectories);
 
                 foreach (var project in projects)
                 {
@@ -354,6 +360,8 @@ namespace BenchmarkServer
                         netCoreReferences.Add(reference);
                     }
                 }
+
+                InitializeSourceRepo(repoRoot, env);
             }
 
             benchmarksProjectDocument.Root.Add(commonReferences);
@@ -364,6 +372,38 @@ namespace BenchmarkServer
             using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
             {
                 benchmarksProjectDocument.Save(writer);
+            }
+        }
+
+        private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
+        {
+            var initArgs = new List<string>();
+            var repoProps = Path.Combine(repoRoot, "build", "repo.props");
+            if (File.Exists(repoProps))
+            {
+                var props = XDocument.Load(repoProps);
+                if (props.Root.Descendants("DotNetCoreRuntime").Any())
+                {
+                    initArgs.Add("/t:InstallDotNet");
+                }
+
+                if (props.Root.Descendants("PackageLineup").Any())
+                {
+                    initArgs.Add("/t:Pin");
+                }
+            }
+
+            if (initArgs.Count > 0)
+            {
+                var args = string.Join(' ', initArgs);
+                if (OperatingSystem == OperatingSystem.Windows)
+                {
+                    ProcessUtil.Run("cmd", "/c build.cmd " + args, workingDirectory: repoRoot, environmentVariables: env);
+                }
+                else
+                {
+                    ProcessUtil.Run("/usr/bin/env", "bash build.sh " + args, workingDirectory: repoRoot, environmentVariables: env);
+                }
             }
         }
 
