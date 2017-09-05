@@ -287,7 +287,7 @@ namespace BenchmarkServer
                 ["DOTNET_HOME"] = dotnetHome,
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
-                // for custom compiler to find right dotnet.exe
+                // for custom compiler to find right dotnet
                 ["PATH"] = dotnetHome + ";" + Environment.GetEnvironmentVariable("PATH")
             };
 
@@ -315,8 +315,8 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp);
+            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp, environmentVariables: env);
 
             return benchmarksDir;
         }
