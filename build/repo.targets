@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <!-- Used by custom roslyn compiler -->
-    <DotNetCoreRuntime Include="1.1.0" InstallDir="$(DOTNET_INSTALL_DIR)" />
+    <DotNetCoreRuntime Include="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
