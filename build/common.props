@@ -1,5 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
+  <Import Project="compiler.props" />
   <Import Project="..\version.xml" />
 
   <PropertyGroup>
@@ -16,16 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-
-    <PackageReference Include="Microsoft.NETCore.Compilers" Version="2.6.0-rdonly-ref-61915-01" PrivateAssets="All">
-      <!--
-        Suppresses the warning about having an explicit package version in this repo.
-        We are okay with this for now as the experimental version of the compiler is unique to Kestrel (for now).
-
-        See https://github.com/dotnet/csharplang/issues/666 for more details.
-       -->
-      <NoWarn>KRB4002</NoWarn>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
