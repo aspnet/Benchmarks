@@ -1,9 +1,15 @@
 <Project>
+
+  <ItemGroup>
+    <!-- Used by custom roslyn compiler -->
+    <DotNetCoreSdk Include="1.1.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext" />
     <CloudScenarios Include="-n MvcPlaintext" />
-    
+
     <CloudScenarios Include="-n Json" />
     <CloudScenarios Include="-n MvcJson" />
 
@@ -14,7 +20,7 @@
     <CloudScenarios Include="-n MvcDbFortunesDapper" />
     <CloudScenarios Include="-n MvcDbFortunesEf" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2" />
