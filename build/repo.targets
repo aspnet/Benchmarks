@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <!-- Used by custom roslyn compiler -->
-    <DotNetCoreSdk Include="1.1.0" />
+    <DotNetCoreRuntime Include="1.1.0" InstallDir="$(DOTNET_INSTALL_DIR)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -98,6 +98,6 @@
     <Exec Command="&quot;$(DotNetPath)&quot; $(RunArgs)" WorkingDirectory="$(RepositoryRoot)src\BenchmarksDriver\" />
   </Target>
 
-  <Target Name="RunBenchmark" DependsOnTargets="InstallDotNet" BeforeTargets="Noop">
+  <Target Name="RunBenchmark" DependsOnTargets="InstallDotNet" BeforeTargets="noop">
   </Target>
 </Project>
