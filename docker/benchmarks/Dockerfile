@@ -18,7 +18,7 @@ RUN git clone https://github.com/wg/wrk.git wrk \
     && cd wrk \
     && make \
     && cp wrk /usr/local/bin \
-    && cd / \
+    && cd .. \
     && rm -rf wrk
 
 WORKDIR /benchmarks
