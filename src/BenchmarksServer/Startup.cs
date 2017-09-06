@@ -293,7 +293,7 @@ namespace BenchmarkServer
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
                 // temporary for custom compiler to find right dotnet
-                ["PATH"] = dotnetExeLocation + Path.DirectorySeparatorChar + Environment.GetEnvironmentVariable("PATH")
+                ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
             AddSourceDependencies(path, benchmarksDir, dirs, env);
