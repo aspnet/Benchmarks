@@ -281,12 +281,19 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
+            // on windows dotnet is installed into subdirectory of 'dotnetHome' so we have to append 'x64'
+            string dotnetExeLocation = OperatingSystem == OperatingSystem.Windows
+                ? Path.Combine(dotnetHome, "x64")
+                : dotnetHome;
+
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
                 ["DOTNET_HOME"] = dotnetHome,
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
+                // temporary for custom compiler to find right dotnet
+                ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
             AddSourceDependencies(path, benchmarksDir, dirs, env);
@@ -313,8 +320,8 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp);
+            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp, environmentVariables: env);
 
             return benchmarksDir;
         }
