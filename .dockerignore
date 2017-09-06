@@ -1,3 +1,2 @@
-# Exclude "docker" directory, so changes in this directory do not invalidate docker caches
-# and trigger rebuilding of Benchmarks
+# Changes in "docker" directory should not invalidate caches and trigger rebuilding of Benchmarks
 docker
