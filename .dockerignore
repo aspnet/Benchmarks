@@ -1,2 +1,4 @@
+.git*
+
 # Changes in "docker" directory should not invalidate caches and trigger rebuilding of Benchmarks
 docker
