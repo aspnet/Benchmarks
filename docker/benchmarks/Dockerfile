@@ -1,35 +1,25 @@
-# The ideal base image would be "microsoft/dotnet-nightly:2.1.0-preview1-runtime-deps-stretch".
-# However, the wrk package is currently broken in "debian:stretch" (4.0.2-1+b1), but fixed in
-# "debian:buster" (4.0.2-2).  For now, it's easier to use "debian:buster" as the base image and 
-# manually install the .NET Core dependencies, rather than using "microsoft/dotnet-nightly" and
-# compiling wrk from source.
-
-FROM debian:buster
+FROM microsoft/dotnet-nightly:2.1.0-preview1-runtime-deps-jessie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-# .NET Core dependencies
-        ca-certificates \
-        libc6 \
-        libcurl3 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu57 \
-        liblttng-ust0 \
-        libssl1.0.2 \
-        libstdc++6 \
-        libunwind8 \
-        libuuid1 \
-        zlib1g \
+# wrk dependencies
+        build-essential \
+        libssl-dev \
 # KoreBuild dependencies
         unzip \
         wget \
-# BenchmarksClient dependencies
-        wrk \
 # BenchmarksServer dependencies
         git \
         procps \
     && rm -rf /var/lib/apt/lists/*
+
+# Build and install wrk
+RUN git clone https://github.com/wg/wrk.git wrk \
+    && cd wrk \
+    && make \
+    && cp wrk /usr/local/bin \
+    && cd / \
+    && rm -rf wrk
 
 WORKDIR /benchmarks
 COPY . .
