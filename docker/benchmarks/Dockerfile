@@ -13,9 +13,8 @@ RUN apt-get update \
         procps \
     && rm -rf /var/lib/apt/lists/*
 
-ENV WRK_VERSION 4.0.2
-
 # Build and install wrk
+ENV WRK_VERSION 4.0.2
 RUN cd /tmp \
     && wget https://github.com/wg/wrk/archive/$WRK_VERSION.tar.gz -O wrk.tar.gz \
     && tar xvzf wrk.tar.gz \
