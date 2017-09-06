@@ -13,13 +13,17 @@ RUN apt-get update \
         procps \
     && rm -rf /var/lib/apt/lists/*
 
+ENV WRK_VERSION 4.0.2
+
 # Build and install wrk
-RUN git clone https://github.com/wg/wrk.git wrk \
-    && cd wrk \
+RUN cd /tmp \
+    && wget https://github.com/wg/wrk/archive/$WRK_VERSION.tar.gz -O wrk.tar.gz \
+    && tar xvzf wrk.tar.gz \
+    && cd wrk-$WRK_VERSION \
     && make \
     && cp wrk /usr/local/bin \
     && cd .. \
-    && rm -rf wrk
+    && rm -rf wrk.tar.gz wrk-$WRK_VERSION
 
 WORKDIR /benchmarks
 COPY . .
