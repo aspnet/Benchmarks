@@ -281,6 +281,11 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarksDir != null);
 
+            // on windows dotnet is installed into subdirectory of 'dotnetHome' so we have to append 'x64'
+            string dotnetExeLocation = OperatingSystem == OperatingSystem.Windows
+                ? Path.Combine(dotnetHome, "x64")
+                : dotnetHome;
+
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
@@ -288,8 +293,7 @@ namespace BenchmarkServer
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
                 // temporary for custom compiler to find right dotnet
-                // dotnet is installed into subdirectory of 'dotnetHome' so we have to append 'x64'
-                ["PATH"] = Path.Combine(dotnetHome, "x64") + ";" + Environment.GetEnvironmentVariable("PATH")
+                ["PATH"] = dotnetExeLocation + Path.DirectorySeparatorChar + Environment.GetEnvironmentVariable("PATH")
             };
 
             AddSourceDependencies(path, benchmarksDir, dirs, env);
