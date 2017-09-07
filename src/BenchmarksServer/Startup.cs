@@ -60,12 +60,17 @@ namespace BenchmarkServer
 
             Action shutdown = () =>
             {
-                DeleteDir(_rootTempDir);
+                if (Directory.Exists(_rootTempDir))
+                {
+                    DeleteDir(_rootTempDir);
+                }
             };
 
+            // SIGTERM
             AssemblyLoadContext.GetLoadContext(typeof(Startup).GetTypeInfo().Assembly).Unloading +=
                 context => shutdown();
 
+            // SIGINT
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
                 shutdown();
