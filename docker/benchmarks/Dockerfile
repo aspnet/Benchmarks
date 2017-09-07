@@ -25,5 +25,11 @@ RUN cd /tmp \
     && rm -rf wrk.tar.gz wrk-$WRK_VERSION
 
 WORKDIR /benchmarks
+
+ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
+
+COPY build* ./
+RUN /benchmarks/build.sh /t:noop
+
 COPY . .
 RUN /benchmarks/build.sh
