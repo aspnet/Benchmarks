@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -32,6 +33,7 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
+        private static readonly string _rootTempDir;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -50,6 +52,24 @@ namespace BenchmarkServer
             {
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
+
+            _rootTempDir = Path.GetTempFileName();
+            File.Delete(_rootTempDir);
+            Directory.CreateDirectory(_rootTempDir);
+            Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
+
+            Action shutdown = () =>
+            {
+                DeleteDir(_rootTempDir);
+            };
+
+            AssemblyLoadContext.GetLoadContext(typeof(Startup).GetTypeInfo().Assembly).Unloading +=
+                context => shutdown();
+
+            Console.CancelKeyPress += (sender, eventArgs) =>
+            {
+                shutdown();
+            };
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -416,13 +436,18 @@ namespace BenchmarkServer
 
         private static string GetTempDir()
         {
-            var temp = Path.GetTempFileName();
-            File.Delete(temp);
-            Directory.CreateDirectory(temp);
-
-            Log.WriteLine($"Created temp directory '{temp}'");
-
-            return temp;
+            var temp = Path.Combine(_rootTempDir, Path.GetRandomFileName());
+            if (Directory.Exists(temp))
+            {
+                // Retry
+                return GetTempDir();
+            }
+            else
+            {
+                Directory.CreateDirectory(temp);
+                Log.WriteLine($"Created temp directory '{temp}'");
+                return temp;
+            }
         }
 
         private static void DeleteDir(string path)
