@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 		docker\benchmarks\Dockerfile = docker\benchmarks\Dockerfile
 		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
 		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
+		docker\benchmarks\stop-client.sh = docker\benchmarks\stop-client.sh
+		docker\benchmarks\stop-server.sh = docker\benchmarks\stop-server.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower", "postgres-techempower", "{8520802B-DCBB-42DE-866C-C7F533129071}"
@@ -58,6 +60,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower", "pos
 		docker\postgres-techempower\Dockerfile = docker\postgres-techempower\Dockerfile
 		docker\postgres-techempower\max_connections.sh = docker\postgres-techempower\max_connections.sh
 		docker\postgres-techempower\run.sh = docker\postgres-techempower\run.sh
+		docker\postgres-techempower\stop.sh = docker\postgres-techempower\stop.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower-fortunesbench", "postgres-techempower-fortunesbench", "{6B2BF265-7141-40E2-9BEC-DAFB9547B942}"
