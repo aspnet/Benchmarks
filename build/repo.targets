@@ -97,7 +97,4 @@
     <Message Text="Running: $(RunArgs)" Importance="High" />
     <Exec Command="&quot;$(DotNetPath)&quot; $(RunArgs)" WorkingDirectory="$(RepositoryRoot)src\BenchmarksDriver\" />
   </Target>
-
-  <Target Name="RunBenchmark" DependsOnTargets="InstallDotNet" BeforeTargets="noop">
-  </Target>
 </Project>
