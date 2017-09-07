@@ -163,7 +163,7 @@ namespace BenchmarkClient
                 }
             }
 
-            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}  {job.ServerBenchmarkUri}";
+            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}  {job.ServerBenchmarkUri}{job.Query}";
 
             if (!string.IsNullOrEmpty(job.ScriptName))
             {

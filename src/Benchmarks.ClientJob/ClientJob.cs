@@ -24,6 +24,7 @@ namespace Benchmarks.ClientJob
             PipelineDepth = clientJob.PipelineDepth;
             Headers = clientJob.Headers;
             ServerBenchmarkUri = clientJob.ServerBenchmarkUri;
+            Query = clientJob.Query;
             State = clientJob.State;
             RequestsPerSecond = clientJob.RequestsPerSecond;
             Output = clientJob.Output;
@@ -46,6 +47,8 @@ namespace Benchmarks.ClientJob
         public IEnumerable<string> Headers { get; set; }
 
         public string ServerBenchmarkUri { get; set; }
+
+        public string Query { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ClientState State { get; set; }

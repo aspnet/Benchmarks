@@ -61,6 +61,11 @@ namespace BenchmarksDriver
             },
         };
 
+        private static readonly ClientJob _multiQueryJob = new ClientJob(_jsonJob)
+        {
+            Query = "?queries=20",
+        };
+
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
@@ -86,18 +91,18 @@ namespace BenchmarksDriver
                 { Scenario.MvcDbSingleQueryRaw, _jsonJob },
                 { Scenario.MvcDbSingleQueryDapper, _jsonJob },
                 { Scenario.MvcDbSingleQueryEf, _jsonJob },
-                { Scenario.DbMultiQueryRaw, _jsonJob },
-                { Scenario.DbMultiQueryDapper, _jsonJob },
-                { Scenario.DbMultiQueryEf, _jsonJob },
-                { Scenario.MvcDbMultiQueryRaw, _jsonJob },
-                { Scenario.MvcDbMultiQueryDapper, _jsonJob },
-                { Scenario.MvcDbMultiQueryEf, _jsonJob },
-                { Scenario.DbMultiUpdateRaw, _jsonJob },
-                { Scenario.DbMultiUpdateDapper, _jsonJob },
-                { Scenario.DbMultiUpdateEf, _jsonJob },
-                { Scenario.MvcDbMultiUpdateRaw, _jsonJob },
-                { Scenario.MvcDbMultiUpdateDapper, _jsonJob },
-                { Scenario.MvcDbMultiUpdateEf, _jsonJob },
+                { Scenario.DbMultiQueryRaw, _multiQueryJob },
+                { Scenario.DbMultiQueryDapper, _multiQueryJob },
+                { Scenario.DbMultiQueryEf, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryRaw, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryDapper, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryEf, _multiQueryJob },
+                { Scenario.DbMultiUpdateRaw, _multiQueryJob },
+                { Scenario.DbMultiUpdateDapper, _multiQueryJob },
+                { Scenario.DbMultiUpdateEf, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateRaw, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateDapper, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateEf, _multiQueryJob },
                 { Scenario.DbFortunesRaw, _htmlJob },
                 { Scenario.DbFortunesDapper, _htmlJob },
                 { Scenario.DbFortunesEf, _htmlJob },
