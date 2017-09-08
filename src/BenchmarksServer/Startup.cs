@@ -71,10 +71,8 @@ namespace BenchmarkServer
                 context => shutdown();
 
             // SIGINT
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                shutdown();
-            };
+            Console.CancelKeyPress +=
+                (sender, eventArgs) => shutdown();
         }
 
         public void ConfigureServices(IServiceCollection services)
