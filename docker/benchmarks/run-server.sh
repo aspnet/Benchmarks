@@ -15,7 +15,7 @@ fi
 if [[ -v DBHOST ]]
 then
     database="--database PostgreSql"
-    sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;Max Auto Prepare=20;NoResetOnClose=true\""
 fi
 
 docker run \
