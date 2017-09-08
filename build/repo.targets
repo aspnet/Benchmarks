@@ -13,6 +13,27 @@
     <CloudScenarios Include="-n Json" />
     <CloudScenarios Include="-n MvcJson" />
 
+    <CloudScenarios Include="-n DbSingleQueryRaw" />
+    <CloudScenarios Include="-n DbSingleQueryDapper" />
+    <CloudScenarios Include="-n DbSingleQueryEf" />
+    <CloudScenarios Include="-n MvcDbSingleQueryRaw" />
+    <CloudScenarios Include="-n MvcDbSingleQueryDapper" />
+    <CloudScenarios Include="-n MvcDbSingleQueryEf" />
+
+    <CloudScenarios Include="-n DbMultiQueryRaw" />
+    <CloudScenarios Include="-n DbMultiQueryDapper" />
+    <CloudScenarios Include="-n DbMultiQueryEf" />
+    <CloudScenarios Include="-n MvcDbMultiQueryRaw" />
+    <CloudScenarios Include="-n MvcDbMultiQueryDapper" />
+    <CloudScenarios Include="-n MvcDbMultiQueryEf" />
+
+    <CloudScenarios Include="-n DbMultiUpdateRaw" />
+    <CloudScenarios Include="-n DbMultiUpdateDapper" />
+    <CloudScenarios Include="-n DbMultiUpdateEf" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateRaw" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateDapper" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateEf" />
+
     <CloudScenarios Include="-n DbFortunesRaw" />
     <CloudScenarios Include="-n DbFortunesDapper" />
     <CloudScenarios Include="-n DbFortunesEf" />
