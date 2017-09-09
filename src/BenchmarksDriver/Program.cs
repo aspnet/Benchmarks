@@ -61,6 +61,11 @@ namespace BenchmarksDriver
             },
         };
 
+        private static readonly ClientJob _multiQueryJob = new ClientJob(_jsonJob)
+        {
+            Query = "?queries=20",
+        };
+
         private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
             new Dictionary<Scenario, ClientJob>()
             {
@@ -80,6 +85,24 @@ namespace BenchmarksDriver
                 } },
                 { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
                 { Scenario.StaticFiles, _plaintextJob },
+                { Scenario.DbSingleQueryRaw, _jsonJob },
+                { Scenario.DbSingleQueryDapper, _jsonJob },
+                { Scenario.DbSingleQueryEf, _jsonJob },
+                { Scenario.MvcDbSingleQueryRaw, _jsonJob },
+                { Scenario.MvcDbSingleQueryDapper, _jsonJob },
+                { Scenario.MvcDbSingleQueryEf, _jsonJob },
+                { Scenario.DbMultiQueryRaw, _multiQueryJob },
+                { Scenario.DbMultiQueryDapper, _multiQueryJob },
+                { Scenario.DbMultiQueryEf, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryRaw, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryDapper, _multiQueryJob },
+                { Scenario.MvcDbMultiQueryEf, _multiQueryJob },
+                { Scenario.DbMultiUpdateRaw, _multiQueryJob },
+                { Scenario.DbMultiUpdateDapper, _multiQueryJob },
+                { Scenario.DbMultiUpdateEf, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateRaw, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateDapper, _multiQueryJob },
+                { Scenario.MvcDbMultiUpdateEf, _multiQueryJob },
                 { Scenario.DbFortunesRaw, _htmlJob },
                 { Scenario.DbFortunesDapper, _htmlJob },
                 { Scenario.DbFortunesEf, _htmlJob },
