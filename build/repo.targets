@@ -1,11 +1,6 @@
 <Project>
 
   <ItemGroup>
-    <!-- Used by custom roslyn compiler -->
-    <DotNetCoreRuntime Include="1.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext" />
     <CloudScenarios Include="-n MvcPlaintext" />
@@ -119,5 +114,4 @@
     <Exec Command="&quot;$(DotNetPath)&quot; $(RunArgs)" WorkingDirectory="$(RepositoryRoot)src\BenchmarksDriver\" />
   </Target>
 
-  <Target Name="InstallDotNetBeforeNoOp" DependsOnTargets="InstallDotNet" BeforeTargets="noop" />
  </Project>
