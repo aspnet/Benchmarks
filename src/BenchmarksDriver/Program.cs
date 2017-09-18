@@ -156,6 +156,8 @@ namespace BenchmarksDriver
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
+            var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
+                "ASP NET Core version (2.0.0 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -189,6 +191,12 @@ namespace BenchmarksDriver
                 if (string.IsNullOrEmpty(webHostValue))
                 {
                     webHostValue = "Kestrel";
+                }
+
+                var aspnetCoreVersionValue = aspnetCoreVersionOption.Value();
+                if (string.IsNullOrEmpty(aspnetCoreVersionValue))
+                {
+                    aspnetCoreVersionValue = "2.1.0-*";
                 }
 
                 var server = serverOption.Value();
@@ -245,7 +253,8 @@ namespace BenchmarksDriver
                 {
                     Scheme = scheme,
                     Scenario = scenario,
-                    WebHost = webHost
+                    WebHost = webHost,
+                    AspNetCoreVersion = aspnetCoreVersionValue
                 };
 
                 if (connectionFilterOption.HasValue())

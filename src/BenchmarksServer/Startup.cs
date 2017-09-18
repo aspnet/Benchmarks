@@ -319,10 +319,11 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
+            // Source dependencies are always built using KoreBuild
             AddSourceDependencies(path, benchmarksDir, dirs, env);
 
             // Install latest SDK and runtime
-            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
+            // * Use custom install dir to avoid changing the default install, which is impossible if other processes
             //   are already using it.
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
 
@@ -344,7 +345,7 @@ namespace BenchmarkServer
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
             ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp, environmentVariables: env);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release /p:AspnetCoreVersion=" + job.AspNetCoreVersion, workingDirectory: benchmarksApp, environmentVariables: env);
 
             return benchmarksDir;
         }

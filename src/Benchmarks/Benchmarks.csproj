@@ -10,6 +10,14 @@
     <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.1.0-*'">
+    <DefineConstants>$(DefineConstants);DOTNET210</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.0.0'">
+    <DefineConstants>$(DefineConstants);DOTNET200</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup>
     <None Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
@@ -23,7 +31,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(BenchmarksAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(BenchmarksAspNetCoreVersion)" />
@@ -34,4 +41,9 @@
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(AspNetCoreVersion)' == '2.1.0-*'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
+  </ItemGroup>
+
 </Project>

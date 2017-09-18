@@ -34,6 +34,8 @@ namespace Benchmarks.ServerJob
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
 
+        public string AspNetCoreVersion { get; set; }
+
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

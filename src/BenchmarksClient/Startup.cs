@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
@@ -34,6 +35,13 @@ namespace BenchmarkClient
         public void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
+
+            app.Map("", builder => 
+                builder.Run( (context) =>
+                {
+                    return context.Response.WriteAsync("OK!");
+                })
+            );
         }
 
         public static int Main(string[] args)
