@@ -217,12 +217,53 @@ namespace BenchmarkClient
             process.Exited += (_, __) =>
             {
                 double rps = -1;
-                var match = Regex.Match(job.Output, @"Requests/sec:\s*([\d.]*)");
-                if (match.Success && match.Groups.Count == 2)
+                var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
+                if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
                 {
-                    double.TryParse(match.Groups[1].Value, out rps);
+                    double.TryParse(rpsMatch.Groups[1].Value, out rps);
                 }
                 job.RequestsPerSecond = rps;
+
+                double average = -1;
+                var latencyMatch = Regex.Match(job.Output, @"Latency\s*([\d\.]*)");
+                if (latencyMatch.Success && latencyMatch.Groups.Count == 2)
+                {
+                    double.TryParse(latencyMatch.Groups[1].Value, out average);
+                }
+                job.Latency.Average = average;
+
+                double p50 = -1;
+                var p50Match = Regex.Match(job.Output, @"50%\s*([\d\.]*)");
+                if (p50Match.Success && p50Match.Groups.Count == 2)
+                {
+                    double.TryParse(p50Match.Groups[1].Value, out p50);
+                }
+                job.Latency.P50 = p50;
+
+                double p75 = -1;
+                var p75Match = Regex.Match(job.Output, @"75%\s*([\d\.]*)");
+                if (p75Match.Success && p75Match.Groups.Count == 2)
+                {
+                    double.TryParse(p75Match.Groups[1].Value, out p75);
+                }
+                job.Latency.P75 = p75;
+
+                double p90 = -1;
+                var p90Match = Regex.Match(job.Output, @"90%\s*([\d\.]*)");
+                if (p90Match.Success && p90Match.Groups.Count == 2)
+                {
+                    double.TryParse(p90Match.Groups[1].Value, out p90);
+                }
+                job.Latency.P90 = p90;
+
+                double p99 = -1;
+                var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)");
+                if (p99Match.Success && p99Match.Groups.Count == 2)
+                {
+                    double.TryParse(p99Match.Groups[1].Value, out p99);
+                }
+                job.Latency.P99 = p99;
+
 
                 job.State = ClientState.Completed;
             };

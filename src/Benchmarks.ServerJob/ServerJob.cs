@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -33,9 +34,13 @@ namespace Benchmarks.ServerJob
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
-
         public string AspNetCoreVersion { get; set; }
-
+        public string RuntimeFrameworkVersion { get; set; }
+        public string Group { get; set; }
+        public string Description { get; set; }
+        public TimeSpan Startup { get; set; }
+        public List<long> WorkingSets { get; set; } = new List<long>();
+        public List<TimeSpan> ProcessorTimes { get; set; } = new List<TimeSpan>();
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

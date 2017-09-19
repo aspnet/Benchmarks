@@ -157,7 +157,13 @@ namespace BenchmarksDriver
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP NET Core version (2.0.0 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
+                "ASP.NET Core version (2.0.0 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
+            var runtimeFrameworkVersionOption = app.Option("--runtimeFrameworkVersion",
+                ".NET Core Runtime version (2.0.0 or 2.1.0-*).  Default is 2.0.0.", CommandOptionType.SingleValue);
+            var groupOption = app.Option("--group",
+                "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
+            var descriptionOption = app.Option("--description",
+                "The description of the job.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -193,11 +199,20 @@ namespace BenchmarksDriver
                     webHostValue = "Kestrel";
                 }
 
-                var aspnetCoreVersionValue = aspnetCoreVersionOption.Value();
-                if (string.IsNullOrEmpty(aspnetCoreVersionValue))
+                var aspnetCoreVersion = aspnetCoreVersionOption.Value();
+                if (string.IsNullOrEmpty(aspnetCoreVersion))
                 {
-                    aspnetCoreVersionValue = "2.1.0-*";
+                    aspnetCoreVersion = "2.1.0-*";
                 }
+
+                var runtimeFrameworkVersion = runtimeFrameworkVersionOption.Value();
+                if (string.IsNullOrEmpty(runtimeFrameworkVersion))
+                {
+                    runtimeFrameworkVersion = "2.0.0";
+                }
+
+                var group = groupOption.Value();
+                var description = descriptionOption.Value();
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -254,7 +269,10 @@ namespace BenchmarksDriver
                     Scheme = scheme,
                     Scenario = scenario,
                     WebHost = webHost,
-                    AspNetCoreVersion = aspnetCoreVersionValue
+                    AspNetCoreVersion = aspnetCoreVersion,
+                    RuntimeFrameworkVersion = runtimeFrameworkVersion,
+                    Group = group,
+                    Description = description
                 };
 
                 if (connectionFilterOption.HasValue())
@@ -412,25 +430,85 @@ namespace BenchmarksDriver
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
                     await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
                         connectionString: sqlConnectionString,
                         scenario: scenario,
-                        hardware: serverJob.Hardware.Value,
-                        operatingSystem: serverJob.OperatingSystem.Value,
-                        scheme: serverJob.Scheme,
-                        sources: serverJob.Sources,
-                        connectionFilter: serverJob.ConnectionFilter,
-                        webHost: serverJob.WebHost,
-                        kestrelThreadCount: serverJob.KestrelThreadCount,
-                        kestrelThreadPoolDispatching: serverJob.KestrelThreadPoolDispatching,
-                        kestrelTransport: serverJob.KestrelTransport,
-                        clientThreads: clientJob.Threads,
-                        connections: clientJob.Connections,
-                        duration: clientJob.Duration,
-                        pipelineDepth: clientJob.PipelineDepth,
                         path: path,
-                        method: clientJob.Method,
-                        headers: clientJob.Headers,
-                        rps: clientJob.RequestsPerSecond);
+                        dimension: "RequestsPerSecond",
+                        value: clientJob.RequestsPerSecond);
+                        
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Startup",
+                        value: serverJob.Startup.TotalMilliseconds);
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "WorkingSet",
+                        value: serverJob.WorkingSets.Max());
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "ProcessorTime",
+                        value: serverJob.ProcessorTimes.Max(p => p.TotalMilliseconds));
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency",
+                        value: clientJob.Latency.Average);
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency50",
+                        value: clientJob.Latency.P50);
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency75",
+                        value: clientJob.Latency.P75);
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency90",
+                        value: clientJob.Latency.P90);
+
+                    await WriteResultsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency99",
+                        value: clientJob.Latency.P99);
                 }
             }
             finally
@@ -529,8 +607,40 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
+        private static Task WriteResultsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, Scenario scenario, string path, string dimension, double value)
+        {
+            return WriteResultsToSql(
+                        connectionString: connectionString,
+                        scenario: scenario,
+                        group: serverJob.Group,
+                        description: serverJob.Description,
+                        aspnetCoreVersion: serverJob.AspNetCoreVersion,
+                        runtimeFrameworkVersion: serverJob.RuntimeFrameworkVersion,
+                        hardware: serverJob.Hardware.Value,
+                        operatingSystem: serverJob.OperatingSystem.Value,
+                        scheme: serverJob.Scheme,
+                        sources: serverJob.Sources,
+                        connectionFilter: serverJob.ConnectionFilter,
+                        webHost: serverJob.WebHost,
+                        kestrelThreadCount: serverJob.KestrelThreadCount,
+                        kestrelThreadPoolDispatching: serverJob.KestrelThreadPoolDispatching,
+                        kestrelTransport: serverJob.KestrelTransport,
+                        clientThreads: clientJob.Threads,
+                        connections: clientJob.Connections,
+                        duration: clientJob.Duration,
+                        pipelineDepth: clientJob.PipelineDepth,
+                        path: path,
+                        method: clientJob.Method,
+                        headers: clientJob.Headers,
+                        dimension: dimension,
+                        value: value);
+        }
         private static async Task WriteResultsToSql(
             string connectionString,
+            string group,
+            string description,
+            string aspnetCoreVersion,
+            string runtimeFrameworkVersion,
             Scenario scenario,
             Hardware hardware,
             OperatingSystem operatingSystem,
@@ -548,7 +658,8 @@ namespace BenchmarksDriver
             string path,
             string method,
             IEnumerable<string> headers,
-            double rps)
+            string dimension,
+            double value)
         {
             Log("Writing results to SQL...");
 
@@ -559,6 +670,10 @@ namespace BenchmarksDriver
                     CREATE TABLE [dbo].[AspNetBenchmarks](
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [DateTime] [datetimeoffset](7) NOT NULL,
+                        [Group] [nvarchar](max) NOT NULL,
+                        [Description] [nvarchar](max) NOT NULL,
+                        [AspNetCoreVersion] [nvarchar](max) NOT NULL,
+                        [RuntimeFrameworkVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
@@ -577,7 +692,8 @@ namespace BenchmarksDriver
                         [Path] [nvarchar](max) NULL,
                         [Method] [nvarchar](max) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
-                        [RequestsPerSecond] [float] NOT NULL
+                        [Dimension] [nvarchar](max) NOT NULL,
+                        [Value] [float] NOT NULL
                     )
                 END
                 ";
@@ -586,6 +702,10 @@ namespace BenchmarksDriver
                 @"
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
+                           ,[Group]
+                           ,[Description]
+                           ,[AspNetCoreVersion]
+                           ,[RuntimeFrameworkVersion]
                            ,[Scenario]
                            ,[Hardware]
                            ,[OperatingSystem]
@@ -604,9 +724,14 @@ namespace BenchmarksDriver
                            ,[Path]
                            ,[Method]
                            ,[Headers]
-                           ,[RequestsPerSecond])
+                           ,[Dimension]
+                           ,[Value])
                      VALUES
                            (@DateTime
+                           ,@Group
+                           ,@Description
+                           ,@AspNetCoreVersion
+                           ,@RuntimeFrameworkVersion
                            ,@Scenario
                            ,@Hardware
                            ,@OperatingSystem
@@ -625,7 +750,8 @@ namespace BenchmarksDriver
                            ,@Path
                            ,@Method
                            ,@Headers
-                           ,@RequestsPerSecond)
+                           ,@Dimension
+                           ,@Value)
                 ";
 
             using (var connection = new SqlConnection(connectionString))
@@ -641,6 +767,10 @@ namespace BenchmarksDriver
                 {
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@Group", group);
+                    p.AddWithValue("@Description", description.ToString());
+                    p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion.ToString());
+                    p.AddWithValue("@RuntimeFrameworkVersion", runtimeFrameworkVersion.ToString());
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
@@ -660,7 +790,8 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
                     p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
-                    p.AddWithValue("@RequestsPerSecond", rps);
+                    p.AddWithValue("@Dimension", dimension);
+                    p.AddWithValue("@Value", value);
 
                     await command.ExecuteNonQueryAsync();
                 }

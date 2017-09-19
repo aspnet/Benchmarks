@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -27,7 +28,7 @@ namespace BenchmarkServer
     public class Startup
     {
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
-        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
+        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl, BranchOrCommit = "sebros" };
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
@@ -185,6 +186,7 @@ namespace BenchmarkServer
                 dotnetHome = GetTempDir();
 
                 Process process = null;
+                Timer timer = null;
                 string tempDir = null;
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -217,6 +219,17 @@ namespace BenchmarkServer
                                 Debug.Assert(process == null);
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
+                                
+                                if (timer != null)
+                                {
+                                    timer.Dispose();
+                                }
+
+                                timer = new Timer(_ => 
+                                {
+                                    job.WorkingSets.Add(process.WorkingSet64);
+                                    job.ProcessorTimes.Add(process.TotalProcessorTime);
+                                }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
                             catch (Exception e)
                             {
@@ -235,6 +248,12 @@ namespace BenchmarkServer
                         else if (job.State == ServerState.Deleting)
                         {
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
+
+                            if (timer != null)
+                            {
+                                timer.Dispose();
+                                timer = null;
+                            }
 
                             if (process != null)
                             {
@@ -319,6 +338,23 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
+            // Update the package and framework version in the props file
+
+            var dependenciesProps = Path.Combine(path, "benchmarks", "build", "dependencies.props");
+            Log.WriteLine($"Altering versions in '{dependenciesProps}', AspNetCoreVersion: {job.AspNetCoreVersion}, RuntimeFrameworkVersion: {job.RuntimeFrameworkVersion}");
+            if (!File.Exists(dependenciesProps))
+            {
+                throw new FileNotFoundException($"Could not find dependencies file '{dependenciesProps}'");
+            }
+            else
+            {
+                var dependencies = XDocument.Load(dependenciesProps);
+                var propertyGroup = dependencies.Root.Element("PropertyGroup");
+                propertyGroup.Element("AspNetCoreVersion").Value = job.AspNetCoreVersion;
+                propertyGroup.Element("RuntimeFrameworkVersion").Value = job.RuntimeFrameworkVersion;
+                dependencies.Save(dependenciesProps);
+            }
+
             // Source dependencies are always built using KoreBuild
             AddSourceDependencies(path, benchmarksDir, dirs, env);
 
@@ -345,7 +381,7 @@ namespace BenchmarkServer
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
             ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp, environmentVariables: env);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release /p:AspnetCoreVersion=" + job.AspNetCoreVersion, workingDirectory: benchmarksApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp, environmentVariables: env);
 
             return benchmarksDir;
         }
@@ -473,6 +509,12 @@ namespace BenchmarkServer
                         info.Attributes = FileAttributes.Normal;
                     }
                     dir.Delete(recursive: true);
+                    Log.WriteLine("SUCCESS");
+                    break;
+                }
+                catch(DirectoryNotFoundException)
+                {
+                    Log.WriteLine("Nothing to do");
                     break;
                 }
                 catch (Exception e)
@@ -481,6 +523,7 @@ namespace BenchmarkServer
 
                     if (i < 9)
                     {
+                        Log.WriteLine("RETRYING");
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
                     else
@@ -553,6 +596,8 @@ namespace BenchmarkServer
                 process.StartInfo.Environment.Add("ConnectionString", sqlConnectionString);
             }
 
+            var stopwatch = new Stopwatch();
+            
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
@@ -561,13 +606,24 @@ namespace BenchmarkServer
 
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
-                        job.State = ServerState.Running;
-                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
+                        Log.WriteLine("Measuring startup time");
+                        var httpClient = new HttpClient();
+                        httpClient.GetAsync(job.Url).GetAwaiter().GetResult();
+                        stopwatch.Stop();
+                        job.Startup = stopwatch.Elapsed;
+
+                        job.WorkingSets.Add(process.WorkingSet64);
+                        job.ProcessorTimes.Add(process.TotalProcessorTime);
+                    
+                        // Make the job as running to allow the Client to start the test
+                        job.State = ServerState.Running;
                     }
                 }
             };
 
+            stopwatch.Start();
             process.Start();
             process.BeginOutputReadLine();
 

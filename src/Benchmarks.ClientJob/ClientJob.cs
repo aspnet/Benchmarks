@@ -54,6 +54,7 @@ namespace Benchmarks.ClientJob
         public ClientState State { get; set; }
 
         public double RequestsPerSecond { get; set; }
+        public Latency Latency { get;set; } = new Latency();
 
         public string Output { get; set; }
 
