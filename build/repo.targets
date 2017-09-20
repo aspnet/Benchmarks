@@ -5,8 +5,8 @@
     <CloudScenarios Include="-n Plaintext" />
     <CloudScenarios Include="-n MvcPlaintext" />
 
-    <CloudScenarios Include="-n Jil" />
     <CloudScenarios Include="-n Json" />
+    <CloudScenarios Include="-n Jil" />
     <CloudScenarios Include="-n MvcJson" />
     <CloudScenarios Include="-n MvcJil" />
 

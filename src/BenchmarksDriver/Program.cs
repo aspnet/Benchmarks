@@ -52,6 +52,15 @@ namespace BenchmarksDriver
             },
         };
 
+        private static readonly ClientJob _jilJob = new ClientJob(_baseJob)
+        {
+            Headers = new string[] {
+                "Host: localhost",
+                "Accept: application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
+                "Connection: keep-alive"
+            },
+        };
+
         private static readonly ClientJob _htmlJob = new ClientJob(_baseJob)
         {
             Headers = new string[] {
@@ -71,11 +80,13 @@ namespace BenchmarksDriver
             {
                 { Scenario.Plaintext, _plaintextJob },
                 { Scenario.Json, _jsonJob },
+                { Scenario.Jil, _jilJob },
                 { Scenario.CopyToAsync, new ClientJob(_plaintextJob) {
                     ScriptName = "post",
                 } },
                 { Scenario.MvcPlaintext, _plaintextJob },
                 { Scenario.MvcJson, _jsonJob },
+                { Scenario.MvcJil, _jilJob },
                 { Scenario.MemoryCachePlaintext, _plaintextJob },
                 { Scenario.MemoryCachePlaintextSetRemove, _plaintextJob },
                 { Scenario.ResponseCachingPlaintextCached, _plaintextJob },
