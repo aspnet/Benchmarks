@@ -623,13 +623,27 @@ namespace BenchmarkServer
                         job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
                         Log.WriteLine("Measuring startup time");
                         
-                        var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult();
-                        var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
+                        {
+                            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                            job.Startup = stopwatch.Elapsed;
+                        }
 
-                        stopwatch.Stop();
-                        job.Startup = stopwatch.Elapsed;
+                        // Measure a low-load latency by getting 5 samples synchronously
+                        // This could be done during the Client job but we are already measuring the Startup time here.
+                        var latencies = new List<TimeSpan>();
+                        for (var i = 0; i < 5; i++)
+                        {
+                            stopwatch.Restart();
+                            using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
+                            {
+                                latencies.Add(stopwatch.Elapsed);
+                            }
+                        }
 
-                        // Make the job as running to allow the Client to start the test
+                        job.Latency = TimeSpan.FromTicks((long)latencies.Average(l => l.Ticks));
+
+                        // Mark the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
                     }
                 }

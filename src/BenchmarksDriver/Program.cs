@@ -488,43 +488,17 @@ namespace BenchmarksDriver
                         scenario: scenario,
                         path: path,
                         dimension: "Latency (ms)",
+                        value: serverJob.Latency.TotalMilliseconds);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "LatencyAverage (ms)",
                         value: clientJob.Latency.Average);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        scenario: scenario,
-                        path: path,
-                        dimension: "Latency50 (ms)",
-                        value: clientJob.Latency.P50);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        scenario: scenario,
-                        path: path,
-                        dimension: "Latency75 (ms)",
-                        value: clientJob.Latency.P75);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        scenario: scenario,
-                        path: path,
-                        dimension: "Latency90 (ms)",
-                        value: clientJob.Latency.P90);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        scenario: scenario,
-                        path: path,
-                        dimension: "Latency99 (ms)",
-                        value: clientJob.Latency.P99);
+                    
                 }
             }
             finally
@@ -599,7 +573,6 @@ namespace BenchmarksDriver
                         LogVerbose($"Output: {clientJob.Output}");
                         LogVerbose($"Error: {clientJob.Error}");
                         Log($"RPS: {clientJob.RequestsPerSecond}");
-                        Log($"Latency: {clientJob.Latency.Average} ms");
                         break;
                     }
                     else
