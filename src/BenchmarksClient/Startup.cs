@@ -232,8 +232,12 @@ namespace BenchmarkClient
                 }
                 job.Latency.Average = average;
 
+                // Start Latency Distribution pattent matching after a specific index as 
+                // previous results could render a .75% result for instance
+                var latencyDistributionIndex = job.Output.IndexOf("Latency Distribution");
+
                 double p50 = -1;
-                var p50Match = Regex.Match(job.Output, @"50%\s*([\d\.]*)");
+                var p50Match = new Regex(@"50%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
                 if (p50Match.Success && p50Match.Groups.Count == 2)
                 {
                     double.TryParse(p50Match.Groups[1].Value, out p50);
@@ -241,7 +245,7 @@ namespace BenchmarkClient
                 job.Latency.P50 = p50;
 
                 double p75 = -1;
-                var p75Match = Regex.Match(job.Output, @"75%\s*([\d\.]*)");
+                var p75Match = new Regex(@"75%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
                 if (p75Match.Success && p75Match.Groups.Count == 2)
                 {
                     double.TryParse(p75Match.Groups[1].Value, out p75);
@@ -249,7 +253,7 @@ namespace BenchmarkClient
                 job.Latency.P75 = p75;
 
                 double p90 = -1;
-                var p90Match = Regex.Match(job.Output, @"90%\s*([\d\.]*)");
+                var p90Match = new Regex(@"90%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
                 if (p90Match.Success && p90Match.Groups.Count == 2)
                 {
                     double.TryParse(p90Match.Groups[1].Value, out p90);
@@ -257,7 +261,7 @@ namespace BenchmarkClient
                 job.Latency.P90 = p90;
 
                 double p99 = -1;
-                var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)");
+                var p99Match = new Regex(@"99%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
                 if (p99Match.Success && p99Match.Groups.Count == 2)
                 {
                     double.TryParse(p99Match.Groups[1].Value, out p99);

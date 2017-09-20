@@ -36,11 +36,11 @@ namespace Benchmarks.ServerJob
         public Scheme Scheme { get; set; }
         public string AspNetCoreVersion { get; set; }
         public string RuntimeFrameworkVersion { get; set; }
-        public string Group { get; set; }
+        public string Session { get; set; }
         public string Description { get; set; }
         public TimeSpan Startup { get; set; }
         public List<long> WorkingSets { get; set; } = new List<long>();
-        public List<TimeSpan> ProcessorTimes { get; set; } = new List<TimeSpan>();
+        public List<double> Cpus { get; set; } = new List<double>();
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

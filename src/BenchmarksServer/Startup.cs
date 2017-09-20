@@ -27,6 +27,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
         private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl, BranchOrCommit = "sebros" };
 
@@ -187,6 +188,7 @@ namespace BenchmarkServer
 
                 Process process = null;
                 Timer timer = null;
+                                
                 string tempDir = null;
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -225,10 +227,21 @@ namespace BenchmarkServer
                                     timer.Dispose();
                                 }
 
+                                DateTime lastMonitorTime = DateTime.UtcNow;
+                                var oldCPUTime = new TimeSpan(0);
+
                                 timer = new Timer(_ => 
                                 {
+
+                                    var newCPUTime = process.TotalProcessorTime;
+                                    var ellapsed = DateTime.UtcNow.Subtract(lastMonitorTime).TotalMilliseconds;
+                                    var cpu =  Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount *  ellapsed) * 100);
+                                    lastMonitorTime = DateTime.UtcNow;
+                                    oldCPUTime = newCPUTime;
+
                                     job.WorkingSets.Add(process.WorkingSet64);
-                                    job.ProcessorTimes.Add(process.TotalProcessorTime);
+                                    job.Cpus.Add(cpu);
+
                                 }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
                             catch (Exception e)
@@ -609,14 +622,13 @@ namespace BenchmarkServer
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                         job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
                         Log.WriteLine("Measuring startup time");
-                        var httpClient = new HttpClient();
-                        httpClient.GetAsync(job.Url).GetAwaiter().GetResult();
+                        
+                        var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult();
+                        var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
                         stopwatch.Stop();
                         job.Startup = stopwatch.Elapsed;
 
-                        job.WorkingSets.Add(process.WorkingSet64);
-                        job.ProcessorTimes.Add(process.TotalProcessorTime);
-                    
                         // Make the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
                     }
