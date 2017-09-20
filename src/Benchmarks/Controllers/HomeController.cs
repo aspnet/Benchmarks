@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Benchmarks.Controllers
 {
@@ -18,12 +19,19 @@ namespace Benchmarks.Controllers
         }
 
         [HttpGet("json")]
-        [Produces("application/json")]
+        [Produces("application/json", Type = typeof(JsonOutputFormatter))]
         public object Json()
         {
             return new { message = "Hello, World!" };
         }
-        
+
+        [HttpGet("jil")]
+        [Produces("application/json", Type = typeof(JilOutputFormatter))]
+        public object Jil()
+        {
+            return new { message = "Hello, World!" };
+        }
+
         [HttpGet("view")]
         public ViewResult Index()
         {

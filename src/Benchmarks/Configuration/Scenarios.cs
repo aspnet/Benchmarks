@@ -41,11 +41,17 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/json")]
         public bool Json { get; set; }
 
+        [ScenarioPath("/jil")]
+        public bool Jil { get; set; }
+
         [ScenarioPath("/mvc/plaintext")]
         public bool MvcPlaintext { get; set; }
 
         [ScenarioPath("/mvc/json")]
         public bool MvcJson { get; set; }
+
+        [ScenarioPath("/mvc/jil")]
+        public bool MvcJil { get; set; }
 
         [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         public bool StaticFiles { get; set; }
