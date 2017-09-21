@@ -36,6 +36,7 @@ namespace BenchmarkClient
         {
             app.UseMvc();
 
+            // Register a default startup page to ensure the application is up
             app.Map("", builder => 
                 builder.Run( (context) =>
                 {
