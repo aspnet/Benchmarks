@@ -261,7 +261,7 @@ namespace BenchmarkClient
             {
                 case "s" : return TimeSpan.FromSeconds(value);
                 case "ms" : return TimeSpan.FromMilliseconds(value);
-                case "us" : return TimeSpan.FromTicks((long)value * 10);
+                case "us" : return TimeSpan.FromTicks((long)value * 10); // 1 Tick == 100ns == 0.1us
 
                 default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
             }
