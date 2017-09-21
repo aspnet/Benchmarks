@@ -157,9 +157,7 @@ namespace BenchmarksDriver
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP.NET Core version (2.0.0 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
-            var runtimeFrameworkVersionOption = app.Option("--runtimeFrameworkVersion",
-                ".NET Core Runtime version (2.0.0 or 2.1.0-*).  Default is 2.0.0.", CommandOptionType.SingleValue);
+                "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
             var sessionOption = app.Option("--session",
                 "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             var descriptionOption = app.Option("--description",
@@ -203,12 +201,6 @@ namespace BenchmarksDriver
                 if (string.IsNullOrEmpty(aspnetCoreVersion))
                 {
                     aspnetCoreVersion = "2.1.0-*";
-                }
-
-                var runtimeFrameworkVersion = runtimeFrameworkVersionOption.Value();
-                if (string.IsNullOrEmpty(runtimeFrameworkVersion))
-                {
-                    runtimeFrameworkVersion = "2.0.0";
                 }
 
                 var session = sessionOption.Value();
@@ -275,7 +267,6 @@ namespace BenchmarksDriver
                     Scenario = scenario,
                     WebHost = webHost,
                     AspNetCoreVersion = aspnetCoreVersion,
-                    RuntimeFrameworkVersion = runtimeFrameworkVersion,
                     Session = session,
                     Description = description
                 };
@@ -642,7 +633,6 @@ namespace BenchmarksDriver
                         session: serverJob.Session,
                         description: serverJob.Description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
-                        runtimeFrameworkVersion: serverJob.RuntimeFrameworkVersion,
                         hardware: serverJob.Hardware.Value,
                         operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
@@ -667,7 +657,6 @@ namespace BenchmarksDriver
             string session,
             string description,
             string aspnetCoreVersion,
-            string runtimeFrameworkVersion,
             Scenario scenario,
             Hardware hardware,
             OperatingSystem operatingSystem,
@@ -699,7 +688,6 @@ namespace BenchmarksDriver
                         [Session] [nvarchar](max) NOT NULL,
                         [Description] [nvarchar](max) NOT NULL,
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
-                        [RuntimeFrameworkVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
@@ -732,7 +720,6 @@ namespace BenchmarksDriver
                            ,[Session]
                            ,[Description]
                            ,[AspNetCoreVersion]
-                           ,[RuntimeFrameworkVersion]
                            ,[Scenario]
                            ,[Hardware]
                            ,[OperatingSystem]
@@ -759,7 +746,6 @@ namespace BenchmarksDriver
                            ,@Session
                            ,@Description
                            ,@AspNetCoreVersion
-                           ,@RuntimeFrameworkVersion
                            ,@Scenario
                            ,@Hardware
                            ,@OperatingSystem
@@ -798,7 +784,6 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description.ToString());
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion.ToString());
-                    p.AddWithValue("@RuntimeFrameworkVersion", runtimeFrameworkVersion.ToString());
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());

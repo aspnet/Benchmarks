@@ -352,9 +352,8 @@ namespace BenchmarkServer
             };
 
             // Update the package and framework version in the props file
-
             var dependenciesProps = Path.Combine(path, "benchmarks", "build", "dependencies.props");
-            Log.WriteLine($"Altering versions in '{dependenciesProps}', AspNetCoreVersion: {job.AspNetCoreVersion}, RuntimeFrameworkVersion: {job.RuntimeFrameworkVersion}");
+            Log.WriteLine($"Altering versions in '{dependenciesProps}', AspNetCoreVersion: {job.AspNetCoreVersion}");
             if (!File.Exists(dependenciesProps))
             {
                 throw new FileNotFoundException($"Could not find dependencies file '{dependenciesProps}'");
@@ -363,8 +362,26 @@ namespace BenchmarkServer
             {
                 var dependencies = XDocument.Load(dependenciesProps);
                 var propertyGroup = dependencies.Root.Element("PropertyGroup");
-                propertyGroup.Element("AspNetCoreVersion").Value = job.AspNetCoreVersion;
-                propertyGroup.Element("RuntimeFrameworkVersion").Value = job.RuntimeFrameworkVersion;
+                propertyGroup.Element("BenchmarksAspNetCoreVersion").Value = job.AspNetCoreVersion;
+
+                switch (job.AspNetCoreVersion)
+                {
+                    case "2.0.0" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        break;
+
+                    case "2.0.1" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        break;
+
+                    case "2.1.0-*" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        break;
+                }
+
                 dependencies.Save(dependenciesProps);
             }
 
@@ -629,7 +646,8 @@ namespace BenchmarkServer
                             job.Startup = stopwatch.Elapsed;
                         }
 
-                        // Measure a low-load latency
+                        Log.WriteLine("Measuring single-user latency");
+
                         // This could be done during the Client job but we are already measuring the Startup time here.
                         for (var i = 0; i < 10; i++)
                         {

@@ -35,7 +35,6 @@ namespace Benchmarks.ServerJob
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
         public string AspNetCoreVersion { get; set; }
-        public string RuntimeFrameworkVersion { get; set; }
         public string Session { get; set; }
         public string Description { get; set; }
         public TimeSpan Startup { get; set; }

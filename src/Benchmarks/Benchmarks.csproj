@@ -14,7 +14,7 @@
     <DefineConstants>$(DefineConstants);DOTNET210</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.0.0'">
+  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.0.0' or '$(AspNetCoreVersion)' == '2.0.1'">
     <DefineConstants>$(DefineConstants);DOTNET200</DefineConstants>
   </PropertyGroup>
   
