@@ -29,7 +29,7 @@ namespace BenchmarkServer
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
-        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl, BranchOrCommit = "sebros" };
+        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
