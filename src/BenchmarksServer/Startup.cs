@@ -222,16 +222,16 @@ namespace BenchmarkServer
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
                                 
-                                DateTime lastMonitorTime = DateTime.UtcNow;
+                                var lastMonitorTime = DateTime.UtcNow;
                                 var oldCPUTime = new TimeSpan(0);
 
                                 timer = new Timer(_ => 
                                 {
-
+                                    var now = DateTime.UtcNow;
                                     var newCPUTime = process.TotalProcessorTime;
-                                    var ellapsed = DateTime.UtcNow.Subtract(lastMonitorTime).TotalMilliseconds;
-                                    var cpu =  Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount *  ellapsed) * 100);
-                                    lastMonitorTime = DateTime.UtcNow;
+                                    var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                    var cpu =  Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount *  elapsed) * 100);
+                                    lastMonitorTime = now;
                                     oldCPUTime = newCPUTime;
 
                                     job.WorkingSets.Add(process.WorkingSet64);
@@ -246,7 +246,7 @@ namespace BenchmarkServer
                                 job.State = ServerState.Failed;
 
                                 CleanJob();
-                                
+
                                 continue;
                             }
                         }
