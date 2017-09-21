@@ -470,7 +470,7 @@ namespace BenchmarksDriver
                         scenario: scenario,
                         path: path,
                         dimension: "WorkingSet (MB)",
-                        value: Math.Round(((double)serverJob.WorkingSets.Max()) / (1024 * 1024), 3));
+                        value: Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).Max()) / (1024 * 1024), 3));
 
                     await WriteJobsToSql(
                         serverJob: serverJob, 
@@ -479,7 +479,7 @@ namespace BenchmarksDriver
                         scenario: scenario,
                         path: path,
                         dimension: "CPU",
-                        value: serverJob.Cpus.Max());
+                        value: serverJob.ServerCounters.Select(x => x.CpuPercentage).Max());
 
                     await WriteJobsToSql(
                         serverJob: serverJob, 

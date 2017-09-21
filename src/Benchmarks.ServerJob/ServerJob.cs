@@ -40,8 +40,7 @@ namespace Benchmarks.ServerJob
         public string Description { get; set; }
         public TimeSpan Startup { get; set; }
         public TimeSpan Latency { get; set; }
-        public List<long> WorkingSets { get; set; } = new List<long>();
-        public List<double> Cpus { get; set; } = new List<double>();
+        public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

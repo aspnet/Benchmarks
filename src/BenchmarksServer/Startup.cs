@@ -234,8 +234,11 @@ namespace BenchmarkServer
                                     lastMonitorTime = now;
                                     oldCPUTime = newCPUTime;
 
-                                    job.WorkingSets.Add(process.WorkingSet64);
-                                    job.Cpus.Add(cpu);
+                                    job.ServerCounters.Add(new ServerCounter 
+                                    { 
+                                        WorkingSet = process.WorkingSet64,
+                                        CpuPercentage = cpu
+                                    });
 
                                 }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
