@@ -216,59 +216,27 @@ namespace BenchmarkClient
 
             process.Exited += (_, __) =>
             {
-                double rps = -1;
                 var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
                 if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
                 {
-                    double.TryParse(rpsMatch.Groups[1].Value, out rps);
+                    job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
                 }
-                job.RequestsPerSecond = rps;
 
-                double average = -1;
-                var latencyMatch = Regex.Match(job.Output, @"Latency\s*([\d\.]*)");
-                if (latencyMatch.Success && latencyMatch.Groups.Count == 2)
-                {
-                    double.TryParse(latencyMatch.Groups[1].Value, out average);
-                }
-                job.Latency.Average = average;
+                var latencyMatch = Regex.Match(job.Output, @"Latency\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Average = ReadLatency(latencyMatch);
 
-                // Start Latency Distribution pattent matching after a specific index as 
-                // previous results could render a .75% result for instance
-                var latencyDistributionIndex = job.Output.IndexOf("Latency Distribution");
+                var p50Match = Regex.Match(job.Output, @"50%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within50thPercentile = ReadLatency(p50Match);
 
-                double p50 = -1;
-                var p50Match = new Regex(@"50%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
-                if (p50Match.Success && p50Match.Groups.Count == 2)
-                {
-                    double.TryParse(p50Match.Groups[1].Value, out p50);
-                }
-                job.Latency.P50 = p50;
+                var p75Match = Regex.Match(job.Output, @"75%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within75thPercentile = ReadLatency(p75Match);
 
-                double p75 = -1;
-                var p75Match = new Regex(@"75%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
-                if (p75Match.Success && p75Match.Groups.Count == 2)
-                {
-                    double.TryParse(p75Match.Groups[1].Value, out p75);
-                }
-                job.Latency.P75 = p75;
+                var p90Match = Regex.Match(job.Output, @"90%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within90thPercentile = ReadLatency(p90Match);
 
-                double p90 = -1;
-                var p90Match = new Regex(@"90%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
-                if (p90Match.Success && p90Match.Groups.Count == 2)
-                {
-                    double.TryParse(p90Match.Groups[1].Value, out p90);
-                }
-                job.Latency.P90 = p90;
-
-                double p99 = -1;
-                var p99Match = new Regex(@"99%\s*([\d\.]*)").Match(job.Output, latencyDistributionIndex);
-                if (p99Match.Success && p99Match.Groups.Count == 2)
-                {
-                    double.TryParse(p99Match.Groups[1].Value, out p99);
-                }
-                job.Latency.P99 = p99;
-
-
+                var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within99thPercentile = ReadLatency(p99Match);
+                
                 job.State = ClientState.Completed;
             };
 
@@ -276,7 +244,27 @@ namespace BenchmarkClient
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            return process;
+            return process;                
+        }
+
+        private static TimeSpan ReadLatency(Match match)
+        {
+            if (!match.Success || match.Groups.Count != 3)
+            {
+                throw new NotSupportedException("Failed to parse latency");
+            }
+
+            var value = double.Parse(match.Groups[1].Value);
+            var unit = match.Groups[2].Value;
+
+            switch (unit)
+            {
+                case "s" : return TimeSpan.FromSeconds(value);
+                case "ms" : return TimeSpan.FromMilliseconds(value);
+                case "us" : return TimeSpan.FromTicks((long)value * 10);
+
+                default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
+            }
         }
 
         private static void Log(string message)

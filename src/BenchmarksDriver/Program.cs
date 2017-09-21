@@ -497,7 +497,44 @@ namespace BenchmarksDriver
                         scenario: scenario,
                         path: path,
                         dimension: "LatencyAverage (ms)",
-                        value: clientJob.Latency.Average);
+                        value: clientJob.Latency.Average.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency50Percentile (ms)",
+                        value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency75Percentile (ms)",
+                        value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency90Percentile (ms)",
+                        value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Latency99Percentile (ms)",
+                        value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
+                    
                     
                 }
             }
