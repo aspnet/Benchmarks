@@ -222,11 +222,6 @@ namespace BenchmarkServer
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
                                 
-                                if (timer != null)
-                                {
-                                    timer.Dispose();
-                                }
-
                                 DateTime lastMonitorTime = DateTime.UtcNow;
                                 var oldCPUTime = new TimeSpan(0);
 
@@ -248,13 +243,10 @@ namespace BenchmarkServer
                             {
                                 Log.WriteLine($"Error starting job '{job.Id}': {e}");
 
-                                if (tempDir != null)
-                                {
-                                    DeleteDir(tempDir);
-                                    tempDir = null;
-                                }
-
                                 job.State = ServerState.Failed;
+
+                                CleanJob();
+                                
                                 continue;
                             }
                         }
@@ -262,6 +254,11 @@ namespace BenchmarkServer
                         {
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
+                            CleanJob();
+                        }
+
+                        void CleanJob()
+                        {
                             if (timer != null)
                             {
                                 timer.Dispose();
