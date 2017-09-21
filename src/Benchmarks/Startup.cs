@@ -107,11 +107,6 @@ namespace Benchmarks
                     mvcBuilder.AddJsonFormatters();
                 }
 
-                if (Scenarios.MvcJil)
-                {
-                    mvcBuilder.AddMvcOptions(options => options.OutputFormatters.Add(new JilOutputFormatter()));
-                }
-
                 if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
                 {
                     mvcBuilder

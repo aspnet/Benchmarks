@@ -36,9 +36,8 @@ namespace Benchmarks.Middleware
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
                     JSON.Serialize(new { message = "Hello, World!" }, sw);
+                    return sw.FlushAsync();
                 }
-
-                return Task.CompletedTask;
             }
 
             return _next(httpContext);

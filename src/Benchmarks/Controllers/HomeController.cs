@@ -19,14 +19,15 @@ namespace Benchmarks.Controllers
         }
 
         [HttpGet("json")]
-        [Produces("application/json", Type = typeof(JsonOutputFormatter))]
+        [Produces("application/json")]
         public object Json()
         {
             return new { message = "Hello, World!" };
         }
 
         [HttpGet("jil")]
-        [Produces("application/json", Type = typeof(JilOutputFormatter))]
+        [Produces("application/json")]
+        [JilFormatter]
         public object Jil()
         {
             return new { message = "Hello, World!" };
