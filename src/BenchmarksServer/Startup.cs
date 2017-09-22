@@ -662,6 +662,8 @@ namespace BenchmarkServer
                         // This could be done during the Client job but we are already measuring the Startup time here.
                         for (var i = 0; i < 10; i++)
                         {
+                            stopwatch.Restart();
+                            
                             using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
                             {
                                 var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
