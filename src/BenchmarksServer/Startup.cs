@@ -386,8 +386,10 @@ namespace BenchmarkServer
                         propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.1.0-*";
                         propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = "2.1.0-*";
                         propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
-                        env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
                         env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+
+                        // Don't use "latest" runtime as it might not be tested yet. Use whatever KoreBuild specifies.
+                        // env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
                         break;
                     default:
                         throw new ArgumentException($"Unsupported AspNetCoreVersion argument '{job.AspNetCoreVersion}'");
