@@ -387,6 +387,8 @@ namespace BenchmarkServer
                         env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
                         env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                         break;
+                    default:
+                        throw new ArgumentException($"Unsupported AspNetCoreVersion argument '{job.AspNetCoreVersion}'");
                 }
 
                 dependencies.Save(dependenciesProps);

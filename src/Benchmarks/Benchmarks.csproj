@@ -10,11 +10,11 @@
     <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.1.0-*'">
+  <PropertyGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.0-*'">
     <DefineConstants>$(DefineConstants);DOTNET210</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(AspNetCoreVersion)' == '2.0.0' or '$(AspNetCoreVersion)' == '2.0.1'">
+  <PropertyGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.0.0' or '$(BenchmarksAspNetCoreVersion)' == '2.0.1'">
     <DefineConstants>$(DefineConstants);DOTNET200</DefineConstants>
   </PropertyGroup>
   
@@ -42,7 +42,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(AspNetCoreVersion)' == '2.1.0-*'">
+  <ItemGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.0-*'">
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
 
