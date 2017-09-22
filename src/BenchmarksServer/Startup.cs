@@ -222,7 +222,8 @@ namespace BenchmarkServer
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
                                 
-                                var lastMonitorTime = DateTime.UtcNow;
+                                var startMonitorTime = DateTime.UtcNow;
+                                var lastMonitorTime = startMonitorTime;
                                 var oldCPUTime = new TimeSpan(0);
 
                                 timer = new Timer(_ => 
@@ -236,6 +237,7 @@ namespace BenchmarkServer
 
                                     job.ServerCounters.Add(new ServerCounter 
                                     { 
+                                        Ellapsed = now - startMonitorTime,
                                         WorkingSet = process.WorkingSet64,
                                         CpuPercentage = cpu
                                     });
