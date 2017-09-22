@@ -35,8 +35,7 @@ namespace Benchmarks.ServerJob
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
         public string AspNetCoreVersion { get; set; }
-        public string Session { get; set; }
-        public string Description { get; set; }
+        
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
         // Delay from the process started to the result of the first request

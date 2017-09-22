@@ -266,9 +266,7 @@ namespace BenchmarksDriver
                     Scheme = scheme,
                     Scenario = scenario,
                     WebHost = webHost,
-                    AspNetCoreVersion = aspnetCoreVersion,
-                    Session = session,
-                    Description = description
+                    AspNetCoreVersion = aspnetCoreVersion
                 };
 
                 if (connectionFilterOption.HasValue())
@@ -338,7 +336,7 @@ namespace BenchmarksDriver
                     _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path, session, description).Result;
             });
 
             return app.Execute(args);
@@ -349,7 +347,9 @@ namespace BenchmarksDriver
             Uri clientUri,
             string sqlConnectionString,
             ServerJob serverJob,
-            string path)
+            string path,
+            string session,
+            string description)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -442,6 +442,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "RequestsPerSecond",
                         value: clientJob.RequestsPerSecond);
                         
@@ -451,6 +453,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Startup Main (ms)",
                         value: serverJob.StartupMainMethod.TotalMilliseconds);
 
@@ -460,6 +464,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Startup First Request (ms)",
                         value: serverJob.StartupFirstRequest.TotalMilliseconds);
 
@@ -469,6 +475,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "WorkingSet (MB)",
                         value: Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).Max()) / (1024 * 1024), 3));
 
@@ -478,6 +486,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "CPU",
                         value: serverJob.ServerCounters.Select(x => x.CpuPercentage).Max());
 
@@ -486,6 +496,8 @@ namespace BenchmarksDriver
                         clientJob: clientJob,
                         connectionString: sqlConnectionString,
                         scenario: scenario,
+                        session: session,
+                        description: description,
                         path: path,
                         dimension: "Latency (ms)",
                         value: serverJob.Latency.TotalMilliseconds);
@@ -496,6 +508,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "LatencyAverage (ms)",
                         value: clientJob.Latency.Average.TotalMilliseconds);
                     
@@ -505,6 +519,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Latency50Percentile (ms)",
                         value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
                     
@@ -514,6 +530,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Latency75Percentile (ms)",
                         value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
                     
@@ -523,6 +541,8 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Latency90Percentile (ms)",
                         value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
                     
@@ -532,10 +552,10 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
+                        session: session,
+                        description: description,
                         dimension: "Latency99Percentile (ms)",
                         value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
-                    
-                    
                 }
             }
             finally
@@ -634,13 +654,13 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
-        private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, Scenario scenario, string path, string dimension, double value)
+        private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, Scenario scenario, string path, string session, string description, string dimension, double value)
         {
             return WriteResultsToSql(
                         connectionString: connectionString,
                         scenario: scenario,
-                        session: serverJob.Session,
-                        description: serverJob.Description,
+                        session: session,
+                        description: description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
                         hardware: serverJob.Hardware.Value,
                         operatingSystem: serverJob.OperatingSystem.Value,
