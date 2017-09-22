@@ -62,5 +62,7 @@ namespace Benchmarks.ServerJob
 
         [JsonConverter(typeof(StringEnumConverter))]
         public WebHost WebHost { get; set; }
+
+        public bool EnableRuntimeStore { get; set; }
     }
 }
