@@ -367,18 +367,25 @@ namespace BenchmarkServer
                 switch (job.AspNetCoreVersion)
                 {
                     case "2.0.0" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                         break;
 
                     case "2.0.1" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                         break;
 
                     case "2.1.0-*" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0-*";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0-*";
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.1.0-*";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = "2.1.0-*";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                         break;
                 }
 
