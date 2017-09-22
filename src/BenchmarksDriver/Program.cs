@@ -451,8 +451,17 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         scenario: scenario,
                         path: path,
-                        dimension: "Startup (ms)",
-                        value: serverJob.Startup.TotalMilliseconds);
+                        dimension: "Startup Main (ms)",
+                        value: serverJob.StartupMainMethod.TotalMilliseconds);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        scenario: scenario,
+                        path: path,
+                        dimension: "Startup First Request (ms)",
+                        value: serverJob.StartupFirstRequest.TotalMilliseconds);
 
                     await WriteJobsToSql(
                         serverJob: serverJob, 

@@ -37,7 +37,10 @@ namespace Benchmarks.ServerJob
         public string AspNetCoreVersion { get; set; }
         public string Session { get; set; }
         public string Description { get; set; }
-        public TimeSpan Startup { get; set; }
+        // Delay from the process started to the console receiving "Application started"
+        public TimeSpan StartupMainMethod { get; set; }
+        // Delay from the process started to the result of the first request
+        public TimeSpan StartupFirstRequest { get; set; }
         public TimeSpan Latency { get; set; }
         public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
         private IEnumerable<Source> _sources;
