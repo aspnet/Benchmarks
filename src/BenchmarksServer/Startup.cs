@@ -237,7 +237,7 @@ namespace BenchmarkServer
 
                                     job.ServerCounters.Add(new ServerCounter 
                                     { 
-                                        Ellapsed = now - startMonitorTime,
+                                        Elapsed = now - startMonitorTime,
                                         WorkingSet = process.WorkingSet64,
                                         CpuPercentage = cpu
                                     });
