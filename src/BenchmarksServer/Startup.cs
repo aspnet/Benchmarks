@@ -670,7 +670,7 @@ namespace BenchmarkServer
                             {
                                 var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                                // We keep the last measy to simulate a warmup phase.
+                                // We keep the last measure to simulate a warmup phase.
                                 job.Latency = stopwatch.Elapsed;
                             }
                         }
