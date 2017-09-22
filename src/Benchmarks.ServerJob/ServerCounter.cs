@@ -7,7 +7,7 @@ namespace Benchmarks.ServerJob
 {
     public class ServerCounter
     {
-        public TimeSpan Ellapsed { get; set; }
+        public TimeSpan Elapsed { get; set; }
         public long WorkingSet { get; set; }
         public double CpuPercentage { get; set; }
     }
