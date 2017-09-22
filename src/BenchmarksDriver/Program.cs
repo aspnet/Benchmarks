@@ -701,7 +701,7 @@ namespace BenchmarksDriver
                 BEGIN
                     CREATE TABLE [dbo].[AspNetBenchmarks](
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        [Excluded] [bit] NOT NULL,
+                        [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Session] [nvarchar](max) NOT NULL,
                         [Description] [nvarchar](max) NOT NULL,
@@ -733,8 +733,7 @@ namespace BenchmarksDriver
             const string insertCmd =
                 @"
                 INSERT INTO [dbo].[AspNetBenchmarks]
-                           ([Excluded]
-                           ,[DateTime]
+                           ([DateTime]
                            ,[Session]
                            ,[Description]
                            ,[AspNetCoreVersion]
@@ -759,8 +758,7 @@ namespace BenchmarksDriver
                            ,[Dimension]
                            ,[Value])
                      VALUES
-                           (0
-                           ,@DateTime
+                           (@DateTime
                            ,@Session
                            ,@Description
                            ,@AspNetCoreVersion
