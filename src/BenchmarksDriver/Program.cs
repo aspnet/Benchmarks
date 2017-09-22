@@ -156,6 +156,12 @@ namespace BenchmarksDriver
                 "-w|--webHost",
                 "WebHost (Kestrel or HttpSys). Default is Kestrel.",
                 CommandOptionType.SingleValue);
+            var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
+                "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
+            var sessionOption = app.Option("--session",
+                "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
+            var descriptionOption = app.Option("--description",
+                "The description of the job.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -190,6 +196,20 @@ namespace BenchmarksDriver
                 {
                     webHostValue = "Kestrel";
                 }
+
+                var aspnetCoreVersion = aspnetCoreVersionOption.Value();
+                if (string.IsNullOrEmpty(aspnetCoreVersion))
+                {
+                    aspnetCoreVersion = "2.1.0-*";
+                }
+
+                var session = sessionOption.Value();
+                if (String.IsNullOrEmpty(session)) 
+                {
+                    session = Guid.NewGuid().ToString("n");
+                }
+
+                var description = descriptionOption.Value();
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -245,7 +265,8 @@ namespace BenchmarksDriver
                 {
                     Scheme = scheme,
                     Scenario = scenario,
-                    WebHost = webHost
+                    WebHost = webHost,
+                    AspNetCoreVersion = aspnetCoreVersion
                 };
 
                 if (connectionFilterOption.HasValue())
@@ -315,7 +336,7 @@ namespace BenchmarksDriver
                     _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path, session, description).Result;
             });
 
             return app.Execute(args);
@@ -326,7 +347,9 @@ namespace BenchmarksDriver
             Uri clientUri,
             string sqlConnectionString,
             ServerJob serverJob,
-            string path)
+            string path,
+            string session,
+            string description)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -402,26 +425,126 @@ namespace BenchmarksDriver
 
                 if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
                 {
-                    await WriteResultsToSql(
+                    // Load latest state of server job
+                    LogVerbose($"GET {serverJobUri}...");
+                    response = await _httpClient.GetAsync(serverJobUri);
+                    responseContent = await response.Content.ReadAsStringAsync();
+
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                    Log("Writing results to SQL...");
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
                         connectionString: sqlConnectionString,
-                        scenario: scenario,
-                        hardware: serverJob.Hardware.Value,
-                        operatingSystem: serverJob.OperatingSystem.Value,
-                        scheme: serverJob.Scheme,
-                        sources: serverJob.Sources,
-                        connectionFilter: serverJob.ConnectionFilter,
-                        webHost: serverJob.WebHost,
-                        kestrelThreadCount: serverJob.KestrelThreadCount,
-                        kestrelThreadPoolDispatching: serverJob.KestrelThreadPoolDispatching,
-                        kestrelTransport: serverJob.KestrelTransport,
-                        clientThreads: clientJob.Threads,
-                        connections: clientJob.Connections,
-                        duration: clientJob.Duration,
-                        pipelineDepth: clientJob.PipelineDepth,
                         path: path,
-                        method: clientJob.Method,
-                        headers: clientJob.Headers,
-                        rps: clientJob.RequestsPerSecond);
+                        session: session,
+                        description: description,
+                        dimension: "RequestsPerSecond",
+                        value: clientJob.RequestsPerSecond);
+                        
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Startup Main (ms)",
+                        value: serverJob.StartupMainMethod.TotalMilliseconds);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Startup First Request (ms)",
+                        value: serverJob.StartupFirstRequest.TotalMilliseconds);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "WorkingSet (MB)",
+                        value: Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).Max()) / (1024 * 1024), 3));
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "CPU",
+                        value: serverJob.ServerCounters.Select(x => x.CpuPercentage).Max());
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        session: session,
+                        description: description,
+                        path: path,
+                        dimension: "Latency (ms)",
+                        value: serverJob.Latency.TotalMilliseconds);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "LatencyAverage (ms)",
+                        value: clientJob.Latency.Average.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency50Percentile (ms)",
+                        value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency75Percentile (ms)",
+                        value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency90Percentile (ms)",
+                        value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
+                    
+                    await WriteJobsToSql(
+                        serverJob: serverJob, 
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency99Percentile (ms)",
+                        value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
                 }
             }
             finally
@@ -520,8 +643,38 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
+        private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string description, string dimension, double value)
+        {
+            return WriteResultsToSql(
+                        connectionString: connectionString,
+                        scenario: serverJob.Scenario,
+                        session: session,
+                        description: description,
+                        aspnetCoreVersion: serverJob.AspNetCoreVersion,
+                        hardware: serverJob.Hardware.Value,
+                        operatingSystem: serverJob.OperatingSystem.Value,
+                        scheme: serverJob.Scheme,
+                        sources: serverJob.Sources,
+                        connectionFilter: serverJob.ConnectionFilter,
+                        webHost: serverJob.WebHost,
+                        kestrelThreadCount: serverJob.KestrelThreadCount,
+                        kestrelThreadPoolDispatching: serverJob.KestrelThreadPoolDispatching,
+                        kestrelTransport: serverJob.KestrelTransport,
+                        clientThreads: clientJob.Threads,
+                        connections: clientJob.Connections,
+                        duration: clientJob.Duration,
+                        pipelineDepth: clientJob.PipelineDepth,
+                        path: path,
+                        method: clientJob.Method,
+                        headers: clientJob.Headers,
+                        dimension: dimension,
+                        value: value);
+        }
         private static async Task WriteResultsToSql(
             string connectionString,
+            string session,
+            string description,
+            string aspnetCoreVersion,
             Scenario scenario,
             Hardware hardware,
             OperatingSystem operatingSystem,
@@ -539,17 +692,20 @@ namespace BenchmarksDriver
             string path,
             string method,
             IEnumerable<string> headers,
-            double rps)
+            string dimension,
+            double value)
         {
-            Log("Writing results to SQL...");
-
             const string createCmd =
                 @"
                 IF OBJECT_ID(N'dbo.AspNetBenchmarks', N'U') IS NULL
                 BEGIN
                     CREATE TABLE [dbo].[AspNetBenchmarks](
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
+                        [Session] [nvarchar](max) NOT NULL,
+                        [Description] [nvarchar](max) NOT NULL,
+                        [AspNetCoreVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
@@ -568,7 +724,8 @@ namespace BenchmarksDriver
                         [Path] [nvarchar](max) NULL,
                         [Method] [nvarchar](max) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
-                        [RequestsPerSecond] [float] NOT NULL
+                        [Dimension] [nvarchar](max) NOT NULL,
+                        [Value] [float] NOT NULL
                     )
                 END
                 ";
@@ -577,6 +734,9 @@ namespace BenchmarksDriver
                 @"
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
+                           ,[Session]
+                           ,[Description]
+                           ,[AspNetCoreVersion]
                            ,[Scenario]
                            ,[Hardware]
                            ,[OperatingSystem]
@@ -595,9 +755,13 @@ namespace BenchmarksDriver
                            ,[Path]
                            ,[Method]
                            ,[Headers]
-                           ,[RequestsPerSecond])
+                           ,[Dimension]
+                           ,[Value])
                      VALUES
                            (@DateTime
+                           ,@Session
+                           ,@Description
+                           ,@AspNetCoreVersion
                            ,@Scenario
                            ,@Hardware
                            ,@OperatingSystem
@@ -616,7 +780,8 @@ namespace BenchmarksDriver
                            ,@Path
                            ,@Method
                            ,@Headers
-                           ,@RequestsPerSecond)
+                           ,@Dimension
+                           ,@Value)
                 ";
 
             using (var connection = new SqlConnection(connectionString))
@@ -632,6 +797,9 @@ namespace BenchmarksDriver
                 {
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@Session", session);
+                    p.AddWithValue("@Description", description.ToString());
+                    p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion.ToString());
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
@@ -651,7 +819,8 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
                     p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
-                    p.AddWithValue("@RequestsPerSecond", rps);
+                    p.AddWithValue("@Dimension", dimension);
+                    p.AddWithValue("@Value", value);
 
                     await command.ExecuteNonQueryAsync();
                 }

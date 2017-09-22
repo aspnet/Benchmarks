@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
@@ -34,6 +35,14 @@ namespace BenchmarkClient
         public void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
+
+            // Register a default startup page to ensure the application is up
+            app.Map("", builder => 
+                builder.Run( (context) =>
+                {
+                    return context.Response.WriteAsync("OK!");
+                })
+            );
         }
 
         public static int Main(string[] args)
@@ -208,14 +217,27 @@ namespace BenchmarkClient
 
             process.Exited += (_, __) =>
             {
-                double rps = -1;
-                var match = Regex.Match(job.Output, @"Requests/sec:\s*([\d.]*)");
-                if (match.Success && match.Groups.Count == 2)
+                var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
+                if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
                 {
-                    double.TryParse(match.Groups[1].Value, out rps);
+                    job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
                 }
-                job.RequestsPerSecond = rps;
 
+                var latencyMatch = Regex.Match(job.Output, @"Latency\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Average = ReadLatency(latencyMatch);
+
+                var p50Match = Regex.Match(job.Output, @"50%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within50thPercentile = ReadLatency(p50Match);
+
+                var p75Match = Regex.Match(job.Output, @"75%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within75thPercentile = ReadLatency(p75Match);
+
+                var p90Match = Regex.Match(job.Output, @"90%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within90thPercentile = ReadLatency(p90Match);
+
+                var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)\s*(s|ms|us)");
+                job.Latency.Within99thPercentile = ReadLatency(p99Match);
+                
                 job.State = ClientState.Completed;
             };
 
@@ -223,7 +245,27 @@ namespace BenchmarkClient
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            return process;
+            return process;                
+        }
+
+        private static TimeSpan ReadLatency(Match match)
+        {
+            if (!match.Success || match.Groups.Count != 3)
+            {
+                throw new NotSupportedException("Failed to parse latency");
+            }
+
+            var value = double.Parse(match.Groups[1].Value);
+            var unit = match.Groups[2].Value;
+
+            switch (unit)
+            {
+                case "s" : return TimeSpan.FromSeconds(value);
+                case "ms" : return TimeSpan.FromMilliseconds(value);
+                case "us" : return TimeSpan.FromTicks((long)value * 10); // 1 Tick == 100ns == 0.1us
+
+                default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
+            }
         }
 
         private static void Log(string message)

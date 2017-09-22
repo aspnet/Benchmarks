@@ -5,13 +5,15 @@
     <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
-    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
+    <NETCoreAppImplicitPackageVersion>2.0.0-*</NETCoreAppImplicitPackageVersion>
+    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
 
     <!--
       Following properties are specific to src/Benchmarks/Benchmarks.csproj.
       Separate to ease testing of earlier releases.
     -->
     <BenchmarksAspNetCoreVersion>$(AspNetCoreVersion)</BenchmarksAspNetCoreVersion>
+    <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
     <DapperVersion>1.*</DapperVersion>

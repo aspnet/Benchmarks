@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -33,7 +34,14 @@ namespace Benchmarks.ServerJob
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
-
+        public string AspNetCoreVersion { get; set; }
+        
+        // Delay from the process started to the console receiving "Application started"
+        public TimeSpan StartupMainMethod { get; set; }
+        // Delay from the process started to the result of the first request
+        public TimeSpan StartupFirstRequest { get; set; }
+        public TimeSpan Latency { get; set; }
+        public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
         private IEnumerable<Source> _sources;
         public IEnumerable<Source> Sources
         {

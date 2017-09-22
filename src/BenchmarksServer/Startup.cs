@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -26,6 +27,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
         private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
 
@@ -185,6 +187,8 @@ namespace BenchmarkServer
                 dotnetHome = GetTempDir();
 
                 Process process = null;
+                Timer timer = null;
+                                
                 string tempDir = null;
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -217,24 +221,54 @@ namespace BenchmarkServer
                                 Debug.Assert(process == null);
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
+                                
+                                var startMonitorTime = DateTime.UtcNow;
+                                var lastMonitorTime = startMonitorTime;
+                                var oldCPUTime = new TimeSpan(0);
+
+                                timer = new Timer(_ => 
+                                {
+                                    var now = DateTime.UtcNow;
+                                    var newCPUTime = process.TotalProcessorTime;
+                                    var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                    var cpu =  Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount *  elapsed) * 100);
+                                    lastMonitorTime = now;
+                                    oldCPUTime = newCPUTime;
+
+                                    job.ServerCounters.Add(new ServerCounter 
+                                    { 
+                                        Ellapsed = now - startMonitorTime,
+                                        WorkingSet = process.WorkingSet64,
+                                        CpuPercentage = cpu
+                                    });
+
+                                }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
                             catch (Exception e)
                             {
                                 Log.WriteLine($"Error starting job '{job.Id}': {e}");
 
-                                if (tempDir != null)
-                                {
-                                    DeleteDir(tempDir);
-                                    tempDir = null;
-                                }
-
                                 job.State = ServerState.Failed;
+
+                                CleanJob();
+
                                 continue;
                             }
                         }
                         else if (job.State == ServerState.Deleting)
                         {
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
+
+                            CleanJob();
+                        }
+
+                        void CleanJob()
+                        {
+                            if (timer != null)
+                            {
+                                timer.Dispose();
+                                timer = null;
+                            }
 
                             if (process != null)
                             {
@@ -319,10 +353,54 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
+            // Update the package and framework version in the props file
+            var dependenciesProps = Path.Combine(path, "benchmarks", "build", "dependencies.props");
+            Log.WriteLine($"Altering versions in '{dependenciesProps}', AspNetCoreVersion: {job.AspNetCoreVersion}");
+            if (!File.Exists(dependenciesProps))
+            {
+                throw new FileNotFoundException($"Could not find dependencies file '{dependenciesProps}'");
+            }
+            else
+            {
+                var dependencies = XDocument.Load(dependenciesProps);
+                var propertyGroup = dependencies.Root.Element("PropertyGroup");
+                propertyGroup.Element("BenchmarksAspNetCoreVersion").Value = job.AspNetCoreVersion;
+
+                switch (job.AspNetCoreVersion)
+                {
+                    case "2.0.0" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+                        break;
+
+                    case "2.0.1" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+                        break;
+
+                    case "2.1.0-*" :
+                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.1.0-*";
+                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = "2.1.0-*";
+                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
+                        env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
+                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+                        break;
+                    default:
+                        throw new ArgumentException($"Unsupported AspNetCoreVersion argument '{job.AspNetCoreVersion}'");
+                }
+
+                dependencies.Save(dependenciesProps);
+            }
+
+            // Source dependencies are always built using KoreBuild
             AddSourceDependencies(path, benchmarksDir, dirs, env);
 
             // Install latest SDK and runtime
-            // * Use custom install dir to avoid changing the default install,  which is impossible if other processes
+            // * Use custom install dir to avoid changing the default install, which is impossible if other processes
             //   are already using it.
             var benchmarksRoot = Path.Combine(path, benchmarksDir);
 
@@ -472,6 +550,12 @@ namespace BenchmarkServer
                         info.Attributes = FileAttributes.Normal;
                     }
                     dir.Delete(recursive: true);
+                    Log.WriteLine("SUCCESS");
+                    break;
+                }
+                catch(DirectoryNotFoundException)
+                {
+                    Log.WriteLine("Nothing to do");
                     break;
                 }
                 catch (Exception e)
@@ -480,6 +564,7 @@ namespace BenchmarkServer
 
                     if (i < 9)
                     {
+                        Log.WriteLine("RETRYING");
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
                     else
@@ -552,6 +637,8 @@ namespace BenchmarkServer
                 process.StartInfo.Environment.Add("ConnectionString", sqlConnectionString);
             }
 
+            var stopwatch = new Stopwatch();
+            
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
@@ -560,13 +647,41 @@ namespace BenchmarkServer
 
                     if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
                     {
-                        job.State = ServerState.Running;
-                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
+                        job.StartupMainMethod = stopwatch.Elapsed;
+
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
+                        Log.WriteLine("Measuring startup time");
+                        
+                        using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
+                        {
+                            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                            job.StartupFirstRequest = stopwatch.Elapsed;
+                        }
+
+                        Log.WriteLine("Measuring single-user latency");
+
+                        // This could be done during the Client job but we are already measuring the Startup time here.
+                        for (var i = 0; i < 10; i++)
+                        {
+                            stopwatch.Restart();
+                            
+                            using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
+                            {
+                                var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                                // We keep the last measure to simulate a warmup phase.
+                                job.Latency = stopwatch.Elapsed;
+                            }
+                        }
+
+                        // Mark the job as running to allow the Client to start the test
+                        job.State = ServerState.Running;
                     }
                 }
             };
 
+            stopwatch.Start();
             process.Start();
             process.BeginOutputReadLine();
 
