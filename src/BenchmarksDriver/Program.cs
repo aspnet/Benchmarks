@@ -209,7 +209,7 @@ namespace BenchmarksDriver
                     session = Guid.NewGuid().ToString("n");
                 }
 
-                var description = descriptionOption.Value();
+                var description = descriptionOption.Value() ?? "";
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -704,7 +704,7 @@ namespace BenchmarksDriver
                         [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Session] [nvarchar](max) NOT NULL,
-                        [Description] [nvarchar](max) NOT NULL,
+                        [Description] [nvarchar](max),
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
@@ -798,8 +798,8 @@ namespace BenchmarksDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Session", session);
-                    p.AddWithValue("@Description", description.ToString());
-                    p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion.ToString());
+                    p.AddWithValue("@Description", description);
+                    p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
