@@ -163,7 +163,7 @@ namespace BenchmarksDriver
             var descriptionOption = app.Option("--description",
                 "The description of the job.", CommandOptionType.SingleValue);
             var enableRuntimeStoreOption = app.Option("--enableRuntimeStore",
-                "Runs the benchmarks using the runtime store is available.", CommandOptionType.NoValue);
+                "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",

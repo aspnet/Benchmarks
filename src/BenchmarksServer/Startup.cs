@@ -397,7 +397,6 @@ namespace BenchmarkServer
             }
 
             // Source dependencies are always built using KoreBuild
-            // Source dependencies are always built using KoreBuild
             AddSourceDependencies(path, benchmarksDir, dirs, env);
 
             // Install latest SDK and runtime
