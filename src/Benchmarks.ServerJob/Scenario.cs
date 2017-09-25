@@ -15,11 +15,17 @@ namespace Benchmarks.ServerJob
         Json,
         CopyToAsync,
 
+        [ScenarioPath("/jil")]
+        Jil,
+
         [ScenarioPath("/mvc/plaintext")]
         MvcPlaintext,
 
         [ScenarioPath("/mvc/json")]
         MvcJson,
+
+        [ScenarioPath("/mvc/jil")]
+        MvcJil,
 
         [ScenarioPath("/memorycache/plaintext")]
         MemoryCachePlaintext,

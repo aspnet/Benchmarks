@@ -6,7 +6,9 @@
     <CloudScenarios Include="-n MvcPlaintext" />
 
     <CloudScenarios Include="-n Json" />
+    <CloudScenarios Include="-n Jil" />
     <CloudScenarios Include="-n MvcJson" />
+    <CloudScenarios Include="-n MvcJil" />
 
     <CloudScenarios Include="-n DbSingleQueryRaw" />
     <CloudScenarios Include="-n DbSingleQueryDapper" />
@@ -60,11 +62,15 @@
     <PhysicalScenarios Include="-n Json -m https --kestrelTransport Sockets" />
     <PhysicalScenarios Include="-n Json -m https --webHost HttpSys" />
 
+    <PhysicalScenarios Include="-n Jil" />
+
     <PhysicalScenarios Include="-n StaticFiles --path plaintext" />
 
     <PhysicalScenarios Include="-n MvcPlaintext" />
 
     <PhysicalScenarios Include="-n MvcJson" />
+
+    <PhysicalScenarios Include="-n MvcJil" />
 
     <PhysicalScenarios Include="-n MemoryCachePlaintext" />
     <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove" />

@@ -71,11 +71,13 @@ namespace BenchmarksDriver
             {
                 { Scenario.Plaintext, _plaintextJob },
                 { Scenario.Json, _jsonJob },
+                { Scenario.Jil, _jsonJob },
                 { Scenario.CopyToAsync, new ClientJob(_plaintextJob) {
                     ScriptName = "post",
                 } },
                 { Scenario.MvcPlaintext, _plaintextJob },
                 { Scenario.MvcJson, _jsonJob },
+                { Scenario.MvcJil, _jsonJob },
                 { Scenario.MemoryCachePlaintext, _plaintextJob },
                 { Scenario.MemoryCachePlaintextSetRemove, _plaintextJob },
                 { Scenario.ResponseCachingPlaintextCached, _plaintextJob },

@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Benchmarks.Configuration;
+using Benchmarks.Controllers;
 using Benchmarks.Data;
 using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Builder;
@@ -140,6 +141,11 @@ namespace Benchmarks
             if (Scenarios.Json)
             {
                 app.UseJson();
+            }
+
+            if (Scenarios.Jil)
+            {
+                app.UseJil();
             }
 
             if (Scenarios.CopyToAsync)
