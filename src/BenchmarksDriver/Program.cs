@@ -359,8 +359,9 @@ namespace BenchmarksDriver
 
             try
             {
+                Log($"Running session '{session}' with description '{description}'");
                 Log($"Starting scenario {scenario} on benchmark server...");
-
+                
                 var content = JsonConvert.SerializeObject(serverJob);
                 LogVerbose($"POST {serverJobsUri} {content}...");
 
@@ -617,7 +618,12 @@ namespace BenchmarksDriver
                     {
                         Log($"Scenario {scenario} completed on benchmark client");
                         LogVerbose($"Output: {clientJob.Output}");
-                        LogVerbose($"Error: {clientJob.Error}");
+
+                        if (!String.IsNullOrWhiteSpace(clientJob.Error))
+                        {
+                            LogVerbose($"Error: {clientJob.Error}");
+                        }
+
                         Log($"RPS: {clientJob.RequestsPerSecond}");
                         break;
                     }
