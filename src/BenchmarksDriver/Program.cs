@@ -703,30 +703,41 @@ namespace BenchmarksDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
-                        [Session] [nvarchar](128) NOT NULL,
-                        [Description] [nvarchar](1024),
-                        [AspNetCoreVersion] [nvarchar](64) NOT NULL,
-                        [Scenario] [nvarchar](1024) NOT NULL,
+                        [Session] [nvarchar](max) NOT NULL,
+                        [Description] [nvarchar](512),
+                        [AspNetCoreVersion] [nvarchar](max) NOT NULL,
+                        [Scenario] [nvarchar](128) NOT NULL,
                         [Hardware] [nvarchar](64) NOT NULL,
-                        [OperatingSystem] [nvarchar](max) NOT NULL,
-                        [Framework] [nvarchar](64) NOT NULL,
-                        [Scheme] [nvarchar](16) NOT NULL,
-                        [Sources] [nvarchar](1024) NULL,
-                        [ConnectionFilter] [nvarchar](1024) NULL,
-                        [WebHost] [nvarchar](64) NOT NULL,
-                        [KestrelTransport] [nvarchar](64) NULL,
+                        [OperatingSystem] [nvarchar](64) NOT NULL,
+                        [Framework] [nvarchar](max) NOT NULL,
+                        [Scheme] [nvarchar](max) NOT NULL,
+                        [Sources] [nvarchar](max) NULL,
+                        [ConnectionFilter] [nvarchar](max) NULL,
+                        [WebHost] [nvarchar](max) NOT NULL,
+                        [KestrelTransport] [nvarchar](max) NULL,
                         [KestrelThreadCount] [int] NULL,
                         [KestrelThreadPoolDispatching] [bit] NULL,
                         [ClientThreads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
-                        [Path] [nvarchar](1024) NULL,
-                        [Method] [nvarchar](32) NOT NULL,
+                        [Path] [nvarchar](max) NULL,
+                        [Method] [nvarchar](max) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
                         [Dimension] [nvarchar](64) NOT NULL,
                         [Value] [float] NOT NULL
                     )
+
+                    CREATE INDEX IDX_Scenario_Hardware_OS_Description_Dimension
+                    ON AspNetBenchmarks
+                    (
+                        [Scenario],
+                        [Hardware],
+                        [OperatingSystem],
+                        [Description],
+                        [Dimension]
+                    )
+                    
                 END
                 ";
 
