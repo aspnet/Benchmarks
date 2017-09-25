@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -27,7 +28,8 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient;
+        private static readonly HttpClientHandler _httpClientHandler;
         private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
         private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
 
@@ -59,6 +61,11 @@ namespace BenchmarkServer
             File.Delete(_rootTempDir);
             Directory.CreateDirectory(_rootTempDir);
             Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
+
+            // Configuring the http client to trust the self-signed certificate
+            _httpClientHandler = new HttpClientHandler();
+            _httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+            _httpClient = new HttpClient(_httpClientHandler);
 
             Action shutdown = () =>
             {
