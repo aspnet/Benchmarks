@@ -361,7 +361,7 @@ namespace BenchmarksDriver
             {
                 Log($"Running session '{session}' with description '{description}'");
                 Log($"Starting scenario {scenario} on benchmark server...");
-                
+
                 var content = JsonConvert.SerializeObject(serverJob);
                 LogVerbose($"POST {serverJobsUri} {content}...");
 
