@@ -422,16 +422,16 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var result = ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
 
             if (job.EnableRuntimeStore)
             {
-                result = ProcessUtil.Run(dotnetExecutable, $"build -c Release", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
+                ProcessUtil.Run(dotnetExecutable, $"build -c Release", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
             }
             else
             {
                 // Publishing the application will prevent the runtime store from being used as it copies the assemblies in the published folder
-                result = ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {Path.Combine(benchmarksApp, "published")}", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {Path.Combine(benchmarksApp, "published")}", throwOnError: false, workingDirectory: benchmarksApp, environmentVariables: env);
             }                
 
 
