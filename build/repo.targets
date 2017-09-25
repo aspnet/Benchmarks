@@ -64,14 +64,6 @@
 
     <PhysicalScenarios Include="-n Jil" />
 
-    <PhysicalScenarios Include="-n Jil --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Jil --webHost HttpSys" />
-    <PhysicalScenarios Include="-n Jil -f Benchmarks.PassthroughConnectionFilter" />
-
-    <PhysicalScenarios Include="-n Jil -m https" />
-    <PhysicalScenarios Include="-n Jil -m https --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Jil -m https --webHost HttpSys" />
-
     <PhysicalScenarios Include="-n StaticFiles --path plaintext" />
 
     <PhysicalScenarios Include="-n MvcPlaintext" />
