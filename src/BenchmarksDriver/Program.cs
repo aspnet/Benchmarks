@@ -164,6 +164,8 @@ namespace BenchmarksDriver
                 "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             var descriptionOption = app.Option("--description",
                 "The description of the job.", CommandOptionType.SingleValue);
+            var enableRuntimeStoreOption = app.Option("--enableRuntimeStore",
+                "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -212,6 +214,8 @@ namespace BenchmarksDriver
                 }
 
                 var description = descriptionOption.Value() ?? "";
+
+                var enableRuntimeStore = enableRuntimeStoreOption.HasValue();
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -268,7 +272,8 @@ namespace BenchmarksDriver
                     Scheme = scheme,
                     Scenario = scenario,
                     WebHost = webHost,
-                    AspNetCoreVersion = aspnetCoreVersion
+                    AspNetCoreVersion = aspnetCoreVersion,
+                    EnableRuntimeStore = enableRuntimeStore
                 };
 
                 if (connectionFilterOption.HasValue())
