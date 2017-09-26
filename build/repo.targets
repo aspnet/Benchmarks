@@ -111,7 +111,7 @@
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) </RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
