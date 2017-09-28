@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Repository;
 
 namespace BenchmarkClient
@@ -122,7 +123,7 @@ namespace BenchmarkClient
 
                     if (job.Headers != null)
                     {
-                        jobLogText += $" Headers:{job.Headers.ToContentString()}";
+                        jobLogText += $" Headers:{JsonConvert.SerializeObject(job.Headers)}";
                     }
 
                     jobLogText += "]";
@@ -168,7 +169,7 @@ namespace BenchmarkClient
             {
                 foreach (var header in job.Headers)
                 {
-                    command += $" -H \"{header}\"";
+                    command += $" -H \"{header.Key}={header.Value}\"";
                 }
             }
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Repository;
@@ -29,11 +28,11 @@ namespace Benchmarks.ServerJob
         [JsonConverter(typeof(StringEnumConverter))]
         public KestrelTransport? KestrelTransport { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Scenario Scenario { get; set; }
+        public string Scenario { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
+        public int Port { get; set; } = 5000;
         public string AspNetCoreVersion { get; set; }
         
         // Delay from the process started to the console receiving "Application started"
@@ -42,18 +41,10 @@ namespace Benchmarks.ServerJob
         public TimeSpan StartupFirstRequest { get; set; }
         public TimeSpan Latency { get; set; }
         public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
-        private IEnumerable<Source> _sources;
-        public IEnumerable<Source> Sources
-        {
-            get
-            {
-                return _sources ?? Enumerable.Empty<Source>();
-            }
-            set
-            {
-                _sources = value;
-            }
-        }
+        public IList<Source> Sources { get; set; } = new List<Source>();
+
+        public Source Source { get; set; }
+        public string Arguments { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ServerState State { get; set; }

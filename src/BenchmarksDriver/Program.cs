@@ -4,17 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Linq;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
 
 namespace BenchmarksDriver
@@ -24,95 +23,9 @@ namespace BenchmarksDriver
         private static bool _verbose;
 
         private static readonly HttpClient _httpClient = new HttpClient();
-
-        private static readonly ClientJob _baseJob = new ClientJob()
-        {
-            Connections = 256,
-            Threads = 32,
-            Duration = 15,
-        };
-
-        private static readonly ClientJob _plaintextJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-                "Connection: keep-alive"
-            },
-            ScriptName = "pipeline",
-            PipelineDepth = 16,
-        };
-
-        private static readonly ClientJob _jsonJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-                "Connection: keep-alive"
-            },
-        };
-
-        private static readonly ClientJob _htmlJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Connection: keep-alive"
-            },
-        };
-
-        private static readonly ClientJob _multiQueryJob = new ClientJob(_jsonJob)
-        {
-            Query = "?queries=20",
-        };
-
-        private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
-            new Dictionary<Scenario, ClientJob>()
-            {
-                { Scenario.Plaintext, _plaintextJob },
-                { Scenario.Json, _jsonJob },
-                { Scenario.Jil, _jsonJob },
-                { Scenario.CopyToAsync, new ClientJob(_plaintextJob) {
-                    ScriptName = "post",
-                } },
-                { Scenario.MvcPlaintext, _plaintextJob },
-                { Scenario.MvcJson, _jsonJob },
-                { Scenario.MvcJil, _jsonJob },
-                { Scenario.MemoryCachePlaintext, _plaintextJob },
-                { Scenario.MemoryCachePlaintextSetRemove, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextCached, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextResponseNoCache, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob(_plaintextJob) {
-                    Headers = _plaintextJob.Headers.Append("Cache-Control: no-cache")
-                } },
-                { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
-                { Scenario.StaticFiles, _plaintextJob },
-                { Scenario.DbSingleQueryRaw, _jsonJob },
-                { Scenario.DbSingleQueryDapper, _jsonJob },
-                { Scenario.DbSingleQueryEf, _jsonJob },
-                { Scenario.MvcDbSingleQueryRaw, _jsonJob },
-                { Scenario.MvcDbSingleQueryDapper, _jsonJob },
-                { Scenario.MvcDbSingleQueryEf, _jsonJob },
-                { Scenario.DbMultiQueryRaw, _multiQueryJob },
-                { Scenario.DbMultiQueryDapper, _multiQueryJob },
-                { Scenario.DbMultiQueryEf, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryRaw, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryDapper, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryEf, _multiQueryJob },
-                { Scenario.DbMultiUpdateRaw, _multiQueryJob },
-                { Scenario.DbMultiUpdateDapper, _multiQueryJob },
-                { Scenario.DbMultiUpdateEf, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateRaw, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateDapper, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateEf, _multiQueryJob },
-                { Scenario.DbFortunesRaw, _htmlJob },
-                { Scenario.DbFortunesDapper, _htmlJob },
-                { Scenario.DbFortunesEf, _htmlJob },
-                { Scenario.MvcDbFortunesRaw, _htmlJob },
-                { Scenario.MvcDbFortunesDapper, _htmlJob },
-                { Scenario.MvcDbFortunesEf, _htmlJob },
-            };
-
+        
+        private static ClientJob _clientJob;
+        
         public static int Main(string[] args)
         {
             var app = new CommandLineApplication()
@@ -167,21 +80,23 @@ namespace BenchmarksDriver
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
-                "Number of threads used by client", CommandOptionType.SingleValue);
+                "Number of threads used by client.", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
-                "Number of connections used by client", CommandOptionType.SingleValue);
+                "Number of connections used by client.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
-                "Duration of test in seconds", CommandOptionType.SingleValue);
+                "Duration of test in seconds.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
-                "Header added to request", CommandOptionType.MultipleValue);
+                "Header added to request.", CommandOptionType.MultipleValue);
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var pipelineDepthOption = app.Option("--pipelineDepth",
-                "Depth of pipeline used by client", CommandOptionType.SingleValue);
+                "Depth of pipeline used by client.", CommandOptionType.SingleValue);
             var pathOption = app.Option(
                 "--path",
                 "Relative URL where the client should send requests.",
                 CommandOptionType.SingleValue);
+            var jobsOptions = app.Option("-j|--jobs",
+                "The path or url to the jobs definition.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -215,61 +130,96 @@ namespace BenchmarksDriver
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
+                var jobDefinitionPathOrUrl =  jobsOptions.Value();
+
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
-                    !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out Scenario scenario) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
                     string.IsNullOrWhiteSpace(server) ||
-                    string.IsNullOrWhiteSpace(client))
+                    string.IsNullOrWhiteSpace(client) ||
+                    string.IsNullOrWhiteSpace(jobDefinitionPathOrUrl))
                 {
                     app.ShowHelp();
                     return 2;
                 }
 
-                string path = null;
-                var scenarioName = scenario.ToString();
-                var field = typeof(Scenario).GetTypeInfo().GetField(scenarioName);
-                var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
-                if (pathAttribute != null)
+                string jobDefinitionContent;
+                
+                // Load the job definition from a url or locally
+                try
                 {
-                    Debug.Assert(pathAttribute.Paths.Length > 0);
-                    if (pathAttribute.Paths.Length == 1)
+                    if (jobDefinitionPathOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (pathOption.HasValue())
-                        {
-                            Console.WriteLine($"Scenario '{scenarioName}' does not support the {pathOption.LongName} option.");
-                            return 4;
-                        }
+                        jobDefinitionContent = _httpClient.GetStringAsync(jobDefinitionPathOrUrl).GetAwaiter().GetResult();
                     }
                     else
                     {
-                        if (!pathOption.HasValue())
-                        {
-                            Console.WriteLine($"Scenario '{scenarioName}' requires one of the following {pathOption.LongName} options:");
-                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
-                            return 5;
-                        }
-
-                        path = pathOption.Value();
-
-                        if (!pathAttribute.Paths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) &&
-                            !pathAttribute.Paths.Any(p => string.Equals(p, "/" + path, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
-                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
-                            return 6;
-                        }
+                        jobDefinitionContent = File.ReadAllText(jobDefinitionPathOrUrl);
                     }
                 }
-
-                var serverJob = new ServerJob()
+                catch
                 {
-                    Scheme = scheme,
-                    Scenario = scenario,
-                    WebHost = webHost,
-                    AspNetCoreVersion = aspnetCoreVersion
-                };
+                    Console.WriteLine($"Job definition '{jobDefinitionPathOrUrl}' could not be loaded.");
+                    return 7;
+                }
+
+                var jobDefinitions = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(jobDefinitionContent);
+
+                var scenarioName = scenarioOption.Value() ?? "Default";
+
+                if (!jobDefinitions.ContainsKey(scenarioName))
+                {
+                    if (scenarioName == "Default")
+                    {
+                        Console.WriteLine($"Default job not found in the job definition file.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Job named '{scenarioName}' not found in the job definition file.");
+                    }
+                    
+                    return 7;
+                }
+
+
+                var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+                if (!jobDefinitions.TryGetValue("Default", out var defaultJob))
+                {
+                    defaultJob = new JObject();
+                }
+
+                var job = jobDefinitions[scenarioName];
+
+                // Building ServerJob
+
+                var mergedServerJob = new JObject(defaultJob);
+                mergedServerJob.Merge(job);
+                var serverJob = mergedServerJob.ToObject<ServerJob>();
+                var jobOptions = mergedServerJob.ToObject<JobOptions>();
+
+                string path = jobOptions.Path;
+
+                if (pathOption.HasValue() && jobOptions.Paths != null && jobOptions.Paths.Length > 0)
+                {
+                    if (!jobOptions.Paths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) &&
+                        !jobOptions.Paths.Any(p => string.Equals(p, "/" + path, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
+                        Console.WriteLine($"'{string.Join("', '", jobOptions.Paths)}'");
+                        return 6;
+                    }
+
+                    path = pathOption.Value();
+                }
+
+
+                // These properties are mandatory on the command line and can't be set in the job definitions
+                serverJob.Scheme = scheme;
+                serverJob.Scenario = scenarioName;
+                serverJob.WebHost = webHost;
+                serverJob.AspNetCoreVersion = aspnetCoreVersion;
 
                 if (connectionFilterOption.HasValue())
                 {
@@ -296,7 +246,6 @@ namespace BenchmarksDriver
                     serverJob.KestrelThreadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingOption.Value());
                 }
 
-                var sources = new List<Source>();
                 foreach (var source in sourceOption.Values)
                 {
                     var split = source.IndexOf('@');
@@ -308,34 +257,43 @@ namespace BenchmarksDriver
                         repository = $"https://github.com/aspnet/{repository}.git";
                     }
 
-                    sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                    serverJob.Sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                 }
-                serverJob.Sources = sources;
+
+                // Building ClientJob
+
+                var mergedClientJob = new JObject(defaultJob);
+                mergedClientJob.Merge(job);
+                _clientJob = mergedClientJob.ToObject<ClientJob>();
 
                 // Override default ClientJob settings if options are set
                 if (connectionsOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
+                    _clientJob.Connections = int.Parse(connectionsOption.Value());
                 }
                 if (clientThreadsOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(clientThreadsOption.Value()));
+                    _clientJob.Threads = int.Parse(clientThreadsOption.Value());
                 }
                 if (durationOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
+                    _clientJob.Duration = int.Parse(durationOption.Value());
                 }
                 if (pipelineDepthOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
+                    _clientJob.PipelineDepth = int.Parse(pipelineDepthOption.Value());
                 }
                 if (methodOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Method = methodOption.Value());
+                    _clientJob.Method = methodOption.Value();
                 }
                 if (headerOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
+                    foreach(var header in headerOption.Values)
+                    {
+                        var values = header.Split('=');
+                        _clientJob.Headers.Add(values[0], values[1]);
+                    }
                 }
 
                 return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path, session, description).Result;
@@ -566,14 +524,14 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<ClientJob> RunClientJob(Scenario scenario, Uri clientUri, string serverBenchmarkUri)
+        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, string serverBenchmarkUri)
         {
-            var clientJob = new ClientJob(_clientJobs[scenario]) { ServerBenchmarkUri = serverBenchmarkUri };
+            var clientJob = new ClientJob(_clientJob) { ServerBenchmarkUri = serverBenchmarkUri };
 
             Uri clientJobUri = null;
             try
             {
-                Log($"Starting scenario {scenario} on benchmark client...");
+                Log($"Starting scenario {scenarioName} on benchmark client...");
 
                 var clientJobsUri = new Uri(clientUri, "/jobs");
                 var clientContent = JsonConvert.SerializeObject(clientJob);
@@ -618,7 +576,7 @@ namespace BenchmarksDriver
 
                     if (clientJob.State == ClientState.Completed)
                     {
-                        Log($"Scenario {scenario} completed on benchmark client");
+                        Log($"Scenario {scenarioName} completed on benchmark client");
                         LogVerbose($"Output: {clientJob.Output}");
 
                         if (!String.IsNullOrWhiteSpace(clientJob.Error))
@@ -639,7 +597,7 @@ namespace BenchmarksDriver
             {
                 if (clientJobUri != null)
                 {
-                    Log($"Stopping scenario {scenario} on benchmark client...");
+                    Log($"Stopping scenario {scenarioName} on benchmark client...");
 
                     LogVerbose($"DELETE {clientJobUri}...");
                     var response = _httpClient.DeleteAsync(clientJobUri).Result;
@@ -683,7 +641,7 @@ namespace BenchmarksDriver
             string session,
             string description,
             string aspnetCoreVersion,
-            Scenario scenario,
+            string scenario,
             Hardware hardware,
             OperatingSystem operatingSystem,
             Scheme scheme,
@@ -699,7 +657,7 @@ namespace BenchmarksDriver
             int? pipelineDepth,
             string path,
             string method,
-            IEnumerable<string> headers,
+            IDictionary<string, string> headers,
             string dimension,
             double value)
         {
@@ -826,7 +784,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
-                    p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
+                    p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : null);
                     p.AddWithValue("@Dimension", dimension);
                     p.AddWithValue("@Value", value);
 

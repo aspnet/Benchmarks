@@ -1,0 +1,188 @@
+{
+    "Default": {
+        "ScriptName": "pipeline",
+        "PipelineDepth" : 16,
+        "Headers": { 
+            "Host": "localhost",
+            "Accept": "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
+            "Connection": "keep-alive"
+        },
+        "Source": {
+            "Repository": "https://github.com/aspnet/benchmarks.git",
+            "BranchOrCommit": "dev",
+            "Project": "src/Benchmarks/Benchmarks.csproj"
+        },
+
+        "Connections": 256,
+        "Threads": 32,
+        "Duration": 15
+    },
+    "Plaintext": {
+        "Path": "/plaintext",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "Json": {
+        "Path": "/json"
+    },
+    "Jil": {
+        "Path": "/jil"
+    },
+    "CopyToAsync": {
+        "Path": "/copytoasync",
+        "ScriptName": "post",
+        "PipelineDepth": 16
+    },
+    "MvcPlaintext" :{
+        "Path": "/mvc/plaintext",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "MvcJson" :{
+        "Path": "/mvc/json"
+    },
+    "MvcJil" :{
+        "Path": "/mvc/jil"
+    },
+    "MemoryCachePlaintext" :{
+        "Path": "/memorycache/plaintext",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "MemoryCachePlaintextSetRemove" :{
+        "Path": "/memorycache/plaintext/setremove",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "ResponseCachingPlaintextCached" :{
+        "Path": "/responsecaching/plaintext/cached",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "ResponseCachingPlaintextResponseNoCache" :{
+        "Path": "/responsecaching/plaintext/responsenocache",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "ResponseCachingPlaintextRequestNoCache" :{
+        "Path": "/responsecaching/plaintext/requestnocache",
+        "Headers": {
+            "Cache-Control": "no-cache"
+        },
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "ResponseCachingPlaintextVaryByCached" :{
+        "Path": "/responsecaching/plaintext/varybycached",
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "StaticFiles" :{
+        "Path": "/plaintext",
+        "Paths": ["/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt"],
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
+    "DbSingleQueryRaw" :{
+        "Path": "/db/raw"
+    },
+    "DbSingleQueryDapper" :{
+        "Path": "/db/dapper"
+    },
+    "DbSingleQueryEf" :{
+        "Path": "/db/ef"
+    },
+    "MvcDbSingleQueryRaw" :{
+        "Path": "/mvc/db/raw"
+    },
+    "MvcDbSingleQueryDapper" :{
+        "Path": "/mvc/db/dapper"
+    },
+    "MvcDbSingleQueryEf" :{
+        "Path": "/mvc/db/ef"
+    },
+    "DbMultiQueryRaw" :{
+        "Path": "/queries/raw",
+        "Query": "?queries=20"
+    },
+    "DbMultiQueryDapper" :{
+        "Path": "/queries/dapper",
+        "Query": "?queries=20"
+    },
+    "DbMultiQueryEf" :{
+        "Path": "/queries/ef",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiQueryRaw" :{
+        "Path": "/mvc/queries/raw",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiQueryDapper" :{
+        "Path": "/mvc/queries/dapper",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiQueryEf" :{
+        "Path": "/mvc/queries/ef",
+        "Query": "?queries=20"
+    },
+    "DbMultiUpdateRaw" :{
+        "Path": "/updates/raw",
+        "Query": "?queries=20"
+    },
+    "DbMultiUpdateDapper" :{
+        "Path": "/updates/dapper",
+        "Query": "?queries=20"
+    },
+    "DbMultiUpdateEf" :{
+        "Path": "/updates/ef",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiUpdateRaw" :{
+        "Path": "/mvc/updates/raw",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiUpdateDapper" :{
+        "Path": "/mvc/updates/dapper",
+        "Query": "?queries=20"
+    },
+    "MvcDbMultiUpdateEf" :{
+        "Path": "/mvc/updates/ef",
+        "Query": "?queries=20"
+    },
+    "DbFortunesRaw" :{
+        "Path": "/fortunes/raw",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    },
+    "DbFortunesDapper" :{
+        "Path": "/fortunes/dapper",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    },
+    "DbFortunesEf" :{
+        "Path": "/fortunes/ef",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    },
+    "MvcDbFortunesRaw" :{
+        "Path": "/mvc/fortunes/raw",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    },
+    "MvcDbFortunesDapper" :{
+        "Path": "/mvc/fortunes/dapper",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    },
+    "MvcDbFortunesEf" :{
+        "Path": "/mvc/fortunes/ef",
+        "Headers": {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+    }
+}

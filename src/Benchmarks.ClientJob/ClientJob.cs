@@ -44,7 +44,7 @@ namespace Benchmarks.ClientJob
 
         public int PipelineDepth { get; set; }
 
-        public IEnumerable<string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
 
         public string ServerBenchmarkUri { get; set; }
 
