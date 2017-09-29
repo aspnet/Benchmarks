@@ -2,85 +2,90 @@
 
   <ItemGroup>
 
+    <PlaintextJobs>-j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.plaintext.json"</PlaintextJobs>
+    <HtmlJobs>-j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.html.json"</HtmlJobs>
+    <JsonJobs>-j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.json.json"</JsonJobs>
+    <MultiQueryJobs>-j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
+    
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
-    <CloudScenarios Include="-n Plaintext" />
-    <CloudScenarios Include="-n MvcPlaintext" />
+    <CloudScenarios Include="-n Plaintext $(PlaintextJobs)" />
+    <CloudScenarios Include="-n MvcPlaintext $(PlaintextJobs)" />
 
-    <CloudScenarios Include="-n Json" />
-    <CloudScenarios Include="-n Jil" />
-    <CloudScenarios Include="-n MvcJson" />
-    <CloudScenarios Include="-n MvcJil" />
+    <CloudScenarios Include="-n Json $(JsonJobs)" />
+    <CloudScenarios Include="-n Jil $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcJson $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcJil $(JsonJobs)" />
 
-    <CloudScenarios Include="-n DbSingleQueryRaw" />
-    <CloudScenarios Include="-n DbSingleQueryDapper" />
-    <CloudScenarios Include="-n DbSingleQueryEf" />
-    <CloudScenarios Include="-n MvcDbSingleQueryRaw" />
-    <CloudScenarios Include="-n MvcDbSingleQueryDapper" />
-    <CloudScenarios Include="-n MvcDbSingleQueryEf" />
+    <CloudScenarios Include="-n DbSingleQueryRaw $(JsonJobs)" />
+    <CloudScenarios Include="-n DbSingleQueryDapper $(JsonJobs)" />
+    <CloudScenarios Include="-n DbSingleQueryEf $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcDbSingleQueryRaw $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcDbSingleQueryDapper $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcDbSingleQueryEf $(JsonJobs)" />
 
-    <CloudScenarios Include="-n DbMultiQueryRaw" />
-    <CloudScenarios Include="-n DbMultiQueryDapper" />
-    <CloudScenarios Include="-n DbMultiQueryEf" />
-    <CloudScenarios Include="-n MvcDbMultiQueryRaw" />
-    <CloudScenarios Include="-n MvcDbMultiQueryDapper" />
-    <CloudScenarios Include="-n MvcDbMultiQueryEf" />
+    <CloudScenarios Include="-n DbMultiQueryRaw $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiQueryDapper $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiQueryEf $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiQueryRaw $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiQueryDapper $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiQueryEf $(MultiQueryJobs)" />
 
-    <CloudScenarios Include="-n DbMultiUpdateRaw" />
-    <CloudScenarios Include="-n DbMultiUpdateDapper" />
-    <CloudScenarios Include="-n DbMultiUpdateEf" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateRaw" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateDapper" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateEf" />
+    <CloudScenarios Include="-n DbMultiUpdateRaw $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiUpdateDapper $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiUpdateEf $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateRaw $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateDapper $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateEf $(MultiQueryJobs)" />
 
-    <CloudScenarios Include="-n DbFortunesRaw" />
-    <CloudScenarios Include="-n DbFortunesDapper" />
-    <CloudScenarios Include="-n DbFortunesEf" />
-    <CloudScenarios Include="-n MvcDbFortunesRaw" />
-    <CloudScenarios Include="-n MvcDbFortunesDapper" />
-    <CloudScenarios Include="-n MvcDbFortunesEf" />
+    <CloudScenarios Include="-n DbFortunesRaw $(HtmlJobs)" />
+    <CloudScenarios Include="-n DbFortunesDapper $(HtmlJobs)" />
+    <CloudScenarios Include="-n DbFortunesEf $(HtmlJobs)" />
+    <CloudScenarios Include="-n MvcDbFortunesRaw $(HtmlJobs)" />
+    <CloudScenarios Include="-n MvcDbFortunesDapper $(HtmlJobs)" />
+    <CloudScenarios Include="-n MvcDbFortunesEf $(HtmlJobs)" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Optimal ThreadCount for current hardware -->
-    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2" />
+    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n Plaintext --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Plaintext --webHost HttpSys" />
-    <PhysicalScenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter" />
+    <PhysicalScenarios Include="-n Plaintext --kestrelTransport Sockets $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n Plaintext -m https" />
-    <PhysicalScenarios Include="-n Plaintext -m https --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Plaintext -m https $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext -m https --kestrelTransport Sockets $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys $(PlaintextJobs)" />
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
-    <PhysicalScenarios Include="-n Json" />
+    <PhysicalScenarios Include="-n Json $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n Json --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Json --webHost HttpSys" />
-    <PhysicalScenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter" />
+    <PhysicalScenarios Include="-n Json --kestrelTransport Sockets $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json --webHost HttpSys $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n Json -m https" />
-    <PhysicalScenarios Include="-n Json -m https --kestrelTransport Sockets" />
-    <PhysicalScenarios Include="-n Json -m https --webHost HttpSys" />
+    <PhysicalScenarios Include="-n Json -m https $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json -m https --kestrelTransport Sockets $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json -m https --webHost HttpSys $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n Jil" />
+    <PhysicalScenarios Include="-n Jil $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n StaticFiles --path plaintext" />
+    <PhysicalScenarios Include="-n StaticFiles --path plaintext $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n MvcPlaintext" />
+    <PhysicalScenarios Include="-n MvcPlaintext $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n MvcJson" />
+    <PhysicalScenarios Include="-n MvcJson $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n MvcJil" />
+    <PhysicalScenarios Include="-n MvcJil $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n MemoryCachePlaintext" />
-    <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintext $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --method DELETE" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --method DELETE $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached $(PlaintextJobs)" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -112,7 +117,7 @@
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" -j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.json" </RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
