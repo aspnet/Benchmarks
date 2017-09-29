@@ -1,6 +1,7 @@
 <Project>
 
   <ItemGroup>
+
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext" />
     <CloudScenarios Include="-n MvcPlaintext" />
@@ -111,7 +112,7 @@
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" </RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" -j "https://raw.githubusercontent.com/aspnet/benchmarks/dev/src/Benchmarks/benchmarks.json" </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
