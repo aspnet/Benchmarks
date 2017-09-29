@@ -208,7 +208,7 @@ namespace BenchmarksDriver
                 {
                     if (scenarioOption.HasValue())
                     {
-                        Console.WriteLine($"Job named '{scenarioName}' was specified but no job definition.");
+                        Console.WriteLine($"Job named '{scenarioName}' was specified but no job definition argument.");
                         return 8;
                     }
 
