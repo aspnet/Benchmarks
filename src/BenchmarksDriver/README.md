@@ -34,8 +34,7 @@ Options:
   --path                          Relative URL where the client should send requests.
   --querystring                   Querystring to add to the requests. (e.g., "?page=1")
   --arguments                     Arguments to pass to the application. (e.g., "--raw true")
-  --repository                    Git repository containing the project to test.
-  --branchOrCommit                Branch name or commit hash to checkout.
+  --repository                    Project repository. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
   --project                       Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)
 ```
 

@@ -85,8 +85,6 @@ namespace BenchmarksDriver
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
-            var branchOrCommitOption = app.Option("-b|--branchOrCommit",
-                "Branch name or commit hash to checkout.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -298,11 +296,17 @@ namespace BenchmarksDriver
                 }
                 if (repositoryOption.HasValue())
                 {
-                    serverJob.Source.Repository = repositoryOption.Value();
-                }
-                if (branchOrCommitOption.HasValue())
-                {
-                    serverJob.Source.BranchOrCommit = branchOrCommitOption.Value();
+                    var source = repositoryOption.Value();
+                    var split = source.IndexOf('@');
+                    var repository = (split == -1) ? source : source.Substring(0, split);
+                    serverJob.Source.BranchOrCommit = (split == -1) ? null : source.Substring(split + 1);
+
+                    if (!repository.Contains(":"))
+                    {
+                        repository = $"https://github.com/aspnet/{repository}.git";
+                    }
+
+                    serverJob.Source.Repository = repository;
                 }
                 if (projectOption.HasValue())
                 {
