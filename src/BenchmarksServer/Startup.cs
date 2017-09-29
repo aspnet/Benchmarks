@@ -566,13 +566,15 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, Database? database, string sqlConnectionString, string benchmarksRepo,
             ServerJob job, string dotnetHome)
         {
+            var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
+
             var filename = GetDotNetExecutable(dotnetHome);
             var arguments = "bin/Release/netcoreapp2.0/" + Path.GetFileNameWithoutExtension(job.Source.Project) + ".dll" +
                     $" {job.Source.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
                     $" --server {job.WebHost}" +
-                    $" --server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
+                    $" --server.urls {serverUrl}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
@@ -607,7 +609,12 @@ namespace BenchmarkServer
                 },
                 EnableRaisingEvents = true
             };
+
             process.StartInfo.Environment.Add("COREHOST_SERVER_GC", "1");
+
+            // Force Kestrel server urls
+            process.StartInfo.Environment.Add("ASPNETCORE_URLS", serverUrl);
+            
 
             if (database.HasValue)
             {
@@ -632,30 +639,7 @@ namespace BenchmarkServer
                         job.StartupMainMethod = stopwatch.Elapsed;
 
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Port);
-                        Log.WriteLine("Measuring startup time");
-                        
-                        using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
-                        {
-                            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                            job.StartupFirstRequest = stopwatch.Elapsed;
-                        }
-
-                        Log.WriteLine("Measuring single-user latency");
-
-                        // This could be done during the Client job but we are already measuring the Startup time here.
-                        for (var i = 0; i < 10; i++)
-                        {
-                            stopwatch.Restart();
-                            
-                            using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
-                            {
-                                var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                                // We keep the last measure to simulate a warmup phase.
-                                job.Latency = stopwatch.Elapsed;
-                            }
-                        }
+                        job.Url = ComputeServerUrl(hostname, job);
 
                         // Mark the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
@@ -670,9 +654,9 @@ namespace BenchmarkServer
             return process;
         }
 
-        private static string ComputeServerUrl(string hostname, Scheme scheme, int port)
+        private static string ComputeServerUrl(string hostname, ServerJob job)
         {
-            return $"{scheme.ToString().ToLowerInvariant()}://{hostname}:{port}/";
+            return $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}/{job.Path.TrimStart('/')}";
         }
 
         private static string GetRepoName(Source source)

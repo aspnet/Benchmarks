@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -61,5 +62,10 @@ namespace Benchmarks.ClientJob
         public string Error { get; set; }
 
         public string Method { get; set; } = "GET";
+        // Latency of  first request
+        public TimeSpan LatencyFirstRequest { get; set; }
+        // Latency with a single connection
+        public TimeSpan LatencyNoLoad { get; set; }
+
     }
 }

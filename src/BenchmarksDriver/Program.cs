@@ -239,21 +239,22 @@ namespace BenchmarksDriver
                 var serverJob = mergedServerJob.ToObject<ServerJob>();
                 var jobOptions = mergedServerJob.ToObject<JobOptions>();
 
-                string path = jobOptions.Path;
+                if (pathOption.HasValue())
+                {
+                    serverJob.Path = pathOption.Value();
+                }
 
                 if (pathOption.HasValue() && jobOptions.Paths != null && jobOptions.Paths.Length > 0)
                 {
-                    if (!jobOptions.Paths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) &&
-                        !jobOptions.Paths.Any(p => string.Equals(p, "/" + path, StringComparison.OrdinalIgnoreCase)))
+                    if (!jobOptions.Paths.Any(p => string.Equals(p, serverJob.Path, StringComparison.OrdinalIgnoreCase)) &&
+                        !jobOptions.Paths.Any(p => string.Equals(p, "/" + serverJob.Path, StringComparison.OrdinalIgnoreCase)))
                     {
                         Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
                         Console.WriteLine($"'{string.Join("', '", jobOptions.Paths)}'");
                         return 6;
                     }
                 }
-
-                path = pathOption.Value();
-
+                
                 // These properties are mandatory on the command line and can't be set in the job definitions
                 serverJob.Scenario = scenarioName;
                 serverJob.AspNetCoreVersion = aspnetCoreVersion;
@@ -368,20 +369,23 @@ namespace BenchmarksDriver
                     {
                         case Headers.None:
                             break;
+
                         case Headers.Html:
-                            _clientJob.Headers.Add("Host", "localhost");
-                            _clientJob.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                            _clientJob.Headers["Connection"] = "keep-alive";
                             break;
+                        
                         case Headers.Json:
-                            _clientJob.Headers.Add("Host", "localhost");
-                            _clientJob.Headers.Add("Accept", "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
-                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
+                            _clientJob.Headers["Connection"] = "keep-alive";
                             break;
+                        
                         case Headers.Plaintext:
-                            _clientJob.Headers.Add("Host", "localhost");
-                            _clientJob.Headers.Add("Accept", "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
-                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
+                            _clientJob.Headers["Connection"] = "keep-alive";
                             break;
                     }
                 }
@@ -397,11 +401,11 @@ namespace BenchmarksDriver
                             return 9;
                         }
 
-                        _clientJob.Headers.Add(header.Substring(0, index), header.Substring(index, header.Length - index));
+                        _clientJob.Headers[header.Substring(0, index)] = header.Substring(index + 1, header.Length - index - 1);
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path, session, description).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description).Result;
             });
 
             return app.Execute(args);
@@ -412,7 +416,6 @@ namespace BenchmarksDriver
             Uri clientUri,
             string sqlConnectionString,
             ServerJob serverJob,
-            string path,
             string session,
             string description)
         {
@@ -477,11 +480,7 @@ namespace BenchmarksDriver
                         await Task.Delay(1000);
                     }
                 }
-
-                if (path != null)
-                {
-                    serverBenchmarkUri += path.Trim('/');
-                }
+                
 
                 Log("Warmup");
                 await RunClientJob(scenario, clientUri, serverBenchmarkUri);
@@ -504,12 +503,12 @@ namespace BenchmarksDriver
                     var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).Max();
 
                     Log($"RequestsPerSecond:           {clientJob.RequestsPerSecond}");
-                    Log($"Latency on load (ms):        {clientJob.Latency.Average}");
+                    Log($"Latency on load (ms):        {clientJob.Latency.Average.TotalMilliseconds}");
                     Log($"Max CPU (%):                 {cpu}");
                     Log($"WorkingSet (MB):             {workingSet}");
                     Log($"Startup Main (ms):           {serverJob.StartupMainMethod.TotalMilliseconds}");
-                    Log($"Startup First Request (ms):  {serverJob.StartupFirstRequest.TotalMilliseconds}");
-                    Log($"Latency (ms):                {serverJob.Latency.TotalMilliseconds}");
+                    Log($"First Request (ms):          {clientJob.LatencyFirstRequest.TotalMilliseconds}");
+                    Log($"Latency (ms):                {clientJob.LatencyNoLoad.TotalMilliseconds}");
                     
                     if (!string.IsNullOrWhiteSpace(sqlConnectionString))
                     {
@@ -519,7 +518,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "RequestsPerSecond",
@@ -529,7 +528,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "Startup Main (ms)",
@@ -539,17 +538,17 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
-                            dimension: "Startup First Request (ms)",
-                            value: serverJob.StartupFirstRequest.TotalMilliseconds);
+                            dimension: "First Request (ms)",
+                            value: clientJob.LatencyFirstRequest.TotalMilliseconds);
 
                         await WriteJobsToSql(
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "WorkingSet (MB)",
@@ -559,7 +558,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "CPU",
@@ -571,15 +570,15 @@ namespace BenchmarksDriver
                             connectionString: sqlConnectionString,
                             session: session,
                             description: description,
-                            path: path,
+                            path: serverJob.Path,
                             dimension: "Latency (ms)",
-                            value: serverJob.Latency.TotalMilliseconds);
+                            value: clientJob.LatencyNoLoad.TotalMilliseconds);
 
                         await WriteJobsToSql(
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "LatencyAverage (ms)",
@@ -589,7 +588,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "Latency50Percentile (ms)",
@@ -599,7 +598,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "Latency75Percentile (ms)",
@@ -609,7 +608,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "Latency90Percentile (ms)",
@@ -619,7 +618,7 @@ namespace BenchmarksDriver
                             serverJob: serverJob, 
                             clientJob: clientJob,
                             connectionString: sqlConnectionString,
-                            path: path,
+                            path: serverJob.Path,
                             session: session,
                             description: description,
                             dimension: "Latency99Percentile (ms)",
