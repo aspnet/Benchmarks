@@ -18,9 +18,7 @@
         "Duration": 15
     },
     "Plaintext": {
-        "Path": "/plaintext",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/plaintext"
     },
     "Json": {
         "Path": "/json"
@@ -30,13 +28,10 @@
     },
     "CopyToAsync": {
         "Path": "/copytoasync",
-        "ScriptName": "post",
-        "PipelineDepth": 16
+        "ScriptName": "post"
     },
     "MvcPlaintext" :{
-        "Path": "/mvc/plaintext",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/mvc/plaintext"
     },
     "MvcJson" :{
         "Path": "/mvc/json"
@@ -45,43 +40,25 @@
         "Path": "/mvc/jil"
     },
     "MemoryCachePlaintext" :{
-        "Path": "/memorycache/plaintext",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/memorycache/plaintext"
     },
     "MemoryCachePlaintextSetRemove" :{
-        "Path": "/memorycache/plaintext/setremove",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/memorycache/plaintext/setremove"
     },
     "ResponseCachingPlaintextCached" :{
-        "Path": "/responsecaching/plaintext/cached",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/responsecaching/plaintext/cached"
     },
     "ResponseCachingPlaintextResponseNoCache" :{
-        "Path": "/responsecaching/plaintext/responsenocache",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/responsecaching/plaintext/responsenocache"
     },
     "ResponseCachingPlaintextRequestNoCache" :{
         "Path": "/responsecaching/plaintext/requestnocache",
         "Headers": {
             "Cache-Control": "no-cache"
-        },
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        }
     },
     "ResponseCachingPlaintextVaryByCached" :{
-        "Path": "/responsecaching/plaintext/varybycached",
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
-    },
-    "StaticFiles" :{
-        "Path": "/plaintext",
-        "Paths": ["/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt"],
-        "ScriptName": "pipeline",
-        "PipelineDepth": 16
+        "Path": "/responsecaching/plaintext/varybycached"
     },
     "DbSingleQueryRaw" :{
         "Path": "/db/raw"

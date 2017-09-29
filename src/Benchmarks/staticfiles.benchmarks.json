@@ -1,0 +1,24 @@
+{
+    "Default": {
+        "ScriptName": "pipeline",
+        "PipelineDepth" : 16,
+        "Headers": { 
+            "Host": "localhost",
+            "Accept": "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
+            "Connection": "keep-alive"
+        },
+        "Source": {
+            "Repository": "https://github.com/aspnet/benchmarks.git",
+            "BranchOrCommit": "dev",
+            "Project": "src/Benchmarks/Benchmarks.csproj"
+        },
+
+        "Connections": 256,
+        "Threads": 32,
+        "Duration": 15
+    },
+    "StaticFiles" :{
+        "Path": "/plaintext",
+        "Paths": ["/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt"],
+    }
+}

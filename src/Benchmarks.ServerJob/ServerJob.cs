@@ -43,7 +43,7 @@ namespace Benchmarks.ServerJob
         public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
         public IList<Source> Sources { get; set; } = new List<Source>();
 
-        public Source Source { get; set; }
+        public Source Source { get; set; } = new Source();
         public string Arguments { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

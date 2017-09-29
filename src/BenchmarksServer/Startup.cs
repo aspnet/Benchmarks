@@ -368,9 +368,6 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
-
-            env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-
             // Source dependencies are always built using KoreBuild
             AddSourceDependencies(path, benchmarkedDir, job.Source.Project, dirs, env);
 
@@ -384,6 +381,22 @@ namespace BenchmarkServer
             await DownloadBuildTools(buildToolsPath);
 
             Log.WriteLine("Installing dotnet runtimes and sdk");
+
+            // Computes the location of the benchmarked app
+            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
+
+            // Degines SDK will be installed. Using "" downloads the latest SDK.
+            if (job.AspNetCoreVersion == "2.1.0-*")
+            {
+                env["KOREBUILD_DOTNET_VERSION"] = "";
+            }
+            else
+            {
+                env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+                
+                // Generate a global.json file in the local repository to force which SDK the application is using.
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{ \"sdk\": { \"version\": \"2.0.0\" } }\"");
+            }            
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
@@ -399,7 +412,6 @@ namespace BenchmarkServer
             }
 
             // Build and Restore
-            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
             var dotnetExecutable = GetDotNetExecutable(dotnetHome);
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
@@ -556,7 +568,7 @@ namespace BenchmarkServer
         {
             var filename = GetDotNetExecutable(dotnetHome);
             var arguments = "bin/Release/netcoreapp2.0/" + Path.GetFileNameWithoutExtension(job.Source.Project) + ".dll" +
-                    $" {job.Arguments} " +
+                    $" {job.Source.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
                     $" --server {job.WebHost}" +
@@ -620,7 +632,7 @@ namespace BenchmarkServer
                         job.StartupMainMethod = stopwatch.Elapsed;
 
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.Url = ComputeServerUrl(hostname, job.Scheme);
+                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Port);
                         Log.WriteLine("Measuring startup time");
                         
                         using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
@@ -658,9 +670,9 @@ namespace BenchmarkServer
             return process;
         }
 
-        private static string ComputeServerUrl(string hostname, Scheme scheme)
+        private static string ComputeServerUrl(string hostname, Scheme scheme, int port)
         {
-            return $"{scheme.ToString().ToLowerInvariant()}://{hostname}:5000/";
+            return $"{scheme.ToString().ToLowerInvariant()}://{hostname}:{port}/";
         }
 
         private static string GetRepoName(Source source)

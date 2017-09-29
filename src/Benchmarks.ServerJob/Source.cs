@@ -8,5 +8,6 @@ namespace Benchmarks.ServerJob
         public string BranchOrCommit { get; set; }
         public string Repository { get; set; }
         public string Project { get; set; }
+        public string Arguments { get; set; }
     }
 }
