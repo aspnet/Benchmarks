@@ -197,7 +197,6 @@ namespace BenchmarkClient
 
             Log("Measuring single connection latency");
 
-            // This could be done during the Client job but we are already measuring the Startup time here.
             for (var i = 0; i < 10; i++)
             {
                 stopwatch.Restart();

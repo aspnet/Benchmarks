@@ -46,7 +46,7 @@ namespace BenchmarkServer.Controllers
         public IActionResult Create([FromBody] ServerJob job)
         {
             if (job == null || job.Id != 0 || job.State != ServerState.Waiting ||
-                job.Sources.Any(source => string.IsNullOrEmpty(source.Repository)))
+                job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
             {
                 return BadRequest();
             }

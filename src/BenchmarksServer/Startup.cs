@@ -328,7 +328,7 @@ namespace BenchmarkServer
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.Sources, SourceRepoComparer.Instance);
+            var repos = new HashSet<Source>(job.ReferenceSources, SourceRepoComparer.Instance);
 
             // This will no-op if 'benchmarks' was specified by the user.
             repos.Add(job.Source);
@@ -570,7 +570,7 @@ namespace BenchmarkServer
 
             var filename = GetDotNetExecutable(dotnetHome);
             var arguments = "bin/Release/netcoreapp2.0/" + Path.GetFileNameWithoutExtension(job.Source.Project) + ".dll" +
-                    $" {job.Source.Arguments} " +
+                    $" {job.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
                     $" --server {job.WebHost}" +

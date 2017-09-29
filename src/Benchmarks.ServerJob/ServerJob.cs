@@ -39,9 +39,17 @@ namespace Benchmarks.ServerJob
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
         public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
-        public IList<Source> Sources { get; set; } = new List<Source>();
 
+        /// <summary>
+        /// The source information for references packages
+        /// </summary>
+        public IList<Source> ReferenceSources { get; set; } = new List<Source>();
+
+        /// <summary>
+        /// The source information for the benchmarked application
+        /// </summary>
         public Source Source { get; set; } = new Source();
+
         public string Arguments { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

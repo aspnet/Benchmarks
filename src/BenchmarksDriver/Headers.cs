@@ -1,7 +1,5 @@
-using Newtonsoft.Json;
-
 namespace BenchmarksDriver
-{    
+{
     public enum Headers
     {
         None,

@@ -320,7 +320,7 @@ namespace BenchmarksDriver
                         repository = $"https://github.com/aspnet/{repository}.git";
                     }
 
-                    serverJob.Sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                    serverJob.ReferenceSources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                 }
 
                 // Building ClientJob
@@ -737,7 +737,7 @@ namespace BenchmarksDriver
                         hardware: serverJob.Hardware.Value,
                         operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
-                        sources: serverJob.Sources,
+                        sources: serverJob.ReferenceSources,
                         connectionFilter: serverJob.ConnectionFilter,
                         webHost: serverJob.WebHost,
                         kestrelThreadCount: serverJob.KestrelThreadCount,
