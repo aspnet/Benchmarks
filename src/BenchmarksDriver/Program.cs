@@ -86,7 +86,7 @@ namespace BenchmarksDriver
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             var branchOrCommitOption = app.Option("-b|--branchOrCommit",
-                "Branch name of commit hash to checkout.", CommandOptionType.SingleValue);
+                "Branch name or commit hash to checkout.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",

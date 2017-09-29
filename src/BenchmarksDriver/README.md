@@ -35,7 +35,7 @@ Options:
   --querystring                   Querystring to add to the requests. (e.g., "?page=1")
   --arguments                     Arguments to pass to the application. (e.g., "--raw true")
   --repository                    Git repository containing the project to test.
-  --branchOrCommit                Branch name of commit hash to checkout.
+  --branchOrCommit                Branch name or commit hash to checkout.
   --project                       Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)
 ```
 
