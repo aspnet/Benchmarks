@@ -62,8 +62,10 @@ namespace Benchmarks.ClientJob
         public string Error { get; set; }
 
         public string Method { get; set; } = "GET";
+
         // Latency of  first request
         public TimeSpan LatencyFirstRequest { get; set; }
+
         // Latency with a single connection
         public TimeSpan LatencyNoLoad { get; set; }
 
