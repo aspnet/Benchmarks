@@ -97,6 +97,8 @@ namespace BenchmarksDriver
                 "Duration of test in seconds.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
                 "Header added to request.", CommandOptionType.MultipleValue);
+            var headersOption = app.Option("--headers",
+                "Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.", CommandOptionType.SingleValue);
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var scriptNameOption = app.Option("--script",
@@ -146,12 +148,14 @@ namespace BenchmarksDriver
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
+                var headers = Headers.Html;
                 var jobDefinitionPathOrUrl =  jobsOptions.Value();
 
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
+                    (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -357,6 +361,29 @@ namespace BenchmarksDriver
                 if (querystringOption.HasValue())
                 {
                     _clientJob.Query = querystringOption.Value();
+                }
+                if (headersOption.HasValue())
+                {
+                    switch (headers)
+                    {
+                        case Headers.None:
+                            break;
+                        case Headers.Html:
+                            _clientJob.Headers.Add("Host", "localhost");
+                            _clientJob.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            break;
+                        case Headers.Json:
+                            _clientJob.Headers.Add("Host", "localhost");
+                            _clientJob.Headers.Add("Accept", "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
+                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            break;
+                        case Headers.Plaintext:
+                            _clientJob.Headers.Add("Host", "localhost");
+                            _clientJob.Headers.Add("Accept", "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7");
+                            _clientJob.Headers.Add("Connection", "keep-alive");
+                            break;
+                    }
                 }
                 if (headerOption.HasValue())
                 {
