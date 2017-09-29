@@ -253,7 +253,7 @@ namespace BenchmarksDriver
                     }
                 }
                 
-                // These properties are mandatory on the command line and can't be set in the job definitions
+                // These properties can't be set in the job definitions
                 serverJob.Scenario = scenarioName;
                 serverJob.AspNetCoreVersion = aspnetCoreVersion;
 
