@@ -417,12 +417,12 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var buildParameters = $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksRuntimeFrameworkVersion=2.0.0";
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} /p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksRuntimeFrameworkVersion=2.0.0";
 
             ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", workingDirectory: benchmarkedApp, environmentVariables: env);
             ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}", workingDirectory: benchmarkedApp, environmentVariables: env);
 
-            // /p:PublishWithAspNetCoreTargetManifest=false
+            // TODO: /p:PublishWithAspNetCoreTargetManifest=false for the .All package
 
             return benchmarkedDir;
         }

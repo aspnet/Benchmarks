@@ -26,6 +26,7 @@ Options:
   --clientThreads                 Number of threads used by client.
   --connections                   Number of connections used by client.
   --duration                      Duration of test in seconds.
+  --headers                       Predefined set of headers (Plaintext, Json, Html, None). Default is Html.
   --header                        Header added to request. (e.g., "Host=localhost")
   --method                        HTTP method of the request. Default is GET.
   --pipelineDepth                 Depth of pipeline used by client.
@@ -54,9 +55,13 @@ dotnet run -c release
     --clientThreads 16 
     --duration 15 
     --pipelineDepth 16 
-    --header "Host=localhost" 
-    --header "Accept=text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7" 
-    --header "Connection=keep-alive"
+    --headers Plaintext 
+```
+
+Running the "Plaintext" job defined in the __benchmaks.json__ file, targeting 2.0.0
+
+```powershell
+dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion 2.0.0
 ```
 
 ## Job definition format
@@ -101,4 +106,69 @@ Also if no named job is requested on the command line, the _default_ job will be
 }
 ```
 
-This definition contains three custom job plus the _default_ one.
+This definition contains three custom jobs plus the _default_ one.
+
+## MSBUILD parameters
+
+When the benchmarked application is built, `msbuild` is invoked with a set of parameters that can be used to customize the build.
+
+```
+Usage: BenchmarksDriver [options]
+
+Options:
+  BenchmarksAspNetCoreVersion                       Set to the value of --aspnetCoreVersion
+  BenchmarksNETStandardImplicitPackageVersion       Set to the value of --aspnetCoreVersion
+  BenchmarksNETCoreAppImplicitPackageVersion        Set to the value of --aspnetCoreVersion
+  BenchmarksRuntimeFrameworkVersion                 Set to 2.0.0
+```
+
+### Sample project file 
+
+This demonstrate how `msbuild` parameters can be used in a benchmarked application
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+    <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
+    <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.0-*'">
+    <DefineConstants>$(DefineConstants);DOTNET210</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.0.0' or '$(BenchmarksAspNetCoreVersion)' == '2.0.1'">
+    <DefineConstants>$(DefineConstants);DOTNET200</DefineConstants>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BenchmarksAspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.0-*'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
+  </ItemGroup>
+
+</Project>
+```
