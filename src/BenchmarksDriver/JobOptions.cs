@@ -1,7 +1,9 @@
+using System.Collections.Generic;
+
 namespace BenchmarksDriver
 {
     public class JobOptions
     {
-        public string[] Paths { get; set; }
+        public List<string> Paths { get; set; }
     }
 }

@@ -236,14 +236,11 @@ namespace BenchmarksDriver
                 mergedServerJob.Merge(job);
                 var serverJob = mergedServerJob.ToObject<ServerJob>();
                 var jobOptions = mergedServerJob.ToObject<JobOptions>();
-
-                if (pathOption.HasValue())
+                
+                if (pathOption.HasValue() && jobOptions.Paths != null && jobOptions.Paths.Count > 0)
                 {
-                    serverJob.Path = pathOption.Value();
-                }
+                    jobOptions.Paths.Add(serverJob.Path);
 
-                if (pathOption.HasValue() && jobOptions.Paths != null && jobOptions.Paths.Length > 0)
-                {
                     if (!jobOptions.Paths.Any(p => string.Equals(p, serverJob.Path, StringComparison.OrdinalIgnoreCase)) &&
                         !jobOptions.Paths.Any(p => string.Equals(p, "/" + serverJob.Path, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -252,7 +249,12 @@ namespace BenchmarksDriver
                         return 6;
                     }
                 }
-                
+
+                if (pathOption.HasValue())
+                {
+                    serverJob.Path = pathOption.Value();
+                }
+
                 // These properties can't be set in the job definitions
                 serverJob.Scenario = scenarioName;
                 serverJob.AspNetCoreVersion = aspnetCoreVersion;
