@@ -1,0 +1,69 @@
+{
+  "Default": {
+    "Connections": 256,
+    "Threads": 32,
+    "Duration": 15,
+
+    "Headers": {
+      "Host": "localhost",
+      "Accept": "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
+      "Connection": "keep-alive"
+    },
+
+    "Query": "?queries=20",
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "dev",
+      "Project": "src/Benchmarks/Benchmarks.csproj"
+    }
+  },
+  "DbMultiQueryRaw": {
+    "Path": "/queries/raw",
+    "Query": "?queries=20"
+  },
+  "DbMultiQueryDapper": {
+    "Path": "/queries/dapper",
+    "Query": "?queries=20"
+  },
+  "DbMultiQueryEf": {
+    "Path": "/queries/ef",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiQueryRaw": {
+    "Path": "/mvc/queries/raw",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiQueryDapper": {
+    "Path": "/mvc/queries/dapper",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiQueryEf": {
+    "Path": "/mvc/queries/ef",
+    "Query": "?queries=20"
+  },
+  "DbMultiUpdateRaw": {
+    "Path": "/updates/raw",
+    "Query": "?queries=20"
+  },
+  "DbMultiUpdateDapper": {
+    "Path": "/updates/dapper",
+    "Query": "?queries=20"
+  },
+  "DbMultiUpdateEf": {
+    "Path": "/updates/ef",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiUpdateRaw": {
+    "Path": "/mvc/updates/raw",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiUpdateDapper": {
+    "Path": "/mvc/updates/dapper",
+    "Query": "?queries=20"
+  },
+  "MvcDbMultiUpdateEf": {
+    "Path": "/mvc/updates/ef",
+    "Query": "?queries=20"
+  }
+}

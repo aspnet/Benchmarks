@@ -1,0 +1,49 @@
+{
+  "Default": {
+    "Connections": 256,
+    "Threads": 32,
+    "Duration": 15,
+
+    "Headers": {
+      "Host": "localhost",
+      "Accept": "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
+      "Connection": "keep-alive"
+    },
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "dev",
+      "Project": "src/Benchmarks/Benchmarks.csproj"
+    }
+  },
+  "Json": {
+    "Path": "/json"
+  },
+  "Jil": {
+    "Path": "/jil"
+  },
+  "MvcJson": {
+    "Path": "/mvc/json"
+  },
+  "MvcJil": {
+    "Path": "/mvc/jil"
+  },
+  "DbSingleQueryRaw": {
+    "Path": "/db/raw"
+  },
+  "DbSingleQueryDapper": {
+    "Path": "/db/dapper"
+  },
+  "DbSingleQueryEf": {
+    "Path": "/db/ef"
+  },
+  "MvcDbSingleQueryRaw": {
+    "Path": "/mvc/db/raw"
+  },
+  "MvcDbSingleQueryDapper": {
+    "Path": "/mvc/db/dapper"
+  },
+  "MvcDbSingleQueryEf": {
+    "Path": "/mvc/db/ef"
+  }
+}

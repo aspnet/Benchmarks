@@ -4,17 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using Microsoft.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Linq;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
 
 namespace BenchmarksDriver
@@ -24,95 +23,9 @@ namespace BenchmarksDriver
         private static bool _verbose;
 
         private static readonly HttpClient _httpClient = new HttpClient();
-
-        private static readonly ClientJob _baseJob = new ClientJob()
-        {
-            Connections = 256,
-            Threads = 32,
-            Duration = 15,
-        };
-
-        private static readonly ClientJob _plaintextJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-                "Connection: keep-alive"
-            },
-            ScriptName = "pipeline",
-            PipelineDepth = 16,
-        };
-
-        private static readonly ClientJob _jsonJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-                "Connection: keep-alive"
-            },
-        };
-
-        private static readonly ClientJob _htmlJob = new ClientJob(_baseJob)
-        {
-            Headers = new string[] {
-                "Host: localhost",
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Connection: keep-alive"
-            },
-        };
-
-        private static readonly ClientJob _multiQueryJob = new ClientJob(_jsonJob)
-        {
-            Query = "?queries=20",
-        };
-
-        private static readonly Dictionary<Scenario, ClientJob> _clientJobs =
-            new Dictionary<Scenario, ClientJob>()
-            {
-                { Scenario.Plaintext, _plaintextJob },
-                { Scenario.Json, _jsonJob },
-                { Scenario.Jil, _jsonJob },
-                { Scenario.CopyToAsync, new ClientJob(_plaintextJob) {
-                    ScriptName = "post",
-                } },
-                { Scenario.MvcPlaintext, _plaintextJob },
-                { Scenario.MvcJson, _jsonJob },
-                { Scenario.MvcJil, _jsonJob },
-                { Scenario.MemoryCachePlaintext, _plaintextJob },
-                { Scenario.MemoryCachePlaintextSetRemove, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextCached, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextResponseNoCache, _plaintextJob },
-                { Scenario.ResponseCachingPlaintextRequestNoCache, new ClientJob(_plaintextJob) {
-                    Headers = _plaintextJob.Headers.Append("Cache-Control: no-cache")
-                } },
-                { Scenario.ResponseCachingPlaintextVaryByCached, _plaintextJob },
-                { Scenario.StaticFiles, _plaintextJob },
-                { Scenario.DbSingleQueryRaw, _jsonJob },
-                { Scenario.DbSingleQueryDapper, _jsonJob },
-                { Scenario.DbSingleQueryEf, _jsonJob },
-                { Scenario.MvcDbSingleQueryRaw, _jsonJob },
-                { Scenario.MvcDbSingleQueryDapper, _jsonJob },
-                { Scenario.MvcDbSingleQueryEf, _jsonJob },
-                { Scenario.DbMultiQueryRaw, _multiQueryJob },
-                { Scenario.DbMultiQueryDapper, _multiQueryJob },
-                { Scenario.DbMultiQueryEf, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryRaw, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryDapper, _multiQueryJob },
-                { Scenario.MvcDbMultiQueryEf, _multiQueryJob },
-                { Scenario.DbMultiUpdateRaw, _multiQueryJob },
-                { Scenario.DbMultiUpdateDapper, _multiQueryJob },
-                { Scenario.DbMultiUpdateEf, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateRaw, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateDapper, _multiQueryJob },
-                { Scenario.MvcDbMultiUpdateEf, _multiQueryJob },
-                { Scenario.DbFortunesRaw, _htmlJob },
-                { Scenario.DbFortunesDapper, _htmlJob },
-                { Scenario.DbFortunesEf, _htmlJob },
-                { Scenario.MvcDbFortunesRaw, _htmlJob },
-                { Scenario.MvcDbFortunesDapper, _htmlJob },
-                { Scenario.MvcDbFortunesEf, _htmlJob },
-            };
-
+        
+        private static ClientJob _clientJob;
+        
         public static int Main(string[] args)
         {
             var app = new CommandLineApplication()
@@ -133,6 +46,10 @@ namespace BenchmarksDriver
                 "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
             var verboseOption = app.Option("-v|--verbose",
                 "Verbose output", CommandOptionType.NoValue);
+            var sessionOption = app.Option("--session",
+                "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
+            var descriptionOption = app.Option("--description",
+                "The description of the job.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var connectionFilterOption = app.Option("-f|--connectionFilter",
@@ -160,28 +77,42 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
                 "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
-            var sessionOption = app.Option("--session",
-                "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
-            var descriptionOption = app.Option("--description",
-                "The description of the job.", CommandOptionType.SingleValue);
+            var argumentsOption = app.Option("--arguments",
+                "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
+            var portOption = app.Option("--port",
+                "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
+            var repositoryOption = app.Option("-r|--repository",
+                "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            var projectOption = app.Option("--projectFile",
+                "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
-                "Number of threads used by client", CommandOptionType.SingleValue);
+                "Number of threads used by client.", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
-                "Number of connections used by client", CommandOptionType.SingleValue);
+                "Number of connections used by client.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
-                "Duration of test in seconds", CommandOptionType.SingleValue);
+                "Duration of test in seconds.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
-                "Header added to request", CommandOptionType.MultipleValue);
+                "Header added to request.", CommandOptionType.MultipleValue);
+            var headersOption = app.Option("--headers",
+                "Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.", CommandOptionType.SingleValue);
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
+            var scriptNameOption = app.Option("--script",
+                "Name of the script used by wrk.", CommandOptionType.SingleValue);
             var pipelineDepthOption = app.Option("--pipelineDepth",
-                "Depth of pipeline used by client", CommandOptionType.SingleValue);
+                "Depth of pipeline used by client.", CommandOptionType.SingleValue);
             var pathOption = app.Option(
                 "--path",
                 "Relative URL where the client should send requests.",
                 CommandOptionType.SingleValue);
+            var querystringOption = app.Option(
+                "--querystring",
+                "Querystring to add to the requests. (e.g., \"?page=1\")",
+                CommandOptionType.SingleValue);
+            var jobsOptions = app.Option("-j|--jobs",
+                "The path or url to the jobs definition.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -215,11 +146,14 @@ namespace BenchmarksDriver
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
+                var headers = Headers.Html;
+                var jobDefinitionPathOrUrl =  jobsOptions.Value();
+
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
-                    !Enum.TryParse(scenarioOption.Value(), ignoreCase: true, result: out Scenario scenario) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
+                    (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -227,55 +161,114 @@ namespace BenchmarksDriver
                     return 2;
                 }
 
-                string path = null;
-                var scenarioName = scenario.ToString();
-                var field = typeof(Scenario).GetTypeInfo().GetField(scenarioName);
-                var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
-                if (pathAttribute != null)
+                var scenarioName = scenarioOption.Value() ?? "Default";
+                Dictionary<string, JObject> jobDefinitions;
+
+                if (!string.IsNullOrWhiteSpace(jobDefinitionPathOrUrl))
                 {
-                    Debug.Assert(pathAttribute.Paths.Length > 0);
-                    if (pathAttribute.Paths.Length == 1)
+                    string jobDefinitionContent;
+                
+                    // Load the job definition from a url or locally
+                    try
                     {
-                        if (pathOption.HasValue())
+                        if (jobDefinitionPathOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                         {
-                            Console.WriteLine($"Scenario '{scenarioName}' does not support the {pathOption.LongName} option.");
-                            return 4;
+                            jobDefinitionContent = _httpClient.GetStringAsync(jobDefinitionPathOrUrl).GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            jobDefinitionContent = File.ReadAllText(jobDefinitionPathOrUrl);
                         }
                     }
-                    else
+                    catch
                     {
-                        if (!pathOption.HasValue())
-                        {
-                            Console.WriteLine($"Scenario '{scenarioName}' requires one of the following {pathOption.LongName} options:");
-                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
-                            return 5;
-                        }
+                        Console.WriteLine($"Job definition '{jobDefinitionPathOrUrl}' could not be loaded.");
+                        return 7;
+                    }
 
-                        path = pathOption.Value();
+                    jobDefinitions = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(jobDefinitionContent);
 
-                        if (!pathAttribute.Paths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) &&
-                            !pathAttribute.Paths.Any(p => string.Equals(p, "/" + path, StringComparison.OrdinalIgnoreCase)))
+                    if (!jobDefinitions.ContainsKey(scenarioName))
+                    {
+                        if (scenarioName == "Default")
                         {
-                            Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
-                            Console.WriteLine($"'{string.Join("', '", pathAttribute.Paths)}'");
-                            return 6;
+                            Console.WriteLine($"Default job not found in the job definition file.");
                         }
+                        else
+                        {
+                            Console.WriteLine($"Job named '{scenarioName}' not found in the job definition file.");
+                        }
+                        
+                        return 7;
                     }
                 }
-
-                var serverJob = new ServerJob()
+                else
                 {
-                    Scheme = scheme,
-                    Scenario = scenario,
-                    WebHost = webHost,
-                    AspNetCoreVersion = aspnetCoreVersion
-                };
+                    if (scenarioOption.HasValue())
+                    {
+                        Console.WriteLine($"Job named '{scenarioName}' was specified but no job definition argument.");
+                        return 8;
+                    }
+
+                    if (!repositoryOption.HasValue() ||
+                        !projectOption.HasValue())
+                    {
+                        Console.WriteLine($"Repository and project are mandatory when no job definition is specified.");
+                        return 8;
+                    }
+
+                    jobDefinitions = new Dictionary<string, JObject>();
+                    jobDefinitions.Add("Default", new JObject());
+                }
+
+                var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+                if (!jobDefinitions.TryGetValue("Default", out var defaultJob))
+                {
+                    defaultJob = new JObject();
+                }
+
+                var job = jobDefinitions[scenarioName];
+
+                // Building ServerJob
+
+                var mergedServerJob = new JObject(defaultJob);
+                mergedServerJob.Merge(job);
+                var serverJob = mergedServerJob.ToObject<ServerJob>();
+                var jobOptions = mergedServerJob.ToObject<JobOptions>();
+
+                if (pathOption.HasValue())
+                {
+                    serverJob.Path = pathOption.Value();
+                }
+
+                if (pathOption.HasValue() && jobOptions.Paths != null && jobOptions.Paths.Length > 0)
+                {
+                    if (!jobOptions.Paths.Any(p => string.Equals(p, serverJob.Path, StringComparison.OrdinalIgnoreCase)) &&
+                        !jobOptions.Paths.Any(p => string.Equals(p, "/" + serverJob.Path, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        Console.WriteLine($"Scenario '{scenarioName}' does not support {pathOption.LongName} '{pathOption.Value()}'. Choose from:");
+                        Console.WriteLine($"'{string.Join("', '", jobOptions.Paths)}'");
+                        return 6;
+                    }
+                }
+                
+                // These properties can't be set in the job definitions
+                serverJob.Scenario = scenarioName;
+                serverJob.AspNetCoreVersion = aspnetCoreVersion;
 
                 if (connectionFilterOption.HasValue())
                 {
                     serverJob.ConnectionFilter = connectionFilterOption.Value();
                 }
-
+                if (schemeOption.HasValue())
+                {
+                    serverJob.Scheme = scheme;
+                }
+                if (webHostOption.HasValue())
+                {
+                    serverJob.WebHost = webHost;
+                }
                 if (kestrelTransportOption.HasValue())
                 {
                     if (!Enum.TryParse(kestrelTransportOption.Value(), ignoreCase: true, result: out KestrelTransport kestrelTransport))
@@ -285,18 +278,41 @@ namespace BenchmarksDriver
                     }
                     serverJob.KestrelTransport = kestrelTransport;
                 }
-
                 if (kestrelThreadCountOption.HasValue())
                 {
                     serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
                 }
-
                 if (kestrelThreadPoolDispatchingOption.HasValue())
                 {
                     serverJob.KestrelThreadPoolDispatching = bool.Parse(kestrelThreadPoolDispatchingOption.Value());
                 }
+                if (argumentsOption.HasValue())
+                {
+                    serverJob.Arguments = argumentsOption.Value();
+                }
+                if (portOption.HasValue())
+                {
+                    serverJob.Port = int.Parse(portOption.Value());
+                }
+                if (repositoryOption.HasValue())
+                {
+                    var source = repositoryOption.Value();
+                    var split = source.IndexOf('@');
+                    var repository = (split == -1) ? source : source.Substring(0, split);
+                    serverJob.Source.BranchOrCommit = (split == -1) ? null : source.Substring(split + 1);
 
-                var sources = new List<Source>();
+                    if (!repository.Contains(":"))
+                    {
+                        repository = $"https://github.com/aspnet/{repository}.git";
+                    }
+
+                    serverJob.Source.Repository = repository;
+                }
+                if (projectOption.HasValue())
+                {
+                    serverJob.Source.Project = projectOption.Value();
+                }
+
                 foreach (var source in sourceOption.Values)
                 {
                     var split = source.IndexOf('@');
@@ -308,37 +324,92 @@ namespace BenchmarksDriver
                         repository = $"https://github.com/aspnet/{repository}.git";
                     }
 
-                    sources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
+                    serverJob.ReferenceSources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                 }
-                serverJob.Sources = sources;
+
+                // Building ClientJob
+
+                var mergedClientJob = new JObject(defaultJob);
+                mergedClientJob.Merge(job);
+                _clientJob = mergedClientJob.ToObject<ClientJob>();
 
                 // Override default ClientJob settings if options are set
                 if (connectionsOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Connections = int.Parse(connectionsOption.Value()));
+                    _clientJob.Connections = int.Parse(connectionsOption.Value());
                 }
                 if (clientThreadsOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Threads = int.Parse(clientThreadsOption.Value()));
+                    _clientJob.Threads = int.Parse(clientThreadsOption.Value());
                 }
                 if (durationOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Duration = int.Parse(durationOption.Value()));
+                    _clientJob.Duration = int.Parse(durationOption.Value());
                 }
                 if (pipelineDepthOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.PipelineDepth = int.Parse(pipelineDepthOption.Value()));
+                    _clientJob.PipelineDepth = int.Parse(pipelineDepthOption.Value());
+
+                    if (_clientJob.PipelineDepth > 0)
+                    {
+                        _clientJob.ScriptName = "pipeline";
+                    }
+                }
+                if (scriptNameOption.HasValue())
+                {
+                    _clientJob.ScriptName = scriptNameOption.Value();
                 }
                 if (methodOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Method = methodOption.Value());
+                    _clientJob.Method = methodOption.Value();
+                }
+                if (querystringOption.HasValue())
+                {
+                    _clientJob.Query = querystringOption.Value();
+                }
+                if (headersOption.HasValue())
+                {
+                    switch (headers)
+                    {
+                        case Headers.None:
+                            break;
+
+                        case Headers.Html:
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                            _clientJob.Headers["Connection"] = "keep-alive";
+                            break;
+                        
+                        case Headers.Json:
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
+                            _clientJob.Headers["Connection"] = "keep-alive";
+                            break;
+                        
+                        case Headers.Plaintext:
+                            _clientJob.Headers["Host"] = "localhost";
+                            _clientJob.Headers["Accept"] = "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
+                            _clientJob.Headers["Connection"] = "keep-alive";
+                            break;
+                    }
                 }
                 if (headerOption.HasValue())
                 {
-                    _clientJobs.Values.ToList().ForEach(c => c.Headers = headerOption.Values.ToArray());
+                    foreach(var header in headerOption.Values)
+                    {
+                        var index = header.IndexOf('=');
+
+                        if (index == -1)
+                        {
+                            Console.WriteLine($"Invalid http header, '=' not found: '{header}'");
+                            return 9;
+                        }
+
+                        _clientJob.Headers[header.Substring(0, index)] = header.Substring(index + 1, header.Length - index - 1);
+                    }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, path, session, description).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description).Result;
             });
 
             return app.Execute(args);
@@ -349,7 +420,6 @@ namespace BenchmarksDriver
             Uri clientUri,
             string sqlConnectionString,
             ServerJob serverJob,
-            string path,
             string session,
             string description)
         {
@@ -414,11 +484,7 @@ namespace BenchmarksDriver
                         await Task.Delay(1000);
                     }
                 }
-
-                if (path != null)
-                {
-                    serverBenchmarkUri += path.Trim('/');
-                }
+                
 
                 Log("Warmup");
                 await RunClientJob(scenario, clientUri, serverBenchmarkUri);
@@ -426,7 +492,7 @@ namespace BenchmarksDriver
                 Log("Benchmark");
                 var clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
 
-                if (clientJob.State == ClientState.Completed && !string.IsNullOrWhiteSpace(sqlConnectionString))
+                if (clientJob.State == ClientState.Completed)
                 {
                     // Load latest state of server job
                     LogVerbose($"GET {serverJobUri}...");
@@ -437,117 +503,131 @@ namespace BenchmarksDriver
 
                     serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
-                    Log("Writing results to SQL...");
+                    var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).Max()) / (1024 * 1024), 3);
+                    var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).Max();
 
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "RequestsPerSecond",
-                        value: clientJob.RequestsPerSecond);
+                    Log($"RequestsPerSecond:           {clientJob.RequestsPerSecond}");
+                    Log($"Latency on load (ms):        {clientJob.Latency.Average.TotalMilliseconds}");
+                    Log($"Max CPU (%):                 {cpu}");
+                    Log($"WorkingSet (MB):             {workingSet}");
+                    Log($"Startup Main (ms):           {serverJob.StartupMainMethod.TotalMilliseconds}");
+                    Log($"First Request (ms):          {clientJob.LatencyFirstRequest.TotalMilliseconds}");
+                    Log($"Latency (ms):                {clientJob.LatencyNoLoad.TotalMilliseconds}");
+                    
+                    if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+                    {
+                        Log("Writing results to SQL...");
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "RequestsPerSecond",
+                            value: clientJob.RequestsPerSecond);
+                            
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Startup Main (ms)",
+                            value: serverJob.StartupMainMethod.TotalMilliseconds);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "First Request (ms)",
+                            value: clientJob.LatencyFirstRequest.TotalMilliseconds);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "WorkingSet (MB)",
+                            value: workingSet);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "CPU",
+                            value: cpu);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            session: session,
+                            description: description,
+                            path: serverJob.Path,
+                            dimension: "Latency (ms)",
+                            value: clientJob.LatencyNoLoad.TotalMilliseconds);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "LatencyAverage (ms)",
+                            value: clientJob.Latency.Average.TotalMilliseconds);
                         
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Startup Main (ms)",
-                        value: serverJob.StartupMainMethod.TotalMilliseconds);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Startup First Request (ms)",
-                        value: serverJob.StartupFirstRequest.TotalMilliseconds);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "WorkingSet (MB)",
-                        value: Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).Max()) / (1024 * 1024), 3));
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "CPU",
-                        value: serverJob.ServerCounters.Select(x => x.CpuPercentage).Max());
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        session: session,
-                        description: description,
-                        path: path,
-                        dimension: "Latency (ms)",
-                        value: serverJob.Latency.TotalMilliseconds);
-
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "LatencyAverage (ms)",
-                        value: clientJob.Latency.Average.TotalMilliseconds);
-                    
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Latency50Percentile (ms)",
-                        value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
-                    
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Latency75Percentile (ms)",
-                        value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
-                    
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Latency90Percentile (ms)",
-                        value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
-                    
-                    await WriteJobsToSql(
-                        serverJob: serverJob, 
-                        clientJob: clientJob,
-                        connectionString: sqlConnectionString,
-                        path: path,
-                        session: session,
-                        description: description,
-                        dimension: "Latency99Percentile (ms)",
-                        value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Latency50Percentile (ms)",
+                            value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
+                        
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Latency75Percentile (ms)",
+                            value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
+                        
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Latency90Percentile (ms)",
+                            value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
+                        
+                        await WriteJobsToSql(
+                            serverJob: serverJob, 
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Latency99Percentile (ms)",
+                            value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
+                    }
                 }
             }
             finally
@@ -566,14 +646,14 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<ClientJob> RunClientJob(Scenario scenario, Uri clientUri, string serverBenchmarkUri)
+        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, string serverBenchmarkUri)
         {
-            var clientJob = new ClientJob(_clientJobs[scenario]) { ServerBenchmarkUri = serverBenchmarkUri };
+            var clientJob = new ClientJob(_clientJob) { ServerBenchmarkUri = serverBenchmarkUri };
 
             Uri clientJobUri = null;
             try
             {
-                Log($"Starting scenario {scenario} on benchmark client...");
+                Log($"Starting scenario {scenarioName} on benchmark client...");
 
                 var clientJobsUri = new Uri(clientUri, "/jobs");
                 var clientContent = JsonConvert.SerializeObject(clientJob);
@@ -618,7 +698,7 @@ namespace BenchmarksDriver
 
                     if (clientJob.State == ClientState.Completed)
                     {
-                        Log($"Scenario {scenario} completed on benchmark client");
+                        Log($"Scenario {scenarioName} completed on benchmark client");
                         LogVerbose($"Output: {clientJob.Output}");
 
                         if (!String.IsNullOrWhiteSpace(clientJob.Error))
@@ -626,7 +706,6 @@ namespace BenchmarksDriver
                             LogVerbose($"Error: {clientJob.Error}");
                         }
 
-                        Log($"RPS: {clientJob.RequestsPerSecond}");
                         break;
                     }
                     else
@@ -639,7 +718,7 @@ namespace BenchmarksDriver
             {
                 if (clientJobUri != null)
                 {
-                    Log($"Stopping scenario {scenario} on benchmark client...");
+                    Log($"Stopping scenario {scenarioName} on benchmark client...");
 
                     LogVerbose($"DELETE {clientJobUri}...");
                     var response = _httpClient.DeleteAsync(clientJobUri).Result;
@@ -662,7 +741,7 @@ namespace BenchmarksDriver
                         hardware: serverJob.Hardware.Value,
                         operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
-                        sources: serverJob.Sources,
+                        sources: serverJob.ReferenceSources,
                         connectionFilter: serverJob.ConnectionFilter,
                         webHost: serverJob.WebHost,
                         kestrelThreadCount: serverJob.KestrelThreadCount,
@@ -683,7 +762,7 @@ namespace BenchmarksDriver
             string session,
             string description,
             string aspnetCoreVersion,
-            Scenario scenario,
+            string scenario,
             Hardware hardware,
             OperatingSystem operatingSystem,
             Scheme scheme,
@@ -699,7 +778,7 @@ namespace BenchmarksDriver
             int? pipelineDepth,
             string path,
             string method,
-            IEnumerable<string> headers,
+            IDictionary<string, string> headers,
             string dimension,
             double value)
         {
@@ -826,7 +905,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
-                    p.AddWithValue("@Headers", headers.Any() ? (object)headers.ToContentString() : DBNull.Value);
+                    p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : null);
                     p.AddWithValue("@Dimension", dimension);
                     p.AddWithValue("@Value", value);
 

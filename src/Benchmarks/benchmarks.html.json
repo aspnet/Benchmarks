@@ -1,0 +1,37 @@
+{
+  "Default": {
+    "Connections": 256,
+    "Threads": 32,
+    "Duration": 15,
+
+    "Headers": {
+      "Host": "localhost",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Connection": "keep-alive"
+    },
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "dev",
+      "Project": "src/Benchmarks/Benchmarks.csproj"
+    }
+  },
+  "DbFortunesRaw": {
+    "Path": "/mvc/fortunes/raw"
+  },
+  "DbFortunesDapper": {
+    "Path": "/mvc/fortunes/dapper"
+  },
+  "DbFortunesEf": {
+    "Path": "/mvc/fortunes/ef"
+  },
+  "MvcDbFortunesRaw": {
+    "Path": "/mvc/fortunes/raw"
+  },
+  "MvcDbFortunesDapper": {
+    "Path": "/mvc/fortunes/dapper"
+  },
+  "MvcDbFortunesEf": {
+    "Path": "/mvc/fortunes/ef"
+  }
+}

@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
@@ -30,9 +31,8 @@ namespace BenchmarkServer
     {
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
-        private const string _benchmarksRepoUrl = "https://github.com/aspnet/benchmarks.git";
-        private static readonly Source _benchmarksSource = new Source() { Repository = _benchmarksRepoUrl };
-
+        private const string _buildToolsRepoUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/scripts/bootstrapper/";
+        private static readonly string[] _buildToolsFiles = new string[] { "build.cmd", "build.sh", "run.cmd", "run.ps1", "run.sh" };
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
@@ -94,6 +94,14 @@ namespace BenchmarkServer
         public void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
+
+            // Register a default startup page to ensure the application is up
+            app.Map("", builder =>
+                builder.Run((context) =>
+                {
+                    return context.Response.WriteAsync("OK!");
+                })
+            );
         }
 
         public static int Main(string[] args)
@@ -223,7 +231,7 @@ namespace BenchmarkServer
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
 
-                                var benchmarksDir = CloneRestoreAndBuild(tempDir, job, dotnetHome);
+                                var benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
                                 Debug.Assert(process == null);
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
@@ -313,27 +321,26 @@ namespace BenchmarkServer
             }
         }
 
-        private static string CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
+        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.Sources, SourceRepoComparer.Instance);
+            var repos = new HashSet<Source>(job.ReferenceSources, SourceRepoComparer.Instance);
 
-            // This will no-op if 'benchmarks' was specified by the user.
-            repos.Add(_benchmarksSource);
+            repos.Add(job.Source);
 
             // Clone
-            string benchmarksDir = null;
+            string benchmarkedDir = null;
             var dirs = new List<string>();
             foreach (var source in repos)
             {
                 var dir = Git.Clone(path, source.Repository);
-                if (SourceRepoComparer.Instance.Equals(source, _benchmarksSource))
+                if (SourceRepoComparer.Instance.Equals(source, job.Source))
                 {
-                    benchmarksDir = dir;
+                    benchmarkedDir = dir;
                 }
 
                 if (!string.IsNullOrEmpty(source.BranchOrCommit))
@@ -343,7 +350,7 @@ namespace BenchmarkServer
                 dirs.Add(dir);
             }
 
-            Debug.Assert(benchmarksDir != null);
+            Debug.Assert(benchmarkedDir != null);
 
             // on windows dotnet is installed into subdirectory of 'dotnetHome' so we have to append 'x64'
             string dotnetExeLocation = OperatingSystem == OperatingSystem.Windows
@@ -360,85 +367,91 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
-            // Update the package and framework version in the props file
-            var dependenciesProps = Path.Combine(path, "benchmarks", "build", "dependencies.props");
-            Log.WriteLine($"Altering versions in '{dependenciesProps}', AspNetCoreVersion: {job.AspNetCoreVersion}");
-            if (!File.Exists(dependenciesProps))
-            {
-                throw new FileNotFoundException($"Could not find dependencies file '{dependenciesProps}'");
-            }
-            else
-            {
-                var dependencies = XDocument.Load(dependenciesProps);
-                var propertyGroup = dependencies.Root.Element("PropertyGroup");
-                propertyGroup.Element("BenchmarksAspNetCoreVersion").Value = job.AspNetCoreVersion;
-
-                switch (job.AspNetCoreVersion)
-                {
-                    case "2.0.0" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
-                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
-                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-                        break;
-
-                    case "2.0.1" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.0.0";
-                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "2.0.0";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
-                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-                        break;
-
-                    case "2.1.0-*" :
-                        propertyGroup.Element("BenchmarksNETStandardImplicitPackageVersion").Value = "2.1.0-*";
-                        propertyGroup.Element("BenchmarksNETCoreAppImplicitPackageVersion").Value = "2.1.0-*";
-                        propertyGroup.Element("BenchmarksRuntimeFrameworkVersion").Value = "2.0.0";
-                        env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-
-                        // Don't use "latest" runtime as it might not be tested yet. Use whatever KoreBuild specifies.
-                        // env["KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION"] = "latest";
-                        break;
-                    default:
-                        throw new ArgumentException($"Unsupported AspNetCoreVersion argument '{job.AspNetCoreVersion}'");
-                }
-
-                dependencies.Save(dependenciesProps);
-            }
-
             // Source dependencies are always built using KoreBuild
-            AddSourceDependencies(path, benchmarksDir, dirs, env);
+            AddSourceDependencies(path, benchmarkedDir, job.Source.Project, dirs, env);
+
+            Log.WriteLine("Downloading build tools");
 
             // Install latest SDK and runtime
             // * Use custom install dir to avoid changing the default install, which is impossible if other processes
             //   are already using it.
-            var benchmarksRoot = Path.Combine(path, benchmarksDir);
+            var buildToolsPath = Path.Combine(path, "buildtools");
+            
+            await DownloadBuildTools(buildToolsPath);
 
-            if (OperatingSystem == OperatingSystem.Windows)
+            Log.WriteLine("Installing dotnet runtimes and sdk");
+
+            // Computes the location of the benchmarked app
+            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
+
+            // Defines which SDK will be installed. Using "" downloads the latest SDK.
+            if (job.AspNetCoreVersion == "2.1.0-*")
             {
-                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", workingDirectory: benchmarksRoot, environmentVariables: env);
+                env["KOREBUILD_DOTNET_VERSION"] = "";
             }
             else
             {
-                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop", workingDirectory: benchmarksRoot,
+                env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
+                
+                // Generate a global.json file in the local repository to force which SDK the application is using.
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{ \"sdk\": { \"version\": \"2.0.0\" } }\"");
+            }            
+
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", 
+                    workingDirectory: buildToolsPath, 
+                    environmentVariables: env);
+            }
+            else
+            {
+                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop", 
+                    workingDirectory: buildToolsPath,
                     environmentVariables: env);
             }
 
             // Build and Restore
-            var benchmarksApp = Path.Combine(benchmarksRoot, "src", "Benchmarks");
             var dotnetExecutable = GetDotNetExecutable(dotnetHome);
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            ProcessUtil.Run(dotnetExecutable, "restore /p:VersionSuffix=zzzzz-99999", workingDirectory: benchmarksApp, environmentVariables: env);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release", workingDirectory: benchmarksApp, environmentVariables: env);
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0";
 
-            return benchmarksDir;
+            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", 
+                workingDirectory: benchmarkedApp, 
+                environmentVariables: env);
+
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}", 
+                workingDirectory: benchmarkedApp, 
+                environmentVariables: env);
+
+            // TODO: /p:PublishWithAspNetCoreTargetManifest=false for the .All package
+
+            return benchmarkedDir;
         }
 
-        private static void AddSourceDependencies(string path, string benchmarksDir, IEnumerable<string> dirs, IDictionary<string, string> env)
+        private static async Task DownloadBuildTools(string buildToolsPath)
         {
-            var benchmarksProjectPath = Path.Combine(path, benchmarksDir, "src", "Benchmarks", "Benchmarks.csproj");
+            if (!Directory.Exists(buildToolsPath))
+            {
+                Directory.CreateDirectory(buildToolsPath);
+            }
+
+            foreach(var file in _buildToolsFiles)
+            {
+                var content = await _httpClient.GetStringAsync(_buildToolsRepoUrl + file);
+                File.WriteAllText(Path.Combine(buildToolsPath, file), content);
+            }
+        }
+
+        private static void AddSourceDependencies(string path, string benchmarksDir, string benchmarksProject, IEnumerable<string> dirs, IDictionary<string, string> env)
+        {
+            
+            var benchmarksProjectPath = Path.Combine(path, benchmarksDir, benchmarksProject);
             var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
 
             var commonReferences = new XElement("ItemGroup");
@@ -491,7 +504,7 @@ namespace BenchmarkServer
                 benchmarksProjectDocument.Save(writer);
             }
         }
-
+         
         private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
         {
             var initArgs = new List<string>();
@@ -594,12 +607,15 @@ namespace BenchmarkServer
         private static Process StartProcess(string hostname, Database? database, string sqlConnectionString, string benchmarksRepo,
             ServerJob job, string dotnetHome)
         {
+            var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
+
             var filename = GetDotNetExecutable(dotnetHome);
-            var arguments = "bin/Release/netcoreapp2.0/Benchmarks.dll" +
+            var arguments = "bin/Release/netcoreapp2.0/" + Path.GetFileNameWithoutExtension(job.Source.Project) + ".dll" +
+                    $" {job.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
                     $" --server {job.WebHost}" +
-                    $" --server.urls {job.Scheme.ToString().ToLowerInvariant()}://{hostname}:5000";
+                    $" --server.urls {serverUrl}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
@@ -628,13 +644,18 @@ namespace BenchmarkServer
                 StartInfo = {
                     FileName = filename,
                     Arguments = arguments,
-                    WorkingDirectory = Path.Combine(benchmarksRepo, "src", "Benchmarks"),
+                    WorkingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project)),
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
             };
+
             process.StartInfo.Environment.Add("COREHOST_SERVER_GC", "1");
+
+            // Force Kestrel server urls
+            process.StartInfo.Environment.Add("ASPNETCORE_URLS", serverUrl);
+            
 
             if (database.HasValue)
             {
@@ -654,35 +675,12 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine(e.Data);
 
-                    if (job.State == ServerState.Starting && e.Data.Contains("Application started"))
+                    if (job.State == ServerState.Starting && (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")) )
                     {
                         job.StartupMainMethod = stopwatch.Elapsed;
 
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.Url = ComputeServerUrl(hostname, job.Scheme, job.Scenario);
-                        Log.WriteLine("Measuring startup time");
-                        
-                        using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
-                        {
-                            var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                            job.StartupFirstRequest = stopwatch.Elapsed;
-                        }
-
-                        Log.WriteLine("Measuring single-user latency");
-
-                        // This could be done during the Client job but we are already measuring the Startup time here.
-                        for (var i = 0; i < 10; i++)
-                        {
-                            stopwatch.Restart();
-                            
-                            using(var response = _httpClient.GetAsync(job.Url).GetAwaiter().GetResult())
-                            {
-                                var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                                // We keep the last measure to simulate a warmup phase.
-                                job.Latency = stopwatch.Elapsed;
-                            }
-                        }
+                        job.Url = ComputeServerUrl(hostname, job);
 
                         // Mark the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
@@ -697,29 +695,9 @@ namespace BenchmarkServer
             return process;
         }
 
-        private static string ComputeServerUrl(string hostname, Scheme scheme, Scenario scenario)
+        private static string ComputeServerUrl(string hostname, ServerJob job)
         {
-            var scenarioName = scenario.ToString();
-            var path = scenarioName;
-
-            var field = scenario.GetType().GetTypeInfo().GetField(scenarioName);
-            var pathAttribute = field.GetCustomAttribute<ScenarioPathAttribute>();
-            if (pathAttribute != null)
-            {
-                Debug.Assert(pathAttribute.Paths.Length > 0);
-                if (pathAttribute.Paths.Length == 1)
-                {
-                    path = pathAttribute.Paths[0].Trim('/');
-                }
-                else
-                {
-                    // Driver will choose between paths when more than one is available. The scenario name is not
-                    // necessarily even one of the choices.
-                    path = string.Empty;
-                }
-            }
-
-            return $"{scheme.ToString().ToLowerInvariant()}://{hostname}:5000/{path.ToLower()}";
+            return $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}/{job.Path.TrimStart('/')}";
         }
 
         private static string GetRepoName(Source source)

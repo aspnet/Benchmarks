@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -15,12 +16,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Repository;
 
 namespace BenchmarkClient
 {
     public class Startup
     {
+        private static HttpClient _httpClient;
+        private static HttpClientHandler _httpClientHandler;
+
         private const string _defaultUrl = "http://*:5002";
 
         private static readonly IRepository<ClientJob> _jobs = new InMemoryRepository<ClientJob>();
@@ -63,6 +68,11 @@ namespace BenchmarkClient
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 return Run(url).Result;
             });
+
+            // Configuring the http client to trust the self-signed certificate
+            _httpClientHandler = new HttpClientHandler();
+            _httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+            _httpClient = new HttpClient(_httpClientHandler);
 
             return app.Execute(args);
         }
@@ -122,7 +132,7 @@ namespace BenchmarkClient
 
                     if (job.Headers != null)
                     {
-                        jobLogText += $" Headers:{job.Headers.ToContentString()}";
+                        jobLogText += $" Headers:{JsonConvert.SerializeObject(job.Headers)}";
                     }
 
                     jobLogText += "]";
@@ -138,6 +148,8 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
+
+                        MeasureFirstRequestLatency(job);
 
                         process = StartProcess(job);
                     }
@@ -158,6 +170,47 @@ namespace BenchmarkClient
             }
         }
 
+        private static HttpRequestMessage CreateHttpMessage(ClientJob job)
+        {
+            var requestMessage = new HttpRequestMessage(new HttpMethod(job.Method), job.ServerBenchmarkUri);
+
+            foreach (var header in job.Headers)
+            {
+                requestMessage.Headers.Add(header.Key, header.Value);
+            }
+
+            return requestMessage;
+        }
+
+        private static void MeasureFirstRequestLatency(ClientJob job)
+        {
+            Log("Measuring startup time");
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            using (var response = _httpClient.SendAsync(CreateHttpMessage(job)).GetAwaiter().GetResult())
+            {
+                var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                job.LatencyFirstRequest = stopwatch.Elapsed;
+            }
+
+            Log("Measuring single connection latency");
+
+            for (var i = 0; i < 10; i++)
+            {
+                stopwatch.Restart();
+
+                using (var response = _httpClient.SendAsync(CreateHttpMessage(job)).GetAwaiter().GetResult())
+                {
+                    var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                    // We keep the last measure to simulate a warmup phase.
+                    job.LatencyNoLoad = stopwatch.Elapsed;
+                }
+            }
+        }
+
         private static Process StartProcess(ClientJob job)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -168,7 +221,7 @@ namespace BenchmarkClient
             {
                 foreach (var header in job.Headers)
                 {
-                    command += $" -H \"{header}\"";
+                    command += $" -H \"{header.Key}={header.Value}\"";
                 }
             }
 
