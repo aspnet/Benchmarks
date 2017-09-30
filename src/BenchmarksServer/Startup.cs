@@ -330,7 +330,6 @@ namespace BenchmarkServer
             // the command-line (last first to support overrides).
             var repos = new HashSet<Source>(job.ReferenceSources, SourceRepoComparer.Instance);
 
-            // This will no-op if 'benchmarks' was specified by the user.
             repos.Add(job.Source);
 
             // Clone
@@ -385,7 +384,7 @@ namespace BenchmarkServer
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
 
-            // Degines SDK will be installed. Using "" downloads the latest SDK.
+            // Defines which SDK will be installed. Using "" downloads the latest SDK.
             if (job.AspNetCoreVersion == "2.1.0-*")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "";
@@ -417,10 +416,18 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} /p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} /p:BenchmarksRuntimeFrameworkVersion=2.0.0";
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
+                $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0";
 
-            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", workingDirectory: benchmarkedApp, environmentVariables: env);
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}", workingDirectory: benchmarkedApp, environmentVariables: env);
+            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", 
+                workingDirectory: benchmarkedApp, 
+                environmentVariables: env);
+
+            ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}", 
+                workingDirectory: benchmarkedApp, 
+                environmentVariables: env);
 
             // TODO: /p:PublishWithAspNetCoreTargetManifest=false for the .All package
 
@@ -483,6 +490,8 @@ namespace BenchmarkServer
                         netCoreReferences.Add(reference);
                     }
                 }
+
+                InitializeSourceRepo(repoRoot, env);
             }
 
             benchmarksProjectDocument.Root.Add(commonReferences);
@@ -493,6 +502,38 @@ namespace BenchmarkServer
             using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
             {
                 benchmarksProjectDocument.Save(writer);
+            }
+        }
+         
+        private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
+        {
+            var initArgs = new List<string>();
+            var repoProps = Path.Combine(repoRoot, "build", "repo.props");
+            if (File.Exists(repoProps))
+            {
+                var props = XDocument.Load(repoProps);
+                if (props.Root.Descendants("DotNetCoreRuntime").Any())
+                {
+                    initArgs.Add("/t:InstallDotNet");
+                }
+
+                if (props.Root.Descendants("PackageLineup").Any())
+                {
+                    initArgs.Add("/t:Pin");
+                }
+            }
+
+            if (initArgs.Count > 0)
+            {
+                var args = string.Join(' ', initArgs);
+                if (OperatingSystem == OperatingSystem.Windows)
+                {
+                    ProcessUtil.Run("cmd", "/c build.cmd " + args, workingDirectory: repoRoot, environmentVariables: env);
+                }
+                else
+                {
+                    ProcessUtil.Run("/usr/bin/env", "bash build.sh " + args, workingDirectory: repoRoot, environmentVariables: env);
+                }
             }
         }
 
