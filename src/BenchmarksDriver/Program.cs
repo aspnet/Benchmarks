@@ -85,6 +85,8 @@ namespace BenchmarksDriver
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
+            var useRuntimeStoreOption = app.Option("--useRuntimeStore",
+                "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -266,6 +268,10 @@ namespace BenchmarksDriver
                 if (schemeOption.HasValue())
                 {
                     serverJob.Scheme = scheme;
+                }
+                if (useRuntimeStoreOption.HasValue())
+                {
+                    serverJob.UseRuntimeStore = true;
                 }
                 if (webHostOption.HasValue())
                 {
