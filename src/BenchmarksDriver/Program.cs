@@ -162,7 +162,7 @@ namespace BenchmarksDriver
                 }
 
                 var scenarioName = scenarioOption.Value() ?? "Default";
-                Dictionary<string, JObject> jobDefinitions;
+                JobDefinition jobDefinitions;
 
                 if (!string.IsNullOrWhiteSpace(jobDefinitionPathOrUrl))
                 {
@@ -186,8 +186,8 @@ namespace BenchmarksDriver
                         return 7;
                     }
 
-                    jobDefinitions = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(jobDefinitionContent);
-
+                    jobDefinitions = JsonConvert.DeserializeObject<JobDefinition>(jobDefinitionContent);
+                    
                     if (!jobDefinitions.ContainsKey(scenarioName))
                     {
                         if (scenarioName == "Default")
@@ -200,6 +200,11 @@ namespace BenchmarksDriver
                         }
                         
                         return 7;
+                    }
+                    else
+                    {
+                        // Normalizes the scenario name by using the one from the job definition
+                        scenarioName = jobDefinitions.First(x => String.Equals(x.Key, scenarioName, StringComparison.OrdinalIgnoreCase)).Key;
                     }
                 }
                 else
@@ -217,7 +222,7 @@ namespace BenchmarksDriver
                         return 8;
                     }
 
-                    jobDefinitions = new Dictionary<string, JObject>();
+                    jobDefinitions = new JobDefinition();
                     jobDefinitions.Add("Default", new JObject());
                 }
 
@@ -907,7 +912,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
-                    p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : null);
+                    p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : (object)DBNull.Value);
                     p.AddWithValue("@Dimension", dimension);
                     p.AddWithValue("@Value", value);
 
