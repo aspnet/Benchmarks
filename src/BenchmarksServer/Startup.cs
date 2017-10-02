@@ -419,17 +419,27 @@ namespace BenchmarkServer
             var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0";
+                $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0 ";
 
-            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", 
+            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999", 
                 workingDirectory: benchmarkedApp, 
                 environmentVariables: env);
 
-            ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}", 
-                workingDirectory: benchmarkedApp, 
-                environmentVariables: env);
+            if (job.UseRuntimeStore)
+            {
+                ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}",
+                    workingDirectory: benchmarkedApp,
+                    environmentVariables: env);
+            }
+            else
+            {
+                // This flag is necessary when using the .All metapackage
+                buildParameters += " /p:PublishWithAspNetCoreTargetManifest=false";
 
-            // TODO: /p:PublishWithAspNetCoreTargetManifest=false for the .All package
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {Path.Combine(benchmarkedApp, "published")} {buildParameters}",
+                    workingDirectory: benchmarkedApp,
+                    environmentVariables: env);
+            }
 
             return benchmarkedDir;
         }
@@ -609,8 +619,11 @@ namespace BenchmarkServer
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
 
-            var filename = GetDotNetExecutable(dotnetHome);
-            var arguments = "bin/Release/netcoreapp2.0/" + Path.GetFileNameWithoutExtension(job.Source.Project) + ".dll" +
+            var dotnetFilename = GetDotNetExecutable(dotnetHome);
+            var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
+            var benchmarksDll = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/{projectFilename}.dll" : $"published/{projectFilename}.dll";
+
+            var arguments = $"{benchmarksDll}"+
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
@@ -637,12 +650,12 @@ namespace BenchmarkServer
                 arguments += $" --kestrelThreadPoolDispatching {job.KestrelThreadPoolDispatching.Value}";
             }
 
-            Log.WriteLine($"Starting process '{filename} {arguments}'");
+            Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
 
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = filename,
+                    FileName = dotnetFilename,
                     Arguments = arguments,
                     WorkingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project)),
                     RedirectStandardOutput = true,
