@@ -387,19 +387,19 @@ namespace BenchmarksDriver
                         break;
 
                     case Headers.Html:
-                        _clientJob.Headers["Host"] = "localhost";
+                        _clientJob.Headers["Host"] = "TFB-server";
                         _clientJob.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
 
                     case Headers.Json:
-                        _clientJob.Headers["Host"] = "localhost";
+                        _clientJob.Headers["Host"] = "TFB-server";
                         _clientJob.Headers["Accept"] = "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
 
                     case Headers.Plaintext:
-                        _clientJob.Headers["Host"] = "localhost";
+                        _clientJob.Headers["Host"] = "TFB-server";
                         _clientJob.Headers["Accept"] = "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
