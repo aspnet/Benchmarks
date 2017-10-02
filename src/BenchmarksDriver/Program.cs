@@ -807,7 +807,7 @@ namespace BenchmarksDriver
                         [Hardware] [nvarchar](max) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
-                        [RuntimeStore] [bit] NULL,
+                        [RuntimeStore] [bit] NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
                         [Sources] [nvarchar](max) NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
