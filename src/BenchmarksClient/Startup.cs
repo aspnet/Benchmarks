@@ -221,7 +221,7 @@ namespace BenchmarkClient
             {
                 foreach (var header in job.Headers)
                 {
-                    command += $" -H \"{header.Key}={header.Value}\"";
+                    command += $" -H \"{header.Key}: {header.Value}\"";
                 }
             }
 
