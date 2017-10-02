@@ -294,7 +294,8 @@ namespace BenchmarkServer
                                 }
                                 else
                                 {
-                                    ProcessUtil.Run("pkill", "--signal SIGINT --full Benchmarks.dll", throwOnError: false);
+                                    var assemblyName = Path.GetFileNameWithoutExtension(job.Source.Project);
+                                    ProcessUtil.Run("pkill", $"--signal SIGINT --full {assemblyName}.dll", throwOnError: false);
                                 }
                                 process.Dispose();
                                 process = null;
