@@ -763,7 +763,8 @@ namespace BenchmarksDriver
                         method: clientJob.Method,
                         headers: clientJob.Headers,
                         dimension: dimension,
-                        value: value);
+                        value: value,
+                        runtimeStore: serverJob.UseRuntimeStore);
         }
         private static async Task WriteResultsToSql(
             string connectionString,
@@ -788,7 +789,8 @@ namespace BenchmarksDriver
             string method,
             IDictionary<string, string> headers,
             string dimension,
-            double value)
+            double value,
+            bool runtimeStore)
         {
             const string createCmd =
                 @"
@@ -805,6 +807,7 @@ namespace BenchmarksDriver
                         [Hardware] [nvarchar](max) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
+                        [RuntimeStore] [bit] DEFAULT 1,
                         [Scheme] [nvarchar](max) NOT NULL,
                         [Sources] [nvarchar](max) NULL,
                         [ConnectionFilter] [nvarchar](max) NULL,
@@ -836,6 +839,7 @@ namespace BenchmarksDriver
                            ,[Hardware]
                            ,[OperatingSystem]
                            ,[Framework]
+                           ,[RuntimeStore]
                            ,[Scheme]
                            ,[Sources]
                            ,[ConnectionFilter]
@@ -861,6 +865,7 @@ namespace BenchmarksDriver
                            ,@Hardware
                            ,@OperatingSystem
                            ,@Framework
+                           ,@RuntimeStore
                            ,@Scheme
                            ,@Sources
                            ,@ConnectionFilter
@@ -899,6 +904,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
                     p.AddWithValue("@Framework", "Core");
+                    p.AddWithValue("@RuntimeStore", runtimeStore);
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@Sources", sources.Any() ? (object)ConvertToSqlString(sources) : DBNull.Value);
                     p.AddWithValue("@ConnectionFilter",
