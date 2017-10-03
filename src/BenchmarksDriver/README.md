@@ -23,9 +23,9 @@ Options:
   --aspnetCoreVersion             ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*). Default is 2.1.0-*.
   --session                       A logical identifier to group related jobs.
   --description                   The description of the job.
-  --clientThreads                 Number of threads used by client.
-  --connections                   Number of connections used by client.
-  --duration                      Duration of test in seconds.
+  --clientThreads                 Number of threads used by client. Default is 32.
+  --connections                   Number of connections used by client. Default is 256.
+  --duration                      Duration of test in seconds. Default is 15.
   --headers                       Predefined set of headers (Plaintext, Json, Html, None). Default is Html.
   --header                        Header added to request. (e.g., "Host=localhost")
   --method                        HTTP method of the request. Default is GET.
@@ -36,6 +36,7 @@ Options:
   --arguments                     Arguments to pass to the application. (e.g., "--raw true")
   --repository                    Project repository. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
   --project                       Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)
+  --useRuntimeStore               Runs the benchmarks using the runtime store if available.
 ```
 
 ### Examples

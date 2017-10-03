@@ -35,11 +35,11 @@ namespace Benchmarks.ClientJob
 
         public int Id { get; set; }
 
-        public int Threads { get; set; }
+        public int Threads { get; set; } = 32;
 
-        public int Connections { get; set; }
+        public int Connections { get; set; } = 256;
 
-        public int Duration { get; set; }
+        public int Duration { get; set; } = 15;
 
         public string ScriptName { get; set; }
 
