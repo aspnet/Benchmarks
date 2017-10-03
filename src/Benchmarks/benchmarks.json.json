@@ -1,14 +1,7 @@
 {
   "Default": {
-    "Connections": 256,
-    "Threads": 32,
-    "Duration": 15,
 
-    "Headers": {
-      "Host": "localhost",
-      "Accept": "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-      "Connection": "keep-alive"
-    },
+    "PresetHeaders": "Json",
 
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",

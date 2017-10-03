@@ -76,10 +76,9 @@ Also if no named job is requested on the command line, the _default_ job will be
     "Default": {
         "ScriptName": "pipeline",
         "PipelineDepth" : 16,
+        "PresetHeaders": "Plaintext", // None, Html, Plaintext or Json
         "Headers": { 
-            "Host": "localhost",
-            "Accept": "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
-            "Connection": "keep-alive"
+            "Foo": "Bar"
         },
         "Source": {
             "Repository": "https://github.com/aspnet/benchmarks.git",
