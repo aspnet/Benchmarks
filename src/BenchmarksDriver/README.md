@@ -27,7 +27,7 @@ Options:
   --connections                   Number of connections used by client. Default is 256.
   --duration                      Duration of test in seconds. Default is 15.
   --headers                       Predefined set of headers (Plaintext, Json, Html, None). Default is Html.
-  --header                        Header added to request. (e.g., "Host=localhost")
+  --header                        Header added to request. (e.g., "Host: localhost")
   --method                        HTTP method of the request. Default is GET.
   --pipelineDepth                 Depth of pipeline used by client.
   --script                        Name of the script used by wrk.

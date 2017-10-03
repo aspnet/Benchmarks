@@ -5,7 +5,7 @@
     "Duration": 15,
 
     "Headers": {
-      "Host": "localhost",
+      "Host": "TFB-server",
       "Accept": "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7",
       "Connection": "keep-alive"
     },
