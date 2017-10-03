@@ -422,7 +422,7 @@ namespace BenchmarkServer
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0 ";
 
-            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999", 
+            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", 
                 workingDirectory: benchmarkedApp, 
                 environmentVariables: env);
 
