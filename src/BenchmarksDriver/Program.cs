@@ -90,11 +90,11 @@ namespace BenchmarksDriver
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
-                "Number of threads used by client.", CommandOptionType.SingleValue);
+                "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
-                "Number of connections used by client.", CommandOptionType.SingleValue);
+                "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
-                "Duration of test in seconds.", CommandOptionType.SingleValue);
+                "Duration of test in seconds. Default is 15.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
                 "Header added to request.", CommandOptionType.MultipleValue);
             var headersOption = app.Option("--headers",
