@@ -17,13 +17,13 @@
     }
   },
   "DbFortunesRaw": {
-    "Path": "/mvc/fortunes/raw"
+    "Path": "/fortunes/raw"
   },
   "DbFortunesDapper": {
-    "Path": "/mvc/fortunes/dapper"
+    "Path": "/fortunes/dapper"
   },
   "DbFortunesEf": {
-    "Path": "/mvc/fortunes/ef"
+    "Path": "/fortunes/ef"
   },
   "MvcDbFortunesRaw": {
     "Path": "/mvc/fortunes/raw"
