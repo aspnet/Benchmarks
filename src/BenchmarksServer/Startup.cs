@@ -449,13 +449,36 @@ namespace BenchmarkServer
         {
             if (!Directory.Exists(buildToolsPath))
             {
+                Log.WriteLine("Creating build tools folder");
+
                 Directory.CreateDirectory(buildToolsPath);
             }
 
             foreach(var file in _buildToolsFiles)
             {
-                var content = await _httpClient.GetStringAsync(_buildToolsRepoUrl + file);
-                File.WriteAllText(Path.Combine(buildToolsPath, file), content);
+                var retries = 0;
+
+                do
+                {
+                    var url = _buildToolsRepoUrl + file;
+                    var downloadTask = _httpClient.GetStringAsync(url);
+
+                    Log.WriteLine($"Downloading {url}");
+
+                    await AwaitWithTimeout(
+                        downloadTask,
+                        TimeSpan.FromSeconds(5),
+                        success: () =>
+                        {
+                            File.WriteAllText(Path.Combine(buildToolsPath, file), downloadTask.Result);
+                        },
+                        error: () =>
+                        {
+                            retries++;
+                            Log.WriteLine($"Failed to download {url}, attempt {retries}");
+                        });
+
+                } while (retries > 0 && retries < 5);
             }
         }
 
@@ -731,6 +754,32 @@ namespace BenchmarkServer
             var start = lastSlash + 1; // +1 to skip over the slash.
             var name = dot > lastSlash ? repository.Substring(start, dot - start) : repository.Substring(start);
             return name;
+        }
+
+        public static async Task AwaitWithTimeout(Task task, TimeSpan timeout, Action success = null, Action error = null)
+        {
+            var timedout = false;
+
+            try
+            {
+                if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+                {
+                    success?.Invoke();
+                }
+                else
+                {
+                    timedout = true;
+                    error?.Invoke();
+                }
+            }
+            catch
+            {
+                // Don't invoke the error handled if this is the one that threw the exception
+                if (!timedout)
+                {
+                    error?.Invoke();
+                }
+            }
         }
 
         // Compares just the repository name
