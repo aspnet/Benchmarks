@@ -88,7 +88,10 @@ Also if no named job is requested on the command line, the _default_ job will be
 
         "Connections": 256,
         "Threads": 32,
-        "Duration": 15
+        "Duration": 15,
+
+        AspNetCoreVersion: "2.1.0-*",
+        Port: 8081
     },
     "Plaintext": {
         "Path": "/plaintext"
