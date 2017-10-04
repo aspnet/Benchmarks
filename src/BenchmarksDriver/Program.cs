@@ -260,18 +260,14 @@ namespace BenchmarksDriver
                     }
                 }
 
-                if (pathOption.HasValue())
-                {
-                    serverJob.Path = pathOption.Value();
-                }
 
                 // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
 
-                // Setting default values here so it's not necessary to update the server when they change
-                serverJob.AspNetCoreVersion = "2.1.0-*";
-                serverJob.Port = 5000;
-                
+                if (pathOption.HasValue())
+                {
+                    serverJob.Path = pathOption.Value();
+                }
                 if (connectionFilterOption.HasValue())
                 {
                     serverJob.ConnectionFilter = connectionFilterOption.Value();
