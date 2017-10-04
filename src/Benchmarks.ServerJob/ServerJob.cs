@@ -32,7 +32,7 @@ namespace Benchmarks.ServerJob
 
         [JsonConverter(typeof(StringEnumConverter))]
         public Scheme Scheme { get; set; }
-        public int Port { get; set; };
+        public int Port { get; set; }
         public string Path { get; set; }
         public string AspNetCoreVersion { get; set; }
         
