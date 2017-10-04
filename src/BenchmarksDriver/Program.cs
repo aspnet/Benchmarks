@@ -257,6 +257,15 @@ namespace BenchmarksDriver
                     }
                 }
 
+                // If the KnownHeaders property of the job definition is a string, fetch it from the Headers enum
+                if (!String.IsNullOrEmpty(jobOptions.PresetHeaders))
+                {
+                    if (!Enum.TryParse(jobOptions.PresetHeaders, ignoreCase: true, result: out headers))
+                    {
+                        Console.WriteLine($"Unknown KnownHeaders value: '{jobOptions.PresetHeaders}'. Choose from: None, Html, Json, Plaintext.");
+                    }
+                }
+
                 if (pathOption.HasValue())
                 {
                     serverJob.Path = pathOption.Value();
