@@ -132,12 +132,6 @@ namespace BenchmarksDriver
                     webHostValue = "Kestrel";
                 }
 
-                var aspnetCoreVersion = aspnetCoreVersionOption.Value();
-                if (string.IsNullOrEmpty(aspnetCoreVersion))
-                {
-                    aspnetCoreVersion = "2.1.0-*";
-                }
-
                 var session = sessionOption.Value();
                 if (String.IsNullOrEmpty(session)) 
                 {
@@ -271,10 +265,13 @@ namespace BenchmarksDriver
                     serverJob.Path = pathOption.Value();
                 }
 
-                // These properties can't be set in the job definitions
+                // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
-                serverJob.AspNetCoreVersion = aspnetCoreVersion;
 
+                // Setting default values here so it's not necessary to update the server when they change
+                serverJob.AspNetCoreVersion = "2.1.0-*";
+                serverJob.Port = 5000;
+                
                 if (connectionFilterOption.HasValue())
                 {
                     serverJob.ConnectionFilter = connectionFilterOption.Value();
@@ -315,6 +312,10 @@ namespace BenchmarksDriver
                 if (portOption.HasValue())
                 {
                     serverJob.Port = int.Parse(portOption.Value());
+                }
+                if (aspnetCoreVersionOption.HasValue())
+                {
+                    serverJob.AspNetCoreVersion = aspnetCoreVersionOption.Value();
                 }
                 if (repositoryOption.HasValue())
                 {
