@@ -460,38 +460,51 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(buildToolsPath);
             }
 
+            const int maxRetries = 5;
+
             foreach (var file in _buildToolsFiles)
             {
-                var retries = 0;
+                var url = _buildToolsRepoUrl + file;
 
-                do
-                {
-                    var url = _buildToolsRepoUrl + file;
-                    var downloadTask = _httpClient.GetStringAsync(url);
-
-                    Log.WriteLine($"Downloading {url}");
-
-                    try
-                    {
-                        var result = await AwaitWithTimeout(
-                            downloadTask,
-                            TimeSpan.FromSeconds(5));
-
-                        File.WriteAllText(Path.Combine(buildToolsPath, file), result);
-                    }
-                    catch (TimeoutException)
-                    {
-                        retries++;
-                        Log.WriteLine($"Timeout trying to download {url}, attempt {retries}");
-                    }
-                    catch (Exception ex)
-                    {
-                        retries++;
-                        Log.WriteLine($"Failed to download {url}, attempt {retries}, Exception: {ex}");
-                    }
-
-                } while (retries > 0 && retries < 5);
+                // If any of the files completely fails to download the entire thing will fail
+                var path = Path.Combine(buildToolsPath, file);
+                await DownloadFileAsync(url, path, maxRetries);
             }
+        }
+
+        private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries)
+        {
+            Log.WriteLine($"Downloading {url}");
+
+            for (var i = 0; i < maxRetries; ++i)
+            {
+                try
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    // This probably won't use async IO on windows since the stream
+                    // needs to created with the right flags
+                    using (var stream = File.Create(outputPath))
+                    {
+                        // Copy the response stream directly to the file stream
+                        await response.Content.CopyToAsync(stream);
+                    }
+
+                    return;
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.WriteLine($"Timeout trying to download {url}, attempt {i + 1}");
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
+                }
+            }
+
+            throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
         }
 
         private static void AddSourceDependencies(string path, string benchmarksDir, string benchmarksProject, IEnumerable<string> dirs, IDictionary<string, string> env)
@@ -766,17 +779,6 @@ namespace BenchmarkServer
             var start = lastSlash + 1; // +1 to skip over the slash.
             var name = dot > lastSlash ? repository.Substring(start, dot - start) : repository.Substring(start);
             return name;
-        }
-
-        public static async Task<T> AwaitWithTimeout<T>(Task<T> task, TimeSpan timeout)
-        {
-            if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
-            {
-                // Await the task to observe any exceptions
-                return await task;
-            }
-
-            throw new TimeoutException();
         }
 
         // Compares just the repository name
