@@ -42,12 +42,10 @@ namespace BenchmarkClient
             app.UseMvc();
 
             // Register a default startup page to ensure the application is up
-            app.Map("", builder => 
-                builder.Run( (context) =>
-                {
-                    return context.Response.WriteAsync("OK!");
-                })
-            );
+            app.Run((context) =>
+            {
+                return context.Response.WriteAsync("OK!");
+            });
         }
 
         public static int Main(string[] args)
@@ -71,7 +69,7 @@ namespace BenchmarkClient
 
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
-            _httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+            _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClient = new HttpClient(_httpClientHandler);
 
             return app.Execute(args);
