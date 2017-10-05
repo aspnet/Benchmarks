@@ -3,6 +3,7 @@
     public enum OperatingSystem
     {
         Linux,
-        Windows
+        Windows,
+        OSX
     }
 }

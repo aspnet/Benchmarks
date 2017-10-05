@@ -52,6 +52,10 @@ namespace BenchmarkServer
             {
                 OperatingSystem = OperatingSystem.Windows;
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                OperatingSystem = OperatingSystem.OSX;
+            }
             else
             {
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
@@ -64,7 +68,7 @@ namespace BenchmarkServer
 
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
-            _httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+            _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClient = new HttpClient(_httpClientHandler);
 
             Action shutdown = () =>
@@ -96,12 +100,10 @@ namespace BenchmarkServer
             app.UseMvc();
 
             // Register a default startup page to ensure the application is up
-            app.Map("", builder =>
-                builder.Run((context) =>
-                {
-                    return context.Response.WriteAsync("OK!");
-                })
-            );
+            app.Run((context) =>
+            {
+                return context.Response.WriteAsync("OK!");
+            });
         }
 
         public static int Main(string[] args)
@@ -168,16 +170,13 @@ namespace BenchmarkServer
 
         private static async Task<int> Run(string url, string hostname, Database? database, string sqlConnectionString)
         {
-            var hostTask = Task.Run(() =>
-            {
-                var host = new WebHostBuilder()
+            var host = new WebHostBuilder()
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .Build();
 
-                host.Run();
-            });
+            var hostTask = host.RunAsync();
 
             var processJobsCts = new CancellationTokenSource();
             var processJobsTask = ProcessJobs(hostname, database, sqlConnectionString, processJobsCts.Token);
@@ -203,7 +202,7 @@ namespace BenchmarkServer
 
                 Process process = null;
                 Timer timer = null;
-                                
+
                 string tempDir = null;
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -236,22 +235,24 @@ namespace BenchmarkServer
                                 Debug.Assert(process == null);
                                 process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
-                                
+
                                 var startMonitorTime = DateTime.UtcNow;
                                 var lastMonitorTime = startMonitorTime;
-                                var oldCPUTime = new TimeSpan(0);
+                                var oldCPUTime = TimeSpan.Zero;
 
-                                timer = new Timer(_ => 
+                                timer = new Timer(_ =>
                                 {
+                                    // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                    // We need to dig into this
                                     var now = DateTime.UtcNow;
-                                    var newCPUTime = process.TotalProcessorTime;
+                                    var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
                                     var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                    var cpu =  Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount *  elapsed) * 100);
+                                    var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
                                     lastMonitorTime = now;
                                     oldCPUTime = newCPUTime;
 
-                                    job.ServerCounters.Add(new ServerCounter 
-                                    { 
+                                    job.ServerCounters.Add(new ServerCounter
+                                    {
                                         Elapsed = now - startMonitorTime,
                                         WorkingSet = process.WorkingSet64,
                                         CpuPercentage = cpu
@@ -291,6 +292,11 @@ namespace BenchmarkServer
                                 if (OperatingSystem == OperatingSystem.Windows)
                                 {
                                     ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
+                                }
+                                else if (OperatingSystem == OperatingSystem.OSX)
+                                {
+                                    // pkill isn't available on OSX and this will only kill bash probably
+                                    ProcessUtil.Run("kill", $"-s SIGINT {process.Id}", throwOnError: false);
                                 }
                                 else
                                 {
@@ -377,7 +383,7 @@ namespace BenchmarkServer
             // * Use custom install dir to avoid changing the default install, which is impossible if other processes
             //   are already using it.
             var buildToolsPath = Path.Combine(path, "buildtools");
-            
+
             await DownloadBuildTools(buildToolsPath);
 
             Log.WriteLine("Installing dotnet runtimes and sdk");
@@ -393,20 +399,20 @@ namespace BenchmarkServer
             else
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-                
+
                 // Generate a global.json file in the local repository to force which SDK the application is using.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{ \"sdk\": { \"version\": \"2.0.0\" } }");
-            }            
+            }
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                ProcessUtil.Run("cmd", "/c build.cmd /t:noop", 
-                    workingDirectory: buildToolsPath, 
+                ProcessUtil.Run("cmd", "/c build.cmd /t:noop",
+                    workingDirectory: buildToolsPath,
                     environmentVariables: env);
             }
             else
             {
-                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop", 
+                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
             }
@@ -422,8 +428,8 @@ namespace BenchmarkServer
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0 ";
 
-            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}", 
-                workingDirectory: benchmarkedApp, 
+            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}",
+                workingDirectory: benchmarkedApp,
                 environmentVariables: env);
 
             if (job.UseRuntimeStore)
@@ -454,37 +460,56 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(buildToolsPath);
             }
 
-            foreach(var file in _buildToolsFiles)
+            const int maxRetries = 5;
+
+            foreach (var file in _buildToolsFiles)
             {
-                var retries = 0;
+                var url = _buildToolsRepoUrl + file;
 
-                do
-                {
-                    var url = _buildToolsRepoUrl + file;
-                    var downloadTask = _httpClient.GetStringAsync(url);
-
-                    Log.WriteLine($"Downloading {url}");
-
-                    await AwaitWithTimeout(
-                        downloadTask,
-                        TimeSpan.FromSeconds(5),
-                        success: () =>
-                        {
-                            File.WriteAllText(Path.Combine(buildToolsPath, file), downloadTask.Result);
-                        },
-                        error: () =>
-                        {
-                            retries++;
-                            Log.WriteLine($"Failed to download {url}, attempt {retries}");
-                        });
-
-                } while (retries > 0 && retries < 5);
+                // If any of the files completely fails to download the entire thing will fail
+                var path = Path.Combine(buildToolsPath, file);
+                await DownloadFileAsync(url, path, maxRetries);
             }
+        }
+
+        private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries)
+        {
+            Log.WriteLine($"Downloading {url}");
+
+            for (var i = 0; i < maxRetries; ++i)
+            {
+                try
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    // This probably won't use async IO on windows since the stream
+                    // needs to created with the right flags
+                    using (var stream = File.Create(outputPath))
+                    {
+                        // Copy the response stream directly to the file stream
+                        await response.Content.CopyToAsync(stream);
+                    }
+
+                    return;
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.WriteLine($"Timeout trying to download {url}, attempt {i + 1}");
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
+                }
+            }
+
+            throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
         }
 
         private static void AddSourceDependencies(string path, string benchmarksDir, string benchmarksProject, IEnumerable<string> dirs, IDictionary<string, string> env)
         {
-            
+
             var benchmarksProjectPath = Path.Combine(path, benchmarksDir, benchmarksProject);
             var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
 
@@ -538,7 +563,7 @@ namespace BenchmarkServer
                 benchmarksProjectDocument.Save(writer);
             }
         }
-         
+
         private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
         {
             var initArgs = new List<string>();
@@ -609,7 +634,7 @@ namespace BenchmarkServer
                     Log.WriteLine("SUCCESS");
                     break;
                 }
-                catch(DirectoryNotFoundException)
+                catch (DirectoryNotFoundException)
                 {
                     Log.WriteLine("Nothing to do");
                     break;
@@ -647,7 +672,7 @@ namespace BenchmarkServer
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksDll = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/{projectFilename}.dll" : $"published/{projectFilename}.dll";
 
-            var arguments = $"{benchmarksDll}"+
+            var arguments = $"{benchmarksDll}" +
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
@@ -692,7 +717,7 @@ namespace BenchmarkServer
 
             // Force Kestrel server urls
             process.StartInfo.Environment.Add("ASPNETCORE_URLS", serverUrl);
-            
+
 
             if (database.HasValue)
             {
@@ -705,14 +730,14 @@ namespace BenchmarkServer
             }
 
             var stopwatch = new Stopwatch();
-            
+
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
 
-                    if (job.State == ServerState.Starting && (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")) )
+                    if (job.State == ServerState.Starting && (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
                     {
                         job.StartupMainMethod = stopwatch.Elapsed;
 
@@ -754,32 +779,6 @@ namespace BenchmarkServer
             var start = lastSlash + 1; // +1 to skip over the slash.
             var name = dot > lastSlash ? repository.Substring(start, dot - start) : repository.Substring(start);
             return name;
-        }
-
-        public static async Task AwaitWithTimeout(Task task, TimeSpan timeout, Action success = null, Action error = null)
-        {
-            var timedout = false;
-
-            try
-            {
-                if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
-                {
-                    success?.Invoke();
-                }
-                else
-                {
-                    timedout = true;
-                    error?.Invoke();
-                }
-            }
-            catch
-            {
-                // Don't invoke the error handled if this is the one that threw the exception
-                if (!timedout)
-                {
-                    error?.Invoke();
-                }
-            }
         }
 
         // Compares just the repository name
