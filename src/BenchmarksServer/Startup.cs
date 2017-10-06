@@ -202,8 +202,12 @@ namespace BenchmarkServer
 
                 Process process = null;
                 Timer timer = null;
+                var executionLock = new object();
+                var disposed = false;
 
                 string tempDir = null;
+                string dockerImage = null;
+                string dockerContainerId = null;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -230,11 +234,18 @@ namespace BenchmarkServer
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
 
-                                var benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
+                                if (job.Source.DockerFile != null)
+                                {
+                                    (dockerContainerId, dockerImage) = DockerBuildAndRun(tempDir, job, hostname);
+                                }
+                                else
+                                {
+                                    var benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
-                                Debug.Assert(process == null);
-                                process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
-                                    job, dotnetHome);
+                                    Debug.Assert(process == null);
+                                    process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
+                                        job, dotnetHome);
+                                }
 
                                 var startMonitorTime = DateTime.UtcNow;
                                 var lastMonitorTime = startMonitorTime;
@@ -242,22 +253,75 @@ namespace BenchmarkServer
 
                                 timer = new Timer(_ =>
                                 {
-                                    // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                    // We need to dig into this
-                                    var now = DateTime.UtcNow;
-                                    var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
-                                    var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                    var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
-                                    lastMonitorTime = now;
-                                    oldCPUTime = newCPUTime;
-
-                                    job.ServerCounters.Add(new ServerCounter
+                                    // If we couldn't get the lock it means one of 2 things are true:
+                                    // - We're about to dispose so we don't care to run the scan callback anyways.
+                                    // - The previous the computation took long enough that the next scan tried to run in parallel
+                                    // In either case just do nothing and end the timer callback as soon as possible
+                                    if (!Monitor.TryEnter(executionLock))
                                     {
-                                        Elapsed = now - startMonitorTime,
-                                        WorkingSet = process.WorkingSet64,
-                                        CpuPercentage = cpu
-                                    });
+                                        return;
+                                    }
 
+                                    try
+                                    {
+                                        if (disposed || Debugger.IsAttached)
+                                        {
+                                            return;
+                                        }
+
+                                        // Pause the timer while we're running
+                                        timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                                        var now = DateTime.UtcNow;
+
+                                        if (process != null)
+                                        {
+                                            // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                            // We need to dig into this
+                                            var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+                                            var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                            var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
+                                            lastMonitorTime = now;
+                                            oldCPUTime = newCPUTime;
+
+                                            job.ServerCounters.Add(new ServerCounter
+                                            {
+                                                Elapsed = now - startMonitorTime,
+                                                WorkingSet = process.WorkingSet64,
+                                                CpuPercentage = cpu
+                                            });
+                                        }
+                                        else
+                                        {
+                                            // Get docker stats
+                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId);
+                                            var data = result.StandardOutput.Trim().Split('-');
+
+                                            // Format is {value}%
+                                            var cpuPercentRaw = data[0];
+
+                                            // Format is {used}MiB/{total}MiB
+                                            var workingSetRaw = data[1];
+                                            var usedMemoryRaw = workingSetRaw.Split('/')[0];
+                                            var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+                                            var workingSet = (long)(double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.IndexOf('M'))) * 1048576);
+
+                                            job.ServerCounters.Add(new ServerCounter
+                                            {
+                                                Elapsed = now - startMonitorTime,
+                                                WorkingSet = workingSet,
+                                                CpuPercentage = cpu
+                                            });
+                                        }
+
+                                        // Resume once we finished processing all connections
+                                        timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                                    }
+                                    finally
+                                    {
+                                          // Exit the lock now
+                                          Monitor.Exit(executionLock);
+                                    }
                                 }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
                             catch (Exception e)
@@ -280,10 +344,12 @@ namespace BenchmarkServer
 
                         void CleanJob()
                         {
-                            if (timer != null)
+                            lock (executionLock)
                             {
-                                timer.Dispose();
+                                timer?.Dispose();
                                 timer = null;
+
+                                disposed = true;
                             }
 
                             if (process != null)
@@ -306,6 +372,10 @@ namespace BenchmarkServer
                                 process.Dispose();
                                 process = null;
                             }
+                            else if (dockerImage != null)
+                            {
+                                DockerCleanUp(dockerContainerId, dockerImage);
+                            }
 
                             if (tempDir != null)
                             {
@@ -326,6 +396,38 @@ namespace BenchmarkServer
                     DeleteDir(dotnetHome);
                 }
             }
+        }
+
+        private static (string containerId, string imageName) DockerBuildAndRun(string path, ServerJob job, string hostname)
+        {
+            var source = job.Source;
+            // Docker image names must be lowercase
+            var imageName = $"{Path.GetDirectoryName(source.Project)}_{Guid.NewGuid()}".ToLowerInvariant();
+            var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository));
+
+            if (!string.IsNullOrEmpty(source.BranchOrCommit))
+            {
+                Git.Checkout(cloneDir, source.BranchOrCommit);
+            }
+
+            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", cloneDir);
+
+            var result = ProcessUtil.Run("docker", $"run -d -p {job.Port}:{job.Port} {imageName}");
+            var containerId = result.StandardOutput.Trim();
+
+            job.Url = ComputeServerUrl(hostname, job);
+            job.State = ServerState.Running;
+
+            return (containerId, imageName);
+        }
+
+        private static void DockerCleanUp(string containerId, string imageName)
+        {
+            ProcessUtil.Run("docker", $"stop {containerId}");
+
+            ProcessUtil.Run("docker", $"container rm {containerId}");
+
+            ProcessUtil.Run("docker", $"rmi {imageName}");
         }
 
         private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
@@ -667,7 +769,6 @@ namespace BenchmarkServer
             ServerJob job, string dotnetHome)
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
-
             var dotnetFilename = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksDll = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/{projectFilename}.dll" : $"published/{projectFilename}.dll";

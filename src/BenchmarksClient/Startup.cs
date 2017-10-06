@@ -111,7 +111,7 @@ namespace BenchmarkClient
                 if (job != null)
                 {
                     var jobLogText =
-                        $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method}";
+                        $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method} ServerUrl:{job.ServerBenchmarkUri}";
 
                     Debug.Assert(job.PipelineDepth <= 0 || job.ScriptName != null, "A script name must be present when the pipeline depth is larger than 0.");
 
