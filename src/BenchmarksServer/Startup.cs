@@ -682,7 +682,7 @@ namespace BenchmarkServer
                 switch (job.Database)
                 {
                     case Database.PostgreSql:
-                        connectionString = Environment.GetEnvironmentVariable("POSTGRE_CONN");
+                        connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONN");
                         break;
 
                     case Database.MySql:

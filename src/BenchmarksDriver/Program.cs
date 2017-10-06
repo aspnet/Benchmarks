@@ -53,7 +53,7 @@ namespace BenchmarksDriver
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
-                "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
+                "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.", CommandOptionType.SingleValue);
             var connectionFilterOption = app.Option("-f|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
