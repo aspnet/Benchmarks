@@ -9,6 +9,7 @@ using Benchmarks.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace Benchmarks.Data
 {
@@ -16,13 +17,20 @@ namespace Benchmarks.Data
     {
         private readonly IRandom _random;
         private readonly ApplicationDbContext _dbContext;
-        private readonly bool _useBatchUpdate;
 
         public EfDb(IRandom random, ApplicationDbContext dbContext, IOptions<AppSettings> appSettings)
         {
+            if (appSettings.Value.Database == DatabaseServer.PostgreSql)
+            {
+                var builder = new NpgsqlConnectionStringBuilder(appSettings.Value.ConnectionString);
+                if (builder.MaxAutoPrepare < 20)
+                {
+                    throw new Exception($"{nameof(builder.MaxAutoPrepare)} must be at least 20 in the PostgreSQL connection string");
+                }
+            }
+
             _random = random;
             _dbContext = dbContext;
-            _useBatchUpdate = appSettings.Value.Database != DatabaseServer.PostgreSql;
         }
 
         private static readonly Func<ApplicationDbContext, int, Task<World>> _firstWorldQuery
@@ -66,17 +74,9 @@ namespace Benchmarks.Data
                 _dbContext.Entry(result).Property("RandomNumber").CurrentValue = _random.Next(1, 10001);
 
                 results[i] = result;
-
-                if (!_useBatchUpdate)
-                {
-                    await _dbContext.SaveChangesAsync();
-                }
             }
 
-            if (_useBatchUpdate)
-            {
-                await _dbContext.SaveChangesAsync();
-            }
+            await _dbContext.SaveChangesAsync();
 
             return results;
         }
