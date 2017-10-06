@@ -38,6 +38,7 @@ namespace BenchmarkServer
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
+        private static bool _cleanup = true;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -73,7 +74,7 @@ namespace BenchmarkServer
 
             Action shutdown = () =>
             {
-                if (Directory.Exists(_rootTempDir))
+                if (_cleanup && Directory.Exists(_rootTempDir))
                 {
                     DeleteDir(_rootTempDir);
                 }
@@ -126,10 +127,16 @@ namespace BenchmarkServer
             var databaseOption = app.Option("-d|--database", "Database (PostgreSQL or SqlServer).",
                 CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
-                "Connection string of SQL Database used by Benchmarks app", CommandOptionType.SingleValue);
+                "Connection string of SQL Database used by Benchmarks app.", CommandOptionType.SingleValue);
+            var noCleanupOption = app.Option("--no-cleanup",
+                "Don't kill processes or delete temp directories.", CommandOptionType.NoValue);
 
             app.OnExecute(() =>
             {
+                if (noCleanupOption.HasValue()) {
+                    _cleanup = false;
+                }
+                
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
                     Hardware = hardware;
@@ -286,7 +293,7 @@ namespace BenchmarkServer
                                 timer = null;
                             }
 
-                            if (process != null)
+                            if (_cleanup && process != null)
                             {
                                 // TODO: Replace with managed xplat version of kill process tree
                                 if (OperatingSystem == OperatingSystem.Windows)
@@ -307,7 +314,7 @@ namespace BenchmarkServer
                                 process = null;
                             }
 
-                            if (tempDir != null)
+                            if (_cleanup && tempDir != null)
                             {
                                 DeleteDir(tempDir);
                                 tempDir = null;
@@ -321,7 +328,7 @@ namespace BenchmarkServer
             }
             finally
             {
-                if (dotnetHome != null)
+                if (_cleanup && dotnetHome != null)
                 {
                     DeleteDir(dotnetHome);
                 }
