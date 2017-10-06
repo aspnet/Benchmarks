@@ -16,7 +16,7 @@ if [[ -v DBHOST ]]
 then
     POSTGRES_CONN = 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true'
     MYSQL_CONN = 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass'
-    MSSQL_CONN = 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass'
+    MSSQL_CONN = 'Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55'
 
     docker run \
         -d \
