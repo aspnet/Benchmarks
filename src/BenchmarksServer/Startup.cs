@@ -258,6 +258,8 @@ namespace BenchmarkServer
                                 var lastMonitorTime = startMonitorTime;
                                 var oldCPUTime = TimeSpan.Zero;
 
+                                disposed = false;
+
                                 timer = new Timer(_ =>
                                 {
                                     // If we couldn't get the lock it means one of 2 things are true:
