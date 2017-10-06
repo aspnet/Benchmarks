@@ -24,6 +24,14 @@ RUN cd /tmp \
     && cd .. \
     && rm -rf wrk.tar.gz wrk-$WRK_VERSION
 
+# Install docker client
+ENV DOCKER_VERSION 17.09.0-ce
+RUN cd /tmp \
+    && wget https://download.docker.com/linux/static/stable/x86_64/docker-$DOCKER_VERSION.tgz -O docker.tgz \
+    && tar xvzf docker.tgz \
+    && cp docker/docker /usr/bin \
+    && rm -rf docker.tgz docker
+
 WORKDIR /benchmarks
 
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true

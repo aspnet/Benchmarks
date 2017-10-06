@@ -18,6 +18,8 @@ then
     sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
 fi
 
+# "--network host" - Better performance than the default "bridge" driver
+# "-v /var/run/docker.sock" - Give container access to the host docker daemon 
 docker run \
     -d \
     --log-opt max-size=10m \
@@ -26,6 +28,7 @@ docker run \
     --name benchmarks-server \
     --network host \
     --restart always \
+    -v /var/run/docker.sock:/var/run/docker.sock \
     benchmarks \
     bash -c \
     "/root/.dotnet/dotnet \
