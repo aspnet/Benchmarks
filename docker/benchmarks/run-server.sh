@@ -18,8 +18,8 @@ then
     MYSQL_CONN = 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass'
     MSSQL_CONN = 'Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55'
 
-# "--network host" - Better performance than the default "bridge" driver
-# "-v /var/run/docker.sock" - Give container access to the host docker daemon 
+    # "--network host" - Better performance than the default "bridge" driver
+    # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
     docker run \
         -d \
         --log-opt max-size=10m \

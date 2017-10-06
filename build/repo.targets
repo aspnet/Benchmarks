@@ -18,33 +18,33 @@
     <CloudScenarios Include="-n MvcJson $(JsonJobs)" />
     <CloudScenarios Include="-n MvcJil $(JsonJobs)" />
 
-    <CloudScenarios Include="-n DbSingleQueryRaw $(JsonJobs)" />
-    <CloudScenarios Include="-n DbSingleQueryDapper $(JsonJobs)" />
-    <CloudScenarios Include="-n DbSingleQueryEf $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcDbSingleQueryRaw $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcDbSingleQueryDapper $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcDbSingleQueryEf $(JsonJobs)" />
+    <CloudScenarios Include="-n DbSingleQueryRaw $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbSingleQueryDapper $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbSingleQueryEf $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbSingleQueryRaw $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbSingleQueryDapper $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbSingleQueryEf $(JsonJobs) --database PostgreSql" />
 
-    <CloudScenarios Include="-n DbMultiQueryRaw $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n DbMultiQueryDapper $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n DbMultiQueryEf $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiQueryRaw $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiQueryDapper $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiQueryEf $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiQueryRaw $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbMultiQueryDapper $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbMultiQueryEf $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiQueryRaw $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiQueryDapper $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiQueryEf $(MultiQueryJobs) --database PostgreSql" />
 
-    <CloudScenarios Include="-n DbMultiUpdateRaw $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n DbMultiUpdateDapper $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n DbMultiUpdateEf $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateRaw $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateDapper $(MultiQueryJobs)" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateEf $(MultiQueryJobs)" />
+    <CloudScenarios Include="-n DbMultiUpdateRaw $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbMultiUpdateDapper $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbMultiUpdateEf $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateRaw $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateDapper $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbMultiUpdateEf $(MultiQueryJobs) --database PostgreSql" />
 
-    <CloudScenarios Include="-n DbFortunesRaw $(HtmlJobs)" />
-    <CloudScenarios Include="-n DbFortunesDapper $(HtmlJobs)" />
-    <CloudScenarios Include="-n DbFortunesEf $(HtmlJobs)" />
-    <CloudScenarios Include="-n MvcDbFortunesRaw $(HtmlJobs)" />
-    <CloudScenarios Include="-n MvcDbFortunesDapper $(HtmlJobs)" />
-    <CloudScenarios Include="-n MvcDbFortunesEf $(HtmlJobs)" />
+    <CloudScenarios Include="-n DbFortunesRaw $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbFortunesDapper $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbFortunesEf $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbFortunesRaw $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbFortunesDapper $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n MvcDbFortunesEf $(HtmlJobs) --database PostgreSql" />
   </ItemGroup>
 
   <ItemGroup>
