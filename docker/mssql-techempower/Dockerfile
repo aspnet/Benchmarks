@@ -1,4 +1,4 @@
-FROM mssql-server-linux:2017-latest
+FROM microsoft/mssql-server-linux:2017-latest
 
 # Create app directory
 RUN mkdir -p /usr/src/app
