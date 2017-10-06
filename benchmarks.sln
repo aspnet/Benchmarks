@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26820.0
+VisualStudioVersion = 15.0.26923.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 	ProjectSection(SolutionItems) = preProject
@@ -70,6 +70,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres-techempower-fortun
 		docker\postgres-techempower-fortunesbench\fortunes.sql = docker\postgres-techempower-fortunesbench\fortunes.sql
 		docker\postgres-techempower-fortunesbench\fortunesbench.sh = docker\postgres-techempower-fortunesbench\fortunesbench.sh
 		docker\postgres-techempower-fortunesbench\run.sh = docker\postgres-techempower-fortunesbench\run.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mysql-techempower", "mysql-techempower", "{17D18F38-2030-46BE-8C5A-48607A6E69AA}"
+	ProjectSection(SolutionItems) = preProject
+		docker\mysql-techempower\build.sh = docker\mysql-techempower\build.sh
+		docker\mysql-techempower\create.sql = docker\mysql-techempower\create.sql
+		docker\mysql-techempower\Dockerfile = docker\mysql-techempower\Dockerfile
+		docker\mysql-techempower\my.cnf = docker\mysql-techempower\my.cnf
+		docker\mysql-techempower\run.sh = docker\mysql-techempower\run.sh
+		docker\mysql-techempower\stop.sh = docker\mysql-techempower\stop.sh
 	EndProjectSection
 EndProject
 Global
@@ -160,6 +170,7 @@ Global
 		{01457A29-0D92-45A3-A37A-A6381E766D67} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{8520802B-DCBB-42DE-866C-C7F533129071} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{6B2BF265-7141-40E2-9BEC-DAFB9547B942} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{17D18F38-2030-46BE-8C5A-48607A6E69AA} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}

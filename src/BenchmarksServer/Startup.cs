@@ -121,10 +121,6 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
-            var databaseOption = app.Option("-d|--database", "Database (PostgreSQL or SqlServer).",
-                CommandOptionType.SingleValue);
-            var sqlConnectionStringOption = app.Option("-q|--sql",
-                "Connection string of SQL Database used by Benchmarks app", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -145,28 +141,14 @@ namespace BenchmarkServer
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
 
-                Database? database = null;
-                if (databaseOption.HasValue())
-                {
-                    if (Enum.TryParse(databaseOption.Value(), out Database databaseValue))
-                    {
-                        database = databaseValue;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Invalid value for option --{databaseOption.LongName}: '{databaseOption.Value()}'");
-                        return 2;
-                    }
-                }
 
-
-                return Run(url, hostname, database, sqlConnectionStringOption.Value()).Result;
+                return Run(url, hostname).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string hostname, Database? database, string sqlConnectionString)
+        private static async Task<int> Run(string url, string hostname)
         {
             var hostTask = Task.Run(() =>
             {
@@ -180,7 +162,7 @@ namespace BenchmarkServer
             });
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, database, sqlConnectionString, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -194,7 +176,7 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string hostname, Database? database, string sqlConnectionString, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
             try
@@ -234,7 +216,7 @@ namespace BenchmarkServer
                                 var benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
 
                                 Debug.Assert(process == null);
-                                process = StartProcess(hostname, database, sqlConnectionString, Path.Combine(tempDir, benchmarksDir),
+                                process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir),
                                     job, dotnetHome);
                                 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -638,7 +620,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, Database? database, string sqlConnectionString, string benchmarksRepo,
+        private static Process StartProcess(string hostname, string benchmarksRepo,
             ServerJob job, string dotnetHome)
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
@@ -692,18 +674,30 @@ namespace BenchmarkServer
 
             // Force Kestrel server urls
             process.StartInfo.Environment.Add("ASPNETCORE_URLS", serverUrl);
-            
 
-            if (database.HasValue)
+            if (job.Database != Database.None)
             {
-                process.StartInfo.Environment.Add("Database", database.Value.ToString());
-            }
+                string connectionString = null;
 
-            if (!string.IsNullOrEmpty(sqlConnectionString))
-            {
-                process.StartInfo.Environment.Add("ConnectionString", sqlConnectionString);
-            }
+                switch (job.Database)
+                {
+                    case Database.PostgreSql:
+                        connectionString = Environment.GetEnvironmentVariable("POSTGRE_CONN");
+                        break;
 
+                    case Database.MySql:
+                        connectionString = Environment.GetEnvironmentVariable("MYSQL_CONN");
+                        break;
+
+                    case Database.SqlServer:
+                        connectionString = Environment.GetEnvironmentVariable("MSSQL_CONN");
+                        break;
+                }
+
+                process.StartInfo.Environment.Add("Database", job.Database.ToString());
+                process.StartInfo.Environment.Add("ConnectionString", connectionString);
+            }
+                        
             var stopwatch = new Stopwatch();
             
             process.OutputDataReceived += (_, e) =>

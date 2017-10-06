@@ -20,5 +20,6 @@
     <DapperVersion>1.*</DapperVersion>
     <NpgsqlVersion>3.*</NpgsqlVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>2.0.0-*</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloEntityFrameworkCoreMySqlVersion>2.0-*</PomeloEntityFrameworkCoreMySqlVersion>
   </PropertyGroup>
 </Project>

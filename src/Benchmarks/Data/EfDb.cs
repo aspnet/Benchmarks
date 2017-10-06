@@ -22,7 +22,7 @@ namespace Benchmarks.Data
         {
             _random = random;
             _dbContext = dbContext;
-            _useBatchUpdate = appSettings.Value.Database != DatabaseServer.PostgreSql;
+            _useBatchUpdate = appSettings.Value.Database == DatabaseServer.SqlServer;
         }
 
         private static readonly Func<ApplicationDbContext, int, Task<World>> _firstWorldQuery
