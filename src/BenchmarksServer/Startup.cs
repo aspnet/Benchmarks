@@ -412,13 +412,15 @@ namespace BenchmarkServer
 
             ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", cloneDir);
 
-            // OSX doesn't support host networking
-            var useHostNetworking = OperatingSystem != OperatingSystem.OSX;
+            // Only run on the host network on linux
+            var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
 
             var command = useHostNetworking ? $"run -d --rm --network host {imageName}" : 
                                               $"run -d --rm -p {job.Port}:{job.Port} {imageName}";
-            var result = ProcessUtil.Run("docker", command);
+            var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
+
+            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
             job.Url = ComputeServerUrl(hostname, job);
             job.State = ServerState.Running;
@@ -428,6 +430,9 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName)
         {
+            var result = ProcessUtil.Run("docker", $"logs {containerId}");
+            Console.WriteLine(result.StandardOutput);
+
             ProcessUtil.Run("docker", $"stop {containerId}");
 
             ProcessUtil.Run("docker", $"rmi {imageName}");
