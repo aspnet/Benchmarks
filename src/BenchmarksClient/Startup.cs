@@ -42,12 +42,10 @@ namespace BenchmarkClient
             app.UseMvc();
 
             // Register a default startup page to ensure the application is up
-            app.Map("", builder => 
-                builder.Run( (context) =>
-                {
-                    return context.Response.WriteAsync("OK!");
-                })
-            );
+            app.Run((context) =>
+            {
+                return context.Response.WriteAsync("OK!");
+            });
         }
 
         public static int Main(string[] args)
@@ -71,7 +69,7 @@ namespace BenchmarkClient
 
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
-            _httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+            _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClient = new HttpClient(_httpClientHandler);
 
             return app.Execute(args);
@@ -79,16 +77,13 @@ namespace BenchmarkClient
 
         private static async Task<int> Run(string url)
         {
-            var hostTask = Task.Run(() =>
-            {
-                var host = new WebHostBuilder()
+            var host = new WebHostBuilder()
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .Build();
 
-                host.Run();
-            });
+            var hostTask = host.RunAsync();
 
             var processJobsCts = new CancellationTokenSource();
             var processJobsTask = ProcessJobs(processJobsCts.Token);
@@ -116,7 +111,7 @@ namespace BenchmarkClient
                 if (job != null)
                 {
                     var jobLogText =
-                        $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method}";
+                        $"[ID:{job.Id} Connections:{job.Connections} Threads:{job.Threads} Duration:{job.Duration} Method:{job.Method} ServerUrl:{job.ServerBenchmarkUri}";
 
                     Debug.Assert(job.PipelineDepth <= 0 || job.ScriptName != null, "A script name must be present when the pipeline depth is larger than 0.");
 
