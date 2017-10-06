@@ -42,6 +42,7 @@ namespace BenchmarkServer
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
+        public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
 
         static Startup()
         {
@@ -128,13 +129,32 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var noCleanupOption = app.Option("--no-cleanup",
                 "Don't kill processes or delete temp directories.", CommandOptionType.NoValue);
+            var postgresqlConnectionStringOption = app.Option("--postgresql",
+                "The connection string for PostgreSql.", CommandOptionType.NoValue);
+            var mysqlConnectionStringOption = app.Option("--mysql",
+                "The connection string for MySql.", CommandOptionType.NoValue);
+            var mssqlConnectionStringOption = app.Option("--mssql",
+                "The connection string for SqlServer.", CommandOptionType.NoValue);
 
             app.OnExecute(() =>
             {
-                if (noCleanupOption.HasValue()) {
+                if (noCleanupOption.HasValue())
+                {
                     _cleanup = false;
                 }
                 
+                if (postgresqlConnectionStringOption.HasValue())
+                {
+                    ConnectionStrings[Database.PostgreSql] = postgresqlConnectionStringOption.Value();
+                }
+                if (mysqlConnectionStringOption.HasValue())
+                {
+                    ConnectionStrings[Database.MySql] = mysqlConnectionStringOption.Value();
+                }
+                if (mssqlConnectionStringOption.HasValue())
+                {
+                    ConnectionStrings[Database.SqlServer] = mssqlConnectionStringOption.Value();
+                }
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
                     Hardware = hardware;
@@ -820,25 +840,15 @@ namespace BenchmarkServer
 
             if (job.Database != Database.None)
             {
-                string connectionString = null;
-
-                switch (job.Database)
+                if (ConnectionStrings.ContainsKey(job.Database))
                 {
-                    case Database.PostgreSql:
-                        connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONN");
-                        break;
-
-                    case Database.MySql:
-                        connectionString = Environment.GetEnvironmentVariable("MYSQL_CONN");
-                        break;
-
-                    case Database.SqlServer:
-                        connectionString = Environment.GetEnvironmentVariable("MSSQL_CONN");
-                        break;
+                    process.StartInfo.Environment.Add("Database", job.Database.ToString());
+                    process.StartInfo.Environment.Add("ConnectionString", ConnectionStrings[job.Database]);
                 }
-
-                process.StartInfo.Environment.Add("Database", job.Database.ToString());
-                process.StartInfo.Environment.Add("ConnectionString", connectionString);
+                else
+                {
+                    Log.WriteLine($"Could not find connection string for {job.Database}");
+                }
             }
                         
             var stopwatch = new Stopwatch();
