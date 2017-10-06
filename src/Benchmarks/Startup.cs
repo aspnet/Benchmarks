@@ -59,10 +59,7 @@ namespace Benchmarks
             switch (appSettings.Database)
             {
                 case DatabaseServer.PostgreSql:
-                    if (Scenarios.Any("Ef"))
-                    {
-                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
-                    }
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
@@ -71,10 +68,7 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.SqlServer:
-                    if (Scenarios.Any("Ef"))
-                    {
-                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
-                    }
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
@@ -83,10 +77,7 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.MySql:
-                    if (Scenarios.Any("Ef"))
-                    {
-                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
-                    }
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
