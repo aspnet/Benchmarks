@@ -234,10 +234,10 @@ namespace Benchmarks
 
             if (Scenarios.Any("Db"))
             {
-                if (!dbSeeder.Seed())
-                {
-                    Environment.Exit(1);
-                }
+                //if (!dbSeeder.Seed())
+                //{
+                //    Environment.Exit(1);
+                //}
             }
 
             if (Scenarios.Any("Mvc"))
