@@ -36,4 +36,5 @@ docker run \
     -n $server_ip \
     --hardware $hardware \
     $database \
-    $sql"
+    $sql \
+    $@"
