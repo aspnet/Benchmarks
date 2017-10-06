@@ -402,7 +402,7 @@ namespace BenchmarkServer
         {
             var source = job.Source;
             // Docker image names must be lowercase
-            var imageName = $"{Path.GetDirectoryName(source.Project)}_{Guid.NewGuid()}".ToLowerInvariant();
+            var imageName = $"benchmarks_{Path.GetDirectoryName(source.Project)}".ToLowerInvariant();
             var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository));
 
             if (!string.IsNullOrEmpty(source.BranchOrCommit))
@@ -412,7 +412,12 @@ namespace BenchmarkServer
 
             ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", cloneDir);
 
-            var result = ProcessUtil.Run("docker", $"run -d -p {job.Port}:{job.Port} {imageName}");
+            // OSX doesn't support host networking
+            var useHostNetworking = OperatingSystem != OperatingSystem.OSX;
+
+            var command = useHostNetworking ? $"run -d --rm --network host {imageName}" : 
+                                              $"run -d --rm -p {job.Port}:{job.Port} {imageName}";
+            var result = ProcessUtil.Run("docker", command);
             var containerId = result.StandardOutput.Trim();
 
             job.Url = ComputeServerUrl(hostname, job);
@@ -424,8 +429,6 @@ namespace BenchmarkServer
         private static void DockerCleanUp(string containerId, string imageName)
         {
             ProcessUtil.Run("docker", $"stop {containerId}");
-
-            ProcessUtil.Run("docker", $"container rm {containerId}");
 
             ProcessUtil.Run("docker", $"rmi {imageName}");
         }
