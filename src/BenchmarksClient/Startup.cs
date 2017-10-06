@@ -77,16 +77,13 @@ namespace BenchmarkClient
 
         private static async Task<int> Run(string url)
         {
-            var hostTask = Task.Run(() =>
-            {
-                var host = new WebHostBuilder()
+            var host = new WebHostBuilder()
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .Build();
 
-                host.Run();
-            });
+            var hostTask = host.RunAsync();
 
             var processJobsCts = new CancellationTokenSource();
             var processJobsTask = ProcessJobs(processJobsCts.Token);
