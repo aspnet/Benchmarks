@@ -87,6 +87,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mssql-techempower", "mssql-
 		docker\mssql-techempower\build.sh = docker\mssql-techempower\build.sh
 		docker\mssql-techempower\create.sql = docker\mssql-techempower\create.sql
 		docker\mssql-techempower\Dockerfile = docker\mssql-techempower\Dockerfile
+		docker\mssql-techempower\entrypoint.sh = docker\mssql-techempower\entrypoint.sh
+		docker\mssql-techempower\import-data.sh = docker\mssql-techempower\import-data.sh
 		docker\mssql-techempower\run.sh = docker\mssql-techempower\run.sh
 		docker\mssql-techempower\stop.sh = docker\mssql-techempower\stop.sh
 	EndProjectSection
