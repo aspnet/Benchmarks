@@ -264,7 +264,7 @@ namespace BenchmarkServer
 
                                     try
                                     {
-                                        if (disposed || Debugger.IsAttached)
+                                        if (disposed)
                                         {
                                             return;
                                         }
