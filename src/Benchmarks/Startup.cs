@@ -53,6 +53,9 @@ namespace Benchmarks
             services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
+
+            Console.WriteLine($"Database: {appSettings.Database}; ConnectionString: {appSettings.ConnectionString}");
+            
             switch (appSettings.Database)
             {
                 case DatabaseServer.PostgreSql:
