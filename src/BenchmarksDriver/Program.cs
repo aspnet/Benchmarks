@@ -521,7 +521,7 @@ namespace BenchmarksDriver
 
                     serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
-                    var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024),3);
+                    var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
                     var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
 
                     Log($"RequestsPerSecond:           {clientJob.RequestsPerSecond}");
