@@ -7,8 +7,9 @@ docker run \
     -d \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    --name mysql-techempower \
+    --name mssql-techempower \
     --network host \
     --restart always \
-    -e SA_PASSWORD=$MSSQL_PASSWORD \
+    -e ACCEPT_EULA=Y \
+    -e SA_PASSWORD=Benchmarkdbp@55 \
     mssql-techempower
