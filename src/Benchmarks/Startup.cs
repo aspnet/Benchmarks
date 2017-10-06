@@ -56,7 +56,11 @@ namespace Benchmarks
             switch (appSettings.Database)
             {
                 case DatabaseServer.PostgreSql:
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
+                    if (Scenarios.Any("Ef"))
+                    {
+                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
+                    }
+
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
                         services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
@@ -64,7 +68,11 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.SqlServer:
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
+                    if (Scenarios.Any("Ef"))
+                    {
+                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
+                    }
+
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
                         services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
@@ -72,7 +80,11 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.MySql:
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
+                    if (Scenarios.Any("Ef"))
+                    {
+                        services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
+                    }
+
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
                         services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
