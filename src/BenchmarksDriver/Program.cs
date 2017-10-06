@@ -146,14 +146,13 @@ namespace BenchmarksDriver
                 var client = clientOption.Value();
                 var headers = Headers.Html;
                 var jobDefinitionPathOrUrl =  jobsOptions.Value();
-                Database database = Database.None;
 
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
                     (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
-                    (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out database)) ||
+                    (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -264,13 +263,12 @@ namespace BenchmarksDriver
                     }
                 }
 
-
                 // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
 
                 if (databaseOption.HasValue())
                 {
-                    serverJob.Database = database;
+                    serverJob.Database = Enum.Parse<Database>(databaseOption.Value(), ignoreCase: true);
                 }
                 if (pathOption.HasValue())
                 {

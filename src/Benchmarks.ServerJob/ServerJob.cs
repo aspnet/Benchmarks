@@ -35,7 +35,7 @@ namespace Benchmarks.ServerJob
         public int Port { get; set; } = 5000;
         public string Path { get; set; } = "/";
         public string AspNetCoreVersion { get; set; } = "2.1.0-*";
-        public Database Database { get; set; }
+        public Database Database { get; set; } = Database.PostgreSql;
         
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
