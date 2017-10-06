@@ -651,6 +651,15 @@ namespace BenchmarkServer
                         continue;
                     }
 
+                    // If the project contains "<IncludeBuildOutput>false</IncludeBuildOutput>", adding it as a
+                    // source reference will likely cause a build error.
+                    var includeBuildOutput = projectDocument.Root.Descendants("IncludeBuildOutput").FirstOrDefault();
+                    if (includeBuildOutput != null && bool.Parse(includeBuildOutput.Value) == false)
+                    {
+                        Log.WriteLine($"Project '{project}' not added as a source reference because includeBuildOutput=false.");
+                        continue;
+                    }
+
                     var reference = new XElement("ProjectReference", new XAttribute("Include", project));
 
                     if (targetFrameworks != null)
