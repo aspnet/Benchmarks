@@ -130,11 +130,11 @@ namespace BenchmarkServer
             var noCleanupOption = app.Option("--no-cleanup",
                 "Don't kill processes or delete temp directories.", CommandOptionType.NoValue);
             var postgresqlConnectionStringOption = app.Option("--postgresql",
-                "The connection string for PostgreSql.", CommandOptionType.NoValue);
+                "The connection string for PostgreSql.", CommandOptionType.SingleValue);
             var mysqlConnectionStringOption = app.Option("--mysql",
-                "The connection string for MySql.", CommandOptionType.NoValue);
+                "The connection string for MySql.", CommandOptionType.SingleValue);
             var mssqlConnectionStringOption = app.Option("--mssql",
-                "The connection string for SqlServer.", CommandOptionType.NoValue);
+                "The connection string for SqlServer.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {

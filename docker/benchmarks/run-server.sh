@@ -14,6 +14,10 @@ fi
 
 if [[ -v DBHOST ]]
 then
+    postgresql="--postgresql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    mssql="--mssql \"Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
+
     # "--network host" - Better performance than the default "bridge" driver
     # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
     docker run \
@@ -25,19 +29,16 @@ then
         --network host \
         --restart always \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -e POSTGRES_CONN \
-        -e MYSQL_CONN \
-        -e MSSQL_CONN \
         benchmarks \
         bash -c \
-        "/root/.dotnet/dotnet \
+        '/root/.dotnet/dotnet \
         /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
         -n $server_ip \
         --hardware $hardware \
-        --postgresql 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true' \
-        --mysql 'Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass' \
-        --mssql 'Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55' \
-        $@"
+        $postgresql  \
+        $mysql  \
+        $mssql \
+        $@'
 else
     echo DBHOST needs to be defined
 fi
