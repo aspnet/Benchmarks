@@ -313,11 +313,15 @@ namespace BenchmarkServer
                                             // Format is {value}%
                                             var cpuPercentRaw = data[0];
 
-                                            // Format is {used}MiB/{total}MiB
+                                            // Format is {used}M/GiB/{total}M/GiB
                                             var workingSetRaw = data[1];
-                                            var usedMemoryRaw = workingSetRaw.Split('/')[0];
+                                            var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
                                             var cpu = double.Parse(cpuPercentRaw.Trim('%'));
-                                            var workingSet = (long)(double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.IndexOf('M'))) * 1048576);
+
+                                            // MiB or GiB
+                                            var factor = usedMemoryRaw.EndsWith("MiB") ? 1024 * 1024 : 1024 * 1024 * 1024;
+                                            var memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                            var workingSet = (long)(memory * factor);
 
                                             job.ServerCounters.Add(new ServerCounter
                                             {
