@@ -247,7 +247,7 @@ namespace BenchmarkServer
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage) = DockerBuildAndRun(tempDir, job, hostname);
+                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname);
                                 }
                                 else
                                 {
@@ -332,8 +332,8 @@ namespace BenchmarkServer
                                     }
                                     finally
                                     {
-                                          // Exit the lock now
-                                          Monitor.Exit(executionLock);
+                                        // Exit the lock now
+                                        Monitor.Exit(executionLock);
                                     }
                                 }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                             }
@@ -411,7 +411,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static (string containerId, string imageName) DockerBuildAndRun(string path, ServerJob job, string hostname)
+        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
         {
             var source = job.Source;
             // Docker image names must be lowercase
@@ -428,10 +428,31 @@ namespace BenchmarkServer
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
 
-            var command = useHostNetworking ? $"run -d --rm --network host {imageName}" : 
+            var command = useHostNetworking ? $"run -d --rm --network host {imageName}" :
                                               $"run -d --rm -p {job.Port}:{job.Port} {imageName}";
             var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
+
+            // Wait until the service is reachable to avoid races where the container started but isn't
+            // listening yet. We only try 5 times, if it keeps failing we ignore it. If the port
+            // is unreachable then clients will fail to connect and the job will be cleaned up properly
+            using (var client = new HttpClient())
+            {
+                const int maxRetries = 5;
+                for (var i = 0; i < maxRetries; ++i)
+                {
+                    try
+                    {
+                        // We don't care if it's a 404, it just needs to not fail
+                        await client.GetAsync($"http://{hostname}:{job.Port}");
+                        break;
+                    }
+                    catch
+                    {
+                        await Task.Delay(300);
+                    }
+                }
+            }
 
             Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
