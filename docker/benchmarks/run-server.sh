@@ -15,7 +15,7 @@ fi
 if [[ -v DBHOST ]]
 then
     postgresql="--postgresql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
-    mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass\""
     mssql="--mssql \"Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
 
     # "--network host" - Better performance than the default "bridge" driver
@@ -31,14 +31,14 @@ then
         -v /var/run/docker.sock:/var/run/docker.sock \
         benchmarks \
         bash -c \
-        '/root/.dotnet/dotnet \
+        "/root/.dotnet/dotnet \
         /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
         -n $server_ip \
         --hardware $hardware \
         $postgresql  \
         $mysql  \
         $mssql \
-        $@'
+        $@"
 else
     echo DBHOST needs to be defined
 fi
