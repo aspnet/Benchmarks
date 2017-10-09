@@ -436,31 +436,30 @@ namespace BenchmarkServer
                                               $"run -d --rm -p {job.Port}:{job.Port} {imageName}";
             var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
+            var url = ComputeServerUrl(hostname, job);
 
             // Wait until the service is reachable to avoid races where the container started but isn't
             // listening yet. We only try 5 times, if it keeps failing we ignore it. If the port
-            // is unreachable then clients will fail to connect and the job will be cleaned up properly
-            using (var client = new HttpClient())
+            // is unreachable then clients will fail to connect and the job will be cleaned up properl
+            const int maxRetries = 5;
+            for (var i = 0; i < maxRetries; ++i)
             {
-                const int maxRetries = 5;
-                for (var i = 0; i < maxRetries; ++i)
+                try
                 {
-                    try
-                    {
-                        // We don't care if it's a 404, it just needs to not fail
-                        await client.GetAsync($"http://{hostname}:{job.Port}");
-                        break;
-                    }
-                    catch
-                    {
-                        await Task.Delay(300);
-                    }
+                    // We don't care if it's a 404, it just needs to not fail
+                    await _httpClient.GetAsync(url);
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(300);
                 }
             }
 
+
             Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
-            job.Url = ComputeServerUrl(hostname, job);
+            job.Url = url;
             job.State = ServerState.Running;
 
             return (containerId, imageName);
