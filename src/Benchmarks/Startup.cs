@@ -234,17 +234,9 @@ namespace Benchmarks
 
             if (Scenarios.Any("Db"))
             {
-                try
+                if (!dbSeeder.Seed())
                 {
-                    if (!dbSeeder.Seed())
-                    {
-                        Environment.Exit(1);
-                    }
-                }
-                catch(Exception e)
-                {
-                    // Ignore failed seeding attempt
-                    Console.WriteLine($"Seeding failed, ignoring. {e.Message}");
+                    Console.WriteLine($"Seeding failed, continuing.");
                 }
             }
 
