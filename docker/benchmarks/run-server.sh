@@ -14,27 +14,31 @@ fi
 
 if [[ -v DBHOST ]]
 then
-    database="--database PostgreSql"
-    sql="--sql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
-fi
+    postgresql="--postgresql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
+    mssql="--mssql \"Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
 
-# "--network host" - Better performance than the default "bridge" driver
-# "-v /var/run/docker.sock" - Give container access to the host docker daemon 
-docker run \
-    -d \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
-    --mount type=bind,source=/mnt,target=/tmp \
-    --name benchmarks-server \
-    --network host \
-    --restart always \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    benchmarks \
-    bash -c \
-    "/root/.dotnet/dotnet \
-    /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
-    -n $server_ip \
-    --hardware $hardware \
-    $database \
-    $sql \
-    $@"
+    # "--network host" - Better performance than the default "bridge" driver
+    # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
+    docker run \
+        -d \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        --mount type=bind,source=/mnt,target=/tmp \
+        --name benchmarks-server \
+        --network host \
+        --restart always \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        benchmarks \
+        bash -c \
+        '/root/.dotnet/dotnet \
+        /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
+        -n $server_ip \
+        --hardware $hardware \
+        $postgresql  \
+        $mysql  \
+        $mssql \
+        $@'
+else
+    echo DBHOST needs to be defined
+fi

@@ -110,6 +110,13 @@ Also if no named job is requested on the command line, the _default_ job will be
 
 This definition contains three custom jobs plus the _default_ one.
 
+## Database connection
+
+When the benchmarked application is executed, the following environment variables are set:
+
+`Database`: either None, PostgreSql, SqlServer or MySql
+`ConnectionString`: The connection string to use to run the benchmark application
+
 ## MSBUILD parameters
 
 When the benchmarked application is built, `msbuild` is invoked with a set of parameters that can be used to customize the build.

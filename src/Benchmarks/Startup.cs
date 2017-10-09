@@ -53,21 +53,37 @@ namespace Benchmarks
             services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
-            if (appSettings.Database == DatabaseServer.PostgreSql)
+
+            Console.WriteLine($"Database: {appSettings.Database}");
+            
+            switch (appSettings.Database)
             {
-                services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
-                if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
-                {
-                    services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
-                }
-            }
-            else
-            {
-                services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
-                if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
-                {
-                    services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
-                }
+                case DatabaseServer.PostgreSql:
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
+
+                    if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
+                    {
+                        services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
+                    }
+                    break;
+
+                case DatabaseServer.SqlServer:
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
+
+                    if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
+                    {
+                        services.AddSingleton<DbProviderFactory>(SqlClientFactory.Instance);
+                    }
+                    break;
+
+                case DatabaseServer.MySql:
+                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
+
+                    if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
+                    {
+                        services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
+                    }
+                    break;
             }
 
             if (Scenarios.Any("Ef"))

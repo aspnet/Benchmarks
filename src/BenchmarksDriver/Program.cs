@@ -52,6 +52,8 @@ namespace BenchmarksDriver
                 "The description of the job.", CommandOptionType.SingleValue);
 
             // ServerJob Options
+            var databaseOption = app.Option("--database",
+                "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.", CommandOptionType.SingleValue);
             var connectionFilterOption = app.Option("-f|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
@@ -150,6 +152,7 @@ namespace BenchmarksDriver
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
                     (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
+                    (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client))
                 {
@@ -260,10 +263,13 @@ namespace BenchmarksDriver
                     }
                 }
 
-
                 // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
 
+                if (databaseOption.HasValue())
+                {
+                    serverJob.Database = Enum.Parse<Database>(databaseOption.Value(), ignoreCase: true);
+                }
                 if (pathOption.HasValue())
                 {
                     serverJob.Path = pathOption.Value();
