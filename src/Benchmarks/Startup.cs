@@ -236,7 +236,7 @@ namespace Benchmarks
             {
                 if (!dbSeeder.Seed())
                 {
-                    Environment.Exit(1);
+                    Console.WriteLine($"Seeding failed, continuing.");
                 }
             }
 
