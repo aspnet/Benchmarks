@@ -63,7 +63,7 @@ namespace BenchmarksDriver
                 "Maps to InternalKestrelServerOptions.ThreadPoolDispatching.",
                 CommandOptionType.SingleValue);
             var kestrelTransportOption = app.Option("--kestrelTransport",
-                "Kestrel's transport (Libuv or Sockets). Default is Libuv.",
+                "Kestrel's transport (Libuv or Sockets). Default is Sockets.",
                 CommandOptionType.SingleValue);
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
