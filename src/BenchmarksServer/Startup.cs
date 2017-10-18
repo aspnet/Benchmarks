@@ -849,11 +849,6 @@ namespace BenchmarkServer
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
             }
 
-            if (job.KestrelThreadPoolDispatching.HasValue)
-            {
-                arguments += $" --kestrelThreadPoolDispatching {job.KestrelThreadPoolDispatching.Value}";
-            }
-
             Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
 
             var process = new Process()
