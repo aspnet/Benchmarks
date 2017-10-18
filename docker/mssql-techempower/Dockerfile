@@ -11,4 +11,4 @@ COPY . /usr/src/app
 RUN chmod +x /usr/src/app/import-data.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-RUN /usr/src/app/entrypoint
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
