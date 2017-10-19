@@ -125,7 +125,7 @@ namespace BenchmarksDriver
                 var webHostValue = webHostOption.Value();
                 if (string.IsNullOrEmpty(webHostValue))
                 {
-                    webHostValue = "Kestrel";
+                    webHostValue = "Sockets";
                 }
 
                 var session = sessionOption.Value();
