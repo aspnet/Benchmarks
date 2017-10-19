@@ -69,7 +69,7 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
-                "WebHost (Kestrel or HttpSys). Default is Kestrel.",
+                "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
                 "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
@@ -125,7 +125,7 @@ namespace BenchmarksDriver
                 var webHostValue = webHostOption.Value();
                 if (string.IsNullOrEmpty(webHostValue))
                 {
-                    webHostValue = "Sockets";
+                    webHostValue = "KestrelSockets";
                 }
 
                 var session = sessionOption.Value();

@@ -5,8 +5,8 @@ namespace Benchmarks.ServerJob
 {
     public enum WebHost
     {
-        Sockets,
-        Libuv,
+        KestrelSockets,
+        KestrelLibuv,
         HttpSys,
     }
 }

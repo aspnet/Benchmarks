@@ -231,7 +231,7 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.Sockets && job.WebHost != WebHost.Libuv)
+                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.KestrelSockets && job.WebHost != WebHost.KestrelLibuv)
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
@@ -838,13 +838,17 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
-            if (job.WebHost == WebHost.HttpSys)
+            switch (job.WebHost)
             {
-                arguments += $" --server {WebHost.HttpSys}";
-            }
-            else
-            {
-                arguments += $" --server Kestrel --kestrelTransport {job.WebHost}";
+                case WebHost.HttpSys:
+                    arguments += $" --server HttpSys";
+                    break;
+                case WebHost.KestrelSockets:
+                    arguments += $" --server Kestrel --kestrelTransport Sockets";
+                    break;
+                case WebHost.KestrelLibuv:
+                    arguments += $" --server Kestrel --kestrelTransport Libuv";
+                    break;
             }
 
             if (job.KestrelThreadCount.HasValue)
