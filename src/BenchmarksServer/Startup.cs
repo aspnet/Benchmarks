@@ -231,7 +231,7 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.Kestrel)
+                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.KestrelSockets && job.WebHost != WebHost.KestrelLibuv)
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
@@ -831,7 +831,6 @@ namespace BenchmarkServer
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}" +
-                    $" --server {job.WebHost}" +
                     $" --server.urls {serverUrl}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
@@ -839,19 +838,22 @@ namespace BenchmarkServer
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
 
-            if (job.KestrelTransport.HasValue)
+            switch (job.WebHost)
             {
-                arguments += $" --kestrelTransport {job.KestrelTransport.Value}";
+                case WebHost.HttpSys:
+                    arguments += $" --server HttpSys";
+                    break;
+                case WebHost.KestrelSockets:
+                    arguments += $" --server Kestrel --kestrelTransport Sockets";
+                    break;
+                case WebHost.KestrelLibuv:
+                    arguments += $" --server Kestrel --kestrelTransport Libuv";
+                    break;
             }
 
             if (job.KestrelThreadCount.HasValue)
             {
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
-            }
-
-            if (job.KestrelThreadPoolDispatching.HasValue)
-            {
-                arguments += $" --kestrelThreadPoolDispatching {job.KestrelThreadPoolDispatching.Value}";
             }
 
             Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
