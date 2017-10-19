@@ -35,6 +35,7 @@ Options:
   --repository                    Project repository. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
   --project                       Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)
   --useRuntimeStore               Runs the benchmarks using the runtime store if available.
+  --timeout                       The max delay to wait to the job to run. Default is 00:02:00.
 ```
 
 ### Examples

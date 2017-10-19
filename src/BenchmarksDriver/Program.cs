@@ -83,6 +83,8 @@ namespace BenchmarksDriver
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             var useRuntimeStoreOption = app.Option("--useRuntimeStore",
                 "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
+            var timeoutOption = app.Option("--timeout",
+                "The max delay to wait to the job to run. Default is 00:02:00.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -148,7 +150,8 @@ namespace BenchmarksDriver
                     (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
-                    string.IsNullOrWhiteSpace(client))
+                    string.IsNullOrWhiteSpace(client) ||
+                    !TimeSpan.TryParse(timeoutOption.Value(), result: out TimeSpan timeoutValue))
                 {
                     app.ShowHelp();
                     return 2;
@@ -317,6 +320,10 @@ namespace BenchmarksDriver
                 if (projectOption.HasValue())
                 {
                     serverJob.Source.Project = projectOption.Value();
+                }
+                if (timeoutOption.HasValue())
+                {
+                    serverJob.Timeout = timeoutValue;
                 }
 
                 foreach (var source in sourceOption.Values)
