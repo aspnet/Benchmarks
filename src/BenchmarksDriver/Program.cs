@@ -151,7 +151,7 @@ namespace BenchmarksDriver
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client) ||
-                    !TimeSpan.TryParse(timeoutOption.Value(), result: out TimeSpan timeoutValue))
+                    (timeoutOption.HasValue() && !TimeSpan.TryParse(timeoutOption.Value(), result: out TimeSpan timeoutValue)))
                 {
                     app.ShowHelp();
                     return 2;
