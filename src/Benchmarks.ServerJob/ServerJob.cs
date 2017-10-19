@@ -62,6 +62,6 @@ namespace Benchmarks.ServerJob
         public WebHost WebHost { get; set; }
 
         public bool UseRuntimeStore { get; set; }
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(2);
     }
 }
