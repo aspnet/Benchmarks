@@ -11,11 +11,15 @@
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext $(PlaintextJobs)" />
+    <CloudScenarios Include="-n Plaintext --webHost Libuv $(PlaintextJobs)" />
     <CloudScenarios Include="-n MvcPlaintext $(PlaintextJobs)" />
+    <CloudScenarios Include="-n MvcPlaintext --webHost Libuv $(PlaintextJobs)" />
 
     <CloudScenarios Include="-n Json $(JsonJobs)" />
+    <CloudScenarios Include="-n Json --webHost Libuv $(JsonJobs)" />
     <CloudScenarios Include="-n Jil $(JsonJobs)" />
     <CloudScenarios Include="-n MvcJson $(JsonJobs)" />
+    <CloudScenarios Include="-n MvcJson --webHost Libuv $(JsonJobs)" />
     <CloudScenarios Include="-n MvcJil $(JsonJobs)" />
 
     <CloudScenarios Include="-n DbSingleQueryRaw $(JsonJobs) --database PostgreSql" />
@@ -48,26 +52,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Optimal ThreadCount for current hardware -->
-    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n Plaintext --kestrelTransport Sockets $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext $(PlaintextJobs)" />
+    <!-- Optimal ThreadCount for current hardware -->
+    <PhysicalScenarios Include="-n Plaintext --webHost Libuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext -f Benchmarks.PassthroughConnectionFilter $(PlaintextJobs)" />
 
     <PhysicalScenarios Include="-n Plaintext -m https $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n Plaintext -m https --kestrelTransport Sockets $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext -m https --webHost Libuv $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys $(PlaintextJobs)" />
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <PhysicalScenarios Include="-n Json $(JsonJobs)" />
-
-    <PhysicalScenarios Include="-n Json --kestrelTransport Sockets $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json --webHost Libuv $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost HttpSys $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json -f Benchmarks.PassthroughConnectionFilter $(JsonJobs)" />
 
     <PhysicalScenarios Include="-n Json -m https $(JsonJobs)" />
-    <PhysicalScenarios Include="-n Json -m https --kestrelTransport Sockets $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json -m https --webHost Libuv $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json -m https --webHost HttpSys $(JsonJobs)" />
 
     <PhysicalScenarios Include="-n Jil $(JsonJobs)" />
@@ -75,9 +78,7 @@
     <PhysicalScenarios Include="-n StaticFiles --path plaintext $(PlaintextJobs)" />
 
     <PhysicalScenarios Include="-n MvcPlaintext $(PlaintextJobs)" />
-
     <PhysicalScenarios Include="-n MvcJson $(JsonJobs)" />
-
     <PhysicalScenarios Include="-n MvcJil $(JsonJobs)" />
 
     <PhysicalScenarios Include="-n MemoryCachePlaintext $(PlaintextJobs)" />

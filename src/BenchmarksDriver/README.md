@@ -14,12 +14,10 @@ Options:
   -f|--connectionFilter           Assembly-qualified name of the ConnectionFilter
   -j|--jobs                       The path or url to the jobs definition.
   --kestrelThreadCount            Maps to KestrelServerOptions.ThreadCount.
-  --kestrelThreadPoolDispatching  Maps to InternalKestrelServerOptions.ThreadPoolDispatching.
-  --kestrelTransport              Kestrel's transport (Libuv or Sockets). Default is Libuv.
   -n|--scenario                   Benchmark scenario to run
-  -m|--scheme                     Scheme (http or https).  Default is http.
+  -m|--scheme                     Scheme (http or https). Default is http.
   -o|--source                     Source dependency. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
-  -w|--webHost                    WebHost (Kestrel or HttpSys). Default is Kestrel.
+  -w|--webHost                    WebHost (e.g., Libuv, Sockets, HttpSys). Default is Sockets.
   --aspnetCoreVersion             ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*). Default is 2.1.0-*.
   --session                       A logical identifier to group related jobs.
   --description                   The description of the job.
