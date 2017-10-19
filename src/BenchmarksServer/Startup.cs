@@ -287,6 +287,13 @@ namespace BenchmarkServer
 
                                         var now = DateTime.UtcNow;
 
+                                        // Clean the job in case the driver that created the job was stopped, or the job is not running
+                                        if (now - startMonitorTime > job.Timeout)
+                                        {
+                                            Log.WriteLine($"Job timed out after {job.Timeout}. Halting job.");
+                                            job.State = ServerState.Deleting;
+                                        }
+
                                         if (process != null)
                                         {
                                             // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
