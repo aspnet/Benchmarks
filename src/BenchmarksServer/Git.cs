@@ -2,17 +2,49 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BenchmarkServer
 {
     public static class Git
     {
-        public static string Clone(string path, string repository, string branch = null)
+        /// <summary>
+        /// Clones a git repository in the specified path, and caches it.
+        /// </summary>
+        /// <param name="path">The path where the repository should be cloned.</param>
+        /// <param name="repository">The repository to clone.</param>
+        /// <param name="branch">The branch to checkout.</param>
+        /// <returns>The folder relative to <paramref name="path"/> where the repository was cloned.</returns>
+
+        public static string CloneAndCache(string cachePath, string path, string repository, string branch = null)
+        {
+            // Clone the repository in the cache path if it's not already here
+            var repositoryHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(repository));
+
+            if (!Directory.Exists(cachePath))
+            {
+                Clone(path, repository, branch, repositoryHash);
+            }
+
+            // Clone the cached repository to the requested location, technically creating a copy of the cache repository
+            return Clone(path, Path.Combine(cachePath, repositoryHash), branch);
+        }
+
+        /// <summary>
+        /// Clones a git repository in the specified path.
+        /// </summary>
+        /// <param name="path">The path where the repository should be cloned.</param>
+        /// <param name="repository">The repository to clone.</param>
+        /// <param name="destination">The folder relative to <paramref name="path"/> where the repository is cloned.</param>
+        /// <param name="branch">The branch to checkout.</param>
+        /// <returns>The folder relative to <paramref name="path"/> where the repository was cloned.</returns>
+        public static string Clone(string path, string repository, string branch = null, string destination = null)
         {
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
 
-            var result = RunGitCommand(path, $"clone {branchParam} {repository}");
+            var result = RunGitCommand(path, $"clone {branchParam} {repository} {destination}");
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)

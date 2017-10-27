@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -154,9 +155,20 @@ namespace BenchmarkClient
 
                         Debug.Assert(process != null);
 
-                        process.WaitForExit();
-                        process.Dispose();
-                        process = null;
+                        try
+                        {
+                            // We can't wait for ever as the driver is informed that 
+                            // the job is pending deletion, and the client would be blocked otherwise
+                            if (!process.WaitForExit((job.Duration + 5) * 1000))
+                            {
+                                process.Kill();
+                            }
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                            process = null;
+                        }
 
                         _jobs.Remove(job.Id);
                     }
