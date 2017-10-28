@@ -22,10 +22,17 @@ namespace BenchmarkServer
         {
             // Clone the repository in the cache path if it's not already here
             var repositoryHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(repository));
+            var repositoryPath = Path.Combine(cachePath, repositoryHash);
 
-            if (!Directory.Exists(cachePath))
+            if (!Directory.Exists(repositoryPath))
             {
-                Clone(path, repository, branch, repositoryHash);
+                Log.WriteLine($"Cloning and caching '{repository}' in '{cachePath}'");
+                Clone(cachePath, repository, branch, repositoryHash);
+            }
+            else
+            {
+                Log.WriteLine($"Repository '{repository}' already cached locally, pulling only");
+                Pull(repositoryPath);
             }
 
             // Clone the cached repository to the requested location, technically creating a copy of the cache repository
@@ -60,6 +67,11 @@ namespace BenchmarkServer
         public static void Checkout(string path, string branchOrCommit)
         {
             RunGitCommand(path, $"checkout {branchOrCommit}");
+        }
+
+        public static void Pull(string path)
+        {
+            RunGitCommand(path, $"pull");
         }
 
         private static ProcessResult RunGitCommand(string path, string command, bool throwOnError = true)
