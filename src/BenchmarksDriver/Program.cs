@@ -654,7 +654,7 @@ namespace BenchmarksDriver
 
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
-                        throw new Exception($@"Server job was not found, it must have been aborted. Possible cause:
+                        Log($@"Server job was not found, it must have been aborted. Possible cause:
                             - Issue while cloning the repository (GitHub unresponsive)
                             - Issue while restoring (MyGet/NuGet unresponsive)
                             - Issue while building
