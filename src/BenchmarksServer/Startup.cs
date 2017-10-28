@@ -498,7 +498,7 @@ namespace BenchmarkServer
             var dirs = new List<string>();
             foreach (var source in repos)
             {
-                var dir = Git.CloneAndCache(_rootTempDir, path, source.Repository);
+                var dir = Git.Clone(path, source.Repository);
                 if (SourceRepoComparer.Instance.Equals(source, job.Source))
                 {
                     benchmarkedDir = dir;

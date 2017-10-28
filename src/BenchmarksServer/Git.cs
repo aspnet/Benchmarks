@@ -2,56 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BenchmarkServer
 {
     public static class Git
     {
-        /// <summary>
-        /// Clones a git repository in the specified path, and caches it.
-        /// </summary>
-        /// <param name="path">The path where the repository should be cloned.</param>
-        /// <param name="repository">The repository to clone.</param>
-        /// <param name="branch">The branch to checkout.</param>
-        /// <returns>The folder relative to <paramref name="path"/> where the repository was cloned.</returns>
+        private const int CommandTimeout = 5000;
 
-        public static string CloneAndCache(string cachePath, string path, string repository, string branch = null)
-        {
-            // Clone the repository in the cache path if it's not already here
-            var repositoryHash = Convert.ToBase64String(Encoding.UTF8.GetBytes(repository));
-            var repositoryPath = Path.Combine(cachePath, repositoryHash);
-
-            if (!Directory.Exists(repositoryPath))
-            {
-                Log.WriteLine($"Cloning and caching '{repository}' in '{cachePath}'");
-                Clone(cachePath, repository, branch, repositoryHash);
-            }
-            else
-            {
-                Log.WriteLine($"Repository '{repository}' already cached locally, pulling only");
-                Pull(repositoryPath);
-            }
-
-            // Clone the cached repository to the requested location, technically creating a copy of the cache repository
-            return Clone(path, Path.Combine(cachePath, repositoryHash), branch);
-        }
-
-        /// <summary>
-        /// Clones a git repository in the specified path.
-        /// </summary>
-        /// <param name="path">The path where the repository should be cloned.</param>
-        /// <param name="repository">The repository to clone.</param>
-        /// <param name="destination">The folder relative to <paramref name="path"/> where the repository is cloned.</param>
-        /// <param name="branch">The branch to checkout.</param>
-        /// <returns>The folder relative to <paramref name="path"/> where the repository was cloned.</returns>
-        public static string Clone(string path, string repository, string branch = null, string destination = null)
+        public static string Clone(string path, string repository, string branch = null)
         {
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
 
-            var result = RunGitCommand(path, $"clone {branchParam} {repository} {destination}");
+            var result = RunGitCommand(path, $"clone {branchParam} {repository}");
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)
@@ -66,17 +29,34 @@ namespace BenchmarkServer
 
         public static void Checkout(string path, string branchOrCommit)
         {
-            RunGitCommand(path, $"checkout {branchOrCommit}");
+            RunGitCommand(path, $"checkout {branchOrCommit}", retries: 5);
         }
 
-        public static void Pull(string path)
+        private static ProcessResult RunGitCommand(string path, string command, bool throwOnError = true, int retries = 0)
         {
-            RunGitCommand(path, $"pull");
+            return RetryOnException(retries, () => ProcessUtil.Run("git", command, workingDirectory: path, throwOnError: throwOnError, timeout: CommandTimeout));
         }
 
-        private static ProcessResult RunGitCommand(string path, string command, bool throwOnError = true)
+        private static T RetryOnException<T>(int retries, Func<T> operation)
         {
-            return ProcessUtil.Run("git", command, workingDirectory: path, throwOnError: throwOnError);
+            var attempts = 0;
+            do
+            {
+                try
+                {
+                    attempts++;
+                    return operation();
+                }
+                catch(Exception e)
+                {
+                    if (attempts == retries + 1)
+                    {
+                        throw;
+                    }
+
+                    Log.WriteLine($"Attempt {attempts} failed: {e.Message}");
+                }
+            } while (true);
         }
     }
 }
