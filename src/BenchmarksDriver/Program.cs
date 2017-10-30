@@ -661,6 +661,26 @@ namespace BenchmarksDriver
                             description: description,
                             dimension: "BadResponses",
                             value: clientJob.BadResponses);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "TotalRequests",
+                            value: clientJob.Requests);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Duration (ms)",
+                            value: clientJob.ActualDuration.TotalMilliseconds);
                     }
                 }
             }
