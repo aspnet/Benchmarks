@@ -526,7 +526,7 @@ namespace BenchmarksDriver
                     Log($"First Request (ms):          {clientJob.LatencyFirstRequest.TotalMilliseconds}");
                     Log($"Latency (ms):                {clientJob.LatencyNoLoad.TotalMilliseconds}");
                     Log($"Socket Errors:               {clientJob.SocketErrors}");
-                    Log($"Bad Responsed:               {clientJob.BadResponses}");
+                    Log($"Bad Responses:               {clientJob.BadResponses}");
 
                     if (!string.IsNullOrWhiteSpace(sqlConnectionString))
                     {
