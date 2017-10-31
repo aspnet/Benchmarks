@@ -143,10 +143,24 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
+                        job.RunningSince = DateTime.UtcNow;
 
                         MeasureFirstRequestLatency(job);
 
                         process = StartProcess(job);
+                    }
+                    else if (job.State == ClientState.Running)
+                    {
+                        // If the driver never sent the Delete command, for instance
+                        // if it was killed, mark it as Deleting
+
+                        if (DateTime.UtcNow - job.RunningSince > TimeSpan.FromSeconds(job.Duration + 5))
+                        {
+                            Log($"Job running for too long {jobLogText}");
+
+                            job.State = ClientState.Deleting;
+                            _jobs.Update(job);
+                        }
                     }
                     else if (job.State == ClientState.Deleting)
                     {
@@ -156,8 +170,7 @@ namespace BenchmarkClient
 
                         try
                         {
-                            // We can't wait for ever as the driver is informed that 
-                            // the job is pending deletion, and the client would be blocked otherwise
+                            // If the wrk process is stuck, kill it
                             if (!process.WaitForExit((int)TimeSpan.FromSeconds(job.Duration + 5).TotalMilliseconds))
                             {
                                 process.Kill();
