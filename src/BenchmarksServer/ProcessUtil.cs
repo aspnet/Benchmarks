@@ -11,8 +11,8 @@ namespace BenchmarkServer
 {
     public static class ProcessUtil
     {
-        public static ProcessResult Run(string filename, string arguments, string workingDirectory = null,
-            bool throwOnError = true, IDictionary<string, string> environmentVariables = null, int timeout = int.MaxValue)
+        public static ProcessResult Run(string filename, string arguments, TimeSpan? timeout, string workingDirectory = null,
+            bool throwOnError = true, IDictionary<string, string> environmentVariables = null)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
             Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
@@ -59,7 +59,15 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            process.WaitForExit(timeout);
+
+            if (timeout.HasValue)
+            {
+                process.WaitForExit((int)timeout.Value.TotalMilliseconds);
+            }
+            else
+            {
+                process.WaitForExit();
+            }
 
             if (throwOnError && process.ExitCode != 0)
             {

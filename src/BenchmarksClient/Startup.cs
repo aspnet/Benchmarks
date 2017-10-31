@@ -158,7 +158,7 @@ namespace BenchmarkClient
                         {
                             // We can't wait for ever as the driver is informed that 
                             // the job is pending deletion, and the client would be blocked otherwise
-                            if (!process.WaitForExit((job.Duration + 5) * 1000))
+                            if (!process.WaitForExit((int)TimeSpan.FromSeconds(job.Duration + 5).TotalMilliseconds))
                             {
                                 process.Kill();
                             }

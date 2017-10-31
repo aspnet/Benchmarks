@@ -8,13 +8,14 @@ namespace BenchmarkServer
 {
     public static class Git
     {
-        private const int CommandTimeout = 5000;
+        private static readonly TimeSpan CloneTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan CheckoutTimeout = TimeSpan.FromSeconds(30);
 
         public static string Clone(string path, string repository, string branch = null)
         {
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
 
-            var result = RunGitCommand(path, $"clone {branchParam} {repository}");
+            var result = RunGitCommand(path, $"clone {branchParam} {repository}", CloneTimeout, retries: 5);
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)
@@ -29,12 +30,12 @@ namespace BenchmarkServer
 
         public static void Checkout(string path, string branchOrCommit)
         {
-            RunGitCommand(path, $"checkout {branchOrCommit}", retries: 5);
+            RunGitCommand(path, $"checkout {branchOrCommit}", CheckoutTimeout, retries: 5);
         }
 
-        private static ProcessResult RunGitCommand(string path, string command, bool throwOnError = true, int retries = 0)
+        private static ProcessResult RunGitCommand(string path, string command, TimeSpan? timeout, bool throwOnError = true, int retries = 0)
         {
-            return RetryOnException(retries, () => ProcessUtil.Run("git", command, workingDirectory: path, throwOnError: throwOnError, timeout: CommandTimeout));
+            return RetryOnException(retries, () => ProcessUtil.Run("git", command, timeout, workingDirectory: path, throwOnError: throwOnError));
         }
 
         private static T RetryOnException<T>(int retries, Func<T> operation)
