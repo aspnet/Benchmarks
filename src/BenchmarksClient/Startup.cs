@@ -309,7 +309,17 @@ namespace BenchmarkClient
 
                 var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)\s*(s|ms|us)");
                 job.Latency.Within99thPercentile = ReadLatency(p99Match);
-                
+
+                var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
+                job.SocketErrors = CountSocketErrors(socketErrorsMatch);
+
+                var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
+                job.BadResponses = ReadBadReponses(badResponsesMatch);
+
+                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)s");
+                job.Requests = ReadRequests(requestsCountMatch);
+                job.ActualDuration = ReadDuration(requestsCountMatch);
+
                 job.State = ClientState.Completed;
             };
 
@@ -318,6 +328,57 @@ namespace BenchmarkClient
             process.BeginErrorReadLine();
 
             return process;                
+        }
+
+        private static TimeSpan ReadDuration(Match responseCountMatch)
+        {
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 3)
+            {
+                throw new NotSupportedException("Failed to parse duration");
+            }
+
+            var value = double.Parse(responseCountMatch.Groups[2].Value);
+            return TimeSpan.FromSeconds(value);
+        }
+
+        private static int ReadRequests(Match responseCountMatch)
+        {
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 3)
+            {
+                throw new NotSupportedException("Failed to parse requests");
+            }
+
+            var value = int.Parse(responseCountMatch.Groups[1].Value);
+            return value;
+        }
+
+        private static int ReadBadReponses(Match badResponsesMatch)
+        {
+            if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 2)
+            {
+                return 0;
+            }
+
+            var value = int.Parse(badResponsesMatch.Groups[1].Value);
+
+            return value;
+        }
+
+        private static int CountSocketErrors(Match socketErrorsMatch)
+        {
+            if (!socketErrorsMatch.Success || socketErrorsMatch.Groups.Count != 5)
+            {
+                return 0;
+            }
+
+            var value = 
+                int.Parse(socketErrorsMatch.Groups[1].Value) +
+                int.Parse(socketErrorsMatch.Groups[2].Value) +
+                int.Parse(socketErrorsMatch.Groups[3].Value) +
+                int.Parse(socketErrorsMatch.Groups[4].Value)
+                ;
+
+            return value;
         }
 
         private static TimeSpan ReadLatency(Match match)

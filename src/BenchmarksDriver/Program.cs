@@ -525,7 +525,9 @@ namespace BenchmarksDriver
                     Log($"Startup Main (ms):           {serverJob.StartupMainMethod.TotalMilliseconds}");
                     Log($"First Request (ms):          {clientJob.LatencyFirstRequest.TotalMilliseconds}");
                     Log($"Latency (ms):                {clientJob.LatencyNoLoad.TotalMilliseconds}");
-                    
+                    Log($"Socket Errors:               {clientJob.SocketErrors}");
+                    Log($"Bad Responses:               {clientJob.BadResponses}");
+
                     if (!string.IsNullOrWhiteSpace(sqlConnectionString))
                     {
                         Log("Writing results to SQL...");
@@ -639,6 +641,46 @@ namespace BenchmarksDriver
                             description: description,
                             dimension: "Latency99Percentile (ms)",
                             value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "SocketErrors",
+                            value: clientJob.SocketErrors);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "BadResponses",
+                            value: clientJob.BadResponses);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "TotalRequests",
+                            value: clientJob.Requests);
+
+                        await WriteJobsToSql(
+                            serverJob: serverJob,
+                            clientJob: clientJob,
+                            connectionString: sqlConnectionString,
+                            path: serverJob.Path,
+                            session: session,
+                            description: description,
+                            dimension: "Duration (ms)",
+                            value: clientJob.ActualDuration.TotalMilliseconds);
                     }
                 }
             }
