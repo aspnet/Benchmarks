@@ -143,10 +143,24 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
+                        job.RunningSince = DateTime.UtcNow;
 
                         MeasureFirstRequestLatency(job);
 
                         process = StartProcess(job);
+                    }
+                    else if (job.State == ClientState.Running)
+                    {
+                        // If the driver never sent the Delete command, for instance
+                        // if it was killed, mark it as Deleting
+
+                        if (DateTime.UtcNow - job.RunningSince > TimeSpan.FromSeconds(job.Duration + 5))
+                        {
+                            Log($"Job running for too long {jobLogText}");
+
+                            job.State = ClientState.Deleting;
+                            _jobs.Update(job);
+                        }
                     }
                     else if (job.State == ClientState.Deleting)
                     {
@@ -154,9 +168,19 @@ namespace BenchmarkClient
 
                         Debug.Assert(process != null);
 
-                        process.WaitForExit();
-                        process.Dispose();
-                        process = null;
+                        try
+                        {
+                            // If the wrk process is stuck, kill it
+                            if (!process.WaitForExit((int)TimeSpan.FromSeconds(job.Duration + 5).TotalMilliseconds))
+                            {
+                                process.Kill();
+                            }
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                            process = null;
+                        }
 
                         _jobs.Remove(job.Id);
                     }

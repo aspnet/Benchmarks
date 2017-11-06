@@ -68,6 +68,7 @@ namespace Benchmarks.ClientJob
 
         // Latency with a single connection
         public TimeSpan LatencyNoLoad { get; set; }
+        public DateTime RunningSince { get; set; }
 
     }
 }

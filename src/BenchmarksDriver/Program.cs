@@ -651,6 +651,17 @@ namespace BenchmarksDriver
                     LogVerbose($"DELETE {serverJobUri}...");
                     response = _httpClient.DeleteAsync(serverJobUri).Result;
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        Log($@"Server job was not found, it must have been aborted. Possible cause:
+                            - Issue while cloning the repository (GitHub unresponsive)
+                            - Issue while restoring (MyGet/NuGet unresponsive)
+                            - Issue while building
+                            - Issue while running (Timeout)"
+                        );
+                    }
+
                     response.EnsureSuccessStatusCode();
                 }
             }
