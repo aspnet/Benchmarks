@@ -434,7 +434,7 @@ namespace BenchmarkServer
                 Git.Checkout(cloneDir, source.BranchOrCommit);
             }
 
-            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", cloneDir);
+            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", workingDirectory: cloneDir);
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;

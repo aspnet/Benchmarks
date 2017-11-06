@@ -11,7 +11,7 @@ namespace BenchmarkServer
 {
     public static class ProcessUtil
     {
-        public static ProcessResult Run(string filename, string arguments, TimeSpan? timeout, string workingDirectory = null,
+        public static ProcessResult Run(string filename, string arguments, TimeSpan? timeout = null, string workingDirectory = null,
             bool throwOnError = true, IDictionary<string, string> environmentVariables = null)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
