@@ -37,6 +37,7 @@ WORKDIR /benchmarks
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
 
 COPY build* ./
+COPY run* ./
 RUN /benchmarks/build.sh /t:noop
 
 COPY . .
