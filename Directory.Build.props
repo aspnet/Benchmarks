@@ -1,13 +1,17 @@
 <Project>
-  <Import Project="dependencies.props" />
-  <Import Project="compiler.props" />
-  <Import Project="..\version.xml" />
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\compiler.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <RepositoryUrl>https://github.com/aspnet/Benchmarks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <!-- this repo does not produce NuGet packages -->
     <IsPackable>false</IsPackable>
 
