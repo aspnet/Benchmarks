@@ -854,11 +854,11 @@ namespace BenchmarksDriver
                         [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Session] [nvarchar](max) NOT NULL,
-                        [Description] [nvarchar](max),
+                        [Description] [nvarchar](512),
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
-                        [Scenario] [nvarchar](max) NOT NULL,
-                        [Hardware] [nvarchar](max) NOT NULL,
-                        [OperatingSystem] [nvarchar](max) NOT NULL,
+                        [Scenario] [nvarchar](128) NOT NULL,
+                        [Hardware] [nvarchar](64) NOT NULL,
+                        [OperatingSystem] [nvarchar](64) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
                         [RuntimeStore] [bit] NOT NULL,
                         [Scheme] [nvarchar](max) NOT NULL,
@@ -873,9 +873,20 @@ namespace BenchmarksDriver
                         [Path] [nvarchar](max) NULL,
                         [Method] [nvarchar](max) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
-                        [Dimension] [nvarchar](max) NOT NULL,
+                        [Dimension] [nvarchar](64) NOT NULL,
                         [Value] [float] NOT NULL
                     )
+
+                    CREATE INDEX IDX_Scenario_Hardware_OS_Description_Dimension
+                    ON AspNetBenchmarks
+                    (
+                        [Scenario],
+                        [Hardware],
+                        [OperatingSystem],
+                        [Description],
+                        [Dimension]
+                    )
+                    
                 END
                 ";
 
