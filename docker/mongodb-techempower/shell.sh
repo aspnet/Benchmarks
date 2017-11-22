@@ -3,4 +3,4 @@
 #echo on
 set -x
 
-docker exec -it mongodb-techempower mongo --host mongodb:27017 
+docker exec -it mongodb-techempower mongo
