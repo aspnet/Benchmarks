@@ -12,4 +12,4 @@ docker run \
     --restart always \
     mongodb-techempower
 
-docker exec mongo mongo benchmarks ./init.js
+docker exec mongodb-techempower mongo benchmarks ./init.js
