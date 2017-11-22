@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using Npgsql;
 
 namespace Benchmarks
@@ -84,6 +85,10 @@ namespace Benchmarks
                         services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
                     }
                     break;
+                case DatabaseServer.MongoDb:
+                    
+                    services.AddSingleton(new MongoClient(appSettings.ConnectionString));
+                    break;
             }
 
             if (Scenarios.Any("Ef"))
@@ -99,6 +104,11 @@ namespace Benchmarks
             if (Scenarios.Any("Dapper"))
             {
                 services.AddScoped<DapperDb>();
+            }
+
+            if (Scenarios.Any("Mongo"))
+            {
+                services.AddScoped<MongoDb>();
             }
 
             if (Scenarios.Any("Fortunes"))
@@ -225,6 +235,11 @@ namespace Benchmarks
             if (Scenarios.DbFortunesDapper)
             {
                 app.UseFortunesDapper();
+            }
+
+            if (Scenarios.DbFortunesMongoDb)
+            {
+                app.UseFortunesMongoDb();
             }
 
             if (Scenarios.DbFortunesEf)

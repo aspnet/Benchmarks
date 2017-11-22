@@ -15,6 +15,9 @@
   "DbFortunesDapper": {
     "Path": "/fortunes/dapper"
   },
+  "DbFortunesMongoDb": {
+    "Path": "/fortunes/mongodb"
+  },
   "DbFortunesEf": {
     "Path": "/fortunes/ef"
   },

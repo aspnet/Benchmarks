@@ -17,6 +17,7 @@
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
+    <MongoDbVersion>2.*</MongoDbVersion>
     <DapperVersion>1.*</DapperVersion>
     <NpgsqlVersion>3.*</NpgsqlVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion>2.0.0-*</NpgsqlEntityFrameworkCorePostgreSQLVersion>

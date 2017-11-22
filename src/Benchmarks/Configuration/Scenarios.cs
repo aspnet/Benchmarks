@@ -100,6 +100,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/fortunes/dapper")]
         public bool DbFortunesDapper { get; set; }
 
+        [ScenarioPath("/fortunes/mongodb")]
+        public bool DbFortunesMongoDb { get; set; }
+
         [ScenarioPath("/mvc/view")]
         public bool MvcViews { get; set; }
 
