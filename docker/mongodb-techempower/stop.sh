@@ -3,5 +3,5 @@
 #echo on
 set -x
 
-docker stop mysql-techempower
-docker rm mysql-techempower
+docker stop mongodb-techempower
+docker rm mongodb-techempower
