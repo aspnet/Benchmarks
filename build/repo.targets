@@ -24,6 +24,7 @@
 
     <CloudScenarios Include="-n DbSingleQueryRaw $(JsonJobs) --database PostgreSql" />
     <CloudScenarios Include="-n DbSingleQueryDapper $(JsonJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbSingleQueryMongoDb $(JsonJobs) --database MongoDb" />
     <CloudScenarios Include="-n DbSingleQueryEf $(JsonJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbSingleQueryRaw $(JsonJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbSingleQueryDapper $(JsonJobs) --database PostgreSql" />
@@ -31,6 +32,7 @@
 
     <CloudScenarios Include="-n DbMultiQueryRaw $(MultiQueryJobs) --database PostgreSql" />
     <CloudScenarios Include="-n DbMultiQueryDapper $(MultiQueryJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbMultiQueryMongoDb $(MultiQueryJobs) --database MongoDb" />
     <CloudScenarios Include="-n DbMultiQueryEf $(MultiQueryJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbMultiQueryRaw $(MultiQueryJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbMultiQueryDapper $(MultiQueryJobs) --database PostgreSql" />
@@ -45,6 +47,7 @@
 
     <CloudScenarios Include="-n DbFortunesRaw $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n DbFortunesDapper $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbFortunesMongoDb $(HtmlJobs) --database MongoDb" />
     <CloudScenarios Include="-n DbFortunesEf $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesRaw $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesDapper $(HtmlJobs) --database PostgreSql" />

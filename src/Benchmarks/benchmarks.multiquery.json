@@ -19,6 +19,10 @@
     "Path": "/queries/dapper",
     "Query": "?queries=20"
   },
+  "DbMultiQueryMongoDb": {
+    "Path": "/queries/mongodb",
+    "Query": "?queries=20"
+  },
   "DbMultiQueryEf": {
     "Path": "/queries/ef",
     "Query": "?queries=20"

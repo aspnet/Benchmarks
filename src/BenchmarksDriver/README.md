@@ -47,7 +47,6 @@ dotnet run -c release
     --server "http://localhost:5001" 
     --client "http://10.0.75.2:5002" 
     --repository "https://github.com/sebastienros/FrameworkBenchmarks.git" 
-    --branchOrCommit "benchmarks" 
     --projectFile "frameworks/CSharp/aspnetcore/Benchmarks/Benchmarks.csproj" 
     --path "/plaintext" 
     --connections 256 
@@ -113,7 +112,7 @@ This definition contains three custom jobs plus the _default_ one.
 
 When the benchmarked application is executed, the following environment variables are set:
 
-`Database`: either None, PostgreSql, SqlServer or MySql
+`Database`: either None, PostgreSql, SqlServer, MySql or MongoDb
 `ConnectionString`: The connection string to use to run the benchmark application
 
 ## MSBUILD parameters

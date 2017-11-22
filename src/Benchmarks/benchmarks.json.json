@@ -27,6 +27,9 @@
   "DbSingleQueryDapper": {
     "Path": "/db/dapper"
   },
+  "DbSingleQueryMongoDb": {
+    "Path": "/db/mongodb"
+  },
   "DbSingleQueryEf": {
     "Path": "/db/ef"
   },
