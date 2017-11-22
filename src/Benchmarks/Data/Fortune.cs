@@ -12,6 +12,7 @@ namespace Benchmarks.Data
     public class Fortune : IComparable<Fortune>, IComparable
     {
         [Column("id")]
+        [BsonId]
         public int Id { get; set; }
 
         [Column("message")]

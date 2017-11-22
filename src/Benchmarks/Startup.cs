@@ -86,8 +86,13 @@ namespace Benchmarks
                     }
                     break;
                 case DatabaseServer.MongoDb:
-                    
-                    services.AddSingleton(new MongoClient(appSettings.ConnectionString));
+
+                    var mongoClient = new MongoClient(appSettings.ConnectionString);
+                    var mongoDatabase = mongoClient.GetDatabase("benchmarks");
+                    services.AddSingleton(mongoClient);
+                    services.AddSingleton(mongoDatabase);
+                    services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortunes"));
+
                     break;
             }
 

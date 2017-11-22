@@ -3,13 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Dynamic;
-using System.Text;
 using System.Threading.Tasks;
-using Benchmarks.Configuration;
-using Dapper;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -18,21 +12,19 @@ namespace Benchmarks.Data
     public class MongoDb : IDb
     {
         private readonly IRandom _random;
+        private readonly IMongoCollection<Fortune> _fortuneCollection;
         private readonly MongoClient _mongoClient;
         private readonly string _connectionString;
 
-        public MongoDb(IRandom random, MongoClient mongoClient, IOptions<AppSettings> appSettings)
+        public MongoDb(IRandom random, IMongoCollection<Fortune> fortuneCollection)
         {
             _random = random;
-            _mongoClient = mongoClient;
-            _connectionString = appSettings.Value.ConnectionString;
+            _fortuneCollection = fortuneCollection;
         }
 
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
-            var database = _mongoClient.GetDatabase("benchmarks");
-            var collection = database.GetCollection<Fortune>("fortunes");
-            var result = await collection.Find(new BsonDocument()).ToListAsync();
+            var result = await _fortuneCollection.Find(new BsonDocument()).ToListAsync();
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
             result.Sort();
@@ -142,5 +134,10 @@ namespace Benchmarks.Data
 
         //    return result;
         //}
+    }
+
+    public interface IFortuneCollection : IMongoCollection<Fortune>
+    {
+
     }
 }
