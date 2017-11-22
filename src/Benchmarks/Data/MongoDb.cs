@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Benchmarks.Data
@@ -13,26 +12,23 @@ namespace Benchmarks.Data
     {
         private readonly IRandom _random;
         private readonly IMongoCollection<Fortune> _fortuneCollection;
+        private readonly IMongoCollection<World> _worldCollection;
 
-        public MongoDb(IRandom random, IMongoCollection<Fortune> fortuneCollection)
+        public MongoDb(IRandom random, IMongoCollection<Fortune> fortuneCollection, IMongoCollection<World> worldCollection)
         {
             _random = random;
             _fortuneCollection = fortuneCollection;
+            _worldCollection = worldCollection;
         }
 
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
-            var result = await _fortuneCollection.Find(new BsonDocument()).ToListAsync();
+            var result = await _fortuneCollection.Find(FilterDefinition<Fortune>.Empty).ToListAsync();
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
             result.Sort();
 
             return result;
-        }
-
-        public Task<World[]> LoadMultipleQueriesRows(int count)
-        {
-            throw new NotImplementedException();
         }
 
         public Task<World[]> LoadMultipleUpdatesRows(int count)
@@ -42,100 +38,19 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow()
         {
-            throw new NotImplementedException();
+            return _worldCollection.Find(x => x.Id == _random.Next(1, 10001)).FirstOrDefaultAsync();
         }
 
-        //public async Task<World> LoadSingleQueryRow()
-        //{
-        //    using (var db = _dbProviderFactory.CreateConnection())
-        //    {
-        //        db.ConnectionString = _connectionString;
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
+        {
+            var results = new World[count];
 
-        //        // Note: Don't need to open connection if only doing one thing; let dapper do it
-        //        return await ReadSingleRow(db);
-        //    }
-        //}
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = await _worldCollection.Find(x => x.Id == _random.Next(1, 10001)).FirstOrDefaultAsync();
+            }
 
-        //async Task<World> ReadSingleRow(DbConnection db)
-        //{
-        //    return await db.QueryFirstOrDefaultAsync<World>(
-        //            "SELECT id, randomnumber FROM world WHERE id = @Id",
-        //            new { Id = _random.Next(1, 10001) });
-        //}
-
-        //public async Task<World[]> LoadMultipleQueriesRows(int count)
-        //{
-        //    var results = new World[count];
-        //    using (var db = _dbProviderFactory.CreateConnection())
-        //    {
-        //        db.ConnectionString = _connectionString;
-        //        await db.OpenAsync();
-
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            results[i] = await ReadSingleRow(db);
-        //        }
-        //    }
-
-        //    return results;
-        //}
-
-        //public async Task<World[]> LoadMultipleUpdatesRows(int count)
-        //{
-        //    var results = new World[count];
-        //    IDictionary<string, object> parameters = new ExpandoObject();
-        //    var updateCommand = new StringBuilder(count);
-
-        //    using (var db = _dbProviderFactory.CreateConnection())
-        //    {
-        //        db.ConnectionString = _connectionString;
-        //        await db.OpenAsync();
-
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            results[i] = await ReadSingleRow(db);
-        //        }
-
-        //        // postgres has problems with deadlocks when these aren't sorted
-        //        Array.Sort<World>(results, (a, b) => a.Id.CompareTo(b.Id));
-
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            var randomNumber = _random.Next(1, 10001);
-        //            parameters[BatchUpdateString.Strings[i].Random] = randomNumber;
-        //            parameters[BatchUpdateString.Strings[i].Id] = results[i].Id;
-
-        //            results[i].RandomNumber = randomNumber;
-        //            updateCommand.Append(BatchUpdateString.Strings[i].UpdateQuery);
-        //        }
-
-        //        await db.ExecuteAsync(updateCommand.ToString(), parameters);
-        //    }
-
-        //    return results;
-        //}
-
-        //public async Task<IEnumerable<Fortune>> LoadFortunesRows()
-        //{
-        //    List<Fortune> result;
-
-        //    using (var db = _dbProviderFactory.CreateConnection())
-        //    {
-        //        db.ConnectionString = _connectionString;
-
-        //        // Note: don't need to open connection if only doing one thing; let dapper do it
-        //        result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
-        //    }
-
-        //    result.Add(new Fortune { Message = "Additional fortune added at request time." });
-        //    result.Sort();
-
-        //    return result;
-        //}
-    }
-
-    public interface IFortuneCollection : IMongoCollection<Fortune>
-    {
-
+            return results;
+        }
     }
 }

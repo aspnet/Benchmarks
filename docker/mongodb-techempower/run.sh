@@ -12,5 +12,5 @@ docker run \
     --name mongodb-techempower \
     --network host \
     --restart always \
-    -e MONGO_INITDB_DATABASE=benchmarks \
+    -e MONGO_INITDB_DATABASE=hello_world \
     mongodb-techempower

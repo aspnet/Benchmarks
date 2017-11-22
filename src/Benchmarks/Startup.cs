@@ -88,10 +88,11 @@ namespace Benchmarks
                 case DatabaseServer.MongoDb:
 
                     var mongoClient = new MongoClient(appSettings.ConnectionString);
-                    var mongoDatabase = mongoClient.GetDatabase("benchmarks");
+                    var mongoDatabase = mongoClient.GetDatabase("hello_world");
                     services.AddSingleton(mongoClient);
                     services.AddSingleton(mongoDatabase);
-                    services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortunes"));
+                    services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortune"));
+                    services.AddSingleton(sp => mongoDatabase.GetCollection<World>("world"));
 
                     break;
             }
@@ -194,6 +195,11 @@ namespace Benchmarks
                 app.UseSingleQueryDapper();
             }
 
+            if (Scenarios.DbSingleQueryMongoSb)
+            {
+                app.UseSingleQueryMongoDb();
+            }
+
             if (Scenarios.DbSingleQueryEf)
             {
                 app.UseSingleQueryEf();
@@ -208,6 +214,11 @@ namespace Benchmarks
             if (Scenarios.DbMultiQueryDapper)
             {
                 app.UseMultipleQueriesDapper();
+            }
+
+            if (Scenarios.DbMultiQueryMongoDb)
+            {
+                app.UseMultipleQueriesMongoDb();
             }
 
             if (Scenarios.DbMultiQueryEf)

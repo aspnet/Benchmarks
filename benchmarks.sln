@@ -95,8 +95,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mongodb-techempower", "{13B1DC5E-AD37-4958-B22D-FAE26F6D4058}"
 	ProjectSection(SolutionItems) = preProject
 		docker\mongodb-techempower\build.sh = docker\mongodb-techempower\build.sh
+		docker\mongodb-techempower\create.js = docker\mongodb-techempower\create.js
 		docker\mongodb-techempower\Dockerfile = docker\mongodb-techempower\Dockerfile
-		docker\mongodb-techempower\init.js = docker\mongodb-techempower\init.js
 		docker\mongodb-techempower\run.sh = docker\mongodb-techempower\run.sh
 		docker\mongodb-techempower\shell.sh = docker\mongodb-techempower\shell.sh
 		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh

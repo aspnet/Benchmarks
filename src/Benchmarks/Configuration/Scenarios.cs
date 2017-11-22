@@ -73,6 +73,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/db/dapper")]
         public bool DbSingleQueryDapper { get; set; }
 
+        [ScenarioPath("/db/mongodb")]
+        public bool DbSingleQueryMongoSb { get; set; }
+
         [ScenarioPath("/queries/raw")]
         public bool DbMultiQueryRaw { get; set; }
 
@@ -81,6 +84,9 @@ namespace Benchmarks.Configuration
 
         [ScenarioPath("/queries/dapper")]
         public bool DbMultiQueryDapper { get; set; }
+
+        [ScenarioPath("/queries/mongodb")]
+        public bool DbMultiQueryMongoDb { get; set; }
 
         [ScenarioPath("/updates/raw")]
         public bool DbMultiUpdateRaw { get; set; }
