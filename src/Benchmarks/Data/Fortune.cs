@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Benchmarks.Data
 {
@@ -15,6 +16,7 @@ namespace Benchmarks.Data
 
         [Column("message")]
         [StringLength(2048)]
+        [BsonElement("message")]
         public string Message { get; set; }
         
         public int CompareTo(object obj)
