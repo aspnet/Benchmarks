@@ -13,8 +13,6 @@ namespace Benchmarks.Data
     {
         private readonly IRandom _random;
         private readonly IMongoCollection<Fortune> _fortuneCollection;
-        private readonly MongoClient _mongoClient;
-        private readonly string _connectionString;
 
         public MongoDb(IRandom random, IMongoCollection<Fortune> fortuneCollection)
         {
