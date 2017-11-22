@@ -50,7 +50,6 @@ namespace Benchmarks
 
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
-            services.AddSingleton<ApplicationDbSeeder>();
             services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
@@ -157,7 +156,7 @@ namespace Benchmarks
             }
         }
 
-        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (Scenarios.StaticFiles)
             {
@@ -261,14 +260,6 @@ namespace Benchmarks
             if (Scenarios.DbFortunesEf)
             {
                 app.UseFortunesEf();
-            }
-
-            if (Scenarios.Any("Db"))
-            {
-                if (!dbSeeder.Seed())
-                {
-                    Console.WriteLine($"Seeding failed, continuing.");
-                }
             }
 
             if (Scenarios.Any("Mvc"))

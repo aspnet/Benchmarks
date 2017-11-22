@@ -13,6 +13,9 @@ namespace Benchmarks.Data
         [BsonElement("id")]
         public int Id { get; set; }
 
+        [BsonId]
+        public int _Id { get; set; }
+
         [Column("randomnumber")]
         [BsonElement("randomNumber")]
         public int RandomNumber { get; set; }

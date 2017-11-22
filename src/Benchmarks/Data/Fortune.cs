@@ -15,6 +15,9 @@ namespace Benchmarks.Data
         [BsonElement("id")]
         public int Id { get; set; }
 
+        [BsonId]
+        public int _Id { get; set; }
+
         [Column("message")]
         [StringLength(2048)]
         [BsonElement("message")]
