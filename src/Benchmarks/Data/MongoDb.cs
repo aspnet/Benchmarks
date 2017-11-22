@@ -38,7 +38,10 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow()
         {
-            return _worldCollection.Find(x => x.Id == _random.Next(1, 10001)).FirstOrDefaultAsync();
+            var rnd = _random.Next(1, 10001);
+
+            var filter = Builders<World>.Filter.Eq("_id", rnd);
+            return _worldCollection.Find(filter).SingleAsync();
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
@@ -47,7 +50,9 @@ namespace Benchmarks.Data
 
             for (int i = 0; i < count; i++)
             {
-                results[i] = await _worldCollection.Find(x => x.Id == _random.Next(1, 10001)).FirstOrDefaultAsync();
+                var rnd = _random.Next(1, 10001);
+                var filter = Builders<World>.Filter.Eq("_id", rnd);
+                results[i] = await _worldCollection.Find(filter).SingleAsync();
             }
 
             return results;
