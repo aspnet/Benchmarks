@@ -74,7 +74,7 @@ namespace Benchmarks.Configuration
         public bool DbSingleQueryDapper { get; set; }
 
         [ScenarioPath("/db/mongodb")]
-        public bool DbSingleQueryMongoSb { get; set; }
+        public bool DbSingleQueryMongoDb { get; set; }
 
         [ScenarioPath("/queries/raw")]
         public bool DbMultiQueryRaw { get; set; }

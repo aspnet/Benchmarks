@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Benchmarks.Data
@@ -20,6 +21,7 @@ namespace Benchmarks.Data
 
         [Column("message")]
         [StringLength(2048)]
+        [IgnoreDataMember]
         [BsonElement("message")]
         public string Message { get; set; }
         

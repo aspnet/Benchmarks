@@ -194,7 +194,7 @@ namespace Benchmarks
                 app.UseSingleQueryDapper();
             }
 
-            if (Scenarios.DbSingleQueryMongoSb)
+            if (Scenarios.DbSingleQueryMongoDb)
             {
                 app.UseSingleQueryMongoDb();
             }

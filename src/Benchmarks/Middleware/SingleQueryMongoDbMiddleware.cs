@@ -13,9 +13,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class SingleQueryDapperMongoDb
+    public class SingleQueryMongoDb
     {
-        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbSingleQueryMongoSb));
+        private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbSingleQueryMongoDb));
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -23,7 +23,7 @@ namespace Benchmarks.Middleware
 
         private readonly RequestDelegate _next;
 
-        public SingleQueryDapperMongoDb(RequestDelegate next)
+        public SingleQueryMongoDb(RequestDelegate next)
         {
             _next = next;
         }
@@ -54,7 +54,7 @@ namespace Benchmarks.Middleware
     {
         public static IApplicationBuilder UseSingleQueryMongoDb(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<SingleQueryDapperMiddleware>();
+            return builder.UseMiddleware<SingleQueryMongoDb>();
         }
     }
 }
