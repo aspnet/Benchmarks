@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using Npgsql;
 
 namespace Benchmarks
@@ -49,7 +50,6 @@ namespace Benchmarks
 
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
-            services.AddSingleton<ApplicationDbSeeder>();
             services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
@@ -84,6 +84,16 @@ namespace Benchmarks
                         services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
                     }
                     break;
+                case DatabaseServer.MongoDb:
+
+                    var mongoClient = new MongoClient(appSettings.ConnectionString);
+                    var mongoDatabase = mongoClient.GetDatabase("hello_world");
+                    services.AddSingleton(mongoClient);
+                    services.AddSingleton(mongoDatabase);
+                    services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortune"));
+                    services.AddSingleton(sp => mongoDatabase.GetCollection<World>("world"));
+
+                    break;
             }
 
             if (Scenarios.Any("Ef"))
@@ -99,6 +109,11 @@ namespace Benchmarks
             if (Scenarios.Any("Dapper"))
             {
                 services.AddScoped<DapperDb>();
+            }
+
+            if (Scenarios.Any("Mongo"))
+            {
+                services.AddScoped<MongoDb>();
             }
 
             if (Scenarios.Any("Fortunes"))
@@ -141,7 +156,7 @@ namespace Benchmarks
             }
         }
 
-        public void Configure(IApplicationBuilder app, ApplicationDbSeeder dbSeeder)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (Scenarios.StaticFiles)
             {
@@ -179,6 +194,11 @@ namespace Benchmarks
                 app.UseSingleQueryDapper();
             }
 
+            if (Scenarios.DbSingleQueryMongoDb)
+            {
+                app.UseSingleQueryMongoDb();
+            }
+
             if (Scenarios.DbSingleQueryEf)
             {
                 app.UseSingleQueryEf();
@@ -193,6 +213,11 @@ namespace Benchmarks
             if (Scenarios.DbMultiQueryDapper)
             {
                 app.UseMultipleQueriesDapper();
+            }
+
+            if (Scenarios.DbMultiQueryMongoDb)
+            {
+                app.UseMultipleQueriesMongoDb();
             }
 
             if (Scenarios.DbMultiQueryEf)
@@ -227,17 +252,14 @@ namespace Benchmarks
                 app.UseFortunesDapper();
             }
 
+            if (Scenarios.DbFortunesMongoDb)
+            {
+                app.UseFortunesMongoDb();
+            }
+
             if (Scenarios.DbFortunesEf)
             {
                 app.UseFortunesEf();
-            }
-
-            if (Scenarios.Any("Db"))
-            {
-                if (!dbSeeder.Seed())
-                {
-                    Console.WriteLine($"Seeding failed, continuing.");
-                }
             }
 
             if (Scenarios.Any("Mvc"))

@@ -17,6 +17,7 @@ then
     postgresql="--postgresql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
     mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;\""
     mssql="--mssql \"Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
+    mongodb="--mongodb \"mongodb://$DBHOST:27017?maxPoolSize=1024\""
 
     # "--network host" - Better performance than the default "bridge" driver
     # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
@@ -38,6 +39,7 @@ then
         $postgresql  \
         $mysql  \
         $mssql \
+        $mongodb \
         $@"
 else
     echo DBHOST needs to be defined

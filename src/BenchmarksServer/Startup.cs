@@ -125,7 +125,7 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
-            var databaseOption = app.Option("-d|--database", "Database (PostgreSQL or SqlServer).",
+            var databaseOption = app.Option("-d|--database", "Database (PostgreSQL, SqlServer, MySql or MongoDb).",
                 CommandOptionType.SingleValue);
             var noCleanupOption = app.Option("--no-cleanup",
                 "Don't kill processes or delete temp directories.", CommandOptionType.NoValue);
@@ -135,6 +135,8 @@ namespace BenchmarkServer
                 "The connection string for MySql.", CommandOptionType.SingleValue);
             var mssqlConnectionStringOption = app.Option("--mssql",
                 "The connection string for SqlServer.", CommandOptionType.SingleValue);
+            var mongoDbConnectionStringOption = app.Option("--mongodb",
+                "The connection string for MongoDb.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -154,6 +156,10 @@ namespace BenchmarkServer
                 if (mssqlConnectionStringOption.HasValue())
                 {
                     ConnectionStrings[Database.SqlServer] = mssqlConnectionStringOption.Value();
+                }
+                if (mongoDbConnectionStringOption.HasValue())
+                {
+                    ConnectionStrings[Database.MongoDb] = mongoDbConnectionStringOption.Value();
                 }
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {

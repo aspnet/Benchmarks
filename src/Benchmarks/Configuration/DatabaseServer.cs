@@ -9,6 +9,7 @@ namespace Benchmarks.Configuration
         None,
         PostgreSql,
         SqlServer,
-        MySql
+        MySql,
+        MongoDb,
     }
 }

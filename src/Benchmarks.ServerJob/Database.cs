@@ -5,6 +5,7 @@
         None,
         PostgreSql,
         SqlServer,
-        MySql
+        MySql,
+        MongoDb,
     }
 }

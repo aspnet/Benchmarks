@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26923.0
+VisualStudioVersion = 15.0.27119.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}"
 	ProjectSection(SolutionItems) = preProject
@@ -90,6 +90,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mssql-techempower", "mssql-
 		docker\mssql-techempower\import-data.sh = docker\mssql-techempower\import-data.sh
 		docker\mssql-techempower\run.sh = docker\mssql-techempower\run.sh
 		docker\mssql-techempower\stop.sh = docker\mssql-techempower\stop.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mongodb-techempower", "{13B1DC5E-AD37-4958-B22D-FAE26F6D4058}"
+	ProjectSection(SolutionItems) = preProject
+		docker\mongodb-techempower\build.sh = docker\mongodb-techempower\build.sh
+		docker\mongodb-techempower\create.js = docker\mongodb-techempower\create.js
+		docker\mongodb-techempower\Dockerfile = docker\mongodb-techempower\Dockerfile
+		docker\mongodb-techempower\run.sh = docker\mongodb-techempower\run.sh
+		docker\mongodb-techempower\shell.sh = docker\mongodb-techempower\shell.sh
+		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh
 	EndProjectSection
 EndProject
 Global
@@ -182,6 +192,7 @@ Global
 		{6B2BF265-7141-40E2-9BEC-DAFB9547B942} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{17D18F38-2030-46BE-8C5A-48607A6E69AA} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{FA7BA2F5-47DA-418F-B29F-458714F44C89} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
