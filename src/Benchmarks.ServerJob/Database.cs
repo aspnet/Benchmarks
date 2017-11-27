@@ -6,6 +6,6 @@
         PostgreSql,
         SqlServer,
         MySql,
-        MongoDb
+        MongoDb,
     }
 }

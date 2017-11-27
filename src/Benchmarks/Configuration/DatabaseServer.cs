@@ -10,6 +10,6 @@ namespace Benchmarks.Configuration
         PostgreSql,
         SqlServer,
         MySql,
-        MongoDb
+        MongoDb,
     }
 }
