@@ -499,10 +499,14 @@ namespace BenchmarksDriver
                 
 
                 Log("Warmup");
-                await RunClientJob(scenario, clientUri, serverBenchmarkUri);
-
-                Log("Benchmark");
                 var clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+
+                // Run the benchmark only if warmup was successfull
+                if (clientJob.State == ClientState.Completed)
+                {
+                    Log("Benchmark");
+                    clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+                }
 
                 if (clientJob.State == ClientState.Completed)
                 {
@@ -682,6 +686,10 @@ namespace BenchmarksDriver
                             dimension: "Duration (ms)",
                             value: clientJob.ActualDuration.TotalMilliseconds);
                     }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The client job didn't complete, ignoring results, check logs for {scenario} on job id {clientJob.Id}");
                 }
             }
             finally

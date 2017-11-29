@@ -109,15 +109,33 @@
       <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
     </GetDotNetHost>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-      Condition="'$(BENCHMARK_SERVER_CLOUD)' != '' AND '$(BENCHMARK_CLIENT_CLOUD)' != ''"
-      Targets="RunBenchmark"
-      Properties="Scenario=%(CloudScenarios.Identity);Server=$(BENCHMARK_SERVER_CLOUD);Client=$(BENCHMARK_CLIENT_CLOUD);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
+    <ItemGroup>
+      <RunProjects Include="$(MSBuildProjectFullPath)" Condition="'$(BENCHMARK_SERVER_CLOUD)' != '' AND '$(BENCHMARK_CLIENT_CLOUD)' != ''">
+        <AdditionalProperties>
+          Scenario=%(CloudScenarios.Identity);
+          Server=$(BENCHMARK_SERVER_CLOUD);
+          Client=$(BENCHMARK_CLIENT_CLOUD);
+          DotNetPath=$(DotNetPath);
+          DriverOutputPath=$(DriverOutputPath);
+          NoBuild=true
+        </AdditionalProperties>
+      </RunProjects>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-      Condition="'$(BENCHMARK_SERVER_PHYSICAL)' != '' AND '$(BENCHMARK_CLIENT_PHYSICAL)' != ''"
-      Targets="RunBenchmark"
-      Properties="Scenario=%(PhysicalScenarios.Identity);Server=$(BENCHMARK_SERVER_PHYSICAL);Client=$(BENCHMARK_CLIENT_PHYSICAL);DotNetPath=$(DotNetPath);DriverOutputPath=$(DriverOutputPath);NoBuild=true" />
+      <RunProjects Include="$(MSBuildProjectFullPath)" Condition="'$(BENCHMARK_SERVER_PHYSICAL)' != '' AND '$(BENCHMARK_CLIENT_PHYSICAL)' != ''">
+        <AdditionalProperties>
+          Scenario=%(PhysicalScenarios.Identity);
+          Server=$(BENCHMARK_SERVER_PHYSICAL);
+          Client=$(BENCHMARK_CLIENT_PHYSICAL);
+          DotNetPath=$(DotNetPath);
+          DriverOutputPath=$(DriverOutputPath);
+          NoBuild=true
+        </AdditionalProperties>
+      </RunProjects>
+    </ItemGroup>
+
+    <!-- All the scenarios are run, even if one fails. When one fails the task will return as errored -->
+    <MSBuild Projects="@(RunProjects)" Targets="RunBenchmark" BuildInParallel="false" />
+    
   </Target>
 
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
