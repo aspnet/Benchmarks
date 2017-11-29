@@ -17,6 +17,8 @@ namespace Benchmarks.Data
         public int Id { get; set; }
 
         [BsonId]
+        [NotMapped]
+        [IgnoreDataMember]
         public int _Id { get; set; }
 
         [Column("message")]

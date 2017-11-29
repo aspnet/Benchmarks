@@ -16,6 +16,7 @@ namespace Benchmarks.Data
 
         [BsonId]
         [IgnoreDataMember]
+        [NotMapped]
         public int _Id { get; set; }
 
         [Column("randomnumber")]
