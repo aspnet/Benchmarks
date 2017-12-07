@@ -3,7 +3,11 @@
 #echo on
 set -x
 
-server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+if [ -z server_ip ]
+then
+    # tries to get the ip from the available NICs, but it's recommended to set it manually to use the fastest one
+    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+fi
 
 if [ -e /var/log/waagent.log ]
 then
