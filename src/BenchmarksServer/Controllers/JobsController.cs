@@ -52,6 +52,7 @@ namespace BenchmarkServer.Controllers
             }
 
             job.Hardware = Startup.Hardware;
+            job.HardwareVersion = Startup.HardwareVersion;
             job.OperatingSystem = Startup.OperatingSystem;
             job = _jobs.Add(job);
 

@@ -472,6 +472,11 @@ namespace BenchmarksDriver
                         throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
                     }
 
+                    if (String.IsNullOrWhiteSpace(serverJob.HardwareVersion))
+                    {
+                        throw new InvalidOperationException("Server is required to set ServerJob.HardwareVersion.");
+                    }
+
                     if (!serverJob.OperatingSystem.HasValue)
                     {
                         throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
@@ -804,6 +809,7 @@ namespace BenchmarksDriver
                         description: description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
                         hardware: serverJob.Hardware.Value,
+                        hardwareVersion: serverJob.HardwareVersion,
                         operatingSystem: serverJob.OperatingSystem.Value,
                         scheme: serverJob.Scheme,
                         sources: serverJob.ReferenceSources,
@@ -828,6 +834,7 @@ namespace BenchmarksDriver
             string aspnetCoreVersion,
             string scenario,
             Hardware hardware,
+            string hardwareVersion,
             OperatingSystem operatingSystem,
             Scheme scheme,
             IEnumerable<Source> sources,
@@ -858,6 +865,7 @@ namespace BenchmarksDriver
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
+                        [HardwareVersion] [nvarchar](128) NOT NULL,
                         [OperatingSystem] [nvarchar](max) NOT NULL,
                         [Framework] [nvarchar](max) NOT NULL,
                         [RuntimeStore] [bit] NOT NULL,
@@ -888,6 +896,7 @@ namespace BenchmarksDriver
                            ,[AspNetCoreVersion]
                            ,[Scenario]
                            ,[Hardware]
+                           ,[HardwareVersion]
                            ,[OperatingSystem]
                            ,[Framework]
                            ,[RuntimeStore]
@@ -912,6 +921,7 @@ namespace BenchmarksDriver
                            ,@AspNetCoreVersion
                            ,@Scenario
                            ,@Hardware
+                           ,@HardwareVersion
                            ,@OperatingSystem
                            ,@Framework
                            ,@RuntimeStore
@@ -949,6 +959,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
+                    p.AddWithValue("@HardwareVersion", hardwareVersion);
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);

@@ -18,6 +18,8 @@ namespace Benchmarks.ServerJob
         [JsonConverter(typeof(StringEnumConverter))]
         public Hardware? Hardware { get; set; }
 
+        public string HardwareVersion { get; set; }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public OperatingSystem? OperatingSystem { get; set; }
 
