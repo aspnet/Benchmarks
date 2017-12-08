@@ -7,6 +7,14 @@ if [ -z server_ip ]
 then
     # tries to get the ip from the available NICs, but it's recommended to set it manually to use the fastest one
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+
+    echo "Using server_ip=$server_ip"
+fi
+
+if [ -z hardware_version ]
+then
+    echo "harware_version needs to be set"
+    exit 1
 fi
 
 if [ -e /var/log/waagent.log ]
@@ -40,6 +48,7 @@ then
         /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
         -n $server_ip \
         --hardware $hardware \
+        --hardware-version $hardware_version \
         $postgresql  \
         $mysql  \
         $mssql \

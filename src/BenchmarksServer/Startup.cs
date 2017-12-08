@@ -42,6 +42,7 @@ namespace BenchmarkServer
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
+        public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
 
         static Startup()
@@ -125,6 +126,8 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
+            var hardwareVersionOption = app.Option("--hardware-version", "Hardware version (e.g, D3V2, Z420, ...).  Required.",
+                CommandOptionType.SingleValue);
             var databaseOption = app.Option("-d|--database", "Database (PostgreSQL, SqlServer, MySql or MongoDb).",
                 CommandOptionType.SingleValue);
             var noCleanupOption = app.Option("--no-cleanup",
@@ -160,6 +163,15 @@ namespace BenchmarkServer
                 if (mongoDbConnectionStringOption.HasValue())
                 {
                     ConnectionStrings[Database.MongoDb] = mongoDbConnectionStringOption.Value();
+                }
+                if (hardwareVersionOption.HasValue() && !string.IsNullOrWhiteSpace(hardwareVersionOption.Value()))
+                {
+                    HardwareVersion = hardwareVersionOption.Value();
+                }
+                else
+                {
+                    Console.WriteLine("Option --hardware-version is required.");
+                    return 3;
                 }
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
