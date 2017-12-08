@@ -959,8 +959,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
-                    p.AddWithValue("@HardwareVersion",
-                        string.IsNullOrEmpty(hardwareVersion) ? (object)DBNull.Value : hardwareVersion);
+                    p.AddWithValue("@HardwareVersion", hardwareVersion);
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);
