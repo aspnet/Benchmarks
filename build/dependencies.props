@@ -5,17 +5,21 @@
     <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
-    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
-    <NETCoreAppImplicitPackageVersion>2.0.0-*</NETCoreAppImplicitPackageVersion>
+    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
+    <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26016-05</MicrosoftNETCoreApp21PackageVersion>
     <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
+    <DefaultTargetFramework>netcoreapp2.0</DefaultTargetFramework>
 
     <!--
       Following properties are specific to src/Benchmarks/Benchmarks.csproj.
       Separate to ease testing of earlier releases.
     -->
+    <BenchmarksTargetFramework>$(DefaultTargetFramework)</BenchmarksTargetFramework>
     <BenchmarksAspNetCoreVersion>$(AspNetCoreVersion)</BenchmarksAspNetCoreVersion>
-    <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
+    <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
     <MongoDbVersion>2.*</MongoDbVersion>
     <DapperVersion>1.*</DapperVersion>

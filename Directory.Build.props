@@ -5,7 +5,6 @@
 
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="build\compiler.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>

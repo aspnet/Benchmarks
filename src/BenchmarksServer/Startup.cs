@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -31,8 +30,11 @@ namespace BenchmarkServer
     {
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
-        private const string _buildToolsRepoUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/scripts/bootstrapper/";
-        private static readonly string[] _buildToolsFiles = new string[] { "build.cmd", "build.sh", "run.cmd", "run.ps1", "run.sh" };
+        private static readonly string _dotnetInstallRepoUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/";
+        private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
+        private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
+        private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
+
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
@@ -531,11 +533,6 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarkedDir != null);
 
-            // on windows dotnet is installed into subdirectory of 'dotnetHome' so we have to append 'x64'
-            string dotnetExeLocation = OperatingSystem == OperatingSystem.Windows
-                ? Path.Combine(dotnetHome, "x64")
-                : dotnetHome;
-
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
@@ -543,7 +540,7 @@ namespace BenchmarkServer
                 // for backward compatibility with aspnet/KoreBuild
                 ["DOTNET_INSTALL_DIR"] = dotnetHome,
                 // temporary for custom compiler to find right dotnet
-                ["PATH"] = dotnetExeLocation + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
+                ["PATH"] = dotnetHome + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
             // Source dependencies are always built using KoreBuild
@@ -562,11 +559,30 @@ namespace BenchmarkServer
 
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
+            string targetFramework = "netcoreapp2.0";
+            string runtimeFrameworkVersion = "2.0.3";
+
+            // Downloading latest SDK version
+            var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
+            await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5);
+            var sdkVersion = File.ReadAllText(sdkVersionPath);
+            Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+                
+            var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
+            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
+            var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
+                .Element("PropertyGroup")
+                .Element("MicrosoftNETCoreApp21PackageVersion")
+                .Value;
+            Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
 
             // Defines which SDK will be installed. Using "" downloads the latest SDK.
             if (job.AspNetCoreVersion == "2.1.0-*")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "";
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  }");
+                targetFramework = "netcoreapp2.1";
+                runtimeFrameworkVersion = "2.1.0-*";
             }
             else
             {
@@ -578,15 +594,37 @@ namespace BenchmarkServer
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                ProcessUtil.Run("cmd", "/c build.cmd /t:noop",
+                // Install latest stable 2.0 SDK version (and associated runtime)
+                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                // Install latest SDK version (and associated runtime)
+                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion}",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                // Install runtime required by coherence universe
+                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {latestRuntimeVersion} -SharedRuntime",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
             }
             else
             {
-                ProcessUtil.Run("/usr/bin/env", "bash build.sh /t:noop",
+                // Install latest stable 2.0 SDK version (and associated runtime)
+                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
+
+                // Install latest SDK version (and associated runtime)
+                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion}",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                // Install runtime required by coherence universe
+                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {latestRuntimeVersion} --shared-runtime",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);                
             }
 
             // Build and Restore
@@ -598,7 +636,8 @@ namespace BenchmarkServer
             var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksRuntimeFrameworkVersion=2.0.0 ";
+                $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
+                $"/p:BenchmarksTargetFramework={targetFramework} ";
 
             ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}",
                 workingDirectory: benchmarkedApp,
@@ -634,9 +673,9 @@ namespace BenchmarkServer
 
             const int maxRetries = 5;
 
-            foreach (var file in _buildToolsFiles)
+            foreach (var file in _dotnetInstallPaths)
             {
-                var url = _buildToolsRepoUrl + file;
+                var url = _dotnetInstallRepoUrl + file;
 
                 // If any of the files completely fails to download the entire thing will fail
                 var path = Path.Combine(buildToolsPath, file);
@@ -840,7 +879,7 @@ namespace BenchmarkServer
         private static string GetDotNetExecutable(string dotnetHome)
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Path.Combine(dotnetHome, RuntimeInformation.ProcessArchitecture.ToString(), "dotnet.exe")
+                ? Path.Combine(dotnetHome, "dotnet.exe")
                 : Path.Combine(dotnetHome, "dotnet");
         }
 

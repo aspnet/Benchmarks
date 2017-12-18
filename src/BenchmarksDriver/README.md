@@ -126,7 +126,8 @@ Options:
   BenchmarksAspNetCoreVersion                       Set to the value of --aspnetCoreVersion
   BenchmarksNETStandardImplicitPackageVersion       Set to the value of --aspnetCoreVersion
   BenchmarksNETCoreAppImplicitPackageVersion        Set to the value of --aspnetCoreVersion
-  BenchmarksRuntimeFrameworkVersion                 Set to 2.0.0
+  BenchmarksRuntimeFrameworkVersion                 Set to 2.0.3 or 2.1.0-*
+  BenchmarksTargetFramework                         Set to netcoreapp2.0 or netcoreapp2.1
 ```
 
 ### Sample project file 
@@ -137,7 +138,7 @@ This demonstrate how `msbuild` parameters can be used in a benchmarked applicati
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
