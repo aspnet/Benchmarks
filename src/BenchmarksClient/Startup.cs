@@ -143,9 +143,10 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
-                        job.RunningSince = DateTime.UtcNow;
 
                         MeasureFirstRequestLatency(job);
+
+                        job.RunningSince = DateTime.UtcNow;
 
                         process = StartProcess(job);
                     }
