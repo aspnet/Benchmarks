@@ -141,11 +141,11 @@ namespace BenchmarkClient
 
                         Debug.Assert(process == null);
 
+                        MeasureFirstRequestLatency(job);
+
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
                         job.RunningSince = DateTime.UtcNow;
-
-                        MeasureFirstRequestLatency(job);
 
                         process = StartProcess(job);
                     }
@@ -214,6 +214,8 @@ namespace BenchmarkClient
                 job.LatencyFirstRequest = stopwatch.Elapsed;
             }
 
+            Log(job.LatencyFirstRequest.ToString());
+
             Log("Measuring single connection latency");
 
             for (var i = 0; i < 10; i++)
@@ -228,6 +230,8 @@ namespace BenchmarkClient
                     job.LatencyNoLoad = stopwatch.Elapsed;
                 }
             }
+
+            Log(job.LatencyNoLoad.ToString());
         }
 
         private static Process StartProcess(ClientJob job)
