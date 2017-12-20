@@ -116,15 +116,13 @@ namespace Benchmarks
                         }
                     });
                 }
-#if DOTNET210
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseSockets();
                 }
-#endif
                 else if (string.IsNullOrEmpty(kestrelTransport))
                 {
-                    // Use default transport
+                    throw new InvalidOperationException($"Transport must be specified");
                 }
                 else
                 {

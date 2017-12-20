@@ -587,9 +587,7 @@ namespace BenchmarkServer
             else
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-
-                // Generate a global.json file in the local repository to force which SDK the application is using.
-                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{ \"sdk\": { \"version\": \"2.0.0\" } }");
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  }");
             }
 
             if (OperatingSystem == OperatingSystem.Windows)
