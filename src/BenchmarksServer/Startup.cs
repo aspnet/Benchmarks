@@ -652,9 +652,52 @@ namespace BenchmarkServer
                 // This flag is necessary when using the .All metapackage
                 buildParameters += " /p:PublishWithAspNetCoreTargetManifest=false";
 
-                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {Path.Combine(benchmarkedApp, "published")} {buildParameters}",
+                var outputFolder = Path.Combine(benchmarkedApp, "published");
+
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
                     workingDirectory: benchmarkedApp,
                     environmentVariables: env);
+
+                // Copy all output attachments
+                foreach (var attachment in job.Attachments)
+                {
+                    if (attachment.Location == AttachmentLocation.Output)
+                    {
+                        var filename = Path.Combine(outputFolder, attachment.Filename);
+
+                        Log.WriteLine($"Creating output file: {filename}");
+
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                    }
+                }
+            }
+
+            // Copy all runtime attachments in all runtime folders
+            foreach (var attachment in job.Attachments)
+            {
+                var runtimeRoot = Path.Combine(dotnetHome, "shared", "Microsoft.NETCore.App");
+
+                foreach (var runtimeFolder in Directory.GetDirectories(runtimeRoot))
+                {
+                    if (attachment.Location == AttachmentLocation.Runtime)
+                    {
+                        var filename = Path.Combine(runtimeFolder, attachment.Filename);
+
+                        Log.WriteLine($"Creating runtime file: {filename}");
+
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                    }
+                }
             }
 
             return benchmarkedDir;

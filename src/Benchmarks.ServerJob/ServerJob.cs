@@ -60,5 +60,7 @@ namespace Benchmarks.ServerJob
 
         public bool UseRuntimeStore { get; set; }
         public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(2);
+
+        public Attachment[] Attachments { get; set; }
     }
 }
