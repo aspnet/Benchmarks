@@ -356,6 +356,8 @@ namespace BenchmarksDriver
                                 attachment.Content = File.ReadAllBytes(jobDefinitionPathOrUrl);
                             }
 
+                            attachment.Filename = Path.GetFileName(attachment.Filename);
+
                             if (outputFileSegments.Length > 1)
                             {
                                 attachment.Filename = Path.Combine(outputFileSegments[1], Path.GetFileName(attachment.Filename)).Replace("\\", "/");
@@ -392,9 +394,11 @@ namespace BenchmarksDriver
                                 attachment.Content = File.ReadAllBytes(jobDefinitionPathOrUrl);
                             }
 
+                            attachment.Filename = Path.GetFileName(attachment.Filename);
+
                             if (runtimeFileSegments.Length > 1)
                             {
-                                attachment.Filename = Path.Combine(runtimeFileSegments[1], Path.GetFileName(attachment.Filename)).Replace("\\", "/");
+                                attachment.Filename = Path.Combine(runtimeFileSegments[1], attachment.Filename).Replace("\\", "/");
                             }
 
                             attachments.Add(attachment);
