@@ -13,6 +13,8 @@ Options:
   -v|--verbose           Verbose output
   --session              A logical identifier to group related jobs.
   --description          The description of the job.
+  -i|--iterations        The number of iterations.
+  -x|--exclude           The number of best and worst and jobs to skip.  
   --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.
   -f|--connectionFilter  Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
@@ -28,7 +30,8 @@ Options:
   --useRuntimeStore      Runs the benchmarks using the runtime store if available.
   --timeout              The max delay to wait to the job to run. Default is 00:02:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png|wwwroot\picture.png"
-  --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  --clientThreads        Number of threads used by client. Default is 32.
+  --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
+  --clientThreads        Number of threads used by client. Default is 32.
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
   --header               Header added to request.
