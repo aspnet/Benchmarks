@@ -675,6 +675,7 @@ namespace BenchmarkServer
             {
                 dotnetDir = GetTempDir();
 
+                Log.WriteLine($"Cloning dotnet folder for customization in {dotnetDir}");
                 CloneDir(dotnetHome, dotnetDir);
             }
 

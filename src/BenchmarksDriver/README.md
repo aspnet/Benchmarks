@@ -6,36 +6,40 @@
 Usage: BenchmarksDriver [options]
 
 Options:
-  -?|-h|--help                    Show help information
-  -c|--client                     URL of benchmark client
-  -s|--server                     URL of benchmark server
-  -q|--sql                        Connection string of SQL Database to store results.
-  -v|--verbose                    Verbose output
-  -f|--connectionFilter           Assembly-qualified name of the ConnectionFilter
-  -j|--jobs                       The path or url to the jobs definition.
-  --kestrelThreadCount            Maps to KestrelServerOptions.ThreadCount.
-  -n|--scenario                   Benchmark scenario to run
-  -m|--scheme                     Scheme (http or https). Default is http.
-  -o|--source                     Source dependency. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
-  -w|--webHost                    WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
-  --aspnetCoreVersion             ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*). Default is 2.1.0-*.
-  --session                       A logical identifier to group related jobs.
-  --description                   The description of the job.
-  --clientThreads                 Number of threads used by client. Default is 32.
-  --connections                   Number of connections used by client. Default is 256.
-  --duration                      Duration of test in seconds. Default is 15.
-  --headers                       Predefined set of headers (Plaintext, Json, Html, None). Default is Html.
-  --header                        Header added to request. (e.g., "Host=localhost")
-  --method                        HTTP method of the request. Default is GET.
-  --pipelineDepth                 Depth of pipeline used by client.
-  --script                        Name of the script used by wrk.
-  --path                          Relative URL where the client should send requests.
-  --querystring                   Querystring to add to the requests. (e.g., "?page=1")
-  --arguments                     Arguments to pass to the application. (e.g., "--raw true")
-  --repository                    Project repository. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
-  --project                       Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)
-  --useRuntimeStore               Runs the benchmarks using the runtime store if available.
-  --timeout                       The max delay to wait to the job to run. Default is 00:02:00.
+  -?|-h|--help           Show help information
+  -c|--client            URL of benchmark client
+  -s|--server            URL of benchmark server
+  -q|--sql               Connection string of SQL Database to store results
+  -v|--verbose           Verbose output
+  --session              A logical identifier to group related jobs.
+  --description          The description of the job.
+  --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.
+  -f|--connectionFilter  Assembly-qualified name of the ConnectionFilter
+  --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
+  -n|--scenario          Benchmark scenario to run
+  -m|--scheme            Scheme (http or https).  Default is http.
+  -o|--source            Source dependency. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
+  -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
+  --aspnetCoreVersion    ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.
+  --arguments            Arguments to pass to the application. (e.g., "--raw true")
+  --port                 The port used to request the benchmarked application. Default is 5000.
+  -r|--repository        Git repository containing the project to test.
+  --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
+  --useRuntimeStore      Runs the benchmarks using the runtime store if available.
+  --timeout              The max delay to wait to the job to run. Default is 00:02:00.
+  --outputFile           Output file attachment. Format is 'filepath[|destination]'. FilePath can be a URL. e.g., "c:\build\Microsoft.AspNetCore.Mvc.dll", "c:\files\samples\picture.png|wwwroot\picture.png"
+  --runtimeFile          Runtime file attachment. Format is 'filepath', e.g., "c:\build\System.Net.Security.dll"
+  --clientThreads        Number of threads used by client. Default is 32.
+  --connections          Number of connections used by client. Default is 256.
+  --duration             Duration of test in seconds. Default is 15.
+  --header               Header added to request.
+  --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
+  --method               HTTP method of the request. Default is GET.
+  --script               Name of the script used by wrk.
+  --pipelineDepth        Depth of pipeline used by client.
+  --path                 Relative URL where the client should send requests.
+  --querystring          Querystring to add to the requests. (e.g., "?page=1")
+  -j|--jobs              The path or url to the jobs definition.
 ```
 
 ### Examples
