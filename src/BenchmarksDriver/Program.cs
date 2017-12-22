@@ -361,7 +361,7 @@ namespace BenchmarksDriver
 
                             if (outputFileSegments.Length > 1)
                             {
-                                attachment.Filename = outputFileSegments[1].Replace("\\", "/");
+                                attachment.Filename = outputFileSegments[1];
                             }
                             else
                             {
@@ -403,7 +403,7 @@ namespace BenchmarksDriver
 
                             if (runtimeFileSegments.Length > 1)
                             {
-                                attachment.Filename = runtimeFileSegments[1].Replace("\\", "/");
+                                attachment.Filename = runtimeFileSegments[1];
                             }
                             else
                             {

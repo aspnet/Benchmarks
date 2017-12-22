@@ -717,7 +717,7 @@ namespace BenchmarkServer
                 {
                     if (attachment.Location == AttachmentLocation.Output)
                     {
-                        var filename = Path.Combine(outputFolder, attachment.Filename);
+                        var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
 
                         Log.WriteLine($"Creating output file: {filename}");
 
@@ -740,7 +740,7 @@ namespace BenchmarkServer
                 {
                     if (attachment.Location == AttachmentLocation.Runtime)
                     {
-                        var filename = Path.Combine(runtimeFolder, attachment.Filename);
+                        var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
 
                         Log.WriteLine($"Creating runtime file: {filename}");
 
