@@ -86,12 +86,13 @@ namespace BenchmarksDriver
             var timeoutOption = app.Option("--timeout",
                 "The max delay to wait to the job to run. Default is 00:02:00.", CommandOptionType.SingleValue);
             var outputFileOption = app.Option("--outputFile",
-                "Output file attachment. Format is 'filepath[|destination]'. FilePath can be a URL. e.g., " +
-                "\"c:\\build\\Microsoft.AspNetCore.Mvc.dll\", \"c:\\files\\samples\\picture.png|wwwroot\\picture.png\"",
+                "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
+                "\"--outputFile c:\\files\\samples\\picture.png|wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             var runtimeFileOption = app.Option("--runtimeFile",
-                "Runtime file attachment. Format is 'filepath', e.g., " +
-                "\"c:\\build\\System.Net.Security.dll\"",
+                "Runtime file attachment. Format is 'path[;destination]', e.g., " +
+                "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -343,7 +344,7 @@ namespace BenchmarksDriver
 
                         try
                         {
-                            var outputFileSegments = outputFile.Split('|');
+                            var outputFileSegments = outputFile.Split(';');
 
                             attachment.Filename = outputFileSegments[0];
                             
@@ -385,7 +386,7 @@ namespace BenchmarksDriver
 
                         try
                         {
-                            var runtimeFileSegments = runtimeFile.Split('|');
+                            var runtimeFileSegments = runtimeFile.Split(';');
 
                             attachment.Filename = runtimeFileSegments[0];
 

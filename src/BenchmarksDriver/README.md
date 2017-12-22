@@ -27,9 +27,8 @@ Options:
   --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
   --useRuntimeStore      Runs the benchmarks using the runtime store if available.
   --timeout              The max delay to wait to the job to run. Default is 00:02:00.
-  --outputFile           Output file attachment. Format is 'filepath[|destination]'. FilePath can be a URL. e.g., "c:\build\Microsoft.AspNetCore.Mvc.dll", "c:\files\samples\picture.png|wwwroot\picture.png"
-  --runtimeFile          Runtime file attachment. Format is 'filepath', e.g., "c:\build\System.Net.Security.dll"
-  --clientThreads        Number of threads used by client. Default is 32.
+  --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png|wwwroot\picture.png"
+  --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  --clientThreads        Number of threads used by client. Default is 32.
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
   --header               Header added to request.
