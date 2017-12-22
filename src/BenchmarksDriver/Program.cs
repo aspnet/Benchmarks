@@ -373,15 +373,15 @@ namespace BenchmarksDriver
 
                 if (runtimeFileOption.HasValue())
                 {
-                    foreach (var outputFile in outputFileOption.Values)
+                    foreach (var runtimeFile in runtimeFileOption.Values)
                     {
                         var attachment = new Attachment { Location = AttachmentLocation.Runtime };
 
                         try
                         {
-                            var outputFileSegments = outputFile.Split('|');
+                            var runtimeFileSegments = runtimeFile.Split('|');
 
-                            attachment.Filename = outputFileSegments[0];
+                            attachment.Filename = runtimeFileSegments[0];
 
                             if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                             {
@@ -392,9 +392,9 @@ namespace BenchmarksDriver
                                 attachment.Content = File.ReadAllBytes(jobDefinitionPathOrUrl);
                             }
 
-                            if (outputFileSegments.Length > 1)
+                            if (runtimeFileSegments.Length > 1)
                             {
-                                attachment.Filename = Path.Combine(outputFileSegments[1], Path.GetFileName(attachment.Filename)).Replace("\\", "/");
+                                attachment.Filename = Path.Combine(runtimeFileSegments[1], Path.GetFileName(attachment.Filename)).Replace("\\", "/");
                             }
 
                             attachments.Add(attachment);
@@ -406,6 +406,8 @@ namespace BenchmarksDriver
                         }
                     }
                 }
+
+                serverJob.Attachments = attachments.ToArray();
 
                 foreach (var source in sourceOption.Values)
                 {
