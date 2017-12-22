@@ -349,18 +349,22 @@ namespace BenchmarksDriver
                             
                             if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                             {
-                                attachment.Content = _httpClient.GetByteArrayAsync(jobDefinitionPathOrUrl).GetAwaiter().GetResult();
+                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
                             }
                             else
                             {
-                                attachment.Content = File.ReadAllBytes(jobDefinitionPathOrUrl);
+                                attachment.Content = File.ReadAllBytes(attachment.Filename);
                             }
 
                             attachment.Filename = Path.GetFileName(attachment.Filename);
 
                             if (outputFileSegments.Length > 1)
                             {
-                                attachment.Filename = Path.Combine(outputFileSegments[1], Path.GetFileName(attachment.Filename)).Replace("\\", "/");
+                                attachment.Filename = outputFileSegments[1].Replace("\\", "/");
+                            }
+                            else
+                            {
+                                attachment.Filename = Path.GetFileName(attachment.Filename);
                             }
 
                             attachments.Add(attachment);
@@ -387,18 +391,22 @@ namespace BenchmarksDriver
 
                             if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                             {
-                                attachment.Content = _httpClient.GetByteArrayAsync(jobDefinitionPathOrUrl).GetAwaiter().GetResult();
+                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
                             }
                             else
                             {
-                                attachment.Content = File.ReadAllBytes(jobDefinitionPathOrUrl);
+                                attachment.Content = File.ReadAllBytes(attachment.Filename);
                             }
 
                             attachment.Filename = Path.GetFileName(attachment.Filename);
 
                             if (runtimeFileSegments.Length > 1)
                             {
-                                attachment.Filename = Path.Combine(runtimeFileSegments[1], attachment.Filename).Replace("\\", "/");
+                                attachment.Filename = runtimeFileSegments[1].Replace("\\", "/");
+                            }
+                            else
+                            {
+                                attachment.Filename = Path.GetFileName(attachment.Filename);
                             }
 
                             attachments.Add(attachment);
