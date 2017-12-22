@@ -396,7 +396,7 @@ namespace BenchmarkServer
                                 disposed = true;
                             }
 
-                            if (_cleanup && process != null)
+                            if (process != null)
                             {
                                 // TODO: Replace with managed xplat version of kill process tree
                                 if (OperatingSystem == OperatingSystem.Windows)
@@ -424,8 +424,9 @@ namespace BenchmarkServer
                             if (_cleanup && tempDir != null)
                             {
                                 DeleteDir(tempDir);
-                                tempDir = null;
                             }
+
+                            tempDir = null;
 
                             _jobs.Remove(job.Id);
                         }
