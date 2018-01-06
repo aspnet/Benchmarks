@@ -315,10 +315,17 @@ namespace BenchmarkServer
 
                                         var now = DateTime.UtcNow;
 
-                                        // Clean the job in case the driver that created the job was stopped, or the job is not running
+                                        // Clean the job in case the client job is not running
                                         if (now - startMonitorTime > job.Timeout)
                                         {
                                             Log.WriteLine($"Job timed out after {job.Timeout}. Halting job.");
+                                            job.State = ServerState.Deleting;
+                                        }
+
+                                        // Clean the job in case the driver is not running
+                                        if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                                        {
+                                            Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
                                             job.State = ServerState.Deleting;
                                         }
 

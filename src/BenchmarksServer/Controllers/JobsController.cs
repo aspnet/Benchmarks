@@ -39,6 +39,9 @@ namespace BenchmarkServer.Controllers
             }
             else
             {
+                // Mark when the job was last read to notify that the driver is still connected
+                job.LastDriverCommunicationUtc = DateTime.UtcNow;
+
                 return new ObjectResult(RemoveAttachmentContent(job));
             }
         }

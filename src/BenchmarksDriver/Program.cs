@@ -50,6 +50,10 @@ namespace BenchmarksDriver
                 "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             var descriptionOption = app.Option("--description",
                 "The description of the job.", CommandOptionType.SingleValue);
+            var iterationsOption = app.Option("-i|--iterations",
+                "The number of iterations.", CommandOptionType.SingleValue);
+            var excludeOption = app.Option("-x|--exclude",
+                "The number of best and worst and jobs to skip.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -94,6 +98,7 @@ namespace BenchmarksDriver
                 "Runtime file attachment. Format is 'path[;destination]', e.g., " +
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
+
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
@@ -150,6 +155,8 @@ namespace BenchmarksDriver
                 var client = clientOption.Value();
                 var headers = Headers.Html;
                 var jobDefinitionPathOrUrl =  jobsOptions.Value();
+                var iterations = 1;
+                var exclude = 0;
 
                 var sqlConnectionString = sqlConnectionStringOption.Value();
 
@@ -159,7 +166,9 @@ namespace BenchmarksDriver
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client) ||
-                    (timeoutOption.HasValue() && !TimeSpan.TryParse(timeoutOption.Value(), result: out TimeSpan timeoutValue)))
+                    (timeoutOption.HasValue() && !TimeSpan.TryParse(timeoutOption.Value(), result: out TimeSpan timeoutValue)) ||
+                    (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
+                    (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
                 {
                     app.ShowHelp();
                     return 2;
@@ -517,7 +526,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude).Result;
             });
 
             return app.Execute(args);
@@ -529,7 +538,9 @@ namespace BenchmarksDriver
             string sqlConnectionString,
             ServerJob serverJob,
             string session,
-            string description)
+            string description,
+            int iterations,
+            int exclude)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -537,275 +548,353 @@ namespace BenchmarksDriver
             HttpResponseMessage response = null;
             string responseContent = null;
 
-            try
+            var results = new List<Statistics>();
+            ClientJob clientJob = null;
+
+            var content = JsonConvert.SerializeObject(serverJob);
+
+            Log($"Running session '{session}' with description '{description}'");
+
+            for (var i = 1; i <= iterations; i++)
             {
-                Log($"Running session '{session}' with description '{description}'");
-                Log($"Starting scenario {scenario} on benchmark server...");
-
-                var content = JsonConvert.SerializeObject(serverJob);
-                LogVerbose($"POST {serverJobsUri} {content}...");
-
-                response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
-                responseContent = await response.Content.ReadAsStringAsync();
-                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                response.EnsureSuccessStatusCode();
-
-                serverJobUri = new Uri(serverUri, response.Headers.Location);
-
-                var serverBenchmarkUri = (string)null;
-                while (true)
+                if (iterations > 1)
                 {
-                    LogVerbose($"GET {serverJobUri}...");
-                    response = await _httpClient.GetAsync(serverJobUri);
-                    responseContent = await response.Content.ReadAsStringAsync();
-
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                    if (!serverJob.Hardware.HasValue)
-                    {
-                        throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
-                    }
-
-                    if (String.IsNullOrWhiteSpace(serverJob.HardwareVersion))
-                    {
-                        throw new InvalidOperationException("Server is required to set ServerJob.HardwareVersion.");
-                    }
-
-                    if (!serverJob.OperatingSystem.HasValue)
-                    {
-                        throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
-                    }
-
-                    if (serverJob.State == ServerState.Running)
-                    {
-                        serverBenchmarkUri = serverJob.Url;
-                        break;
-                    }
-                    else if (serverJob.State == ServerState.Failed)
-                    {
-                        throw new InvalidOperationException("Server job failed");
-                    }
-                    else if (serverJob.State == ServerState.NotSupported)
-                    {
-                        Log("Server does not support this job configuration.");
-                        return 0;
-                    }
-                    else
-                    {
-                        await Task.Delay(1000);
-                    }
+                    Log($"Job {i} of {iterations}");
                 }
-                
 
-                Log("Warmup");
-                await RunClientJob(scenario, clientUri, serverBenchmarkUri);
-
-                Log("Benchmark");
-                var clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
-
-                if (clientJob.State == ClientState.Completed)
+                try
                 {
-                    // Load latest state of server job
-                    LogVerbose($"GET {serverJobUri}...");
-                    response = await _httpClient.GetAsync(serverJobUri);
+                    Log($"Starting scenario {scenario} on benchmark server...");
+
+                    LogVerbose($"POST {serverJobsUri} {content}...");
+
+                    response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
                     responseContent = await response.Content.ReadAsStringAsync();
-
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                    var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
-                    var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
-
-                    Log($"RequestsPerSecond:           {clientJob.RequestsPerSecond}");
-                    Log($"Latency on load (ms):        {clientJob.Latency.Average.TotalMilliseconds}");
-                    Log($"Max CPU (%):                 {cpu}");
-                    Log($"WorkingSet (MB):             {workingSet}");
-                    Log($"Startup Main (ms):           {serverJob.StartupMainMethod.TotalMilliseconds}");
-                    Log($"First Request (ms):          {clientJob.LatencyFirstRequest.TotalMilliseconds}");
-                    Log($"Latency (ms):                {clientJob.LatencyNoLoad.TotalMilliseconds}");
-                    Log($"Socket Errors:               {clientJob.SocketErrors}");
-                    Log($"Bad Responses:               {clientJob.BadResponses}");
-
-                    if (!string.IsNullOrWhiteSpace(sqlConnectionString))
-                    {
-                        Log("Writing results to SQL...");
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "RequestsPerSecond",
-                            value: clientJob.RequestsPerSecond);
-                            
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Startup Main (ms)",
-                            value: serverJob.StartupMainMethod.TotalMilliseconds);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "First Request (ms)",
-                            value: clientJob.LatencyFirstRequest.TotalMilliseconds);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "WorkingSet (MB)",
-                            value: workingSet);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "CPU",
-                            value: cpu);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            session: session,
-                            description: description,
-                            path: serverJob.Path,
-                            dimension: "Latency (ms)",
-                            value: clientJob.LatencyNoLoad.TotalMilliseconds);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "LatencyAverage (ms)",
-                            value: clientJob.Latency.Average.TotalMilliseconds);
-                        
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Latency50Percentile (ms)",
-                            value: clientJob.Latency.Within50thPercentile.TotalMilliseconds);
-                        
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Latency75Percentile (ms)",
-                            value: clientJob.Latency.Within75thPercentile.TotalMilliseconds);
-                        
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Latency90Percentile (ms)",
-                            value: clientJob.Latency.Within90thPercentile.TotalMilliseconds);
-                        
-                        await WriteJobsToSql(
-                            serverJob: serverJob, 
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Latency99Percentile (ms)",
-                            value: clientJob.Latency.Within99thPercentile.TotalMilliseconds);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob,
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "SocketErrors",
-                            value: clientJob.SocketErrors);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob,
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "BadResponses",
-                            value: clientJob.BadResponses);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob,
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "TotalRequests",
-                            value: clientJob.Requests);
-
-                        await WriteJobsToSql(
-                            serverJob: serverJob,
-                            clientJob: clientJob,
-                            connectionString: sqlConnectionString,
-                            path: serverJob.Path,
-                            session: session,
-                            description: description,
-                            dimension: "Duration (ms)",
-                            value: clientJob.ActualDuration.TotalMilliseconds);
-                    }
-                }
-            }
-            finally
-            {
-                if (serverJobUri != null)
-                {
-                    Log($"Stopping scenario {scenario} on benchmark server...");
-
-                    LogVerbose($"DELETE {serverJobUri}...");
-                    response = _httpClient.DeleteAsync(serverJobUri).Result;
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    response.EnsureSuccessStatusCode();
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    serverJobUri = new Uri(serverUri, response.Headers.Location);
+
+                    var serverBenchmarkUri = (string)null;
+                    while (true)
                     {
-                        Log($@"Server job was not found, it must have been aborted. Possible cause:
+                        LogVerbose($"GET {serverJobUri}...");
+                        response = await _httpClient.GetAsync(serverJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                        if (!serverJob.Hardware.HasValue)
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
+                        }
+
+                        if (String.IsNullOrWhiteSpace(serverJob.HardwareVersion))
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.HardwareVersion.");
+                        }
+
+                        if (!serverJob.OperatingSystem.HasValue)
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
+                        }
+
+                        if (serverJob.State == ServerState.Running)
+                        {
+                            serverBenchmarkUri = serverJob.Url;
+                            break;
+                        }
+                        else if (serverJob.State == ServerState.Failed)
+                        {
+                            throw new InvalidOperationException("Server job failed");
+                        }
+                        else if (serverJob.State == ServerState.NotSupported)
+                        {
+                            Log("Server does not support this job configuration.");
+                            return 0;
+                        }
+                        else
+                        {
+                            await Task.Delay(1000);
+                        }
+                    }
+
+
+                    Log("Warmup");
+                    clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+
+                    Log("Benchmark");
+
+
+                    clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+
+                    if (clientJob.State == ClientState.Completed)
+                    {
+                        // Load latest state of server job
+                        LogVerbose($"GET {serverJobUri}...");
+                        response = await _httpClient.GetAsync(serverJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                        var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
+                        var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
+
+                        var statistics = new Statistics
+                        {
+                            RequestsPerSecond = clientJob.RequestsPerSecond,
+                            LatencyOnLoad = clientJob.Latency.Average.TotalMilliseconds,
+                            Cpu = cpu,
+                            WorkingSet = workingSet,
+                            StartupMain = serverJob.StartupMainMethod.TotalMilliseconds,
+                            FirstRequest = clientJob.LatencyFirstRequest.TotalMilliseconds,
+                            Latency = clientJob.LatencyNoLoad.TotalMilliseconds,
+                            SocketErrors = clientJob.SocketErrors,
+                            BadResponses = clientJob.BadResponses,
+
+                            LatencyAverage = clientJob.Latency.Average.TotalMilliseconds,
+                            Latency50Percentile = clientJob.Latency.Within50thPercentile.TotalMilliseconds,
+                            Latency75Percentile = clientJob.Latency.Within75thPercentile.TotalMilliseconds,
+                            Latency90Percentile = clientJob.Latency.Within90thPercentile.TotalMilliseconds,
+                            Latency99Percentile = clientJob.Latency.Within99thPercentile.TotalMilliseconds,
+                            TotalRequests = clientJob.Requests,
+                            Duration = clientJob.ActualDuration.TotalMilliseconds
+
+                        };
+
+                        results.Add(statistics);
+
+                        if (iterations > 1)
+                        {
+                            LogVerbose($"RequestsPerSecond:           {statistics.RequestsPerSecond}");
+                            LogVerbose($"Latency on load (ms):        {statistics.LatencyOnLoad}");
+                            LogVerbose($"Max CPU (%):                 {statistics.Cpu}");
+                            LogVerbose($"WorkingSet (MB):             {statistics.WorkingSet}");
+                            LogVerbose($"Startup Main (ms):           {statistics.StartupMain}");
+                            LogVerbose($"First Request (ms):          {statistics.FirstRequest}");
+                            LogVerbose($"Latency (ms):                {statistics.Latency}");
+                            LogVerbose($"Socket Errors:               {statistics.SocketErrors}");
+                            LogVerbose($"Bad Responses:               {statistics.BadResponses}");
+                        }
+                    }
+                }
+                finally
+                {
+                    if (serverJobUri != null)
+                    {
+                        Log($"Stopping scenario {scenario} on benchmark server...");
+
+                        LogVerbose($"DELETE {serverJobUri}...");
+                        response = _httpClient.DeleteAsync(serverJobUri).Result;
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        {
+                            Log($@"Server job was not found, it must have been aborted. Possible cause:
                             - Issue while cloning the repository (GitHub unresponsive)
                             - Issue while restoring (MyGet/NuGet unresponsive)
                             - Issue while building
                             - Issue while running (Timeout)"
-                        );
-                    }
+                            );
+                        }
 
-                    response.EnsureSuccessStatusCode();
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
+            }
+
+            if (results.Any())
+            {
+                var samples = results.OrderBy(x => x.RequestsPerSecond).Skip(exclude).SkipLast(exclude).ToList();
+
+                var average = new Statistics
+                {
+                    RequestsPerSecond = Math.Round(samples.Average(x => x.RequestsPerSecond)),
+                    LatencyOnLoad = Math.Round(samples.Average(x => x.LatencyOnLoad), 1),
+                    Cpu = Math.Round(samples.Average(x => x.Cpu)),
+                    WorkingSet = Math.Round(samples.Average(x => x.WorkingSet)),
+                    StartupMain = Math.Round(samples.Average(x => x.StartupMain)),
+                    FirstRequest = Math.Round(samples.Average(x => x.FirstRequest), 1),
+                    SocketErrors = Math.Round(samples.Average(x => x.SocketErrors)),
+                    BadResponses = Math.Round(samples.Average(x => x.BadResponses)),
+
+                    Latency = Math.Round(samples.Average(x => x.Latency), 1),
+                    LatencyAverage = Math.Round(samples.Average(x => x.LatencyAverage), 1),
+                    Latency50Percentile = Math.Round(samples.Average(x => x.Latency50Percentile), 1),
+                    Latency75Percentile = Math.Round(samples.Average(x => x.Latency75Percentile), 1),
+                    Latency90Percentile = Math.Round(samples.Average(x => x.Latency90Percentile), 1),
+                    Latency99Percentile = Math.Round(samples.Average(x => x.Latency99Percentile), 1),
+                    TotalRequests = Math.Round(samples.Average(x => x.TotalRequests)),
+                    Duration = Math.Round(samples.Average(x => x.Duration))
+                };
+
+                Log($"RequestsPerSecond:           {average.RequestsPerSecond}");
+                Log($"Latency on load (ms):        {average.LatencyOnLoad}");
+                Log($"Max CPU (%):                 {average.Cpu}");
+                Log($"WorkingSet (MB):             {average.WorkingSet}");
+                Log($"Startup Main (ms):           {average.StartupMain}");
+                Log($"First Request (ms):          {average.FirstRequest}");
+                Log($"Latency (ms):                {average.Latency}");
+                Log($"Socket Errors:               {average.SocketErrors}");
+                Log($"Bad Responses:               {average.BadResponses}");
+
+                if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+                {
+                    Log("Writing results to SQL...");
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "RequestsPerSecond",
+                        value: average.RequestsPerSecond);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Startup Main (ms)",
+                        value: average.StartupMain);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "First Request (ms)",
+                        value: average.FirstRequest);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "WorkingSet (MB)",
+                        value: average.WorkingSet);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "CPU",
+                        value: average.Cpu);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        session: session,
+                        description: description,
+                        path: serverJob.Path,
+                        dimension: "Latency (ms)",
+                        value: average.Latency);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "LatencyAverage (ms)",
+                        value: average.LatencyAverage);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency50Percentile (ms)",
+                        value: average.Latency50Percentile);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency75Percentile (ms)",
+                        value: average.Latency75Percentile);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency90Percentile (ms)",
+                        value: average.Latency90Percentile);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Latency99Percentile (ms)",
+                        value: average.Latency99Percentile);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "SocketErrors",
+                        value: average.SocketErrors);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "BadResponses",
+                        value: average.BadResponses);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "TotalRequests",
+                        value: average.TotalRequests);
+
+                    await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        connectionString: sqlConnectionString,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: "Duration (ms)",
+                        value: average.Duration);
                 }
             }
 
