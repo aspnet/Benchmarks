@@ -26,7 +26,7 @@ namespace BenchmarkServer.Controllers
 
         public IEnumerable<ServerJob> GetAll()
         {
-            return _jobs.GetAll().Select(PrepareJob);
+            return _jobs.GetAll().Select(RemoveAttachmentContent);
         }
 
         [HttpGet("{id}")]
@@ -42,7 +42,7 @@ namespace BenchmarkServer.Controllers
                 // Mark when the job was last read to notify that the driver is still connected
                 job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
-                return new ObjectResult(PrepareJob(job));
+                return new ObjectResult(RemoveAttachmentContent(job));
             }
         }
 
@@ -53,11 +53,6 @@ namespace BenchmarkServer.Controllers
                 job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
             {
                 return BadRequest();
-            }
-
-            if (job.Attachments != null && job.Attachments.Length > 0)
-            {
-
             }
 
             job.Hardware = Startup.Hardware;
@@ -90,7 +85,7 @@ namespace BenchmarkServer.Controllers
         /// <summary>
         /// Creates a cloned job by removing its attachments' content.
         /// </summary>
-        private ServerJob PrepareJob(ServerJob job)
+        private ServerJob RemoveAttachmentContent(ServerJob job)
         {
             var attachments = job.Attachments;
 
