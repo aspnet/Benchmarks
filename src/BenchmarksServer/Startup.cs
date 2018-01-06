@@ -322,7 +322,7 @@ namespace BenchmarkServer
                                             job.State = ServerState.Deleting;
                                         }
 
-                                        // Clean the job in case the driveris not running
+                                        // Clean the job in case the driver is not running
                                         if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
                                         {
                                             Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
