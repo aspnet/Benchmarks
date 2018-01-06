@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
-    <RuntimeFrameworkVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.0-*'">
