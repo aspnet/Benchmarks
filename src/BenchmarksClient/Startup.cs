@@ -208,7 +208,7 @@ namespace BenchmarkClient
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using (var response = _httpClient.SendAsync(CreateHttpMessage(job),).GetAwaiter().GetResult())
+            using (var response = _httpClient.SendAsync(CreateHttpMessage(job)).GetAwaiter().GetResult())
             {
                 var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 job.LatencyFirstRequest = stopwatch.Elapsed;
