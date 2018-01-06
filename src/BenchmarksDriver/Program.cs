@@ -85,7 +85,15 @@ namespace BenchmarksDriver
                 "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
             var timeoutOption = app.Option("--timeout",
                 "The max delay to wait to the job to run. Default is 00:02:00.", CommandOptionType.SingleValue);
-
+            var outputFileOption = app.Option("--outputFile",
+                "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
+                "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
+                CommandOptionType.MultipleValue);
+            var runtimeFileOption = app.Option("--runtimeFile",
+                "Runtime file attachment. Format is 'path[;destination]', e.g., " +
+                "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
+                CommandOptionType.MultipleValue);
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
@@ -325,6 +333,94 @@ namespace BenchmarksDriver
                 {
                     serverJob.Timeout = timeoutValue;
                 }
+
+                var attachments = new List<Attachment>();
+
+                if (outputFileOption.HasValue())
+                {
+                    foreach (var outputFile in outputFileOption.Values)
+                    {
+                        var attachment = new Attachment { Location = AttachmentLocation.Output };
+
+                        try
+                        {
+                            var outputFileSegments = outputFile.Split(';');
+
+                            attachment.Filename = outputFileSegments[0];
+                            
+                            if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            {
+                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
+                            }
+                            else
+                            {
+                                attachment.Content = File.ReadAllBytes(attachment.Filename);
+                            }
+
+                            attachment.Filename = Path.GetFileName(attachment.Filename);
+
+                            if (outputFileSegments.Length > 1)
+                            {
+                                attachment.Filename = outputFileSegments[1];
+                            }
+                            else
+                            {
+                                attachment.Filename = Path.GetFileName(attachment.Filename);
+                            }
+
+                            attachments.Add(attachment);
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"Output File '{attachment.Filename}' could not be loaded.");
+                            return 8;
+                        }
+                    }
+                }
+
+                if (runtimeFileOption.HasValue())
+                {
+                    foreach (var runtimeFile in runtimeFileOption.Values)
+                    {
+                        var attachment = new Attachment { Location = AttachmentLocation.Runtime };
+
+                        try
+                        {
+                            var runtimeFileSegments = runtimeFile.Split(';');
+
+                            attachment.Filename = runtimeFileSegments[0];
+
+                            if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            {
+                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
+                            }
+                            else
+                            {
+                                attachment.Content = File.ReadAllBytes(attachment.Filename);
+                            }
+
+                            attachment.Filename = Path.GetFileName(attachment.Filename);
+
+                            if (runtimeFileSegments.Length > 1)
+                            {
+                                attachment.Filename = runtimeFileSegments[1];
+                            }
+                            else
+                            {
+                                attachment.Filename = Path.GetFileName(attachment.Filename);
+                            }
+
+                            attachments.Add(attachment);
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"Runtime File '{attachment.Filename}' could not be loaded.");
+                            return 8;
+                        }
+                    }
+                }
+
+                serverJob.Attachments = attachments.ToArray();
 
                 foreach (var source in sourceOption.Values)
                 {

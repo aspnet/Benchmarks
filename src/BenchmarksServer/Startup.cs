@@ -35,6 +35,10 @@ namespace BenchmarkServer
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
 
+        // Cached lists of SDKs and runtimes already installed
+        private static readonly List<string> _installedRuntimes = new List<string>();
+        private static readonly List<string> _installedSdks = new List<string>();
+
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
 
@@ -246,6 +250,9 @@ namespace BenchmarkServer
                     var job = allJobs.FirstOrDefault();
                     if (job != null)
                     {
+                        string dotnetDir = dotnetHome;
+                        string benchmarksDir;
+
                         if (job.State == ServerState.Waiting)
                         {
                             // TODO: Race condition if DELETE is called during this code
@@ -271,11 +278,12 @@ namespace BenchmarkServer
                                 }
                                 else
                                 {
-                                    var benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
+
+                                    // returns the application directory and the dotnet directory to use
+                                    (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
 
                                     Debug.Assert(process == null);
-                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir),
-                                        job, dotnetHome);
+                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir);
                                 }
 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -396,7 +404,7 @@ namespace BenchmarkServer
                                 disposed = true;
                             }
 
-                            if (_cleanup && process != null)
+                            if (process != null)
                             {
                                 // TODO: Replace with managed xplat version of kill process tree
                                 if (OperatingSystem == OperatingSystem.Windows)
@@ -424,8 +432,15 @@ namespace BenchmarkServer
                             if (_cleanup && tempDir != null)
                             {
                                 DeleteDir(tempDir);
-                                tempDir = null;
                             }
+
+                            // If a custom dotnet directory was used, clean it
+                            if (_cleanup && dotnetDir != dotnetHome)
+                            {
+                                DeleteDir(dotnetDir);
+                            }
+
+                            tempDir = null;
 
                             _jobs.Remove(job.Id);
                         }
@@ -502,7 +517,7 @@ namespace BenchmarkServer
             ProcessUtil.Run("docker", $"rmi {imageName}");
         }
 
-        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
+        private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
             // It's possible that the user specified a custom branch/commit for the benchmarks repo,
             // so we need to add that to the set of sources to restore if it's not already there.
@@ -596,41 +611,80 @@ namespace BenchmarkServer
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                // Install latest stable 2.0 SDK version (and associated runtime)
-                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current",
+                if (!_installedRuntimes.Contains("Current"))
+                {
+                    // Install latest stable 2.0 SDK version (and associated runtime)
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current",
+                        workingDirectory: buildToolsPath,
+                        environmentVariables: env);
+
+                    _installedRuntimes.Add("Current");
+                }
+
+                if (!_installedSdks.Contains(sdkVersion))
+                {
+                    // Install latest SDK version (and associated runtime)
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion}",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                // Install latest SDK version (and associated runtime)
-                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion}",
+                    _installedSdks.Add(sdkVersion);
+                }
+
+                if (!_installedRuntimes.Contains(latestRuntimeVersion))
+                {
+                    // Install runtime required by coherence universe
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {latestRuntimeVersion} -SharedRuntime",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                // Install runtime required by coherence universe
-                ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {latestRuntimeVersion} -SharedRuntime",
-                    workingDirectory: buildToolsPath,
-                    environmentVariables: env);
+                    _installedRuntimes.Add(latestRuntimeVersion);
+                }
             }
             else
             {
-                // Install latest stable 2.0 SDK version (and associated runtime)
-                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current",
+                if (!_installedRuntimes.Contains("Current"))
+                {
+                    // Install latest stable 2.0 SDK version (and associated runtime)
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+                    _installedRuntimes.Add("Current");
+                }
+
+                if (!_installedSdks.Contains(sdkVersion))
+                {
+                    // Install latest SDK version (and associated runtime)
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion}",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+                    _installedSdks.Add(sdkVersion);
+                }
+
+                if (!_installedRuntimes.Contains(latestRuntimeVersion))
+                {
+                    // Install runtime required by coherence universe
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {latestRuntimeVersion} --shared-runtime",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                // Install latest SDK version (and associated runtime)
-                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion}",
-                    workingDirectory: buildToolsPath,
-                    environmentVariables: env);
+                    _installedRuntimes.Add(latestRuntimeVersion);
+                }
+            }
 
-                // Install runtime required by coherence universe
-                ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {latestRuntimeVersion} --shared-runtime",
-                    workingDirectory: buildToolsPath,
-                    environmentVariables: env);                
+            var dotnetDir = dotnetHome;
+
+            // If there is no custom runtime attachment we don't need to copy the dotnet folder
+            if (job.Attachments.Any(x => x.Location == AttachmentLocation.Runtime))
+            {
+                dotnetDir = GetTempDir();
+
+                Log.WriteLine($"Cloning dotnet folder for customization in {dotnetDir}");
+                CloneDir(dotnetHome, dotnetDir);
             }
 
             // Build and Restore
-            var dotnetExecutable = GetDotNetExecutable(dotnetHome);
+            var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
@@ -659,12 +713,55 @@ namespace BenchmarkServer
                 // This flag is necessary when using the .All metapackage since ASP.NET shared runtime 2.1
                 buildParameters += " /p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App";
 
-                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {Path.Combine(benchmarkedApp, "published")} {buildParameters}",
+                var outputFolder = Path.Combine(benchmarkedApp, "published");
+
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
                     workingDirectory: benchmarkedApp,
                     environmentVariables: env);
+
+                // Copy all output attachments
+                foreach (var attachment in job.Attachments)
+                {
+                    if (attachment.Location == AttachmentLocation.Output)
+                    {
+                        var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
+
+                        Log.WriteLine($"Creating output file: {filename}");
+
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                    }
+                }
             }
 
-            return benchmarkedDir;
+            // Copy all runtime attachments in all runtime folders
+            foreach (var attachment in job.Attachments)
+            {
+                var runtimeRoot = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App");
+
+                foreach (var runtimeFolder in Directory.GetDirectories(runtimeRoot))
+                {
+                    if (attachment.Location == AttachmentLocation.Runtime)
+                    {
+                        var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
+
+                        Log.WriteLine($"Creating runtime file: {filename}");
+
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                    }
+                }
+            }
+
+            return (benchmarkedDir, dotnetDir);
         }
 
         private static async Task DownloadBuildTools(string buildToolsPath)
@@ -834,6 +931,20 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(temp);
                 Log.WriteLine($"Created temp directory '{temp}'");
                 return temp;
+            }
+        }
+
+        private static void CloneDir(string source, string dest)
+        {
+            foreach (string dirPath in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(source, dest));
+            }
+
+            // Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(source, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(source, dest), true);
             }
         }
 

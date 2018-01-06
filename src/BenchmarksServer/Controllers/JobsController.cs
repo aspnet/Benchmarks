@@ -9,6 +9,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Repository;
 
 namespace BenchmarkServer.Controllers
@@ -25,7 +26,7 @@ namespace BenchmarkServer.Controllers
 
         public IEnumerable<ServerJob> GetAll()
         {
-            return _jobs.GetAll();
+            return _jobs.GetAll().Select(RemoveAttachmentContent);
         }
 
         [HttpGet("{id}")]
@@ -38,7 +39,7 @@ namespace BenchmarkServer.Controllers
             }
             else
             {
-                return new ObjectResult(job);
+                return new ObjectResult(RemoveAttachmentContent(job));
             }
         }
 
@@ -78,5 +79,20 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        /// <summary>
+        /// Creates a cloned job by removing its attachments' content.
+        /// </summary>
+        private ServerJob RemoveAttachmentContent(ServerJob job)
+        {
+            var attachments = job.Attachments;
+
+            job.Attachments = attachments.Select(x => new Attachment { Filename = x.Filename, Location = x.Location }).ToArray();
+
+            var newJob = JsonConvert.DeserializeObject<ServerJob>(JsonConvert.SerializeObject(job));
+
+            job.Attachments = attachments;
+
+            return newJob;
+        }
     }
 }
