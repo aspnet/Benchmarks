@@ -88,7 +88,7 @@ namespace BenchmarksDriver
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
-                "\"--outputFile c:\\files\\samples\\picture.png|wwwroot\\picture.png\"",
+                "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             var runtimeFileOption = app.Option("--runtimeFile",
                 "Runtime file attachment. Format is 'path[;destination]', e.g., " +
