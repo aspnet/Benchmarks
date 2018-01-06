@@ -623,12 +623,12 @@ namespace BenchmarksDriver
 
 
                     Log("Warmup");
-                    clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+                    clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     Log("Benchmark");
 
 
-                    clientJob = await RunClientJob(scenario, clientUri, serverBenchmarkUri);
+                    clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     if (clientJob.State == ClientState.Completed)
                     {
@@ -901,7 +901,7 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, string serverBenchmarkUri)
+        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri)
         {
             var clientJob = new ClientJob(_clientJob) { ServerBenchmarkUri = serverBenchmarkUri };
 
@@ -926,6 +926,9 @@ namespace BenchmarksDriver
                     LogVerbose($"GET {clientJobUri}...");
                     response = await _httpClient.GetAsync(clientJobUri);
                     responseContent = await response.Content.ReadAsStringAsync();
+
+                    // Ping server job to keep it alive
+                    response = await _httpClient.GetAsync(serverJobUri);
 
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
