@@ -587,9 +587,15 @@ namespace BenchmarkServer
             // Downloading latest SDK version
             var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
             await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5);
-            var sdkVersion = File.ReadAllText(sdkVersionPath);
-            Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
-                
+
+            // var sdkVersion = File.ReadAllText(sdkVersionPath);
+            // Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+
+            // This is the last known working SDK with Benchmarks on Linux
+            var sdkVersion = "2.2.0-preview1-007522";
+            Log.WriteLine($"WARNING !!! CHANGE WHEN FIXED");
+            Log.WriteLine($"Using last known compatible SDK: {sdkVersion}");
+
             var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
             await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
             var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
@@ -606,14 +612,14 @@ namespace BenchmarkServer
             if (job.AspNetCoreVersion == "2.1.0-*")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "";
-                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  }");
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
                 runtimeFrameworkVersion = latestRuntimeVersion;
             }
             else
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  }");
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"2.1-*\" } }");
             }
 
             if (OperatingSystem == OperatingSystem.Windows)
