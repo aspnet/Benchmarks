@@ -591,13 +591,17 @@ namespace BenchmarkServer
                 .Value;
             Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
 
+            // In theory the actual runtime version should be taken from the dependencies.pros file from 
+            // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
+            // however this is different only if the coherence build didn't go through.
+
             // Defines which SDK will be installed. Using "" downloads the latest SDK.
             if (job.AspNetCoreVersion == "2.1.0-*")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = "";
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  }");
                 targetFramework = "netcoreapp2.1";
-                runtimeFrameworkVersion = "2.1.0-*";
+                runtimeFrameworkVersion = latestRuntimeVersion;
             }
             else
             {
@@ -705,6 +709,9 @@ namespace BenchmarkServer
             {
                 // This flag is necessary when using the .All metapackage
                 buildParameters += " /p:PublishWithAspNetCoreTargetManifest=false";
+
+                // This flag is necessary when using the .All metapackage since ASP.NET shared runtime 2.1
+                buildParameters += " /p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App";
 
                 var outputFolder = Path.Combine(benchmarkedApp, "published");
 
