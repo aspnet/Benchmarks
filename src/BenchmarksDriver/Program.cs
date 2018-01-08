@@ -76,7 +76,9 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
+                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
+            var runtimeVersionOption = app.Option("--runtimeVersion",
+                ".NET Core Runtime version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
             var portOption = app.Option("--port",
@@ -319,6 +321,10 @@ namespace BenchmarksDriver
                 if (aspnetCoreVersionOption.HasValue())
                 {
                     serverJob.AspNetCoreVersion = aspnetCoreVersionOption.Value();
+                }
+                if (runtimeVersionOption.HasValue())
+                {
+                    serverJob.RuntimeVersion = runtimeVersionOption.Value();
                 }
                 if (repositoryOption.HasValue())
                 {
@@ -996,6 +1002,7 @@ namespace BenchmarksDriver
                         session: session,
                         description: description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
+                        runtimeVersion: serverJob.RuntimeVersion,
                         hardware: serverJob.Hardware.Value,
                         hardwareVersion: serverJob.HardwareVersion,
                         operatingSystem: serverJob.OperatingSystem.Value,
@@ -1020,6 +1027,7 @@ namespace BenchmarksDriver
             string session,
             string description,
             string aspnetCoreVersion,
+            string runtimeVersion,
             string scenario,
             Hardware hardware,
             string hardwareVersion,
@@ -1051,6 +1059,7 @@ namespace BenchmarksDriver
                         [Session] [nvarchar](max) NOT NULL,
                         [Description] [nvarchar](max),
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
+                        [RuntimeVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
                         [HardwareVersion] [nvarchar](128) NOT NULL,
@@ -1082,6 +1091,7 @@ namespace BenchmarksDriver
                            ,[Session]
                            ,[Description]
                            ,[AspNetCoreVersion]
+                           ,[RuntimeVersion]
                            ,[Scenario]
                            ,[Hardware]
                            ,[HardwareVersion]
@@ -1107,6 +1117,7 @@ namespace BenchmarksDriver
                            ,@Session
                            ,@Description
                            ,@AspNetCoreVersion
+                           ,@RuntimeVersion
                            ,@Scenario
                            ,@Hardware
                            ,@HardwareVersion
@@ -1145,6 +1156,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
+                    p.AddWithValue("@RuntimeVersion", aspnetCoreVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@HardwareVersion", hardwareVersion);

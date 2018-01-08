@@ -22,7 +22,8 @@ Options:
   -m|--scheme            Scheme (http or https).  Default is http.
   -o|--source            Source dependency. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
-  --aspnetCoreVersion    ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.
+  --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).
+  --runtimeVersion       .NET Core Runtime version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).
   --arguments            Arguments to pass to the application. (e.g., "--raw true")
   --port                 The port used to request the benchmarked application. Default is 5000.
   -r|--repository        Git repository containing the project to test.
@@ -65,7 +66,7 @@ dotnet run -c release
 Running the "Plaintext" job defined in the __benchmaks.json__ file, targeting 2.0.0
 
 ```powershell
-dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion 2.0.0
+dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion Current
 ```
 
 ## Job definition format
@@ -94,7 +95,8 @@ Also if no named job is requested on the command line, the _default_ job will be
         "Threads": 32,
         "Duration": 15,
 
-        "AspNetCoreVersion": "2.1.0-*",
+        "AspNetCoreVersion": "Latest",
+        "RuntimeVersion": "Latest",
         "Port": 8081
     },
     "Plaintext": {
@@ -132,7 +134,7 @@ Options:
   BenchmarksAspNetCoreVersion                       Set to the value of --aspnetCoreVersion
   BenchmarksNETStandardImplicitPackageVersion       Set to the value of --aspnetCoreVersion
   BenchmarksNETCoreAppImplicitPackageVersion        Set to the value of --aspnetCoreVersion
-  BenchmarksRuntimeFrameworkVersion                 Set to 2.0.3 or 2.1.0-*
+  BenchmarksRuntimeFrameworkVersion                 Set to the value of --runtimeVersion (e.g., 2.0.3, 2.1.0-*)
   BenchmarksTargetFramework                         Set to netcoreapp2.0 or netcoreapp2.1
 ```
 
