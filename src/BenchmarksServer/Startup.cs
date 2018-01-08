@@ -602,12 +602,14 @@ namespace BenchmarkServer
 
             string targetFramework;
             string runtimeFrameworkVersion;
+            string aspNetCoteVersion;
 
             if (job.RuntimeVersion != "Current")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = ""; // Using "" downloads the latest SDK.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
+                aspNetCoteVersion = "2.1-*";
 
                 if (job.RuntimeVersion == "Latest")
                 {
@@ -625,7 +627,22 @@ namespace BenchmarkServer
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"2.1-*\" } }");
                 runtimeFrameworkVersion = "2.0.3";
+                aspNetCoteVersion = "2.0-*";
                 targetFramework = "netcoreapp2.0";
+            }
+
+            // Define which ASP.NET Core packages version to use
+            switch(job.AspNetCoreVersion)
+            {
+                case "Current":
+                    aspNetCoteVersion = "2.0-*";
+                    break;
+                case "Latest":
+                    aspNetCoteVersion = "2.1-*";
+                    break;
+                default:
+                    aspNetCoteVersion = job.AspNetCoreVersion;
+                    break;
             }
 
 
@@ -709,9 +726,9 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoteVersion} " +
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoteVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoteVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
 
