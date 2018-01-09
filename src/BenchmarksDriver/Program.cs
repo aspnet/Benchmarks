@@ -1003,7 +1003,7 @@ namespace BenchmarksDriver
                 {
                     Log($"Invoking {clientJob.BeforeShutdown} on benchmark client...");
 
-                    var beforeShutdownUri = new Uri(new Uri(serverBenchmarkUri), clientJob.AfterStartup);
+                    var beforeShutdownUri = new Uri(new Uri(serverBenchmarkUri), clientJob.BeforeShutdown);
                     Console.WriteLine(await _httpClient.GetStringAsync(beforeShutdownUri));
                 }
             }
