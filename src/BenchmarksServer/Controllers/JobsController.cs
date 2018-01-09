@@ -91,9 +91,9 @@ namespace BenchmarkServer.Controllers
             {
                 return Content(await _httpClient.GetStringAsync(url));
             }
-            catch
+            catch(Exception e)
             {
-                return NotFound();
+                return StatusCode(500, e.ToString());
             }
         }
 
