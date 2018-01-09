@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -17,6 +17,8 @@ namespace BenchmarkServer.Controllers
     [Route("[controller]")]
     public class JobsController : Controller
     {
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         private readonly IRepository<ServerJob> _jobs;
 
         public JobsController(IRepository<ServerJob> jobs)
@@ -75,6 +77,20 @@ namespace BenchmarkServer.Controllers
 
                 Response.Headers["Location"] = $"/jobs/{job.Id}";
                 return new StatusCodeResult((int)HttpStatusCode.Accepted);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("{id}/invoke")]
+        public async Task<IActionResult> Invoke(int id, string path)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+                return Content(await _httpClient.GetStringAsync(new Uri(new Uri(job.Url), path)));
             }
             catch
             {
