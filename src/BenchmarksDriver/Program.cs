@@ -641,7 +641,7 @@ namespace BenchmarksDriver
                     if (i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
                     {
                         Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
-                        await InvokeApplicationEndpoint(serverJobsUri, shutdownEndpoint);
+                        await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
                     }
 
                     if (clientJob.State == ClientState.Completed)
@@ -1006,7 +1006,7 @@ namespace BenchmarksDriver
         {
             if (!String.IsNullOrEmpty(endpoint))
             {
-                var uri = new Uri(serverUri, "invoke?path=" + HttpUtility.UrlEncode(endpoint));
+                var uri = serverUri + "/invoke?path=" + HttpUtility.UrlEncode(endpoint);
                 Console.WriteLine(await _httpClient.GetStringAsync(uri));
             }
         }

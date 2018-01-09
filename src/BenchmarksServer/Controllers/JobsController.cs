@@ -84,13 +84,12 @@ namespace BenchmarkServer.Controllers
             }
         }
 
-        [HttpGet("{id}/invoke")]
-        public async Task<IActionResult> Invoke(int id, string path)
+        [HttpGet("invoke")]
+        public async Task<IActionResult> Invoke(string url)
         {
             try
             {
-                var job = _jobs.Find(id);
-                return Content(await _httpClient.GetStringAsync(new Uri(new Uri(job.Url), path)));
+                return Content(await _httpClient.GetStringAsync(url));
             }
             catch
             {
