@@ -64,5 +64,7 @@ namespace Benchmarks.ServerJob
         public Attachment[] Attachments { get; set; }
 
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
+
+        public string CollectionFile { get; set; }
     }
 }
