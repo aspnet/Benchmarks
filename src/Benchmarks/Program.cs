@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -271,14 +272,16 @@ namespace Benchmarks
 
         private static void DisplayRuntimeInfo()
         {
+            Console.WriteLine("");
             Console.WriteLine("Environment variables");
             Console.WriteLine("-----------------------");
 
-            foreach (var entry in Environment.GetEnvironmentVariables())
+            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
             {
-                Console.WriteLine(entry);
+                Console.WriteLine($"{entry.Key}={entry.Value}");
             }
 
+            Console.WriteLine("");
             Console.WriteLine("Loaded modules");
             Console.WriteLine("-----------------------");
 
