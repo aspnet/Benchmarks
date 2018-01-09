@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime;
@@ -154,12 +151,6 @@ namespace Benchmarks
                 StartInteractiveConsoleThread();
             }
 
-            var runtimeInfo = config["runtimeInfo"];
-            if (runtimeInfo != null && bool.Parse(runtimeInfo))
-            {
-                DisplayRuntimeInfo();
-            }
-
             webHost.Run();
         }
 
@@ -268,34 +259,6 @@ namespace Benchmarks
             }
 
             return new IPEndPoint(ip, urlPrefix.PortValue);
-        }
-
-        private static void DisplayRuntimeInfo()
-        {
-            Console.WriteLine("");
-            Console.WriteLine("Environment variables");
-            Console.WriteLine("-----------------------");
-
-            foreach (DictionaryEntry entry in Environment.GetEnvironmentVariables())
-            {
-                Console.WriteLine($"{entry.Key}={entry.Value}");
-            }
-
-            Console.WriteLine("");
-            Console.WriteLine("Loaded modules");
-            Console.WriteLine("-----------------------");
-
-            foreach(var m in Process.GetCurrentProcess().Modules.OfType<ProcessModule>())
-            {
-                Assembly assembly = null;
-                try
-                {
-                    assembly = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(m.ModuleName)));
-                }
-                catch { }
-
-                Console.WriteLine($"{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-            }
         }
     }
 }
