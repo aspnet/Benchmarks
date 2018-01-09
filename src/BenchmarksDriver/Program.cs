@@ -54,6 +54,10 @@ namespace BenchmarksDriver
                 "The number of iterations.", CommandOptionType.SingleValue);
             var excludeOption = app.Option("-x|--exclude",
                 "The number of best and worst and jobs to skip.", CommandOptionType.SingleValue);
+            var startupOption = app.Option("--after-startup",
+                "An endpoint to call after the application is started.", CommandOptionType.SingleValue);
+            var shutdownOption = app.Option("--before-shutdown",
+                "An endpoint to call before the application is shutdown.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -152,6 +156,7 @@ namespace BenchmarksDriver
                 }
 
                 var description = descriptionOption.Value() ?? "";
+                
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -490,6 +495,14 @@ namespace BenchmarksDriver
                 if (querystringOption.HasValue())
                 {
                     _clientJob.Query = querystringOption.Value();
+                }
+                if (startupOption.HasValue())
+                {
+                    _clientJob.AfterStartup = startupOption.Value();
+                }
+                if (shutdownOption.HasValue())
+                {
+                    _clientJob.BeforeShutdown = shutdownOption.Value();
                 }
 
                 switch (headers)
@@ -914,6 +927,14 @@ namespace BenchmarksDriver
             Uri clientJobUri = null;
             try
             {
+                if (!String.IsNullOrEmpty(clientJob.AfterStartup))
+                {
+                    Log($"Invoking {clientJob.AfterStartup} on benchmark client...");
+
+                    var afterStartupUri = new Uri(new Uri(serverBenchmarkUri), clientJob.AfterStartup);
+                    Console.WriteLine(await _httpClient.GetStringAsync(afterStartupUri));
+                }
+
                 Log($"Starting scenario {scenarioName} on benchmark client...");
 
                 var clientJobsUri = new Uri(clientUri, "/jobs");
@@ -976,6 +997,14 @@ namespace BenchmarksDriver
                     {
                         await Task.Delay(1000);
                     }
+                }
+
+                if (!String.IsNullOrEmpty(clientJob.BeforeShutdown))
+                {
+                    Log($"Invoking {clientJob.BeforeShutdown} on benchmark client...");
+
+                    var beforeShutdownUri = new Uri(new Uri(serverBenchmarkUri), clientJob.AfterStartup);
+                    Console.WriteLine(await _httpClient.GetStringAsync(beforeShutdownUri));
                 }
             }
             finally

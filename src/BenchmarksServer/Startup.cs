@@ -1059,7 +1059,6 @@ namespace BenchmarkServer
             var arguments = $"{benchmarksDll}" +
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
-                    $" --runtimeInfo true" +
                     $" --scenarios {job.Scenario}" +
                     $" --server.urls {serverUrl}";
 

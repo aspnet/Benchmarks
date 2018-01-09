@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
@@ -42,7 +45,11 @@ namespace Benchmarks.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             httpContext.Response.ContentType = "text/html";
-            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+
+            // If the diagnostics were explicitly requested we return 200 OK
+            httpContext.Response.StatusCode = httpContext.Request.Path == "/diagnostics"
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status404NotFound;
 
             await httpContext.Response.WriteAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
             await httpContext.Response.WriteAsync("<h1>ASP.NET Core Benchmarks</h1>");
@@ -78,7 +85,24 @@ namespace Benchmarks.Middleware
             await httpContext.Response.WriteAsync($"</ul></li>");
 
 
+            await httpContext.Response.WriteAsync($"<li>Loaded modules:<ul>");
+
+            foreach (var m in Process.GetCurrentProcess().Modules.OfType<ProcessModule>())
+            {
+                Assembly assembly = null;
+                try
+                {
+                    assembly = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(m.ModuleName)));
+                }
+                catch { }
+
+                await httpContext.Response.WriteAsync($"{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            }
+
+            await httpContext.Response.WriteAsync("</ul></li>");
+
             await httpContext.Response.WriteAsync("</ul>");
+
             await httpContext.Response.WriteAsync("</body></html>");
         }
     }
