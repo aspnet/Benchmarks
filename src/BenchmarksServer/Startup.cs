@@ -1176,7 +1176,29 @@ namespace BenchmarkServer
 
                         // Start perfview
                         job.PerfViewTraceFile = Path.Combine(benchmarksDir, "benchmarks.etl");
-                        var perfviewArguments = $"start /AcceptEula /NoGui /Process={process.Id} \"{job.PerfViewTraceFile}\"";
+                        var perfViewArguments = new Dictionary<string, string>();
+                        perfViewArguments["AcceptEula"] = "";
+                        perfViewArguments["NoGui"] = "";
+                        perfViewArguments["InMemoryCircularBuffer"] = "";
+                        perfViewArguments["Process"] = process.Id.ToString();
+
+                        if (!String.IsNullOrEmpty(job.CollectArguments))
+                        {
+                            foreach(var tuple in job.CollectArguments.Split(';'))
+                            {
+                                var values = tuple.Split('=');
+                                perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                            }
+                        }
+
+                        var perfviewArguments = $"start";
+
+                        foreach(var customArg in perfViewArguments)
+                        {
+                            perfviewArguments += $" /{customArg.Key} {customArg.Value ?? ""}";
+                        }
+
+                        perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
                         RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, benchmarksDir));
 
                         // Mark the job as running to allow the Client to start the test

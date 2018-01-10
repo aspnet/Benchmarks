@@ -99,7 +99,9 @@ namespace BenchmarksDriver
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
-                "Collect a PerfView trace.", CommandOptionType.NoValue);
+                "Collect a PerfView trace. Optionally set custom arguments", CommandOptionType.NoValue);
+            var collectArgsOption = app.Option("--collect-args",
+                "Defines custom PerfView arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -347,6 +349,10 @@ namespace BenchmarksDriver
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.Collect = true;
+                }
+                if (collectArgsOption.HasValue())
+                {
+                    serverJob.CollectArguments = collectArgsOption.Value();
                 }
 
                 var attachments = new List<Attachment>();
@@ -728,7 +734,15 @@ namespace BenchmarksDriver
                             }
 
                             Log($"Downloading trace...");
-                            await File.WriteAllBytesAsync("trace.etl.zip", await _httpClient.GetByteArrayAsync(uri));
+
+                            var filename = "trace.etl.zip";
+                            var counter = 1;
+                            while (File.Exists(filename))
+                            {
+                                filename = $"trace({counter++}).etl.zip";
+                            }
+
+                            await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
                         }
                     }
                 }
