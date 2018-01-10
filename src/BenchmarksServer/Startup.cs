@@ -491,7 +491,7 @@ namespace BenchmarkServer
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Log.WriteLine($"PerfView is only supported on Windows");
-                return;
+                return null;
             }
 
             var process = new Process()
