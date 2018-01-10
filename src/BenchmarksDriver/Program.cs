@@ -723,7 +723,7 @@ namespace BenchmarksDriver
                                 }
                                 else if (serverJob.State == ServerState.TraceCollecting)
                                 {
-                                    // Server is collecting the trance
+                                    // Server is collecting the trace
                                 }
                                 else
                                 {
