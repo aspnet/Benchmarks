@@ -1180,7 +1180,7 @@ namespace BenchmarkServer
                         perfViewArguments["AcceptEula"] = "";
                         perfViewArguments["NoGui"] = "";
                         perfViewArguments["InMemoryCircularBuffer"] = "";
-                        perfViewArguments["Process=" + process.Id.ToString()] = "";
+                        perfViewArguments["Process"] = process.Id.ToString();
 
                         if (!String.IsNullOrEmpty(job.CollectArguments))
                         {
@@ -1195,7 +1195,8 @@ namespace BenchmarkServer
 
                         foreach(var customArg in perfViewArguments)
                         {
-                            perfviewArguments += $" /{customArg.Key} {customArg.Value ?? ""}";
+                            var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
+                            perfviewArguments += $" /{customArg.Key}{value}";
                         }
 
                         perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
