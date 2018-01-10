@@ -106,7 +106,7 @@ namespace BenchmarkServer.Controllers
             try
             {
                 var job = _jobs.Find(id);
-                return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile), "application/object");
+                return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile + ".zip"), "application/object");
             }
             catch
             {

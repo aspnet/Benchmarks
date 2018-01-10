@@ -690,7 +690,7 @@ namespace BenchmarksDriver
                         // Collect Trace
                         if (serverJob.Collect)
                         {
-                            Log($"Collecting trace...");
+                            Log($"Collecting trace, this can take 10s of seconds...");
                             var uri = serverJobUri + "/trace";
                             response = await _httpClient.PostAsync(uri, new StringContent(""));
                             response.EnsureSuccessStatusCode();
@@ -717,7 +717,7 @@ namespace BenchmarksDriver
                                 }
                                 else if (serverJob.State == ServerState.TraceCollecting)
                                 {
-                                    QuietLog(".");
+                                    // Server is collecting the trance
                                 }
                                 else
                                 {
