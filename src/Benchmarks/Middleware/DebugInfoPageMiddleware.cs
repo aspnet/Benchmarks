@@ -51,41 +51,41 @@ namespace Benchmarks.Middleware
                 ? StatusCodes.Status200OK
                 : StatusCodes.Status404NotFound;
 
-            await httpContext.Response.WriteAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
-            await httpContext.Response.WriteAsync("<h1>ASP.NET Core Benchmarks</h1>");
-            await httpContext.Response.WriteAsync("<h2>Configuration Information</h2>");
-            await httpContext.Response.WriteAsync("<ul>");
-            await httpContext.Response.WriteAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
-            await httpContext.Response.WriteAsync($"<li>Framework: {_targetFrameworkName}</li>");
-            await httpContext.Response.WriteAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
-            await httpContext.Response.WriteAsync($"<li>Configuration: {_configurationName}</li>");
-            await httpContext.Response.WriteAsync($"<li>Server: {Program.Server}</li>");
-            await httpContext.Response.WriteAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
-            await httpContext.Response.WriteAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
+            await WriteLineAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
+            await WriteLineAsync("<h1>ASP.NET Core Benchmarks</h1>");
+            await WriteLineAsync("<h2>Configuration Information</h2>");
+            await WriteLineAsync("<ul>");
+            await WriteLineAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
+            await WriteLineAsync($"<li>Framework: {_targetFrameworkName}</li>");
+            await WriteLineAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
+            await WriteLineAsync($"<li>Configuration: {_configurationName}</li>");
+            await WriteLineAsync($"<li>Server: {Program.Server}</li>");
+            await WriteLineAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
+            await WriteLineAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
 
-            await httpContext.Response.WriteAsync($"<li>Server features:<ul>");
+            await WriteLineAsync($"<li>Server features:<ul>");
             foreach (var feature in httpContext.Features)
             {
-                await httpContext.Response.WriteAsync($"<li>{feature.Key.Name}</li>");
+                await WriteLineAsync($"<li>{feature.Key.Name}</li>");
             }
-            await httpContext.Response.WriteAsync($"</ul></li>");
+            await WriteLineAsync($"</ul></li>");
 
-            await httpContext.Response.WriteAsync($"<li>Enabled scenarios:<ul>");
+            await WriteLineAsync($"<li>Enabled scenarios:<ul>");
             var enabledScenarios = _scenarios.GetEnabled();
             var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
             foreach (var scenario in enabledScenarios)
             {
-                await httpContext.Response.WriteAsync($"<li>{scenario.Name}<ul>");
+                await WriteLineAsync($"<li>{scenario.Name}<ul>");
                 foreach (var path in scenario.Paths)
                 {
-                    await httpContext.Response.WriteAsync($"<li><a href=\"{path}\">{path}</a></li>");
+                    await WriteLineAsync($"<li><a href=\"{path}\">{path}</a></li>");
                 }
-                await httpContext.Response.WriteAsync($"</ul></li>");
+                await WriteLineAsync($"</ul></li>");
             }
-            await httpContext.Response.WriteAsync($"</ul></li>");
+            await WriteLineAsync($"</ul></li>");
 
 
-            await httpContext.Response.WriteAsync($"<li>Loaded modules:<ul>");
+            await WriteLineAsync($"<li>Loaded modules:<ul>");
 
             foreach (var m in Process.GetCurrentProcess().Modules.OfType<ProcessModule>())
             {
@@ -96,14 +96,20 @@ namespace Benchmarks.Middleware
                 }
                 catch { }
 
-                await httpContext.Response.WriteAsync($"{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+                await WriteLineAsync($"{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             }
 
-            await httpContext.Response.WriteAsync("</ul></li>");
+            await WriteLineAsync("</ul></li>");
 
-            await httpContext.Response.WriteAsync("</ul>");
+            await WriteLineAsync("</ul>");
 
-            await httpContext.Response.WriteAsync("</body></html>");
+            await WriteLineAsync("</body></html>");
+
+            async Task WriteLineAsync(string text)
+            {
+                await httpContext.Response.WriteAsync(text);
+                await httpContext.Response.WriteAsync(Environment.NewLine);
+            }
         }
     }
 
