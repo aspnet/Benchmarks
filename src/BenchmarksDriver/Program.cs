@@ -99,9 +99,7 @@ namespace BenchmarksDriver
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
-                "Collect a PerfView trace. Optionally set custom arguments", CommandOptionType.NoValue);
-            var collectArgsOption = app.Option("--collect-args",
-                "Defines custom PerfView arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.SingleValue);
+                "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -349,10 +347,7 @@ namespace BenchmarksDriver
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.Collect = true;
-                }
-                if (collectArgsOption.HasValue())
-                {
-                    serverJob.CollectArguments = collectArgsOption.Value();
+                    serverJob.CollectArguments = collectTraceOption.Value();
                 }
 
                 var attachments = new List<Attachment>();

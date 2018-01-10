@@ -42,8 +42,7 @@ Options:
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
-  --collect-trace        Collect a PerfView trace. Optionally set custom arguments.
-  --collect-args         Defines custom PerfView arguments. e.g., BufferSize=256;InMemoryCircularBuffer.
+  --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
 ```
 
 ### Examples
