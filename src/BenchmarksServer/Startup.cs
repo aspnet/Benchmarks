@@ -83,8 +83,8 @@ namespace BenchmarkServer
             _httpClient = new HttpClient(_httpClientHandler);
 
             // Download PerfView
-            Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
             _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
+            Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
             DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5).GetAwaiter().GetResult();
 
             Action shutdown = () =>
