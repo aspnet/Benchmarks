@@ -43,6 +43,7 @@ Options:
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
+  --before-shutdown      An endpoint to call before the application is shutdown.
 ```
 
 ### Examples

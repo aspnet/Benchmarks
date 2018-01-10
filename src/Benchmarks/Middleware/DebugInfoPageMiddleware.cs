@@ -96,7 +96,7 @@ namespace Benchmarks.Middleware
                 }
                 catch { }
 
-                await WriteLineAsync($"{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+                await WriteLineAsync($"<li>{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}</li>");
             }
 
             await WriteLineAsync("</ul></li>");
