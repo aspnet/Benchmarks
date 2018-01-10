@@ -77,15 +77,15 @@ namespace BenchmarkServer
             Directory.CreateDirectory(_rootTempDir);
             Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
 
-            // Download PerfView
-            Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
-            _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
-            DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5).GetAwaiter().GetResult();
-            
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClient = new HttpClient(_httpClientHandler);
+
+            // Download PerfView
+            Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
+            _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
+            DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5).GetAwaiter().GetResult();
 
             Action shutdown = () =>
             {
