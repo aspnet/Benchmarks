@@ -291,7 +291,7 @@ namespace BenchmarkServer
                                     (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
 
                                     Debug.Assert(process == null);
-                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir);
+                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled);
                                 }
 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -1089,7 +1089,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview)
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var dotnetFilename = GetDotNetExecutable(dotnetHome);
@@ -1174,33 +1174,36 @@ namespace BenchmarkServer
                         Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                         job.Url = ComputeServerUrl(hostname, job);
 
-                        // Start perfview
-                        job.PerfViewTraceFile = Path.Combine(benchmarksDir, "benchmarks.etl");
-                        var perfViewArguments = new Dictionary<string, string>();
-                        perfViewArguments["AcceptEula"] = "";
-                        perfViewArguments["NoGui"] = "";
-                        perfViewArguments["BufferSize"] = "256";
-                        perfViewArguments["Process"] = process.Id.ToString();
-
-                        if (!String.IsNullOrEmpty(job.CollectArguments))
+                        // Start perfview?
+                        if (perfview)
                         {
-                            foreach(var tuple in job.CollectArguments.Split(';'))
+                            job.PerfViewTraceFile = Path.Combine(benchmarksDir, "benchmarks.etl");
+                            var perfViewArguments = new Dictionary<string, string>();
+                            perfViewArguments["AcceptEula"] = "";
+                            perfViewArguments["NoGui"] = "";
+                            perfViewArguments["BufferSize"] = "256";
+                            perfViewArguments["Process"] = process.Id.ToString();
+
+                            if (!String.IsNullOrEmpty(job.CollectArguments))
                             {
-                                var values = tuple.Split('=');
-                                perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                                foreach (var tuple in job.CollectArguments.Split(';'))
+                                {
+                                    var values = tuple.Split('=');
+                                    perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                                }
                             }
+
+                            var perfviewArguments = $"start";
+
+                            foreach (var customArg in perfViewArguments)
+                            {
+                                var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
+                                perfviewArguments += $" /{customArg.Key}{value}";
+                            }
+
+                            perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
+                            RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, benchmarksDir));
                         }
-
-                        var perfviewArguments = $"start";
-
-                        foreach(var customArg in perfViewArguments)
-                        {
-                            var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
-                            perfviewArguments += $" /{customArg.Key}{value}";
-                        }
-
-                        perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
-                        RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, benchmarksDir));
 
                         // Mark the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
