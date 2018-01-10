@@ -98,6 +98,8 @@ namespace BenchmarksDriver
                 "Runtime file attachment. Format is 'path[;destination]', e.g., " +
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
+            var collectTraceOption = app.Option("--collect-trace",
+                "Collect a PerfView trace.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -341,6 +343,10 @@ namespace BenchmarksDriver
                 if (timeoutOption.HasValue())
                 {
                     serverJob.Timeout = timeoutValue;
+                }
+                if (collectTraceOption.HasValue())
+                {
+                    serverJob.Collect = true;
                 }
 
                 var attachments = new List<Attachment>();
@@ -680,6 +686,12 @@ namespace BenchmarksDriver
                             LogVerbose($"Socket Errors:               {statistics.SocketErrors}");
                             LogVerbose($"Bad Responses:               {statistics.BadResponses}");
                         }
+
+                        if (serverJob.Collect)
+                        {
+                            Log($"Downloading trace...");
+                            await DownloadTrace(serverJobUri);
+                        }
                     }
                 }
                 finally
@@ -899,6 +911,12 @@ namespace BenchmarksDriver
             }
 
             return 0;
+        }
+
+        private static async Task DownloadTrace(Uri serverJobUri)
+        {
+            var uri = serverJobUri + "/trace";
+            await File.WriteAllBytesAsync("trace.etl.zip", await _httpClient.GetByteArrayAsync(uri));
         }
 
         private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri)

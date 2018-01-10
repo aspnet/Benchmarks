@@ -82,6 +82,20 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("{id}/trace")]
+        public IActionResult Trace(int id)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+                return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile), "application/object");
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
         /// <summary>
         /// Creates a cloned job by removing its attachments' content.
         /// </summary>

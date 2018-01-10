@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -42,7 +43,7 @@ namespace BenchmarkServer
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
-
+        private static readonly string _perfviewPath;
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
@@ -76,6 +77,11 @@ namespace BenchmarkServer
             Directory.CreateDirectory(_rootTempDir);
             Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
 
+            // Download PerfView
+            Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
+            _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
+            DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5).GetAwaiter().GetResult();
+            
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -244,7 +250,6 @@ namespace BenchmarkServer
                 string tempDir = null;
                 string dockerImage = null;
                 string dockerContainerId = null;
-                string perfviewPath = null;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -253,7 +258,9 @@ namespace BenchmarkServer
                     if (job != null)
                     {
                         string dotnetDir = dotnetHome;
-                        string benchmarksDir;
+                        string benchmarksDir = null;
+
+                        var perfviewEnabled = job.Collect && OperatingSystem == OperatingSystem.Windows;
 
                         if (job.State == ServerState.Waiting)
                         {
@@ -274,14 +281,6 @@ namespace BenchmarkServer
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
 
-                                var perfviewEnabled = !String.IsNullOrEmpty(job.CollectionFile) && OperatingSystem == OperatingSystem.Windows;
-                                // Download Perfview if necessary
-                                perfviewPath = Path.Combine(tempDir, Path.GetFileName(_perfviewUrl));
-                                if (perfviewEnabled)
-                                {
-                                    await DownloadFileAsync(_perfviewUrl, perfviewPath, maxRetries: 5);
-                                }
-
                                 if (job.Source.DockerFile != null)
                                 {
                                     (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname);
@@ -292,7 +291,7 @@ namespace BenchmarkServer
                                     (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
 
                                     Debug.Assert(process == null);
-                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewPath);
+                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir);
                                 }
 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -405,13 +404,12 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Deleting)
                         {
-
                             // Collection perfview results
-                            if (perfviewPath != null)
+                            if (perfviewEnabled)
                             {
                                 // Start perfview
-                                var perfviewArguments = $"/AcceptEula /NoNGenRundown /NoRundown /NoView";
-                                var perfViewProcess = Process.Start(perfviewPath, perfviewArguments);
+                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoRundown /NoView";
+                                var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
                             }
 
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
@@ -449,10 +447,10 @@ namespace BenchmarkServer
                                 process.Dispose();
                                 process = null;
 
-                                if (perfviewPath != null)
+                                if (perfviewEnabled)
                                 {
                                     // Abort all perfview processes
-                                    ProcessUtil.Run(perfviewPath, $"abort", throwOnError: false);
+                                    var perfViewProcess = RunPerfview("abort", Path.GetPathRoot(_perfviewPath));
                                 }
                             }
                             else if (dockerImage != null)
@@ -472,7 +470,6 @@ namespace BenchmarkServer
                             }
 
                             tempDir = null;
-                            perfviewPath = null;
 
                             _jobs.Remove(job.Id);
                         }
@@ -487,6 +484,50 @@ namespace BenchmarkServer
                     DeleteDir(dotnetHome);
                 }
             }
+        }
+
+        private static string RunPerfview(string arguments, string workingDirectory)
+        {
+            var process = new Process()
+            {
+                StartInfo = {
+                    FileName = _perfviewPath,
+                    Arguments = arguments,
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                },
+                EnableRaisingEvents = true
+            };
+
+            var perfviewDoneEvent = new ManualResetEvent(false);
+            var output = new StringBuilder();
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Log.WriteLine(e.Data);
+
+                    if (e.Data.Contains("Press enter to close window"))
+                    {
+                        perfviewDoneEvent.Set();
+                    }
+
+                    output.Append(e.Data);
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+
+            // Wait until PerfView is done
+            perfviewDoneEvent.WaitOne();
+
+            // Perfview is waiting for a keystroke to stop
+            process.StandardInput.WriteLine();
+
+            return output.ToString();
         }
 
         private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
@@ -1037,8 +1078,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo,
-            ServerJob job, string dotnetHome, string perfviewPath)
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var dotnetFilename = GetDotNetExecutable(dotnetHome);
@@ -1076,12 +1116,14 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
 
+            var benchmarksDir = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
+
             var process = new Process()
             {
                 StartInfo = {
                     FileName = dotnetFilename,
                     Arguments = arguments,
-                    WorkingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project)),
+                    WorkingDirectory = benchmarksDir,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -1122,8 +1164,9 @@ namespace BenchmarkServer
                         job.Url = ComputeServerUrl(hostname, job);
 
                         // Start perfview
-                        var perfviewArguments = $"/AcceptEula /Process={process.Id} benchmarks.etl";
-                        var perfViewProcess = Process.Start(perfviewPath, perfviewArguments);
+                        job.PerfViewTraceFile = Path.Combine(benchmarksDir, "benchmarks.etl");
+                        var perfviewArguments = $"start /AcceptEula /NoGui /Process={process.Id} \"{job.PerfViewTraceFile}\"";
+                        RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, benchmarksDir));
 
                         // Mark the job as running to allow the Client to start the test
                         job.State = ServerState.Running;
