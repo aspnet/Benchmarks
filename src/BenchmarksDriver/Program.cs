@@ -638,14 +638,14 @@ namespace BenchmarksDriver
                     Log("Benchmark");
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
-                    if (i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
-                    {
-                        Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
-                        await InvokeApplicationEndpoint(serverUri, shutdownEndpoint);
-                    }
-
                     if (clientJob.State == ClientState.Completed)
                     {
+                        if (i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
+                        {
+                            Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
+                            await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
+                        }
+
                         // Load latest state of server job
                         LogVerbose($"GET {serverJobUri}...");
                         response = await _httpClient.GetAsync(serverJobUri);
@@ -1002,13 +1002,10 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
-        private static async Task InvokeApplicationEndpoint(Uri serverUri, string endpoint)
+        private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)
         {
-            if (!String.IsNullOrEmpty(endpoint))
-            {
-                var uri = serverUri + "jobs/invoke?path=" + HttpUtility.UrlEncode(endpoint);
-                Console.WriteLine(await _httpClient.GetStringAsync(uri));
-            }
+            var uri = serverJobUri + "/invoke?path=" + HttpUtility.UrlEncode(path);
+            Console.WriteLine(await _httpClient.GetStringAsync(uri));
         }
 
         private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string description, string dimension, double value)
