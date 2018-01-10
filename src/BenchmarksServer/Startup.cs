@@ -1179,7 +1179,7 @@ namespace BenchmarkServer
                         var perfViewArguments = new Dictionary<string, string>();
                         perfViewArguments["AcceptEula"] = "";
                         perfViewArguments["NoGui"] = "";
-                        perfViewArguments["InMemoryCircularBuffer"] = "";
+                        perfViewArguments["BufferSize"] = "256";
                         perfViewArguments["Process"] = process.Id.ToString();
 
                         if (!String.IsNullOrEmpty(job.CollectArguments))
