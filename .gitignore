@@ -282,5 +282,5 @@ __pycache__/
 # tools/**
 # !tools/packages.config
 
-# Perfview
-*.zip
+# Perfview trace
+*.etl.zip
