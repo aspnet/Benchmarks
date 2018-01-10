@@ -82,6 +82,22 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpPost("{id}/trace")]
+        public IActionResult TracePost(int id)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+                job.State = ServerState.TraceCollecting;
+                _jobs.Update(job);
+                return Ok();
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
         [HttpGet("{id}/trace")]
         public IActionResult Trace(int id)
         {

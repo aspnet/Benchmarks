@@ -404,17 +404,20 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Deleting)
                         {
+                            Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
+
+                            CleanJob();
+                        }
+                        else if (job.State == ServerState.TraceCollecting)
+                        {
                             // Collection perfview results
                             if (perfviewEnabled)
                             {
                                 // Start perfview
                                 var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
+                                job.State = ServerState.TraceCollected;
                             }
-
-                            Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
-
-                            CleanJob();
                         }
 
                         void CleanJob()
@@ -501,6 +504,7 @@ namespace BenchmarkServer
                     Arguments = arguments,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true

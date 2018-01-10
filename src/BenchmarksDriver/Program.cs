@@ -687,10 +687,33 @@ namespace BenchmarksDriver
                             LogVerbose($"Bad Responses:               {statistics.BadResponses}");
                         }
 
+                        // Collect Trace
                         if (serverJob.Collect)
                         {
+
+                            Log($"Collecting trace...");
+                            var uri = serverJobUri + "/trace";
+                            response = await _httpClient.PostAsync(uri, new StringContent(""));
+                            response.EnsureSuccessStatusCode();
+                            
+                            while (true)
+                            {
+                                LogVerbose($"GET {serverJobUri}...");
+                                response = await _httpClient.GetAsync(serverJobUri);
+                                responseContent = await response.Content.ReadAsStringAsync();
+
+                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                if (serverJob.State == ServerState.TraceCollected)
+                                {
+                                    break;
+                                }
+                            }
+
                             Log($"Downloading trace...");
-                            await DownloadTrace(serverJobUri);
+                            await File.WriteAllBytesAsync("trace.etl.zip", await _httpClient.GetByteArrayAsync(uri));
                         }
                     }
                 }
@@ -911,12 +934,6 @@ namespace BenchmarksDriver
             }
 
             return 0;
-        }
-
-        private static async Task DownloadTrace(Uri serverJobUri)
-        {
-            var uri = serverJobUri + "/trace";
-            await File.WriteAllBytesAsync("trace.etl.zip", await _httpClient.GetByteArrayAsync(uri));
         }
 
         private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri)
