@@ -324,14 +324,14 @@ namespace BenchmarkServer
                                         var now = DateTime.UtcNow;
 
                                         // Clean the job in case the client job is not running
-                                        if (now - startMonitorTime > job.Timeout)
+                                        if (now - startMonitorTime > job.Timeout && job.State != ServerState.TraceCollecting)
                                         {
                                             Log.WriteLine($"Job timed out after {job.Timeout}. Halting job.");
                                             job.State = ServerState.Deleting;
                                         }
 
                                         // Clean the job in case the driver is not running
-                                        if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                                        if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30) && job.State != ServerState.TraceCollecting)
                                         {
                                             Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
                                             job.State = ServerState.Deleting;
@@ -537,6 +537,7 @@ namespace BenchmarkServer
             // Perfview is waiting for a keystroke to stop
             process.StandardInput.WriteLine();
 
+            process.Close();
             return output.ToString();
         }
 
