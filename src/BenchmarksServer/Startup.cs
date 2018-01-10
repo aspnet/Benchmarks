@@ -488,6 +488,12 @@ namespace BenchmarkServer
 
         private static string RunPerfview(string arguments, string workingDirectory)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Log.WriteLine($"PerfView is only supported on Windows");
+                return;
+            }
+
             var process = new Process()
             {
                 StartInfo = {
