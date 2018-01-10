@@ -90,7 +90,9 @@ namespace BenchmarkServer.Controllers
                 var job = _jobs.Find(id);
                 job.State = ServerState.TraceCollecting;
                 _jobs.Update(job);
-                return Ok();
+
+                Response.Headers["Location"] = $"/jobs/{job.Id}";
+                return new StatusCodeResult((int)HttpStatusCode.Accepted);
             }
             catch
             {

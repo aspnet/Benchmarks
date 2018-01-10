@@ -690,7 +690,6 @@ namespace BenchmarksDriver
                         // Collect Trace
                         if (serverJob.Collect)
                         {
-
                             Log($"Collecting trace...");
                             var uri = serverJobUri + "/trace";
                             response = await _httpClient.PostAsync(uri, new StringContent(""));
@@ -706,16 +705,37 @@ namespace BenchmarksDriver
 
                                 serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                                if (serverJob == null)
+                                {
+                                    Log($"The job was forcibly stopped by the server.");
+                                    return 1;
+                                }
+
                                 if (serverJob.State == ServerState.TraceCollected)
                                 {
                                     break;
                                 }
+                                else if (serverJob.State == ServerState.TraceCollecting)
+                                {
+                                    QuietLog(".");
+                                }
+                                else
+                                {
+                                    Log($"Unexpected state: {serverJob.State}");
+                                }
+
+                                await Task.Delay(1000);
                             }
 
                             Log($"Downloading trace...");
                             await File.WriteAllBytesAsync("trace.etl.zip", await _httpClient.GetByteArrayAsync(uri));
                         }
                     }
+                }
+                catch(Exception e)
+                {
+                    Log($"Interrupting due to an unexpected exception");
+                    Log(e.ToString());
                 }
                 finally
                 {
@@ -1237,6 +1257,11 @@ namespace BenchmarksDriver
             {
                 return shortRepository + "@" + source.BranchOrCommit;
             }
+        }
+
+        private static void QuietLog(string message)
+        {
+            Console.Write(message);
         }
 
         private static void Log(string message)
