@@ -85,7 +85,7 @@ namespace BenchmarkServer
             // Download PerfView
             _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
             Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
-            DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5).GetAwaiter().GetResult();
+            DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
 
             Action shutdown = () =>
             {
@@ -870,7 +870,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries)
+        private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5)
         {
             Log.WriteLine($"Downloading {url}");
 
@@ -878,7 +878,7 @@ namespace BenchmarkServer
             {
                 try
                 {
-                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
                     var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
                     response.EnsureSuccessStatusCode();
 
