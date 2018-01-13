@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using Microsoft.Extensions.CommandLineUtils;
@@ -54,6 +55,8 @@ namespace BenchmarksDriver
                 "The number of iterations.", CommandOptionType.SingleValue);
             var excludeOption = app.Option("-x|--exclude",
                 "The number of best and worst and jobs to skip.", CommandOptionType.SingleValue);
+            var shutdownOption = app.Option("--before-shutdown",
+                "An endpoint to call before the application is shutdown.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -76,7 +79,9 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP.NET Core version (2.0.0, 2.0.1 or 2.1.0-*).  Default is 2.1.0-*.", CommandOptionType.SingleValue);
+                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
+            var runtimeVersionOption = app.Option("--runtimeVersion",
+                ".NET Core Runtime version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
             var portOption = app.Option("--port",
@@ -150,6 +155,7 @@ namespace BenchmarksDriver
                 }
 
                 var description = descriptionOption.Value() ?? "";
+                
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -319,6 +325,10 @@ namespace BenchmarksDriver
                 if (aspnetCoreVersionOption.HasValue())
                 {
                     serverJob.AspNetCoreVersion = aspnetCoreVersionOption.Value();
+                }
+                if (runtimeVersionOption.HasValue())
+                {
+                    serverJob.RuntimeVersion = runtimeVersionOption.Value();
                 }
                 if (repositoryOption.HasValue())
                 {
@@ -526,7 +536,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value()).Result;
             });
 
             return app.Execute(args);
@@ -540,7 +550,8 @@ namespace BenchmarksDriver
             string session,
             string description,
             int iterations,
-            int exclude)
+            int exclude,
+            string shutdownEndpoint)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -621,17 +632,20 @@ namespace BenchmarksDriver
                         }
                     }
 
-
                     Log("Warmup");
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     Log("Benchmark");
-
-
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     if (clientJob.State == ClientState.Completed)
                     {
+                        if (i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
+                        {
+                            Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
+                            await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
+                        }
+
                         // Load latest state of server job
                         LogVerbose($"GET {serverJobUri}...");
                         response = await _httpClient.GetAsync(serverJobUri);
@@ -988,6 +1002,12 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
+        private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)
+        {
+            var uri = serverJobUri + "/invoke?path=" + HttpUtility.UrlEncode(path);
+            Console.WriteLine(await _httpClient.GetStringAsync(uri));
+        }
+
         private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string description, string dimension, double value)
         {
             return WriteResultsToSql(
@@ -996,6 +1016,7 @@ namespace BenchmarksDriver
                         session: session,
                         description: description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
+                        runtimeVersion: serverJob.RuntimeVersion,
                         hardware: serverJob.Hardware.Value,
                         hardwareVersion: serverJob.HardwareVersion,
                         operatingSystem: serverJob.OperatingSystem.Value,
@@ -1020,6 +1041,7 @@ namespace BenchmarksDriver
             string session,
             string description,
             string aspnetCoreVersion,
+            string runtimeVersion,
             string scenario,
             Hardware hardware,
             string hardwareVersion,
@@ -1051,6 +1073,7 @@ namespace BenchmarksDriver
                         [Session] [nvarchar](max) NOT NULL,
                         [Description] [nvarchar](max),
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
+                        [RuntimeVersion] [nvarchar](max) NOT NULL,
                         [Scenario] [nvarchar](max) NOT NULL,
                         [Hardware] [nvarchar](max) NOT NULL,
                         [HardwareVersion] [nvarchar](128) NOT NULL,
@@ -1082,6 +1105,7 @@ namespace BenchmarksDriver
                            ,[Session]
                            ,[Description]
                            ,[AspNetCoreVersion]
+                           ,[RuntimeVersion]
                            ,[Scenario]
                            ,[Hardware]
                            ,[HardwareVersion]
@@ -1107,6 +1131,7 @@ namespace BenchmarksDriver
                            ,@Session
                            ,@Description
                            ,@AspNetCoreVersion
+                           ,@RuntimeVersion
                            ,@Scenario
                            ,@Hardware
                            ,@HardwareVersion
@@ -1145,6 +1170,7 @@ namespace BenchmarksDriver
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
+                    p.AddWithValue("@RuntimeVersion", aspnetCoreVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@HardwareVersion", hardwareVersion);

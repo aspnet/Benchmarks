@@ -581,8 +581,6 @@ namespace BenchmarkServer
 
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
-            string targetFramework = "netcoreapp2.0";
-            string runtimeFrameworkVersion = "2.0.3";
 
             // Downloading latest SDK version
             var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
@@ -596,31 +594,57 @@ namespace BenchmarkServer
             Log.WriteLine($"WARNING !!! CHANGE WHEN FIXED");
             Log.WriteLine($"Using last known compatible SDK: {sdkVersion}");
 
-            var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
-            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
-            var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
-                .Element("PropertyGroup")
-                .Element("MicrosoftNETCoreApp21PackageVersion")
-                .Value;
-            Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
-
-            // In theory the actual runtime version should be taken from the dependencies.pros file from 
+            // In theory the actual latest runtime version should be taken from the dependencies.pros file from 
             // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
             // however this is different only if the coherence build didn't go through.
 
-            // Defines which SDK will be installed. Using "" downloads the latest SDK.
-            if (job.AspNetCoreVersion == "2.1.0-*")
+            // Define which Runtime and SDK will be installed.
+
+            string targetFramework;
+            string runtimeFrameworkVersion;
+            string aspNetCoteVersion;
+
+            if (job.RuntimeVersion != "Current")
             {
-                env["KOREBUILD_DOTNET_VERSION"] = "";
+                env["KOREBUILD_DOTNET_VERSION"] = ""; // Using "" downloads the latest SDK.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
-                runtimeFrameworkVersion = latestRuntimeVersion;
+                aspNetCoteVersion = "2.1-*";
+
+                if (job.RuntimeVersion == "Latest")
+                {
+                    runtimeFrameworkVersion = await GetLatestRuntimeVersion(buildToolsPath);
+                }
+                else
+                {
+                    // Custom version
+                    runtimeFrameworkVersion = job.RuntimeVersion;
+                }
             }
             else
             {
+                // Latest public version
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"2.1-*\" } }");
+                runtimeFrameworkVersion = "2.0.3";
+                aspNetCoteVersion = "2.0-*";
+                targetFramework = "netcoreapp2.0";
             }
+
+            // Define which ASP.NET Core packages version to use
+            switch(job.AspNetCoreVersion)
+            {
+                case "Current":
+                    aspNetCoteVersion = "2.0-*";
+                    break;
+                case "Latest":
+                    aspNetCoteVersion = "2.1-*";
+                    break;
+                default:
+                    aspNetCoteVersion = job.AspNetCoreVersion;
+                    break;
+            }
+
 
             if (OperatingSystem == OperatingSystem.Windows)
             {
@@ -644,14 +668,14 @@ namespace BenchmarkServer
                     _installedSdks.Add(sdkVersion);
                 }
 
-                if (!_installedRuntimes.Contains(latestRuntimeVersion))
+                if (!_installedRuntimes.Contains(runtimeFrameworkVersion))
                 {
-                    // Install runtime required by coherence universe
-                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {latestRuntimeVersion} -SharedRuntime",
+                    // Install runtime required for this scenario
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeFrameworkVersion} -SharedRuntime",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                    _installedRuntimes.Add(latestRuntimeVersion);
+                    _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
             }
             else
@@ -674,14 +698,14 @@ namespace BenchmarkServer
                     _installedSdks.Add(sdkVersion);
                 }
 
-                if (!_installedRuntimes.Contains(latestRuntimeVersion))
+                if (!_installedRuntimes.Contains(runtimeFrameworkVersion))
                 {
                     // Install runtime required by coherence universe
-                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {latestRuntimeVersion} --shared-runtime",
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeFrameworkVersion} --shared-runtime",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                    _installedRuntimes.Add(latestRuntimeVersion);
+                    _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
             }
 
@@ -702,9 +726,9 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksNETStandardImplicitPackageVersion={job.AspNetCoreVersion} " +
-                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={job.AspNetCoreVersion} " +
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoteVersion} " +
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoteVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoteVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
 
@@ -775,6 +799,18 @@ namespace BenchmarkServer
             }
 
             return (benchmarkedDir, dotnetDir);
+        }
+
+        private static async Task<string> GetLatestRuntimeVersion(string buildToolsPath)
+        {
+            var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
+            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
+            var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
+                .Element("PropertyGroup")
+                .Element("MicrosoftNETCoreApp21PackageVersion")
+                .Value;
+            Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
+            return latestRuntimeVersion;
         }
 
         private static async Task DownloadBuildTools(string buildToolsPath)

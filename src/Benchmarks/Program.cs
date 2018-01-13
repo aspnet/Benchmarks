@@ -145,7 +145,7 @@ namespace Benchmarks
             Console.WriteLine($"Using server {Server}");
             Console.WriteLine($"Server GC is currently {(GCSettings.IsServerGC ? "ENABLED" : "DISABLED")}");
 
-            var nonInteractiveValue = config["NonInteractive"];
+            var nonInteractiveValue = config["nonInteractive"];
             if (nonInteractiveValue == null || !bool.Parse(nonInteractiveValue))
             {
                 StartInteractiveConsoleThread();
