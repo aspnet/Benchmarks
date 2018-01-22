@@ -14,6 +14,11 @@
   "Plaintext": {
     "Path": "/plaintext"
   },
+  "PlaintextNonPipelined": {
+    "Path": "/plaintext",
+    "ScriptName": "",
+    "PipelineDepth": 0
+  },
   "CopyToAsync": {
     "Path": "/copytoasync",
     "ScriptName": "post"
