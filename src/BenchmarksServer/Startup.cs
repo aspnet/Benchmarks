@@ -35,7 +35,7 @@ namespace BenchmarkServer
         private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
-        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.0/PerfView.exe";
+        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.2/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly List<string> _installedRuntimes = new List<string>();
