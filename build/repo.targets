@@ -7,6 +7,11 @@
     <MultiQueryJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <CloudScenarios Description="Trend/Latest" AspNetCoreVersion="Latest" RuntimeVersion="Latest"></CloudScenarios>
+    <PhysicalScenarios Description="Trend/Latest" AspNetCoreVersion="Latest" RuntimeVersion="Latest"></PhysicalScenarios>
+  </ItemDefinitionGroup>
+  
   <ItemGroup>
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
@@ -52,11 +57,16 @@
     <CloudScenarios Include="-n MvcDbFortunesRaw $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesDapper $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesEf $(HtmlJobs) --database PostgreSql" />
+
+    <!-- Baselines for KPIs -->
+    <CloudScenarios Include="-n DbFortunesEf $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
+    <CloudScenarios Include="-n DbFortunesRaw $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
+
   </ItemGroup>
 
   <ItemGroup>
 
-    <PhysicalScenarios Include="-n Plaintext $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 $(PlaintextJobs)" />
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
@@ -92,6 +102,13 @@
     <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached $(PlaintextJobs)" />
+
+    <!-- Baselines for KPIs -->
+    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelLibuv $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelSockets $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+
   </ItemGroup>
 
   <PropertyGroup>
@@ -113,6 +130,9 @@
       <RunProjects Include="$(MSBuildProjectFullPath)" Condition="'$(BENCHMARK_SERVER_CLOUD)' != '' AND '$(BENCHMARK_CLIENT_CLOUD)' != ''">
         <AdditionalProperties>
           Scenario=%(CloudScenarios.Identity);
+          Description=%(CloudScenarios.Description);
+          RuntimeVersion=%(CloudScenarios.RuntimeVersion);
+          AspNetCoreVersion=%(CloudScenarios.AspNetCoreVersion);
           Server=$(BENCHMARK_SERVER_CLOUD);
           Client=$(BENCHMARK_CLIENT_CLOUD);
           DotNetPath=$(DotNetPath);
@@ -124,6 +144,9 @@
       <RunProjects Include="$(MSBuildProjectFullPath)" Condition="'$(BENCHMARK_SERVER_PHYSICAL)' != '' AND '$(BENCHMARK_CLIENT_PHYSICAL)' != ''">
         <AdditionalProperties>
           Scenario=%(PhysicalScenarios.Identity);
+          Description=%(PhysicalScenarios.Description);
+          RuntimeVersion=%(PhysicalScenarios.RuntimeVersion);
+          AspNetCoreVersion=%(PhysicalScenarios.AspNetCoreVersion);
           Server=$(BENCHMARK_SERVER_PHYSICAL);
           Client=$(BENCHMARK_CLIENT_PHYSICAL);
           DotNetPath=$(DotNetPath);
@@ -141,7 +164,7 @@
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description "Trend/Latest" </RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description $(Description) --aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
