@@ -25,6 +25,7 @@
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Jil" Version="$(JilVersion)" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="$(BenchmarksAspNetCoreVersion)" />
