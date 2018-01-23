@@ -500,6 +500,8 @@ namespace BenchmarkServer
                 return null;
             }
 
+            Log.WriteLine($"Starting process '{_perfviewPath} {arguments}'");
+
             var process = new Process()
             {
                 StartInfo = {
