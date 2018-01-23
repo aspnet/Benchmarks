@@ -358,6 +358,12 @@ namespace BenchmarksDriver
                 {
                     serverJob.Collect = true;
                     serverJob.CollectArguments = collectTraceOption.Value();
+
+                    // Clear the arguments if the value is "on" as this is a marker for NoValue on the command parser
+                    if (serverJob.CollectArguments == "on")
+                    {
+                        serverJob.CollectArguments = "";
+                    }
                 }
 
                 var attachments = new List<Attachment>();
