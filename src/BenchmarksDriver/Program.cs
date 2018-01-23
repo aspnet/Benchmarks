@@ -93,7 +93,7 @@ namespace BenchmarksDriver
             var useRuntimeStoreOption = app.Option("--useRuntimeStore",
                 "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
             var timeoutOption = app.Option("--timeout",
-                "The max delay to wait to the job to run. Default is 00:02:00.", CommandOptionType.SingleValue);
+                "The max delay to wait to the job to run. Default is 00:05:00.", CommandOptionType.SingleValue);
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -357,6 +357,12 @@ namespace BenchmarksDriver
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.Collect = true;
+                    // Increase server job timeout as Perfview collection can be time consuming
+                    if (!timeoutOption.HasValue())
+                    {
+                        serverJob.Timeout = TimeSpan.FromMinutes(10);
+                    }
+
                     serverJob.CollectArguments = collectTraceOption.Value();
 
                     // Clear the arguments if the value is "on" as this is a marker for NoValue on the command parser
