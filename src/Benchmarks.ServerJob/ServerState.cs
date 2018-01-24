@@ -10,6 +10,8 @@ namespace Benchmarks.ServerJob
         Running,
         Failed,
         Deleting,
+        TraceCollecting,
+        TraceCollected,
         NotSupported,
     }
 }

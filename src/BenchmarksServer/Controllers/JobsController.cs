@@ -84,6 +84,38 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpPost("{id}/trace")]
+        public IActionResult TracePost(int id)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+                job.State = ServerState.TraceCollecting;
+                _jobs.Update(job);
+
+                Response.Headers["Location"] = $"/jobs/{job.Id}";
+                return new StatusCodeResult((int)HttpStatusCode.Accepted);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("{id}/trace")]
+        public IActionResult Trace(int id)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+                return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile + ".zip"), "application/object");
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+        
         [HttpGet("{id}/invoke")]
         public async Task<IActionResult> Invoke(int id, string path)
         {

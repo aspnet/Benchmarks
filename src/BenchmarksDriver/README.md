@@ -29,7 +29,7 @@ Options:
   -r|--repository        Git repository containing the project to test.
   --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
   --useRuntimeStore      Runs the benchmarks using the runtime store if available.
-  --timeout              The max delay to wait to the job to run. Default is 00:02:00.
+  --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
   --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
   --clientThreads        Number of threads used by client. Default is 32.
@@ -43,6 +43,7 @@ Options:
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
+  --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
   --before-shutdown      An endpoint to call before the application is shutdown.
 ```
 

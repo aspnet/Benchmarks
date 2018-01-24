@@ -13,7 +13,7 @@ fi
 
 if [ -z "$hardware_version" ]
 then
-    echo "harware_version needs to be set"
+    echo "hardware_version needs to be set"
     exit 1
 fi
 

@@ -93,7 +93,7 @@ namespace BenchmarksDriver
             var useRuntimeStoreOption = app.Option("--useRuntimeStore",
                 "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
             var timeoutOption = app.Option("--timeout",
-                "The max delay to wait to the job to run. Default is 00:02:00.", CommandOptionType.SingleValue);
+                "The max delay to wait to the job to run. Default is 00:05:00.", CommandOptionType.SingleValue);
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -103,6 +103,8 @@ namespace BenchmarksDriver
                 "Runtime file attachment. Format is 'path[;destination]', e.g., " +
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
+            var collectTraceOption = app.Option("--collect-trace",
+                "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -351,6 +353,23 @@ namespace BenchmarksDriver
                 if (timeoutOption.HasValue())
                 {
                     serverJob.Timeout = timeoutValue;
+                }
+                if (collectTraceOption.HasValue())
+                {
+                    serverJob.Collect = true;
+                    // Increase server job timeout as Perfview collection can be time consuming
+                    if (!timeoutOption.HasValue())
+                    {
+                        serverJob.Timeout = TimeSpan.FromMinutes(10);
+                    }
+
+                    serverJob.CollectArguments = collectTraceOption.Value();
+
+                    // Clear the arguments if the value is "on" as this is a marker for NoValue on the command parser
+                    if (serverJob.CollectArguments == "on")
+                    {
+                        serverJob.CollectArguments = "";
+                    }
                 }
 
                 var attachments = new List<Attachment>();
@@ -694,7 +713,64 @@ namespace BenchmarksDriver
                             LogVerbose($"Socket Errors:               {statistics.SocketErrors}");
                             LogVerbose($"Bad Responses:               {statistics.BadResponses}");
                         }
+
+                        // Collect Trace
+                        if (serverJob.Collect)
+                        {
+                            Log($"Collecting trace, this can take 10s of seconds...");
+                            var uri = serverJobUri + "/trace";
+                            response = await _httpClient.PostAsync(uri, new StringContent(""));
+                            response.EnsureSuccessStatusCode();
+                            
+                            while (true)
+                            {
+                                LogVerbose($"GET {serverJobUri}...");
+                                response = await _httpClient.GetAsync(serverJobUri);
+                                responseContent = await response.Content.ReadAsStringAsync();
+
+                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                if (serverJob == null)
+                                {
+                                    Log($"The job was forcibly stopped by the server.");
+                                    return 1;
+                                }
+
+                                if (serverJob.State == ServerState.TraceCollected)
+                                {
+                                    break;
+                                }
+                                else if (serverJob.State == ServerState.TraceCollecting)
+                                {
+                                    // Server is collecting the trace
+                                }
+                                else
+                                {
+                                    Log($"Unexpected state: {serverJob.State}");
+                                }
+
+                                await Task.Delay(1000);
+                            }
+
+                            Log($"Downloading trace...");
+
+                            var filename = "trace.etl.zip";
+                            var counter = 1;
+                            while (File.Exists(filename))
+                            {
+                                filename = $"trace({counter++}).etl.zip";
+                            }
+
+                            await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
+                        }
                     }
+                }
+                catch(Exception e)
+                {
+                    Log($"Interrupting due to an unexpected exception");
+                    Log(e.ToString());
                 }
                 finally
                 {
@@ -1228,6 +1304,11 @@ namespace BenchmarksDriver
             {
                 return shortRepository + "@" + source.BranchOrCommit;
             }
+        }
+
+        private static void QuietLog(string message)
+        {
+            Console.Write(message);
         }
 
         private static void Log(string message)
