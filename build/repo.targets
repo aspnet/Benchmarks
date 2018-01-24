@@ -77,7 +77,7 @@
 
   <ItemGroup>
 
-    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext $(PlaintextJobs)" />
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
@@ -116,7 +116,7 @@
 
     <!-- Baselines for KPIs -->
     <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelLibuv $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelSockets $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    <PhysicalScenarios Include="-n Plaintext $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
 
