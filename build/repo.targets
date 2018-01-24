@@ -8,8 +8,19 @@
   </PropertyGroup>
 
   <ItemDefinitionGroup>
-    <CloudScenarios Description="Trend/Latest" AspNetCoreVersion="Latest" RuntimeVersion="Latest"></CloudScenarios>
-    <PhysicalScenarios Description="Trend/Latest" AspNetCoreVersion="Latest" RuntimeVersion="Latest"></PhysicalScenarios>
+    
+    <CloudScenarios>
+      <Description>Trend/Latest</Description>
+      <AspNetCoreVersion>Latest</AspNetCoreVersion>
+      <RuntimeVersion>Latest</RuntimeVersion>
+    </CloudScenarios>
+    
+    <PhysicalScenarios>
+      <Description>Trend/Latest</Description>
+      <AspNetCoreVersion>Latest</AspNetCoreVersion>
+      <RuntimeVersion>Latest</RuntimeVersion>
+    </PhysicalScenarios>
+  
   </ItemDefinitionGroup>
   
   <ItemGroup>

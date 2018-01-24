@@ -602,14 +602,14 @@ namespace BenchmarkServer
 
             string targetFramework;
             string runtimeFrameworkVersion;
-            string aspNetCoteVersion;
+            string aspNetCoreVersion;
 
             if (job.RuntimeVersion != "Current")
             {
                 env["KOREBUILD_DOTNET_VERSION"] = ""; // Using "" downloads the latest SDK.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
-                aspNetCoteVersion = "2.1-*";
+                aspNetCoreVersion = "2.1-*";
 
                 if (job.RuntimeVersion == "Latest")
                 {
@@ -625,9 +625,9 @@ namespace BenchmarkServer
             {
                 // Latest public version
                 env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
-                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"2.1-*\" } }");
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 runtimeFrameworkVersion = "2.0.3";
-                aspNetCoteVersion = "2.0-*";
+                aspNetCoreVersion = "2.0-*";
                 targetFramework = "netcoreapp2.0";
             }
 
@@ -635,13 +635,13 @@ namespace BenchmarkServer
             switch(job.AspNetCoreVersion)
             {
                 case "Current":
-                    aspNetCoteVersion = "2.0-*";
+                    aspNetCoreVersion = "2.0-*";
                     break;
                 case "Latest":
-                    aspNetCoteVersion = "2.1-*";
+                    aspNetCoreVersion = "2.1-*";
                     break;
                 default:
-                    aspNetCoteVersion = job.AspNetCoreVersion;
+                    aspNetCoreVersion = job.AspNetCoreVersion;
                     break;
             }
 
@@ -726,9 +726,9 @@ namespace BenchmarkServer
             // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
             // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
             // higher than packages references by the same name.
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoteVersion} " +
-                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoteVersion} " +
-                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoteVersion} " +
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
 
