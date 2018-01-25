@@ -57,7 +57,7 @@ namespace Benchmarks.ServerJob
         public string Url { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public WebHost WebHost { get; set; }
+        public WebHost WebHost { get; set; } = WebHost.KestrelLibuv;
 
         public bool UseRuntimeStore { get; set; }
         public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
