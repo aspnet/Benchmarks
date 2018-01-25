@@ -77,7 +77,7 @@
 
   <ItemGroup>
 
-    <PhysicalScenarios Include="-n Plaintext $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
