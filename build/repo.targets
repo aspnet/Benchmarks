@@ -25,9 +25,8 @@
   
   <ItemGroup>
 
-    <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <CloudScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
-    <CloudScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <CloudScenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextJobs)" />
     <CloudScenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <CloudScenarios Include="-n MvcPlaintext --webHost KestrelLibuv $(PlaintextJobs)" />
 
