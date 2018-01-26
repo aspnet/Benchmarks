@@ -48,6 +48,8 @@ namespace BenchmarksDriver
             var verboseOption = app.Option("-v|--verbose",
                 "Verbose output", CommandOptionType.NoValue);
             var sessionOption = app.Option("--session",
+                "A logical identifier to group related measures.", CommandOptionType.SingleValue);
+            var batchOption = app.Option("--batch",
                 "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             var descriptionOption = app.Option("--description",
                 "The description of the job.", CommandOptionType.SingleValue);
@@ -151,13 +153,18 @@ namespace BenchmarksDriver
                 }
 
                 var session = sessionOption.Value();
-                if (String.IsNullOrEmpty(session)) 
+                if (String.IsNullOrEmpty(session))
                 {
                     session = Guid.NewGuid().ToString("n");
                 }
 
+                var batch = batchOption.Value();
+                if (String.IsNullOrEmpty(batch))
+                {
+                    batch = Guid.NewGuid().ToString("n");
+                }
+
                 var description = descriptionOption.Value() ?? "";
-                
 
                 var server = serverOption.Value();
                 var client = clientOption.Value();
@@ -555,7 +562,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value()).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, batch, description, iterations, exclude, shutdownOption.Value()).Result;
             });
 
             return app.Execute(args);
@@ -567,6 +574,7 @@ namespace BenchmarksDriver
             string sqlConnectionString,
             ServerJob serverJob,
             string session,
+            string batch,
             string description,
             int iterations,
             int exclude,
@@ -842,6 +850,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "RequestsPerSecond",
                         value: average.RequestsPerSecond);
@@ -852,6 +861,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Startup Main (ms)",
                         value: average.StartupMain);
@@ -862,6 +872,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "First Request (ms)",
                         value: average.FirstRequest);
@@ -872,6 +883,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "WorkingSet (MB)",
                         value: average.WorkingSet);
@@ -882,6 +894,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "CPU",
                         value: average.Cpu);
@@ -891,6 +904,7 @@ namespace BenchmarksDriver
                         clientJob: clientJob,
                         connectionString: sqlConnectionString,
                         session: session,
+                        batch: batch,
                         description: description,
                         path: serverJob.Path,
                         dimension: "Latency (ms)",
@@ -902,6 +916,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "LatencyAverage (ms)",
                         value: average.LatencyAverage);
@@ -912,6 +927,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Latency50Percentile (ms)",
                         value: average.Latency50Percentile);
@@ -922,6 +938,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Latency75Percentile (ms)",
                         value: average.Latency75Percentile);
@@ -932,6 +949,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Latency90Percentile (ms)",
                         value: average.Latency90Percentile);
@@ -942,6 +960,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Latency99Percentile (ms)",
                         value: average.Latency99Percentile);
@@ -952,6 +971,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "SocketErrors",
                         value: average.SocketErrors);
@@ -962,6 +982,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "BadResponses",
                         value: average.BadResponses);
@@ -972,6 +993,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "TotalRequests",
                         value: average.TotalRequests);
@@ -982,6 +1004,7 @@ namespace BenchmarksDriver
                         connectionString: sqlConnectionString,
                         path: serverJob.Path,
                         session: session,
+                        batch: batch,
                         description: description,
                         dimension: "Duration (ms)",
                         value: average.Duration);
@@ -1084,12 +1107,13 @@ namespace BenchmarksDriver
             Console.WriteLine(await _httpClient.GetStringAsync(uri));
         }
 
-        private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string description, string dimension, double value)
+        private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string batch, string description, string dimension, double value)
         {
             return WriteResultsToSql(
                         connectionString: connectionString,
                         scenario: serverJob.Scenario,
                         session: session,
+                        batch: batch,
                         description: description,
                         aspnetCoreVersion: serverJob.AspNetCoreVersion,
                         runtimeVersion: serverJob.RuntimeVersion,
@@ -1115,6 +1139,7 @@ namespace BenchmarksDriver
         private static async Task WriteResultsToSql(
             string connectionString,
             string session,
+            string batch,
             string description,
             string aspnetCoreVersion,
             string runtimeVersion,
@@ -1147,6 +1172,7 @@ namespace BenchmarksDriver
                         [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
                         [Session] [nvarchar](max) NOT NULL,
+                        [Batch] [nvarchar](128) NOT NULL,
                         [Description] [nvarchar](max),
                         [AspNetCoreVersion] [nvarchar](max) NOT NULL,
                         [RuntimeVersion] [nvarchar](max) NOT NULL,
@@ -1179,6 +1205,7 @@ namespace BenchmarksDriver
                 INSERT INTO [dbo].[AspNetBenchmarks]
                            ([DateTime]
                            ,[Session]
+                           ,[Batch]
                            ,[Description]
                            ,[AspNetCoreVersion]
                            ,[RuntimeVersion]
@@ -1205,6 +1232,7 @@ namespace BenchmarksDriver
                      VALUES
                            (@DateTime
                            ,@Session
+                           ,@Batch
                            ,@Description
                            ,@AspNetCoreVersion
                            ,@RuntimeVersion
@@ -1244,6 +1272,7 @@ namespace BenchmarksDriver
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
                     p.AddWithValue("@Session", session);
+                    p.AddWithValue("@Batch", batch);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
                     p.AddWithValue("@RuntimeVersion", aspnetCoreVersion);
