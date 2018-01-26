@@ -158,11 +158,7 @@ namespace BenchmarksDriver
                     session = Guid.NewGuid().ToString("n");
                 }
 
-                var batch = batchOption.Value();
-                if (String.IsNullOrEmpty(batch))
-                {
-                    batch = Guid.NewGuid().ToString("n");
-                }
+                var batch = batchOption.Value() ?? ""; 
 
                 var description = descriptionOption.Value() ?? "";
 

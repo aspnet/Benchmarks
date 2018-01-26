@@ -174,8 +174,9 @@
 
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
     <PropertyGroup>
+      <Batch>$([System.Guid]::NewGuid())</Batch>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description $(Description) --aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) </RunArgs>
+      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --batch $(Batch) --description $(Description) --aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
