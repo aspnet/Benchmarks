@@ -164,7 +164,7 @@ namespace BenchmarkServer
                 {
                     _cleanup = false;
                 }
-                
+
                 if (postgresqlConnectionStringOption.HasValue())
                 {
                     ConnectionStrings[Database.PostgreSql] = postgresqlConnectionStringOption.Value();
@@ -920,9 +920,7 @@ namespace BenchmarkServer
 
                 var outputFolder = Path.Combine(benchmarkedApp, "published");
 
-                var rid = OperatingSystem == OperatingSystem.Windows ? "win-x64" : "linux-x64";
-
-                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -r {rid} -o {outputFolder} {buildParameters}",
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
                     workingDirectory: benchmarkedApp,
                     environmentVariables: env);
 
