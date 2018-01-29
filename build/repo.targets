@@ -104,14 +104,14 @@
     <PhysicalScenarios Include="-n MvcJson --webHost KestrelLibuv $(JsonJobs)" />
     <PhysicalScenarios Include="-n MvcJil --webHost KestrelLibuv $(JsonJobs)" />
 
-    <PhysicalScenarios Include="-n MemoryCachePlaintext --webHost KestrelLibuv $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv --method DELETE $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $(PlaintextJobs)" />
-    <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv --kestrelThreadCount 2 --method DELETE $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
 
     <!-- Baselines for KPIs -->
     <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelLibuv $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
