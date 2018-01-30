@@ -350,12 +350,15 @@ namespace BenchmarkServer
                                             lastMonitorTime = now;
                                             oldCPUTime = newCPUTime;
 
-                                            job.ServerCounters.Add(new ServerCounter
+                                            using (var localProcess = Process.GetProcessById(process.Id))
                                             {
-                                                Elapsed = now - startMonitorTime,
-                                                WorkingSet = process.PeakWorkingSet64,
-                                                CpuPercentage = cpu
-                                            });
+                                                job.ServerCounters.Add(new ServerCounter
+                                                {
+                                                    Elapsed = now - startMonitorTime,
+                                                    WorkingSet = localProcess.WorkingSet64,
+                                                    CpuPercentage = cpu
+                                                });
+                                            }
                                         }
                                         else
                                         {
@@ -376,12 +379,15 @@ namespace BenchmarkServer
                                             var memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
                                             var workingSet = (long)(memory * factor);
 
-                                            job.ServerCounters.Add(new ServerCounter
+                                            using (var localProcess = Process.GetProcessById(process.Id))
                                             {
-                                                Elapsed = now - startMonitorTime,
-                                                WorkingSet = workingSet,
-                                                CpuPercentage = cpu
-                                            });
+                                                job.ServerCounters.Add(new ServerCounter
+                                                {
+                                                    Elapsed = now - startMonitorTime,
+                                                    WorkingSet = localProcess.WorkingSet64,
+                                                    CpuPercentage = cpu
+                                                });
+                                            }
                                         }
 
                                         // Resume once we finished processing all connections
