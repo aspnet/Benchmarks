@@ -113,6 +113,8 @@ namespace BenchmarksDriver
                 "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
                 "Duration of test in seconds. Default is 15.", CommandOptionType.SingleValue);
+            var warmupOption = app.Option("--warmup",
+                "Duration of warmup in seconds. Default is 15.", CommandOptionType.SingleValue);
             var headerOption = app.Option("--header",
                 "Header added to request.", CommandOptionType.MultipleValue);
             var headersOption = app.Option("--headers",
@@ -493,6 +495,10 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Duration = int.Parse(durationOption.Value());
                 }
+                if (warmupOption.HasValue())
+                {
+                    _clientJob.Warmup = int.Parse(warmupOption.Value());
+                }
                 if (pipelineDepthOption.HasValue())
                 {
                     _clientJob.PipelineDepth = int.Parse(pipelineDepthOption.Value());
@@ -652,9 +658,12 @@ namespace BenchmarksDriver
                     }
 
                     Log("Warmup");
+                    var duration = clientJob.Duration;
+                    clientJob.Duration = clientJob.Warmup;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     Log("Benchmark");
+                    clientJob.Duration = duration;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     if (clientJob.State == ClientState.Completed)

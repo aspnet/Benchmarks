@@ -35,6 +35,7 @@ Options:
   --clientThreads        Number of threads used by client. Default is 32.
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
+  --warmup               Duration of warmup in seconds. Default is 15.
   --header               Header added to request.
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.

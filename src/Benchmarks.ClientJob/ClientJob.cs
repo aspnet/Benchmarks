@@ -40,6 +40,7 @@ namespace Benchmarks.ClientJob
         public int Connections { get; set; } = 256;
 
         public int Duration { get; set; } = 15;
+        public int Warmup { get; set; } = 15;
 
         public string ScriptName { get; set; }
 
