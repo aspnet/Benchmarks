@@ -1040,6 +1040,9 @@ namespace BenchmarksDriver
                     response = await _httpClient.GetAsync(clientJobUri);
                     responseContent = await response.Content.ReadAsStringAsync();
 
+                    // Ping server job to keep it alive
+                    response = await _httpClient.GetAsync(serverJobUri);
+
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
