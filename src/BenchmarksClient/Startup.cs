@@ -253,7 +253,7 @@ namespace BenchmarkClient
             if (!string.IsNullOrEmpty(job.ScriptName))
             {
                 command += $" -s scripts/{job.ScriptName}.lua --";
-                
+
                 if (job.PipelineDepth > 0)
                 {
                     command += $" {job.PipelineDepth}";
@@ -320,7 +320,7 @@ namespace BenchmarkClient
                 var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
                 job.BadResponses = ReadBadReponses(badResponsesMatch);
 
-                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)s");
+                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(s|m|h)");
                 job.Requests = ReadRequests(requestsCountMatch);
                 job.ActualDuration = ReadDuration(requestsCountMatch);
 
@@ -331,7 +331,7 @@ namespace BenchmarkClient
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            return process;                
+            return process;
         }
 
         private static TimeSpan ReadDuration(Match responseCountMatch)
@@ -342,7 +342,17 @@ namespace BenchmarkClient
             }
 
             var value = double.Parse(responseCountMatch.Groups[2].Value);
-            return TimeSpan.FromSeconds(value);
+
+            var unit = responseCountMatch.Groups[3].Value;
+
+            switch (unit)
+            {
+                case "s": return TimeSpan.FromSeconds(value);
+                case "m": return TimeSpan.FromMinutes(value);
+                case "h": return TimeSpan.FromHours(value);
+
+                default: throw new NotSupportedException("Failed to parse duration unit: " + unit);
+            }
         }
 
         private static int ReadRequests(Match responseCountMatch)
@@ -353,6 +363,7 @@ namespace BenchmarkClient
             }
 
             var value = int.Parse(responseCountMatch.Groups[1].Value);
+
             return value;
         }
 
@@ -375,7 +386,7 @@ namespace BenchmarkClient
                 return 0;
             }
 
-            var value = 
+            var value =
                 int.Parse(socketErrorsMatch.Groups[1].Value) +
                 int.Parse(socketErrorsMatch.Groups[2].Value) +
                 int.Parse(socketErrorsMatch.Groups[3].Value) +
@@ -397,9 +408,9 @@ namespace BenchmarkClient
 
             switch (unit)
             {
-                case "s" : return value * 1000;
-                case "ms" : return value;
-                case "us" : return value / 1000;
+                case "s": return value * 1000;
+                case "ms": return value;
+                case "us": return value / 1000;
 
                 default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
             }
