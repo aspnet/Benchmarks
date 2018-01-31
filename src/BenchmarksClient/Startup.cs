@@ -357,7 +357,7 @@ namespace BenchmarkClient
 
         private static int ReadRequests(Match responseCountMatch)
         {
-            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 3)
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
             {
                 throw new NotSupportedException("Failed to parse requests");
             }
