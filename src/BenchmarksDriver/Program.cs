@@ -688,7 +688,7 @@ namespace BenchmarksDriver
                         var statistics = new Statistics
                         {
                             RequestsPerSecond = clientJob.RequestsPerSecond,
-                            LatencyOnLoad = clientJob.Latency.Average.TotalMilliseconds,
+                            LatencyOnLoad = clientJob.Latency.Average,
                             Cpu = cpu,
                             WorkingSet = workingSet,
                             StartupMain = serverJob.StartupMainMethod.TotalMilliseconds,
@@ -697,11 +697,11 @@ namespace BenchmarksDriver
                             SocketErrors = clientJob.SocketErrors,
                             BadResponses = clientJob.BadResponses,
 
-                            LatencyAverage = clientJob.Latency.Average.TotalMilliseconds,
-                            Latency50Percentile = clientJob.Latency.Within50thPercentile.TotalMilliseconds,
-                            Latency75Percentile = clientJob.Latency.Within75thPercentile.TotalMilliseconds,
-                            Latency90Percentile = clientJob.Latency.Within90thPercentile.TotalMilliseconds,
-                            Latency99Percentile = clientJob.Latency.Within99thPercentile.TotalMilliseconds,
+                            LatencyAverage = clientJob.Latency.Average,
+                            Latency50Percentile = clientJob.Latency.Within50thPercentile,
+                            Latency75Percentile = clientJob.Latency.Within75thPercentile,
+                            Latency90Percentile = clientJob.Latency.Within90thPercentile,
+                            Latency99Percentile = clientJob.Latency.Within99thPercentile,
                             TotalRequests = clientJob.Requests,
                             Duration = clientJob.ActualDuration.TotalMilliseconds
 

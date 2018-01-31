@@ -385,7 +385,7 @@ namespace BenchmarkClient
             return value;
         }
 
-        private static TimeSpan ReadLatency(Match match)
+        private static double ReadLatency(Match match)
         {
             if (!match.Success || match.Groups.Count != 3)
             {
@@ -397,9 +397,9 @@ namespace BenchmarkClient
 
             switch (unit)
             {
-                case "s" : return TimeSpan.FromSeconds(value);
-                case "ms" : return TimeSpan.FromMilliseconds(value);
-                case "us" : return TimeSpan.FromTicks((long)value * 10); // 1 Tick == 100ns == 0.1us
+                case "s" : return value * 1000;
+                case "ms" : return value;
+                case "us" : return value / 1000;
 
                 default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
             }
