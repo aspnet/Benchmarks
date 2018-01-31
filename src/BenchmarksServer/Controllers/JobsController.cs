@@ -28,7 +28,10 @@ namespace BenchmarkServer.Controllers
 
         public IEnumerable<ServerJob> GetAll()
         {
-            return _jobs.GetAll().Select(RemoveAttachmentContent);
+            lock (_jobs)
+            {
+                return _jobs.GetAll().Select(RemoveAttachmentContent);
+            }
         }
 
         [HttpGet("{id}")]
@@ -44,7 +47,10 @@ namespace BenchmarkServer.Controllers
                 // Mark when the job was last read to notify that the driver is still connected
                 job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
-                return new ObjectResult(RemoveAttachmentContent(job));
+                lock (_jobs)
+                {
+                    return new ObjectResult(RemoveAttachmentContent(job));
+                }
             }
         }
 
@@ -135,6 +141,11 @@ namespace BenchmarkServer.Controllers
         /// </summary>
         private ServerJob RemoveAttachmentContent(ServerJob job)
         {
+            if (job.Attachments == null || job.Attachments.Length == 0)
+            {
+                return job;
+            }
+
             var attachments = job.Attachments;
 
             job.Attachments = attachments.Select(x => new Attachment { Filename = x.Filename, Location = x.Location }).ToArray();
