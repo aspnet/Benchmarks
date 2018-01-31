@@ -658,12 +658,11 @@ namespace BenchmarksDriver
                     }
 
                     Log("Warmup");
-                    var duration = clientJob.Duration;
-                    clientJob.Duration = clientJob.Warmup;
+                    var duration = _clientJob.Duration;
+                    _clientJob.Duration = _clientJob.Warmup;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     Log("Benchmark");
-                    clientJob.Duration = duration;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                     if (clientJob.State == ClientState.Completed)
