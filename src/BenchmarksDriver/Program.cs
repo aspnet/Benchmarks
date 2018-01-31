@@ -662,6 +662,7 @@ namespace BenchmarksDriver
                     _clientJob.Duration = _clientJob.Warmup;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
+                    _clientJob.Duration = duration;
                     Log("Benchmark");
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
