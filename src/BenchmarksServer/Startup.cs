@@ -370,19 +370,33 @@ namespace BenchmarkServer
                                             // Format is {used}M/GiB/{total}M/GiB
                                             var workingSetRaw = data[1];
                                             var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
-                                            var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+                                            var cpu = Math.Round(double.Parse(cpuPercentRaw.Trim('%')) / Environment.ProcessorCount);
 
-                                            // MiB or GiB
-                                            var factor = usedMemoryRaw.EndsWith("MiB") ? 1024 * 1024 : 1024 * 1024 * 1024;
-                                            var memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                            // MiB, GiB, B ?
+                                            var factor = 1;
+                                            double memory;
+
+                                            if (usedMemoryRaw.EndsWith("GiB"))
+                                            {
+                                                factor = 1024 * 1024 * 1024;
+                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                            }
+                                            else if (usedMemoryRaw.EndsWith("MiB"))
+                                            {
+                                                factor = 1024 * 1024;
+                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                            }
+                                            else
+                                            {
+                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
+                                            }
+                                                
                                             var workingSet = (long)(memory * factor);
-
-                                            process.Refresh();
 
                                             job.AddServerCounter(new ServerCounter
                                             {
                                                 Elapsed = now - startMonitorTime,
-                                                WorkingSet = process.WorkingSet64,
+                                                WorkingSet = workingSet,
                                                 CpuPercentage = cpu
                                             });
                                         }
@@ -606,7 +620,7 @@ namespace BenchmarkServer
 
             ProcessUtil.Run("docker", $"stop {containerId}");
 
-            ProcessUtil.Run("docker", $"rmi {imageName}");
+            ProcessUtil.Run("docker", $"rmi --force {imageName}");
         }
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)

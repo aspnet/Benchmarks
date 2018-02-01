@@ -29,52 +29,54 @@ namespace BenchmarkServer
                 },
             };
 
-            if (workingDirectory != null)
+            using (process)
             {
-                process.StartInfo.WorkingDirectory = workingDirectory;
-            }
-
-            if (environmentVariables != null)
-            {
-                foreach (var kvp in environmentVariables)
+                if (workingDirectory != null)
                 {
-                    process.StartInfo.Environment.Add(kvp);
+                    process.StartInfo.WorkingDirectory = workingDirectory;
                 }
-            }
 
-            var outputBuilder = new StringBuilder();
-            process.OutputDataReceived += (_, e) =>
-            {
-                outputBuilder.AppendLine(e.Data);
-                Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
-            };
+                if (environmentVariables != null)
+                {
+                    foreach (var kvp in environmentVariables)
+                    {
+                        process.StartInfo.Environment.Add(kvp);
+                    }
+                }
 
-            var errorBuilder = new StringBuilder();
-            process.ErrorDataReceived += (_, e) =>
-            {
-                errorBuilder.AppendLine(e.Data);
-                Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
-            };
+                var outputBuilder = new StringBuilder();
+                process.OutputDataReceived += (_, e) =>
+                {
+                    outputBuilder.AppendLine(e.Data);
+                    Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
+                };
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+                var errorBuilder = new StringBuilder();
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    errorBuilder.AppendLine(e.Data);
+                    Log.WriteLine($"[{logWorkingDirectory}] [{filename} {arguments}] {e.Data}");
+                };
 
-            if (timeout.HasValue)
-            {
-                process.WaitForExit((int)timeout.Value.TotalMilliseconds);
-            }
-            else
-            {
-                process.WaitForExit();
-            }
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
-            if (throwOnError && process.ExitCode != 0)
-            {
-                throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
-            }
+                if (timeout.HasValue)
+                {
+                    process.WaitForExit((int)timeout.Value.TotalMilliseconds);
+                }
+                else
+                {
+                    process.WaitForExit();
+                }
 
-            return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
+                if (throwOnError && process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
+                }
+                return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
+            }            
         }
     }
 }
