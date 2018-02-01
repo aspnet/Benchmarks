@@ -19,6 +19,7 @@ using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
@@ -219,6 +220,11 @@ namespace BenchmarkServer
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
+                    .ConfigureLogging((hostingContext, logging) =>
+                    {
+                        logging.SetMinimumLevel(LogLevel.Error);
+                        logging.AddConsole();
+                    })
                     .Build();
 
             var hostTask = host.RunAsync();
@@ -326,13 +332,6 @@ namespace BenchmarkServer
 
                                         var now = DateTime.UtcNow;
 
-                                        // Clean the job in case the client job is not running
-                                        if (now - startMonitorTime > job.Timeout)
-                                        {
-                                            Log.WriteLine($"Job timed out after {job.Timeout}. Halting job.");
-                                            job.State = ServerState.Deleting;
-                                        }
-
                                         // Clean the job in case the driver is not running
                                         if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
                                         {
@@ -352,7 +351,7 @@ namespace BenchmarkServer
 
                                             process.Refresh();
 
-                                            job.ServerCounters.Add(new ServerCounter
+                                            job.AddServerCounter(new ServerCounter
                                             {
                                                 Elapsed = now - startMonitorTime,
                                                 WorkingSet = process.WorkingSet64,
@@ -379,7 +378,8 @@ namespace BenchmarkServer
                                             var workingSet = (long)(memory * factor);
 
                                             process.Refresh();
-                                            job.ServerCounters.Add(new ServerCounter
+
+                                            job.AddServerCounter(new ServerCounter
                                             {
                                                 Elapsed = now - startMonitorTime,
                                                 WorkingSet = process.WorkingSet64,

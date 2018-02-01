@@ -132,6 +132,8 @@ namespace BenchmarkClient
 
                     jobLogText += "]";
 
+                    var now = DateTime.UtcNow;
+
                     if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
@@ -145,19 +147,16 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
-                        job.RunningSince = DateTime.UtcNow;
+                        job.LastDriverCommunicationUtc = now;
 
                         process = StartProcess(job);
                     }
                     else if (job.State == ClientState.Running)
                     {
-                        // If the driver never sent the Delete command, for instance
-                        // if it was killed, mark it as Deleting
-
-                        if (DateTime.UtcNow - job.RunningSince > TimeSpan.FromSeconds(job.Duration + 5))
+                        // Clean the job in case the driver is not running
+                        if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
                         {
-                            Log($"Job running for too long {jobLogText}");
-
+                            Log($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
                             job.State = ClientState.Deleting;
                             _jobs.Update(job);
                         }
@@ -336,7 +335,7 @@ namespace BenchmarkClient
 
         private static TimeSpan ReadDuration(Match responseCountMatch)
         {
-            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 3)
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
             {
                 throw new NotSupportedException("Failed to parse duration");
             }

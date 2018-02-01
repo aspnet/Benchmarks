@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Repository;
 
 namespace BenchmarkServer.Controllers
@@ -30,12 +29,12 @@ namespace BenchmarkServer.Controllers
         {
             lock (_jobs)
             {
-                return _jobs.GetAll().Select(RemoveAttachmentContent);
+                return _jobs.GetAll();
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        [HttpGet("{id}/touch")]
+        public IActionResult Touch(int id)
         {
             var job = _jobs.Find(id);
             if (job == null)
@@ -46,42 +45,85 @@ namespace BenchmarkServer.Controllers
             {
                 // Mark when the job was last read to notify that the driver is still connected
                 job.LastDriverCommunicationUtc = DateTime.UtcNow;
-
-                lock (_jobs)
-                {
-                    return new ObjectResult(RemoveAttachmentContent(job));
-                }
+                return Ok();
             }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            lock (_jobs)
+            {
+                var job = _jobs.Find(id);
+                if (job == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    // Mark when the job was last read to notify that the driver is still connected
+                    job.LastDriverCommunicationUtc = DateTime.UtcNow;
+                    return new ObjectResult(job);
+                }
+            }   
         }
 
         [HttpPost]
         public IActionResult Create([FromBody] ServerJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ServerState.Waiting ||
-                job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
+            lock (_jobs)
             {
-                return BadRequest();
+                if (job == null || job.Id != 0 || job.State != ServerState.Waiting ||
+                job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
+                {
+                    return BadRequest();
+                }
+
+                job.Hardware = Startup.Hardware;
+                job.HardwareVersion = Startup.HardwareVersion;
+                job.OperatingSystem = Startup.OperatingSystem;
+                job = _jobs.Add(job);
+
+                Response.Headers["Location"] = $"/jobs/{job.Id}";
+                return new StatusCodeResult((int)HttpStatusCode.Accepted);
             }
-
-            job.Hardware = Startup.Hardware;
-            job.HardwareVersion = Startup.HardwareVersion;
-            job.OperatingSystem = Startup.OperatingSystem;
-            job = _jobs.Add(job);
-
-            Response.Headers["Location"] = $"/jobs/{job.Id}";
-            return new StatusCodeResult((int)HttpStatusCode.Accepted);
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+                    job.State = ServerState.Deleting;
+                    _jobs.Update(job);
+
+                    Response.Headers["Location"] = $"/jobs/{job.Id}";
+                    return new StatusCodeResult((int)HttpStatusCode.Accepted);
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Put([FromBody] ServerJob job)
+        {
             try
             {
-                var job = _jobs.Find(id);
-                job.State = ServerState.Deleting;
+                var existing = _jobs.Find(job.Id);
+                
+                if (existing == null)
+                {
+                    return NotFound();
+                }
+
                 _jobs.Update(job);
 
-                Response.Headers["Location"] = $"/jobs/{job.Id}";
                 return new StatusCodeResult((int)HttpStatusCode.Accepted);
             }
             catch
@@ -93,68 +135,56 @@ namespace BenchmarkServer.Controllers
         [HttpPost("{id}/trace")]
         public IActionResult TracePost(int id)
         {
-            try
+            lock (_jobs)
             {
-                var job = _jobs.Find(id);
-                job.State = ServerState.TraceCollecting;
-                _jobs.Update(job);
+                try
+                {
+                    var job = _jobs.Find(id);
+                    job.State = ServerState.TraceCollecting;
+                    _jobs.Update(job);
 
-                Response.Headers["Location"] = $"/jobs/{job.Id}";
-                return new StatusCodeResult((int)HttpStatusCode.Accepted);
-            }
-            catch
-            {
-                return NotFound();
+                    Response.Headers["Location"] = $"/jobs/{job.Id}";
+                    return new StatusCodeResult((int)HttpStatusCode.Accepted);
+                }
+                catch
+                {
+                    return NotFound();
+                }
             }
         }
 
         [HttpGet("{id}/trace")]
         public IActionResult Trace(int id)
         {
-            try
+            lock (_jobs)
             {
-                var job = _jobs.Find(id);
-                return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile + ".zip"), "application/object");
-            }
-            catch
-            {
-                return NotFound();
+                try
+                {
+                    var job = _jobs.Find(id);
+                    return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile + ".zip"), "application/object");
+                }
+                catch
+                {
+                    return NotFound();
+                }
             }
         }
         
         [HttpGet("{id}/invoke")]
-        public async Task<IActionResult> Invoke(int id, string path)
+        public IActionResult Invoke(int id, string path)
         {
-            try
+            lock (_jobs)
             {
-                var job = _jobs.Find(id);
-                return Content(await _httpClient.GetStringAsync(new Uri(new Uri(job.Url), path)));
+                try
+                {
+                    var job = _jobs.Find(id);
+                    return Content(_httpClient.GetStringAsync(new Uri(new Uri(job.Url), path)).GetAwaiter().GetResult());
+                }
+                catch (Exception e)
+                {
+                    return StatusCode(500, e.ToString());
+                }
             }
-            catch(Exception e)
-            {
-                return StatusCode(500, e.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Creates a cloned job by removing its attachments' content.
-        /// </summary>
-        private ServerJob RemoveAttachmentContent(ServerJob job)
-        {
-            if (job.Attachments == null || job.Attachments.Length == 0)
-            {
-                return job;
-            }
-
-            var attachments = job.Attachments;
-
-            job.Attachments = attachments.Select(x => new Attachment { Filename = x.Filename, Location = x.Location }).ToArray();
-
-            var newJob = JsonConvert.DeserializeObject<ServerJob>(JsonConvert.SerializeObject(job));
-
-            job.Attachments = attachments;
-
-            return newJob;
         }
     }
 }

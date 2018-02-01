@@ -284,3 +284,4 @@ __pycache__/
 
 # Perfview trace
 *.etl.zip
+*.orig

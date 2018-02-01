@@ -37,7 +37,21 @@ namespace Benchmarks.ServerJob
         
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
-        public List<ServerCounter> ServerCounters { get; set; } = new List<ServerCounter>();
+        public ServerCounter[] ServerCounters { get; set; } = new ServerCounter[0];
+
+        public ServerJob AddServerCounter(ServerCounter counter)
+        {
+            var counters = new List<ServerCounter>(ServerCounters);
+            counters.Add(counter);
+            ServerCounters = counters.ToArray();
+            return this;
+        }
+
+        public ServerJob ClearServerCounters()
+        {
+            ServerCounters = new ServerCounter[0];
+            return this;
+        }
 
         /// <summary>
         /// The source information for references packages
@@ -60,7 +74,6 @@ namespace Benchmarks.ServerJob
         public WebHost WebHost { get; set; } = WebHost.KestrelLibuv;
 
         public bool UseRuntimeStore { get; set; }
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
 
         public Attachment[] Attachments { get; set; }
 
