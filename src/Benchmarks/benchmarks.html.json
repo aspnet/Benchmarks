@@ -12,6 +12,9 @@
   "DbFortunesRaw": {
     "Path": "/fortunes/raw"
   },
+  "DbFortunesRawSync": {
+    "Path": "/fortunes/raw-sync"
+  },
   "DbFortunesDapper": {
     "Path": "/fortunes/dapper"
   },

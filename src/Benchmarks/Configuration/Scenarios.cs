@@ -100,6 +100,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/fortunes/raw")]
         public bool DbFortunesRaw { get; set; }
 
+        [ScenarioPath("/fortunes/raw-sync")]
+        public bool DbFortunesRawSync { get; set; }
+
         [ScenarioPath("/fortunes/ef")]
         public bool DbFortunesEf { get; set; }
 

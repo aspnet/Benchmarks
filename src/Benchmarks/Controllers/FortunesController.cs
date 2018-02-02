@@ -18,6 +18,13 @@ namespace Benchmarks.Controllers
             return View("Fortunes", await db.LoadFortunesRows());
         }
 
+        [HttpGet("raw-sync")]
+        public IActionResult RawSync()
+        {
+            var db = HttpContext.RequestServices.GetRequiredService<RawDb>();
+            return View("Fortunes", db.LoadFortunesRowsSync());
+        }
+
         [HttpGet("dapper")]
         public async Task<IActionResult> Dapper()
         {
