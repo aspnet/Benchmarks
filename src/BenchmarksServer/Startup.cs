@@ -580,8 +580,8 @@ namespace BenchmarkServer
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
 
-            var command = useHostNetworking ? $"run -d --rm --network host {imageName}" :
-                                              $"run -d --rm -p {job.Port}:{job.Port} {imageName}";
+            var command = useHostNetworking ? $"run -d --network host {imageName}" :
+                                              $"run -d -p {job.Port}:{job.Port} {imageName}";
             var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
             var url = ComputeServerUrl(hostname, job);

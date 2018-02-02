@@ -143,7 +143,7 @@ namespace BenchmarkClient
 
                         Debug.Assert(process == null);
 
-                        MeasureFirstRequestLatency(job);
+                        await MeasureFirstRequestLatencyAsync(job);
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
@@ -200,16 +200,16 @@ namespace BenchmarkClient
             return requestMessage;
         }
 
-        private static void MeasureFirstRequestLatency(ClientJob job)
+        private static async Task MeasureFirstRequestLatencyAsync(ClientJob job)
         {
             Log("Measuring startup time");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using (var response = _httpClient.SendAsync(CreateHttpMessage(job)).GetAwaiter().GetResult())
+            using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
             {
-                var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var responseContent = await response.Content.ReadAsStringAsync();
                 job.LatencyFirstRequest = stopwatch.Elapsed;
             }
 
@@ -221,9 +221,9 @@ namespace BenchmarkClient
             {
                 stopwatch.Restart();
 
-                using (var response = _httpClient.SendAsync(CreateHttpMessage(job)).GetAwaiter().GetResult())
+                using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
                 {
-                    var responseContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    var responseContent = await response.Content.ReadAsStringAsync();
 
                     // We keep the last measure to simulate a warmup phase.
                     job.LatencyNoLoad = stopwatch.Elapsed;
