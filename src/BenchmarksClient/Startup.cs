@@ -133,8 +133,6 @@ namespace BenchmarkClient
 
                     jobLogText += "]";
 
-                    var now = DateTime.UtcNow;
-
                     if (job.State == ClientState.Waiting)
                     {
                         // TODO: Race condition if DELETE is called during this code
@@ -148,12 +146,14 @@ namespace BenchmarkClient
 
                         Log($"Running job {jobLogText}");
                         job.State = ClientState.Running;
-                        job.LastDriverCommunicationUtc = now;
+                        job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
                         process = StartProcess(job);
                     }
                     else if (job.State == ClientState.Running)
                     {
+                        var now = DateTime.UtcNow;
+
                         // Clean the job in case the driver is not running
                         if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
                         {
