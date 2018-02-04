@@ -11,5 +11,6 @@ docker run \
     --network host \
     --restart always \
     -e ACCEPT_EULA=Y \
+    -e MSSQL_PID=Enterprise \
     -e SA_PASSWORD=Benchmarkdbp@55 \
     mssql-techempower

@@ -1,4 +1,4 @@
-FROM microsoft/mssql-server-linux:2017-GA
+FROM microsoft/mssql-server-linux:latest
 
 # Create app directory
 RUN mkdir -p /usr/src/app
@@ -11,4 +11,4 @@ COPY . /usr/src/app
 RUN chmod +x /usr/src/app/import-data.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+CMD /bin/bash ./entrypoint.sh
