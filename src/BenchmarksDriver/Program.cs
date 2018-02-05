@@ -1096,11 +1096,13 @@ namespace BenchmarksDriver
                     LogVerbose($"GET {clientJobUri}...");
                     response = await _httpClient.GetAsync(clientJobUri);
                     responseContent = await response.Content.ReadAsStringAsync();
-
-                    // Ping server job to keep it alive
-                    response = await _httpClient.GetAsync(serverJobUri);
-
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Log($"Job forcibly stopped on the client, halting driver");
+                        break;
+                    }
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 

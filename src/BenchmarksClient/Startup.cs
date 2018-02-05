@@ -163,7 +163,7 @@ namespace BenchmarkClient
                             _jobs.Update(job);
                         }
                     }
-                    else if (job.State == ClientState.Running)
+                    else if (job.State == ClientState.Running || job.State == ClientState.Completed)
                     {
                         var now = DateTime.UtcNow;
 
@@ -175,7 +175,7 @@ namespace BenchmarkClient
                             _jobs.Update(job);
                         }
                     }
-                    else if (job.State == ClientState.Deleting || job.State == ClientState.Completed)
+                    else if (job.State == ClientState.Deleting)
                     {
                         Log($"Deleting job {jobLogText}");
 
