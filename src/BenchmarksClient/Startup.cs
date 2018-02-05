@@ -140,15 +140,28 @@ namespace BenchmarkClient
                         Log($"Starting job {jobLogText}");
                         job.State = ClientState.Starting;
 
-                        Debug.Assert(process == null);
+                        try
+                        {
+                            Debug.Assert(process == null);
 
-                        await MeasureFirstRequestLatencyAsync(job);
+                            await MeasureFirstRequestLatencyAsync(job);
 
-                        Log($"Running job {jobLogText}");
-                        job.State = ClientState.Running;
-                        job.LastDriverCommunicationUtc = DateTime.UtcNow;
+                            Log($"Running job {jobLogText}");
+                            job.State = ClientState.Running;
+                            _jobs.Update(job);
 
-                        process = StartProcess(job);
+                            job.LastDriverCommunicationUtc = DateTime.UtcNow;
+
+                            process = StartProcess(job);
+                        }
+                        catch(Exception e)
+                        {
+                            Log($"An unexpected error occured while starting the job {job.Id}");
+                            Log(e.Message);
+
+                            job.State = ClientState.Deleting;
+                            _jobs.Update(job);
+                        }
                     }
                     else if (job.State == ClientState.Running)
                     {
@@ -162,7 +175,7 @@ namespace BenchmarkClient
                             _jobs.Update(job);
                         }
                     }
-                    else if (job.State == ClientState.Deleting)
+                    else if (job.State == ClientState.Deleting || job.State == ClientState.Completed)
                     {
                         Log($"Deleting job {jobLogText}");
 
@@ -179,9 +192,9 @@ namespace BenchmarkClient
                         {
                             process.Dispose();
                             process = null;
-                        }
 
-                        _jobs.Remove(job.Id);
+                            _jobs.Remove(job.Id);
+                        }
                     }
                 }
                 await Task.Delay(100);
