@@ -920,7 +920,9 @@ namespace BenchmarkServer
 
                 var outputFolder = Path.Combine(benchmarkedApp, "published");
 
-                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
+                var rid = OperatingSystem == OperatingSystem.Windows ? "win-x64" : "linux-x64";
+
+                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -r {rid} -o {outputFolder} {buildParameters}",
                     workingDirectory: benchmarkedApp,
                     environmentVariables: env);
 
