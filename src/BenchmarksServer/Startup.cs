@@ -1216,6 +1216,11 @@ namespace BenchmarkServer
                     Log.WriteLine($"Could not find connection string for {job.Database}");
                 }
             }
+
+            if (job.DisableR2R)
+            {
+                process.StartInfo.Environment.Add("COMPlus_ReadyToRun", "0");
+            }
                         
             var stopwatch = new Stopwatch();
 

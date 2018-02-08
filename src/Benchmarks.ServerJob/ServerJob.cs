@@ -82,5 +82,6 @@ namespace Benchmarks.ServerJob
         public bool Collect { get; set; }
         public string CollectArguments { get; set; }
         public string PerfViewTraceFile { get; set; }
+        public bool DisableR2R { get; set; }
     }
 }

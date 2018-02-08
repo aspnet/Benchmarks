@@ -109,6 +109,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
+            var disableR2ROption = app.Option("--no-crossgen",
+                "Disable Ready To Run.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -379,6 +381,10 @@ namespace BenchmarksDriver
                     {
                         serverJob.CollectArguments = "";
                     }
+                }
+                if (disableR2ROption.HasValue())
+                {
+                    serverJob.DisableR2R = true;
                 }
 
                 var attachments = new List<Attachment>();
