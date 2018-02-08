@@ -31,6 +31,7 @@ namespace Benchmarks.ClientJob
             Output = clientJob.Output;
             Error = clientJob.Error;
             Method = clientJob.Method;
+            SkipStartupLatencies = clientJob.SkipStartupLatencies;
         }
 
         public int Id { get; set; }
