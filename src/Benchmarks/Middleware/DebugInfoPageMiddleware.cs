@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -62,6 +63,13 @@ namespace Benchmarks.Middleware
             await WriteLineAsync($"<li>Server: {Program.Server}</li>");
             await WriteLineAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
             await WriteLineAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
+
+            await WriteLineAsync($"<li>Environment variables:<ul>");
+            foreach (DictionaryEntry ev in Environment.GetEnvironmentVariables())
+            {
+                await WriteLineAsync($"<li>{ev.Key} = {ev.Value}</li>");
+            }
+            await WriteLineAsync($"</ul></li>");
 
             await WriteLineAsync($"<li>Server features:<ul>");
             foreach (var feature in httpContext.Features)
