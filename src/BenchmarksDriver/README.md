@@ -47,6 +47,9 @@ Options:
   --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
   --before-shutdown      An endpoint to call before the application has shut down.
   -sp|--span             The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days
+  -t|--table             Table name of the SQL Database to store results
+  --no-crossgen          Disables Ready To Run.
+  -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
 ```
 
 ### Examples

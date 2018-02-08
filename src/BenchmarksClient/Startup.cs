@@ -219,7 +219,7 @@ namespace BenchmarkClient
                 return;
             }
 
-            Log($"Measuring first request latency on ${job.ServerBenchmarkUri}");
+            Log($"Measuring first request latency on {job.ServerBenchmarkUri}");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();

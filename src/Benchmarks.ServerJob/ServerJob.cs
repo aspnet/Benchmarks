@@ -83,5 +83,7 @@ namespace Benchmarks.ServerJob
         public string CollectArguments { get; set; }
         public string PerfViewTraceFile { get; set; }
         public bool DisableR2R { get; set; }
+
+        public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
     }
 }

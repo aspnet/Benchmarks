@@ -110,7 +110,9 @@ namespace BenchmarksDriver
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
             var disableR2ROption = app.Option("--no-crossgen",
-                "Disable Ready To Run.", CommandOptionType.NoValue);
+                "Disables Ready To Run.", CommandOptionType.NoValue);
+            var environmentVariablesOption = app.Option("-e|--env",
+                "Defines custom envrionment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -385,6 +387,30 @@ namespace BenchmarksDriver
                 if (disableR2ROption.HasValue())
                 {
                     serverJob.DisableR2R = true;
+                }
+                if (environmentVariablesOption.HasValue())
+                {
+                    foreach(var env in environmentVariablesOption.Values)
+                    {
+                        var index = env.IndexOf('=');
+
+                        if (index == -1)
+                        {
+                            if (index == -1)
+                            {
+                                Console.WriteLine($"Invalid environment variable, '=' not found: '{env}'");
+                                return 9;
+                            }
+                        }
+                        else if (index == env.Length - 1)
+                        {
+                            serverJob.EnvironmentVariables.Add(env.Substring(0, index), "");
+                        }
+                        else 
+                        {
+                            serverJob.EnvironmentVariables.Add(env.Substring(0, index), env.Substring(index + 1));
+                        }
+                    }
                 }
 
                 var attachments = new List<Attachment>();

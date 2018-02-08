@@ -1221,6 +1221,11 @@ namespace BenchmarkServer
             {
                 process.StartInfo.Environment.Add("COMPlus_ReadyToRun", "0");
             }
+
+            foreach(var env in job.EnvironmentVariables)
+            {
+                process.StartInfo.Environment.Add(env.Key, env.Value);
+            }
                         
             var stopwatch = new Stopwatch();
 
