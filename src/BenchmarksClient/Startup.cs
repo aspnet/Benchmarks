@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -215,7 +214,12 @@ namespace BenchmarkClient
 
         private static async Task MeasureFirstRequestLatencyAsync(ClientJob job)
         {
-            Log("Measuring startup time");
+            if (job.SkipStartupLatencies)
+            {
+                return;
+            }
+
+            Log($"Measuring first request latency on ${job.ServerBenchmarkUri}");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -226,9 +230,9 @@ namespace BenchmarkClient
                 job.LatencyFirstRequest = stopwatch.Elapsed;
             }
 
-            Log(job.LatencyFirstRequest.ToString());
+            Log($"{job.LatencyFirstRequest.TotalMilliseconds} ms");
 
-            Log("Measuring single connection latency");
+            Log("Measuring subsequent requests latency");
 
             for (var i = 0; i < 10; i++)
             {
@@ -243,7 +247,7 @@ namespace BenchmarkClient
                 }
             }
 
-            Log(job.LatencyNoLoad.ToString());
+            Log($"{job.LatencyNoLoad.TotalMilliseconds} ms");
         }
 
         private static Process StartProcess(ClientJob job)

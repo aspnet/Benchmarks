@@ -670,6 +670,11 @@ namespace BenchmarksDriver
                     _clientJob.Duration = _clientJob.Warmup;
                     clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
+                    // Store the latency as measured on the warmup job
+                    var latencyNoLoad = clientJob.LatencyNoLoad;
+                    var latencyFirstRequest = clientJob.LatencyFirstRequest;
+                    _clientJob.SkipStartupLatencies = true;
+
                     _clientJob.Duration = duration;
                     var startTime = DateTime.UtcNow;
 
@@ -728,8 +733,8 @@ namespace BenchmarksDriver
                                 Cpu = cpu,
                                 WorkingSet = workingSet,
                                 StartupMain = serverJob.StartupMainMethod.TotalMilliseconds,
-                                FirstRequest = clientJob.LatencyFirstRequest.TotalMilliseconds,
-                                Latency = clientJob.LatencyNoLoad.TotalMilliseconds,
+                                FirstRequest = latencyFirstRequest.TotalMilliseconds,
+                                Latency = latencyNoLoad.TotalMilliseconds,
                                 SocketErrors = clientJob.SocketErrors,
                                 BadResponses = clientJob.BadResponses,
 
