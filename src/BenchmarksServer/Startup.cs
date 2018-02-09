@@ -417,7 +417,7 @@ namespace BenchmarkServer
 
                                 job.State = ServerState.Failed;
 
-                                CleanJob();
+                                await CleanJobAsync();
 
                                 continue;
                             }
@@ -426,7 +426,7 @@ namespace BenchmarkServer
                         {
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
-                            CleanJob();
+                            await CleanJobAsync();
                         }
                         else if (job.State == ServerState.TraceCollecting)
                         {
@@ -440,7 +440,7 @@ namespace BenchmarkServer
                             }
                         }
 
-                        void CleanJob()
+                        async Task CleanJobAsync()
                         {
                             lock (executionLock)
                             {
@@ -452,29 +452,35 @@ namespace BenchmarkServer
 
                             if (process != null)
                             {
-                                // TODO: Replace with managed xplat version of kill process tree
-                                if (OperatingSystem == OperatingSystem.Windows)
-                                {
-                                    ProcessUtil.Run("taskkill.exe", $"/f /t /pid {process.Id}", throwOnError: false);
-                                }
-                                else if (OperatingSystem == OperatingSystem.OSX)
-                                {
-                                    // pkill isn't available on OSX and this will only kill bash probably
-                                    ProcessUtil.Run("kill", $"-s SIGINT {process.Id}", throwOnError: false);
-                                }
-                                else
-                                {
-                                    var assemblyName = Path.GetFileNameWithoutExtension(job.Source.Project);
-                                    ProcessUtil.Run("pkill", $"--signal SIGINT --full {assemblyName}.dll", throwOnError: false);
-                                }
-                                process.Dispose();
-                                process = null;
+                                var processId = process.Id;
 
                                 if (perfviewEnabled)
                                 {
                                     // Abort all perfview processes
                                     var perfViewProcess = RunPerfview("abort", Path.GetPathRoot(_perfviewPath));
                                 }
+
+                                process.CloseMainWindow();
+                                process.Kill();
+                                process.Dispose();
+
+                                do
+                                {
+                                    Log.WriteLine($"Waiting for process {processId} to stop ...");
+
+                                    await Task.Delay(1000);
+
+                                    try
+                                    {
+                                        process = Process.GetProcessById(processId);
+                                    }
+                                    catch
+                                    {
+                                        process = null;
+                                    }
+
+                                } while (process != null && !process.HasExited);
+
                             }
                             else if (dockerImage != null)
                             {
