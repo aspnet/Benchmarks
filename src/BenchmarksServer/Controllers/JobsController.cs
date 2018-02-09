@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -110,6 +111,27 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpPost("{id}/stop")]
+        public IActionResult Stop(int id)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+                    job.State = ServerState.Stopping;
+                    _jobs.Update(job);
+
+                    Response.Headers["Location"] = $"/jobs/{job.Id}";
+                    return new StatusCodeResult((int)HttpStatusCode.Accepted);
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
         [HttpPut("{id}")]
         public IActionResult Put([FromBody] ServerJob job)
         {
@@ -169,7 +191,35 @@ namespace BenchmarkServer.Controllers
                 }
             }
         }
-        
+
+        [HttpGet("{id}/download")]
+        public IActionResult Download(int id, string path)
+        {
+            try
+            {
+                var job = _jobs.Find(id);
+
+                if (job == null)
+                {
+                    return NotFound();
+                }
+
+                var fullPath = Path.Combine(job.BasePath, path);
+
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    return NotFound();
+                }
+
+                var base64 = Convert.ToBase64String(System.IO.File.ReadAllBytes(fullPath));
+                return Content(base64);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
         [HttpGet("{id}/invoke")]
         public IActionResult Invoke(int id, string path)
         {

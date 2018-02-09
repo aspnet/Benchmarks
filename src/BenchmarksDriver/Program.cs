@@ -111,8 +111,12 @@ namespace BenchmarksDriver
                 "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run.", CommandOptionType.NoValue);
+            var collectR2RLogOption = app.Option("--collect-crossgen",
+                "Download the Ready To Run log.", CommandOptionType.NoValue);
             var environmentVariablesOption = app.Option("-e|--env",
-                "Defines custom envrionment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
+                "Defines custom environment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
+            var downloadFilesOption = app.Option("-d|--download",
+                "Download specific server files. This argument can be used multiple times. e.g., -d \"published/wwwroot/picture.png\"", CommandOptionType.MultipleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -386,7 +390,11 @@ namespace BenchmarksDriver
                 }
                 if (disableR2ROption.HasValue())
                 {
-                    serverJob.DisableR2R = true;
+                    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRun", "0");
+                }
+                if (collectR2RLogOption.HasValue())
+                {
+                    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRunLogFile", "r2r");
                 }
                 if (environmentVariablesOption.HasValue())
                 {
@@ -600,7 +608,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value(), span).Result;
+                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value(), span, downloadFilesOption.Values, collectR2RLogOption.HasValue()).Result;
             });
 
             return app.Execute(args);
@@ -616,7 +624,9 @@ namespace BenchmarksDriver
             int iterations,
             int exclude,
             string shutdownEndpoint,
-            TimeSpan span)
+            TimeSpan span,
+            List<string> downloadFiles,
+            bool collectR2RLog)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -755,6 +765,12 @@ namespace BenchmarksDriver
 
                             serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                            // Download R2R log
+                            if (collectR2RLog)
+                            {
+                                downloadFiles.Add("r2r." + serverJob.ProcessId);
+                            }
+
                             var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
                             var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
 
@@ -852,7 +868,70 @@ namespace BenchmarksDriver
                                 await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
                             }
 
-                            if (results.Any())
+                            Log($"Stopping scenario {scenario} on benchmark server...");
+
+                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
+                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                            // Wait for Stop state
+                            do
+                            {
+                                await Task.Delay(1000);
+
+                                LogVerbose($"GET {serverJobUri}...");
+                                response = await _httpClient.GetAsync(serverJobUri);
+                                responseContent = await response.Content.ReadAsStringAsync();
+
+                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                if (serverJob == null)
+                                {
+                                    Log($"The job was forcibly stopped by the server.");
+                                    return 1;
+                                }
+                            } while (serverJob.State != ServerState.Stopped);
+
+                            // Download files
+                            if (downloadFiles != null && downloadFiles.Any())
+                            {
+                                foreach (var file in downloadFiles)
+                                {
+                                    Log($"Downloading file {file}");
+                                    var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
+                                    LogVerbose("GET " + uri);
+
+                                    try
+                                    {
+                                        var filename = file;
+                                        var counter = 1;
+                                        while (File.Exists(filename))
+                                        {
+                                            filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
+                                        }
+
+                                        var base64 = await _httpClient.GetStringAsync(uri);
+                                        await File.WriteAllBytesAsync(filename, Convert.FromBase64String(base64));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log($"Error while downloading file {file}, skipping ...");
+                                        LogVerbose(e.Message);
+                                        continue;
+                                    }
+                                }
+
+                                // Remove locally added R2R log file
+                                if (collectR2RLog)
+                                {
+                                    downloadFiles.Remove("r2r." + serverJob.ProcessId);
+                                }
+                            }
+
+                            var shouldComputeResults = results.Any() && iterations == i;
+
+                            if (shouldComputeResults)
                             {
                                 var samples = results.OrderBy(x => x.RequestsPerSecond).Skip(exclude).SkipLast(exclude).ToList();
 
@@ -1056,10 +1135,10 @@ namespace BenchmarksDriver
                 {
                     if (serverJobUri != null)
                     {
-                        Log($"Stopping scenario {scenario} on benchmark server...");
+                        Log($"Deleting scenario {scenario} on benchmark server...");
 
                         LogVerbose($"DELETE {serverJobUri}...");
-                        response = _httpClient.DeleteAsync(serverJobUri).Result;
+                        response = await _httpClient.DeleteAsync(serverJobUri);
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
 
                         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

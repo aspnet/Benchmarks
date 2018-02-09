@@ -301,6 +301,8 @@ namespace BenchmarkServer
 
                                     Debug.Assert(process == null);
                                     process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled);
+
+                                    job.ProcessId = process.Id;
                                 }
 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -417,16 +419,22 @@ namespace BenchmarkServer
 
                                 job.State = ServerState.Failed;
 
-                                await CleanJobAsync();
+                                await DeleteJobAsync();
 
                                 continue;
                             }
+                        }
+                        else if (job.State == ServerState.Stopping)
+                        {
+                            Log.WriteLine($"Stopping job '{job.Id}' with scenario '{job.Scenario}'");
+
+                            await StopJobAsync();
                         }
                         else if (job.State == ServerState.Deleting)
                         {
                             Log.WriteLine($"Deleting job '{job.Id}' with scenario '{job.Scenario}'");
 
-                            await CleanJobAsync();
+                            await DeleteJobAsync();
                         }
                         else if (job.State == ServerState.TraceCollecting)
                         {
@@ -440,7 +448,7 @@ namespace BenchmarkServer
                             }
                         }
 
-                        async Task CleanJobAsync()
+                        async Task StopJobAsync()
                         {
                             lock (executionLock)
                             {
@@ -482,10 +490,18 @@ namespace BenchmarkServer
                                 } while (process != null && !process.HasExited);
 
                             }
-                            else if (dockerImage != null)
+                            else if (!String.IsNullOrEmpty(dockerImage))
                             {
                                 DockerCleanUp(dockerContainerId, dockerImage);
+                                dockerImage = null;
                             }
+
+                            job.State = ServerState.Stopped;
+                        }
+
+                        async Task DeleteJobAsync()
+                        {
+                            await StopJobAsync();
 
                             if (_cleanup && tempDir != null)
                             {
@@ -1191,14 +1207,14 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
 
-            var benchmarksDir = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
+            job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
 
             var process = new Process()
             {
                 StartInfo = {
                     FileName = dotnetFilename,
                     Arguments = arguments,
-                    WorkingDirectory = benchmarksDir,
+                    WorkingDirectory = job.BasePath,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -1222,12 +1238,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Could not find connection string for {job.Database}");
                 }
             }
-
-            if (job.DisableR2R)
-            {
-                process.StartInfo.Environment.Add("COMPlus_ReadyToRun", "0");
-            }
-
+            
             foreach(var env in job.EnvironmentVariables)
             {
                 process.StartInfo.Environment.Add(env.Key, env.Value);
@@ -1251,7 +1262,7 @@ namespace BenchmarkServer
                         // Start perfview?
                         if (perfview)
                         {
-                            job.PerfViewTraceFile = Path.Combine(benchmarksDir, "benchmarks.etl");
+                            job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl");
                             var perfViewArguments = new Dictionary<string, string>();
                             perfViewArguments["AcceptEula"] = "";
                             perfViewArguments["NoGui"] = "";
@@ -1276,7 +1287,7 @@ namespace BenchmarkServer
                             }
 
                             perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
-                            RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, benchmarksDir));
+                            RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
                         }
 
                         // Mark the job as running to allow the Client to start the test
