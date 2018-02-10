@@ -469,7 +469,12 @@ namespace BenchmarkServer
                                 }
 
                                 process.CloseMainWindow();
-                                process.Kill();
+
+                                if (!process.HasExited)
+                                {
+                                    process.Kill();
+                                }
+
                                 process.Dispose();
 
                                 do
@@ -489,6 +494,7 @@ namespace BenchmarkServer
 
                                 } while (process != null && !process.HasExited);
 
+                                process = null;
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
