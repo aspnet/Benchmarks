@@ -715,7 +715,7 @@ namespace BenchmarksDriver
                     // Store the latency as measured on the warmup job
                     var latencyNoLoad = clientJob.LatencyNoLoad;
                     var latencyFirstRequest = clientJob.LatencyFirstRequest;
-                    _clientJob.SkipStartupLatencies = true;
+                    _clientJob.SkipStartupLatencies = false;
 
                     _clientJob.Duration = duration;
                     var startTime = DateTime.UtcNow;
