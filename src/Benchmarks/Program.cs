@@ -51,8 +51,7 @@ namespace Benchmarks
                 {
                     if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
                     {
-                        loggerFactory.AddFilter("Default", logLevel)
-                                     .AddConsole();
+                        loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
                 })
                 .ConfigureServices(services => services
