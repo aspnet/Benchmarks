@@ -19,10 +19,6 @@ do
             shift
             hardware="$1"
             ;;
-        -d|--db)
-            shift
-            DBHOST="$1"
-            ;;
         -url|--url)
             shift
             url="$1"
@@ -72,36 +68,31 @@ else
     hardware=Physical
 fi
 
-if [[ -v DBHOST ]]
-then
-    postgresql="--postgresql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true\""
-    mysql="--mysql \"Server=$DBHOST;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;\""
-    mssql="--mssql \"Server=$DBHOST;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
-    mongodb="--mongodb \"mongodb://$DBHOST:27017?maxPoolSize=1024\""
+postgresql="--postgresql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true;Max Auto Prepare=3\""
+mysql="--mysql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;\""
+mssql="--mssql \"Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55\""
+mongodb="--mongodb \"mongodb://TFB-database:27017?maxPoolSize=1024\""
 
-    # "--network host" - Better performance than the default "bridge" driver
-    # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
-    docker run \
-        -d \
-        --log-opt max-size=10m \
-        --log-opt max-file=3 \
-        --mount type=bind,source=/mnt,target=/tmp \
-        --name $dockername \
-        --network host \
-        --restart always \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        benchmarks \
-        bash -c \
-        "dotnet run -c Debug --project src/BenchmarksServer/BenchmarksServer.csproj \
-        -n $server_ip \
-        --url $url \
-        --hardware $hardware \
-        --hardware-version $hardware_version \
-        $postgresql  \
-        $mysql  \
-        $mssql \
-        $mongodb \
-        $@"
-else
-    echo DBHOST needs to be defined
-fi
+# "--network host" - Better performance than the default "bridge" driver
+# "-v /var/run/docker.sock" - Give container access to the host docker daemon 
+docker run \
+    -d \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
+    --mount type=bind,source=/mnt,target=/tmp \
+    --name $dockername \
+    --network host \
+    --restart always \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    benchmarks \
+    bash -c \
+    "dotnet run -c Debug --project src/BenchmarksServer/BenchmarksServer.csproj \
+    -n $server_ip \
+    --url $url \
+    --hardware $hardware \
+    --hardware-version $hardware_version \
+    $postgresql  \
+    $mysql  \
+    $mssql \
+    $mongodb \
+    $@"
