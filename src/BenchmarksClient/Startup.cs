@@ -178,11 +178,9 @@ namespace BenchmarkClient
                     {
                         Log($"Deleting job {jobLogText}");
 
-                        Debug.Assert(process != null);
-
                         try
                         {
-                            if (!process.HasExited)
+                            if (process != null && !process.HasExited)
                             {
                                 process.Kill();
                             }
@@ -252,8 +250,6 @@ namespace BenchmarkClient
 
         private static Process StartProcess(ClientJob job)
         {
-            var tcs = new TaskCompletionSource<bool>();
-
             var command = "wrk";
 
             if (job.Headers != null)

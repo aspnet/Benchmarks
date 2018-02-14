@@ -747,7 +747,7 @@ namespace BenchmarksDriver
                         {
                             LogVerbose($"Client Job completed");
 
-                            if (span > TimeSpan.Zero && i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
+                            if (span == TimeSpan.Zero && i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
                             {
                                 Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
                                 await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
@@ -865,67 +865,6 @@ namespace BenchmarksDriver
                                 }
 
                                 await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
-                            }
-
-                            Log($"Stopping scenario {scenario} on benchmark server...");
-
-                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
-                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-
-                            // Wait for Stop state
-                            do
-                            {
-                                await Task.Delay(1000);
-
-                                LogVerbose($"GET {serverJobUri}...");
-                                response = await _httpClient.GetAsync(serverJobUri);
-                                responseContent = await response.Content.ReadAsStringAsync();
-
-                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
-                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                                if (serverJob == null)
-                                {
-                                    Log($"The job was forcibly stopped by the server.");
-                                    return 1;
-                                }
-                            } while (serverJob.State != ServerState.Stopped);
-
-                            // Download files
-                            if (downloadFiles != null && downloadFiles.Any())
-                            {
-                                foreach (var file in downloadFiles)
-                                {
-                                    Log($"Downloading file {file}");
-                                    var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
-                                    LogVerbose("GET " + uri);
-
-                                    try
-                                    {
-                                        var filename = file;
-                                        var counter = 1;
-                                        while (File.Exists(filename))
-                                        {
-                                            filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
-                                        }
-
-                                        var base64 = await _httpClient.GetStringAsync(uri);
-                                        await File.WriteAllBytesAsync(filename, Convert.FromBase64String(base64));
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Log($"Error while downloading file {file}, skipping ...");
-                                        LogVerbose(e.Message);
-                                        continue;
-                                    }
-                                }
-
-                                // Remove locally added R2R log file
-                                if (collectR2RLog)
-                                {
-                                    downloadFiles.Remove("r2r." + serverJob.ProcessId);
-                                }
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
@@ -1124,6 +1063,61 @@ namespace BenchmarksDriver
 
                         spanLoop = spanLoop + 1;
                     } while (DateTime.UtcNow - startTime < span);
+
+                    Log($"Stopping scenario {scenario} on benchmark server...");
+
+                    response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
+                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                    // Wait for Stop state
+                    do
+                    {
+                        await Task.Delay(1000);
+
+                        LogVerbose($"GET {serverJobUri}...");
+                        response = await _httpClient.GetAsync(serverJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                        if (serverJob == null)
+                        {
+                            Log($"The job was forcibly stopped by the server.");
+                            return 1;
+                        }
+                    } while (serverJob.State != ServerState.Stopped);
+
+                    // Download files
+                    if (downloadFiles != null && downloadFiles.Any())
+                    {
+                        foreach (var file in downloadFiles)
+                        {
+                            Log($"Downloading file {file}");
+                            var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
+                            LogVerbose("GET " + uri);
+
+                            try
+                            {
+                                var filename = file;
+                                var counter = 1;
+                                while (File.Exists(filename))
+                                {
+                                    filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
+                                }
+
+                                var base64 = await _httpClient.GetStringAsync(uri);
+                                await File.WriteAllBytesAsync(filename, Convert.FromBase64String(base64));
+                            }
+                            catch (Exception e)
+                            {
+                                Log($"Error while downloading file {file}, skipping ...");
+                                LogVerbose(e.Message);
+                                continue;
+                            }
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -1180,15 +1174,19 @@ namespace BenchmarksDriver
 
                 while (true)
                 {
-                    // Ping server job to keep it alive
-                    LogVerbose($"GET {serverJobUri}/touch...");
-                    response = await _httpClient.GetAsync(serverJobUri + "/touch");
+                    // Retry block, prevent any network communication error from stopping the job
+                    await RetryOnException(3, async () =>
+                    {
+                        // Ping server job to keep it alive
+                        LogVerbose($"GET {serverJobUri}/touch...");
+                        response = await _httpClient.GetAsync(serverJobUri + "/touch");
 
-                    LogVerbose($"GET {clientJobUri}...");
-                    response = await _httpClient.GetAsync(clientJobUri);
-                    responseContent = await response.Content.ReadAsStringAsync();
+                        LogVerbose($"GET {clientJobUri}...");
+                        response = await _httpClient.GetAsync(clientJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
 
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                    }, 1000);
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
@@ -1204,14 +1202,18 @@ namespace BenchmarksDriver
 
                 while (true)
                 {
-                    // Ping server job to keep it alive
-                    LogVerbose($"GET {serverJobUri}/touch...");
-                    response = await _httpClient.GetAsync(serverJobUri + "/touch");
+                    // Retry block, prevent any network communication error from stopping the job
+                    await RetryOnException(3, async () =>
+                    {
+                        // Ping server job to keep it alive
+                        LogVerbose($"GET {serverJobUri}/touch...");
+                        response = await _httpClient.GetAsync(serverJobUri + "/touch");
 
-                    LogVerbose($"GET {clientJobUri}...");
-                    response = await _httpClient.GetAsync(clientJobUri);
-                    responseContent = await response.Content.ReadAsStringAsync();
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                        LogVerbose($"GET {clientJobUri}...");
+                        response = await _httpClient.GetAsync(clientJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+                    }, 1000);
 
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -1243,13 +1245,18 @@ namespace BenchmarksDriver
             {
                 if (clientJobUri != null)
                 {
-                    Log($"Stopping scenario {scenarioName} on benchmark client...");
+                    HttpResponseMessage response = null;
 
-                    LogVerbose($"DELETE {clientJobUri}...");
-                    var response = await _httpClient.DeleteAsync(clientJobUri);
-                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    await RetryOnException(3, async () =>
+                    {
+                        Log($"Stopping scenario {scenarioName} on benchmark client...");
 
-                    if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                        LogVerbose($"DELETE {clientJobUri}...");
+                        response = await _httpClient.DeleteAsync(clientJobUri);
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    }, 1000);
+
+                    if (response.StatusCode != HttpStatusCode.NotFound)
                     {
                         response.EnsureSuccessStatusCode();
                     }
@@ -1327,29 +1334,29 @@ namespace BenchmarksDriver
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [Excluded] [bit] DEFAULT 0,
                         [DateTime] [datetimeoffset](7) NOT NULL,
-                        [Session] [nvarchar](max) NOT NULL,
-                        [Description] [nvarchar](max),
-                        [AspNetCoreVersion] [nvarchar](max) NOT NULL,
-                        [RuntimeVersion] [nvarchar](max) NOT NULL,
-                        [Scenario] [nvarchar](max) NOT NULL,
-                        [Hardware] [nvarchar](max) NOT NULL,
+                        [Session] [nvarchar](200) NOT NULL,
+                        [Description] [nvarchar](200),
+                        [AspNetCoreVersion] [nvarchar](50) NOT NULL,
+                        [RuntimeVersion] [nvarchar](50) NOT NULL,
+                        [Scenario] [nvarchar](50) NOT NULL,
+                        [Hardware] [nvarchar](50) NOT NULL,
                         [HardwareVersion] [nvarchar](128) NOT NULL,
-                        [OperatingSystem] [nvarchar](max) NOT NULL,
-                        [Framework] [nvarchar](max) NOT NULL,
+                        [OperatingSystem] [nvarchar](50) NOT NULL,
+                        [Framework] [nvarchar](50) NOT NULL,
                         [RuntimeStore] [bit] NOT NULL,
-                        [Scheme] [nvarchar](max) NOT NULL,
-                        [Sources] [nvarchar](max) NULL,
-                        [ConnectionFilter] [nvarchar](max) NULL,
-                        [WebHost] [nvarchar](max) NOT NULL,
+                        [Scheme] [nvarchar](50) NOT NULL,
+                        [Sources] [nvarchar](50) NULL,
+                        [ConnectionFilter] [nvarchar](50) NULL,
+                        [WebHost] [nvarchar](50) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
                         [ClientThreads] [int] NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [PipelineDepth] [int] NULL,
-                        [Path] [nvarchar](max) NULL,
-                        [Method] [nvarchar](max) NOT NULL,
+                        [Path] [nvarchar](200) NULL,
+                        [Method] [nvarchar](50) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
-                        [Dimension] [nvarchar](max) NOT NULL,
+                        [Dimension] [nvarchar](50) NOT NULL,
                         [Value] [float] NOT NULL
                     )
                 END
@@ -1504,6 +1511,33 @@ namespace BenchmarksDriver
             {
                 Log(message);
             }
+        }
+
+        private static T RetryOnException<T>(int retries, Func<T> operation, int millisSecondsDelay = 0)
+        {
+            var attempts = 0;
+            do
+            {
+                try
+                {
+                    attempts++;
+                    return operation();
+                }
+                catch (Exception e)
+                {
+                    if (attempts == retries + 1)
+                    {
+                        throw;
+                    }
+
+                    Log($"Attempt {attempts} failed: {e.Message}");
+
+                    if (millisSecondsDelay > 0)
+                    {
+                        Task.Delay(millisSecondsDelay).GetAwaiter().GetResult();
+                    }
+                }
+            } while (true);
         }
     }
 }

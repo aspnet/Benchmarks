@@ -1,4 +1,4 @@
-FROM microsoft/dotnet-nightly:2.0-runtime-deps-jessie
+FROM microsoft/dotnet-nightly:2.0-sdk-jessie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -36,9 +36,4 @@ WORKDIR /benchmarks
 
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
 
-COPY build* ./
-COPY run* ./
-RUN /benchmarks/build.sh /t:noop
-
 COPY . .
-RUN /benchmarks/build.sh

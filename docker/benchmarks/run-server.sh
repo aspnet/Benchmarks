@@ -3,12 +3,60 @@
 #echo on
 set -x
 
+while [ $# -ne 0 ]
+do
+    name="$1"
+    case "$name" in
+        -sip|-server-ip)
+            shift
+            server_ip="$1"
+            ;;
+        -v|--hardware-version)
+            shift
+            hardware_version="$1"
+            ;;
+        -h|--hardware)
+            shift
+            hardware="$1"
+            ;;
+        -d|--db)
+            shift
+            DBHOST="$1"
+            ;;
+        -url|--url)
+            shift
+            url="$1"
+            ;;
+        -n|--name)
+            shift
+            dockername="$1"
+            ;;
+        *)
+            say_err "Unknown argument \`$name\`"
+            exit 1
+            ;;
+    esac
+
+    shift
+done
+
+
 if [ -z "$server_ip" ]
 then
     # tries to get the ip from the available NICs, but it's recommended to set it manually to use the fastest one
     server_ip=$(ip route get 1 | awk '{print $NF;exit}')
 
     echo "Using server_ip=$server_ip"
+fi
+
+if [ -z "$url" ]
+then
+    url="http://*:5001"
+fi
+
+if [ -z "$dockername" ]
+then
+    dockername="benchmarks-server"
 fi
 
 if [ -z "$hardware_version" ]
@@ -38,15 +86,15 @@ then
         --log-opt max-size=10m \
         --log-opt max-file=3 \
         --mount type=bind,source=/mnt,target=/tmp \
-        --name benchmarks-server \
+        --name $dockername \
         --network host \
         --restart always \
         -v /var/run/docker.sock:/var/run/docker.sock \
         benchmarks \
         bash -c \
-        "/root/.dotnet/dotnet \
-        /benchmarks/src/BenchmarksServer/bin/Debug/netcoreapp2.0/BenchmarksServer.dll \
+        "dotnet run -c Debug --project src/BenchmarksServer/BenchmarksServer.csproj \
         -n $server_ip \
+        --url $url \
         --hardware $hardware \
         --hardware-version $hardware_version \
         $postgresql  \

@@ -48,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 		docker\benchmarks\Dockerfile = docker\benchmarks\Dockerfile
 		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
 		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
+		docker\benchmarks\start-driver.sh = docker\benchmarks\start-driver.sh
 		docker\benchmarks\stop-client.sh = docker\benchmarks\stop-client.sh
 		docker\benchmarks\stop-server.sh = docker\benchmarks\stop-server.sh
 	EndProjectSection

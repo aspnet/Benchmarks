@@ -934,7 +934,7 @@ namespace BenchmarkServer
             await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
             var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
                 .Element("PropertyGroup")
-                .Element("MicrosoftNETCoreApp21PackageVersion")
+                .Element("MicrosoftNETCoreAppPackageVersion")
                 .Value;
             Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
             return latestRuntimeVersion;
