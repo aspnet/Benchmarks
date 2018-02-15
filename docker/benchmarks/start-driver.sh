@@ -105,7 +105,7 @@ fi
         -v /var/run/docker.sock:/var/run/docker.sock \
         benchmarks \
         bash -c \
-        "dotnet run -c Debug --project src/BenchmarksDriver/BenchmarksDriver.csproj \
+        "dotnet run -c Release --project src/BenchmarksDriver/BenchmarksDriver.csproj \
         --server \"$server\" \
         --client \"$client\" \
         --port \"$port\" \
@@ -116,8 +116,8 @@ fi
         -q 'Server=aspnetbenchmarks.database.windows.net;Database=AspNetBenchmarks;User Id=aspnet;Password=$password' \
         --table AspNetStress \
         --database PostgreSql \
-        --clientThreads 2 \
-        --connections 2 \
+        --clientThreads 4 \
+        --connections 4 \
         --session `date '+%Y-%m-%dT%H-%M'` \
         --description \"$description\" \
         --span \"$timespan\"  \
