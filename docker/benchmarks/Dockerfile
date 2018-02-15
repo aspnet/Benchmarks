@@ -1,4 +1,4 @@
-FROM microsoft/dotnet-nightly:2.0-sdk-jessie
+FROM microsoft/dotnet:2.0-sdk-jessie
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
