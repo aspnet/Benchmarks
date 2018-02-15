@@ -1175,7 +1175,7 @@ namespace BenchmarksDriver
                 while (true)
                 {
                     // Retry block, prevent any network communication error from stopping the job
-                    await RetryOnException(3, async () =>
+                    await RetryOnExceptionAsync(5, async () =>
                     {
                         // Ping server job to keep it alive
                         LogVerbose($"GET {serverJobUri}/touch...");
@@ -1203,7 +1203,7 @@ namespace BenchmarksDriver
                 while (true)
                 {
                     // Retry block, prevent any network communication error from stopping the job
-                    await RetryOnException(3, async () =>
+                    await RetryOnExceptionAsync(5, async () =>
                     {
                         // Ping server job to keep it alive
                         LogVerbose($"GET {serverJobUri}/touch...");
@@ -1247,7 +1247,7 @@ namespace BenchmarksDriver
                 {
                     HttpResponseMessage response = null;
 
-                    await RetryOnException(3, async () =>
+                    await RetryOnExceptionAsync(5, async () =>
                     {
                         Log($"Stopping scenario {scenarioName} on benchmark client...");
 
@@ -1513,7 +1513,7 @@ namespace BenchmarksDriver
             }
         }
 
-        private static T RetryOnException<T>(int retries, Func<T> operation, int millisSecondsDelay = 0)
+        private async static Task RetryOnExceptionAsync(int retries, Func<Task> operation, int milliSecondsDelay = 0)
         {
             var attempts = 0;
             do
@@ -1521,7 +1521,7 @@ namespace BenchmarksDriver
                 try
                 {
                     attempts++;
-                    return operation();
+                    await operation();
                 }
                 catch (Exception e)
                 {
@@ -1532,9 +1532,9 @@ namespace BenchmarksDriver
 
                     Log($"Attempt {attempts} failed: {e.Message}");
 
-                    if (millisSecondsDelay > 0)
+                    if (milliSecondsDelay > 0)
                     {
-                        Task.Delay(millisSecondsDelay).GetAwaiter().GetResult();
+                        await Task.Delay(milliSecondsDelay);
                     }
                 }
             } while (true);
