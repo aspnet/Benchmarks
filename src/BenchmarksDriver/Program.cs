@@ -1522,6 +1522,7 @@ namespace BenchmarksDriver
                 {
                     attempts++;
                     await operation();
+                    return;
                 }
                 catch (Exception e)
                 {
