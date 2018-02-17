@@ -118,7 +118,7 @@ fi
         --database PostgreSql \
         --clientThreads 4 \
         --connections 4 \
-        --session `date '+%Y-%m-%dT%H-%M'` \
+        --session \$(date '+%Y-%m-%dT%H-%M') \
         --description \"$description\" \
         --span \"$timespan\"  \
         -e \"ASPNETCORE_LogLevel=Error\""
