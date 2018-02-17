@@ -311,21 +311,21 @@ namespace BenchmarkClient
                     job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
                 }
 
-                const string LatencyPattern = @"\s*([\d\.]*)(\w*)";
+                const string LatencyPattern = @"\s+{0}\s+([\d\.]+)(\w+)";
 
-                var latencyMatch = Regex.Match(job.Output, "Latency" + LatencyPattern);
+                var latencyMatch = Regex.Match(job.Output, String.Format(LatencyPattern, "Latency"));
                 job.Latency.Average = ReadLatency(latencyMatch);
 
-                var p50Match = Regex.Match(job.Output, "50%" + LatencyPattern);
+                var p50Match = Regex.Match(job.Output, String.Format(LatencyPattern, "50%"));
                 job.Latency.Within50thPercentile = ReadLatency(p50Match);
 
-                var p75Match = Regex.Match(job.Output, "75%" + LatencyPattern);
+                var p75Match = Regex.Match(job.Output, String.Format(LatencyPattern, "75%"));
                 job.Latency.Within75thPercentile = ReadLatency(p75Match);
 
-                var p90Match = Regex.Match(job.Output, "90%" + LatencyPattern);
+                var p90Match = Regex.Match(job.Output, String.Format(LatencyPattern, "90%"));
                 job.Latency.Within90thPercentile = ReadLatency(p90Match);
 
-                var p99Match = Regex.Match(job.Output, "99%" + LatencyPattern);
+                var p99Match = Regex.Match(job.Output, String.Format(LatencyPattern, "99%"));
                 job.Latency.Within99thPercentile = ReadLatency(p99Match);
 
                 var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
