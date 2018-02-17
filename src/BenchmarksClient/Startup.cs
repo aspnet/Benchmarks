@@ -311,19 +311,21 @@ namespace BenchmarkClient
                     job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
                 }
 
-                var latencyMatch = Regex.Match(job.Output, @"Latency\s*([\d\.]*)\s*(s|ms|us)");
+                const string LatencyPattern = @"\s*([\d\.]*)(\w*)";
+
+                var latencyMatch = Regex.Match(job.Output, "Latency" + LatencyPattern);
                 job.Latency.Average = ReadLatency(latencyMatch);
 
-                var p50Match = Regex.Match(job.Output, @"50%\s*([\d\.]*)\s*(s|ms|us)");
+                var p50Match = Regex.Match(job.Output, "50%" + LatencyPattern);
                 job.Latency.Within50thPercentile = ReadLatency(p50Match);
 
-                var p75Match = Regex.Match(job.Output, @"75%\s*([\d\.]*)\s*(s|ms|us)");
+                var p75Match = Regex.Match(job.Output, "75%" + LatencyPattern);
                 job.Latency.Within75thPercentile = ReadLatency(p75Match);
 
-                var p90Match = Regex.Match(job.Output, @"90%\s*([\d\.]*)\s*(s|ms|us)");
+                var p90Match = Regex.Match(job.Output, "90%" + LatencyPattern);
                 job.Latency.Within90thPercentile = ReadLatency(p90Match);
 
-                var p99Match = Regex.Match(job.Output, @"99%\s*([\d\.]*)\s*(s|ms|us)");
+                var p99Match = Regex.Match(job.Output, "99%" + LatencyPattern);
                 job.Latency.Within99thPercentile = ReadLatency(p99Match);
 
                 var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
@@ -332,7 +334,7 @@ namespace BenchmarkClient
                 var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
                 job.BadResponses = ReadBadReponses(badResponsesMatch);
 
-                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(s|m|h)");
+                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(\w*)");
                 job.Requests = ReadRequests(requestsCountMatch);
                 job.ActualDuration = ReadDuration(requestsCountMatch);
 
@@ -412,7 +414,8 @@ namespace BenchmarkClient
         {
             if (!match.Success || match.Groups.Count != 3)
             {
-                throw new NotSupportedException("Failed to parse latency");
+                Log("Failed to parse latency");
+                return -1;
             }
 
             var value = double.Parse(match.Groups[1].Value);
@@ -424,7 +427,9 @@ namespace BenchmarkClient
                 case "ms": return value;
                 case "us": return value / 1000;
 
-                default: throw new NotSupportedException("Failed to parse latency unit: " + unit);
+                default:
+                    Log("Failed to parse latency unit: " + unit);
+                    return -1;
             }
         }
 
