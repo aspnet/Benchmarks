@@ -411,7 +411,7 @@ namespace BenchmarkClient
             if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 2)
             {
                 Log("Failed to parse bad responses");
-                return -1;
+                return 0;
             }
 
             try
@@ -421,7 +421,7 @@ namespace BenchmarkClient
             catch
             {
                 Log("Failed to parse bad responses");
-                return -1;
+                return 0;
             }
         }
 
@@ -430,7 +430,7 @@ namespace BenchmarkClient
             if (!socketErrorsMatch.Success || socketErrorsMatch.Groups.Count != 5)
             {
                 Log("Failed to parse bad responses");
-                return -1;
+                return 0;
             }
 
             try
@@ -446,7 +446,7 @@ namespace BenchmarkClient
             catch
             {
                 Log("Failed to parse socket errors");
-                return -1;
+                return 0;
             }
 
         }
