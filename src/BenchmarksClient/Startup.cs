@@ -293,18 +293,27 @@ namespace BenchmarkClient
 
             process.OutputDataReceived += (_, e) =>
             {
-                Log(e.Data);
-                job.Output += (e.Data + Environment.NewLine);
+                if (e.Data != null)
+                {
+                    Log(e.Data);
+                    job.Output += (e.Data + Environment.NewLine);
+                }
             };
 
             process.ErrorDataReceived += (_, e) =>
             {
-                Log(e.Data);
-                job.Error += (e.Data + Environment.NewLine);
+                if (e.Data != null)
+                {
+                    Log(e.Data);
+                    job.Error += (e.Data + Environment.NewLine);
+                }
             };
 
             process.Exited += (_, __) =>
             {
+                // Wait for all Output messages to be flushed and available in job.Output
+                Thread.Sleep(100);
+
                 var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
                 if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
                 {
@@ -352,20 +361,29 @@ namespace BenchmarkClient
         {
             if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
             {
-                throw new NotSupportedException("Failed to parse duration");
+                Log("Failed to parse duration");
+                return TimeSpan.Zero;
             }
 
-            var value = double.Parse(responseCountMatch.Groups[2].Value);
-
-            var unit = responseCountMatch.Groups[3].Value;
-
-            switch (unit)
+            try
             {
-                case "s": return TimeSpan.FromSeconds(value);
-                case "m": return TimeSpan.FromMinutes(value);
-                case "h": return TimeSpan.FromHours(value);
+                var value = double.Parse(responseCountMatch.Groups[2].Value);
 
-                default: throw new NotSupportedException("Failed to parse duration unit: " + unit);
+                var unit = responseCountMatch.Groups[3].Value;
+
+                switch (unit)
+                {
+                    case "s": return TimeSpan.FromSeconds(value);
+                    case "m": return TimeSpan.FromMinutes(value);
+                    case "h": return TimeSpan.FromHours(value);
+
+                    default: throw new NotSupportedException("Failed to parse duration unit: " + unit);
+                }
+            }
+            catch
+            {
+                Log("Failed to parse durations");
+                return TimeSpan.Zero;
             }
         }
 
@@ -373,41 +391,64 @@ namespace BenchmarkClient
         {
             if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
             {
-                throw new NotSupportedException("Failed to parse requests");
+                Log("Failed to parse requests");
+                return -1;
             }
 
-            var value = int.Parse(responseCountMatch.Groups[1].Value);
-
-            return value;
+            try
+            {
+                return int.Parse(responseCountMatch.Groups[1].Value);
+            }
+            catch
+            {
+                Log("Failed to parse requests");
+                return -1;
+            }
         }
 
         private static int ReadBadReponses(Match badResponsesMatch)
         {
             if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 2)
             {
-                return 0;
+                Log("Failed to parse bad responses");
+                return -1;
             }
 
-            var value = int.Parse(badResponsesMatch.Groups[1].Value);
-
-            return value;
+            try
+            {
+                return int.Parse(badResponsesMatch.Groups[1].Value);
+            }
+            catch
+            {
+                Log("Failed to parse bad responses");
+                return -1;
+            }
         }
 
         private static int CountSocketErrors(Match socketErrorsMatch)
         {
             if (!socketErrorsMatch.Success || socketErrorsMatch.Groups.Count != 5)
             {
-                return 0;
+                Log("Failed to parse bad responses");
+                return -1;
             }
 
-            var value =
-                int.Parse(socketErrorsMatch.Groups[1].Value) +
-                int.Parse(socketErrorsMatch.Groups[2].Value) +
-                int.Parse(socketErrorsMatch.Groups[3].Value) +
-                int.Parse(socketErrorsMatch.Groups[4].Value)
-                ;
+            try
+            {
+                return
+                    int.Parse(socketErrorsMatch.Groups[1].Value) +
+                    int.Parse(socketErrorsMatch.Groups[2].Value) +
+                    int.Parse(socketErrorsMatch.Groups[3].Value) +
+                    int.Parse(socketErrorsMatch.Groups[4].Value)
+                    ;
 
-            return value;
+            }
+            catch
+            {
+                Log("Failed to parse socket errors");
+                return -1;
+            }
+
         }
 
         private static double ReadLatency(Match match)
@@ -418,18 +459,26 @@ namespace BenchmarkClient
                 return -1;
             }
 
-            var value = double.Parse(match.Groups[1].Value);
-            var unit = match.Groups[2].Value;
-
-            switch (unit)
+            try
             {
-                case "s": return value * 1000;
-                case "ms": return value;
-                case "us": return value / 1000;
+                var value = double.Parse(match.Groups[1].Value);
+                var unit = match.Groups[2].Value;
 
-                default:
-                    Log("Failed to parse latency unit: " + unit);
-                    return -1;
+                switch (unit)
+                {
+                    case "s": return value * 1000;
+                    case "ms": return value;
+                    case "us": return value / 1000;
+
+                    default:
+                        Log("Failed to parse latency unit: " + unit);
+                        return -1;
+                }
+            }
+            catch
+            {
+                Log("Failed to parse latency");
+                return -1;
             }
         }
 

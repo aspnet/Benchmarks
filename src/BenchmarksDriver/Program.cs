@@ -968,17 +968,22 @@ namespace BenchmarksDriver
                                         dimension: "Latency (ms)",
                                         value: average.Latency);
 
-                                    await WriteJobsToSql(
-                                        serverJob: serverJob,
-                                        clientJob: clientJob,
-                                        connectionString: sqlConnectionString,
-                                        path: serverJob.Path,
-                                        session: session,
-                                        description: description,
-                                        dimension: "LatencyAverage (ms)",
-                                        value: average.LatencyAverage);
+                                    if (average.LatencyAverage != -1)
+                                    {
+                                        await WriteJobsToSql(
+                                            serverJob: serverJob,
+                                            clientJob: clientJob,
+                                            connectionString: sqlConnectionString,
+                                            path: serverJob.Path,
+                                            session: session,
+                                            description: description,
+                                            dimension: "LatencyAverage (ms)",
+                                            value: average.LatencyAverage);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.Latency50Percentile != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -987,8 +992,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Latency50Percentile (ms)",
                                         value: average.Latency50Percentile);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.Latency75Percentile != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -997,8 +1005,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Latency75Percentile (ms)",
                                         value: average.Latency75Percentile);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.Latency90Percentile != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1007,8 +1018,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Latency90Percentile (ms)",
                                         value: average.Latency90Percentile);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.Latency99Percentile != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1017,8 +1031,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Latency99Percentile (ms)",
                                         value: average.Latency99Percentile);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.SocketErrors != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1027,8 +1044,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "SocketErrors",
                                         value: average.SocketErrors);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.BadResponses != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1037,8 +1057,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "BadResponses",
                                         value: average.BadResponses);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.TotalRequests != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1047,8 +1070,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "TotalRequests",
                                         value: average.TotalRequests);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.Duration != -1)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1057,6 +1083,7 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Duration (ms)",
                                         value: average.Duration);
+                                    }
                                 }
                             }
                         }
