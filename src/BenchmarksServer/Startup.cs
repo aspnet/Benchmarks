@@ -677,6 +677,9 @@ namespace BenchmarkServer
                 {
                     Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
                 }
+
+                Git.InitSubModules(Path.Combine(path, dir));
+
                 dirs.Add(dir);
             }
 

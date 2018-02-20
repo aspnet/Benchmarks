@@ -10,6 +10,7 @@ namespace BenchmarkServer
     {
         private static readonly TimeSpan CloneTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan CheckoutTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan SubModuleTimeout = TimeSpan.FromSeconds(30);
 
         public static string Clone(string path, string repository, string branch = null)
         {
@@ -31,6 +32,11 @@ namespace BenchmarkServer
         public static void Checkout(string path, string branchOrCommit)
         {
             RunGitCommand(path, $"checkout {branchOrCommit}", CheckoutTimeout, retries: 5);
+        }
+
+        public static void InitSubModules(string path)
+        {
+            RunGitCommand(path, $"submodule update --init", SubModuleTimeout, retries: 5);
         }
 
         private static ProcessResult RunGitCommand(string path, string command, TimeSpan? timeout, bool throwOnError = true, int retries = 0)
