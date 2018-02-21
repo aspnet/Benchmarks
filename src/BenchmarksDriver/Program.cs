@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
-using Microsoft.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
@@ -35,7 +35,8 @@ namespace BenchmarksDriver
             {
                 Name = "BenchmarksDriver",
                 FullName = "ASP.NET Benchmark Driver",
-                Description = "Driver for ASP.NET Benchmarks"
+                Description = "Driver for ASP.NET Benchmarks",
+                ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
             };
 
             app.HelpOption("-?|-h|--help");
@@ -610,6 +611,27 @@ namespace BenchmarksDriver
 
                 return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value(), span, downloadFilesOption.Values, collectR2RLogOption.HasValue()).Result;
             });
+
+            // Resolve reponse files from urls
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i].StartsWith("@http", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var tempFilename = Path.GetTempFileName();
+                        var filecontent = _httpClient.GetStringAsync(args[i].Substring(1)).GetAwaiter().GetResult();
+                        File.WriteAllText(tempFilename, filecontent);
+                        args[i] = "@" + tempFilename;
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Invalid reponse file url '{args[i].Substring(1)}'");
+                        return -1;
+                    }
+                }
+            }
 
             return app.Execute(args);
         }
