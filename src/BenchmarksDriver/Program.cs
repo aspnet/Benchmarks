@@ -897,18 +897,26 @@ namespace BenchmarksDriver
                                 Log($"Downloading trace...");
 
                                 var filename = "trace.etl.zip";
-                                var counter = 1;
-                                while (File.Exists(filename))
-                                {
-                                    filename = $"trace ({counter++}).etl.zip";
-                                }
 
                                 if (!String.IsNullOrEmpty(traceDestination))
                                 {
                                     filename = Path.Combine(traceDestination, filename);
-                                }                                    
+                                }
+
+                                var counter = 1;
+                                while (File.Exists(filename))
+                                {
+                                    filename = $"trace ({counter++}).etl.zip";
+
+                                    if (!String.IsNullOrEmpty(traceDestination))
+                                    {
+                                        filename = Path.Combine(traceDestination, filename);
+                                    }
+                                }
 
                                 await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
+
+                                Log($"Trace created at {filename}");
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
