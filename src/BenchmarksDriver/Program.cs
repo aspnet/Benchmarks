@@ -1265,8 +1265,8 @@ namespace BenchmarksDriver
                 var requestContent = new MultipartFormDataContent();
 
                 var fileContent = attachmentFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                    ? new ByteArrayContent(await _httpClient.GetByteArrayAsync(attachmentFilename))
-                    : new ByteArrayContent(File.ReadAllBytes(attachmentFilename));
+                    ? new StreamContent(await _httpClient.GetStreamAsync(attachmentFilename))
+                    : new StreamContent(new FileStream(attachmentFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan));
 
                 requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(attachmentFilename));
                 requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
