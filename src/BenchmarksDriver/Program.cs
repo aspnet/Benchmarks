@@ -679,7 +679,7 @@ namespace BenchmarksDriver
                             {
                                 foreach (var outputFile in outputFileOption.Values)
                                 {
-                                    var result = await UploadFile(outputFile, AttachmentLocation.Output, serverJob, serverJobUri);
+                                    var result = await UploadFileAsync(outputFile, AttachmentLocation.Output, serverJob, serverJobUri);
 
                                     if (result != 0)
                                     {
@@ -692,7 +692,7 @@ namespace BenchmarksDriver
                             {
                                 foreach (var runtimeFile in runtimeFileOption.Values)
                                 {
-                                    var result = await UploadFile(runtimeFile, AttachmentLocation.Runtime, serverJob, serverJobUri);
+                                    var result = await UploadFileAsync(runtimeFile, AttachmentLocation.Runtime, serverJob, serverJobUri);
 
                                     if (result != 0)
                                     {
@@ -1245,7 +1245,7 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<int> UploadFile(string filename, AttachmentLocation location, ServerJob serverJob, Uri serverJobUri)
+        private static async Task<int> UploadFileAsync(string filename, AttachmentLocation location, ServerJob serverJob, Uri serverJobUri)
         {
             try
             {
@@ -1265,7 +1265,7 @@ namespace BenchmarksDriver
                 var requestContent = new MultipartFormDataContent();
 
                 var fileContent = attachmentFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                    ? new ByteArrayContent(_httpClient.GetByteArrayAsync(attachmentFilename).GetAwaiter().GetResult())
+                    ? new ByteArrayContent(await _httpClient.GetByteArrayAsync(attachmentFilename))
                     : new ByteArrayContent(File.ReadAllBytes(attachmentFilename));
 
                 requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(attachmentFilename));
