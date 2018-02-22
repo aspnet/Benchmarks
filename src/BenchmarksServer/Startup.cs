@@ -39,8 +39,8 @@ namespace BenchmarkServer
         private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.2/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
-        private static readonly List<string> _installedRuntimes = new List<string>();
-        private static readonly List<string> _installedSdks = new List<string>();
+        private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _installedSdks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
@@ -772,14 +772,14 @@ namespace BenchmarkServer
             string runtimeFrameworkVersion;
             string aspNetCoreVersion;
 
-            if (job.RuntimeVersion != "Current")
+            if (!String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
                 env["KOREBUILD_DOTNET_VERSION"] = ""; // Using "" downloads the latest SDK.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
                 aspNetCoreVersion = "2.1-*";
 
-                if (job.RuntimeVersion == "Latest")
+                if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
                 {
                     runtimeFrameworkVersion = await GetLatestRuntimeVersion(buildToolsPath);
                 }
@@ -800,12 +800,12 @@ namespace BenchmarkServer
             }
 
             // Define which ASP.NET Core packages version to use
-            switch(job.AspNetCoreVersion)
+            switch(job.AspNetCoreVersion.ToLowerInvariant())
             {
-                case "Current":
+                case "current":
                     aspNetCoreVersion = "2.0-*";
                     break;
-                case "Latest":
+                case "latest":
                     aspNetCoreVersion = "2.1-*";
                     break;
                 default:

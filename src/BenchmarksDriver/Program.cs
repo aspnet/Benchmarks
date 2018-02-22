@@ -110,6 +110,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
+            var traceOutputOption = app.Option("--trace-output",
+                "An optional location to download the trace file to, e.g., --trace-output c:\traces", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
@@ -565,6 +567,7 @@ namespace BenchmarksDriver
                     span, 
                     downloadFilesOption.Values, 
                     collectR2RLogOption.HasValue(),
+                    traceOutputOption.Value(),
                     outputFileOption,
                     runtimeFileOption
                     ).Result;
@@ -607,6 +610,7 @@ namespace BenchmarksDriver
             TimeSpan span,
             List<string> downloadFiles,
             bool collectR2RLog,
+            string traceDestination,
             CommandOption outputFileOption,
             CommandOption runtimeFileOption)
         {
@@ -907,13 +911,26 @@ namespace BenchmarksDriver
                                 Log($"Downloading trace...");
 
                                 var filename = "trace.etl.zip";
+
+                                if (!String.IsNullOrEmpty(traceDestination))
+                                {
+                                    filename = Path.Combine(traceDestination, filename);
+                                }
+
                                 var counter = 1;
                                 while (File.Exists(filename))
                                 {
-                                    filename = $"trace({counter++}).etl.zip";
+                                    filename = $"trace ({counter++}).etl.zip";
+
+                                    if (!String.IsNullOrEmpty(traceDestination))
+                                    {
+                                        filename = Path.Combine(traceDestination, filename);
+                                    }
                                 }
 
                                 await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
+
+                                Log($"Trace created at {filename}");
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
