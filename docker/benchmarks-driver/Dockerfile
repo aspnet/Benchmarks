@@ -12,4 +12,4 @@ RUN dotnet publish -c Release -o /app/out
 FROM microsoft/dotnet:runtime
 WORKDIR /app
 COPY --from=build-env /app/out ./
-ENTRYPOINT ["dotnet", "BenchmarksDriver.dll"]
+ENTRYPOINT ["dotnet", "BenchmarksDriver.dll", "--trace-output", "/traces"]
