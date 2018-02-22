@@ -110,6 +110,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
+            var traceOutputOption = app.Option("--trace-output",
+                "An optional location to download the trace file to, e.g., --trace-output c:\traces", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
@@ -609,7 +611,21 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value(), span, downloadFilesOption.Values, collectR2RLogOption.HasValue()).Result;
+                return Run(
+                    new Uri(server), 
+                    new Uri(client), 
+                    sqlConnectionString, 
+                    serverJob, 
+                    session, 
+                    description, 
+                    iterations, 
+                    exclude, 
+                    shutdownOption.Value(), 
+                    span, 
+                    downloadFilesOption.Values, 
+                    collectR2RLogOption.HasValue(),
+                    traceOutputOption.Value()
+                    ).Result;
             });
 
             // Resolve reponse files from urls
@@ -648,7 +664,8 @@ namespace BenchmarksDriver
             string shutdownEndpoint,
             TimeSpan span,
             List<string> downloadFiles,
-            bool collectR2RLog)
+            bool collectR2RLog,
+            string traceDestination)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -883,8 +900,13 @@ namespace BenchmarksDriver
                                 var counter = 1;
                                 while (File.Exists(filename))
                                 {
-                                    filename = $"trace({counter++}).etl.zip";
+                                    filename = $"trace ({counter++}).etl.zip";
                                 }
+
+                                if (!String.IsNullOrEmpty(traceDestination))
+                                {
+                                    filename = Path.Combine(traceDestination, filename);
+                                }                                    
 
                                 await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
                             }
