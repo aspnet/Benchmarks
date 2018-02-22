@@ -422,45 +422,17 @@ namespace BenchmarksDriver
                     }
                 }
 
-                var attachments = new List<Attachment>();
-
+                // Check all attachments exist
                 if (outputFileOption.HasValue())
                 {
                     foreach (var outputFile in outputFileOption.Values)
                     {
-                        var attachment = new Attachment { Location = AttachmentLocation.Output };
+                        var fileSegments = outputFile.Split(';');
+                        var filename = fileSegments[0];
 
-                        try
+                        if (!File.Exists(filename))
                         {
-                            var outputFileSegments = outputFile.Split(';');
-
-                            attachment.Filename = outputFileSegments[0];
-
-                            if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                            {
-                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
-                            }
-                            else
-                            {
-                                attachment.Content = File.ReadAllBytes(attachment.Filename);
-                            }
-
-                            attachment.Filename = Path.GetFileName(attachment.Filename);
-
-                            if (outputFileSegments.Length > 1)
-                            {
-                                attachment.Filename = outputFileSegments[1];
-                            }
-                            else
-                            {
-                                attachment.Filename = Path.GetFileName(attachment.Filename);
-                            }
-
-                            attachments.Add(attachment);
-                        }
-                        catch
-                        {
-                            Console.WriteLine($"Output File '{attachment.Filename}' could not be loaded.");
+                            Console.WriteLine($"Output File '{filename}' could not be loaded.");
                             return 8;
                         }
                     }
@@ -470,45 +442,16 @@ namespace BenchmarksDriver
                 {
                     foreach (var runtimeFile in runtimeFileOption.Values)
                     {
-                        var attachment = new Attachment { Location = AttachmentLocation.Runtime };
+                        var fileSegments = runtimeFile.Split(';');
+                        var filename = fileSegments[0];
 
-                        try
+                        if (!File.Exists(filename))
                         {
-                            var runtimeFileSegments = runtimeFile.Split(';');
-
-                            attachment.Filename = runtimeFileSegments[0];
-
-                            if (attachment.Filename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                            {
-                                attachment.Content = _httpClient.GetByteArrayAsync(attachment.Filename).GetAwaiter().GetResult();
-                            }
-                            else
-                            {
-                                attachment.Content = File.ReadAllBytes(attachment.Filename);
-                            }
-
-                            attachment.Filename = Path.GetFileName(attachment.Filename);
-
-                            if (runtimeFileSegments.Length > 1)
-                            {
-                                attachment.Filename = runtimeFileSegments[1];
-                            }
-                            else
-                            {
-                                attachment.Filename = Path.GetFileName(attachment.Filename);
-                            }
-
-                            attachments.Add(attachment);
-                        }
-                        catch
-                        {
-                            Console.WriteLine($"Runtime File '{attachment.Filename}' could not be loaded.");
+                            Console.WriteLine($"Runtime File '{filename}' could not be loaded.");
                             return 8;
                         }
                     }
                 }
-
-                serverJob.Attachments = attachments.ToArray();
 
                 foreach (var source in sourceOption.Values)
                 {
@@ -609,7 +552,22 @@ namespace BenchmarksDriver
                     }
                 }
 
-                return Run(new Uri(server), new Uri(client), sqlConnectionString, serverJob, session, description, iterations, exclude, shutdownOption.Value(), span, downloadFilesOption.Values, collectR2RLogOption.HasValue()).Result;
+                return Run(
+                    new Uri(server), 
+                    new Uri(client), 
+                    sqlConnectionString, 
+                    serverJob, 
+                    session, 
+                    description, 
+                    iterations, 
+                    exclude, 
+                    shutdownOption.Value(), 
+                    span, 
+                    downloadFilesOption.Values, 
+                    collectR2RLogOption.HasValue(),
+                    outputFileOption,
+                    runtimeFileOption
+                    ).Result;
             });
 
             // Resolve reponse files from urls
@@ -648,7 +606,9 @@ namespace BenchmarksDriver
             string shutdownEndpoint,
             TimeSpan span,
             List<string> downloadFiles,
-            bool collectR2RLog)
+            bool collectR2RLog,
+            CommandOption outputFileOption,
+            CommandOption runtimeFileOption)
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -682,6 +642,73 @@ namespace BenchmarksDriver
                     response.EnsureSuccessStatusCode();
 
                     serverJobUri = new Uri(serverUri, response.Headers.Location);
+
+                    while (true)
+                    {
+                        LogVerbose($"GET {serverJobUri}...");
+                        response = await _httpClient.GetAsync(serverJobUri);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                        if (!serverJob.Hardware.HasValue)
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
+                        }
+
+                        if (String.IsNullOrWhiteSpace(serverJob.HardwareVersion))
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.HardwareVersion.");
+                        }
+
+                        if (!serverJob.OperatingSystem.HasValue)
+                        {
+                            throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
+                        }
+
+                        if (serverJob.State == ServerState.Initializing)
+                        {
+                            // Uploading attachments
+                            if (outputFileOption.HasValue())
+                            {
+                                foreach (var outputFile in outputFileOption.Values)
+                                {
+                                    var result = await UploadFile(outputFile, AttachmentLocation.Output, serverJob, serverJobUri);
+
+                                    if (result != 0)
+                                    {
+                                        return result;
+                                    }                                    
+                                }
+                            }
+
+                            if (runtimeFileOption.HasValue())
+                            {
+                                foreach (var runtimeFile in runtimeFileOption.Values)
+                                {
+                                    var result = await UploadFile(runtimeFile, AttachmentLocation.Runtime, serverJob, serverJobUri);
+
+                                    if (result != 0)
+                                    {
+                                        return result;
+                                    }
+                                }
+                            }
+
+                            response = await _httpClient.PostAsync(serverJobUri + "/start", new StringContent(""));
+                            responseContent = await response.Content.ReadAsStringAsync();
+                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                            response.EnsureSuccessStatusCode();
+
+                            break;
+                        }
+                        else
+                        {
+                            await Task.Delay(1000);
+                        }
+                    }
 
                     var serverBenchmarkUri = (string)null;
                     while (true)
@@ -1196,6 +1223,44 @@ namespace BenchmarksDriver
                         response.EnsureSuccessStatusCode();
                     }
                 }
+            }
+
+            return 0;
+        }
+
+        private static async Task<int> UploadFile(string filename, AttachmentLocation location, ServerJob serverJob, Uri serverJobUri)
+        {
+            try
+            {
+                var outputFileSegments = filename.Split(';');
+                var attachmentFilename = outputFileSegments[0];
+
+                if (!File.Exists(attachmentFilename))
+                {
+                    Console.WriteLine($"Output File '{attachmentFilename}' could not be loaded.");
+                    return 8;
+                }
+
+                var destinationFilename = outputFileSegments.Length > 1
+                    ? outputFileSegments[1]
+                    : Path.GetFileName(attachmentFilename);
+
+                var requestContent = new MultipartFormDataContent();
+
+                var fileContent = attachmentFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? new ByteArrayContent(_httpClient.GetByteArrayAsync(attachmentFilename).GetAwaiter().GetResult())
+                    : new ByteArrayContent(File.ReadAllBytes(attachmentFilename));
+
+                requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(attachmentFilename));
+                requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
+                requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
+                requestContent.Add(new StringContent(AttachmentLocation.Output.ToString()), nameof(AttachmentViewModel.Location));
+
+                await _httpClient.PostAsync(serverJobUri + "/attachment", requestContent);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"An error occured while uploading a file.", e);
             }
 
             return 0;

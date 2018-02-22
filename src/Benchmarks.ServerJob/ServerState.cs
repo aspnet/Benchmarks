@@ -5,6 +5,7 @@ namespace Benchmarks.ServerJob
 {
     public enum ServerState
     {
+        Initializing,
         Waiting,
         Starting,
         Running,

@@ -262,8 +262,32 @@ namespace BenchmarkServer
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var allJobs = _jobs.GetAll();
-                    var job = allJobs.FirstOrDefault();
+                    ServerJob job = null;
+
+                    // Find the first job that is not in Initializing state
+                    foreach(var j in _jobs.GetAll())
+                    {
+                        if (j.State == ServerState.Initializing)
+                        {
+                            var now = DateTime.UtcNow;
+
+                            if (now - j.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                            {
+                                // The job needs to be deleted
+                                Log.WriteLine($"Driver didn't communicate for {now - j.LastDriverCommunicationUtc}. Halting job.");
+                                j.State = ServerState.Deleting;
+                            }
+                            else
+                            {
+                                // Initializing jobs are skipped
+                                continue;
+                            }
+                        }
+
+                        job = j;
+                        break;
+                    }
+
                     if (job != null)
                     {
                         string dotnetDir = dotnetHome;
@@ -518,6 +542,20 @@ namespace BenchmarkServer
                             if (_cleanup && dotnetDir != dotnetHome)
                             {
                                 DeleteDir(dotnetDir);
+                            }
+
+                            // Clean attachments
+
+                            foreach (var attachment in job.Attachments)
+                            {
+                                try
+                                {
+                                    File.Delete(attachment.TempFilename);
+                                }
+                                catch
+                                {
+                                    Log.WriteLine($"Error while deleting attachment '{attachment.TempFilename}'");
+                                }
                             }
 
                             tempDir = null;
@@ -887,44 +925,38 @@ namespace BenchmarkServer
                     environmentVariables: env);
 
                 // Copy all output attachments
-                foreach (var attachment in job.Attachments)
+                foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
                 {
-                    if (attachment.Location == AttachmentLocation.Output)
+                    var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
+
+                    Log.WriteLine($"Creating output file: {filename}");
+
+                    if (File.Exists(filename))
                     {
-                        var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
-
-                        Log.WriteLine($"Creating output file: {filename}");
-
-                        if (File.Exists(filename))
-                        {
-                            File.Delete(filename);
-                        }
-
-                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                        File.Delete(filename);
                     }
+
+                    File.Copy(attachment.TempFilename, filename);
                 }
             }
 
             // Copy all runtime attachments in all runtime folders
-            foreach (var attachment in job.Attachments)
+            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Runtime))
             {
                 var runtimeRoot = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App");
 
                 foreach (var runtimeFolder in Directory.GetDirectories(runtimeRoot))
                 {
-                    if (attachment.Location == AttachmentLocation.Runtime)
+                    var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
+
+                    Log.WriteLine($"Creating runtime file: {filename}");
+
+                    if (File.Exists(filename))
                     {
-                        var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
-
-                        Log.WriteLine($"Creating runtime file: {filename}");
-
-                        if (File.Exists(filename))
-                        {
-                            File.Delete(filename);
-                        }
-
-                        await File.WriteAllBytesAsync(filename, attachment.Content);
+                        File.Delete(filename);
                     }
+
+                    File.Copy(attachment.TempFilename, filename);
                 }
             }
 

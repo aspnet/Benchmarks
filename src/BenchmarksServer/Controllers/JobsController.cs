@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 
@@ -74,7 +75,7 @@ namespace BenchmarkServer.Controllers
         {
             lock (_jobs)
             {
-                if (job == null || job.Id != 0 || job.State != ServerState.Waiting ||
+                if (job == null || job.Id != 0 || job.State != ServerState.Initializing ||
                 job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
                 {
                     return BadRequest();
@@ -173,6 +174,39 @@ namespace BenchmarkServer.Controllers
                     return NotFound();
                 }
             }
+        }
+
+        [HttpPost("{id}/start")]
+        public IActionResult Start(int id)
+        {
+            var job = _jobs.Find(id);
+            job.State = ServerState.Waiting;
+            _jobs.Update(job);
+
+            return Ok();
+        }
+
+        [HttpPost("{id}/attachment")]
+        public async Task<IActionResult> UploadAttachment(AttachmentViewModel attachment)
+        {
+            var job = _jobs.Find(attachment.Id);
+            var tempFilename = Path.GetTempFileName();
+
+            using (var fs = System.IO.File.Create(tempFilename))
+            {
+                await attachment.Content.CopyToAsync(fs);
+            }
+
+            job.Attachments.Add(new Attachment
+            {
+                TempFilename = tempFilename,
+                Filename = attachment.DestinationFilename,
+                Location = attachment.Location
+            });
+
+            job.LastDriverCommunicationUtc = DateTime.UtcNow;
+
+            return Ok();
         }
 
         [HttpGet("{id}/trace")]
