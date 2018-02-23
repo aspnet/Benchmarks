@@ -169,5 +169,39 @@ namespace Benchmarks.Data
 
             return result;
         }
+
+        public IEnumerable<Fortune> LoadFortunesRowsSync()
+        {
+            var result = new List<Fortune>();
+
+            using (var db = _dbProviderFactory.CreateConnection())
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.CommandText = "SELECT id, message FROM fortune";
+
+                db.ConnectionString = _connectionString;
+                db.Open();
+
+                // Prepared statements improve PostgreSQL performance by 10-15%
+                cmd.Prepare();
+
+                using (var rdr = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                {
+                    while (rdr.Read())
+                    {
+                        result.Add(new Fortune
+                        {
+                            Id = rdr.GetInt32(0),
+                            Message = rdr.GetString(1)
+                        });
+                    }
+                }
+            }
+
+            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Sort();
+
+            return result;
+        }
     }
 }
