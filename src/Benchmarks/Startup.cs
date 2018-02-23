@@ -158,6 +158,11 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
             if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
