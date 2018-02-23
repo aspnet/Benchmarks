@@ -771,10 +771,7 @@ namespace BenchmarksDriver
                             if (spanLoop > 0)
                             {
                                 results.Clear();
-
-                                serverJob.ClearServerCounters();
-                                content = JsonConvert.SerializeObject(serverJob);
-                                response = await _httpClient.PutAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
+                                response = await _httpClient.PostAsync(serverJobUri + "/resetstats", new StringContent(""));
                                 response.EnsureSuccessStatusCode();
                             }
                         }
@@ -970,7 +967,9 @@ namespace BenchmarksDriver
                                         dimension: "RequestsPerSecond",
                                         value: average.RequestsPerSecond);
 
-                                    await WriteJobsToSql(
+                                    if (average.StartupMain != -1 && spanLoop == 0)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -979,8 +978,11 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "Startup Main (ms)",
                                         value: average.StartupMain);
+                                    }
 
-                                    await WriteJobsToSql(
+                                    if (average.FirstRequest != -1 && spanLoop == 0)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -989,6 +991,7 @@ namespace BenchmarksDriver
                                         description: description,
                                         dimension: "First Request (ms)",
                                         value: average.FirstRequest);
+                                    }
 
                                     await WriteJobsToSql(
                                         serverJob: serverJob,
@@ -1010,7 +1013,9 @@ namespace BenchmarksDriver
                                         dimension: "CPU",
                                         value: average.Cpu);
 
-                                    await WriteJobsToSql(
+                                    if (average.Latency != -1 && spanLoop == 0)
+                                    {
+                                        await WriteJobsToSql(
                                         serverJob: serverJob,
                                         clientJob: clientJob,
                                         connectionString: sqlConnectionString,
@@ -1019,6 +1024,7 @@ namespace BenchmarksDriver
                                         path: serverJob.Path,
                                         dimension: "Latency (ms)",
                                         value: average.Latency);
+                                    }
 
                                     if (average.LatencyAverage != -1)
                                     {

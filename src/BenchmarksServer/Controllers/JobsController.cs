@@ -132,25 +132,22 @@ namespace BenchmarkServer.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Put([FromBody] ServerJob job)
+        [HttpPost("{id}/resetstats")]
+        public IActionResult ResetStats(int id)
         {
-            try
+            lock (_jobs)
             {
-                var existing = _jobs.Find(job.Id);
-                
-                if (existing == null)
+                try
+                {
+                    var job = _jobs.Find(id);
+                    job.ClearServerCounters();
+                    _jobs.Update(job);
+                    return Ok();
+                }
+                catch
                 {
                     return NotFound();
                 }
-
-                _jobs.Update(job);
-
-                return new StatusCodeResult((int)HttpStatusCode.Accepted);
-            }
-            catch
-            {
-                return NotFound();
             }
         }
 
