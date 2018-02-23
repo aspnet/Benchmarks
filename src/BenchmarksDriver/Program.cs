@@ -110,7 +110,10 @@ namespace BenchmarksDriver
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
-                "Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer", CommandOptionType.NoValue);
+                "Collect a PerfView trace.", CommandOptionType.NoValue);
+            var traceArgumentsOption = app.Option("--trace-arguments",
+                "Arguments used when collecting a PerfView trace.  Defaults to \"BufferSize=1024\".",
+                CommandOptionType.SingleValue);
             var traceOutputOption = app.Option("--trace-output",
                 "An optional location to download the trace file to, e.g., --trace-output c:\traces", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
@@ -382,13 +385,8 @@ namespace BenchmarksDriver
                 {
                     serverJob.Collect = true;
 
-                    serverJob.CollectArguments = collectTraceOption.Value();
-
-                    // Clear the arguments if the value is "on" as this is a marker for NoValue on the command parser
-                    if (serverJob.CollectArguments == "on")
-                    {
-                        serverJob.CollectArguments = "";
-                    }
+                    // Default to arguments which should be sufficient for collecting trace of default Plaintext run
+                    serverJob.CollectArguments = traceArgumentsOption.Value() ?? "BufferSize=1024";
                 }
                 if (disableR2ROption.HasValue())
                 {
