@@ -63,10 +63,6 @@ namespace Benchmarks.Data
             id.Value = _random.Next(1, 10001);
             cmd.Parameters.Add(id);
 
-            // Prepared statements improve PostgreSQL performance by 10-15%
-            // Especially if you only call them once, instead of on every execution :)
-            cmd.Prepare();
-
             return cmd;
         }
 
