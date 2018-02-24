@@ -623,6 +623,11 @@ namespace BenchmarksDriver
             var results = new List<Statistics>();
             ClientJob clientJob = null;
 
+            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+            {
+                await EnsureTableCreated(sqlConnectionString);
+            }
+
             var content = JsonConvert.SerializeObject(serverJob);
 
             Log($"Running session '{session}' with description '{description}'");
@@ -1411,7 +1416,8 @@ namespace BenchmarksDriver
 
         private static Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string path, string session, string description, string dimension, double value)
         {
-            return WriteResultsToSql(
+            return RetryOnExceptionAsync(5, () =>
+                 WriteResultsToSql(
                         connectionString: connectionString,
                         scenario: serverJob.Scenario,
                         session: session,
@@ -1435,33 +1441,11 @@ namespace BenchmarksDriver
                         headers: clientJob.Headers,
                         dimension: dimension,
                         value: value,
-                        runtimeStore: serverJob.UseRuntimeStore);
+                        runtimeStore: serverJob.UseRuntimeStore)
+            , 5000);
         }
-        private static async Task WriteResultsToSql(
-            string connectionString,
-            string session,
-            string description,
-            string aspnetCoreVersion,
-            string runtimeVersion,
-            string scenario,
-            Hardware hardware,
-            string hardwareVersion,
-            OperatingSystem operatingSystem,
-            Scheme scheme,
-            IEnumerable<Source> sources,
-            string connectionFilter,
-            WebHost webHost,
-            int? kestrelThreadCount,
-            int clientThreads,
-            int connections,
-            int duration,
-            int? pipelineDepth,
-            string path,
-            string method,
-            IDictionary<string, string> headers,
-            string dimension,
-            double value,
-            bool runtimeStore)
+
+        private static async Task EnsureTableCreated(string connectionString)
         {
             string createCmd =
                 @"
@@ -1499,6 +1483,45 @@ namespace BenchmarksDriver
                 END
                 ";
 
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new SqlCommand(createCmd, connection))
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+        }
+
+        private static async Task WriteResultsToSql(
+            string connectionString,
+            string session,
+            string description,
+            string aspnetCoreVersion,
+            string runtimeVersion,
+            string scenario,
+            Hardware hardware,
+            string hardwareVersion,
+            OperatingSystem operatingSystem,
+            Scheme scheme,
+            IEnumerable<Source> sources,
+            string connectionFilter,
+            WebHost webHost,
+            int? kestrelThreadCount,
+            int clientThreads,
+            int connections,
+            int duration,
+            int? pipelineDepth,
+            string path,
+            string method,
+            IDictionary<string, string> headers,
+            string dimension,
+            double value,
+            bool runtimeStore)
+        {
+            
             string insertCmd =
                 @"
                 INSERT INTO [dbo].[" + _tableName + @"]
@@ -1558,11 +1581,6 @@ namespace BenchmarksDriver
             using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
-
-                using (var command = new SqlCommand(createCmd, connection))
-                {
-                    await command.ExecuteNonQueryAsync();
-                }
 
                 using (var command = new SqlCommand(insertCmd, connection))
                 {
