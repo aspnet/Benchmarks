@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Class to transfer data to/from the benchmark client.</Description>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

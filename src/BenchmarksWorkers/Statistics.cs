@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace BenchmarksDriver
+namespace BenchmarksWorkers
 {
     public class Statistics
     {
@@ -22,5 +20,6 @@ namespace BenchmarksDriver
         public double Latency99Percentile { get; set; }
         public double TotalRequests { get; set; }
         public double Duration { get; set; }
+        public Dictionary<string, object> Other = new Dictionary<string, object>();
     }
 }

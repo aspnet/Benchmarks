@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
+    <ProjectReference Include="..\BenchmarksWorkers\BenchmarksWorkers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
