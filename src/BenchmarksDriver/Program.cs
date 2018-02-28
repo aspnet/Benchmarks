@@ -629,16 +629,12 @@ namespace BenchmarksDriver
 
             var results = new List<Statistics>();
             ClientJob clientJob = null;
-            IResultsSerializer serializer = null;
 
-            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+            var serializer = WorkerFactory.CreateResultSerializer(clientJob);
+
+            if (serializer != null && !string.IsNullOrWhiteSpace(sqlConnectionString))
             {
-                serializer = WorkerFactory.CreateResultSerializer(clientJob);
-
-                if (serializer != null)
-                {
-                    await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
-                }
+                await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
             }
 
             var content = JsonConvert.SerializeObject(serverJob);
@@ -974,6 +970,11 @@ namespace BenchmarksDriver
                                     TotalRequests = Math.Round(samples.Average(x => x.TotalRequests)),
                                     Duration = Math.Round(samples.Average(x => x.Duration))
                                 };
+
+                                if (serializer != null)
+                                {
+                                    serializer.ComputeAverages(average, samples);
+                                }
 
                                 Log($"RequestsPerSecond:           {average.RequestsPerSecond}");
                                 Log($"Latency on load (ms):        {average.LatencyOnLoad}");

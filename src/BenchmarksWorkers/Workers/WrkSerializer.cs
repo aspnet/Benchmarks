@@ -509,5 +509,10 @@ namespace BenchmarksWorkers.Workers
         public void Dispose()
         {
         }
+
+        public void ComputeAverages(Statistics average, IEnumerable<Statistics> samples)
+        {
+            // No custom values
+        }
     }
 }
