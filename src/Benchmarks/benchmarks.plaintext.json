@@ -1,9 +1,12 @@
 {
   "Default": {
 
+    "ClientName": "wrk",
     "PresetHeaders": "Plaintext",
-    "ScriptName": "pipeline",
-    "PipelineDepth": 16,
+    "Properties": {
+        "ScriptName": "pipeline",
+        "PipelineDepth": 16
+    },
 
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
@@ -16,8 +19,10 @@
   },
   "PlaintextNonPipelined": {
     "Path": "/plaintext",
-    "ScriptName": "",
-    "PipelineDepth": 0
+    "Properties": {
+        "ScriptName": "",
+        "PipelineDepth": 0
+    }
   },
   "CopyToAsync": {
     "Path": "/copytoasync",

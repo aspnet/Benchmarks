@@ -164,7 +164,7 @@ namespace BenchmarkServer
                 {
                     _cleanup = false;
                 }
-                
+
                 if (postgresqlConnectionStringOption.HasValue())
                 {
                     ConnectionStrings[Database.PostgreSql] = postgresqlConnectionStringOption.Value();

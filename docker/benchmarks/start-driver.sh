@@ -116,7 +116,8 @@ fi
         -q 'Server=aspnetbenchmarks.database.windows.net;Database=AspNetBenchmarks;User Id=aspnet;Password=$password' \
         --table AspNetStress \
         --database PostgreSql \
-        --clientThreads 4 \
+        --clientName wrk \
+        --properties 'Threads=4' \
         --connections 4 \
         --session \$(date '+%Y-%m-%dT%H-%M') \
         --description \"$description\" \
