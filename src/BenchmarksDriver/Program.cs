@@ -630,7 +630,7 @@ namespace BenchmarksDriver
             var results = new List<Statistics>();
             ClientJob clientJob = null;
 
-            var serializer = WorkerFactory.CreateResultSerializer(clientJob);
+            var serializer = WorkerFactory.CreateResultSerializer(_clientJob);
 
             if (serializer != null && !string.IsNullOrWhiteSpace(sqlConnectionString))
             {
