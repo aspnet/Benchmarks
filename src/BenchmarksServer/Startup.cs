@@ -774,10 +774,8 @@ namespace BenchmarkServer
 
             if (!String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                env["KOREBUILD_DOTNET_VERSION"] = ""; // Using "" downloads the latest SDK.
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 targetFramework = "netcoreapp2.1";
-                aspNetCoreVersion = "2.1-*";
 
                 if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
                 {
@@ -792,10 +790,8 @@ namespace BenchmarkServer
             else
             {
                 // Latest public version
-                env["KOREBUILD_DOTNET_VERSION"] = "2.0.0";
                 File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), "{  \"sdk\": { \"version\": \"" + sdkVersion + "\" } }");
                 runtimeFrameworkVersion = "2.0.3";
-                aspNetCoreVersion = "2.0-*";
                 targetFramework = "netcoreapp2.0";
             }
 
@@ -803,10 +799,12 @@ namespace BenchmarkServer
             switch(job.AspNetCoreVersion.ToLowerInvariant())
             {
                 case "current":
-                    aspNetCoreVersion = "2.0-*";
+                    aspNetCoreVersion = "2.0.*";
                     break;
                 case "latest":
-                    aspNetCoreVersion = "2.1-*";
+                    // Temporary value to prevent feature branches from being used
+                    // aspNetCoreVersion = "2.1-*";
+                    aspNetCoreVersion = "2.1.0-preview2-3*";
                     break;
                 default:
                     aspNetCoreVersion = job.AspNetCoreVersion;
