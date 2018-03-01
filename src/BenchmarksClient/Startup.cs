@@ -113,7 +113,7 @@ namespace BenchmarkClient
                 {
                     if (job.State == ClientState.Waiting)
                     {
-                        Log($"Starting '{job.ClientName}' worker");
+                        Log($"Starting '{job.Client}' worker");
                         job.State = ClientState.Starting;
 
                         try

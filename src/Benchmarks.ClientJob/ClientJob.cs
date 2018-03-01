@@ -22,7 +22,7 @@ namespace Benchmarks.ClientJob
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
             ClientProperties = new Dictionary<string, string>(clientJob.ClientProperties);
-            ClientName = clientJob.ClientName;
+            Client = clientJob.Client;
             ScriptName = clientJob.ScriptName;
             PipelineDepth = clientJob.PipelineDepth;
             Headers = new Dictionary<string, string>(clientJob.Headers);
@@ -38,7 +38,7 @@ namespace Benchmarks.ClientJob
 
         public int Id { get; set; }
 
-        public string ClientName { get; set; }
+        public Worker Client { get; set; } = Worker.Wrk;
 
         public int Threads { get; set; } = 32;
 

@@ -16,12 +16,6 @@ namespace BenchmarksWorkers.Workers
     {
         public string JobLogText { get; set; }
 
-        static WrkSerializer()
-        {
-            // Register the serializer
-            WorkerFactory.ResultSerializers["wrk"] = () => new WrkSerializer();
-        }
-
         private static void Log(string message)
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");

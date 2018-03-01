@@ -44,7 +44,7 @@ namespace BenchmarksDriver
             var clientOption = app.Option("-c|--client",
                 "URL of benchmark client", CommandOptionType.SingleValue);
             var clientNameOption = app.Option("--clientName",
-                "Name of client to use for testing, e.g. 'wrk'.", CommandOptionType.SingleValue);
+                "Name of client to use for testing, e.g. Wrk", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server",
                 "URL of benchmark server", CommandOptionType.SingleValue);
             var sqlConnectionStringOption = app.Option("-q|--sql",
@@ -138,7 +138,7 @@ namespace BenchmarksDriver
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var clientProperties = app.Option("--properties",
-                "Key value pairs of properties specific to the client running. e.g., Threads=16;PipelineDepth=16", CommandOptionType.SingleValue);
+                "Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16", CommandOptionType.SingleValue);
             var pathOption = app.Option(
                 "--path",
                 "Relative URL where the client should send requests.",
@@ -474,15 +474,9 @@ namespace BenchmarksDriver
                 mergedClientJob.Merge(job);
                 _clientJob = mergedClientJob.ToObject<ClientJob>();
 
-                if (clientNameOption.HasValue())
+                if (clientNameOption.HasValue() && Enum.TryParse<Worker>(clientNameOption.Value(), ignoreCase: true, result: out var worker))
                 {
-                    _clientJob.ClientName = clientNameOption.Value();
-                }
-
-                if (String.IsNullOrEmpty(_clientJob.ClientName))
-                {
-                    Console.WriteLine($"The client name is missing.");
-                    return 11;
+                    _clientJob.Client = worker;
                 }
 
                 // Override default ClientJob settings if options are set

@@ -10,6 +10,7 @@ Options:
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server
   -q|--sql               Connection string of SQL Database to store results
+  --clientName           Name of client to use for testing, e.g. Wrk
   -v|--verbose           Verbose output
   --session              A logical identifier to group related jobs.
   --description          The description of the job.
@@ -39,8 +40,7 @@ Options:
   --header               Header added to request.
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.
-  --script               Name of the script used by wrk.
-  --pipelineDepth        Depth of pipeline used by client.
+  --properties"          Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16"
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
@@ -51,6 +51,11 @@ Options:
   -t|--table             Table name of the SQL Database to store results
   --no-crossgen          Disables Ready To Run.
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
+
+Properties of the Wrk client
+
+  ScriptName             Name of the script used by wrk.
+  PipelineDepth          Depth of pipeline used by clients.
 ```
 
 ### Examples

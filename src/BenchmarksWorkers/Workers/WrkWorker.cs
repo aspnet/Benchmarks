@@ -26,9 +26,6 @@ namespace BenchmarksWorkers.Workers
 
         static WrkWorker()
         {
-            // Register the worker
-            WorkerFactory.Workers["wrk"] = clientJob => new WrkWorker(clientJob);
-
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
