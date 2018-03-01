@@ -103,6 +103,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mong
 		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarksWorkers", "src\BenchmarksWorkers\BenchmarksWorkers.csproj", "{44D137AF-404D-4963-A096-C803F4774FCB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +177,14 @@ Global
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|Any CPU.Build.0 = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.ActiveCfg = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.Build.0 = Release|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Debug|x86.Build.0 = Debug|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Release|x86.ActiveCfg = Release|Any CPU
+		{44D137AF-404D-4963-A096-C803F4774FCB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,6 +204,7 @@ Global
 		{17D18F38-2030-46BE-8C5A-48607A6E69AA} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{FA7BA2F5-47DA-418F-B29F-458714F44C89} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{44D137AF-404D-4963-A096-C803F4774FCB} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
