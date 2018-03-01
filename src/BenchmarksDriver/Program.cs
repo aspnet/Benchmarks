@@ -980,7 +980,7 @@ namespace BenchmarksDriver
                                 Log($"Socket Errors:               {average.SocketErrors}");
                                 Log($"Bad Responses:               {average.BadResponses}");
 
-                                if (serializer != null)
+                                if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                                 {
                                     Log("Writing results to SQL...");
 
