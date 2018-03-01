@@ -13,5 +13,7 @@
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(SignalRVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.MsgPack" Version="$(SignalRVersion)" />
   </ItemGroup>
 </Project>

@@ -56,6 +56,10 @@ Properties of the Wrk client
 
   ScriptName             Name of the script used by wrk.
   PipelineDepth          Depth of pipeline used by clients.
+
+Properties of the SignalR client
+  HubProtocol            Name of the hub protocol to be used between client and server.
+  TransportType          Name of the transport to communicate over.
 ```
 
 ### Examples

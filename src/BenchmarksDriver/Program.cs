@@ -477,10 +477,18 @@ namespace BenchmarksDriver
                 mergedClientJob.Merge(job);
                 _clientJob = mergedClientJob.ToObject<ClientJob>();
 
-                if (clientNameOption.HasValue() && Enum.TryParse<Worker>(clientNameOption.Value(), ignoreCase: true, result: out var worker))
+                if (clientNameOption.HasValue())
                 {
+                    if (!Enum.TryParse<Worker>(clientNameOption.Value(), ignoreCase: true, result: out var worker))
+                    {
+                        Log($"Could not find worker {clientNameOption.Value()}");
+                        return 9;
+                    }
+
                     _clientJob.Client = worker;
                 }
+
+                Log($"Using worker {_clientJob.Client}");
 
                 // Override default ClientJob settings if options are set
                 if (connectionsOption.HasValue())
