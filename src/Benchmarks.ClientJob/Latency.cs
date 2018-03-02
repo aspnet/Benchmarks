@@ -5,10 +5,10 @@ namespace Benchmarks.ClientJob
 {
     public class Latency
     {
-        public double Average { get; set; }
-        public double Within50thPercentile { get; set; }
-        public double Within75thPercentile { get; set; }
-        public double Within90thPercentile { get; set; }
-        public double Within99thPercentile { get; set; }
+        public double Average { get; set; } = -1;
+        public double Within50thPercentile { get; set; } = -1;
+        public double Within75thPercentile { get; set; } = -1;
+        public double Within90thPercentile { get; set; } = -1;
+        public double Within99thPercentile { get; set; } = -1;
     }
 }

@@ -206,7 +206,9 @@ namespace BenchmarksWorkers.Workers
                 {
                     if (!_stopped)
                     {
-                        Log($"Connection closed early: {e}");
+                        var error = $"Connection closed early: {e}";
+                        _job.Error += error;
+                        Log(error);
                     }
                 };
             }

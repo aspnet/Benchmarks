@@ -64,6 +64,61 @@ namespace BenchmarksWorkers.Workers
 
         public async Task WriteJobResultsToSqlAsync(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning)
         {
+            await RetryOnExceptionAsync(5, async () =>
+            {
+                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond);
+            });
+
+            await RetryOnExceptionAsync(5, async () =>
+            {
+                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu);
+            });
+
+            await RetryOnExceptionAsync(5, async () =>
+            {
+                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
+            });
+
+            await RetryOnExceptionAsync(5, async () =>
+            {
+                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
+            });
+
+            if (statistics.Latency50Percentile != -1)
+            {
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile);
+                });
+            }
+
+            if (statistics.Latency75Percentile != -1)
+            {
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile);
+                });
+            }
+
+            if (statistics.Latency90Percentile != -1)
+            {
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile);
+                });
+            }
+
+            if (statistics.Latency99Percentile != -1)
+            {
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile);
+                });
+            }
+        }
+
+        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value)
+        {
             string insertCmd =
                 @"
                 INSERT INTO [dbo].[" + tableName + @"]
@@ -148,8 +203,8 @@ namespace BenchmarksWorkers.Workers
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Method", clientJob.Method.ToString().ToUpperInvariant());
                     p.AddWithValue("@Headers", clientJob.Headers.Any() ? JsonConvert.SerializeObject(clientJob.Headers) : (object)DBNull.Value);
-                    p.AddWithValue("@Dimension", "RequestsPerSecond"); // TODO: write more SQL entries, latency, etc.
-                    p.AddWithValue("@Value", clientJob.RequestsPerSecond);
+                    p.AddWithValue("@Dimension", dimension);
+                    p.AddWithValue("@Value", value);
 
                     await command.ExecuteNonQueryAsync();
                 }
