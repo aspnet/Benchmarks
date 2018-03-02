@@ -61,24 +61,25 @@
     <CloudScenarios Include="-n MvcDbMultiUpdateEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
 
     <CloudScenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
     <CloudScenarios Include="-n DbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n DbFortunesMongoDb --webHost KestrelLibuv $(HtmlJobs) --database MongoDb" />
     <CloudScenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
+    <CloudScenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
     <CloudScenarios Include="-n MvcDbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-
-    <!-- Baselines for KPIs -->
-    <CloudScenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-    <CloudScenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-
   </ItemGroup>
 
   <ItemGroup>
 
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+
     <PhysicalScenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv -f Benchmarks.PassthroughConnectionFilter $(PlaintextJobs)" />
 
@@ -88,7 +89,9 @@
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost HttpSys $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv -f Benchmarks.PassthroughConnectionFilter $(JsonJobs)" />
 
@@ -112,12 +115,6 @@
     <PhysicalScenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
-
-    <!-- Baselines for KPIs -->
-    <PhysicalScenarios Include="-n Plaintext --kestrelThreadCount 2 --webHost KestrelLibuv $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
 
   </ItemGroup>
 
