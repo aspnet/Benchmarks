@@ -28,6 +28,9 @@ namespace BenchmarksDriver
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
 
+        // Default to arguments which should be sufficient for collecting trace of default Plaintext run
+        private const string _defaultTraceArguments = "BufferSize=1024";
+
         public static int Main(string[] args)
         {
             var app = new CommandLineApplication()
@@ -112,7 +115,7 @@ namespace BenchmarksDriver
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
             var traceArgumentsOption = app.Option("--trace-arguments",
-                "Arguments used when collecting a PerfView trace.  Defaults to \"BufferSize=1024\".",
+                $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
             var traceOutputOption = app.Option("--trace-output",
                 "An optional location to download the trace file to, e.g., --trace-output c:\traces", CommandOptionType.SingleValue);
@@ -384,9 +387,11 @@ namespace BenchmarksDriver
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.Collect = true;
-
-                    // Default to arguments which should be sufficient for collecting trace of default Plaintext run
-                    serverJob.CollectArguments = traceArgumentsOption.Value() ?? "BufferSize=1024";
+                    serverJob.CollectArguments = _defaultTraceArguments;
+                    if (traceArgumentsOption.HasValue())
+                    {
+                        serverJob.CollectArguments = string.Join(';', serverJob.CollectArguments, traceArgumentsOption.Value());
+                    }
                 }
                 if (disableR2ROption.HasValue())
                 {
