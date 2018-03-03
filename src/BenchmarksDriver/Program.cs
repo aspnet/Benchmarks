@@ -982,6 +982,9 @@ namespace BenchmarksDriver
                                 Log($"Latency (ms):                {average.Latency}");
                                 Log($"Socket Errors:               {average.SocketErrors}");
                                 Log($"Bad Responses:               {average.BadResponses}");
+                                Log($"SDK:                         {serverJob.SdkVersion}");
+                                Log($"Runtime:                     {serverJob.RuntimeVersion}");
+                                Log($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
 
                                 if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                                 {

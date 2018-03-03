@@ -886,6 +886,11 @@ namespace BenchmarkServer
                 CloneDir(dotnetHome, dotnetDir);
             }
 
+            // Updating ServerJob to reflect actual versions used
+            job.AspNetCoreVersion = aspNetCoreVersion;
+            job.RuntimeVersion = runtimeFrameworkVersion;
+            job.SdkVersion = sdkVersion;
+
             // Build and Restore
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
