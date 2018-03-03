@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime;
 using System.Threading.Tasks;
@@ -52,66 +49,57 @@ namespace Benchmarks.Middleware
                 ? StatusCodes.Status200OK
                 : StatusCodes.Status404NotFound;
 
-            await WriteLineAsync("<!DOCTYPE html><html><head><style>body{font-family:\"Segoe UI\",Arial,Helvetica,Sans-serif};h1,h2,h3{font-family:\"Segoe UI Light\"}</style></head><body>");
-            await WriteLineAsync("<h1>ASP.NET Core Benchmarks</h1>");
-            await WriteLineAsync("<h2>Configuration Information</h2>");
-            await WriteLineAsync("<ul>");
-            await WriteLineAsync($"<li>Environment: {_hostingEnv.EnvironmentName}</li>");
-            await WriteLineAsync($"<li>Framework: {_targetFrameworkName}</li>");
-            await WriteLineAsync($"<li>Server GC enabled: {GCSettings.IsServerGC}</li>");
-            await WriteLineAsync($"<li>Configuration: {_configurationName}</li>");
-            await WriteLineAsync($"<li>Server: {Program.Server}</li>");
-            await WriteLineAsync($"<li>Server URLs: {string.Join(", ", _serverAddresses.Addresses)}</li>");
-            await WriteLineAsync($"<li>Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}</li>");
+            await WriteLineAsync("ASP.NET Core Benchmarks");
+            await WriteLineAsync("Configuration Information");
+            await WriteLineAsync($"Environment: {_hostingEnv.EnvironmentName}");
+            await WriteLineAsync($"Framework: {_targetFrameworkName}");
+            await WriteLineAsync($"Server GC enabled: {GCSettings.IsServerGC}");
+            await WriteLineAsync($"Configuration: {_configurationName}");
+            await WriteLineAsync($"Server: {Program.Server}");
+            await WriteLineAsync($"Server URLs: {string.Join(", ", _serverAddresses.Addresses)}");
+            await WriteLineAsync($"Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}");
+            await WriteLineAsync("");
 
-            await WriteLineAsync($"<li>Environment variables:<ul>");
+            await WriteLineAsync($"Environment variables:");
             foreach (DictionaryEntry ev in Environment.GetEnvironmentVariables())
             {
-                await WriteLineAsync($"<li>{ev.Key} = {ev.Value}</li>");
+                await WriteLineAsync($"{ev.Key}={ev.Value}");
             }
-            await WriteLineAsync($"</ul></li>");
+            await WriteLineAsync("");
 
-            await WriteLineAsync($"<li>Server features:<ul>");
+            await WriteLineAsync($"Server features:");
             foreach (var feature in httpContext.Features)
             {
-                await WriteLineAsync($"<li>{feature.Key.Name}</li>");
+                await WriteLineAsync(feature.Key.Name);
             }
-            await WriteLineAsync($"</ul></li>");
+            await WriteLineAsync("");
 
-            await WriteLineAsync($"<li>Enabled scenarios:<ul>");
-            var enabledScenarios = _scenarios.GetEnabled();
-            var maxNameLength = enabledScenarios.Max(s => s.Name.Length);
-            foreach (var scenario in enabledScenarios)
+            await WriteLineAsync($"Enabled scenarios:");
+            foreach (var scenario in _scenarios.GetEnabled())
             {
-                await WriteLineAsync($"<li>{scenario.Name}<ul>");
-                foreach (var path in scenario.Paths)
-                {
-                    await WriteLineAsync($"<li><a href=\"{path}\">{path}</a></li>");
-                }
-                await WriteLineAsync($"</ul></li>");
+                await WriteLineAsync($"{scenario.Name}");
             }
-            await WriteLineAsync($"</ul></li>");
+            await WriteLineAsync("");
 
-
-            await WriteLineAsync($"<li>Loaded modules:<ul>");
-
-            foreach (var m in Process.GetCurrentProcess().Modules.OfType<ProcessModule>())
+            await WriteLineAsync($"Loaded assemblies:");
+            
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                Assembly assembly = null;
-                try
+                await WriteLineAsync(assembly.GetName().ToString());
+                await WriteLineAsync(assembly.GetName().Version.ToString());
+
+                var informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                
+                if (informationalVersionAttribute != null)
                 {
-                    assembly = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(m.ModuleName)));
+                    await WriteLineAsync(informationalVersionAttribute.InformationalVersion);
                 }
-                catch { }
 
-                await WriteLineAsync($"<li>{m.FileName} {m.ModuleName} {assembly?.GetName().Version.ToString()} {assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}</li>");
+                foreach(var metadataAttribute in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+                {
+                    await WriteLineAsync($"{metadataAttribute.Key}: {metadataAttribute.Value}");
+                }
             }
-
-            await WriteLineAsync("</ul></li>");
-
-            await WriteLineAsync("</ul>");
-
-            await WriteLineAsync("</body></html>");
 
             async Task WriteLineAsync(string text)
             {
