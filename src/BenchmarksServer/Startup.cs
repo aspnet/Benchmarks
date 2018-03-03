@@ -25,6 +25,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Repository;
 
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace BenchmarkServer
 {
@@ -33,6 +35,7 @@ namespace BenchmarkServer
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallRepoUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/";
+        private static readonly string _latestAspnetCoreRuntimeUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/aspnetcoreruntime/index.json";
         private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
@@ -887,7 +890,7 @@ namespace BenchmarkServer
             }
 
             // Updating ServerJob to reflect actual versions used
-            job.AspNetCoreVersion = aspNetCoreVersion;
+            job.AspNetCoreVersion = await GetLatestAspNetCoreRuntimeVersion(buildToolsPath);
             job.RuntimeVersion = runtimeFrameworkVersion;
             job.SdkVersion = sdkVersion;
 
@@ -974,8 +977,22 @@ namespace BenchmarkServer
                 .Element("PropertyGroup")
                 .Element("MicrosoftNETCoreAppPackageVersion")
                 .Value;
+
             Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
             return latestRuntimeVersion;
+        }
+
+        private static async Task<string> GetLatestAspNetCoreRuntimeVersion(string buildToolsPath)
+        {
+            var aspnetCoreRuntimePath = Path.Combine(buildToolsPath, "aspnetCoreRuntimePath.json");
+            await DownloadFileAsync(_latestAspnetCoreRuntimeUrl, aspnetCoreRuntimePath, maxRetries: 5);
+            var aspnetCoreRuntime = JObject.Parse(File.ReadAllText(aspnetCoreRuntimePath));
+
+            var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Last()["upper"];
+
+
+            Log.WriteLine($"Detecting AspNet Core runtime version: {latestAspNetCoreRuntime}");
+            return latestAspNetCoreRuntime;
         }
 
         private static async Task DownloadBuildTools(string buildToolsPath)
