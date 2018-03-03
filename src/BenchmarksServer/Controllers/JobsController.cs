@@ -252,19 +252,17 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpGet("{id}/invoke")]
-        public IActionResult Invoke(int id, string path)
+        public async Task<IActionResult> Invoke(int id, string path)
         {
-            lock (_jobs)
+            try
             {
-                try
-                {
-                    var job = _jobs.Find(id);
-                    return Content(_httpClient.GetStringAsync(new Uri(new Uri(job.Url), path)).GetAwaiter().GetResult());
-                }
-                catch (Exception e)
-                {
-                    return StatusCode(500, e.ToString());
-                }
+                var job = _jobs.Find(id);
+                var response = await _httpClient.GetStringAsync(new Uri(new Uri(job.Url), path));
+                return Content(response);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.ToString());
             }
         }
     }
