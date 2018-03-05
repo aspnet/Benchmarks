@@ -411,7 +411,7 @@ namespace BenchmarksWorkers.Workers
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
-                    p.AddWithValue("@RuntimeVersion", aspnetCoreVersion);
+                    p.AddWithValue("@RuntimeVersion", runtimeVersion);
                     p.AddWithValue("@Scenario", scenario.ToString());
                     p.AddWithValue("@Hardware", hardware.ToString());
                     p.AddWithValue("@HardwareVersion", hardwareVersion);
@@ -498,7 +498,6 @@ namespace BenchmarksWorkers.Workers
                 }
             } while (true);
         }
-
 
         public void Dispose()
         {

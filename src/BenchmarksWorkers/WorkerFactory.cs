@@ -19,6 +19,10 @@ namespace BenchmarksWorkers
             // Wrk
             Workers[Worker.Wrk] = clientJob => new WrkWorker(clientJob);
             ResultSerializers[Worker.Wrk] = () => new WrkSerializer();
+
+            // SignalR
+            Workers[Worker.SignalR] = clientJob => new SignalRWorker(clientJob);
+            ResultSerializers[Worker.SignalR] = () => new SignalRSerializer();
         }
 
         static public IWorker CreateWorker(ClientJob clientJob)

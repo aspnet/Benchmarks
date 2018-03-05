@@ -126,7 +126,7 @@ namespace BenchmarkClient
                                 job.State = ClientState.Deleting;
                             }
                             else
-                            {                                
+                            {
                                 await worker.StartAsync();
                             }
                         }
@@ -151,15 +151,18 @@ namespace BenchmarkClient
                     }
                     else if (job.State == ClientState.Deleting)
                     {
-                        Log($"Deleting job {worker.JobLogText}");
+                        Log($"Deleting job {worker?.JobLogText ?? "no worker found"}");
 
                         try
                         {
-                            await worker.StopAsync();
+                            if (worker != null)
+                            {
+                                await worker.StopAsync();
+                            }
                         }
                         finally
                         {
-                            worker.Dispose();
+                            worker?.Dispose();
                             worker = null;
 
                             _jobs.Remove(job.Id);

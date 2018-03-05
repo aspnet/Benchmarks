@@ -5,6 +5,7 @@ namespace Benchmarks.ClientJob
 {
     public enum Worker
     {
-        Wrk
+        Wrk,
+        SignalR,
     }
 }
