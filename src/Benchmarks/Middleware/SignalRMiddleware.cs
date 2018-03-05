@@ -23,23 +23,13 @@ namespace Benchmarks.Middleware
 
     public class EchoHub : Hub
     {
-        public override Task OnConnectedAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            return Task.CompletedTask;
-        }
-
         public async Task Echo(int duration)
         {
             try
             {
                 var t = new CancellationTokenSource();
                 t.CancelAfter(TimeSpan.FromSeconds(duration));
-                while (!t.IsCancellationRequested)
+                while (!t.IsCancellationRequested && !Context.Connection.ConnectionAbortedToken.IsCancellationRequested)
                 {
                     await Clients.All.SendAsync("echo", DateTime.UtcNow);
                 }

@@ -79,10 +79,13 @@ namespace BenchmarksWorkers.Workers
                 await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
             });
 
-            await RetryOnExceptionAsync(5, async () =>
+            if (statistics.LatencyAverage != -1)
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
-            });
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage);
+                });
+            }
 
             if (statistics.Latency50Percentile != -1)
             {
@@ -196,7 +199,7 @@ namespace BenchmarksWorkers.Workers
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(serverJob.ConnectionFilter) ? (object)DBNull.Value : serverJob.ConnectionFilter);
                     p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
-                    p.AddWithValue("@Transport", clientJob.ClientProperties["Transport"]);
+                    p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
                     p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
                     p.AddWithValue("@Connections", clientJob.Connections);
                     p.AddWithValue("@Duration", clientJob.Duration);

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace BenchmarksWorkers.Workers
@@ -28,6 +29,7 @@ namespace BenchmarksWorkers.Workers
         private List<List<double>> _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
+        private SemaphoreSlim _lock = new SemaphoreSlim(1);
 
         public SignalRWorker(ClientJob job)
         {
@@ -97,38 +99,50 @@ namespace BenchmarksWorkers.Workers
 
         public async Task StopAsync()
         {
-            if (_timer != null)
+            if (!await _lock.WaitAsync(0))
             {
-                _timer?.Dispose();
-                _timer = null;
-
-                foreach (var callback in _recvCallbacks)
+                // someone else is stopping, we only need to do it once
+                return;
+            }
+            try
+            {
+                if (_timer != null)
                 {
-                    // stops stat collection from happening quicker than StopAsync
-                    // and we can do all the calculations while close is occurring
-                    callback.Dispose();
+                    _timer?.Dispose();
+                    _timer = null;
+
+                    foreach (var callback in _recvCallbacks)
+                    {
+                        // stops stat collection from happening quicker than StopAsync
+                        // and we can do all the calculations while close is occurring
+                        callback.Dispose();
+                    }
+
+                    _workTimer.Stop();
+
+                    _stopped = true;
+
+                    // stop connections
+                    Log("Stopping connections");
+                    var tasks = new List<Task>(_connections.Count);
+                    foreach (var connection in _connections)
+                    {
+                        tasks.Add(connection.StopAsync());
+                    }
+
+                    CalculateStatistics();
+
+                    await Task.WhenAll(tasks);
+
+                    // TODO: Remove when clients no longer take a long time to "cool down"
+                    await Task.Delay(5000);
+
+                    Log("Stopped worker");
                 }
-
-                _workTimer.Stop();
-
-                _stopped = true;
-
-                // stop connections
-                Log("Stopping connections");
-                var tasks = new List<Task>(_connections.Count);
-                foreach (var connection in _connections)
-                {
-                    tasks.Add(connection.StopAsync());
-                }
-
-                CalculateStatistics();
-
-                await Task.WhenAll(tasks);
-
-                // TODO: Remove when clients no longer take a long time to "cool down"
-                await Task.Delay(5000);
-
-                Log("Stopped worker");
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 
@@ -154,8 +168,15 @@ namespace BenchmarksWorkers.Workers
             var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri)
                 .WithMessageHandler(_httpClientHandler)
-                //.WithConsoleLogger(Microsoft.Extensions.Logging.LogLevel.Trace) TODO: Support logging on client for debugging purposes
                 .WithTransport(transportType);
+
+            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
+            {
+                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
+                {
+                    hubConnectionBuilder.WithConsoleLogger(level);
+                }
+            }
 
             if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocolName))
             {
@@ -235,18 +256,18 @@ namespace BenchmarksWorkers.Workers
             }
             // Review: This could be interesting information, see the gap between most active and least active connection
             // Ideally they should be within a couple percent of each other, but if they aren't something could be wrong
-            Log($"Least Requests to Connection: {min}");
-            Log($"Most Requests to Connection: {max}");
+            Log($"Least Requests per Connection: {min}");
+            Log($"Most Requests per Connection: {max}");
 
             var rps = (double)totalRequests / _workTimer.ElapsedMilliseconds * 1000;
             Log($"Total RPS: {rps}");
             _job.RequestsPerSecond = rps;
 
             // Latency
-            Latency();
+            CalculateLatency();
         }
 
-        private void Latency()
+        private void CalculateLatency()
         {
             var avg = new List<double>(_latencyPerConnection.Count);
             var totalAvg = 0.0;
@@ -261,18 +282,26 @@ namespace BenchmarksWorkers.Workers
                 Log($"Average latency for connection #{i}: {avg[i]}");
 
                 _latencyPerConnection[i].Sort();
-                // Review: Each connection can have different latencies, how do we want to deal with that?
-                // We could just combine them all and ignore the fact that they are different connections
-                // Or we could preserve the results for each one and record them separately
-                _job.Latency.Within50thPercentile = GetPercentile(50, _latencyPerConnection[i]);
-                _job.Latency.Within75thPercentile = GetPercentile(75, _latencyPerConnection[i]);
-                _job.Latency.Within90thPercentile = GetPercentile(90, _latencyPerConnection[i]);
-                _job.Latency.Within99thPercentile = GetPercentile(99, _latencyPerConnection[i]);
                 totalAvg += avg[i];
             }
 
             totalAvg /= avg.Count;
             _job.Latency.Average = totalAvg;
+
+            var allConnections = new List<double>();
+            foreach (var connectionLatency in _latencyPerConnection)
+            {
+                allConnections.AddRange(connectionLatency);
+            }
+
+            // Review: Each connection can have different latencies, how do we want to deal with that?
+            // We could just combine them all and ignore the fact that they are different connections
+            // Or we could preserve the results for each one and record them separately
+            allConnections.Sort();
+            _job.Latency.Within50thPercentile = GetPercentile(50, allConnections);
+            _job.Latency.Within75thPercentile = GetPercentile(75, allConnections);
+            _job.Latency.Within90thPercentile = GetPercentile(90, allConnections);
+            _job.Latency.Within99thPercentile = GetPercentile(99, allConnections);
         }
 
         private double GetPercentile(int percent, List<double> sortedData)
