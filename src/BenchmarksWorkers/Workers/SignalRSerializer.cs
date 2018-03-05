@@ -36,14 +36,12 @@ namespace BenchmarksWorkers.Workers
                         [RuntimeStore] [bit] NOT NULL,
                         [Scheme] [nvarchar](50) NOT NULL,
                         [Sources] [nvarchar](50) NULL,
-                        [ConnectionFilter] [nvarchar](50) NULL,
                         [WebHost] [nvarchar](50) NOT NULL,
                         [Transport] [nvarchar](50) NOT NULL,
                         [HubProtocol] [nvarchar](50) NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [Path] [nvarchar](200) NULL,
-                        [Method] [nvarchar](50) NOT NULL,
                         [Headers] [nvarchar](max) NULL,
                         [Dimension] [nvarchar](50) NOT NULL,
                         [Value] [float] NOT NULL
@@ -138,14 +136,12 @@ namespace BenchmarksWorkers.Workers
                            ,[RuntimeStore]
                            ,[Scheme]
                            ,[Sources]
-                           ,[ConnectionFilter]
                            ,[WebHost]
                            ,[Transport]
                            ,[HubProtocol]
                            ,[Connections]
                            ,[Duration]
                            ,[Path]
-                           ,[Method]
                            ,[Headers]
                            ,[Dimension]
                            ,[Value])
@@ -163,14 +159,12 @@ namespace BenchmarksWorkers.Workers
                            ,@RuntimeStore
                            ,@Scheme
                            ,@Sources
-                           ,@ConnectionFilter
                            ,@WebHost
                            ,@Transport
                            ,@HubProtocol
                            ,@Connections
                            ,@Duration
                            ,@Path
-                           ,@Method
                            ,@Headers
                            ,@Dimension
                            ,@Value)
@@ -196,15 +190,12 @@ namespace BenchmarksWorkers.Workers
                     p.AddWithValue("@RuntimeStore", serverJob.UseRuntimeStore);
                     p.AddWithValue("@Scheme", serverJob.Scheme.ToString().ToLowerInvariant());
                     p.AddWithValue("@Sources", serverJob.ReferenceSources.Any() ? (object)ConvertToSqlString(serverJob.ReferenceSources) : DBNull.Value);
-                    p.AddWithValue("@ConnectionFilter",
-                        string.IsNullOrEmpty(serverJob.ConnectionFilter) ? (object)DBNull.Value : serverJob.ConnectionFilter);
                     p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
                     p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
                     p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
                     p.AddWithValue("@Connections", clientJob.Connections);
                     p.AddWithValue("@Duration", clientJob.Duration);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
-                    p.AddWithValue("@Method", clientJob.Method.ToString().ToUpperInvariant());
                     p.AddWithValue("@Headers", clientJob.Headers.Any() ? JsonConvert.SerializeObject(clientJob.Headers) : (object)DBNull.Value);
                     p.AddWithValue("@Dimension", dimension);
                     p.AddWithValue("@Value", value);
