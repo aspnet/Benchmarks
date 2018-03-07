@@ -60,7 +60,8 @@ Properties of the Wrk client
 Properties of the SignalR client
   HubProtocol            Name of the hub protocol to be used between client and server.
   TransportType          Name of the transport to communicate over.
-  LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'
+  LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'.
+  CollectLatency         Turns on collection of detailed latency, used for Percentiles, by default we just collect average Latency.
 ```
 
 ### Examples

@@ -30,6 +30,8 @@ namespace BenchmarksWorkers.Workers
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private bool _detailedLatency;
+        private List<(double sum, int count)> _latencyAverage;
 
         public SignalRWorker(ClientJob job)
         {
@@ -60,6 +62,14 @@ namespace BenchmarksWorkers.Workers
 
             jobLogText += "]";
             JobLogText = jobLogText;
+
+            if (_job.ClientProperties.TryGetValue("CollectLatency", out var collectLatency))
+            {
+                if (Enum.TryParse<bool>(collectLatency, out var toggle))
+                {
+                    _detailedLatency = toggle;
+                }
+            }
 
             CreateConnections(transportType);
         }
@@ -164,6 +174,7 @@ namespace BenchmarksWorkers.Workers
             _connections = new List<HubConnection>(_job.Connections);
             _requestsPerConnection = new List<int>(_job.Connections);
             _latencyPerConnection = new List<List<double>>(_job.Connections);
+            _latencyAverage = new List<(double sum, int count)>(_job.Connections);
 
             var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri)
@@ -207,6 +218,7 @@ namespace BenchmarksWorkers.Workers
             {
                 _requestsPerConnection.Add(0);
                 _latencyPerConnection.Add(new List<double>());
+                _latencyAverage.Add((0, 0));
 
                 var connection = hubConnectionBuilder.Build();
                 _connections.Add(connection);
@@ -220,7 +232,18 @@ namespace BenchmarksWorkers.Workers
                     _requestsPerConnection[id] += 1;
 
                     var latency = DateTime.UtcNow - utcNow;
-                    _latencyPerConnection[id].Add(latency.TotalMilliseconds);
+                    if (_detailedLatency)
+                    {
+                        _latencyPerConnection[id].Add(latency.TotalMilliseconds);
+                    }
+                    else
+                    {
+                        (var sum, var count) = _latencyAverage[id];
+                        sum += latency.TotalMilliseconds;
+                        count++;
+                        _latencyAverage[id] = (sum, count);
+
+                    }
                 }));
 
                 connection.Closed += e =>
@@ -269,39 +292,55 @@ namespace BenchmarksWorkers.Workers
 
         private void CalculateLatency()
         {
-            var avg = new List<double>(_latencyPerConnection.Count);
-            var totalAvg = 0.0;
-            for (var i = 0; i < _latencyPerConnection.Count; i++)
+            if (_detailedLatency)
             {
-                avg.Add(0.0);
-                for (var j = 0; j < _latencyPerConnection[i].Count; j++)
+                var avg = new List<double>(_latencyPerConnection.Count);
+                var totalAvg = 0.0;
+                for (var i = 0; i < _latencyPerConnection.Count; i++)
                 {
-                    avg[i] += _latencyPerConnection[i][j];
+                    avg.Add(0.0);
+                    for (var j = 0; j < _latencyPerConnection[i].Count; j++)
+                    {
+                        avg[i] += _latencyPerConnection[i][j];
+                    }
+                    avg[i] /= _latencyPerConnection[i].Count;
+                    Log($"Average latency for connection #{i}: {avg[i]}");
+
+                    _latencyPerConnection[i].Sort();
+                    totalAvg += avg[i];
                 }
-                avg[i] /= _latencyPerConnection[i].Count;
-                Log($"Average latency for connection #{i}: {avg[i]}");
 
-                _latencyPerConnection[i].Sort();
-                totalAvg += avg[i];
+                totalAvg /= avg.Count;
+                _job.Latency.Average = totalAvg;
+
+                var allConnections = new List<double>();
+                foreach (var connectionLatency in _latencyPerConnection)
+                {
+                    allConnections.AddRange(connectionLatency);
+                }
+
+                // Review: Each connection can have different latencies, how do we want to deal with that?
+                // We could just combine them all and ignore the fact that they are different connections
+                // Or we could preserve the results for each one and record them separately
+                allConnections.Sort();
+                _job.Latency.Within50thPercentile = GetPercentile(50, allConnections);
+                _job.Latency.Within75thPercentile = GetPercentile(75, allConnections);
+                _job.Latency.Within90thPercentile = GetPercentile(90, allConnections);
+                _job.Latency.Within99thPercentile = GetPercentile(99, allConnections);
             }
-
-            totalAvg /= avg.Count;
-            _job.Latency.Average = totalAvg;
-
-            var allConnections = new List<double>();
-            foreach (var connectionLatency in _latencyPerConnection)
+            else
             {
-                allConnections.AddRange(connectionLatency);
-            }
+                var totalSum = 0.0;
+                var totalCount = 0;
+                foreach (var average in _latencyAverage)
+                {
+                    totalSum += average.sum;
+                    totalCount += average.count;
+                }
 
-            // Review: Each connection can have different latencies, how do we want to deal with that?
-            // We could just combine them all and ignore the fact that they are different connections
-            // Or we could preserve the results for each one and record them separately
-            allConnections.Sort();
-            _job.Latency.Within50thPercentile = GetPercentile(50, allConnections);
-            _job.Latency.Within75thPercentile = GetPercentile(75, allConnections);
-            _job.Latency.Within90thPercentile = GetPercentile(90, allConnections);
-            _job.Latency.Within99thPercentile = GetPercentile(99, allConnections);
+                totalSum /= totalCount;
+                _job.Latency.Average = totalSum;
+            }
         }
 
         private double GetPercentile(int percent, List<double> sortedData)
