@@ -11,6 +11,6 @@
     "Warmup": 2
   },
   "SignalRBroadcast": {
-    "Path": "/signalr/broadcast"
+    "Path": "/signalr/broadcast/default"
   }
 }
