@@ -90,9 +90,9 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
+                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("--runtimeVersion",
-                ".NET Core Runtime version (Current, Latest, or custom value). Current is the latest public version, Latest is the currently developped one. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
+                ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
             var portOption = app.Option("--port",
@@ -136,7 +136,9 @@ namespace BenchmarksDriver
             var durationOption = app.Option("--duration",
                 "Duration of client job in seconds. Default is 15.", CommandOptionType.SingleValue);
             var warmupOption = app.Option("--warmup",
-                "Duration of warmup in seconds. Default is 15.", CommandOptionType.SingleValue);
+                "Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.", CommandOptionType.SingleValue);
+            var noWarmupOption = app.Option("--no-warmup",
+                "Disables the warmup phase.", CommandOptionType.NoValue);
             var headerOption = app.Option("--header",
                 "Header added to request.", CommandOptionType.MultipleValue);
             var headersOption = app.Option("--headers",
@@ -507,6 +509,10 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Warmup = int.Parse(warmupOption.Value());
                 }
+                if (noWarmupOption.HasValue())
+                {
+                    _clientJob.Warmup = 0;
+                }
                 if (clientProperties.HasValue())
                 {
                     var properties = clientProperties.Value().Split(';');
@@ -779,17 +785,28 @@ namespace BenchmarksDriver
                         }
                     }
 
-                    Log("Warmup");
-                    var duration = _clientJob.Duration;
-                    _clientJob.Duration = _clientJob.Warmup;
-                    clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
+                    TimeSpan latencyNoLoad, latencyFirstRequest;
 
-                    // Store the latency as measured on the warmup job
-                    var latencyNoLoad = clientJob.LatencyNoLoad;
-                    var latencyFirstRequest = clientJob.LatencyFirstRequest;
-                    _clientJob.SkipStartupLatencies = false;
+                    if (_clientJob.Warmup != 0)
+                    {
+                        Log("Warmup");
+                        var duration = _clientJob.Duration;
 
-                    _clientJob.Duration = duration;
+                        _clientJob.Duration = _clientJob.Warmup;
+                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
+
+                        // Store the latency as measured on the warmup job
+                        latencyNoLoad = clientJob.LatencyNoLoad;
+                        latencyFirstRequest = clientJob.LatencyFirstRequest;
+                        _clientJob.SkipStartupLatencies = false;
+
+                        _clientJob.Duration = duration;
+                    }
+                    else
+                    {
+                        Log("Skipping warmup");
+                    }
+
                     var startTime = DateTime.UtcNow;
 
                     var spanLoop = 0;
@@ -809,7 +826,6 @@ namespace BenchmarksDriver
                             }
                         }
 
-                        Log("Benchmark");
                         clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
                         if (clientJob.State == ClientState.Completed)
@@ -837,6 +853,12 @@ namespace BenchmarksDriver
                             if (collectR2RLog)
                             {
                                 downloadFiles.Add("r2r." + serverJob.ProcessId);
+                            }
+
+                            if (clientJob.Warmup == 0)
+                            {
+                                latencyNoLoad = clientJob.LatencyNoLoad;
+                                latencyFirstRequest = clientJob.LatencyFirstRequest;
                             }
 
                             var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
