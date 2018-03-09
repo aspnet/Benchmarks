@@ -71,12 +71,12 @@
     <CloudScenarios Include="-n MvcDbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
     <CloudScenarios Include="-n MvcDbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
 
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=WebSockets;HubProtocol=json' $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=WebSockets;HubProtocol=messagepack' $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=ServerSentEvents;HubProtocol=json' $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=ServerSentEvents;HubProtocol=messagepack' $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=LongPolling;HubProtocol=json' $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties 'TransportType=LongPolling;HubProtocol=messagepack' $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets;HubProtocol=json&quot; $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets;HubProtocol=messagepack&quot; $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents;HubProtocol=json&quot; $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents;HubProtocol=messagepack&quot; $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling;HubProtocol=json&quot; $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling;HubProtocol=messagepack&quot; $(SignalRJobs)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -124,12 +124,12 @@
     <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=WebSockets;HubProtocol=json' $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=WebSockets;HubProtocol=messagepack' $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=ServerSentEvents;HubProtocol=json' $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=ServerSentEvents;HubProtocol=messagepack' $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=LongPolling;HubProtocol=json' $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties 'TransportType=LongPolling;HubProtocol=messagepack' $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets;HubProtocol=json&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets;HubProtocol=messagepackv $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents;HubProtocol=jsonv $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents;HubProtocol=messagepack&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling;HubProtocol=json&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling;HubProtocol=messagepack&quot; $(SignalRJobs)" />
 
   </ItemGroup>
 
