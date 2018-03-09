@@ -536,19 +536,18 @@ namespace BenchmarkServer
                         {
                             await StopJobAsync();
 
-                            if (_cleanup && tempDir != null)
+                            if (_cleanup && !job.NoClean && tempDir != null)
                             {
                                 DeleteDir(tempDir);
                             }
 
                             // If a custom dotnet directory was used, clean it
-                            if (_cleanup && dotnetDir != dotnetHome)
+                            if (_cleanup && !job.NoClean && dotnetDir != dotnetHome)
                             {
                                 DeleteDir(dotnetDir);
                             }
 
                             // Clean attachments
-
                             foreach (var attachment in job.Attachments)
                             {
                                 try
@@ -758,7 +757,7 @@ namespace BenchmarkServer
             await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5);
 
             //var sdkVersion = File.ReadAllText(sdkVersionPath).Trim();
-            //Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+            //Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             // This is the last known working SDK with Benchmarks on Linux
             var sdkVersion = "2.2.0-preview1-007522";
@@ -917,10 +916,6 @@ namespace BenchmarkServer
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
 
-            ProcessUtil.Run(dotnetExecutable, $"restore /p:VersionSuffix=zzzzz-99999 {buildParameters}",
-                workingDirectory: benchmarkedApp,
-                environmentVariables: env);
-
             if (job.UseRuntimeStore)
             {
                 ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}",
@@ -929,12 +924,6 @@ namespace BenchmarkServer
             }
             else
             {
-                // This flag is necessary when using the .All metapackage
-                buildParameters += " /p:PublishWithAspNetCoreTargetManifest=false";
-
-                // This flag is necessary when using the .All metapackage since ASP.NET shared runtime 2.1
-                buildParameters += " /p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App";
-
                 var outputFolder = Path.Combine(benchmarkedApp, "published");
 
                 ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
@@ -1008,7 +997,7 @@ namespace BenchmarkServer
             var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Last()["upper"];
 
 
-            Log.WriteLine($"Detecting latest runtime version: {latestAspNetCoreRuntime}");
+            Log.WriteLine($"Detecting ASP.NET runtime version: {latestAspNetCoreRuntime}");
             return latestAspNetCoreRuntime;
         }
 

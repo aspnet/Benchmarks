@@ -91,5 +91,6 @@ namespace Benchmarks.ServerJob
         public string BasePath { get; set; }
         public int ProcessId { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
+        public bool NoClean { get; set; }
     }
 }

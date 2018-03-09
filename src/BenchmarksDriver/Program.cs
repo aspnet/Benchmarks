@@ -127,6 +127,8 @@ namespace BenchmarksDriver
                 "Defines custom environment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
             var downloadFilesOption = app.Option("-d|--download",
                 "Download specific server files. This argument can be used multiple times. e.g., -d \"published/wwwroot/picture.png\"", CommandOptionType.MultipleValue);
+            var noCleanOption = app.Option("--no-clean",
+                "Don't delete the application on the server.", CommandOptionType.NoValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -385,6 +387,10 @@ namespace BenchmarksDriver
                 if (projectOption.HasValue())
                 {
                     serverJob.Source.Project = projectOption.Value();
+                }
+                if (noCleanOption.HasValue())
+                {
+                    serverJob.NoClean = true;
                 }
                 if (collectTraceOption.HasValue())
                 {
