@@ -41,7 +41,7 @@ Options:
   --header               Header added to request.
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.
-  --properties"          Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16"
+  --properties           Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16"
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
@@ -61,7 +61,8 @@ Properties of the Wrk client
 Properties of the SignalR client
   HubProtocol            Name of the hub protocol to be used between client and server.
   TransportType          Name of the transport to communicate over.
-  LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'
+  LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'.
+  CollectLatency         Turns on collection of detailed latency, used for Percentiles, by default we just collect average Latency.
 ```
 
 ### Examples

@@ -3,11 +3,14 @@
     "ClientName": "signalr",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "brecon/signalrClientNew",
+      "BranchOrCommit": "dev",
       "Project": "src/Benchmarks/Benchmarks.csproj"
-    }
+    },
+    "Connections": 10,
+    "Duration": 20,
+    "Warmup": 2
   },
   "SignalRBroadcast": {
-    "Path": "/signalr/broadcast"
+    "Path": "/signalr/broadcast/default"
   }
 }
