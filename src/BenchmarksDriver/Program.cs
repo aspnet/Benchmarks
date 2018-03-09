@@ -147,8 +147,8 @@ namespace BenchmarksDriver
                 "Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.", CommandOptionType.SingleValue);
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
-            var clientProperties = app.Option("--properties",
-                "Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16", CommandOptionType.SingleValue);
+            var clientProperties = app.Option("-p|--properties",
+                "Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16", CommandOptionType.MultipleValue);
             var pathOption = app.Option(
                 "--path",
                 "Relative URL where the client should send requests.",
@@ -521,11 +521,19 @@ namespace BenchmarksDriver
                 }
                 if (clientProperties.HasValue())
                 {
-                    var properties = clientProperties.Value().Split(';');
-                    foreach (var kvp in properties)
+                    foreach (var property in clientProperties.Values)
                     {
-                        var values = kvp.Split('=');
-                        _clientJob.ClientProperties[values[0]] = values[1];
+                        var index = property.IndexOf('=');
+
+                        if (index == -1)
+                        {
+                            Console.WriteLine($"Invalid property variable, '=' not found: '{property}'");
+                            return 9;
+                        }
+                        else
+                        {
+                            _clientJob.ClientProperties.Add(property.Substring(0, index), property.Substring(index + 1));
+                        }
                     }
                 }
 

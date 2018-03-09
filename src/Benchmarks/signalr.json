@@ -1,6 +1,6 @@
 {
   "Default": {
-    "ClientName": "signalr",
+    "Client": "SignalR",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "dev",
