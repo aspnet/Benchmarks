@@ -523,8 +523,17 @@ namespace BenchmarksDriver
                 {
                     foreach (var property in clientProperties.Values)
                     {
-                        var values = property.Split('=');
-                        _clientJob.ClientProperties[values[0]] = values[1];
+                        var index = property.IndexOf('=');
+
+                        if (index == -1)
+                        {
+                            Console.WriteLine($"Invalid property variable, '=' not found: '{property}'");
+                            return 9;
+                        }
+                        else
+                        {
+                            _clientJob.ClientProperties.Add(property.Substring(0, index), property.Substring(index + 1));
+                        }
                     }
                 }
 

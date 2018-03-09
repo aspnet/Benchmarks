@@ -1,7 +1,7 @@
 {
   "Default": {
 
-    "Client": "wrk",
+    "Client": "Wrk",
     "PresetHeaders": "Json",
 
     "Query": "?queries=20",
