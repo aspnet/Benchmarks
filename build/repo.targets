@@ -26,57 +26,6 @@
   
   <ItemGroup>
 
-    <CloudScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
-    <CloudScenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextJobs)" />
-    <CloudScenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
-    <CloudScenarios Include="-n MvcPlaintext --webHost KestrelLibuv $(PlaintextJobs)" />
-
-    <CloudScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
-    <CloudScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
-    <CloudScenarios Include="-n Jil --webHost KestrelLibuv $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcJson --webHost KestrelSockets $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcJson --webHost KestrelLibuv $(JsonJobs)" />
-    <CloudScenarios Include="-n MvcJil --webHost KestrelLibuv $(JsonJobs)" />
-
-    <CloudScenarios Include="-n DbSingleQueryRaw --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbSingleQueryDapper --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbSingleQueryMongoDb --webHost KestrelLibuv $(JsonJobs) --database MongoDb" />
-    <CloudScenarios Include="-n DbSingleQueryEf --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbSingleQueryRaw --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbSingleQueryDapper --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbSingleQueryEf --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-
-    <CloudScenarios Include="-n DbMultiQueryRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbMultiQueryDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbMultiQueryMongoDb --webHost KestrelLibuv $(MultiQueryJobs) --database MongoDb" />
-    <CloudScenarios Include="-n DbMultiQueryEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiQueryRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiQueryDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiQueryEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-
-    <CloudScenarios Include="-n DbMultiUpdateRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbMultiUpdateDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbMultiUpdateEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbMultiUpdateEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-
-    <CloudScenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-    <CloudScenarios Include="-n DbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbFortunesMongoDb --webHost KestrelLibuv $(HtmlJobs) --database MongoDb" />
-    <CloudScenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-    <CloudScenarios Include="-n MvcDbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-    <CloudScenarios Include="-n MvcDbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets%3BHubProtocol=json&quot; $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets%3BHubProtocol=messagepack&quot; $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents%3BHubProtocol=json&quot; $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents%3BHubProtocol=messagepack&quot; $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling%3BHubProtocol=json&quot; $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling%3BHubProtocol=messagepack&quot; $(SignalRJobs)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -124,12 +73,12 @@
     <PhysicalScenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
 
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets%3BHubProtocol=json&quot; $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets%3BHubProtocol=messagepackv&quot; $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents%3BHubProtocol=jsonv&quot; $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents%3BHubProtocol=messagepack&quot; $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling%3BHubProtocol=json&quot; $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling%3BHubProtocol=messagepack&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets,HubProtocol=json&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=WebSockets,HubProtocol=messagepackv&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents,HubProtocol=jsonv&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=ServerSentEvents,HubProtocol=messagepack&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling,HubProtocol=json&quot; $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalRBroadcast --properties &quot;TransportType=LongPolling,HubProtocol=messagepack&quot; $(SignalRJobs)" />
 
   </ItemGroup>
 

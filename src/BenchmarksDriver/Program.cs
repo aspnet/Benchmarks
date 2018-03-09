@@ -148,7 +148,7 @@ namespace BenchmarksDriver
             var methodOption = app.Option("--method",
                 "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
             var clientProperties = app.Option("--properties",
-                "Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline;PipelineDepth=16", CommandOptionType.SingleValue);
+                "Key value pairs of properties specific to the client running. e.g., ScriptName=pipeline,PipelineDepth=16", CommandOptionType.SingleValue);
             var pathOption = app.Option(
                 "--path",
                 "Relative URL where the client should send requests.",
@@ -521,7 +521,7 @@ namespace BenchmarksDriver
                 }
                 if (clientProperties.HasValue())
                 {
-                    var properties = clientProperties.Value().Split(';');
+                    var properties = clientProperties.Value().Split(',');
                     foreach (var kvp in properties)
                     {
                         var values = kvp.Split('=');
