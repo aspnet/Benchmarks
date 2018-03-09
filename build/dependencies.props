@@ -23,12 +23,12 @@
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
-    <MongoDbVersion>2.*</MongoDbVersion>
-    <DapperVersion>1.*</DapperVersion>
-    <NpgsqlVersion>3.*</NpgsqlVersion>
-    <MySqlConnectorVersion>0.*</MySqlConnectorVersion>
-    <SqlClientVersion>4.*</SqlClientVersion>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion>2.0.0-*</NpgsqlEntityFrameworkCorePostgreSQLVersion>
-    <PomeloEntityFrameworkCoreMySqlVersion>2.0.0</PomeloEntityFrameworkCoreMySqlVersion>
+    <MongoDbVersion>2.5.0</MongoDbVersion>
+    <DapperVersion>1.50.4</DapperVersion>
+    <NpgsqlVersion>3.2.7</NpgsqlVersion>
+    <MySqlConnectorVersion>0.36.1</MySqlConnectorVersion>
+    <SqlClientVersion>4.4.2</SqlClientVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion>2.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion>
+    <PomeloEntityFrameworkCoreMySqlVersion>2.0.1</PomeloEntityFrameworkCoreMySqlVersion>
   </PropertyGroup>
 </Project>
