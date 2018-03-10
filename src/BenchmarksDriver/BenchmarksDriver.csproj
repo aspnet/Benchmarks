@@ -2,19 +2,36 @@
 
   <PropertyGroup>
     <Description>Schedules benchmark jobs on both the server and client.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <ToolCommandName>benchmarks</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <IsPackable>true</IsPackable>
+    <Version>0.0.1-alpha</Version>
+    <NuspecFile>globaltool.nuspec</NuspecFile>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <Target Name="PackGlobalTool" BeforeTargets="GenerateNuspec" DependsOnTargets="Publish">
+    <PropertyGroup>
+      <NuspecProperties>
+        publishDir=$(PublishDir);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
   <ItemGroup>
-    <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
-    <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
+    <Content Include="DotnetToolSettings.xml" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" PrivateAssets="All" />
+    
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.1.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
-    
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.1.1" PrivateAssets="All" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
