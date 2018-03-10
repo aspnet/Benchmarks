@@ -75,6 +75,7 @@ namespace BenchmarkServer
                 {
                     throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
                 }
+
                 return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
             }            
         }

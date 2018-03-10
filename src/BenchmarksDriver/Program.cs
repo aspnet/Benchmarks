@@ -786,7 +786,14 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Failed)
                         {
-                            throw new InvalidOperationException("Server job failed");
+                            Log($"Job failed on benchmark server, stopping...");
+
+                            Console.WriteLine(serverJob.Error);
+
+                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
+                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                            return -1;
                         }
                         else if (serverJob.State == ServerState.NotSupported)
                         {
@@ -875,8 +882,9 @@ namespace BenchmarksDriver
                                 latencyFirstRequest = clientJob.LatencyFirstRequest;
                             }
 
-                            var workingSet = Math.Round(((double)serverJob.ServerCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
-                            var cpu = serverJob.ServerCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
+                            var serverCounters = serverJob.ServerCounters;
+                            var workingSet = Math.Round(((double)serverCounters.Select(x => x.WorkingSet).DefaultIfEmpty(0).Max()) / (1024 * 1024), 3);
+                            var cpu = serverCounters.Select(x => x.CpuPercentage).DefaultIfEmpty(0).Max();
 
                             var statistics = new Statistics
                             {

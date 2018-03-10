@@ -295,10 +295,22 @@ namespace BenchmarkServer
                     {
                         string dotnetDir = dotnetHome;
                         string benchmarksDir = null;
+                        var standardOutput = new StringBuilder();
 
                         var perfviewEnabled = job.Collect && OperatingSystem == OperatingSystem.Windows;
 
-                        if (job.State == ServerState.Waiting)
+                        if (job.State == ServerState.Failed)
+                        {
+                            var now = DateTime.UtcNow;
+
+                            // Clean the job in case the driver is not running
+                            if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                            {
+                                Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
+                                job.State = ServerState.Deleting;
+                            }
+                        }
+                        else if (job.State == ServerState.Waiting)
                         {
                             // TODO: Race condition if DELETE is called during this code
                             try
@@ -326,10 +338,17 @@ namespace BenchmarkServer
                                     // returns the application directory and the dotnet directory to use
                                     (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
 
-                                    Debug.Assert(process == null);
-                                    process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled);
+                                    if (benchmarksDir != null && dotnetDir != null)
+                                    {
+                                        Debug.Assert(process == null);
+                                        process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled, standardOutput);
 
-                                    job.ProcessId = process.Id;
+                                        job.ProcessId = process.Id;
+                                    }
+                                    else
+                                    {
+                                        job.State = ServerState.Failed;
+                                    }
                                 }
 
                                 var startMonitorTime = DateTime.UtcNow;
@@ -370,24 +389,38 @@ namespace BenchmarkServer
 
                                         if (process != null)
                                         {
-                                            // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                            // We need to dig into this
-                                            var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
-                                            var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                            var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
-                                            lastMonitorTime = now;
-                                            oldCPUTime = newCPUTime;
-
-                                            process.Refresh();
-
-                                            job.AddServerCounter(new ServerCounter
+                                            if (process.HasExited)
                                             {
-                                                Elapsed = now - startMonitorTime,
-                                                WorkingSet = process.WorkingSet64,
-                                                CpuPercentage = cpu
-                                            });
+                                                if (process.ExitCode != 0)
+                                                {
+                                                    Log.WriteLine($"Job failed");
+
+                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                    job.State = ServerState.Failed;
+                                                }
+                                            }
+                                            else
+                                            {
+
+                                                // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                                // We need to dig into this
+                                                var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+                                                var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                                var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
+                                                lastMonitorTime = now;
+                                                oldCPUTime = newCPUTime;
+
+                                                process.Refresh();
+
+                                                job.AddServerCounter(new ServerCounter
+                                                {
+                                                    Elapsed = now - startMonitorTime,
+                                                    WorkingSet = process.WorkingSet64,
+                                                    CpuPercentage = cpu
+                                                });
+                                            }
                                         }
-                                        else
+                                        else if (!String.IsNullOrEmpty(dockerImage))
                                         {
                                             // Get docker stats
                                             var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId);
@@ -443,11 +476,7 @@ namespace BenchmarkServer
                             catch (Exception e)
                             {
                                 Log.WriteLine($"Error starting job '{job.Id}': {e}");
-
                                 job.State = ServerState.Failed;
-
-                                await DeleteJobAsync();
-
                                 continue;
                             }
                         }
@@ -926,9 +955,20 @@ namespace BenchmarkServer
             {
                 var outputFolder = Path.Combine(benchmarkedApp, "published");
 
-                ProcessUtil.Run(dotnetExecutable, $"publish -c Release -o {outputFolder} {buildParameters}",
+                var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
+                var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                     workingDirectory: benchmarkedApp,
-                    environmentVariables: env);
+                    environmentVariables: env,
+                    throwOnError: false);
+
+                if (buildResults.ExitCode != 0)
+                {
+                    job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
+                        buildResults.StandardOutput + "\n" +
+                        buildResults.StandardError;
+
+                    return (null, null);
+                }
 
                 // Copy all output attachments
                 foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
@@ -1270,7 +1310,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview)
+        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
         {
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var dotnetFilename = GetDotNetExecutable(dotnetHome);
@@ -1352,6 +1392,7 @@ namespace BenchmarkServer
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
+                    standardOutput.AppendLine(e.Data);
 
                     if (job.State == ServerState.Starting && (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
                     {

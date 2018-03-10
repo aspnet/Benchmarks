@@ -39,7 +39,16 @@ namespace Benchmarks.ServerJob
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
         private List<ServerCounter> _serverCounter = new List<ServerCounter>();
-        public IEnumerable<ServerCounter> ServerCounters => _serverCounter;
+        public IList<ServerCounter> ServerCounters
+        {
+            get
+            {
+                lock (this)
+                {
+                    return _serverCounter.ToArray();
+                }
+            }
+        }
 
         public ServerJob AddServerCounter(ServerCounter counter)
         {
@@ -92,5 +101,6 @@ namespace Benchmarks.ServerJob
         public int ProcessId { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
         public bool NoClean { get; set; }
+        public string Error { get; set; }
     }
 }
