@@ -53,6 +53,10 @@ namespace Benchmarks
                     {
                         loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
+                    else
+                    {
+                        loggerFactory.AddConsole().SetMinimumLevel(LogLevel.Error);
+                    }
                 })
                 .ConfigureServices(services => services
                     .AddSingleton(new ConsoleArgs(args))
