@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Repository;
@@ -38,14 +40,24 @@ namespace Benchmarks.ServerJob
         
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
-        private List<ServerCounter> _serverCounter = new List<ServerCounter>();
-        public IList<ServerCounter> ServerCounters
+
+        private IList<ServerCounter> _serverCounter = new List<ServerCounter>();
+
+        public IReadOnlyCollection<ServerCounter> ServerCounters
         {
             get
             {
                 lock (this)
                 {
                     return _serverCounter.ToArray();
+                }
+            }
+
+            set
+            {
+                lock (this)
+                {
+                    _serverCounter = new List<ServerCounter>(value);
                 }
             }
         }
