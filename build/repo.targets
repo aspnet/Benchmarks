@@ -5,7 +5,7 @@
     <HtmlJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.html.json"</HtmlJobs>
     <JsonJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.json.json"</JsonJobs>
     <MultiQueryJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
-    <SignalRJobs>-j $(RepositoryRoot)src/Benchmarks/signalr.json -t SignalR</SignalRJobs>
+    <SignalRJobs>-j $(RepositoryRoot)src/Benchmarks/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj</SignalRJobs>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
