@@ -11,7 +11,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "dev",
-      "Project": "src/Benchmarks/PlatformBenchmarks.csproj"
+      "Project": "src/PlatformBenchmarks/PlatformBenchmarks.csproj"
     },
     "Port": 8080
   },
