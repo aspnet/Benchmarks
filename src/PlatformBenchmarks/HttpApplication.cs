@@ -100,7 +100,7 @@ namespace PlatformBenchmarks
 
                 if (!buffer.IsEmpty)
                 {
-                    ParseHttpRequest(in buffer, out consumed, out examined);
+                    ParseHttpRequest(buffer, out consumed, out examined);
 
                     if (_state != State.Body && result.IsCompleted)
                     {
@@ -128,8 +128,8 @@ namespace PlatformBenchmarks
             consumed = buffer.Start;
             examined = buffer.End;
 
-            var parsedStartLine = _state == State.StartLine;
-            if (parsedStartLine)
+            var parsingStartLine = _state == State.StartLine;
+            if (parsingStartLine)
             {
                 if (Parser.ParseRequestLine(this, buffer, out consumed, out examined))
                 {
@@ -139,7 +139,7 @@ namespace PlatformBenchmarks
 
             if (_state == State.Headers)
             {
-                if (Parser.ParseHeaders(this, parsedStartLine ? buffer.Slice(consumed) : buffer, out consumed, out examined, out int consumedBytes))
+                if (Parser.ParseHeaders(this, parsingStartLine ? buffer.Slice(consumed) : buffer, out consumed, out examined, out int consumedBytes))
                 {
                     _state = State.Body;
                 }
