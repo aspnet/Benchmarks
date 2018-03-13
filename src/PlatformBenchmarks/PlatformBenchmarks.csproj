@@ -8,15 +8,6 @@
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
-
-  <PropertyGroup Condition="$(BenchmarksAspNetCoreVersion.StartsWith('2.1'))">
-    <DefineConstants>$(DefineConstants);DOTNET210</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(BenchmarksAspNetCoreVersion.StartsWith('2.0'))">
-    <DefineConstants>$(DefineConstants);DOTNET200</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Buffers.Sources" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
