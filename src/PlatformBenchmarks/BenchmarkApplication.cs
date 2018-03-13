@@ -12,8 +12,8 @@ namespace PlatformBenchmarks
         private static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
         private static AsciiString _headerServer = "Server: Custom";
         private static AsciiString _headerContentLength = "Content-Length: ";
-        private static AsciiString _headerContentLengthZero = "Content-Length: 0";
-        private static AsciiString _headerContentTypeText = "Content-Type: text/plain";
+        private static AsciiString _headerContentLengthZero = "Content-Length: 0\r\n";
+        private static AsciiString _headerContentTypeText = "Content-Type: text/plain\r\n";
 
         private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager();
 
@@ -70,7 +70,6 @@ namespace PlatformBenchmarks
 
             // Content-Length 0
             writer.Write(_headerContentLengthZero);
-            writer.Write(_crlf);
 
             // End of headers
             writer.Write(_crlf);
@@ -92,7 +91,6 @@ namespace PlatformBenchmarks
 
             // Content-Type header
             writer.Write(_headerContentTypeText);
-            writer.Write(_crlf);
 
             // Content-Length header
             writer.Write(_headerContentLength);
