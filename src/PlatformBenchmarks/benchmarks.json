@@ -15,10 +15,10 @@
     },
     "Port": 8080
   },
-  "Plaintext": {
+  "PlaintextPlatform": {
     "Path": "/plaintext"
   },
-  "PlaintextNonPipelined": {
+  "PlaintextNonPipelinedPlatform": {
     "Path": "/plaintext",
     "ClientProperties": {
       "ScriptName": "",
