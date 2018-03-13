@@ -1,0 +1,30 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    },
+    "ScriptName": "pipeline",
+    "PipelineDepth": 16,
+    "PresetHeaders": "Plaintext",
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "dev",
+      "Project": "src/Benchmarks/PlatformBenchmarks.csproj"
+    },
+    "Port": 8080
+  },
+  "Plaintext": {
+    "Path": "/plaintext"
+  },
+  "PlaintextNonPipelined": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "ScriptName": "",
+    "PipelineDepth": 0
+  }
+}
