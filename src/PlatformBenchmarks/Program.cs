@@ -15,7 +15,7 @@ namespace PlatformBenchmarks
             new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.Listen(IPAddress.Loopback, 8080, builder =>
+                    options.Listen(IPAddress.IPv6Any, 8080, builder =>
                     {
                         builder.UseHttpApplication<BenchmarkApplication>();
                     });
