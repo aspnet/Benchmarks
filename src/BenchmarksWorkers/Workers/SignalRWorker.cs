@@ -178,7 +178,7 @@ namespace BenchmarksWorkers.Workers
 
             var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri)
-                .WithMessageHandler(_httpClientHandler)
+                .WithMessageHandler(x => _httpClientHandler)
                 .WithTransport(transportType);
 
             if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
