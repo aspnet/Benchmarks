@@ -1,5 +1,8 @@
 <Project>
   <Import Project="dependencies.props" />
+  <PropertyGroup>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />

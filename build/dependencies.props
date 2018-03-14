@@ -1,5 +1,5 @@
 <Project>
-  <PropertyGroup>
+  <PropertyGroup Label="Package Versions">
     <AspNetCoreVersion>2.1.0-preview2-3*</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
