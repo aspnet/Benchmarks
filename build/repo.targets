@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PlaintextJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.plaintext.json"</PlaintextJobs>
-    <PlaintextPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.plaintext.json"</PlaintextPlatformJobs>
+    <PlaintextPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.json"</PlaintextPlatformJobs>
     <HtmlJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.html.json"</HtmlJobs>
     <JsonJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.json.json"</JsonJobs>
     <MultiQueryJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
