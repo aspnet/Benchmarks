@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -25,8 +26,9 @@ namespace PlatformBenchmarks
 
             var httpConnection = new TConnection
             {
-                Connection = connection,
-                Parser = parser
+                Parser = parser,
+                Reader = connection.Transport.Input,
+                Writer = connection.Transport.Output
             };
             return httpConnection.ExecuteAsync();
         }
@@ -36,7 +38,8 @@ namespace PlatformBenchmarks
     {
         private State _state;
 
-        public ConnectionContext Connection { get; set; }
+        public PipeReader Reader { get; set; }
+        public PipeWriter Writer { get; set; }
 
         internal HttpParser<HttpConnection> Parser { get; set; }
 
@@ -64,83 +67,88 @@ namespace PlatformBenchmarks
         {
             try
             {
-                while (true)
-                {
-                    var task = Connection.Transport.Input.ReadAsync();
+                await ProcessRequestsAsync();
 
-                    if (!task.IsCompleted)
-                    {
-                        // No more data in the input
-                        await OnReadCompletedAsync();
-                    }
-
-                    var result = await task;
-                    var buffer = result.Buffer;
-                    var consumed = buffer.Start;
-                    var examined = buffer.End;
-
-                    try
-                    {
-                        if (!buffer.IsEmpty)
-                        {
-                            ParseHttpRequest(buffer, out consumed, out examined);
-
-                            if (_state != State.Body && result.IsCompleted)
-                            {
-                                throw new InvalidOperationException("Unexpected end of data!");
-                            }
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            break;
-                        }
-                    }
-                    finally
-                    {
-                        Connection.Transport.Input.AdvanceTo(consumed, examined);
-                    }
-
-                    if (_state == State.Body)
-                    {
-                        await ProcessRequestAsync();
-
-                        _state = State.StartLine;
-                    }
-                }
-
-                Connection.Transport.Input.Complete();
+                Reader.Complete();
             }
             catch (Exception ex)
             {
-                Connection.Transport.Input.Complete(ex);
+                Reader.Complete(ex);
             }
             finally
             {
-                Connection.Transport.Output.Complete();
+                Writer.Complete();
             }
         }
 
-        private void ParseHttpRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private async Task ProcessRequestsAsync()
+        {
+            while (true)
+            {
+                var task = Reader.ReadAsync();
+
+                if (!task.IsCompleted)
+                {
+                    // No more data in the input
+                    await OnReadCompletedAsync();
+                }
+
+                var result = await task;
+                var buffer = result.Buffer;
+                var consumed = buffer.Start;
+                var examined = buffer.End;
+
+                if (!buffer.IsEmpty)
+                {
+                    ParseHttpRequest(buffer, out consumed, out examined);
+
+                    if (_state != State.Body && result.IsCompleted)
+                    {
+                        ThrowUnexpectedEndOfData();
+                    }
+                }
+                else if (result.IsCompleted)
+                {
+                    break;
+                }
+
+                Reader.AdvanceTo(consumed, examined);
+
+                if (_state == State.Body)
+                {
+                    await ProcessRequestAsync();
+
+                    _state = State.StartLine;
+                }
+            }
+        }
+
+        private void ParseHttpRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
 
-            if (_state == State.StartLine)
+            var parsingStartLine = _state == State.StartLine;
+            if (parsingStartLine)
             {
                 if (Parser.ParseRequestLine(this, buffer, out consumed, out examined))
                 {
                     _state = State.Headers;
-                    buffer = buffer.Slice(consumed);
                 }
             }
 
             if (_state == State.Headers)
             {
-                if (Parser.ParseHeaders(this, buffer, out consumed, out examined, out int consumedBytes))
+                if (Parser.ParseHeaders(this, parsingStartLine ? buffer.Slice(consumed) : buffer, out consumed, out examined, out int consumedBytes))
                 {
                     _state = State.Body;
                 }
             }
+        }
+
+        private static void ThrowUnexpectedEndOfData()
+        {
+            throw new InvalidOperationException("Unexpected end of data!");
         }
 
         private enum State

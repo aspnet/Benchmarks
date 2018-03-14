@@ -42,11 +42,11 @@ namespace PlatformBenchmarks
         {
             if (_isPlainText)
             {
-                PlainText(Connection.Transport.Output);
+                PlainText(Writer);
             }
             else
             {
-                Default(Connection.Transport.Output);
+                Default(Writer);
             }
 
             return default;
@@ -54,7 +54,7 @@ namespace PlatformBenchmarks
 
         public override async ValueTask OnReadCompletedAsync()
         {
-            await Connection.Transport.Output.FlushAsync();
+            await Writer.FlushAsync();
         }
 
         private static void Default(PipeWriter pipeWriter)
