@@ -130,7 +130,6 @@
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
-    <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
 
