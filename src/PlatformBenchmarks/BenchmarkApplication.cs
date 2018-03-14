@@ -12,13 +12,14 @@ namespace PlatformBenchmarks
     public class BenchmarkApplication : HttpConnection
     {
         private static AsciiString _crlf = "\r\n";
+        private static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
         private static AsciiString _headerServer = "Server: Custom";
         private static AsciiString _headerContentLength = "Content-Length: ";
         private static AsciiString _headerContentLengthZero = "Content-Length: 0\r\n";
         private static AsciiString _headerContentTypeText = "Content-Type: text/plain\r\n";
 
-        private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager();
+        private static readonly DateHeader _dateHeaderValueManager = new DateHeader();
 
         private static AsciiString _plainTextBody = "Hello, World!";
 
@@ -68,8 +69,7 @@ namespace PlatformBenchmarks
             writer.Write(_headerServer);
 
             // Date header
-            writer.Write(_dateHeaderValueManager.GetDateHeaderValues().Bytes);
-            writer.Write(_crlf);
+            writer.Write(_dateHeaderValueManager.HeaderBytes);
 
             // Content-Length 0
             writer.Write(_headerContentLengthZero);
@@ -89,8 +89,7 @@ namespace PlatformBenchmarks
             writer.Write(_headerServer);
 
             // Date header
-            writer.Write(_dateHeaderValueManager.GetDateHeaderValues().Bytes);
-            writer.Write(_crlf);
+            writer.Write(_dateHeaderValueManager.HeaderBytes);
 
             // Content-Type header
             writer.Write(_headerContentTypeText);
@@ -98,10 +97,9 @@ namespace PlatformBenchmarks
             // Content-Length header
             writer.Write(_headerContentLength);
             writer.WriteNumeric((ulong)_plainTextBody.Length);
-            writer.Write(_crlf);
 
             // End of headers
-            writer.Write(_crlf);
+            writer.Write(_eoh);
 
             // Body
             writer.Write(_plainTextBody);
