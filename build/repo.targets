@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PlaintextJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.plaintext.json"</PlaintextJobs>
+    <PlaintextPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.plaintext.json"</PlaintextPlatformJobs>
     <HtmlJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.html.json"</HtmlJobs>
     <JsonJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.json.json"</JsonJobs>
     <MultiQueryJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
@@ -26,6 +27,7 @@
   
   <ItemGroup>
 
+    <CloudScenarios Include="-n PlaintextPlatform --webHost KestrelLibuv $(PlaintextPlatformJobs)" />
     <CloudScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <CloudScenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextJobs)" />
     <CloudScenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
@@ -81,6 +83,7 @@
 
   <ItemGroup>
 
+    <PhysicalScenarios Include="-n PlaintextPlatform --webHost KestrelLibuv $(PlaintextPlatformJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     
