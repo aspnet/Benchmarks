@@ -5,6 +5,7 @@ using System;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -12,20 +13,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// <summary>
     /// Manages the generation of the date header value.
     /// </summary>
-    internal class DateHeader : IHeartbeatHandler
+    internal static class DateHeader 
     {
         const int prefixLength = 8; // "\r\nDate: ".Length
         const int dateTimeRLength = 29; // Wed, 14 Mar 2018 14:20:00 GMT
         const int suffixLength = 2; // crlf
         const int suffixIndex = dateTimeRLength + prefixLength;
 
-        private byte[] s_headerBytesMaster = new byte[prefixLength + dateTimeRLength + suffixLength];
-        private byte[] s_headerBytesScratch = new byte[prefixLength + dateTimeRLength + suffixLength];
+        private static readonly Timer s_timer = new Timer((s) => {
+            SetDateValues(DateTimeOffset.UtcNow);
+        }, null, 1000, 1000);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DateHeaderValueManager"/> class.
-        /// </summary>
-        public DateHeader()
+        private static byte[] s_headerBytesMaster = new byte[prefixLength + dateTimeRLength + suffixLength];
+        private static byte[] s_headerBytesScratch = new byte[prefixLength + dateTimeRLength + suffixLength];
+
+        static DateHeader()
         {
             var utf8 = Encoding.ASCII.GetBytes("\r\nDate: ").AsSpan();
             utf8.CopyTo(s_headerBytesMaster);
@@ -37,14 +39,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SetDateValues(DateTimeOffset.UtcNow);
         }
 
-        // Called by the Timer (background) thread
-        public void OnHeartbeat(DateTimeOffset now) => SetDateValues(now);
+        public static ReadOnlySpan<byte> HeaderBytes => s_headerBytesMaster;
 
-        public ReadOnlySpan<byte> HeaderBytes => s_headerBytesMaster;
-
-        private void SetDateValues(DateTimeOffset value)
+        private static void SetDateValues(DateTimeOffset value)
         {
-            lock (s_headerBytesMaster)
+            lock (s_headerBytesScratch)
             {
                 if (!Utf8Formatter.TryFormat(value, s_headerBytesScratch.AsSpan().Slice(prefixLength), out int written, 'R'))
                 {

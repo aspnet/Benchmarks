@@ -19,8 +19,6 @@ namespace PlatformBenchmarks
         private static AsciiString _headerContentLengthZero = "Content-Length: 0\r\n";
         private static AsciiString _headerContentTypeText = "Content-Type: text/plain\r\n";
 
-        private static readonly DateHeader _dateHeaderValueManager = new DateHeader();
-
         private static AsciiString _plainTextBody = "Hello, World!";
 
         private static class Paths
@@ -69,7 +67,7 @@ namespace PlatformBenchmarks
             writer.Write(_headerServer);
 
             // Date header
-            writer.Write(_dateHeaderValueManager.HeaderBytes);
+            writer.Write(DateHeader.HeaderBytes);
 
             // Content-Length 0
             writer.Write(_headerContentLengthZero);
@@ -89,7 +87,7 @@ namespace PlatformBenchmarks
             writer.Write(_headerServer);
 
             // Date header
-            writer.Write(_dateHeaderValueManager.HeaderBytes);
+            writer.Write(DateHeader.HeaderBytes);
 
             // Content-Type header
             writer.Write(_headerContentTypeText);
