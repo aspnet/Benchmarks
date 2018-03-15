@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -98,8 +99,7 @@ namespace Benchmarks
                 var threadCount = GetThreadCount(config);
                 var kestrelTransport = config["KestrelTransport"];
 
-                if (threadCount > 0 || threadPoolDispatching == false ||
-                    string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                if (threadPoolDispatching == false || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
                     webHostBuilder.UseLibuv(options =>
                     {
@@ -113,11 +113,26 @@ namespace Benchmarks
                             // and the thread count wasn't specified then use 2 * number of logical cores
                             options.ThreadCount = Environment.ProcessorCount * 2;
                         }
+
+                        Console.WriteLine($"Using Libuv with {options.ThreadCount} threads");
                     });
                 }
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
+#if DOTNET210
+                    webHostBuilder.UseSockets(x =>
+                    {
+                        if (threadCount > 0)
+                        {
+                            x.IOQueueCount = threadCount;
+                        }
+
+                        Console.WriteLine($"Using Sockets with {x.IOQueueCount} threads");
+                    });
+#else
                     webHostBuilder.UseSockets();
+                    Console.WriteLine($"Using Sockets");
+#endif
                 }
                 else if (string.IsNullOrEmpty(kestrelTransport))
                 {
