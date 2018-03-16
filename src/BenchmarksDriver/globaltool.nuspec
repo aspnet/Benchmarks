@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>BenchmarksDriver</id>
-        <version>0.0.1-alpha</version>
+        <version>0.0.2-alpha</version>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
@@ -10,7 +10,7 @@
         <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Schedules benchmark jobs on both the server and client.</description>
-        <copyright>Copyright © Microsoft Corporation</copyright>
+        <copyright>Copyright ï¿½ Microsoft Corporation</copyright>
         <serviceable>true</serviceable>
         <dependencies>
             <group targetFramework=".NETCoreApp2.1">
