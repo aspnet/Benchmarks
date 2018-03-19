@@ -136,13 +136,11 @@ namespace Benchmarks
             }
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseKestrel()
-					.UseIISIntegration();
+                webHostBuilder = webHostBuilder.UseIISIntegration();
             }
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseKestrel()
-					.UseIISIntegration();
+                webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
             }
             else
             {
