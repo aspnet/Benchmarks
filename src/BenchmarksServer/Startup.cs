@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -167,7 +168,7 @@ namespace BenchmarkServer
                 {
                     _cleanup = false;
                 }
-                
+
                 if (postgresqlConnectionStringOption.HasValue())
                 {
                     ConnectionStrings[Database.PostgreSql] = postgresqlConnectionStringOption.Value();
@@ -449,7 +450,7 @@ namespace BenchmarkServer
                                             {
                                                 memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
                                             }
-                                                
+
                                             var workingSet = (long)(memory * factor);
 
                                             job.AddServerCounter(new ServerCounter
@@ -790,7 +791,7 @@ namespace BenchmarkServer
             Log.WriteLine($"WARNING !!! CHANGE WHEN FIXED");
             Log.WriteLine($"Using last known compatible SDK: {sdkVersion}");
 
-            // In theory the actual latest runtime version should be taken from the dependencies.pros file from 
+            // In theory the actual latest runtime version should be taken from the dependencies.pros file from
             // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
             // however this is different only if the coherence build didn't go through.
 
@@ -1309,21 +1310,24 @@ namespace BenchmarkServer
 
         private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
         {
+            job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
+
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
-            var dotnetFilename = GetDotNetExecutable(dotnetHome);
+            var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksDll = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/{projectFilename}.dll" : $"published/{projectFilename}.dll";
 
             var arguments = $"{benchmarksDll}" +
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
-                    $" --scenarios {job.Scenario}" +
-                    $" --server.urls {serverUrl}";
+
+                    $" --scenarios {job.Scenario}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
+
 
             switch (job.WebHost)
             {
@@ -1336,6 +1340,9 @@ namespace BenchmarkServer
                 case WebHost.KestrelLibuv:
                     arguments += $" --server Kestrel --kestrelTransport Libuv";
                     break;
+                case WebHost.IISInproc:
+                    arguments += $" --server Kestrel --kestrelTransport Sockets";
+                    break;
             }
 
             if (job.KestrelThreadCount.HasValue)
@@ -1343,14 +1350,26 @@ namespace BenchmarkServer
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
             }
 
-            Log.WriteLine($"Starting process '{dotnetFilename} {arguments}'");
+            if (job.WebHost == WebHost.IISInproc)
+            {
+                Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
 
-            job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
+                var apphost = GenerateApplicationHostConfig(job.BasePath, executable, arguments, hostname, job.Port);
+                arguments = $"-h \"{apphost}\"";
+                executable = @"C:\Windows\System32\inetsrv\w3wp.exe";
+            }
+            else
+            {
+                arguments += $" --server.urls {serverUrl}";
+            }
+
+            Log.WriteLine($"Starting process '{executable} {arguments}'");
+
 
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = dotnetFilename,
+                    FileName = executable,
                     Arguments = arguments,
                     WorkingDirectory = job.BasePath,
                     RedirectStandardOutput = true,
@@ -1376,12 +1395,12 @@ namespace BenchmarkServer
                     Log.WriteLine($"Could not find connection string for {job.Database}");
                 }
             }
-            
+
             foreach(var env in job.EnvironmentVariables)
             {
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
-                        
+
             var stopwatch = new Stopwatch();
 
             process.OutputDataReceived += (_, e) =>
@@ -1391,45 +1410,10 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                     standardOutput.AppendLine(e.Data);
 
-                    if (job.State == ServerState.Starting && (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
+                    if (job.State == ServerState.Starting &&
+                        (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
                     {
-                        job.StartupMainMethod = stopwatch.Elapsed;
-
-                        Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-                        job.Url = ComputeServerUrl(hostname, job);
-
-                        // Start perfview?
-                        if (perfview)
-                        {
-                            job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl");
-                            var perfViewArguments = new Dictionary<string, string>();
-                            perfViewArguments["AcceptEula"] = "";
-                            perfViewArguments["NoGui"] = "";
-                            perfViewArguments["Process"] = process.Id.ToString();
-
-                            if (!String.IsNullOrEmpty(job.CollectArguments))
-                            {
-                                foreach (var tuple in job.CollectArguments.Split(';'))
-                                {
-                                    var values = tuple.Split('=');
-                                    perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
-                                }
-                            }
-
-                            var perfviewArguments = $"start";
-
-                            foreach (var customArg in perfViewArguments)
-                            {
-                                var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
-                                perfviewArguments += $" /{customArg.Key}{value}";
-                            }
-
-                            perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
-                            RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
-                        }
-
-                        // Mark the job as running to allow the Client to start the test
-                        job.State = ServerState.Running;
+                        MarkAsRunning(hostname, benchmarksRepo, job, perfview, stopwatch, process);
                     }
                 }
             };
@@ -1438,7 +1422,91 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
+            if (job.WebHost == WebHost.IISInproc)
+            {
+                // IIS doesn't print anything
+                Thread.Sleep(1000);
+                MarkAsRunning(hostname, benchmarksRepo, job, perfview, stopwatch, process);
+            }
+
             return process;
+        }
+
+        private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, bool perfview, Stopwatch stopwatch,
+            Process process)
+        {
+            job.StartupMainMethod = stopwatch.Elapsed;
+
+            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+            job.Url = ComputeServerUrl(hostname, job);
+
+            // Start perfview?
+            if (perfview)
+            {
+                job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl");
+                var perfViewArguments = new Dictionary<string, string>();
+                perfViewArguments["AcceptEula"] = "";
+                perfViewArguments["NoGui"] = "";
+                perfViewArguments["Process"] = process.Id.ToString();
+
+                if (!String.IsNullOrEmpty(job.CollectArguments))
+                {
+                    foreach (var tuple in job.CollectArguments.Split(';'))
+                    {
+                        var values = tuple.Split('=');
+                        perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                    }
+                }
+
+                var perfviewArguments = $"start";
+
+                foreach (var customArg in perfViewArguments)
+                {
+                    var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
+                    perfviewArguments += $" /{customArg.Key}{value}";
+                }
+
+                perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
+                RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
+            }
+
+            // Mark the job as running to allow the Client to start the test
+            job.State = ServerState.Running;
+        }
+
+        private static string GenerateApplicationHostConfig(string location, string executable, string arguments, string hostname, int jobPort)
+        {
+            void SetAttribute(XDocument doc, string path, string name, string value)
+            {
+                var element = doc.XPathSelectElement(path);
+                if (element == null)
+                {
+                    throw new InvalidOperationException("Element not found");
+                }
+
+                var attribute = element.Attribute(name);
+                if (attribute == null)
+                {
+                    throw new InvalidOperationException("Attribute not found");
+                }
+
+                attribute.Value = value;
+            }
+
+            using (var resourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream("BenchmarksServer.applicationHost.config"))
+            {
+                var applicationHostConfig = XDocument.Load(resourceStream);
+                SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "processPath", executable);
+                SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "arguments", arguments);
+
+                SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{jobPort}:{hostname}");
+                SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/application/virtualDirectory", "physicalPath", location);
+
+                var fileName = executable + ".apphost.config";
+                applicationHostConfig.Save(fileName);
+
+                return fileName;
+            }
         }
 
         private static string ComputeServerUrl(string hostname, ServerJob job)

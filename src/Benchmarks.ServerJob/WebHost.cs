@@ -8,5 +8,6 @@ namespace Benchmarks.ServerJob
         KestrelSockets,
         KestrelLibuv,
         HttpSys,
+        IISInproc
     }
 }

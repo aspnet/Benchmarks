@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="applicationHost.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="applicationHost.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
   </ItemGroup>
