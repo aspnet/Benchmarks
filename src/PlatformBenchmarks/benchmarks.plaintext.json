@@ -1,13 +1,13 @@
 {
   "Default": {
     "Client": "Wrk",
+    "PresetHeaders": "Plaintext",
     "ClientProperties": {
       "ScriptName": "pipeline",
       "PipelineDepth": 16
     },
     "ScriptName": "pipeline",
     "PipelineDepth": 16,
-    "PresetHeaders": "Plaintext",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "dev",
