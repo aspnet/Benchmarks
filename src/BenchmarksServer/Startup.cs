@@ -1315,7 +1315,8 @@ namespace BenchmarkServer
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
-            var benchmarksDll = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/{projectFilename}.dll" : $"published/{projectFilename}.dll";
+            var benchmarksBin = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0/" : $"published/";
+            var benchmarksDll = benchmarksBin + $"{projectFilename}.dll";
 
             var arguments = $"{benchmarksDll}" +
                     $" {job.Arguments} " +
@@ -1357,7 +1358,7 @@ namespace BenchmarkServer
             {
                 Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
 
-                var apphost = GenerateApplicationHostConfig(job.BasePath, executable, arguments, hostname, job.Port);
+                var apphost = GenerateApplicationHostConfig(job.BasePath, benchmarksBin, executable, arguments, hostname, job.Port);
                 arguments = $"-h \"{apphost}\"";
                 executable = @"C:\Windows\System32\inetsrv\w3wp.exe";
             }
@@ -1477,7 +1478,8 @@ namespace BenchmarkServer
             job.State = ServerState.Running;
         }
 
-        private static string GenerateApplicationHostConfig(string location, string executable, string arguments, string hostname, int jobPort)
+        private static string GenerateApplicationHostConfig(string location, string benchmarksBin, string executable, string arguments,
+            string hostname, int jobPort)
         {
             void SetAttribute(XDocument doc, string path, string name, string value)
             {
@@ -1502,8 +1504,12 @@ namespace BenchmarkServer
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "processPath", executable);
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "arguments", arguments);
 
+                var ancmPath = Path.Combine(benchmarksBin, "x64\\aspnetcore.dll");
+                SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[name=AspNetCoreModule]", "image", ancmPath);
+
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{jobPort}:{hostname}");
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/application/virtualDirectory", "physicalPath", location);
+                //\runtimes\win-x64\nativeassets\netcoreapp2.1\aspnetcorerh.dll
 
                 var fileName = executable + ".apphost.config";
                 applicationHostConfig.Save(fileName);
