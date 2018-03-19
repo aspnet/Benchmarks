@@ -5,7 +5,7 @@
     <PlaintextPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.plaintext.json"</PlaintextPlatformJobs>
     <HtmlJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.html.json"</HtmlJobs>
     <JsonJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.json.json"</JsonJobs>
-    <PlatformJsonJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.json.json"</PlatformJsonJobs>
+    <JsonPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.json.json"</JsonPlatformJobs>
     <MultiQueryJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.multiquery.json"</MultiQueryJobs>
     <SignalRJobs>-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj</SignalRJobs>
   </PropertyGroup>
@@ -35,8 +35,8 @@
     <CloudScenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <CloudScenarios Include="-n MvcPlaintext --webHost KestrelLibuv $(PlaintextJobs)" />
 
-    <CloudScenarios Include="-n JsonPlatform --webHost KestrelSockets $(PlatformJsonJobs)" />
-    <CloudScenarios Include="-n JsonPlatform --webHost KestrelLibuv $(PlatformJsonJobs)" />
+    <CloudScenarios Include="-n JsonPlatform --webHost KestrelSockets $(JsonPlatformJobs)" />
+    <CloudScenarios Include="-n JsonPlatform --webHost KestrelLibuv $(JsonPlatformJobs)" />
     <CloudScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
     <CloudScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
     <CloudScenarios Include="-n Jil --webHost KestrelLibuv $(JsonJobs)" />
@@ -104,10 +104,10 @@
     <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys $(PlaintextJobs)" />
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
-    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelSockets $(PlatformJsonJobs)" />
+    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelSockets $(JsonPlatformJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelLibuv $(PlatformJsonJobs)" />
+    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelLibuv $(JsonPlatformJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost HttpSys $(JsonJobs)" />
