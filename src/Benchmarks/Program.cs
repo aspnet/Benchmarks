@@ -134,15 +134,15 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
-            else if (String.Equals(Server, "IISInPocess", StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseIISIntegration();
+                webHostBuilder = webHostBuilder.UseKestrel()
+					.UseIISIntegration();
             }
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseSockets()
+                webHostBuilder = webHostBuilder.UseKestrel()
 					.UseIISIntegration();
-                Console.WriteLine($"Using IISIntegration with Sockets");
             }
             else
             {
