@@ -59,6 +59,12 @@ namespace Benchmarks
             switch (appSettings.Database)
             {
                 case DatabaseServer.PostgreSql:
+                     var settings = new NpgsqlConnectionStringBuilder(appSettings.ConnectionString);
+                     if (!settings.NoResetOnClose)
+                         throw new ArgumentException("No Reset On Close=true must be specified for Npgsql");
+                     if (settings.Enlist)
+                         throw new ArgumentException("Enlist=false must be specified for Npgsql");
+
                     services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
