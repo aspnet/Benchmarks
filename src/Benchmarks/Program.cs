@@ -140,22 +140,9 @@ namespace Benchmarks
             }
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseIISIntegration();
-
-#if DOTNET210
-                webHostBuilder.UseSockets(x =>
-                {
-                    if (threadCount > 0)
-                    {
-                        x.IOQueueCount = threadCount;
-                    }
-
-                    Console.WriteLine($"Using Sockets with {x.IOQueueCount} threads");
-                });
-#else
-                webHostBuilder.UseSockets();
-                Console.WriteLine($"Using Sockets");
-#endif
+                webHostBuilder = webHostBuilder.UseSockets()
+					.UseIISIntegration();
+                Console.WriteLine($"Using IISIntegration with Sockets");
             }
             else
             {
