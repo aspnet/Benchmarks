@@ -12,8 +12,10 @@ namespace PlatformBenchmarks
 {
     public static class BenchmarkConfigurationHelpers
     {
-        public static IWebHostBuilder UseBenchmarksConfiguration(this IWebHostBuilder builder)
+        public static IWebHostBuilder UseBenchmarksConfiguration(this IWebHostBuilder builder, IConfiguration configuration)
         {
+            builder.UseConfiguration(configuration);
+
             // Handle the transport type
             var webHost = builder.GetSetting("webHost");
 
