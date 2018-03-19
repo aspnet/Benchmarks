@@ -48,7 +48,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(BenchmarksAspNetCoreVersion.StartsWith('2.1'))">
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
 
@@ -57,5 +56,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-*" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
+  </ItemGroup>
 
 </Project>
