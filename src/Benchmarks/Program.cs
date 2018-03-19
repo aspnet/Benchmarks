@@ -134,6 +134,29 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
+            else if (String.Equals(Server, "IISInPocess", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseIISIntegration();
+            }
+            else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseIISIntegration();
+
+#if DOTNET210
+                webHostBuilder.UseSockets(x =>
+                {
+                    if (threadCount > 0)
+                    {
+                        x.IOQueueCount = threadCount;
+                    }
+
+                    Console.WriteLine($"Using Sockets with {x.IOQueueCount} threads");
+                });
+#else
+                webHostBuilder.UseSockets();
+                Console.WriteLine($"Using Sockets");
+#endif
+            }
             else
             {
                 throw new InvalidOperationException($"Unknown server value: {Server}");
