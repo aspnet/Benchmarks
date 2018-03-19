@@ -88,7 +88,7 @@ namespace BenchmarkServer
             _httpClient = new HttpClient(_httpClientHandler);
 
             // Download PerfView
-            if (OperatingSystem == OperatingSystem.Windows)
+            if (OperatingSystem == OperatingSystem.Linux)
             {
                 _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
                 Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
@@ -1340,8 +1340,11 @@ namespace BenchmarkServer
                 case WebHost.KestrelLibuv:
                     arguments += $" --server Kestrel --kestrelTransport Libuv";
                     break;
-                case WebHost.IISInproc:
-                    arguments += $" --server Kestrel --kestrelTransport Sockets";
+                case WebHost.IISInProcess:
+                    arguments += $" --server IISInProcess";
+                    break;
+                case WebHost.IISOutOfProcess:
+                    arguments += $" --server IISOutOfProcess";
                     break;
             }
 
@@ -1350,7 +1353,7 @@ namespace BenchmarkServer
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
             }
 
-            if (job.WebHost == WebHost.IISInproc)
+            if (job.WebHost == WebHost.IISInProcess)
             {
                 Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
 
@@ -1422,7 +1425,7 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
-            if (job.WebHost == WebHost.IISInproc)
+            if (job.WebHost == WebHost.IISInProcess)
             {
                 // IIS doesn't print anything
                 Thread.Sleep(1000);
