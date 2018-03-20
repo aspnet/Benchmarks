@@ -495,7 +495,7 @@ namespace BenchmarkServer
                             if (perfviewEnabled)
                             {
                                 // Start perfview
-                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoRundown /NoView";
+                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
                                 job.State = ServerState.TraceCollected;
                             }
@@ -1406,6 +1406,8 @@ namespace BenchmarkServer
                             perfViewArguments["AcceptEula"] = "";
                             perfViewArguments["NoGui"] = "";
                             perfViewArguments["Process"] = process.Id.ToString();
+                            perfViewArguments["CircularMB"] = "1024";
+                            perfViewArguments["BufferSizeMB"] = "1024";
 
                             if (!String.IsNullOrEmpty(job.CollectArguments))
                             {
