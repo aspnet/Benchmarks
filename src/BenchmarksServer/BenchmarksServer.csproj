@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="applicationHost.config" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="applicationHost.config" />
   </ItemGroup>
 

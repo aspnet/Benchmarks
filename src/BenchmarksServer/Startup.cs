@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
@@ -342,7 +343,7 @@ namespace BenchmarkServer
                                     if (benchmarksDir != null && dotnetDir != null)
                                     {
                                         Debug.Assert(process == null);
-                                        process = StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled, standardOutput);
+                                        process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled, standardOutput);
 
                                         job.ProcessId = process.Id;
                                     }
@@ -684,21 +685,7 @@ namespace BenchmarkServer
             // Wait until the service is reachable to avoid races where the container started but isn't
             // listening yet. We only try 5 times, if it keeps failing we ignore it. If the port
             // is unreachable then clients will fail to connect and the job will be cleaned up properl
-            const int maxRetries = 5;
-            for (var i = 0; i < maxRetries; ++i)
-            {
-                try
-                {
-                    // We don't care if it's a 404, it just needs to not fail
-                    await _httpClient.GetAsync(url);
-                    break;
-                }
-                catch
-                {
-                    await Task.Delay(300);
-                }
-            }
-
+            await WaitToListen(job, hostname);
 
             Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
@@ -706,6 +693,30 @@ namespace BenchmarkServer
             job.State = ServerState.Running;
 
             return (containerId, imageName);
+        }
+
+        private static async Task WaitToListen(ServerJob job, string hostname)
+        {
+            const int maxRetries = 5;
+            for (var i = 0; i < maxRetries; ++i)
+            {
+                try
+                {
+                    using (var tcpClient = new TcpClient())
+                    {
+                        var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
+                        await Task.WhenAny(connectTask, Task.Delay(300));
+                        if (connectTask.IsCompleted)
+                        {
+                            break;
+                        }
+                    }
+                }
+                catch
+                {
+                    await Task.Delay(300);
+                }
+            }
         }
 
         private static void DockerCleanUp(string containerId, string imageName)
@@ -1308,7 +1319,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static Process StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
+        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
         {
             job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
 
@@ -1322,14 +1333,12 @@ namespace BenchmarkServer
             var arguments = $"{benchmarksDll}" +
                     $" {job.Arguments} " +
                     $" --nonInteractive true" +
-
                     $" --scenarios {job.Scenario}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
             {
                 arguments += $" --connectionFilter {job.ConnectionFilter}";
             }
-
 
             switch (job.WebHost)
             {
@@ -1361,7 +1370,7 @@ namespace BenchmarkServer
 
                 var apphost = GenerateApplicationHostConfig(job, benchmarksBin, executable, arguments, hostname);
                 arguments = $"-h \"{apphost}\"";
-                executable = @"C:\Windows\System32\inetsrv\w3wp.exe";
+                executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
             else
             {
@@ -1429,8 +1438,7 @@ namespace BenchmarkServer
 
             if (iis)
             {
-                // IIS doesn't print anything
-                Thread.Sleep(1000);
+                await WaitToListen(job, hostname);
                 MarkAsRunning(hostname, benchmarksRepo, job, perfview, stopwatch, process);
             }
 
@@ -1502,7 +1510,7 @@ namespace BenchmarkServer
                 var ancmPath = Path.Combine(job.BasePath, benchmarksBin, "x64\\aspnetcore.dll");
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[@name='AspNetCoreModule']", "image", ancmPath);
 
-                SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{job.Port}:{hostname}");
+                SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{job.Port}:");
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/application/virtualDirectory", "physicalPath", job.BasePath);
                 //\runtimes\win-x64\nativeassets\netcoreapp2.1\aspnetcorerh.dll
 

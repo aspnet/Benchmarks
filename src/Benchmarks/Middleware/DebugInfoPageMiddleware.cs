@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime;
 using System.Threading.Tasks;
@@ -113,7 +114,13 @@ namespace Benchmarks.Middleware
     {
         public static IApplicationBuilder RunDebugInfoPage(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<DebugInfoPageMiddleware>(builder.ServerFeatures.Get<IServerAddressesFeature>());
+            return builder.UseMiddleware<DebugInfoPageMiddleware>(builder.ServerFeatures.Get<IServerAddressesFeature>() ?? new EmptyServerAddressesFeature());
+        }
+
+        private class EmptyServerAddressesFeature: IServerAddressesFeature
+        {
+            public ICollection<string> Addresses { get; } = new List<string>();
+            public bool PreferHostingUrls { get; set; }
         }
     }
 }
