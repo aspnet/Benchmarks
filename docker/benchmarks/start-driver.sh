@@ -112,7 +112,7 @@ fi
         --duration \"$duration\" \
         --jobs src/Benchmarks/benchmarks.html.json \
         -n MvcDbFortunesEf \
-        --webHost KestrelLibuv \
+        --webHost KestrelSockets \
         -q 'Server=aspnetbenchmarks.database.windows.net;Database=AspNetBenchmarks;User Id=aspnet;Password=$password' \
         --table AspNetStress \
         --database PostgreSql \
