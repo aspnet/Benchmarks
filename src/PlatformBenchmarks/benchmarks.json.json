@@ -9,7 +9,7 @@
       "Project": "src/PlatformBenchmarks/PlatformBenchmarks.csproj"
     }
   },
-  "JsonPlaform": {
+  "JsonPlatform": {
     "Path": "/json"
   }
 }
