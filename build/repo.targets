@@ -104,10 +104,10 @@
     <PhysicalScenarios Include="-n Plaintext -m https --webHost HttpSys $(PlaintextJobs)" />
 
     <!-- Default ThreadCount (cores / 2) is optimal for current hardware -->
-    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelSockets $(JsonPlatformJobs)" />
+    <PhysicalScenarios Include="-n JsonPlatform --webHost KestrelSockets $(JsonPlatformJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    <PhysicalScenarios Include="-n PlatformJson --webHost KestrelLibuv $(JsonPlatformJobs)" />
+    <PhysicalScenarios Include="-n JsonPlatform --webHost KestrelLibuv $(JsonPlatformJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
     <PhysicalScenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <PhysicalScenarios Include="-n Json --webHost HttpSys $(JsonJobs)" />
