@@ -495,7 +495,7 @@ namespace BenchmarkServer
                             if (perfviewEnabled)
                             {
                                 // Start perfview
-                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoRundown /NoView";
+                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
                                 job.State = ServerState.TraceCollected;
                             }

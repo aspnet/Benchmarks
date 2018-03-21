@@ -29,7 +29,7 @@ namespace BenchmarksDriver
         private static string _tableName = "AspNetBenchmarks";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
-        private const string _defaultTraceArguments = "BufferSize=1024";
+        private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
 
         public static int Main(string[] args)
         {
@@ -1032,6 +1032,8 @@ namespace BenchmarksDriver
                                 Log($"Startup Main (ms):           {average.StartupMain}");
                                 Log($"First Request (ms):          {average.FirstRequest}");
                                 Log($"Latency (ms):                {average.Latency}");
+                                Log($"Total Requests:              {average.TotalRequests:n0}");
+                                Log($"Duration: (ms)               {average.Duration}");
                                 Log($"Socket Errors:               {average.SocketErrors}");
                                 Log($"Bad Responses:               {average.BadResponses}");
                                 Log($"SDK:                         {serverJob.SdkVersion}");
