@@ -9,7 +9,7 @@ do
     case "$name" in
         --sql)
             shift
-            sql="$1"
+            sql="/p:BENCHMARK_SQL=\"$1\""
             ;;
         -s|--server)
             shift
@@ -59,6 +59,6 @@ docker run \
     "dotnet msbuild ./build/repo.proj \
     /p:BENCHMARK_SERVER=\"$server\" \
     /p:BENCHMARK_CLIENT=\"$client\"  \
-    /p:BENCHMARK_SQL=\"$sql\"  \
+    $sql \
     | tee /tmp/scenarios-\$(date '+%Y-%m-%dT%H-%M').log "
     
