@@ -1406,8 +1406,6 @@ namespace BenchmarkServer
                             perfViewArguments["AcceptEula"] = "";
                             perfViewArguments["NoGui"] = "";
                             perfViewArguments["Process"] = process.Id.ToString();
-                            perfViewArguments["CircularMB"] = "1024";
-                            perfViewArguments["BufferSizeMB"] = "1024";
 
                             if (!String.IsNullOrEmpty(job.CollectArguments))
                             {
