@@ -552,19 +552,16 @@ namespace BenchmarksDriver
                         break;
 
                     case Headers.Html:
-                        _clientJob.Headers["Host"] = "localhost";
                         _clientJob.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
 
                     case Headers.Json:
-                        _clientJob.Headers["Host"] = "localhost";
                         _clientJob.Headers["Accept"] = "application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
 
                     case Headers.Plaintext:
-                        _clientJob.Headers["Host"] = "localhost";
                         _clientJob.Headers["Accept"] = "text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7";
                         _clientJob.Headers["Connection"] = "keep-alive";
                         break;
@@ -685,7 +682,6 @@ namespace BenchmarksDriver
                     response.EnsureSuccessStatusCode();
 
                     serverJobUri = new Uri(serverUri, response.Headers.Location);
-
                     while (true)
                     {
                         LogVerbose($"GET {serverJobUri}...");
@@ -1190,7 +1186,8 @@ namespace BenchmarksDriver
         private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri)
         {
             var clientJob = new ClientJob(_clientJob) { ServerBenchmarkUri = serverBenchmarkUri };
-
+            var benchmarkUri = new Uri(serverBenchmarkUri);
+            clientJob.Headers["Host"] = benchmarkUri.Host + ":" + benchmarkUri.Port;
             Uri clientJobUri = null;
             try
             {

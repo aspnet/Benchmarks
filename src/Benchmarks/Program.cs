@@ -149,6 +149,14 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
+            else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseIISIntegration();
+            }
+            else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
+            {
+                webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
+            }
             else
             {
                 throw new InvalidOperationException($"Unknown server value: {Server}");
