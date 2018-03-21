@@ -56,7 +56,7 @@ docker run \
     --restart always \
     benchmarks \
     bash -c \
-    "dotnet msbuild -c Release ./build/repo.proj \
+    "dotnet msbuild ./build/repo.proj \
     /p:BENCHMARK_SERVER=\"$server\" \
     /p:BENCHMARK_CLIENT=\"$client\"  \
     /p:BENCHMARK_SQL=\"$sql\"  \
