@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#echo on
 set -x
 
 while [ $# -ne 0 ]
@@ -48,7 +47,7 @@ docker run \
     --name benchmarks-scenarios \
     --network host \
     --restart always \
-    benchmarks \
+    benchmarks-scenarios \
     bash -c \
     "dotnet msbuild ./build/repo.proj \
     /p:BENCHMARK_SERVER=\"$server\" \
