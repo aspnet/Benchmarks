@@ -5,4 +5,5 @@ WORKDIR /benchmarks
 COPY . ./
 
 #build
-RUN dotnet publish -c Release --project /benchmarks/src/BenchmarksDriver/BenchmarksDriver.csproj -o /benchmarks/src/BenchmarksDriver/published
+WORKDIR /benchmarks/src/BenchmarksDriver
+RUN dotnet publish -c Release -o /benchmarks/src/BenchmarksDriver/published
