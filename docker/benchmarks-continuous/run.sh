@@ -10,6 +10,6 @@ docker run \
     --restart always \
     benchmarks-scenarios \
     bash -c \
-    "docker/benchmarks-continuous/scenarios.sh $@ | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log"
+    "docker/benchmarks-continuous/scenarios.sh $* | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log"
 
 docker logs -f benchmarks-scenarios
