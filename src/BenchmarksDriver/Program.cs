@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
-using BenchmarksWorkers;
+using BenchmarksDriver.Serializers;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

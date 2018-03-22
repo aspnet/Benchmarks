@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Newtonsoft.Json;
 
-namespace BenchmarksWorkers.Workers
+namespace BenchmarksClient.Workers
 {
     public class WrkWorker : IWorker
     {

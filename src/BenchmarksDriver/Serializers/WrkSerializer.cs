@@ -10,7 +10,7 @@ using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using Newtonsoft.Json;
 
-namespace BenchmarksWorkers.Workers
+namespace BenchmarksDriver.Serializers
 {
     public class WrkSerializer : IResultsSerializer
     {

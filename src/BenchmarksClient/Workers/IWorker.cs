@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace BenchmarksWorkers
+namespace BenchmarksClient.Workers
 {
     public interface IWorker : IDisposable
     {
