@@ -7,8 +7,8 @@ jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
 multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
-trend="--description \"Trend/Latest\""
-baseLine="--description \"Baseline\" --aspnetCoreVersion Current --runtimeVersion Current"
+trend="--description Trend/Latest"
+baseLine="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
 
 jobs=(
   # Plaintext
