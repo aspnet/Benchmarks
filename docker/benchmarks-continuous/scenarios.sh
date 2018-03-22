@@ -58,13 +58,13 @@ baseLineJob="--description \"Trend/Latest\" --aspnetCoreVersion Current --runtim
 
 jobs=(
   # Plaintext
-  -n PlaintextPlatform --webHost KestrelSockets $trendJob $plaintextPlatformJobs 
-  -n PlaintextPlatform --webHost KestrelLibuv $trendJob $plaintextPlatformJobs $plaintextLibuvThreadCount
+  "-n PlaintextPlatform --webHost KestrelSockets $trendJob $plaintextPlatformJobs"
+  "-n PlaintextPlatform --webHost KestrelLibuv $trendJob $plaintextPlatformJobs $plaintextLibuvThreadCount"
 )
 
-for i in "${jobs[@]}"
+for job in "${jobs[@]}"
 do
-   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql $i
+   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql $job
 done
 
 
