@@ -56,9 +56,16 @@ signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/
 trendJob="--description \"Trend/Latest\""
 baseLineJob="--description \"Trend/Latest\" --aspnetCoreVersion Current --runtimeVersion Current"
 
-drivercmd = "dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql "
+jobs=(
+  # Plaintext
+  -n PlaintextPlatform --webHost KestrelSockets $trendJob $plaintextPlatformJobs 
+  -n PlaintextPlatform --webHost KestrelLibuv $trendJob $plaintextPlatformJobs $plaintextLibuvThreadCount
+)
 
-$drivercmd -n PlaintextPlatform --webHost KestrelSockets $plaintextPlatformJobs $plaintextLibuvThreadCount $trendJob
+for i in "${jobs[@]}"
+do
+   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql $i
+done
 
 
     #PlaintextThreadCount = "--kestrelThreadCount 2"
