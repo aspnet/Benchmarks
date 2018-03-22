@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 
-namespace BenchmarksWorkers
+namespace BenchmarksDriver.Serializers
 {
     public interface IResultsSerializer : IDisposable
     {
