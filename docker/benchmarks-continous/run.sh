@@ -43,7 +43,7 @@ docker run \
     -d \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    --mount type=bind,source=/mnt,target=/tmp \
+    --mount type=bind,source=/mnt,target=/logs \
     --name benchmarks-scenarios \
     --network host \
     --restart always \
@@ -52,6 +52,7 @@ docker run \
     "dotnet msbuild ./build/repo.proj \
     /p:BENCHMARK_SERVER=\"$server\" \
     /p:BENCHMARK_CLIENT=\"$client\"  \
+    /p:DriverOutputPath=\"/benchmarks/src/BenchmarksDriver/published/\" \
     $sql \
-    | tee /tmp/scenarios-\$(date '+%Y-%m-%dT%H-%M').log "
+    | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log "
     

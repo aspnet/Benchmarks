@@ -5,6 +5,7 @@
   $(BENCHMARK_SERVER)
   $(BENCHMARK_CLIENT)
   $(PlaintextThreadCount)
+  $(DriverOutputPath)
   
   -->
   <PropertyGroup>
@@ -123,9 +124,6 @@
   </ItemGroup>
 
   <Target Name="TestBenchmarks">
-    <MSBuild Projects="$(RepositoryRoot)src\BenchmarksDriver\BenchmarksDriver.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration)">
-      <Output TaskParameter="TargetOutputs" PropertyName="DriverOutputPath" />
-    </MSBuild>
 
     <ItemGroup>
       <RunProjects Include="$(MSBuildProjectFullPath)" Condition="'$(BENCHMARK_SERVER)' != '' AND '$(BENCHMARK_CLIENT)' != ''">
