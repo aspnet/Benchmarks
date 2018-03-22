@@ -10,6 +10,10 @@
   <PropertyGroup>
     <RepositoryRoot Condition="'$(RepositoryRoot)' == ''">$(MSBuildStartupDirectory)</RepositoryRoot>
     <RepositoryRoot>$([MSBuild]::NormalizeDirectory('$(RepositoryRoot)'))</RepositoryRoot>
+
+    <PlaintextThreadCount Condition="'$(PlaintextThreadCount)' == ''">2</PlaintextThreadCount>
+    <PlaintextThreadCount>--kestrelThreadCount $(PlaintextThreadCount)</PlaintextThreadCount>
+
     <PlaintextJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.plaintext.json"</PlaintextJobs>
     <PlaintextPlatformJobs>-j "$(RepositoryRoot)src/PlatformBenchmarks/benchmarks.plaintext.json"</PlaintextPlatformJobs>
     <HtmlJobs>-j "$(RepositoryRoot)src/Benchmarks/benchmarks.html.json"</HtmlJobs>
@@ -30,10 +34,10 @@
   <ItemGroup>
 
     <!-- Plaintext -->
-    <Scenarios Include="-n PlaintextPlatform --webHost KestrelLibuv --kestrelThreadCount $(PlaintextThreadCount) $(PlaintextPlatformJobs)" />
+    <Scenarios Include="-n PlaintextPlatform --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextPlatformJobs)" />
     <Scenarios Include="-n PlaintextPlatform --webHost KestrelSockets $(PlaintextPlatformJobs)" />
-    <Scenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount $(PlaintextThreadCount) $(PlaintextJobs)" />
-    <Scenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount $(PlaintextThreadCount) $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
+    <Scenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
+    <Scenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <Scenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <Scenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
     <Scenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
@@ -63,14 +67,14 @@
     <Scenarios Include="-n Json -m https --webHost HttpSys $(JsonJobs)" />
 
     <!-- Caching -->
-    <Scenarios Include="-n MemoryCachePlaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
-    <Scenarios Include="-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <Scenarios Include="-n MemoryCachePlaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
+    <Scenarios Include="-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
 
-    <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
-    <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv --kestrelThreadCount 2 --method DELETE $(PlaintextJobs)" />
-    <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
-    <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
-    <Scenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
+    <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
+    <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv $(PlaintextThreadCount) --method DELETE $(PlaintextJobs)" />
+    <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
+    <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
+    <Scenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
 
     <!-- Database SingleQuery -->
     <Scenarios Include="-n DbSingleQueryRaw --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
@@ -119,7 +123,7 @@
   </ItemGroup>
 
   <Target Name="TestBenchmarks">
-    <MSBuild Projects="$(RepositoryRoot)src\BenchmarksDriver\BenchmarksDriver.csproj" Properties="Configuration=$(Configuration)">
+    <MSBuild Projects="$(RepositoryRoot)src\BenchmarksDriver\BenchmarksDriver.csproj" Targets="Restore;Build" Properties="Configuration=$(Configuration)">
       <Output TaskParameter="TargetOutputs" PropertyName="DriverOutputPath" />
     </MSBuild>
 
