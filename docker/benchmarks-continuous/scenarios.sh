@@ -14,6 +14,10 @@ do
             shift
             client="$1"
             ;;
+        -p|--plaintextLibuvThreadCount)
+            shift
+            plaintextLibuvThreadCount="--kestreThreadCount $1"
+            ;;
         *)
             say_err "Unknown argument \`$name\`"
             exit 1
@@ -25,33 +29,36 @@ done
 
 if [ -z "$server" ]
 then
-    echo "--server needs to be set"
+    echo "-s|--server needs to be set"
     exit 1
 fi
 
 if [ -z "$client" ]
 then
-    echo "--client needs to be set"
+    echo "-c|--client needs to be set"
     exit 1
 fi
 
-PlaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
-PlaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
-HtmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
-JsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
-JsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
-MultiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
-SignalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+if [ -z "$plaintextLibuvThreadCount" ]
+then
+    echo "-p|--plaintextLibuvThreadCount needs to be set"
+    exit 1
+fi
 
+plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
+plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
+htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
+jsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
+jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
+multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
+signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
-dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll \
--s "$server" \
--c "$client"  \
--n PlaintextPlatform --webHost KestrelSockets $PlaintextPlatformJobs \
---description "Trend/Latest" \
-$sql -v
+trendJob="--description \"Trend/Latest\""
+baseLineJob="--description \"Trend/Latest\" --aspnetCoreVersion Current --runtimeVersion Current"
 
-    #--aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) 
+drivercmd = "dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql "
+
+$drivercmd -n PlaintextPlatform --webHost KestrelSockets $plaintextPlatformJobs $plaintextLibuvThreadCount $trendJob
 
 
     #PlaintextThreadCount = "--kestrelThreadCount 2"
