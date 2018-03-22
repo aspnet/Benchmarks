@@ -28,12 +28,6 @@ do
     shift
 done
 
-if [ -z "$sql" ]
-then
-    echo "--sql needs to be set"
-    exit 1
-fi
-
 if [ -z "$server" ]
 then
     echo "--server needs to be set"
