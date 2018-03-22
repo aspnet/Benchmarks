@@ -64,7 +64,7 @@ jobs=(
 
 for job in "${jobs[@]}"
 do
-   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s \"$server\" -c \"$client\" $sql $job
+   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$server" -c "$client" $sql $job
 done
 
 

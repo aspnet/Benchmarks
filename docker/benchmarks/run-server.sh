@@ -73,6 +73,8 @@ mysql="--mysql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuse
 mssql="--mssql \"Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;\""
 mongodb="--mongodb \"mongodb://TFB-database:27017?maxPoolSize=1024\""
 
+chmod 777 /mnt
+
 # "--network host" - Better performance than the default "bridge" driver
 # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
 docker run \
