@@ -7,3 +7,5 @@ COPY . ./
 #build
 WORKDIR /benchmarks/src/BenchmarksDriver
 RUN dotnet publish -c Release -o /benchmarks/src/BenchmarksDriver/published
+
+WORKDIR /benchmarks

@@ -149,7 +149,7 @@
   <Target Name="RunBenchmark">
     <PropertyGroup>
       <DotNetPath Condition="'$(DotNetPath)' == ''">dotnet</DotNetPath>
-      <RunArgs>$(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description $(Description) --aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) </RunArgs>
+      <RunArgs>run $(DriverOutputPath) $(Scenario) -s $(Server) -c $(Client) --description $(Description) --aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) </RunArgs>
       <RunArgs Condition="'$(BENCHMARK_SQL)' != ''">$(RunArgs) -q $(BENCHMARK_SQL)</RunArgs>
       <RunArgs Condition="'$(Quiet)' != 'true'">$(RunArgs) -v</RunArgs>
     </PropertyGroup>
