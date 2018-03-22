@@ -35,23 +35,21 @@ then
     exit 1
 fi
 
-quiet = "-v"
-
-    PlaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
-    PlaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
-    HtmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
-    JsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
-    JsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
-    MultiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
-    SignalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+PlaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
+PlaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
+HtmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
+JsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
+JsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
+MultiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
+SignalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
 
-    dotnet run /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll \
-    -s "$server" \
-    -c "$client"  \
-    -n PlaintextPlatform --webHost KestrelSockets $PlaintextPlatformJobs \
-    --description "Trend/Latest" \
-    $sql $quiet
+dotnet run /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll \
+-s "$server" \
+-c "$client"  \
+-n PlaintextPlatform --webHost KestrelSockets $PlaintextPlatformJobs \
+--description "Trend/Latest" \
+$sql -v
 
     #--aspnetCoreVersion $(AspNetCoreVersion) --runtimeVersion $(RuntimeVersion) 
 

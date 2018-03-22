@@ -14,8 +14,4 @@
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
 </Project>
