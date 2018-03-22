@@ -44,7 +44,7 @@ MultiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
 SignalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
 
-dotnet run /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll \
+dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll \
 -s "$server" \
 -c "$client"  \
 -n PlaintextPlatform --webHost KestrelSockets $PlaintextPlatformJobs \
