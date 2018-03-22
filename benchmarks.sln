@@ -34,7 +34,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419-FB9D-4A20-AD4B-C02C13636BA8}"
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
-		build\repo.targets = build\repo.targets
+		build\repo.proj = build\repo.proj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B27-3CBA-4581-893A-7F6DB5527371}"
@@ -49,7 +49,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 		docker\benchmarks\run-client.sh = docker\benchmarks\run-client.sh
 		docker\benchmarks\run-server.sh = docker\benchmarks\run-server.sh
 		docker\benchmarks\start-driver.sh = docker\benchmarks\start-driver.sh
+		docker\benchmarks\start-scenarios.sh = docker\benchmarks\start-scenarios.sh
 		docker\benchmarks\stop-client.sh = docker\benchmarks\stop-client.sh
+		docker\benchmarks\stop-scenarios.sh = docker\benchmarks\stop-scenarios.sh
 		docker\benchmarks\stop-server.sh = docker\benchmarks\stop-server.sh
 	EndProjectSection
 EndProject
@@ -103,9 +105,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mong
 		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarksWorkers", "src\BenchmarksWorkers\BenchmarksWorkers.csproj", "{44D137AF-404D-4963-A096-C803F4774FCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarksWorkers", "src\BenchmarksWorkers\BenchmarksWorkers.csproj", "{44D137AF-404D-4963-A096-C803F4774FCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformBenchmarks", "src\PlatformBenchmarks\PlatformBenchmarks.csproj", "{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "src\PlatformBenchmarks\PlatformBenchmarks.csproj", "{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchmarks-driver", "{80EE0663-7860-4756-8A0E-6A5B6FA5E546}"
+	ProjectSection(SolutionItems) = preProject
+		docker\benchmarks-driver\build.cmd = docker\benchmarks-driver\build.cmd
+		docker\benchmarks-driver\build.sh = docker\benchmarks-driver\build.sh
+		docker\benchmarks-driver\Dockerfile = docker\benchmarks-driver\Dockerfile
+		docker\benchmarks-driver\run.cmd = docker\benchmarks-driver\run.cmd
+		docker\benchmarks-driver\run.sh = docker\benchmarks-driver\run.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -216,6 +227,7 @@ Global
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{44D137AF-404D-4963-A096-C803F4774FCB} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
+		{80EE0663-7860-4756-8A0E-6A5B6FA5E546} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
