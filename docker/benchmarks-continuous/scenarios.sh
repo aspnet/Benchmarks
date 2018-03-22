@@ -1,3 +1,15 @@
+
+plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
+plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
+htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
+jsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
+jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
+multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
+signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+
+trend="--description \"Trend/Latest\""
+baseLine="--description \"Baseline\" --aspnetCoreVersion Current --runtimeVersion Current"
+
 jobs=(
   # Plaintext
   "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
@@ -131,17 +143,6 @@ then
     echo "-p|--plaintextLibuvThreadCount needs to be set"
     exit 1
 fi
-
-plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
-plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
-htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
-jsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
-jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
-multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
-signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
-
-trend="--description \"Trend/Latest\""
-baseLine="--description \"Baseline\" --aspnetCoreVersion Current --runtimeVersion Current"
 
 for s in ${server//,/ }
 do
