@@ -16,7 +16,7 @@ do
             ;;
         -p|--plaintextLibuvThreadCount)
             shift
-            plaintextLibuvThreadCount="--kestreThreadCount $1"
+            plaintextLibuvThreadCount="--kestrelThreadCount $1"
             ;;
         *)
             say_err "Unknown argument \`$name\`"
