@@ -1,3 +1,90 @@
+jobs=(
+  # Plaintext
+  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
+  "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
+#   "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" 
+#   "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" $baseLine
+#   "-n Plaintext --webHost KestrelSockets $plaintextJobs" 
+#   "-n Plaintext --webHost KestrelSockets $plaintextJobs $baseLine$"
+#   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs" 
+#   "-n MvcPlaintext --webHost KestrelLibuv $plaintextJobs" 
+#   "-n Plaintext --webHost HttpSys $plaintextJobs" 
+#   "-n Plaintext --webHost KestrelLibuv -f Benchmarks.PassthroughConnectionFilter $plaintextJobs" 
+#   "-n StaticFiles --webHost KestrelLibuv --path plaintext $plaintextJobs" 
+#   "-n JsonPlatform --webHost KestrelSockets $jsonPlatformJobs" 
+#   "-n JsonPlatform --webHost KestrelLibuv $jsonPlatformJobs" 
+#   "-n Json --webHost KestrelSockets $jsonJobs" 
+#   "-n Json --webHost KestrelSockets $jsonJobs $baseLine"
+#   "-n Json --webHost KestrelLibuv $jsonJobs"
+#   "-n Json --webHost KestrelLibuv $jsonJobs $baseLine"
+#   "-n Jil --webHost KestrelLibuv $jsonJobs"
+#   "-n MvcJson --webHost KestrelSockets $jsonJobs" 
+#   "-n MvcJson --webHost KestrelLibuv $jsonJobs" 
+#   "-n MvcJil --webHost KestrelLibuv $jsonJobs" 
+
+#   # Https
+#   "-n Plaintext -m https --webHost KestrelSockets $plaintextJobs"
+#   "-n Plaintext -m https --webHost KestrelLibuv $plaintextJobs"
+#   "-n Plaintext -m https --webHost HttpSys $plaintextJobs"
+#   "-n Json -m https --webHost KestrelSockets $jsonJobs"
+#   "-n Json -m https --webHost KestrelLibuv $jsonJobs"
+#   "-n Json -m https --webHost HttpSys $jsonJobs"
+
+#   # Caching
+#   "-n MemoryCachePlaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+#   "-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+#   "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+#   "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount --method DELETE $plaintextJobs"
+#   "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+#   "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+#   "-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+
+#   # Database SingleQuery
+#   "-n DbSingleQueryRaw --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+#   "-n DbSingleQueryDapper --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+#   "-n DbSingleQueryMongoDb --webHost KestrelLibuv $jsonJobs --database MongoDb"
+#   "-n DbSingleQueryEf --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+#   "-n MvcDbSingleQueryRaw --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+#   "-n MvcDbSingleQueryDapper --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+#   "-n MvcDbSingleQueryEf --webHost KestrelLibuv $jsonJobs --database PostgreSql"
+
+#   # Database MultiQuery
+#   "-n DbMultiQueryRaw --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n DbMultiQueryDapper --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n DbMultiQueryMongoDb --webHost KestrelLibuv $multiQueryJobs --database MongoDb"
+#   "-n DbMultiQueryEf --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiQueryRaw --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiQueryDapper --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiQueryEf --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+
+#   # Database MultiUpdate
+#   "-n DbMultiUpdateRaw --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n DbMultiUpdateDapper --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n DbMultiUpdateEf --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiUpdateRaw --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiUpdateDapper --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+#   "-n MvcDbMultiUpdateEf --webHost KestrelLibuv $multiQueryJobs --database PostgreSql"
+
+#   # Database Fortunes
+#   "-n DbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+#   "-n DbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseLine"
+#   "-n DbFortunesDapper --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+#   "-n DbFortunesMongoDb --webHost KestrelLibuv $htmlJobs --database MongoDb"
+#   "-n DbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+#   "-n DbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseLine"
+#   "-n MvcDbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+#   "-n MvcDbFortunesDapper --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+#   "-n MvcDbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql"
+
+#   # SignalR
+#   "-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $signalRJobs"
+#   "-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $signalRJobs"
+#   "-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $signalRJobs"
+#   "-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $signalRJobs"
+#   "-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $signalRJobs"
+#   "-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $signalRJobs"
+)
+
 while [ $# -ne 0 ]
 do
     name="$1"
@@ -53,113 +140,13 @@ jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
 multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
-trendJob="--description \"Trend/Latest\""
-baseLineJob="--description \"Trend/Latest\" --aspnetCoreVersion Current --runtimeVersion Current"
+trend="--description \"Trend/Latest\""
+baseLine="--description \"Baseline\" --aspnetCoreVersion Current --runtimeVersion Current"
 
-jobs=(
-  # Plaintext
-  "-n PlaintextPlatform --webHost KestrelSockets $trendJob $plaintextPlatformJobs"
-  "-n PlaintextPlatform --webHost KestrelLibuv $trendJob $plaintextPlatformJobs $plaintextLibuvThreadCount"
-)
-
-for job in "${jobs[@]}"
+for s in ${server//,/ }
 do
-   dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$server" -c "$client" $sql $job
+    for job in "${jobs[@]}"
+    do
+    dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$s" -c "$client" $sql $job
+    done
 done
-
-
-    #PlaintextThreadCount = "--kestrelThreadCount 2"
-
-#   Description = "Trend/Latest"
-#   AspNetCoreVersion="Latest"
-#   RuntimeVersion="Latest"
-
-    # Plaintext
-#     <Scenarios Include="-n PlaintextPlatform --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextPlatformJobs)" />
-#     <Scenarios Include="-n PlaintextPlatform --webHost KestrelSockets $(PlaintextPlatformJobs)" />
-#     <Scenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-#     <Scenarios Include="-n Plaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-#     <Scenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
-#     <Scenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-#     <Scenarios Include="-n MvcPlaintext --webHost KestrelSockets $(PlaintextJobs)" />
-#     <Scenarios Include="-n MvcPlaintext --webHost KestrelLibuv $(PlaintextJobs)" />
-
-#     <Scenarios Include="-n Plaintext --webHost HttpSys $(PlaintextJobs)" />
-#     <Scenarios Include="-n Plaintext --webHost KestrelLibuv -f Benchmarks.PassthroughConnectionFilter $(PlaintextJobs)" />
-#     <Scenarios Include="-n StaticFiles --webHost KestrelLibuv --path plaintext $(PlaintextJobs)" />
-
-#     <Scenarios Include="-n JsonPlatform --webHost KestrelSockets $(JsonPlatformJobs)" />
-#     <Scenarios Include="-n JsonPlatform --webHost KestrelLibuv $(JsonPlatformJobs)" />
-#     <Scenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)" />
-#     <Scenarios Include="-n Json --webHost KestrelSockets $(JsonJobs)"  Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-#     <Scenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" />
-#     <Scenarios Include="-n Json --webHost KestrelLibuv $(JsonJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-#     <Scenarios Include="-n Jil --webHost KestrelLibuv $(JsonJobs)" />
-#     <Scenarios Include="-n MvcJson --webHost KestrelSockets $(JsonJobs)" />
-#     <Scenarios Include="-n MvcJson --webHost KestrelLibuv $(JsonJobs)" />
-#     <Scenarios Include="-n MvcJil --webHost KestrelLibuv $(JsonJobs)" />
-
-#     <!-- Https -->
-#     <Scenarios Include="-n Plaintext -m https --webHost KestrelSockets $(PlaintextJobs)" />
-#     <Scenarios Include="-n Plaintext -m https --webHost KestrelLibuv $(PlaintextJobs)" />
-#     <Scenarios Include="-n Plaintext -m https --webHost HttpSys $(PlaintextJobs)" />
-#     <Scenarios Include="-n Json -m https --webHost KestrelSockets $(JsonJobs)" />
-#     <Scenarios Include="-n Json -m https --webHost KestrelLibuv $(JsonJobs)" />
-#     <Scenarios Include="-n Json -m https --webHost HttpSys $(JsonJobs)" />
-
-#     <!-- Caching -->
-#     <Scenarios Include="-n MemoryCachePlaintext --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-#     <Scenarios Include="-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-
-#     <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-#     <Scenarios Include="-n ResponseCachingPlaintextCached --webHost KestrelLibuv $(PlaintextThreadCount) --method DELETE $(PlaintextJobs)" />
-#     <Scenarios Include="-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-#     <Scenarios Include="-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-#     <Scenarios Include="-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $(PlaintextThreadCount) $(PlaintextJobs)" />
-
-#     <!-- Database SingleQuery -->
-#     <Scenarios Include="-n DbSingleQueryRaw --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbSingleQueryDapper --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbSingleQueryMongoDb --webHost KestrelLibuv $(JsonJobs) --database MongoDb" />
-#     <Scenarios Include="-n DbSingleQueryEf --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbSingleQueryRaw --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbSingleQueryDapper --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbSingleQueryEf --webHost KestrelLibuv $(JsonJobs) --database PostgreSql" />
-
-#     <!-- Database MultiQuery -->
-#     <Scenarios Include="-n DbMultiQueryRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbMultiQueryDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbMultiQueryMongoDb --webHost KestrelLibuv $(MultiQueryJobs) --database MongoDb" />
-#     <Scenarios Include="-n DbMultiQueryEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiQueryRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiQueryDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiQueryEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-
-#     <!-- Database MultiUpdate -->
-#     <Scenarios Include="-n DbMultiUpdateRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbMultiUpdateDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbMultiUpdateEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiUpdateRaw --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiUpdateDapper --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbMultiUpdateEf --webHost KestrelLibuv $(MultiQueryJobs) --database PostgreSql" />
-
-#     <!-- Database Fortunes -->
-#     <Scenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-#     <Scenarios Include="-n DbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbFortunesMongoDb --webHost KestrelLibuv $(HtmlJobs) --database MongoDb" />
-#     <Scenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-#     <Scenarios Include="-n DbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current" />
-#     <Scenarios Include="-n MvcDbFortunesRaw --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbFortunesDapper --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-#     <Scenarios Include="-n MvcDbFortunesEf --webHost KestrelLibuv $(HtmlJobs) --database PostgreSql" />
-
-#     <!-- SignalR -->
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $(SignalRJobs)" />
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
-#     <Scenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
-#   </ItemGroup>
-
