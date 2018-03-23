@@ -23,6 +23,7 @@ then
     exit 1
 fi
 
+
 plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
 plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
 htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
@@ -33,13 +34,14 @@ signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
+plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
 jobs=(
   # Plaintext
-  "-n PlaintextPlatform --webHost KestrelLibuv $trend $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextPlatformJobs"
+  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
-  "-n Plaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs" 
-  "-n Plaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs" $baseline
+  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" 
+  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" $baseline
   "-n Plaintext --webHost KestrelSockets $plaintextJobs" 
   "-n Plaintext --webHost KestrelSockets $plaintextJobs $baseline$"
   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs" 
@@ -67,13 +69,13 @@ jobs=(
   "-n Json -m https --webHost HttpSys $jsonJobs"
 
   # Caching
-  "-n MemoryCachePlaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
-  "-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT --method DELETE $plaintextJobs"
-  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
-  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
-  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n MemoryCachePlaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount --method DELETE $plaintextJobs"
+  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
 
   # Database SingleQuery
   "-n DbSingleQueryRaw --webHost KestrelLibuv $jsonJobs --database PostgreSql"
