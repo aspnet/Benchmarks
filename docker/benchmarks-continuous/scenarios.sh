@@ -1,4 +1,28 @@
 
+if [ -z "$BENCHMARKS_SERVER" ]
+then
+    echo "\$BENCHMARKS_SERVER is not set"
+    exit 1
+fi
+
+if [ -z "$BENCHMARKS_CLIENT" ]
+then
+    echo "\$BENCHMARKS_CLIENT is not set"
+    exit 1
+fi
+
+if [ -z "$BENCHMARKS_SQL" ]
+then
+    echo "\$BENCHMARKS_SQL is not set"
+    exit 1
+fi
+
+if [ -z "$PLAINTEXT_LIBUV_THREAD_COUNT" ]
+then
+    echo "\$PLAINTEXT_LIBUV_THREAD_COUNT is not set"
+    exit 1
+fi
+
 plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
 plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
 htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
@@ -12,10 +36,10 @@ baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Cu
 
 jobs=(
   # Plaintext
-  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
+  "-n PlaintextPlatform --webHost KestrelLibuv $trend $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
-  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" 
-  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" $baseline
+  "-n Plaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs" 
+  "-n Plaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs" $baseline
   "-n Plaintext --webHost KestrelSockets $plaintextJobs" 
   "-n Plaintext --webHost KestrelSockets $plaintextJobs $baseline$"
   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs" 
@@ -43,13 +67,13 @@ jobs=(
   "-n Json -m https --webHost HttpSys $jsonJobs"
 
   # Caching
-  "-n MemoryCachePlaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
-  "-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $plaintextLibuvThreadCount --method DELETE $plaintextJobs"
-  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs"
+  "-n MemoryCachePlaintext --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n MemoryCachePlaintextSetRemove --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT --method DELETE $plaintextJobs"
+  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
+  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelLibuv $PLAINTEXT_LIBUV_THREAD_COUNT $plaintextJobs"
 
   # Database SingleQuery
   "-n DbSingleQueryRaw --webHost KestrelLibuv $jsonJobs --database PostgreSql"
@@ -97,57 +121,10 @@ jobs=(
   "-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $signalRJobs"
 )
 
-while [ $# -ne 0 ]
-do
-    name="$1"
-    case "$name" in
-        --sql)
-            shift
-            sql="-q \"$1\""
-            ;;
-        -s|--server)
-            shift
-            server="$1"
-            ;;
-        -c|--client)
-            shift
-            client="$1"
-            ;;
-        -p|--plaintextLibuvThreadCount)
-            shift
-            plaintextLibuvThreadCount="--kestrelThreadCount $1"
-            ;;
-        *)
-            say_err "Unknown argument \`$name\`"
-            exit 1
-            ;;
-    esac
-
-    shift
-done
-
-if [ -z "$server" ]
-then
-    echo "-s|--server needs to be set"
-    exit 1
-fi
-
-if [ -z "$client" ]
-then
-    echo "-c|--client needs to be set"
-    exit 1
-fi
-
-if [ -z "$plaintextLibuvThreadCount" ]
-then
-    echo "-p|--plaintextLibuvThreadCount needs to be set"
-    exit 1
-fi
-
-for s in ${server//,/ }
+for s in ${BENCHMARKS_SERVER//,/ }
 do
     for job in "${jobs[@]}"
     do
-        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$s" -c "$client" $sql $job
+        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT -q \"$BENCHMARKS_SQL\" $job
     done
 done
