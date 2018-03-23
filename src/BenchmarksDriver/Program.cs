@@ -1029,7 +1029,7 @@ namespace BenchmarksDriver
                                 Log($"First Request (ms):          {average.FirstRequest}");
                                 Log($"Latency (ms):                {average.Latency}");
                                 Log($"Total Requests:              {average.TotalRequests:n0}");
-                                Log($"Duration: (ms)               {average.Duration}");
+                                Log($"Duration (ms):               {average.Duration}");
                                 Log($"Socket Errors:               {average.SocketErrors}");
                                 Log($"Bad Responses:               {average.BadResponses}");
                                 Log($"SDK:                         {serverJob.SdkVersion}");
