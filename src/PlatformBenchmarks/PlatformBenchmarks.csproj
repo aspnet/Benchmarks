@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.1</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>

@@ -46,7 +46,7 @@ jobs=(
   "-n Plaintext --webHost KestrelSockets $baseline $plaintextJobs$"
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
-  "-n Plaintext --webHost HttpSys $trend $plaintextJobs" 
+  "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
   "-n Plaintext --webHost KestrelLibuv -f Benchmarks.PassthroughConnectionFilter $trend $plaintextJobs" 
   "-n StaticFiles --webHost KestrelLibuv --path plaintext $trend $plaintextJobs" 
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 
@@ -63,10 +63,10 @@ jobs=(
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
   "-n Plaintext -m https --webHost KestrelLibuv $trend $plaintextJobs"
-  "-n Plaintext -m https --webHost HttpSys $trend $plaintextJobs"
+  "-n Plaintext -m https --webHost HttpSys $trend $plaintextJobs --windows-only"
   "-n Json -m https --webHost KestrelSockets $trend $jsonJobs"
   "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
-  "-n Json -m https --webHost HttpSys $trend $jsonJobs"
+  "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
 
   # Caching
   "-n MemoryCachePlaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
@@ -113,6 +113,13 @@ jobs=(
   "-n MvcDbFortunesRaw --webHost KestrelLibuv $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesDapper --webHost KestrelLibuv $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesEf --webHost KestrelLibuv $trend $htmlJobs --database PostgreSql"
+
+  # IIS
+  "-n Plaintext --webHost IISInProcess $trend $plaintextJobs --windows-only" />
+  "-n Plaintext --webHost IISOutOfProcess $trend $plaintextJobs --windows-only" />
+
+  "-n Json --webHost IISInProcess $trend $jsonJobs --windows-only" />
+  "-n Json --webHost IISOutOfProcess $trend $jsonJobs --windows-only" />
 
   # SignalR
   "-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $trend $signalRJobs"
