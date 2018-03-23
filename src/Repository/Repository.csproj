@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <Description>Repository to hold objects which can be identified by an integer.</Description>
+    <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 

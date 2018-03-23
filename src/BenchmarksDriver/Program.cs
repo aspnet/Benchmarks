@@ -68,6 +68,10 @@ namespace BenchmarksDriver
                 "An endpoint to call before the application has shut down.", CommandOptionType.SingleValue);
             var spanOption = app.Option("-sp|--span",
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
+            var windowsOnlyOption = app.Option("--windows-only", 
+                "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
+            var linuxOnlyOption = app.Option("--linux-only", 
+                "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -583,6 +587,18 @@ namespace BenchmarksDriver
                     }
                 }
 
+                Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem = null;
+
+                if (windowsOnlyOption.HasValue())
+                {
+                    requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Windows;
+                }
+
+                if (linuxOnlyOption.HasValue())
+                {
+                    requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Linux;
+                }
+
                 return Run(
                     new Uri(server), 
                     new Uri(client), 
@@ -598,8 +614,8 @@ namespace BenchmarksDriver
                     collectR2RLogOption.HasValue(),
                     traceOutputOption.Value(),
                     outputFileOption,
-                    runtimeFileOption
-                    ).Result;
+                    runtimeFileOption,
+                    requiredOperatingSystem).Result;
             });
 
             // Resolve reponse files from urls
@@ -641,7 +657,9 @@ namespace BenchmarksDriver
             bool collectR2RLog,
             string traceDestination,
             CommandOption outputFileOption,
-            CommandOption runtimeFileOption)
+            CommandOption runtimeFileOption,
+            Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
+            )
         {
             var scenario = serverJob.Scenario;
             var serverJobsUri = new Uri(serverUri, "/jobs");
@@ -705,6 +723,16 @@ namespace BenchmarksDriver
                         if (!serverJob.OperatingSystem.HasValue)
                         {
                             throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
+                        }
+
+                        if (requiredOperatingSystem.HasValue && requiredOperatingSystem.Value != serverJob.OperatingSystem)
+                        {
+                            Log($"Job ignored on this OS, stopping job ...");
+
+                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
+                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+                            return 0;
                         }
 
                         if (serverJob.State == ServerState.Initializing)

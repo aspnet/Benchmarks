@@ -6,6 +6,10 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="..\..\scripts\pipeline.lua" CopyToOutputDirectory="PreserveNewest" Link="scripts\pipeline.lua" />
     <Content Include="..\..\scripts\post.lua" CopyToOutputDirectory="PreserveNewest" Link="scripts\post.lua" />
