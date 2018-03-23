@@ -8,16 +8,16 @@ multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
 trend="--description Trend/Latest"
-baseLine="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
+baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
 
 jobs=(
   # Plaintext
   "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
   "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" 
-  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" $baseLine
+  "-n Plaintext --webHost KestrelLibuv $plaintextLibuvThreadCount $plaintextJobs" $baseline
   "-n Plaintext --webHost KestrelSockets $plaintextJobs" 
-  "-n Plaintext --webHost KestrelSockets $plaintextJobs $baseLine$"
+  "-n Plaintext --webHost KestrelSockets $plaintextJobs $baseline$"
   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelLibuv $plaintextJobs" 
   "-n Plaintext --webHost HttpSys $plaintextJobs" 
@@ -26,9 +26,9 @@ jobs=(
   "-n JsonPlatform --webHost KestrelSockets $jsonPlatformJobs" 
   "-n JsonPlatform --webHost KestrelLibuv $jsonPlatformJobs" 
   "-n Json --webHost KestrelSockets $jsonJobs" 
-  "-n Json --webHost KestrelSockets $jsonJobs $baseLine"
+  "-n Json --webHost KestrelSockets $jsonJobs $baseline"
   "-n Json --webHost KestrelLibuv $jsonJobs"
-  "-n Json --webHost KestrelLibuv $jsonJobs $baseLine"
+  "-n Json --webHost KestrelLibuv $jsonJobs $baseline"
   "-n Jil --webHost KestrelLibuv $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $jsonJobs" 
   "-n MvcJson --webHost KestrelLibuv $jsonJobs" 
@@ -79,11 +79,11 @@ jobs=(
 
   # Database Fortunes
   "-n DbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql"
-  "-n DbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseLine"
+  "-n DbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseline"
   "-n DbFortunesDapper --webHost KestrelLibuv $htmlJobs --database PostgreSql"
   "-n DbFortunesMongoDb --webHost KestrelLibuv $htmlJobs --database MongoDb"
   "-n DbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql"
-  "-n DbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseLine"
+  "-n DbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql $baseline"
   "-n MvcDbFortunesRaw --webHost KestrelLibuv $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesDapper --webHost KestrelLibuv $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesEf --webHost KestrelLibuv $htmlJobs --database PostgreSql"
@@ -148,6 +148,6 @@ for s in ${server//,/ }
 do
     for job in "${jobs[@]}"
     do
-    dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$s" -c "$client" $sql $job
+        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s "$s" -c "$client" $sql $job
     done
 done

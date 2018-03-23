@@ -4,7 +4,7 @@ docker run \
     -d \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    --rm
+    --rm \
     --mount type=bind,source=/mnt,target=/logs \
     --name benchmarks-scenarios \
     --network host \
