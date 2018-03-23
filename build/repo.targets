@@ -11,21 +11,21 @@
   </PropertyGroup>
 
   <ItemDefinitionGroup>
-    
+
     <CloudScenarios>
       <Description>Trend/Latest</Description>
       <AspNetCoreVersion>Latest</AspNetCoreVersion>
       <RuntimeVersion>Latest</RuntimeVersion>
     </CloudScenarios>
-    
+
     <PhysicalScenarios>
       <Description>Trend/Latest</Description>
       <AspNetCoreVersion>Latest</AspNetCoreVersion>
       <RuntimeVersion>Latest</RuntimeVersion>
     </PhysicalScenarios>
-  
+
   </ItemDefinitionGroup>
-  
+
   <ItemGroup>
 
     <CloudScenarios Include="-n PlaintextPlatform --webHost KestrelLibuv $(PlaintextPlatformJobs)" />
@@ -83,6 +83,12 @@
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+
+    <CloudScenarios Include="-n Plaintext --webHost IISInProcess $(PlaintextJobs)" />
+    <CloudScenarios Include="-n Plaintext --webHost IISOutOfProcess $(PlaintextJobs)" />
+
+    <CloudScenarios Include="-n Json --webHost IISInProcess $(JsonJobs)" />
+    <CloudScenarios Include="-n Json --webHost IISOutOfProcess $(JsonJobs)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,7 +96,7 @@
     <PhysicalScenarios Include="-n PlaintextPlatform --webHost KestrelSockets $(PlaintextPlatformJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelSockets $(PlaintextJobs)" Description="Baseline" AspNetCoreVersion="Current" RuntimeVersion="Current"/>
-    
+
     <!-- Optimal ThreadCount for current hardware -->
     <PhysicalScenarios Include="-n PlaintextPlatform --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextPlatformJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost KestrelLibuv --kestrelThreadCount 2 $(PlaintextJobs)" />
@@ -139,6 +145,12 @@
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+
+    <PhysicalScenarios Include="-n Plaintext --webHost IISInProcess $(PlaintextJobs)" />
+    <PhysicalScenarios Include="-n Plaintext --webHost IISOutOfProcess $(PlaintextJobs)" />
+
+    <PhysicalScenarios Include="-n Json --webHost IISInProcess $(JsonJobs)" />
+    <PhysicalScenarios Include="-n Json --webHost IISOutOfProcess $(JsonJobs)" />
 
   </ItemGroup>
 
@@ -189,7 +201,7 @@
 
     <!-- All the scenarios are run, even if one fails. When one fails the task will return as errored -->
     <MSBuild Projects="@(RunProjects)" Targets="RunBenchmark" BuildInParallel="false" />
-    
+
   </Target>
 
   <Target Name="RunBenchmark" DependsOnTargets="$(BenchmarksDependsOn)">
