@@ -17,10 +17,10 @@ namespace PlatformBenchmarks
             builder.UseConfiguration(configuration);
 
             // Handle the transport type
-            var webHost = builder.GetSetting("webHost");
+            var webHost = builder.GetSetting("KestrelTransport");
 
             // Handle the thread count
-            var threadCountRaw = builder.GetSetting("kestrelThreadCount");
+            var threadCountRaw = builder.GetSetting("threadCount");
             int? theadCount = null;
 
             if (!string.IsNullOrEmpty(threadCountRaw) && 
