@@ -29,7 +29,7 @@ namespace PlatformBenchmarks
                 theadCount = value;
             }
 
-            if (string.Equals(webHost, "KestrelLibuv", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(webHost, "Libuv", StringComparison.OrdinalIgnoreCase))
             {
                 builder.UseLibuv(options =>
                 {
@@ -39,7 +39,7 @@ namespace PlatformBenchmarks
                     }
                 });
             }
-            else if (string.Equals(webHost, "KestrelSockets", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
             {
                 builder.UseSockets(options =>
                 {
