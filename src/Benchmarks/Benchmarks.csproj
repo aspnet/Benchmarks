@@ -42,18 +42,19 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion)" />
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(BenchmarksAspNetCoreVersion.StartsWith('2.1'))">
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(BenchmarksAspNetCoreVersion.StartsWith('2.0'))">
     <!-- Sockets where only available as a preview package for 2.0 -->
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-*" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion20)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
