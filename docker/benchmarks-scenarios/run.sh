@@ -6,6 +6,8 @@ docker run \
     --log-opt max-file=3 \
     --mount type=bind,source=/mnt,target=/logs \
     --network host \
+    --rm \
+    --name benchmarks-scenarios \
     -e "BENCHMARKS_SERVER=$BENCHMARKS_SERVER" \
     -e "BENCHMARKS_CLIENT=$BENCHMARKS_CLIENT" \
     -e "BENCHMARKS_SQL=$BENCHMARKS_SQL" \

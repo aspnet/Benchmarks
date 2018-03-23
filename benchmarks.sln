@@ -113,12 +113,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchm
 		docker\benchmarks-driver\run.sh = docker\benchmarks-driver\run.sh
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-continuous", "benchmarks-continuous", "{80EFD934-4CFC-4035-8B2A-8071CF36C3CC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-scenarios", "benchmarks-scenarios", "{80EFD934-4CFC-4035-8B2A-8071CF36C3CC}"
 	ProjectSection(SolutionItems) = preProject
-		docker\benchmarks-continuous\build.sh = docker\benchmarks-continuous\build.sh
-		docker\benchmarks-continuous\Dockerfile = docker\benchmarks-continuous\Dockerfile
-		docker\benchmarks-continuous\run.sh = docker\benchmarks-continuous\run.sh
-		docker\benchmarks-continuous\scenarios.sh = docker\benchmarks-continuous\scenarios.sh
+		docker\benchmarks-scenarios\build.sh = docker\benchmarks-scenarios\build.sh
+		docker\benchmarks-scenarios\Dockerfile = docker\benchmarks-scenarios\Dockerfile
+		docker\benchmarks-scenarios\run.sh = docker\benchmarks-scenarios\run.sh
+		docker\benchmarks-scenarios\scenarios.sh = docker\benchmarks-scenarios\scenarios.sh
+		docker\benchmarks-scenarios\stop.sh = docker\benchmarks-scenarios\stop.sh
 	EndProjectSection
 EndProject
 Global
