@@ -14,4 +14,4 @@ docker run \
     -e "PLAINTEXT_LIBUV_THREAD_COUNT=$PLAINTEXT_LIBUV_THREAD_COUNT" \
     benchmarks-scenarios \
     bash -c \
-    "docker/benchmarks-continuous/scenarios.sh | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log"
+    "docker/benchmarks-scenarios/scenarios.sh | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log"
