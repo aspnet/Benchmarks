@@ -127,6 +127,6 @@ for s in ${BENCHMARKS_SERVER//,/ }
 do
     for job in "${jobs[@]}"
     do
-        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT -q \"$BENCHMARKS_SQL\" $job
+        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL"
     done
 done
