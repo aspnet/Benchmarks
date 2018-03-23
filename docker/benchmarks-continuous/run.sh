@@ -7,5 +7,9 @@ docker run \
     --mount type=bind,source=/mnt,target=/logs \
     --network host \
     benchmarks-scenarios \
+    -e BENCHMARKS_SERVER=$BENCHMARKS_SERVER \
+    -e BENCHMARKS_CLIENT=$BENCHMARKS_SERVER \
+    -e BENCHMARKS_SQL=$BENCHMARKS_SERVER \
+    -e PLAINTEXT_LIBUV_THREAD_COUNT=$PLAINTEXT_LIBUV_THREAD_COUNT \
     bash -c \
     "docker/benchmarks-continuous/scenarios.sh | tee /logs/scenarios-\$(date '+%Y-%m-%dT%H-%M').log"
