@@ -1,4 +1,3 @@
-
 if [ -z "$BENCHMARKS_SERVER" ]
 then
     echo "\$BENCHMARKS_SERVER is not set"
@@ -22,7 +21,6 @@ then
     echo "\$PLAINTEXT_LIBUV_THREAD_COUNT is not set"
     exit 1
 fi
-
 
 plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
 plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
@@ -135,7 +133,7 @@ do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL"
+        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL" "$BENCHMARKS_ARGS"
         # error code in $?
     done
 done
