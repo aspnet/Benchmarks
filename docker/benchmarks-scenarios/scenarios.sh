@@ -38,7 +38,6 @@ jobs=(
   # Plaintext
   "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
-  "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs" 
   "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs" 
   "-n Plaintext --webHost KestrelSockets $baseline $plaintextJobs$"
