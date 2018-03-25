@@ -36,7 +36,7 @@ plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
 jobs=(
   # Plaintext
-  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextPlatformJobs"
+  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
   "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs" 
