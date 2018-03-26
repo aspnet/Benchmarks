@@ -66,13 +66,13 @@ jobs=(
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
 
   # Caching
-  "-n MemoryCachePlaintext --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n MemoryCachePlaintextSetRemove --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextCached --webHost KestrelSockets $trend $plaintextLibuvThreadCount --method DELETE $plaintextJobs"
-  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelSockets $trend $plaintextLibuvThreadCount $plaintextJobs"
+  "-n MemoryCachePlaintext --webHost KestrelSockets $trend $plaintextJobs"
+  "-n MemoryCachePlaintextSetRemove --webHost KestrelSockets $trend $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelSockets $trend $plaintextJobs"
+  "-n ResponseCachingPlaintextCached --webHost KestrelSockets $trend --method DELETE $plaintextJobs"
+  "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelSockets $trend $plaintextJobs"
+  "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelSockets $trend $plaintextJobs"
+  "-n ResponseCachingPlaintextVaryByCached --webHost KestrelSockets $trend $plaintextJobs"
 
   # Database SingleQuery
   "-n DbSingleQueryRaw --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
