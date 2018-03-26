@@ -68,6 +68,8 @@ namespace BenchmarksDriver
                 "An endpoint to call before the application has shut down.", CommandOptionType.SingleValue);
             var spanOption = app.Option("-sp|--span",
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
+            var markdownOption = app.Option("-md|--markdown",
+                "Formats the output in markdown", CommandOptionType.NoValue);
             var windowsOnlyOption = app.Option("--windows-only", 
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
             var linuxOnlyOption = app.Option("--linux-only", 
@@ -615,6 +617,7 @@ namespace BenchmarksDriver
                     traceOutputOption.Value(),
                     outputFileOption,
                     runtimeFileOption,
+                    markdownOption,
                     requiredOperatingSystem).Result;
             });
 
@@ -658,6 +661,7 @@ namespace BenchmarksDriver
             string traceDestination,
             CommandOption outputFileOption,
             CommandOption runtimeFileOption,
+            CommandOption markdownOption,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
             )
         {
@@ -1037,20 +1041,57 @@ namespace BenchmarksDriver
                                     serializer.ComputeAverages(average, samples);
                                 }
 
-                                Log($"RequestsPerSecond:           {average.RequestsPerSecond}");
-                                Log($"Latency on load (ms):        {average.LatencyOnLoad}");
-                                Log($"Max CPU (%):                 {average.Cpu}");
-                                Log($"WorkingSet (MB):             {average.WorkingSet}");
-                                Log($"Startup Main (ms):           {average.StartupMain}");
-                                Log($"First Request (ms):          {average.FirstRequest}");
-                                Log($"Latency (ms):                {average.Latency}");
-                                Log($"Total Requests:              {average.TotalRequests:n0}");
-                                Log($"Duration (ms):               {average.Duration}");
-                                Log($"Socket Errors:               {average.SocketErrors}");
-                                Log($"Bad Responses:               {average.BadResponses}");
-                                Log($"SDK:                         {serverJob.SdkVersion}");
-                                Log($"Runtime:                     {serverJob.RuntimeVersion}");
-                                Log($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
+                                if (markdownOption.HasValue())
+                                {
+                                    var fields = new List<KeyValuePair<string, string>>();
+                                    if (!String.IsNullOrEmpty(description))
+                                    {
+                                        fields.Add(new KeyValuePair<string, string>("Description", description.ToString()));
+                                    }
+
+                                    fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
+                                    fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
+                                    fields.Add(new KeyValuePair<string, string>("Memory (MB)",$"{average.WorkingSet:n0}"));
+                                    fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)",$"{average.LatencyOnLoad}"));
+                                    fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
+                                    fields.Add(new KeyValuePair<string, string>("First Request (ms)",$"{average.FirstRequest}"));
+                                    fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
+
+                                    var header = new StringBuilder();
+                                    var separator = new StringBuilder();
+                                    var values = new StringBuilder();
+
+                                    // Headers
+                                    foreach (var field in fields)
+                                    {
+                                        
+                                        var size = Math.Max(field.Key.Length, field.Value.Length);
+                                        header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
+                                        separator.Append("| ").Append(new String('-', size)).Append(" ");
+                                        values.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
+                                    }
+
+                                    Log(header + "|");
+                                    Log(separator + "|");
+                                    Log(values + "|");
+                                }
+                                else
+                                {
+                                    Log($"RequestsPerSecond:           {average.RequestsPerSecond:n0}");
+                                    Log($"Max CPU (%):                 {average.Cpu}");
+                                    Log($"WorkingSet (MB):             {average.WorkingSet:n0}");
+                                    Log($"Avg. Latency (ms):           {average.LatencyOnLoad}");
+                                    Log($"Startup (ms):                {average.StartupMain}");
+                                    Log($"First Request (ms):          {average.FirstRequest}");
+                                    Log($"Latency (ms):                {average.Latency}");
+                                    Log($"Total Requests:              {average.TotalRequests:n0}");
+                                    Log($"Duration: (ms)               {average.Duration:n0}");
+                                    Log($"Socket Errors:               {average.SocketErrors:n0}");
+                                    Log($"Bad Responses:               {average.BadResponses:n0}");
+                                    Log($"SDK:                         {serverJob.SdkVersion}");
+                                    Log($"Runtime:                     {serverJob.RuntimeVersion}");
+                                    Log($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
+                                }
 
                                 if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                                 {
