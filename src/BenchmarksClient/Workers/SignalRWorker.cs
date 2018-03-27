@@ -24,13 +24,13 @@ namespace BenchmarksClient.Workers
         private HttpClientHandler _httpClientHandler;
         private List<HubConnection> _connections;
         private List<IDisposable> _recvCallbacks;
+        private Timer _timer;
         private List<int> _requestsPerConnection;
         private List<List<double>> _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
-        private string _scenario;
         private List<(double sum, int count)> _latencyAverage;
 
         public SignalRWorker(ClientJob job)
@@ -65,19 +65,10 @@ namespace BenchmarksClient.Workers
 
             if (_job.ClientProperties.TryGetValue("CollectLatency", out var collectLatency))
             {
-                if (bool.TryParse(collectLatency, out var toggle))
+                if (Enum.TryParse<bool>(collectLatency, out var toggle))
                 {
                     _detailedLatency = toggle;
                 }
-            }
-
-            if (_job.ClientProperties.TryGetValue("Scenario", out var scenario))
-            {
-                _scenario = scenario;
-            }
-            else
-            {
-                throw new Exception("Scenario wasn't specified");
             }
 
             CreateConnections(transportType);
@@ -97,91 +88,71 @@ namespace BenchmarksClient.Workers
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
-
+            // SendAsync will return as soon as the request has been sent (non-blocking)
+            await _connections[0].SendAsync("Echo", _job.Duration + 1);
             _workTimer.Start();
+            _timer = new Timer(StopClients, null, TimeSpan.FromSeconds(_job.Duration), Timeout.InfiniteTimeSpan);
+        }
 
+        private async void StopClients(object t)
+        {
             try
             {
-                switch (_scenario)
-                {
-                    case "broadcast":
-                        // SendAsync will return as soon as the request has been sent (non-blocking)
-                        await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
-                        break;
-                    case "echo":
-                        while (!cts.IsCancellationRequested)
-                        {
-                            for (var i = 0; i < _connections.Count; i++)
-                            {
-                                _ = _connections[i].SendAsync("Echo", DateTime.UtcNow);
-                            }
-                        }
-                        break;
-                    case "echoAll":
-                        while (!cts.IsCancellationRequested)
-                        {
-                            for (var i = 0; i < _connections.Count; i++)
-                            {
-                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
-                            }
-                        }
-                        break;
-                    default:
-                        throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
-                }
+                _timer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+                await StopAsync();
             }
-            catch (Exception ex)
+            finally
             {
-                Log("Exception from test: " + ex.Message);
+                _job.State = ClientState.Completed;
             }
-
-            cts.Token.WaitHandle.WaitOne();
-            await StopAsync();
         }
 
         public async Task StopAsync()
         {
-            if (_stopped || !await _lock.WaitAsync(0))
+            if (!await _lock.WaitAsync(0))
             {
                 // someone else is stopping, we only need to do it once
                 return;
             }
             try
             {
-                foreach (var callback in _recvCallbacks)
+                if (_timer != null)
                 {
-                    // stops stat collection from happening quicker than StopAsync
-                    // and we can do all the calculations while close is occurring
-                    callback.Dispose();
+                    _timer?.Dispose();
+                    _timer = null;
+
+                    foreach (var callback in _recvCallbacks)
+                    {
+                        // stops stat collection from happening quicker than StopAsync
+                        // and we can do all the calculations while close is occurring
+                        callback.Dispose();
+                    }
+
+                    _workTimer.Stop();
+
+                    _stopped = true;
+
+                    // stop connections
+                    Log("Stopping connections");
+                    var tasks = new List<Task>(_connections.Count);
+                    foreach (var connection in _connections)
+                    {
+                        tasks.Add(connection.StopAsync());
+                    }
+
+                    CalculateStatistics();
+
+                    await Task.WhenAll(tasks);
+
+                    // TODO: Remove when clients no longer take a long time to "cool down"
+                    await Task.Delay(5000);
+
+                    Log("Stopped worker");
                 }
-
-                _workTimer.Stop();
-
-                _stopped = true;
-
-                // stop connections
-                Log("Stopping connections");
-                var tasks = new List<Task>(_connections.Count);
-                foreach (var connection in _connections)
-                {
-                    tasks.Add(connection.StopAsync());
-                }
-
-                CalculateStatistics();
-
-                await Task.WhenAll(tasks);
-
-                // TODO: Remove when clients no longer take a long time to "cool down"
-                await Task.Delay(5000);
-
-                Log("Stopped worker");
             }
             finally
             {
                 _lock.Release();
-                _job.State = ClientState.Completed;
             }
         }
 
@@ -255,7 +226,7 @@ namespace BenchmarksClient.Workers
                 // Capture the connection ID
                 var id = i;
                 // setup event handlers
-                _recvCallbacks.Add(connection.On<DateTime>("send", utcNow =>
+                _recvCallbacks.Add(connection.On<DateTime>("echo", utcNow =>
                 {
                     // TODO: Collect all the things
                     _requestsPerConnection[id] += 1;
