@@ -122,9 +122,18 @@ jobs=(
   "-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $trend $signalRJobs"
   "-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $trend $signalRJobs"
   "-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $trend $signalRJobs"
-  "-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $trend $signalRJobs"
   "-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $trend $signalRJobs"
   "-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
+  "-n SignalREcho -p TransportType=WebSockets -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREcho -p TransportType=WebSockets -p HubProtocol=messagepack $trend $signalRJobs"
+  "-n SignalREcho -p TransportType=ServerSentEvents -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREcho -p TransportType=LongPolling -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREcho -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
+  "-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=messagepack $trend $signalRJobs"
+  "-n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $trend $signalRJobs"
+  "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
 )
 
 for s in ${BENCHMARKS_SERVER//,/ }
