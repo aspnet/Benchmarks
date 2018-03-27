@@ -65,7 +65,7 @@ namespace BenchmarksWorkers.Workers
 
             if (_job.ClientProperties.TryGetValue("CollectLatency", out var collectLatency))
             {
-                if (Enum.TryParse<bool>(collectLatency, out var toggle))
+                if (bool.TryParse(collectLatency, out var toggle))
                 {
                     _detailedLatency = toggle;
                 }
