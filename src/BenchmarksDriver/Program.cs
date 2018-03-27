@@ -118,7 +118,7 @@ namespace BenchmarksDriver
                 $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
             var traceOutputOption = app.Option("--trace-output",
-                "Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
+                @"Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
