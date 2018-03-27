@@ -24,7 +24,6 @@ namespace BenchmarksWorkers.Workers
         private HttpClientHandler _httpClientHandler;
         private List<HubConnection> _connections;
         private List<IDisposable> _recvCallbacks;
-        private Timer _timer;
         private List<int> _requestsPerConnection;
         private List<List<double>> _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
@@ -109,7 +108,7 @@ namespace BenchmarksWorkers.Workers
                 {
                     case "broadcast":
                         // SendAsync will return as soon as the request has been sent (non-blocking)
-                        await _connections[0].SendAsync("Echo", _job.Duration + 1);
+                        await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
                     case "echo":
                         while (!cts.IsCancellationRequested)
