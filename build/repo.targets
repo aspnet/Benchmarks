@@ -80,9 +80,18 @@
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
-    <CloudScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=messagepack $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
     <CloudScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREcho -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREcho -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREcho -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREcho -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREcho -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
+    <CloudScenarios Include="-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
 
     <CloudScenarios Include="-n Plaintext --webHost IISInProcess $(PlaintextJobs)" />
     <CloudScenarios Include="-n Plaintext --webHost IISOutOfProcess $(PlaintextJobs)" />
@@ -145,6 +154,16 @@
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
     <PhysicalScenarios Include="-n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREcho -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREcho -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREcho -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREcho -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREcho -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=messagepack $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $(SignalRJobs)" />
+    <PhysicalScenarios Include="-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $(SignalRJobs)" />
 
     <PhysicalScenarios Include="-n Plaintext --webHost IISInProcess $(PlaintextJobs)" />
     <PhysicalScenarios Include="-n Plaintext --webHost IISOutOfProcess $(PlaintextJobs)" />
