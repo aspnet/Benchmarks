@@ -118,7 +118,7 @@ namespace BenchmarksDriver
                 $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
             var traceOutputOption = app.Option("--trace-output",
-                "An optional location to download the trace file to, e.g., --trace-output c:\traces", CommandOptionType.SingleValue);
+                "Can be a file prefix (app will add *.DATE.etl.zip) , or a specific name (end in *.etl.zip) and no DATE will be added e.g. --trace-output c:\traces\trace", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
@@ -818,16 +818,13 @@ namespace BenchmarksDriver
                         _clientJob.SkipStartupLatencies = false;
 
                         _clientJob.Duration = duration;
-                    }
-                    else
-                    {
-                        Log("Skipping warmup");
+                        System.Threading.Thread.Sleep(200);  // Make it clear on traces when warmup stops and measuring begins. 
                     }
 
+
+                    Log("Measuring");
                     var startTime = DateTime.UtcNow;
-
                     var spanLoop = 0;
-
                     do
                     {
                         if (span > TimeSpan.Zero)
@@ -927,7 +924,7 @@ namespace BenchmarksDriver
                             // Collect Trace
                             if (serverJob.Collect)
                             {
-                                Log($"Collecting trace, this can take 10s of seconds...");
+                                Log($"Post-processing profiler trace, this can take 10s of seconds...");
                                 var uri = serverJobUri + "/trace";
                                 response = await _httpClient.PostAsync(uri, new StringContent(""));
                                 response.EnsureSuccessStatusCode();
@@ -965,28 +962,18 @@ namespace BenchmarksDriver
                                 }
 
                                 Log($"Downloading trace...");
-
-                                var filename = "trace.etl.zip";
-
-                                if (!String.IsNullOrEmpty(traceDestination))
+                                if (!traceDestination.EndsWith(".etl.zip", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    filename = Path.Combine(traceDestination, filename);
+                                    // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
+                                    if (String.IsNullOrEmpty(traceDestination))
+                                        traceDestination = "trace";
+
+                                    string rpsStr = "RPS=" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
+                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".etl.zip";
                                 }
+                                Log($"Creating trace: {traceDestination}");
+                                await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
 
-                                var counter = 1;
-                                while (File.Exists(filename))
-                                {
-                                    filename = $"trace ({counter++}).etl.zip";
-
-                                    if (!String.IsNullOrEmpty(traceDestination))
-                                    {
-                                        filename = Path.Combine(traceDestination, filename);
-                                    }
-                                }
-
-                                await File.WriteAllBytesAsync(filename, await _httpClient.GetByteArrayAsync(uri));
-
-                                Log($"Trace created at {filename}");
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
