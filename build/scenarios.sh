@@ -139,7 +139,7 @@ jobs=(
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # build driver
-cd $DIR
+cd $DIR/src/BenchmarksDriver
 dotnet publish -c Release -o $DIR/.build/BenchmarksDriver
 
 for s in ${BENCHMARKS_SERVER//,/ }
