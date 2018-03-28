@@ -135,12 +135,19 @@ jobs=(
   "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
 )
 
+# compute current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# build driver
+cd DIR
+dotnet publish -c Release -o $DIR/.build/BenchmarksDriver
+
 for s in ${BENCHMARKS_SERVER//,/ }
 do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet /benchmarks/src/BenchmarksDriver/published/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS
+        dotnet $DIR/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS
         # error code in $?
     done
 done

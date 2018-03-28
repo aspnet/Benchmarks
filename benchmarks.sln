@@ -113,15 +113,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchm
 		docker\benchmarks-driver\run.sh = docker\benchmarks-driver\run.sh
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-scenarios", "benchmarks-scenarios", "{80EFD934-4CFC-4035-8B2A-8071CF36C3CC}"
-	ProjectSection(SolutionItems) = preProject
-		docker\benchmarks-scenarios\build.sh = docker\benchmarks-scenarios\build.sh
-		docker\benchmarks-scenarios\Dockerfile = docker\benchmarks-scenarios\Dockerfile
-		docker\benchmarks-scenarios\run.sh = docker\benchmarks-scenarios\run.sh
-		docker\benchmarks-scenarios\scenarios.sh = docker\benchmarks-scenarios\scenarios.sh
-		docker\benchmarks-scenarios\stop.sh = docker\benchmarks-scenarios\stop.sh
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,7 +214,6 @@ Global
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{80EE0663-7860-4756-8A0E-6A5B6FA5E546} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
-		{80EFD934-4CFC-4035-8B2A-8071CF36C3CC} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
