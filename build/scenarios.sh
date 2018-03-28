@@ -137,17 +137,18 @@ jobs=(
 
 # compute current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$DIR/..
 
 # build driver
-cd $DIR/src/BenchmarksDriver
-dotnet publish -c Release -o $DIR/.build/BenchmarksDriver
+cd $ROOT/src/BenchmarksDriver
+dotnet publish -c Release -o $ROOT/.build/BenchmarksDriver
 
 for s in ${BENCHMARKS_SERVER//,/ }
 do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet $DIR/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS
+        dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS
         # error code in $?
     done
 done
