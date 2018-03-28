@@ -962,7 +962,7 @@ namespace BenchmarksDriver
                                 }
 
                                 Log($"Downloading trace...");
-                                if (!traceDestination.EndsWith(".etl.zip", StringComparison.OrdinalIgnoreCase))
+                                if (traceDestination == null || !traceDestination.EndsWith(".etl.zip", StringComparison.OrdinalIgnoreCase))
                                 {
                                     // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
                                     if (String.IsNullOrEmpty(traceDestination))
