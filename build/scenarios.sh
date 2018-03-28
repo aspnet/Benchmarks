@@ -22,12 +22,16 @@ then
     exit 1
 fi
 
-plaintextJobs="-j /benchmarks/src/Benchmarks/benchmarks.plaintext.json"
-plaintextPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.plaintext.json"
-htmlJobs="-j /benchmarks/src/Benchmarks/benchmarks.html.json"
-jsonJobs="-j /benchmarks/src/Benchmarks/benchmarks.json.json"
-jsonPlatformJobs="-j /benchmarks/src/PlatformBenchmarks/benchmarks.json.json"
-multiQueryJobs="-j /benchmarks/src/Benchmarks/benchmarks.multiquery.json"
+# compute current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT=$DIR/..
+
+plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
+plaintextPlatformJobs="-j $ROOT/src/PlatformBenchmarks/benchmarks.plaintext.json"
+htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
+jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
+jsonPlatformJobs="-j $ROOT/src/PlatformBenchmarks/benchmarks.json.json"
+multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
 
 trend="--description Trend/Latest"
@@ -134,10 +138,6 @@ jobs=(
   "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $trend $signalRJobs"
   "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
 )
-
-# compute current directory
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT=$DIR/..
 
 # build driver
 cd $ROOT/src/BenchmarksDriver
