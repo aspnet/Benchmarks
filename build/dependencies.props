@@ -28,7 +28,7 @@
     <NpgsqlVersion>3.2.7</NpgsqlVersion>
     <MySqlConnectorVersion>0.37.1</MySqlConnectorVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0-preview1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion>2.0.1</PomeloEntityFrameworkCoreMySqlVersion>
   </PropertyGroup>
 </Project>
