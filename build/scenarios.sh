@@ -44,7 +44,7 @@ jobs=(
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
   "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs" 
-  "-n Plaintext --webHost KestrelLibuv $baseline $plaintextJobs$"
+  "-n Plaintext --webHost KestrelLibuv $baseline $plaintextJobs"
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
