@@ -801,6 +801,7 @@ namespace BenchmarksDriver
                             await Task.Delay(1000);
                         }
                     }
+                    System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.  
 
                     TimeSpan latencyNoLoad, latencyFirstRequest;
 
