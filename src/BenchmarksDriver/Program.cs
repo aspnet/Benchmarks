@@ -969,7 +969,7 @@ namespace BenchmarksDriver
                                     if (String.IsNullOrEmpty(traceDestination))
                                         traceDestination = "trace";
 
-                                    string rpsStr = "RPS=" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
+                                    string rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
                                     traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".etl.zip";
                                 }
                                 Log($"Creating trace: {traceDestination}");
