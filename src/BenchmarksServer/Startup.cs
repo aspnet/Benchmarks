@@ -135,7 +135,10 @@ namespace BenchmarkServer
         {
             // Prevent unhandled exceptions in the benchmarked apps from displaying a popup that would block 
             // the main process on Windows
-            SetErrorMode(ErrorModes.SEM_NONE);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                SetErrorMode(ErrorModes.SEM_NONE);
+            }
 
             var app = new CommandLineApplication()
             {
