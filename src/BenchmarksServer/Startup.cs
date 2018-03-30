@@ -1434,31 +1434,11 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Starting &&
                         (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
                     {
-                        MarkAsRunning(hostname, benchmarksRepo, job, perfview, stopwatch, process);
+                        MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
                     }
                 }
             };
 
-            stopwatch.Start();
-            process.Start();
-            process.BeginOutputReadLine();
-
-            if (iis)
-            {
-                await WaitToListen(job, hostname);
-                MarkAsRunning(hostname, benchmarksRepo, job, perfview, stopwatch, process);
-            }
-
-            return process;
-        }
-
-        private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, bool perfview, Stopwatch stopwatch,
-            Process process)
-        {
-            job.StartupMainMethod = stopwatch.Elapsed;
-
-            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-            job.Url = ComputeServerUrl(hostname, job);
 
             // Start perfview?
             if (perfview)
@@ -1488,7 +1468,29 @@ namespace BenchmarkServer
 
                 perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
                 RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
+                Log.WriteLine($"Starting PerfView {perfviewArguments}");
             }
+
+            stopwatch.Start();
+            process.Start();
+            process.BeginOutputReadLine();
+
+            if (iis)
+            {
+                await WaitToListen(job, hostname);
+                MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
+            }
+
+            return process;
+        }
+
+        private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, Stopwatch stopwatch,
+            Process process)
+        {
+            job.StartupMainMethod = stopwatch.Elapsed;
+
+            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+            job.Url = ComputeServerUrl(hostname, job);
 
             // Mark the job as running to allow the Client to start the test
             job.State = ServerState.Running;
