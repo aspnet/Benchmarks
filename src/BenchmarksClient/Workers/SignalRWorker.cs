@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace BenchmarksWorkers.Workers
+namespace BenchmarksClient.Workers
 {
     public class SignalRWorker : IWorker
     {

@@ -52,6 +52,8 @@ Options:
   -t|--table             Table name of the SQL Database to store results
   --no-crossgen          Disables Ready To Run.
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
+  --windows-only         Don't execute the job if the server is not running on Windows
+  --linux-only           Don't execute the job if the server is not running on Linux
 
 Properties of the Wrk client
 

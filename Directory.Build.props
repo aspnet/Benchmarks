@@ -1,9 +1,5 @@
 <Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
-  <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
 
   <PropertyGroup>
@@ -17,9 +13,5 @@
     <!-- Repo contains only test code -->
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-  </ItemGroup>
 
 </Project>

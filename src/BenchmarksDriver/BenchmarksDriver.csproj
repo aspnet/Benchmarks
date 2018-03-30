@@ -9,12 +9,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
-    <ProjectReference Include="..\BenchmarksWorkers\BenchmarksWorkers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.1.1" />
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+    
   </ItemGroup>
 
 </Project>

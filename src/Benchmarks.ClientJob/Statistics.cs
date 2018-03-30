@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BenchmarksWorkers
+namespace Benchmarks.ClientJob
 {
     public class Statistics
     {
