@@ -62,26 +62,28 @@ namespace BenchmarksDriver.Serializers
 
         public async Task WriteJobResultsToSqlAsync(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning)
         {
+            var utcNow = DateTime.UtcNow;
+
             await RetryOnExceptionAsync(5, async () =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond);
             });
 
             await RetryOnExceptionAsync(5, async () =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu);
             });
 
             await RetryOnExceptionAsync(5, async () =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
             });
 
             if (statistics.LatencyAverage != -1)
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage);
                 });
             }
 
@@ -89,7 +91,7 @@ namespace BenchmarksDriver.Serializers
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile);
                 });
             }
 
@@ -97,7 +99,7 @@ namespace BenchmarksDriver.Serializers
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile);
                 });
             }
 
@@ -105,7 +107,7 @@ namespace BenchmarksDriver.Serializers
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile);
                 });
             }
 
@@ -113,12 +115,12 @@ namespace BenchmarksDriver.Serializers
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile);
                 });
             }
         }
 
-        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value)
+        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value)
         {
             string insertCmd =
                 @"
@@ -177,7 +179,7 @@ namespace BenchmarksDriver.Serializers
                 using (var command = new SqlCommand(insertCmd, connection))
                 {
                     var p = command.Parameters;
-                    p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@DateTime", utcNow);
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", serverJob.AspNetCoreVersion);

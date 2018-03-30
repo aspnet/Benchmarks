@@ -33,9 +33,12 @@ namespace BenchmarksDriver.Serializers
             Statistics statistics,
             bool longRunning)
         {
+            var utcNow = DateTime.UtcNow;
+
             await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -49,6 +52,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -63,6 +67,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -75,6 +80,7 @@ namespace BenchmarksDriver.Serializers
             await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -86,6 +92,7 @@ namespace BenchmarksDriver.Serializers
             await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -99,6 +106,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 session: session,
@@ -113,6 +121,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                     serverJob: serverJob,
                     clientJob: clientJob,
+                    utcNow: utcNow,
                     connectionString: sqlConnectionString,
                     tableName: tableName,
                     path: serverJob.Path,
@@ -127,6 +136,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -141,6 +151,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -155,6 +166,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -169,6 +181,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -183,6 +196,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -197,6 +211,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -211,6 +226,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -225,6 +241,7 @@ namespace BenchmarksDriver.Serializers
                 await WriteJobsToSql(
                 serverJob: serverJob,
                 clientJob: clientJob,
+                utcNow: utcNow,
                 connectionString: sqlConnectionString,
                 tableName: tableName,
                 path: serverJob.Path,
@@ -235,36 +252,37 @@ namespace BenchmarksDriver.Serializers
             }
         }
 
-        private Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, string dimension, double value)
+        private Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, string dimension, double value)
         {
             return RetryOnExceptionAsync(5, () =>
                  WriteResultsToSql(
-                        connectionString: connectionString,
-                        tableName: tableName,
-                        scenario: serverJob.Scenario,
-                        session: session,
-                        description: description,
-                        aspnetCoreVersion: serverJob.AspNetCoreVersion,
-                        runtimeVersion: serverJob.RuntimeVersion,
-                        hardware: serverJob.Hardware.Value,
-                        hardwareVersion: serverJob.HardwareVersion,
-                        operatingSystem: serverJob.OperatingSystem.Value,
-                        scheme: serverJob.Scheme,
-                        sources: serverJob.ReferenceSources,
-                        connectionFilter: serverJob.ConnectionFilter,
-                        webHost: serverJob.WebHost,
-                        kestrelThreadCount: serverJob.KestrelThreadCount,
-                        clientThreads: clientJob.Threads,
-                        connections: clientJob.Connections,
-                        duration: clientJob.Duration,
-                        pipelineDepth: clientJob.PipelineDepth,
-                        path: path,
-                        method: clientJob.Method,
-                        headers: clientJob.Headers,
-                        dimension: dimension,
-                        value: value,
-                        runtimeStore: serverJob.UseRuntimeStore)
-            , 5000);
+                    utcNow,
+                    connectionString: connectionString,
+                    tableName: tableName,
+                    scenario: serverJob.Scenario,
+                    session: session,
+                    description: description,
+                    aspnetCoreVersion: serverJob.AspNetCoreVersion,
+                    runtimeVersion: serverJob.RuntimeVersion,
+                    hardware: serverJob.Hardware.Value,
+                    hardwareVersion: serverJob.HardwareVersion,
+                    operatingSystem: serverJob.OperatingSystem.Value,
+                    scheme: serverJob.Scheme,
+                    sources: serverJob.ReferenceSources,
+                    connectionFilter: serverJob.ConnectionFilter,
+                    webHost: serverJob.WebHost,
+                    kestrelThreadCount: serverJob.KestrelThreadCount,
+                    clientThreads: clientJob.Threads,
+                    connections: clientJob.Connections,
+                    duration: clientJob.Duration,
+                    pipelineDepth: clientJob.PipelineDepth,
+                    path: path,
+                    method: clientJob.Method,
+                    headers: clientJob.Headers,
+                    dimension: dimension,
+                    value: value,
+                    runtimeStore: serverJob.UseRuntimeStore)
+                , 5000);
         }
 
         public async Task InitializeDatabaseAsync(string connectionString, string tableName)
@@ -317,6 +335,7 @@ namespace BenchmarksDriver.Serializers
         }
 
         private async Task WriteResultsToSql(
+            DateTime utcNow,
             string connectionString,
             string tableName,
             string session,
@@ -407,7 +426,7 @@ namespace BenchmarksDriver.Serializers
                 using (var command = new SqlCommand(insertCmd, connection))
                 {
                     var p = command.Parameters;
-                    p.AddWithValue("@DateTime", DateTimeOffset.UtcNow);
+                    p.AddWithValue("@DateTime", utcNow);
                     p.AddWithValue("@Session", session);
                     p.AddWithValue("@Description", description);
                     p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
