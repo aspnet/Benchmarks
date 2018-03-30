@@ -1278,7 +1278,7 @@ namespace BenchmarksDriver
 
                         if (!String.IsNullOrWhiteSpace(clientJob.Error))
                         {
-                            LogVerbose($"Error: {clientJob.Error}");
+                            Log($"Error: {clientJob.Error}");
                         }
 
                         break;
