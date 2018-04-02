@@ -34,6 +34,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419-FB9D-4A20-AD4B-C02C13636BA8}"
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
+		build\scenarios.sh = build\scenarios.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B27-3CBA-4581-893A-7F6DB5527371}"
