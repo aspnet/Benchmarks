@@ -64,9 +64,11 @@ jobs=(
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
   "-n Plaintext -m https --webHost KestrelLibuv $trend $plaintextJobs"
+  "-n Plaintext -m https --webHost KestrelLibuv $baseline $plaintextJobs"
   "-n Plaintext -m https --webHost HttpSys $trend $plaintextJobs --windows-only"
   "-n Json -m https --webHost KestrelSockets $trend $jsonJobs"
   "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
+  "-n Json -m https --webHost KestrelLibuv $baseline $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
 
   # Caching
