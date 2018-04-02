@@ -83,22 +83,31 @@ namespace Benchmarks.Middleware
             await WriteLineAsync("");
 
             await WriteLineAsync($"Loaded assemblies:");
-            
+
+            bool hasAttribute = false;
+
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                await WriteLineAsync(assembly.GetName().ToString());
+                await WriteAsync(assembly.GetName().ToString());
                 await WriteLineAsync(assembly.GetName().Version.ToString());
 
                 var informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 
                 if (informationalVersionAttribute != null)
                 {
-                    await WriteLineAsync(informationalVersionAttribute.InformationalVersion);
+                    await WriteAsync(informationalVersionAttribute.InformationalVersion + ";");
+                    hasAttribute = true;
                 }
 
                 foreach(var metadataAttribute in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
                 {
-                    await WriteLineAsync($"{metadataAttribute.Key}: {metadataAttribute.Value}");
+                    await WriteAsync($"{metadataAttribute.Key}: {metadataAttribute.Value};");
+                    hasAttribute = true;
+                }
+
+                if (hasAttribute)
+                {
+                    await WriteLineAsync("");
                 }
             }
 
@@ -106,6 +115,11 @@ namespace Benchmarks.Middleware
             {
                 await httpContext.Response.WriteAsync(text);
                 await httpContext.Response.WriteAsync(Environment.NewLine);
+            }
+
+            Task WriteAsync(string text)
+            {
+                return httpContext.Response.WriteAsync(text);
             }
         }
     }
