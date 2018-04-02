@@ -60,8 +60,10 @@ namespace BenchmarksClient.Workers
                 jobLogText += $" TransportType:{transportType}";
             }
 
-            jobLogText += "]";
-            JobLogText = jobLogText;
+            if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocol))
+            {
+                jobLogText += $" HubProtocol:{protocol}";
+            }
 
             if (_job.ClientProperties.TryGetValue("CollectLatency", out var collectLatency))
             {
@@ -74,11 +76,15 @@ namespace BenchmarksClient.Workers
             if (_job.ClientProperties.TryGetValue("Scenario", out var scenario))
             {
                 _scenario = scenario;
+                jobLogText += $" Scenario:{scenario}";
             }
             else
             {
                 throw new Exception("Scenario wasn't specified");
             }
+
+            jobLogText += "]";
+            JobLogText = jobLogText;
 
             CreateConnections(transportType);
         }
@@ -134,7 +140,9 @@ namespace BenchmarksClient.Workers
             }
             catch (Exception ex)
             {
-                Log("Exception from test: " + ex.Message);
+                var text = "Exception from test: " + ex.Message;
+                Log(text);
+                _job.Error += Environment.NewLine + text;
             }
 
             cts.Token.WaitHandle.WaitOne();
@@ -280,7 +288,7 @@ namespace BenchmarksClient.Workers
                     if (!_stopped)
                     {
                         var error = $"Connection closed early: {e}";
-                        _job.Error += error;
+                        _job.Error += Environment.NewLine + error;
                         Log(error);
                     }
                 };
@@ -311,9 +319,16 @@ namespace BenchmarksClient.Workers
             Log($"Least Requests per Connection: {min}");
             Log($"Most Requests per Connection: {max}");
 
+            if (_workTimer.ElapsedMilliseconds <= 0)
+            {
+                Log("Job failed to run");
+                return;
+            }
+
             var rps = (double)totalRequests / _workTimer.ElapsedMilliseconds * 1000;
             Log($"Total RPS: {rps}");
             _job.RequestsPerSecond = rps;
+            _job.Requests = totalRequests;
 
             // Latency
             CalculateLatency();
