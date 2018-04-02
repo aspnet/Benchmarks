@@ -47,6 +47,7 @@ jobs=(
   "-n Plaintext --webHost KestrelLibuv $baseline $plaintextJobs"
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
+  "-n MvcPlaintext --webHost KestrelLibuv $baseline $plaintextJobs"
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
   "-n Plaintext --webHost KestrelSockets -f Benchmarks.PassthroughConnectionFilter $trend $plaintextJobs" 
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs" 
@@ -59,6 +60,7 @@ jobs=(
   "-n Jil --webHost KestrelSockets $trend $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $trend $jsonJobs" 
   "-n MvcJson --webHost KestrelLibuv $trend $jsonJobs" 
+  "-n MvcJson --webHost KestrelLibuv $baseline $jsonJobs"
   "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
 
   # Https
