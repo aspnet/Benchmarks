@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
