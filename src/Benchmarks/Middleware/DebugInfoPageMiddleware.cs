@@ -43,11 +43,10 @@ namespace Benchmarks.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            httpContext.Response.ContentType = "text/plain";
-
             // If the diagnostics were explicitly requested we return 200 OK
-            if (httpContext.Request.Path == "/diagnostics")
+            if (httpContext.Request.Path.StartsWithSegments("/diagnostics", StringComparison.Ordinal))
             {
+                httpContext.Response.ContentType = "text/plain";
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
                 await WriteLineAsync("ASP.NET Core Benchmarks");
@@ -126,7 +125,6 @@ namespace Benchmarks.Middleware
             }
 
             await _next(httpContext);
-
         }
     }
 
