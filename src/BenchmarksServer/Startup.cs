@@ -32,6 +32,8 @@ namespace BenchmarkServer
 {
     public class Startup
     {
+        private const string CurrentAspNetCoreVersion = "2.0.6";
+
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallRepoUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/";
@@ -860,7 +862,7 @@ namespace BenchmarkServer
             {
                 case "current":
                     aspNetCoreVersion = "2.0.*";
-                    actualAspNetCoreVersion = aspNetCoreVersion;
+                    actualAspNetCoreVersion = CurrentAspNetCoreVersion;
                     break;
                 case "latest":
                     aspNetCoreVersion = "2.1-*";
@@ -904,14 +906,14 @@ namespace BenchmarkServer
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
 
-                if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
+                if (!_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install aspnet runtime required for this scenario
-                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath",
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                    _installedAspNetRuntimes.Add(aspNetCoreVersion);
+                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
                 }
             }
             else
@@ -944,14 +946,14 @@ namespace BenchmarkServer
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
 
-                if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
+                if (!_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install runtime required by coherence universe
-                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path",
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
-                    _installedAspNetRuntimes.Add(aspNetCoreVersion);
+                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
                 }
             }
 
