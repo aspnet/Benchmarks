@@ -11,6 +11,11 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
+
+// REVIEW: I copied this from https://github.com/aspnet/SignalR/commit/e7b84b753bf11739cbb2ef10fc0708b375ec816d#diff-6244ded017b0b3eff9bf3dbf575a9a72R55,
+// but the internal namespace is making me think this is wrong.
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -53,10 +58,10 @@ namespace BenchmarksClient.Workers
                 jobLogText += $" Headers:{JsonConvert.SerializeObject(_job.Headers)}";
             }
 
-            TransportType transportType = default;
+            HttpTransportType transportType = default;
             if (_job.ClientProperties.TryGetValue("TransportType", out var transport))
             {
-                transportType = Enum.Parse<TransportType>(transport);
+                transportType = Enum.Parse<HttpTransportType>(transport);
                 jobLogText += $" TransportType:{transportType}";
             }
 
@@ -206,7 +211,7 @@ namespace BenchmarksClient.Workers
             _httpClientHandler.Dispose();
         }
 
-        private void CreateConnections(TransportType transportType = TransportType.WebSockets)
+        private void CreateConnections(HttpTransportType transportType = HttpTransportType.WebSockets)
         {
             _connections = new List<HubConnection>(_job.Connections);
             _requestsPerConnection = new List<int>(_job.Connections);
@@ -214,9 +219,17 @@ namespace BenchmarksClient.Workers
             _latencyAverage = new List<(double sum, int count)>(_job.Connections);
 
             var hubConnectionBuilder = new HubConnectionBuilder()
-                .WithUrl(_job.ServerBenchmarkUri)
-                .WithMessageHandler(x => _httpClientHandler)
-                .WithTransport(transportType);
+                .WithUrl(_job.ServerBenchmarkUri, httpConnectionOptions =>
+                {
+                    httpConnectionOptions.MessageHandlerFactory = _ => _httpClientHandler;
+                    httpConnectionOptions.Transport = transportType;
+
+                    // REVIEW: Is there a CopyTo overload or something that turns this into a one liner?
+                    foreach (var pair in _job.Headers)
+                    {
+                        httpConnectionOptions.Headers.Add(pair.Key, pair.Value);
+                    }
+                });
 
             if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
             {
@@ -231,10 +244,10 @@ namespace BenchmarksClient.Workers
                 switch (protocolName)
                 {
                     case "messagepack":
-                        hubConnectionBuilder.WithMessagePackProtocol();
+                        hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
                         break;
                     case "json":
-                        hubConnectionBuilder.WithJsonProtocol();
+                        hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
                         break;
                     default:
                         throw new Exception($"{protocolName} is an invalid hub protocol name.");
@@ -242,12 +255,7 @@ namespace BenchmarksClient.Workers
             }
             else
             {
-                hubConnectionBuilder.WithJsonProtocol();
-            }
-
-            foreach (var header in _job.Headers)
-            {
-                hubConnectionBuilder.WithHeader(header.Key, header.Value);
+                hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
             }
 
             _recvCallbacks = new List<IDisposable>(_job.Connections);
