@@ -53,10 +53,10 @@ namespace BenchmarksClient.Workers
                 jobLogText += $" Headers:{JsonConvert.SerializeObject(_job.Headers)}";
             }
 
-            TransportType transportType = default;
+            HttpTransportType transportType = default;
             if (_job.ClientProperties.TryGetValue("TransportType", out var transport))
             {
-                transportType = Enum.Parse<TransportType>(transport);
+                transportType = Enum.Parse<HttpTransportType>(transport);
                 jobLogText += $" TransportType:{transportType}";
             }
 
@@ -206,7 +206,7 @@ namespace BenchmarksClient.Workers
             _httpClientHandler.Dispose();
         }
 
-        private void CreateConnections(TransportType transportType = TransportType.WebSockets)
+        private void CreateConnections(HttpTransportType transportType = HttpTransportType.WebSockets)
         {
             _connections = new List<HubConnection>(_job.Connections);
             _requestsPerConnection = new List<int>(_job.Connections);
