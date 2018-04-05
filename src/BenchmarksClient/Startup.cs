@@ -8,10 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using BenchmarksClient.Workers;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
 
@@ -50,7 +50,8 @@ namespace BenchmarkClient
             {
                 Name = "BenchmarksClient",
                 FullName = "ASP.NET Benchmark Client",
-                Description = "REST APIs to run ASP.NET benchmark client"
+                Description = "REST APIs to run ASP.NET benchmark client",
+                OptionsComparison = StringComparison.OrdinalIgnoreCase
             };
 
             app.HelpOption("-?|-h|--help");

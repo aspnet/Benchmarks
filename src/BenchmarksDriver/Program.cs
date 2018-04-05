@@ -38,7 +38,8 @@ namespace BenchmarksDriver
                 Name = "BenchmarksDriver",
                 FullName = "ASP.NET Benchmark Driver",
                 Description = "Driver for ASP.NET Benchmarks",
-                ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
+                ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated,
+                OptionsComparison = StringComparison.OrdinalIgnoreCase
             };
 
             app.HelpOption("-?|-h|--help");

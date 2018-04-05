@@ -18,10 +18,10 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Benchmarks.ServerJob;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -41,9 +41,10 @@ namespace BenchmarkServer
         private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
-        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.2/PerfView.exe";
+        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.7/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
+        private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedSdks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -144,7 +145,8 @@ namespace BenchmarkServer
             {
                 Name = "BenchmarksServer",
                 FullName = "ASP.NET Benchmark Server",
-                Description = "REST APIs to run ASP.NET benchmark server"
+                Description = "REST APIs to run ASP.NET benchmark server",
+                OptionsComparison = StringComparison.OrdinalIgnoreCase
             };
 
             app.HelpOption("-?|-h|--help");
@@ -901,6 +903,16 @@ namespace BenchmarkServer
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
+
+                if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
+                {
+                    // Install aspnet runtime required for this scenario
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeFrameworkVersion} -Runtime aspnetcore -NoPath",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                    _installedAspNetRuntimes.Add(aspNetCoreVersion);
+                }
             }
             else
             {
@@ -931,6 +943,16 @@ namespace BenchmarkServer
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
+
+                if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
+                {
+                    // Install runtime required by coherence universe
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeFrameworkVersion} --runtime aspnetcore --no-path",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                    _installedAspNetRuntimes.Add(aspNetCoreVersion);
+                }
             }
 
             var dotnetDir = dotnetHome;
@@ -960,6 +982,19 @@ namespace BenchmarkServer
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
+
+            if (targetFramework == "netcoreapp2.0")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeFrameworkVersion} ";
+            }
+            else if (targetFramework == "netcoreapp2.1")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported framework: {targetFramework}");
+            }
 
             if (job.UseRuntimeStore)
             {
