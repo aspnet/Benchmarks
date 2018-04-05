@@ -907,7 +907,7 @@ namespace BenchmarkServer
                 if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                 {
                     // Install aspnet runtime required for this scenario
-                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeFrameworkVersion} -Runtime aspnetcore -NoPath",
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
@@ -947,7 +947,7 @@ namespace BenchmarkServer
                 if (!_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                 {
                     // Install runtime required by coherence universe
-                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeFrameworkVersion} --runtime aspnetcore --no-path",
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path",
                     workingDirectory: buildToolsPath,
                     environmentVariables: env);
 
