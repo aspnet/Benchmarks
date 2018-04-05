@@ -560,6 +560,8 @@ namespace BenchmarkServer
 
                                 } while (process != null && !process.HasExited);
 
+                                Log.WriteLine($"Process has stopped");
+
                                 process = null;
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))

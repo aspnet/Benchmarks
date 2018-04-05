@@ -332,6 +332,7 @@ namespace BenchmarksDriver
 
                 // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
+                serverJob.WebHost = webHost;
 
                 if (databaseOption.HasValue())
                 {
@@ -352,10 +353,6 @@ namespace BenchmarksDriver
                 if (useRuntimeStoreOption.HasValue())
                 {
                     serverJob.UseRuntimeStore = true;
-                }
-                if (webHostOption.HasValue())
-                {
-                    serverJob.WebHost = webHost;
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {
@@ -1185,7 +1182,7 @@ namespace BenchmarksDriver
                         response = await _httpClient.DeleteAsync(serverJobUri);
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
 
-                        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        if (response.StatusCode == HttpStatusCode.NotFound)
                         {
                             Log($@"Server job was not found, it must have been aborted. Possible cause:
                             - Issue while cloning the repository (GitHub unresponsive)
