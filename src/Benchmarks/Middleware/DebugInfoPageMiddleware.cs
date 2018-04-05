@@ -43,84 +43,90 @@ namespace Benchmarks.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            httpContext.Response.ContentType = "text/html";
+            httpContext.Response.ContentType = "text/plain";
 
             // If the diagnostics were explicitly requested we return 200 OK
-            httpContext.Response.StatusCode = httpContext.Request.Path == "/diagnostics"
-                ? StatusCodes.Status200OK
-                : StatusCodes.Status404NotFound;
-
-            await WriteLineAsync("ASP.NET Core Benchmarks");
-            await WriteLineAsync("Configuration Information");
-            await WriteLineAsync($"Environment: {_hostingEnv.EnvironmentName}");
-            await WriteLineAsync($"Framework: {_targetFrameworkName}");
-            await WriteLineAsync($"Server GC enabled: {GCSettings.IsServerGC}");
-            await WriteLineAsync($"Configuration: {_configurationName}");
-            await WriteLineAsync($"Server: {Program.Server}");
-            await WriteLineAsync($"Server URLs: {string.Join(", ", _serverAddresses.Addresses)}");
-            await WriteLineAsync($"Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}");
-            await WriteLineAsync("");
-
-            await WriteLineAsync($"Environment variables:");
-            foreach (DictionaryEntry ev in Environment.GetEnvironmentVariables())
+            if (httpContext.Request.Path == "/diagnostics")
             {
-                await WriteLineAsync($"{ev.Key}={ev.Value}");
-            }
-            await WriteLineAsync("");
+                httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-            await WriteLineAsync($"Server features:");
-            foreach (var feature in httpContext.Features)
-            {
-                await WriteLineAsync(feature.Key.Name);
-            }
-            await WriteLineAsync("");
+                await WriteLineAsync("ASP.NET Core Benchmarks");
+                await WriteLineAsync("Configuration Information");
+                await WriteLineAsync($"Environment: {_hostingEnv.EnvironmentName}");
+                await WriteLineAsync($"Framework: {_targetFrameworkName}");
+                await WriteLineAsync($"Server GC enabled: {GCSettings.IsServerGC}");
+                await WriteLineAsync($"Configuration: {_configurationName}");
+                await WriteLineAsync($"Server: {Program.Server}");
+                await WriteLineAsync($"Server URLs: {string.Join(", ", _serverAddresses.Addresses)}");
+                await WriteLineAsync($"Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}");
+                await WriteLineAsync("");
 
-            await WriteLineAsync($"Enabled scenarios:");
-            foreach (var scenario in _scenarios.GetEnabled())
-            {
-                await WriteLineAsync($"{scenario.Name}");
-            }
-            await WriteLineAsync("");
-
-            await WriteLineAsync($"Loaded assemblies:");
-
-            bool hasAttribute = false;
-
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                await WriteAsync(assembly.GetName().ToString());
-                await WriteLineAsync(assembly.GetName().Version.ToString());
-
-                var informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-                
-                if (informationalVersionAttribute != null)
+                await WriteLineAsync($"Environment variables:");
+                foreach (DictionaryEntry ev in Environment.GetEnvironmentVariables())
                 {
-                    await WriteAsync(informationalVersionAttribute.InformationalVersion + ";");
-                    hasAttribute = true;
+                    await WriteLineAsync($"{ev.Key}={ev.Value}");
+                }
+                await WriteLineAsync("");
+
+                await WriteLineAsync($"Server features:");
+                foreach (var feature in httpContext.Features)
+                {
+                    await WriteLineAsync(feature.Key.Name);
+                }
+                await WriteLineAsync("");
+
+                await WriteLineAsync($"Enabled scenarios:");
+                foreach (var scenario in _scenarios.GetEnabled())
+                {
+                    await WriteLineAsync($"{scenario.Name}");
+                }
+                await WriteLineAsync("");
+
+                await WriteLineAsync($"Loaded assemblies:");
+
+                var hasAttribute = false;
+
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    await WriteAsync(assembly.GetName().ToString());
+                    await WriteLineAsync(assembly.GetName().Version.ToString());
+
+                    var informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+                    if (informationalVersionAttribute != null)
+                    {
+                        await WriteAsync(informationalVersionAttribute.InformationalVersion + ";");
+                        hasAttribute = true;
+                    }
+
+                    foreach (var metadataAttribute in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+                    {
+                        await WriteAsync($"{metadataAttribute.Key}: {metadataAttribute.Value};");
+                        hasAttribute = true;
+                    }
+
+                    if (hasAttribute)
+                    {
+                        await WriteLineAsync("");
+                    }
                 }
 
-                foreach(var metadataAttribute in assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+                return;
+
+                async Task WriteLineAsync(string text)
                 {
-                    await WriteAsync($"{metadataAttribute.Key}: {metadataAttribute.Value};");
-                    hasAttribute = true;
+                    await httpContext.Response.WriteAsync(text);
+                    await httpContext.Response.WriteAsync(Environment.NewLine);
                 }
 
-                if (hasAttribute)
+                Task WriteAsync(string text)
                 {
-                    await WriteLineAsync("");
+                    return httpContext.Response.WriteAsync(text);
                 }
             }
 
-            async Task WriteLineAsync(string text)
-            {
-                await httpContext.Response.WriteAsync(text);
-                await httpContext.Response.WriteAsync(Environment.NewLine);
-            }
+            await _next(httpContext);
 
-            Task WriteAsync(string text)
-            {
-                return httpContext.Response.WriteAsync(text);
-            }
         }
     }
 
