@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <AspNetCoreVersion>2.0.6</AspNetCoreVersion>
+    <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
