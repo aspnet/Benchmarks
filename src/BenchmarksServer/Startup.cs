@@ -1010,45 +1010,36 @@ namespace BenchmarkServer
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
             }
 
-            if (job.UseRuntimeStore)
+            var outputFolder = Path.Combine(benchmarkedApp, "published");
+
+            var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
+            var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
+                workingDirectory: benchmarkedApp,
+                environmentVariables: env,
+                throwOnError: false);
+
+            if (buildResults.ExitCode != 0)
             {
-                ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}",
-                    workingDirectory: benchmarkedApp,
-                    environmentVariables: env);
+                job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
+                    buildResults.StandardOutput + "\n" +
+                    buildResults.StandardError;
+
+                return (null, null);
             }
-            else
+
+            // Copy all output attachments
+            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
             {
-                var outputFolder = Path.Combine(benchmarkedApp, "published");
+                var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
 
-                var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
-                var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
-                    workingDirectory: benchmarkedApp,
-                    environmentVariables: env,
-                    throwOnError: false);
+                Log.WriteLine($"Creating output file: {filename}");
 
-                if (buildResults.ExitCode != 0)
+                if (File.Exists(filename))
                 {
-                    job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
-                        buildResults.StandardOutput + "\n" +
-                        buildResults.StandardError;
-
-                    return (null, null);
+                    File.Delete(filename);
                 }
 
-                // Copy all output attachments
-                foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
-                {
-                    var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
-
-                    Log.WriteLine($"Creating output file: {filename}");
-
-                    if (File.Exists(filename))
-                    {
-                        File.Delete(filename);
-                    }
-
-                    File.Copy(attachment.TempFilename, filename);
-                }
+                File.Copy(attachment.TempFilename, filename);
             }
 
             // Copy all runtime attachments in all runtime folders
@@ -1382,8 +1373,7 @@ namespace BenchmarkServer
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
-            var benchmarksBin = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0" : $"published";
-            var benchmarksDll = Path.Combine(benchmarksBin, $"{projectFilename}.dll");
+            var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
             var arguments = $"{benchmarksDll}" +
@@ -1424,7 +1414,7 @@ namespace BenchmarkServer
             {
                 Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
 
-                var apphost = GenerateApplicationHostConfig(job, benchmarksBin, executable, arguments, hostname);
+                var apphost = GenerateApplicationHostConfig(job, "published", executable, arguments, hostname);
                 arguments = $"-h \"{apphost}\"";
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
