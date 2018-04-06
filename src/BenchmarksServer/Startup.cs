@@ -1295,7 +1295,7 @@ namespace BenchmarkServer
                 else
                 {
                     executable = "/bin/bash";
-                    arguments = $"-c \"sudo {projectFilename}";
+                    arguments = "projectFilename";
                 }
                 
                 workingDirectory = Path.Combine(workingDirectory, "published");
@@ -1348,6 +1348,11 @@ namespace BenchmarkServer
             }
 
             Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                arguments = $"-c \"sudo {arguments}\"";
+            }
 
             var process = new Process()
             {
