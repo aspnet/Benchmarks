@@ -992,10 +992,18 @@ namespace BenchmarkServer
             if (targetFramework == "netcoreapp2.0")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeFrameworkVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false";
+                }
             }
             else if (targetFramework == "netcoreapp2.1")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App";
+                }
             }
             else
             {

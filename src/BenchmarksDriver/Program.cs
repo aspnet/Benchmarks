@@ -108,8 +108,8 @@ namespace BenchmarksDriver
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
-            var useRuntimeStoreOption = app.Option("--useRuntimeStore",
-                "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
+            var useRuntimeStoreOption = app.Option("--runtime-store",
+                "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +

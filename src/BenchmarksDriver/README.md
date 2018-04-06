@@ -29,7 +29,7 @@ Options:
   --port                 The port used to request the benchmarked application. Default is 5000.
   -r|--repository        Git repository containing the project to test.
   --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
-  --useRuntimeStore      Runs the benchmarks using the runtime store if available.
+  --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
   --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
