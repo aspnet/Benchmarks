@@ -1347,12 +1347,22 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
-
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // Add executable attribute on the generated file
+                new Process()
+                {
+                    StartInfo = {
+                        FileName = "/bin/bash",
+                        Arguments = $"-c \"sudo chmod +x {projectFilename}\"",
+                        WorkingDirectory = workingDirectory,
+                    }
+                };
+
                 arguments = $"-c \"{arguments}\"";
             }
+
+            Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
 
             var process = new Process()
             {
