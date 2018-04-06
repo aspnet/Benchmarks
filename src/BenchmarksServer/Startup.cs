@@ -1294,8 +1294,8 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    executable = "/bin/bash";
-                    arguments = projectFilename;
+                    executable = "/usr/bin/env";
+                    arguments = $"bash {projectFilename}";
                 }
                 
                 workingDirectory = Path.Combine(workingDirectory, "published");
@@ -1345,21 +1345,6 @@ namespace BenchmarkServer
             else
             {
                 arguments += $" --server.urls {serverUrl}";
-            }
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Add executable attribute on the generated file
-                new Process()
-                {
-                    StartInfo = {
-                        FileName = "/bin/bash",
-                        Arguments = $"-c \"sudo chmod +x {projectFilename}\"",
-                        WorkingDirectory = workingDirectory,
-                    }
-                }.Start().WaitForExit();
-
-                arguments = $"-c \"{arguments}\"";
             }
 
             Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
