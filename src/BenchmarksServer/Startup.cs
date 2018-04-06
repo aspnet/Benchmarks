@@ -1294,8 +1294,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    executable = "/usr/bin/env";
-                    arguments = $"bash {projectFilename}";
+                    executable = "projectFilename";
                 }
                 
                 workingDirectory = Path.Combine(workingDirectory, "published");
@@ -1345,6 +1344,11 @@ namespace BenchmarkServer
             else
             {
                 arguments += $" --server.urls {serverUrl}";
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ProcessUtil.Run("chmod", $"+x {projectFilename}", useShellExecute: true);
             }
 
             Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
