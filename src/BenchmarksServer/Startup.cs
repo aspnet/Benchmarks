@@ -1348,7 +1348,7 @@ namespace BenchmarkServer
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ProcessUtil.Run("chmod", $"+x {projectFilename}", useShellExecute: true);
+                ProcessUtil.Run("/usr/bin/env", $"bash chmod +x {projectFilename}", workingDirectory: workingDirectory);
             }
 
             Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
