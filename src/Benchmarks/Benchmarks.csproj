@@ -4,7 +4,6 @@
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
-    <RuntimeFrameworkVersion>$(BenchmarksRuntimeFrameworkVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
