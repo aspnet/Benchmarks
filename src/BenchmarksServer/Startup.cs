@@ -1006,6 +1006,15 @@ namespace BenchmarkServer
             if (job.SelfContained)
             {
                 buildParameters += $"--self-contained ";
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    buildParameters += "-r win-x64 ";
+                }
+                else
+                {
+                    buildParameters += "-r linux-x64 ";
+                }
             }
 
             var outputFolder = Path.Combine(benchmarkedApp, "published");
