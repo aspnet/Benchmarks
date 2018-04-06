@@ -987,7 +987,7 @@ namespace BenchmarkServer
                 buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeFrameworkVersion} ";
                 if (!job.UseRuntimeStore)
                 {
-                    buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false";
+                    buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false ";
                 }
             }
             else if (targetFramework == "netcoreapp2.1")
@@ -995,7 +995,7 @@ namespace BenchmarkServer
                 buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
                 if (!job.UseRuntimeStore)
                 {
-                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App";
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
                 }
             }
             else
