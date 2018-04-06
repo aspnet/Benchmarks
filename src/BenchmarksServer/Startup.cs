@@ -1351,7 +1351,7 @@ namespace BenchmarkServer
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                arguments = $"-c \"sudo {arguments}\"";
+                arguments = $"-c \"{arguments}\"";
             }
 
             var process = new Process()
