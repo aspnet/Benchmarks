@@ -1357,7 +1357,7 @@ namespace BenchmarkServer
                         Arguments = $"-c \"sudo chmod +x {projectFilename}\"",
                         WorkingDirectory = workingDirectory,
                     }
-                };
+                }.Start().WaitForExit();
 
                 arguments = $"-c \"{arguments}\"";
             }
