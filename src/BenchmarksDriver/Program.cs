@@ -106,6 +106,8 @@ namespace BenchmarksDriver
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
+            var selfContainedOption = app.Option("--self-contained",
+                "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -351,6 +353,10 @@ namespace BenchmarksDriver
                 if (useRuntimeStoreOption.HasValue())
                 {
                     serverJob.UseRuntimeStore = true;
+                }
+                if (selfContainedOption.HasValue())
+                {
+                    serverJob.SelfContained = true;
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {

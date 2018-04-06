@@ -1003,6 +1003,11 @@ namespace BenchmarkServer
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
             }
 
+            if (job.SelfContained)
+            {
+                buildParameters += $"--self-contained ";
+            }
+
             var outputFolder = Path.Combine(benchmarkedApp, "published");
 
             var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
@@ -1271,8 +1276,15 @@ namespace BenchmarkServer
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
-            var arguments = $"{benchmarksDll}" +
-                    $" {job.Arguments} " +
+            var arguments = benchmarksDll;
+
+            if (job.SelfContained)
+            {
+                arguments = "";
+                executable = Path.Combine("published", $"{projectFilename}.exe");
+            }
+
+            arguments += $" {job.Arguments}" +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
 
