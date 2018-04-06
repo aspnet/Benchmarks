@@ -1289,7 +1289,9 @@ namespace BenchmarkServer
             if (job.SelfContained)
             {
                 arguments = "";
-                executable = $"{projectFilename}.exe";
+                executable = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? $"{projectFilename}.exe"
+                    : projectFilename;
                 workingDirectory = Path.Combine(workingDirectory, "published");
             }
 
