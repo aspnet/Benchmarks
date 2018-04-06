@@ -1288,10 +1288,16 @@ namespace BenchmarkServer
 
             if (job.SelfContained)
             {
-                arguments = "";
-                executable = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    ? $"{projectFilename}.exe"
-                    : projectFilename;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    executable = $"{projectFilename}.exe";
+                }
+                else
+                {
+                    executable = "/bin/bash";
+                    arguments = $"-c \"sudo {projectFilename}";
+                }
+                
                 workingDirectory = Path.Combine(workingDirectory, "published");
             }
 
