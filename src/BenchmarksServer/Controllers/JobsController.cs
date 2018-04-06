@@ -75,8 +75,7 @@ namespace BenchmarkServer.Controllers
         {
             lock (_jobs)
             {
-                if (job == null || job.Id != 0 || job.State != ServerState.Initializing ||
-                job.ReferenceSources.Any(source => string.IsNullOrEmpty(source.Repository)))
+                if (job == null || job.Id != 0 || job.State != ServerState.Initializing)
                 {
                     return BadRequest();
                 }

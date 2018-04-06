@@ -88,10 +88,6 @@ namespace BenchmarksDriver
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
             var schemeOption = app.Option("-m|--scheme",
                 "Scheme (http or https).  Default is http.", CommandOptionType.SingleValue);
-            var sourceOption = app.Option("-o|--source",
-                "Source dependency. Format is 'repo@branchOrCommit'. " +
-                "Repo can be a full URL, or a short name under https://github.com/aspnet.",
-                CommandOptionType.MultipleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
@@ -473,20 +469,6 @@ namespace BenchmarksDriver
                             return 8;
                         }
                     }
-                }
-
-                foreach (var source in sourceOption.Values)
-                {
-                    var split = source.IndexOf('@');
-                    var repository = (split == -1) ? source : source.Substring(0, split);
-                    var branch = (split == -1) ? null : source.Substring(split + 1);
-
-                    if (!repository.Contains(":"))
-                    {
-                        repository = $"https://github.com/aspnet/{repository}.git";
-                    }
-
-                    serverJob.ReferenceSources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                 }
 
                 // Building ClientJob

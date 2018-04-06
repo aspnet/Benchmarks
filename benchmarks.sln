@@ -105,8 +105,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mongodb-techempower", "mong
 		docker\mongodb-techempower\stop.sh = docker\mongodb-techempower\stop.sh
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "src\PlatformBenchmarks\PlatformBenchmarks.csproj", "{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchmarks-driver", "{80EE0663-7860-4756-8A0E-6A5B6FA5E546}"
 	ProjectSection(SolutionItems) = preProject
 		docker\benchmarks-driver\build.cmd = docker\benchmarks-driver\build.cmd
@@ -188,14 +186,6 @@ Global
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|Any CPU.Build.0 = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.ActiveCfg = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.Build.0 = Release|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Debug|x86.Build.0 = Debug|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Release|x86.ActiveCfg = Release|Any CPU
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -215,7 +205,6 @@ Global
 		{17D18F38-2030-46BE-8C5A-48607A6E69AA} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{FA7BA2F5-47DA-418F-B29F-458714F44C89} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
-		{796DE0EB-A16B-47FC-B6C7-CBCDF5607E2F} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{80EE0663-7860-4756-8A0E-6A5B6FA5E546} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

@@ -268,7 +268,7 @@ namespace BenchmarksDriver.Serializers
                     hardwareVersion: serverJob.HardwareVersion,
                     operatingSystem: serverJob.OperatingSystem.Value,
                     scheme: serverJob.Scheme,
-                    sources: serverJob.ReferenceSources,
+                    source: serverJob.Source,
                     connectionFilter: serverJob.ConnectionFilter,
                     webHost: serverJob.WebHost,
                     kestrelThreadCount: serverJob.KestrelThreadCount,
@@ -347,7 +347,7 @@ namespace BenchmarksDriver.Serializers
             string hardwareVersion,
             Benchmarks.ServerJob.OperatingSystem operatingSystem,
             Scheme scheme,
-            IEnumerable<Source> sources,
+            Source source,
             string connectionFilter,
             WebHost webHost,
             int? kestrelThreadCount,
@@ -438,7 +438,7 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
-                    p.AddWithValue("@Sources", sources.Any() ? (object)ConvertToSqlString(sources) : DBNull.Value);
+                    p.AddWithValue("@Sources", source != null ? (object)ConvertToSqlString(source) : DBNull.Value);
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());

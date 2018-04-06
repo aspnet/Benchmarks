@@ -81,11 +81,6 @@ namespace Benchmarks.ServerJob
         }
 
         /// <summary>
-        /// The source information for references packages
-        /// </summary>
-        public IList<Source> ReferenceSources { get; set; } = new List<Source>();
-
-        /// <summary>
         /// The source information for the benchmarked application
         /// </summary>
         public Source Source { get; set; } = new Source();

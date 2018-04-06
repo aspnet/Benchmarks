@@ -14,7 +14,6 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Benchmarks.ServerJob;
@@ -749,7 +748,7 @@ namespace BenchmarkServer
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.ReferenceSources, SourceRepoComparer.Instance);
+            var repos = new HashSet<Source>(SourceRepoComparer.Instance);
 
             repos.Add(job.Source);
 
@@ -785,9 +784,6 @@ namespace BenchmarkServer
                 // temporary for custom compiler to find right dotnet
                 ["PATH"] = dotnetHome + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
-
-            // Source dependencies are always built using KoreBuild
-            AddSourceDependencies(path, benchmarkedDir, job.Source.Project, dirs, env);
 
             Log.WriteLine("Downloading build tools");
 
@@ -980,9 +976,6 @@ namespace BenchmarkServer
             // Build and Restore
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
-            // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
-            // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
-            // higher than packages references by the same name.
             var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
@@ -1185,104 +1178,6 @@ namespace BenchmarkServer
             }
 
             throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
-        }
-
-        private static void AddSourceDependencies(string path, string benchmarksDir, string benchmarksProject, IEnumerable<string> dirs, IDictionary<string, string> env)
-        {
-
-            var benchmarksProjectPath = Path.Combine(path, benchmarksDir, benchmarksProject);
-            var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
-
-            var commonReferences = new XElement("ItemGroup");
-            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net46' "));
-            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp2.0' "));
-
-            foreach (var dir in dirs.Except(new[] { benchmarksDir }))
-            {
-                var repoRoot = Path.Combine(path, dir);
-                var projects = Directory.EnumerateFiles(Path.Combine(repoRoot, "src"), "*.csproj", SearchOption.AllDirectories);
-
-                foreach (var project in projects)
-                {
-                    var projectDocument = XDocument.Load(project);
-                    var targetFrameworks = projectDocument.Root.Descendants("TargetFrameworks").FirstOrDefault();
-                    var targetFramework = projectDocument.Root.Descendants("TargetFramework").FirstOrDefault();
-
-                    if (targetFrameworks == null && targetFramework == null)
-                    {
-                        Log.WriteLine($"Project '{project}' not added as a source reference because it has no target frameworks.");
-                        continue;
-                    }
-
-                    // If the project contains "<IncludeBuildOutput>false</IncludeBuildOutput>", adding it as a
-                    // source reference will likely cause a build error.
-                    var includeBuildOutput = projectDocument.Root.Descendants("IncludeBuildOutput").FirstOrDefault();
-                    if (includeBuildOutput != null && bool.Parse(includeBuildOutput.Value) == false)
-                    {
-                        Log.WriteLine($"Project '{project}' not added as a source reference because includeBuildOutput=false.");
-                        continue;
-                    }
-
-                    var reference = new XElement("ProjectReference", new XAttribute("Include", project));
-
-                    if (targetFrameworks != null)
-                    {
-                        commonReferences.Add(reference);
-                    }
-                    else if (targetFramework.Value.StartsWith("net4"))
-                    {
-                        netFrameworkReferences.Add(reference);
-                    }
-                    else if (targetFramework.Value.StartsWith("netstandard"))
-                    {
-                        netCoreReferences.Add(reference);
-                    }
-                }
-
-                InitializeSourceRepo(repoRoot, env);
-            }
-
-            benchmarksProjectDocument.Root.Add(commonReferences);
-            benchmarksProjectDocument.Root.Add(netFrameworkReferences);
-            benchmarksProjectDocument.Root.Add(netCoreReferences);
-
-            using (var stream = File.OpenWrite(benchmarksProjectPath))
-            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
-            {
-                benchmarksProjectDocument.Save(writer);
-            }
-        }
-
-        private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
-        {
-            var initArgs = new List<string>();
-            var repoProps = Path.Combine(repoRoot, "build", "repo.props");
-            if (File.Exists(repoProps))
-            {
-                var props = XDocument.Load(repoProps);
-                if (props.Root.Descendants("DotNetCoreRuntime").Any())
-                {
-                    initArgs.Add("/t:InstallDotNet");
-                }
-
-                if (props.Root.Descendants("PackageLineup").Any())
-                {
-                    initArgs.Add("/t:Pin");
-                }
-            }
-
-            if (initArgs.Count > 0)
-            {
-                var args = string.Join(' ', initArgs);
-                if (OperatingSystem == OperatingSystem.Windows)
-                {
-                    ProcessUtil.Run("cmd", "/c build.cmd " + args, workingDirectory: repoRoot, environmentVariables: env);
-                }
-                else
-                {
-                    ProcessUtil.Run("/usr/bin/env", "bash build.sh " + args, workingDirectory: repoRoot, environmentVariables: env);
-                }
-            }
         }
 
         private static string GetTempDir()

@@ -191,7 +191,7 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", serverJob.UseRuntimeStore);
                     p.AddWithValue("@Scheme", serverJob.Scheme.ToString().ToLowerInvariant());
-                    p.AddWithValue("@Sources", serverJob.ReferenceSources.Any() ? (object)ConvertToSqlString(serverJob.ReferenceSources) : DBNull.Value);
+                    p.AddWithValue("@Sources", serverJob.Source != null ? ConvertToSqlString(serverJob.Source) : (object)DBNull.Value);
                     p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
                     p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
                     p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
