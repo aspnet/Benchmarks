@@ -1341,8 +1341,7 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            Log.WriteLine($"Starting process '{executable} {arguments}'");
-
+            Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
 
             var process = new Process()
             {
