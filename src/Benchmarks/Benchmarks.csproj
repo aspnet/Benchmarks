@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
     
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Jil" Version="$(JilVersion)" />
