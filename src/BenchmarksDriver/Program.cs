@@ -127,7 +127,9 @@ namespace BenchmarksDriver
             var traceOutputOption = app.Option("--trace-output",
                 @"Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
-                "Disables Ready To Run.", CommandOptionType.NoValue);
+                "Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.", CommandOptionType.NoValue);
+            var tieredCompilationOption = app.Option("--tiered-compilation",
+                "Enables tiered-compilation.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
                 "Download the Ready To Run log.", CommandOptionType.NoValue);
             var environmentVariablesOption = app.Option("-e|--env",
@@ -412,6 +414,10 @@ namespace BenchmarksDriver
                 if (collectR2RLogOption.HasValue())
                 {
                     serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRunLogFile", "r2r");
+                }
+                if (tieredCompilationOption.HasValue())
+                {
+                    serverJob.EnvironmentVariables.Add("COMPlus_TieredCompilation", "1");
                 }
                 if (environmentVariablesOption.HasValue())
                 {
