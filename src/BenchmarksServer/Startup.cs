@@ -1295,7 +1295,7 @@ namespace BenchmarkServer
                 else
                 {
                     executable = "/bin/bash";
-                    arguments = "projectFilename";
+                    arguments = projectFilename;
                 }
                 
                 workingDirectory = Path.Combine(workingDirectory, "published");
