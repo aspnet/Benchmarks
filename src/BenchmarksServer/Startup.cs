@@ -1268,8 +1268,7 @@ namespace BenchmarkServer
 
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
         {
-            job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
-
+            var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
@@ -1281,7 +1280,8 @@ namespace BenchmarkServer
             if (job.SelfContained)
             {
                 arguments = "";
-                executable = Path.Combine("published", $"{projectFilename}.exe");
+                executable = $"{projectFilename}.exe";
+                workingDirectory = Path.Combine(workingDirectory, "published");
             }
 
             arguments += $" {job.Arguments}" +
@@ -1338,7 +1338,7 @@ namespace BenchmarkServer
                 StartInfo = {
                     FileName = executable,
                     Arguments = arguments,
-                    WorkingDirectory = job.BasePath,
+                    WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
