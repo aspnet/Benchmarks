@@ -1294,7 +1294,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    executable = "projectFilename";
+                    executable = projectFilename;
                 }
                 
                 workingDirectory = Path.Combine(workingDirectory, "published");
@@ -1346,7 +1346,7 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 ProcessUtil.Run("chmod", $"+x {projectFilename}", useShellExecute: true);
             }
