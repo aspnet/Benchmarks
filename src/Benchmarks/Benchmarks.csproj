@@ -4,7 +4,6 @@
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
@@ -21,13 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(BenchmarksAspNetCoreVersion)" />
-
-    <!--
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
-    -->
-
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Jil" Version="$(JilVersion)" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
@@ -37,12 +29,19 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
-    <!-- Sockets where only available as a preview package for 2.0 -->
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(BenchmarksAspNetCoreVersion)" />
+
+        <PackageReference Include="Microsoft.AspNetCore.All" Version="$(BenchmarksAspNetCoreVersion)" />
+
+<!-- Sockets where only available as a preview package for 2.0 -->
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-preview2-final" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion20)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
+
     <!-- IIS -->
     <!--<PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
