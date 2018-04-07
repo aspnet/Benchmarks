@@ -1288,16 +1288,18 @@ namespace BenchmarkServer
 
             if (job.SelfContained)
             {
+                workingDirectory = Path.Combine(workingDirectory, "published");
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    executable = $"{projectFilename}.exe";
+                    executable = Path.Combine(workingDirectory, $"{projectFilename}.exe");
                 }
                 else
                 {
-                    executable = projectFilename;
+                    executable = Path.Combine(workingDirectory, projectFilename);
                 }
-                
-                workingDirectory = Path.Combine(workingDirectory, "published");
+
+                arguments = "";
             }
 
             arguments += $" {job.Arguments}" +
@@ -1345,13 +1347,6 @@ namespace BenchmarkServer
             {
                 arguments += $" --server.urls {serverUrl}";
             }
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                ProcessUtil.Run("/usr/bin/env", $"bash chmod +x {projectFilename}", workingDirectory: workingDirectory);
-            }
-
-            Log.WriteLine($"Starting process [{workingDirectory}] '{executable} {arguments}'");
 
             var process = new Process()
             {
