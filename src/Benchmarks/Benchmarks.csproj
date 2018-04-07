@@ -31,9 +31,7 @@
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(BenchmarksAspNetCoreVersion)" />
 
-        <PackageReference Include="Microsoft.AspNetCore.All" Version="$(BenchmarksAspNetCoreVersion)" />
-
-<!-- Sockets where only available as a preview package for 2.0 -->
+    <!-- Sockets where only available as a preview package for 2.0 -->
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-preview2-final" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion20)" />
   </ItemGroup>
@@ -43,10 +41,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <!-- IIS -->
-    <!--<PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="$(BenchmarksAspNetCoreVersion)" />-->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
   </ItemGroup>
 

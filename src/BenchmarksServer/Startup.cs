@@ -406,7 +406,7 @@ namespace BenchmarkServer
                                                 Log.WriteLine($"Job failed");
 
                                                 job.Error = "Job failed at runtime\n" + standardOutput.ToString();
-                                                job.State = ServerState.Failed;
+                                                job.State = ServerState.Deleting;
                                             }
                                             else
                                             {
