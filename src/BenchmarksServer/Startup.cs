@@ -558,8 +558,6 @@ namespace BenchmarkServer
                                 } while (process != null && !process.HasExited);
 
                                 process = null;
-
-                                Log.WriteLine($"Process stopped");
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
@@ -568,6 +566,7 @@ namespace BenchmarkServer
                             }
 
                             job.State = ServerState.Stopped;
+                            Log.WriteLine($"Process stopped");
                         }
 
                         async Task DeleteJobAsync()
