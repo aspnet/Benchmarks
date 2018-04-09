@@ -1294,6 +1294,12 @@ namespace BenchmarksDriver
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
                     }, 1000);
 
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Log($"Job halted by the client");
+                        break;
+                    }
+
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
                     if (clientJob.State == ClientState.Running || clientJob.State == ClientState.Completed)
