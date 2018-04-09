@@ -814,11 +814,11 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Failed)
                         {
-                            Log($"Job failed on benchmark server, stopping...");
+                            Log($"Job failed on benchmark server, deleting...");
 
                             Console.WriteLine(serverJob.Error);
 
-                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
+                            response = await _httpClient.DeleteAsync(serverJobUri);
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
 
                             return -1;
