@@ -5,7 +5,7 @@
     <ToolCommandName>benchmarks</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <IsPackable>true</IsPackable>
-    <Version>0.0.2-alpha</Version>
+    <Version>0.0.3-alpha</Version>
     <NuspecFile>globaltool.nuspec</NuspecFile>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
