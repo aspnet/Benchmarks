@@ -97,6 +97,7 @@ namespace BenchmarkServer.Controllers
             {
                 try
                 {
+                    Log($"Driver deleting job '{id}'");
                     var job = _jobs.Find(id);
                     job.State = ServerState.Deleting;
                     _jobs.Update(job);
@@ -104,8 +105,9 @@ namespace BenchmarkServer.Controllers
                     Response.Headers["Location"] = $"/jobs/{job.Id}";
                     return new StatusCodeResult((int)HttpStatusCode.Accepted);
                 }
-                catch
+                catch(Exception e)
                 {
+                    Log($"Error while deleting job '{id}' " + e.Message);
                     return NotFound();
                 }
             }
@@ -116,6 +118,7 @@ namespace BenchmarkServer.Controllers
         {
             lock (_jobs)
             {
+                Log($"Driver stopping job '{id}'");
                 try
                 {
                     var job = _jobs.Find(id);
@@ -125,8 +128,9 @@ namespace BenchmarkServer.Controllers
                     Response.Headers["Location"] = $"/jobs/{job.Id}";
                     return new StatusCodeResult((int)HttpStatusCode.Accepted);
                 }
-                catch
+                catch(Exception e)
                 {
+                    Log($"Error while stopping job '{id}' " + e.Message);
                     return NotFound();
                 }
             }
@@ -264,5 +268,12 @@ namespace BenchmarkServer.Controllers
                 return StatusCode(500, e.ToString());
             }
         }
+
+        private static void Log(string message)
+        {
+            var time = DateTime.Now.ToString("hh:mm:ss.fff");
+            Console.WriteLine($"[{time}] {message}");
+        }
+
     }
 }

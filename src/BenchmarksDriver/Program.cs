@@ -782,6 +782,11 @@ namespace BenchmarksDriver
 
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return -1;
+                        }
+
                         serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                         if (!serverJob.Hardware.HasValue)
@@ -819,6 +824,10 @@ namespace BenchmarksDriver
                         {
                             Log("Server does not support this job configuration.");
                             return 0;
+                        }
+                        else if (serverJob.State == ServerState.Stopped)
+                        {
+                            return -1;
                         }
                         else
                         {
@@ -1110,6 +1119,7 @@ namespace BenchmarksDriver
 
                     response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                    var jobStoppedUtc = DateTime.UtcNow;
 
                     // Wait for Stop state
                     do
@@ -1129,6 +1139,13 @@ namespace BenchmarksDriver
                             Log($"The job was forcibly stopped by the server.");
                             return 1;
                         }
+
+                        if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(10))
+                        {
+                            // The job needs to be deleted
+                            Log($"Server didn't stop the job in the expected time, deleting it ...");
+                        }
+
                     } while (serverJob.State != ServerState.Stopped);
 
                     // Download files
@@ -1269,6 +1286,12 @@ namespace BenchmarksDriver
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
                     }, 1000);
 
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Log($"Job halted by the client");
+                        break;
+                    }
+
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
                     if (clientJob.State == ClientState.Running || clientJob.State == ClientState.Completed)
@@ -1330,7 +1353,7 @@ namespace BenchmarksDriver
 
                     await RetryOnExceptionAsync(5, async () =>
                     {
-                        Log($"Stopping scenario {scenarioName} on benchmark client...");
+                        Log($"Deleting scenario {scenarioName} on benchmark client...");
 
                         LogVerbose($"DELETE {clientJobUri}...");
                         response = await _httpClient.DeleteAsync(clientJobUri);

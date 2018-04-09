@@ -42,7 +42,7 @@ namespace BenchmarkServer
         private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
-        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.7/PerfView.exe";
+        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.12/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -551,6 +551,7 @@ namespace BenchmarkServer
                                     try
                                     {
                                         process = Process.GetProcessById(processId);
+                                        process.Refresh();
                                     }
                                     catch
                                     {
@@ -570,6 +571,7 @@ namespace BenchmarkServer
                             }
 
                             job.State = ServerState.Stopped;
+                            Log.WriteLine($"Process stopped");
                         }
 
                         async Task DeleteJobAsync()
