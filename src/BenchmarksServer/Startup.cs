@@ -548,6 +548,7 @@ namespace BenchmarkServer
                                     try
                                     {
                                         process = Process.GetProcessById(processId);
+                                        process.Refresh();
                                     }
                                     catch
                                     {
@@ -557,6 +558,8 @@ namespace BenchmarkServer
                                 } while (process != null && !process.HasExited);
 
                                 process = null;
+
+                                Log.WriteLine($"Process stopped");
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
