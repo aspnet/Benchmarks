@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BenchmarksClient.Workers
 {
@@ -246,7 +247,7 @@ namespace BenchmarksClient.Workers
                     switch (protocolName)
                     {
                         case "messagepack":
-                            hubConnectionBuilder.WithMessagePackProtocol();
+                            hubConnectionBuilder.AddMessagePackProtocol();
                             break;
                         case "json":
                             // json hub protocol is set by default
