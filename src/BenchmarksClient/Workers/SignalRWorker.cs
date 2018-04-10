@@ -213,46 +213,49 @@ namespace BenchmarksClient.Workers
             _latencyPerConnection = new List<List<double>>(_job.Connections);
             _latencyAverage = new List<(double sum, int count)>(_job.Connections);
 
-            var hubConnectionBuilder = new HubConnectionBuilder()
-                .WithUrl(_job.ServerBenchmarkUri)
-                .WithMessageHandler(x => _httpClientHandler)
-                .WithTransport(transportType);
-
-            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
-            {
-                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
-                {
-                    hubConnectionBuilder.WithConsoleLogger(level);
-                }
-            }
-
-            if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocolName))
-            {
-                switch (protocolName)
-                {
-                    case "messagepack":
-                        hubConnectionBuilder.WithMessagePackProtocol();
-                        break;
-                    case "json":
-                        hubConnectionBuilder.WithJsonProtocol();
-                        break;
-                    default:
-                        throw new Exception($"{protocolName} is an invalid hub protocol name.");
-                }
-            }
-            else
-            {
-                hubConnectionBuilder.WithJsonProtocol();
-            }
-
-            foreach (var header in _job.Headers)
-            {
-                hubConnectionBuilder.WithHeader(header.Key, header.Value);
-            }
-
             _recvCallbacks = new List<IDisposable>(_job.Connections);
             for (var i = 0; i < _job.Connections; i++)
             {
+                var hubConnectionBuilder = new HubConnectionBuilder()
+                .WithUrl(_job.ServerBenchmarkUri, httpConnectionOptions =>
+                {
+                    httpConnectionOptions.MessageHandlerFactory = _ => _httpClientHandler;
+                    httpConnectionOptions.Transports = transportType;
+
+                    // REVIEW: Is there a CopyTo overload or something that turns this into a one liner?
+                    foreach (var pair in _job.Headers)
+                    {
+                        httpConnectionOptions.Headers.Add(pair.Key, pair.Value);
+                    }
+                });
+
+                if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
+                {
+                    if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
+                    {
+                        hubConnectionBuilder.WithLogging(builder =>
+                        {
+                            builder.AddConsole();
+                            builder.SetMinimumLevel(level);
+                        });
+                    }
+                }
+
+                if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocolName))
+                {
+                    switch (protocolName)
+                    {
+                        case "messagepack":
+                            hubConnectionBuilder.WithMessagePackProtocol();
+                            break;
+                        case "json":
+                            // json hub protocol is set by default
+                            break;
+                        default:
+                            throw new Exception($"{protocolName} is an invalid hub protocol name.");
+                    }
+                }
+
                 _requestsPerConnection.Add(0);
                 _latencyPerConnection.Add(new List<double>());
                 _latencyAverage.Add((0, 0));
