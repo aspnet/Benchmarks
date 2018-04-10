@@ -1182,6 +1182,8 @@ namespace BenchmarksDriver
                 {
                     Log($"Interrupting due to an unexpected exception");
                     Log(e.ToString());
+
+                    return -1;
                 }
                 finally
                 {
