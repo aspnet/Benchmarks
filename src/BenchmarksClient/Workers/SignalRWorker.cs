@@ -11,11 +11,6 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Http.Connections;
-
-// REVIEW: I copied this from https://github.com/aspnet/SignalR/commit/e7b84b753bf11739cbb2ef10fc0708b375ec816d#diff-6244ded017b0b3eff9bf3dbf575a9a72R55,
-// but the internal namespace is making me think this is wrong.
-using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -218,11 +213,14 @@ namespace BenchmarksClient.Workers
             _latencyPerConnection = new List<List<double>>(_job.Connections);
             _latencyAverage = new List<(double sum, int count)>(_job.Connections);
 
-            var hubConnectionBuilder = new HubConnectionBuilder()
+            _recvCallbacks = new List<IDisposable>(_job.Connections);
+            for (var i = 0; i < _job.Connections; i++)
+            {
+                var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri, httpConnectionOptions =>
                 {
                     httpConnectionOptions.MessageHandlerFactory = _ => _httpClientHandler;
-                    httpConnectionOptions.Transport = transportType;
+                    httpConnectionOptions.Transports = transportType;
 
                     // REVIEW: Is there a CopyTo overload or something that turns this into a one liner?
                     foreach (var pair in _job.Headers)
@@ -231,36 +229,33 @@ namespace BenchmarksClient.Workers
                     }
                 });
 
-            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
-            {
-                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
+                if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
                 {
-                    hubConnectionBuilder.WithConsoleLogger(level);
+                    if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
+                    {
+                        hubConnectionBuilder.WithLogging(builder =>
+                        {
+                            builder.AddConsole();
+                            builder.SetMinimumLevel(level);
+                        });
+                    }
                 }
-            }
 
-            if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocolName))
-            {
-                switch (protocolName)
+                if (_job.ClientProperties.TryGetValue("HubProtocol", out var protocolName))
                 {
-                    case "messagepack":
-                        hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
-                        break;
-                    case "json":
-                        hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
-                        break;
-                    default:
-                        throw new Exception($"{protocolName} is an invalid hub protocol name.");
+                    switch (protocolName)
+                    {
+                        case "messagepack":
+                            hubConnectionBuilder.WithMessagePackProtocol();
+                            break;
+                        case "json":
+                            // json hub protocol is set by default
+                            break;
+                        default:
+                            throw new Exception($"{protocolName} is an invalid hub protocol name.");
+                    }
                 }
-            }
-            else
-            {
-                hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
-            }
 
-            _recvCallbacks = new List<IDisposable>(_job.Connections);
-            for (var i = 0; i < _job.Connections; i++)
-            {
                 _requestsPerConnection.Add(0);
                 _latencyPerConnection.Add(new List<double>());
                 _latencyAverage.Add((0, 0));
