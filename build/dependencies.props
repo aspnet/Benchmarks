@@ -4,7 +4,7 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
-    <SignalRVersion>1.0.0-preview3-32116</SignalRVersion>
+    <SignalRVersion>1.0.0-preview3-32192</SignalRVersion>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
