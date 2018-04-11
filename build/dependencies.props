@@ -9,9 +9,8 @@
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
     <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect --> 
-    <MicrosoftNETCoreApp20PackageVersion>2.0.6</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreApp21PackageVersion>
-    <RuntimeFrameworkVersion>2.0.6</RuntimeFrameworkVersion>
     <DefaultTargetFramework>netcoreapp2.0</DefaultTargetFramework>
 
     <!--
