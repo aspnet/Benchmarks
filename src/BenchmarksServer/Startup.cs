@@ -985,9 +985,9 @@ namespace BenchmarkServer
             // Build and Restore
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
-                $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
-                $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
+            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={actualAspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAllPackageVersion={actualAspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAppPackageVersion={actualAspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
