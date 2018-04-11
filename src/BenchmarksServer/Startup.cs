@@ -974,6 +974,8 @@ namespace BenchmarkServer
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
             var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
