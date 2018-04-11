@@ -96,6 +96,9 @@ namespace BenchmarkServer
             {
                 _perfviewPath = Path.Combine(Path.GetTempPath(), PerfViewVersion, Path.GetFileName(_perfviewUrl));
 
+                // Ensure the folder already exists
+                Directory.CreateDirectory(Path.GetDirectoryName(_perfviewPath));
+
                 if (!File.Exists(_perfviewPath))
                 {
                     Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
