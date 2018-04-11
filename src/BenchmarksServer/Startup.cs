@@ -93,9 +93,17 @@ namespace BenchmarkServer
             // Download PerfView
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                _perfviewPath = Path.Combine(GetTempDir(), Path.GetFileName(_perfviewUrl));
-                Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
-                DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
+                _perfviewPath = Path.Combine(Path.GetTempPath(), Path.GetFileName(_perfviewUrl));
+
+                if (!File.Exists(_perfviewPath))
+                {
+                    Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
+                    DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
+                }
+                else
+                {
+                    Log.WriteLine($"Found PerfView locally at '{_perfviewPath}'");
+                }
             }
 
             Action shutdown = () =>
