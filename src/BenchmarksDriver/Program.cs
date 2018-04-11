@@ -207,6 +207,7 @@ namespace BenchmarksDriver
                 var exclude = 0;
 
                 var sqlConnectionString = sqlConnectionStringOption.Value();
+                TimeSpan span = TimeSpan.Zero;
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
                     !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
@@ -214,7 +215,7 @@ namespace BenchmarksDriver
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
                     string.IsNullOrWhiteSpace(client) ||
-                    (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out TimeSpan span)) ||
+                    (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out span)) ||
                     (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
                     (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
                 {
@@ -836,7 +837,7 @@ namespace BenchmarksDriver
                     }
                     System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.  
 
-                    TimeSpan latencyNoLoad, latencyFirstRequest;
+                    TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
                     if (_clientJob.Warmup != 0)
                     {

@@ -1030,6 +1030,10 @@ namespace BenchmarkServer
 
             var outputFolder = Path.Combine(benchmarkedApp, "published");
 
+            var startPublish = DateTime.UtcNow;
+
+            Log.WriteLine($"Publishing application in {outputFolder}");
+
             var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
@@ -1044,6 +1048,8 @@ namespace BenchmarkServer
 
                 return (null, null);
             }
+
+            Log.WriteLine($"Application published successfully in {DateTime.Now - startPublish}");
 
             // Copy all output attachments
             foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
