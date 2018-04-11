@@ -32,6 +32,7 @@ namespace BenchmarkServer
     public class Startup
     {
         private const string CurrentAspNetCoreVersion = "2.0.6";
+        private const string PerfViewVersion = "P2.0.12";
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
@@ -42,7 +43,7 @@ namespace BenchmarkServer
         private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
-        private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.12/PerfView.exe";
+        private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -93,7 +94,7 @@ namespace BenchmarkServer
             // Download PerfView
             if (OperatingSystem == OperatingSystem.Windows)
             {
-                _perfviewPath = Path.Combine(Path.GetTempPath(), Path.GetFileName(_perfviewUrl));
+                _perfviewPath = Path.Combine(Path.GetTempPath(), PerfViewVersion, Path.GetFileName(_perfviewUrl));
 
                 if (!File.Exists(_perfviewPath))
                 {
