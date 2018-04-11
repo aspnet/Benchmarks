@@ -21,7 +21,6 @@ Options:
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
   -n|--scenario          Benchmark scenario to run
   -m|--scheme            Scheme (http or https).  Default is http.
-  -o|--source            Source dependency. Format is 'repo@branchOrCommit'. Repo can be a full URL, or a short name under https://github.com/aspnet.
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
   --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
   --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
@@ -29,7 +28,7 @@ Options:
   --port                 The port used to request the benchmarked application. Default is 5000.
   -r|--repository        Git repository containing the project to test.
   --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
-  --useRuntimeStore      Runs the benchmarks using the runtime store if available.
+  --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
   --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
@@ -47,11 +46,12 @@ Options:
   -j|--jobs              The path or url to the jobs definition.
   --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
   --trace-output         Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace
-  --trace-arguments      Arguments used when collecting a PerfView trace. e.g., Providers=.NETTasks:0:0
+  --trace-arguments      Arguments used when collecting a PerfView trace, e.g., Providers=.NETTasks:0:0 (Defaults are BufferSizeMB=1024;CircularMB=1024)
   --before-shutdown      An endpoint to call before the application has shut down.
   -sp|--span             The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days
   -t|--table             Table name of the SQL Database to store results
-  --no-crossgen          Disables Ready To Run.
+  --no-crossgen          Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.
+  --tiered-compilation   Enables tiered-compilation.
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux

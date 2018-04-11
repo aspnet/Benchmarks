@@ -81,11 +81,6 @@ namespace Benchmarks.ServerJob
         }
 
         /// <summary>
-        /// The source information for references packages
-        /// </summary>
-        public IList<Source> ReferenceSources { get; set; } = new List<Source>();
-
-        /// <summary>
         /// The source information for the benchmarked application
         /// </summary>
         public Source Source { get; set; } = new Source();
@@ -114,5 +109,6 @@ namespace Benchmarks.ServerJob
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
         public bool NoClean { get; set; }
         public string Error { get; set; }
+        public bool SelfContained { get; set; }
     }
 }

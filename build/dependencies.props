@@ -1,16 +1,17 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <AspNetCoreVersion>2.1-*</AspNetCoreVersion>
+    <AspNetCoreVersion>2.0.6</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
-    <SignalRVersion>1.0.0-*</SignalRVersion>
+    <SignalRVersion>1.0.0-preview3-32192</SignalRVersion>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect --> 
+    <MicrosoftNETCoreApp20PackageVersion>2.0.6</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreApp21PackageVersion>
-    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>2.0.6</RuntimeFrameworkVersion>
     <DefaultTargetFramework>netcoreapp2.0</DefaultTargetFramework>
 
     <!--

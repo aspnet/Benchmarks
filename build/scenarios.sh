@@ -27,12 +27,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
 
 plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
-plaintextPlatformJobs="-j $ROOT/src/PlatformBenchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
-jsonPlatformJobs="-j $ROOT/src/PlatformBenchmarks/benchmarks.json.json"
 multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+plaintextPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.plaintext.json"
+jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.json.json"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"

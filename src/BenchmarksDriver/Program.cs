@@ -38,7 +38,8 @@ namespace BenchmarksDriver
                 Name = "BenchmarksDriver",
                 FullName = "ASP.NET Benchmark Driver",
                 Description = "Driver for ASP.NET Benchmarks",
-                ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated
+                ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated,
+                OptionsComparison = StringComparison.OrdinalIgnoreCase
             };
 
             app.HelpOption("-?|-h|--help");
@@ -87,10 +88,6 @@ namespace BenchmarksDriver
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
             var schemeOption = app.Option("-m|--scheme",
                 "Scheme (http or https).  Default is http.", CommandOptionType.SingleValue);
-            var sourceOption = app.Option("-o|--source",
-                "Source dependency. Format is 'repo@branchOrCommit'. " +
-                "Repo can be a full URL, or a short name under https://github.com/aspnet.",
-                CommandOptionType.MultipleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
@@ -107,8 +104,10 @@ namespace BenchmarksDriver
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
-            var useRuntimeStoreOption = app.Option("--useRuntimeStore",
-                "Runs the benchmarks using the runtime store if available.", CommandOptionType.NoValue);
+            var useRuntimeStoreOption = app.Option("--runtime-store",
+                "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
+            var selfContainedOption = app.Option("--self-contained",
+                "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
             var outputFileOption = app.Option("--outputFile",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -126,7 +125,9 @@ namespace BenchmarksDriver
             var traceOutputOption = app.Option("--trace-output",
                 @"Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
-                "Disables Ready To Run.", CommandOptionType.NoValue);
+                "Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.", CommandOptionType.NoValue);
+            var tieredCompilationOption = app.Option("--tiered-compilation",
+                "Enables tiered-compilation.", CommandOptionType.NoValue);
             var collectR2RLogOption = app.Option("--collect-crossgen",
                 "Download the Ready To Run log.", CommandOptionType.NoValue);
             var environmentVariablesOption = app.Option("-e|--env",
@@ -331,6 +332,7 @@ namespace BenchmarksDriver
 
                 // Scenario can't be set in job definitions
                 serverJob.Scenario = scenarioName;
+                serverJob.WebHost = webHost;
 
                 if (databaseOption.HasValue())
                 {
@@ -352,9 +354,9 @@ namespace BenchmarksDriver
                 {
                     serverJob.UseRuntimeStore = true;
                 }
-                if (webHostOption.HasValue())
+                if (selfContainedOption.HasValue())
                 {
-                    serverJob.WebHost = webHost;
+                    serverJob.SelfContained = true;
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {
@@ -415,6 +417,10 @@ namespace BenchmarksDriver
                 {
                     serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRunLogFile", "r2r");
                 }
+                if (tieredCompilationOption.HasValue())
+                {
+                    serverJob.EnvironmentVariables.Add("COMPlus_TieredCompilation", "1");
+                }
                 if (environmentVariablesOption.HasValue())
                 {
                     foreach(var env in environmentVariablesOption.Values)
@@ -469,20 +475,6 @@ namespace BenchmarksDriver
                             return 8;
                         }
                     }
-                }
-
-                foreach (var source in sourceOption.Values)
-                {
-                    var split = source.IndexOf('@');
-                    var repository = (split == -1) ? source : source.Substring(0, split);
-                    var branch = (split == -1) ? null : source.Substring(split + 1);
-
-                    if (!repository.Contains(":"))
-                    {
-                        repository = $"https://github.com/aspnet/{repository}.git";
-                    }
-
-                    serverJob.ReferenceSources.Add(new Source() { BranchOrCommit = branch, Repository = repository });
                 }
 
                 // Building ClientJob
@@ -1190,6 +1182,8 @@ namespace BenchmarksDriver
                 {
                     Log($"Interrupting due to an unexpected exception");
                     Log(e.ToString());
+
+                    return -1;
                 }
                 finally
                 {
@@ -1201,7 +1195,7 @@ namespace BenchmarksDriver
                         response = await _httpClient.DeleteAsync(serverJobUri);
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
 
-                        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        if (response.StatusCode == HttpStatusCode.NotFound)
                         {
                             Log($@"Server job was not found, it must have been aborted. Possible cause:
                             - Issue while cloning the repository (GitHub unresponsive)

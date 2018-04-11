@@ -14,14 +14,13 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Benchmarks.ServerJob;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -32,6 +31,8 @@ namespace BenchmarkServer
 {
     public class Startup
     {
+        private const string CurrentAspNetCoreVersion = "2.0.6";
+
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallRepoUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/";
@@ -44,6 +45,7 @@ namespace BenchmarkServer
         private static readonly string _perfviewUrl = "https://github.com/Microsoft/perfview/releases/download/P2.0.12/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
+        private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedSdks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -144,7 +146,8 @@ namespace BenchmarkServer
             {
                 Name = "BenchmarksServer",
                 FullName = "ASP.NET Benchmark Server",
-                Description = "REST APIs to run ASP.NET benchmark server"
+                Description = "REST APIs to run ASP.NET benchmark server",
+                OptionsComparison = StringComparison.OrdinalIgnoreCase
             };
 
             app.HelpOption("-?|-h|--help");
@@ -557,6 +560,8 @@ namespace BenchmarkServer
 
                                 } while (process != null && !process.HasExited);
 
+                                Log.WriteLine($"Process has stopped");
+
                                 process = null;
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
@@ -745,7 +750,7 @@ namespace BenchmarkServer
             //
             // Note that this is also going to de-dupe the repos if the same one was specified twice at
             // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(job.ReferenceSources, SourceRepoComparer.Instance);
+            var repos = new HashSet<Source>(SourceRepoComparer.Instance);
 
             repos.Add(job.Source);
 
@@ -782,9 +787,6 @@ namespace BenchmarkServer
                 ["PATH"] = dotnetHome + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH")
             };
 
-            // Source dependencies are always built using KoreBuild
-            AddSourceDependencies(path, benchmarkedDir, job.Source.Project, dirs, env);
-
             Log.WriteLine("Downloading build tools");
 
             // Install latest SDK and runtime
@@ -803,13 +805,8 @@ namespace BenchmarkServer
             var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
             await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5);
 
-            //var sdkVersion = File.ReadAllText(sdkVersionPath).Trim();
-            //Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
-
-            // This is the last known working SDK with Benchmarks on Linux
-            var sdkVersion = "2.2.0-preview1-007522";
-            Log.WriteLine($"WARNING !!! CHANGE WHEN FIXED");
-            Log.WriteLine($"Using last known compatible SDK: {sdkVersion}");
+            var sdkVersion = File.ReadAllText(sdkVersionPath).Trim();
+            Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             // In theory the actual latest runtime version should be taken from the dependencies.pros file from
             // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
@@ -860,7 +857,7 @@ namespace BenchmarkServer
             {
                 case "current":
                     aspNetCoreVersion = "2.0.*";
-                    actualAspNetCoreVersion = aspNetCoreVersion;
+                    actualAspNetCoreVersion = CurrentAspNetCoreVersion;
                     break;
                 case "latest":
                     aspNetCoreVersion = "2.1-*";
@@ -903,6 +900,17 @@ namespace BenchmarkServer
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
+
+                // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
+                if (targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                {
+                    // Install aspnet runtime required for this scenario
+                    ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
+                }
             }
             else
             {
@@ -933,6 +941,17 @@ namespace BenchmarkServer
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
+
+                // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
+                if (targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                {
+                    // Install runtime required by coherence universe
+                    ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path",
+                    workingDirectory: buildToolsPath,
+                    environmentVariables: env);
+
+                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
+                }
             }
 
             var dotnetDir = dotnetHome;
@@ -954,54 +973,79 @@ namespace BenchmarkServer
             // Build and Restore
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
-            // Project versions must be higher than package versions to resolve those dependencies to project ones as expected.
-            // Passing VersionSuffix to restore will have it append that to the version of restored projects, making them
-            // higher than packages references by the same name.
             var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} ";
 
-            if (job.UseRuntimeStore)
+            if (targetFramework == "netcoreapp2.0")
             {
-                ProcessUtil.Run(dotnetExecutable, $"build -c Release {buildParameters}",
-                    workingDirectory: benchmarkedApp,
-                    environmentVariables: env);
+                buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeFrameworkVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false ";
+                }
+            }
+            else if (targetFramework == "netcoreapp2.1")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
+                }
             }
             else
             {
-                var outputFolder = Path.Combine(benchmarkedApp, "published");
+                throw new NotSupportedException($"Unsupported framework: {targetFramework}");
+            }
 
-                var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
-                var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
-                    workingDirectory: benchmarkedApp,
-                    environmentVariables: env,
-                    throwOnError: false);
+            if (job.SelfContained)
+            {
+                buildParameters += $"--self-contained ";
 
-                if (buildResults.ExitCode != 0)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
-                        buildResults.StandardOutput + "\n" +
-                        buildResults.StandardError;
+                    buildParameters += "-r win-x64 ";
+                }
+                else
+                {
+                    buildParameters += "-r linux-x64 ";
+                }
+            }
 
-                    return (null, null);
+            var outputFolder = Path.Combine(benchmarkedApp, "published");
+
+            var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
+            var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
+                workingDirectory: benchmarkedApp,
+                environmentVariables: env,
+                throwOnError: false);
+
+            if (buildResults.ExitCode != 0)
+            {
+                job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
+                    buildResults.StandardOutput + "\n" +
+                    buildResults.StandardError;
+
+                return (null, null);
+            }
+
+            // Copy all output attachments
+            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
+            {
+                var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
+
+                Log.WriteLine($"Creating output file: {filename}");
+
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
                 }
 
-                // Copy all output attachments
-                foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
-                {
-                    var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
-
-                    Log.WriteLine($"Creating output file: {filename}");
-
-                    if (File.Exists(filename))
-                    {
-                        File.Delete(filename);
-                    }
-
-                    File.Copy(attachment.TempFilename, filename);
-                }
+                File.Copy(attachment.TempFilename, filename);
             }
 
             // Copy all runtime attachments in all runtime folders
@@ -1149,104 +1193,6 @@ namespace BenchmarkServer
             throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
         }
 
-        private static void AddSourceDependencies(string path, string benchmarksDir, string benchmarksProject, IEnumerable<string> dirs, IDictionary<string, string> env)
-        {
-
-            var benchmarksProjectPath = Path.Combine(path, benchmarksDir, benchmarksProject);
-            var benchmarksProjectDocument = XDocument.Load(benchmarksProjectPath);
-
-            var commonReferences = new XElement("ItemGroup");
-            var netFrameworkReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'net46' "));
-            var netCoreReferences = new XElement("ItemGroup", new XAttribute("Condition", @" '$(TargetFramework)' == 'netcoreapp2.0' "));
-
-            foreach (var dir in dirs.Except(new[] { benchmarksDir }))
-            {
-                var repoRoot = Path.Combine(path, dir);
-                var projects = Directory.EnumerateFiles(Path.Combine(repoRoot, "src"), "*.csproj", SearchOption.AllDirectories);
-
-                foreach (var project in projects)
-                {
-                    var projectDocument = XDocument.Load(project);
-                    var targetFrameworks = projectDocument.Root.Descendants("TargetFrameworks").FirstOrDefault();
-                    var targetFramework = projectDocument.Root.Descendants("TargetFramework").FirstOrDefault();
-
-                    if (targetFrameworks == null && targetFramework == null)
-                    {
-                        Log.WriteLine($"Project '{project}' not added as a source reference because it has no target frameworks.");
-                        continue;
-                    }
-
-                    // If the project contains "<IncludeBuildOutput>false</IncludeBuildOutput>", adding it as a
-                    // source reference will likely cause a build error.
-                    var includeBuildOutput = projectDocument.Root.Descendants("IncludeBuildOutput").FirstOrDefault();
-                    if (includeBuildOutput != null && bool.Parse(includeBuildOutput.Value) == false)
-                    {
-                        Log.WriteLine($"Project '{project}' not added as a source reference because includeBuildOutput=false.");
-                        continue;
-                    }
-
-                    var reference = new XElement("ProjectReference", new XAttribute("Include", project));
-
-                    if (targetFrameworks != null)
-                    {
-                        commonReferences.Add(reference);
-                    }
-                    else if (targetFramework.Value.StartsWith("net4"))
-                    {
-                        netFrameworkReferences.Add(reference);
-                    }
-                    else if (targetFramework.Value.StartsWith("netstandard"))
-                    {
-                        netCoreReferences.Add(reference);
-                    }
-                }
-
-                InitializeSourceRepo(repoRoot, env);
-            }
-
-            benchmarksProjectDocument.Root.Add(commonReferences);
-            benchmarksProjectDocument.Root.Add(netFrameworkReferences);
-            benchmarksProjectDocument.Root.Add(netCoreReferences);
-
-            using (var stream = File.OpenWrite(benchmarksProjectPath))
-            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true, OmitXmlDeclaration = true }))
-            {
-                benchmarksProjectDocument.Save(writer);
-            }
-        }
-
-        private static void InitializeSourceRepo(string repoRoot, IDictionary<string, string> env)
-        {
-            var initArgs = new List<string>();
-            var repoProps = Path.Combine(repoRoot, "build", "repo.props");
-            if (File.Exists(repoProps))
-            {
-                var props = XDocument.Load(repoProps);
-                if (props.Root.Descendants("DotNetCoreRuntime").Any())
-                {
-                    initArgs.Add("/t:InstallDotNet");
-                }
-
-                if (props.Root.Descendants("PackageLineup").Any())
-                {
-                    initArgs.Add("/t:Pin");
-                }
-            }
-
-            if (initArgs.Count > 0)
-            {
-                var args = string.Join(' ', initArgs);
-                if (OperatingSystem == OperatingSystem.Windows)
-                {
-                    ProcessUtil.Run("cmd", "/c build.cmd " + args, workingDirectory: repoRoot, environmentVariables: env);
-                }
-                else
-                {
-                    ProcessUtil.Run("/usr/bin/env", "bash build.sh " + args, workingDirectory: repoRoot, environmentVariables: env);
-                }
-            }
-        }
-
         private static string GetTempDir()
         {
             var temp = Path.Combine(_rootTempDir, Path.GetRandomFileName());
@@ -1330,17 +1276,32 @@ namespace BenchmarkServer
 
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
         {
-            job.BasePath = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
-
+            var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
-            var benchmarksBin = job.UseRuntimeStore ? $"bin/Release/netcoreapp2.0" : $"published";
-            var benchmarksDll = Path.Combine(benchmarksBin, $"{projectFilename}.dll");
+            var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
-            var arguments = $"{benchmarksDll}" +
-                    $" {job.Arguments} " +
+            var arguments = benchmarksDll;
+
+            if (job.SelfContained)
+            {
+                workingDirectory = Path.Combine(workingDirectory, "published");
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    executable = Path.Combine(workingDirectory, $"{projectFilename}.exe");
+                }
+                else
+                {
+                    executable = Path.Combine(workingDirectory, projectFilename);
+                }
+
+                arguments = "";
+            }
+
+            arguments += $" {job.Arguments}" +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
 
@@ -1377,7 +1338,7 @@ namespace BenchmarkServer
             {
                 Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
 
-                var apphost = GenerateApplicationHostConfig(job, benchmarksBin, executable, arguments, hostname);
+                var apphost = GenerateApplicationHostConfig(job, "published", executable, arguments, hostname);
                 arguments = $"-h \"{apphost}\"";
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
@@ -1386,15 +1347,12 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            Log.WriteLine($"Starting process '{executable} {arguments}'");
-
-
             var process = new Process()
             {
                 StartInfo = {
                     FileName = executable,
                     Arguments = arguments,
-                    WorkingDirectory = job.BasePath,
+                    WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
