@@ -766,6 +766,8 @@ namespace BenchmarksDriver
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                             response.EnsureSuccessStatusCode();
 
+                            Log($"Job started: {serverJobUri}");
+
                             break;
                         }
                         else
@@ -972,13 +974,13 @@ namespace BenchmarksDriver
 
                                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                                    if (serverJob == null)
+                                    if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
                                     {
                                         Log($"The job was forcibly stopped by the server.");
                                         return 1;
                                     }
+
+                                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                                     if (serverJob.State == ServerState.TraceCollected)
                                     {
@@ -1133,13 +1135,13 @@ namespace BenchmarksDriver
 
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
-                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
-
-                        if (serverJob == null)
+                        if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
                         {
                             Log($"The job was forcibly stopped by the server.");
-                            return 1;
+                            return 0;
                         }
+
+                        serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                         if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(10))
                         {
