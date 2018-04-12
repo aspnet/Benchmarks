@@ -1319,6 +1319,8 @@ namespace BenchmarkServer
                 arguments = "";
             }
 
+            job.BasePath = workingDirectory;
+
             arguments += $" {job.Arguments}" +
                     $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
