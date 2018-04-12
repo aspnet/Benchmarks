@@ -52,6 +52,7 @@ Options:
   -t|--table             Table name of the SQL Database to store results
   --no-crossgen          Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.
   --tiered-compilation   Enables tiered-compilation.
+  --self-contained       Publishes the .NET Core runtime with the application.
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
