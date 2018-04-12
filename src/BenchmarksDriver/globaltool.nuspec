@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>BenchmarksDriver</id>
-        <version>0.0.3-alpha</version>
+        <version>0.0.4-alpha</version>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
