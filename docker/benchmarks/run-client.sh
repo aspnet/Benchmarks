@@ -11,4 +11,4 @@ docker run \
     --network host \
     --restart always \
     benchmarks \
-    dotnet run -c Debug --project src/BenchmarksClient/BenchmarksClient.csproj
+    dotnet run -c Release --project src/BenchmarksClient/BenchmarksClient.csproj

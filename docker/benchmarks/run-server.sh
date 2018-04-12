@@ -86,7 +86,7 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     benchmarks \
     bash -c \
-    "dotnet run -c Debug --project src/BenchmarksServer/BenchmarksServer.csproj \
+    "dotnet run -c Release --project src/BenchmarksServer/BenchmarksServer.csproj \
     -n $server_ip \
     --url $url \
     --hardware $hardware \
