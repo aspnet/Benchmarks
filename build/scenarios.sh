@@ -30,7 +30,7 @@ plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
-signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarks/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarks/BenchmarkServer/BenchmarkServer.csproj"
+signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarkapps/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
 plaintextPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.json.json"
 
