@@ -5,19 +5,11 @@
     <ToolCommandName>benchmarks</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <IsPackable>true</IsPackable>
-    <Version>0.0.4-alpha</Version>
-    <NuspecFile>globaltool.nuspec</NuspecFile>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>0.0.5-alpha</Version>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <Authors>Microsoft</Authors>
   </PropertyGroup>
-
-  <Target Name="PackGlobalTool" BeforeTargets="GenerateNuspec" DependsOnTargets="Publish">
-    <PropertyGroup>
-      <NuspecProperties>
-        publishDir=$(PublishDir);
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
 
   <ItemGroup>
     <Content Include="DotnetToolSettings.xml" CopyToPublishDirectory="PreserveNewest" />
