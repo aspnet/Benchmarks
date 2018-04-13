@@ -8,7 +8,8 @@
       "DockerContextDirectory": "frameworks/Rust/actix/"
     },
     "Client": "Wrk",
-    "Port": 8080
+    "Port": 8080,
+    "ReadyStateText": "Started http server"
   },
   "Plaintext-Actix": {
     "Path": "/plaintext",

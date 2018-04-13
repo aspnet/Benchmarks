@@ -715,7 +715,7 @@ namespace BenchmarkServer
 
             var result = ProcessUtil.Run("docker", $"{command} ");
             var containerId = result.StandardOutput.Trim();
-            var url = ComputeServerUrl(hostname, job);
+            job.Url = ComputeServerUrl(hostname, job);
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
@@ -730,8 +730,6 @@ namespace BenchmarkServer
                 },
                     EnableRaisingEvents = true
                 };
-
-                job.Url = url;
 
                 Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
@@ -755,13 +753,22 @@ namespace BenchmarkServer
                 // Wait until the service is reachable to avoid races where the container started but isn't
                 // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients 
                 // will fail to connect and the job will be cleaned up properly
-                await WaitToListen(job, hostname, 30);
+                if (await WaitToListen(job, hostname, 30))
+                {
+                    Log.WriteLine($"Application is now running...");
+                }
+                else
+                {
+                    Log.WriteLine($"Application MAY be running, continuing...");
+                }
+
+                job.State = ServerState.Running;
             }
 
             return (containerId, imageName);
         }
 
-        private static async Task WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
+        private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
             for (var i = 0; i < maxRetries; ++i)
             {
@@ -773,7 +780,7 @@ namespace BenchmarkServer
                         await Task.WhenAny(connectTask, Task.Delay(1000));
                         if (connectTask.IsCompleted)
                         {
-                            break;
+                            return true;
                         }
                     }
                 }
@@ -782,6 +789,8 @@ namespace BenchmarkServer
                     await Task.Delay(300);
                 }
             }
+
+            return false;
         }
 
         private static void DockerCleanUp(string containerId, string imageName)
