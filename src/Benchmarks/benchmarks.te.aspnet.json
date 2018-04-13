@@ -1,0 +1,29 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
+      "DockerImageName": "aspnetcore",
+      "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-AspNetCore": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ScriptName": "pipeline",
+    "PipelineDepth": 16
+  },
+  "PlaintextNonPipelined-AspNetCore": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-AspNetCore": {
+    "Path": "/json",
+    "PresetHeaders": "Json",
+    "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
+    "DockerImageName": "aspnetcore_json",
+    "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+  }
+}
