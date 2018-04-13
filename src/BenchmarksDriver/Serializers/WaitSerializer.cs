@@ -25,7 +25,7 @@ namespace BenchmarksDriver.Serializers
 
         public Task WriteJobResultsToSqlAsync(ServerJob serverJob, ClientJob clientJob, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning)
         {
-            return Task.CompletedTask
+            return Task.CompletedTask;
         }
     }
 }
