@@ -740,8 +740,6 @@ namespace BenchmarkServer
                 {
                     if (e != null && e.Data != null)
                     {
-                        Log.WriteLine(e.Data);
-
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             job.State = ServerState.Running;
