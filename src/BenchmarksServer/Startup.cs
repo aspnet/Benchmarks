@@ -355,7 +355,7 @@ namespace BenchmarkServer
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname);
+                                    (dockerContainerId, dockerImage) = DockerBuildAndRun(tempDir, job, hostname);
                                 }
                                 else
                                 {
@@ -685,7 +685,7 @@ namespace BenchmarkServer
             return output.ToString();
         }
 
-        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
+        private static (string containerId, string imageName) DockerBuildAndRun(string path, ServerJob job, string hostname)
         {
             var source = job.Source;
             // Docker image names must be lowercase
@@ -705,19 +705,40 @@ namespace BenchmarkServer
 
             var command = useHostNetworking ? $"run -d --network host {imageName}" :
                                               $"run -d -p {job.Port}:{job.Port} {imageName}";
+
+            // TODO: Add environment variables
             var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
             var url = ComputeServerUrl(hostname, job);
 
-            // Wait until the service is reachable to avoid races where the container started but isn't
-            // listening yet. We only try 5 times, if it keeps failing we ignore it. If the port
-            // is unreachable then clients will fail to connect and the job will be cleaned up properl
-            await WaitToListen(job, hostname);
+            var process = new Process()
+            {
+                StartInfo = {
+                    FileName = "docker",
+                    Arguments = $"logs -f {containerId}",
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                },
+                EnableRaisingEvents = true
+            };
+
+            job.Url = url;
 
             Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
-            job.Url = url;
-            job.State = ServerState.Running;
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Log.WriteLine(e.Data);
+
+                    if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        job.State = ServerState.Running;
+                    }
+                }
+            };
 
             return (containerId, imageName);
         }
@@ -1412,14 +1433,12 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                     standardOutput.AppendLine(e.Data);
 
-                    if (job.State == ServerState.Starting &&
-                        (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
+                    if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
                     }
                 }
             };
-
 
             // Start perfview?
             if (perfview)

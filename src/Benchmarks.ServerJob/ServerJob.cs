@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -33,6 +32,7 @@ namespace Benchmarks.ServerJob
         public Scheme Scheme { get; set; }
         public int Port { get; set; } = 5000;
         public string Path { get; set; } = "/";
+        public string ReadyStateText { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
         public string SdkVersion { get; set; }

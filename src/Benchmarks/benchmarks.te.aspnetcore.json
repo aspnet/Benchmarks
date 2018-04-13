@@ -8,7 +8,8 @@
       "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
     },
     "Client": "Wrk",
-    "Port": 8080
+    "Port": 8080,
+    "ReadyStateText": "Application started"
   },
   "Plaintext-AspNetCore": {
     "Path": "/plaintext",
