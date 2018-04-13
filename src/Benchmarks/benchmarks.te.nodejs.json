@@ -1,0 +1,26 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/JavaScript/nodejs/nodejs.dockerfile",
+      "DockerImageName": "nodejs",
+      "DockerContextDirectory": "frameworks/JavaScript/nodejs/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-NodeJs": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ScriptName": "pipeline",
+    "PipelineDepth": 16
+  },
+  "PlaintextNonPipelined-NodeJs": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-NodeJs": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  }
+}

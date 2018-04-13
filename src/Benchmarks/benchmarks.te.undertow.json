@@ -9,46 +9,42 @@
     },
     "Port": 8080
   },
-  "Plaintext": {
+  "Plaintext-Undertow": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
     "ScriptName": "pipeline",
     "PipelineDepth": 16
   },
-  "PlaintextNonPipelined": {
+  "PlaintextNonPipelined-Undertow": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext"
   },
-  "Json": {
+  "Json-Undertow": {
     "Path": "/json",
     "PresetHeaders": "Json"
   },
-  "FortunesMySql": {
+  "FortunesMySql-Undertow": {
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "undertow/Dockerfile.mysql"
+      "DockerFile": "frameworks/Java/undertow/undertow-mysql.dockerfile",
+      "DockerImageName": "undertow_mysql"
     }
   },
-  "FortunesPostgreSql": {
+  "FortunesPostgreSql-Undertow": {
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "undertow/Dockerfile.postgresql"
+      "DockerFile": "frameworks/Java/undertow/undertow-postgresql.dockerfile",
+      "DockerImageName": "undertow_postgresql"
     }
   },
-  "FortunesSqlServer": {
+  "FortunesMongoDb-Undertow": {
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "undertow/Dockerfile.sqlserver"
-    }
-  },
-  "FortunesMongoDb": {
-    "Path": "/fortunes",
-    "PresetHeaders": "Html",
-    "Source": {
-      "DockerFile": "undertow/Dockerfile.mongodb"
+      "DockerFile": "frameworks/Java/undertow/undertow-mongodb.dockerfile",
+      "DockerImageName": "undertow_mongodb"
     }
   }
 }
