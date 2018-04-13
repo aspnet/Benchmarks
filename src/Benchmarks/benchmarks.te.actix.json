@@ -1,0 +1,26 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/Rust/actix/actix.dockerfile",
+      "DockerImageName": "actix",
+      "DockerContextDirectory": "frameworks/Rust/actix/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-Actix": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ScriptName": "pipeline",
+    "PipelineDepth": 16
+  },
+  "PlaintextNonPipelined-Actix": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-Actix": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  }
+}
