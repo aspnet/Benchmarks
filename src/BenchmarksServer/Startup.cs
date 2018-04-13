@@ -740,6 +740,9 @@ namespace BenchmarkServer
                 }
             };
 
+            process.Start();
+            process.BeginOutputReadLine();
+
             return (containerId, imageName);
         }
 
