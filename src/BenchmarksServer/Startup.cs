@@ -689,15 +689,16 @@ namespace BenchmarkServer
         {
             var source = job.Source;
             // Docker image names must be lowercase
-            var imageName = $"benchmarks_{Path.GetDirectoryName(source.Project)}".ToLowerInvariant();
+            var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
             var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository));
+            var workingDirectory = Path.Combine(cloneDir, source.DockerContextDirectory);
 
             if (!string.IsNullOrEmpty(source.BranchOrCommit))
             {
                 Git.Checkout(cloneDir, source.BranchOrCommit);
             }
 
-            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", workingDirectory: cloneDir);
+            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: cloneDir);
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;

@@ -1,0 +1,54 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/Java/undertow/undertow.dockerfile",
+      "DockerImageName": "undertow",
+      "DockerContextDirectory": "frameworks/Java/undertow/"
+    },
+    "Port": 8080
+  },
+  "Plaintext": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ScriptName": "pipeline",
+    "PipelineDepth": 16
+  },
+  "PlaintextNonPipelined": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesMySql": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "undertow/Dockerfile.mysql"
+    }
+  },
+  "FortunesPostgreSql": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "undertow/Dockerfile.postgresql"
+    }
+  },
+  "FortunesSqlServer": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "undertow/Dockerfile.sqlserver"
+    }
+  },
+  "FortunesMongoDb": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "undertow/Dockerfile.mongodb"
+    }
+  }
+}
