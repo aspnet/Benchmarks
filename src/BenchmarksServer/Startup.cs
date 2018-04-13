@@ -703,10 +703,6 @@ namespace BenchmarkServer
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
 
-            var command = useHostNetworking ? $"run -d --network host {imageName}" :
-                                              $"run -d -p {job.Port}:{job.Port} {imageName}";
-
-
             var environmentArguments = "";
 
             foreach (var env in job.EnvironmentVariables)
@@ -714,7 +710,10 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
-            var result = ProcessUtil.Run("docker", $"{command} {environmentArguments} {job.Arguments}");
+            var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
+                                              $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
+
+            var result = ProcessUtil.Run("docker", $"{command} ");
             var containerId = result.StandardOutput.Trim();
             var url = ComputeServerUrl(hostname, job);
 
@@ -742,6 +741,7 @@ namespace BenchmarkServer
                     {
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
+                            Log.WriteLine($"Application is now running...");
                             job.State = ServerState.Running;
                         }
                     }
