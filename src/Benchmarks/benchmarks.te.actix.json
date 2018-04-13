@@ -7,13 +7,16 @@
       "DockerImageName": "actix",
       "DockerContextDirectory": "frameworks/Rust/actix/"
     },
+    "Client": "Wrk",
     "Port": 8080
   },
   "Plaintext-Actix": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
-    "ScriptName": "pipeline",
-    "PipelineDepth": 16
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
   },
   "PlaintextNonPipelined-Actix": {
     "Path": "/plaintext",

@@ -7,13 +7,16 @@
       "DockerImageName": "nodejs",
       "DockerContextDirectory": "frameworks/JavaScript/nodejs/"
     },
+    "Client": "Wrk",
     "Port": 8080
   },
   "Plaintext-NodeJs": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
-    "ScriptName": "pipeline",
-    "PipelineDepth": 16
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
   },
   "PlaintextNonPipelined-NodeJs": {
     "Path": "/plaintext",

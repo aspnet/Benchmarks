@@ -12,8 +12,10 @@
   "Plaintext-Undertow": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
-    "ScriptName": "pipeline",
-    "PipelineDepth": 16
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
   },
   "PlaintextNonPipelined-Undertow": {
     "Path": "/plaintext",
