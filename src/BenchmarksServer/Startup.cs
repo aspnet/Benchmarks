@@ -355,7 +355,7 @@ namespace BenchmarkServer
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage) = DockerBuildAndRun(tempDir, job, hostname);
+                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname);
                                 }
                                 else
                                 {
@@ -685,7 +685,7 @@ namespace BenchmarkServer
             return output.ToString();
         }
 
-        private static (string containerId, string imageName) DockerBuildAndRun(string path, ServerJob job, string hostname)
+        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
         {
             var source = job.Source;
             // Docker image names must be lowercase
@@ -706,49 +706,65 @@ namespace BenchmarkServer
             var command = useHostNetworking ? $"run -d --network host {imageName}" :
                                               $"run -d -p {job.Port}:{job.Port} {imageName}";
 
-            // TODO: Add environment variables
-            var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
+
+            var environmentArguments = "";
+
+            foreach (var env in job.EnvironmentVariables)
+            {
+                environmentArguments += $"--env {env.Key}={env.Value} ";
+            }
+
+            var result = ProcessUtil.Run("docker", $"{command} {environmentArguments} {job.Arguments}");
             var containerId = result.StandardOutput.Trim();
             var url = ComputeServerUrl(hostname, job);
 
-            var process = new Process()
+            if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
-                StartInfo = {
+                var process = new Process()
+                {
+                    StartInfo = {
                     FileName = "docker",
                     Arguments = $"logs -f {containerId}",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
-                EnableRaisingEvents = true
-            };
+                    EnableRaisingEvents = true
+                };
 
-            job.Url = url;
+                job.Url = url;
 
-            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
+                Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (e != null && e.Data != null)
+                process.OutputDataReceived += (_, e) =>
                 {
-                    Log.WriteLine(e.Data);
-
-                    if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (e != null && e.Data != null)
                     {
-                        job.State = ServerState.Running;
-                    }
-                }
-            };
+                        Log.WriteLine(e.Data);
 
-            process.Start();
-            process.BeginOutputReadLine();
+                        if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            job.State = ServerState.Running;
+                        }
+                    }
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+            }
+            else
+            {
+                // Wait until the service is reachable to avoid races where the container started but isn't
+                // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients 
+                // will fail to connect and the job will be cleaned up properly
+                await WaitToListen(job, hostname, 30);
+            }
 
             return (containerId, imageName);
         }
 
-        private static async Task WaitToListen(ServerJob job, string hostname)
+        private static async Task WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
-            const int maxRetries = 5;
             for (var i = 0; i < maxRetries; ++i)
             {
                 try
@@ -756,7 +772,7 @@ namespace BenchmarkServer
                     using (var tcpClient = new TcpClient())
                     {
                         var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
-                        await Task.WhenAny(connectTask, Task.Delay(300));
+                        await Task.WhenAny(connectTask, Task.Delay(1000));
                         if (connectTask.IsCompleted)
                         {
                             break;

@@ -9,7 +9,7 @@
     },
     "Client": "Wrk",
     "Port": 8080,
-    "ReadyStateText": "Application started"
+    "ReadyStateText": "Application started."
   },
   "Plaintext-AspNetCore": {
     "Path": "/plaintext",
