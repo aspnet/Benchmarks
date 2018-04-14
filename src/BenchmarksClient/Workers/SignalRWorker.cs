@@ -220,7 +220,7 @@ namespace BenchmarksClient.Workers
                 var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri, httpConnectionOptions =>
                 {
-                    httpConnectionOptions.MessageHandlerFactory = _ => _httpClientHandler;
+                    httpConnectionOptions.HttpMessageHandlerFactory = _ => _httpClientHandler;
                     httpConnectionOptions.Transports = transportType;
 
                     // REVIEW: Is there a CopyTo overload or something that turns this into a one liner?
