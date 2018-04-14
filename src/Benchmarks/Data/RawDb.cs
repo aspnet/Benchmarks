@@ -91,7 +91,7 @@ namespace Benchmarks.Data
         {
             var results = new World[count];
 
-            var updateCommand = new StringBuilder(count);
+            var updateCommand = new StringBuilder(count * 64);
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
@@ -113,12 +113,13 @@ namespace Benchmarks.Data
                     for(int i = 0; i < count; i++)
                     {
                         var id = updateCmd.CreateParameter();
-                        id.ParameterName = BatchUpdateString.Strings[i].Id;
+                        var data = BatchUpdateString.Strings[i];
+                        id.ParameterName = data.Id;
                         id.DbType = DbType.Int32;
                         updateCmd.Parameters.Add(id);
 
                         var random = updateCmd.CreateParameter();
-                        random.ParameterName = BatchUpdateString.Strings[i].Random;
+                        random.ParameterName = data.Random;
                         random.DbType = DbType.Int32;
                         updateCmd.Parameters.Add(random);
 
@@ -127,7 +128,7 @@ namespace Benchmarks.Data
                         random.Value = randomNumber;
                         results[i].RandomNumber = randomNumber;
 
-                        updateCommand.Append(BatchUpdateString.Strings[i].UpdateQuery);
+                        updateCommand.Append(data.UpdateQuery);
                     }
 
                     updateCmd.CommandText = updateCommand.ToString();

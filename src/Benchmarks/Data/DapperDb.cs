@@ -65,7 +65,7 @@ namespace Benchmarks.Data
         {
             var results = new World[count];
             IDictionary<string, object> parameters = new ExpandoObject();
-            var updateCommand = new StringBuilder(count);
+            var updateCommand = new StringBuilder(count * 64);
 
             using (var db = _dbProviderFactory.CreateConnection())
             {
@@ -83,11 +83,12 @@ namespace Benchmarks.Data
                 for (int i = 0; i < count; i++)
                 {
                     var randomNumber = _random.Next(1, 10001);
-                    parameters[BatchUpdateString.Strings[i].Random] = randomNumber;
-                    parameters[BatchUpdateString.Strings[i].Id] = results[i].Id;
+                    var data = BatchUpdateString.Strings[i];
+                    parameters[data.Random] = randomNumber;
+                    parameters[data.Id] = results[i].Id;
 
                     results[i].RandomNumber = randomNumber;
-                    updateCommand.Append(BatchUpdateString.Strings[i].UpdateQuery);
+                    updateCommand.Append(data.UpdateQuery);
                 }
 
                 await db.ExecuteAsync(updateCommand.ToString(), parameters);
