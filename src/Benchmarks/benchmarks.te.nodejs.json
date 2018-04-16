@@ -8,8 +8,7 @@
       "DockerContextDirectory": "frameworks/JavaScript/nodejs/"
     },
     "Client": "Wrk",
-    "Port": 8080,
-    "ReadyStateText": "Application is now running"
+    "Port": 8080
   },
   "Plaintext-NodeJs": {
     "Path": "/plaintext",
