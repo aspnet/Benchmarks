@@ -1,0 +1,36 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/Java/undertow/undertow.dockerfile",
+      "DockerImageName": "undertow",
+      "DockerContextDirectory": "frameworks/Java/undertow/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-Undertow": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-Undertow": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-Undertow": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesPostgreSql-Undertow": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/Java/undertow/undertow-postgresql.dockerfile",
+      "DockerImageName": "undertow_postgresql"
+    }
+  }
+}

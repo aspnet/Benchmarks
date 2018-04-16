@@ -19,6 +19,9 @@ namespace BenchmarksDriver.Serializers
 
             // SignalR
             ResultSerializers[Worker.SignalR] = () => new SignalRSerializer();
+
+            // Wait
+            ResultSerializers[Worker.Wait] = () => new WaitSerializer();
         }
 
         static public IResultsSerializer CreateResultSerializer(ClientJob clientJob)

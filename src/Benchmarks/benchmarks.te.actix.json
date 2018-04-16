@@ -1,0 +1,38 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/Rust/actix/actix.dockerfile",
+      "DockerImageName": "actix",
+      "DockerContextDirectory": "frameworks/Rust/actix/"
+    },
+    "Client": "Wrk",
+    "Port": 8080,
+    "ReadyStateText": "Started http server"
+  },
+  "Plaintext-Actix": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-Actix": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-Actix": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesPostgreSql-Actix": {
+    "Path": "/fortune",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/Rust/actix/actix-pg.dockerfile",
+      "DockerImageName": "actix_pg"
+    }
+  }
+}

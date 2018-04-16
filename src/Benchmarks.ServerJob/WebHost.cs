@@ -9,6 +9,7 @@ namespace Benchmarks.ServerJob
         KestrelLibuv,
         HttpSys,
         IISInProcess,
-        IISOutOfProcess
+        IISOutOfProcess,
+        Docker
     }
 }

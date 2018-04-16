@@ -1,0 +1,38 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/JavaScript/nodejs/nodejs.dockerfile",
+      "DockerImageName": "nodejs",
+      "DockerContextDirectory": "frameworks/JavaScript/nodejs/"
+    },
+    "Client": "Wrk",
+    "Port": 8080,
+    "ReadyStateText": "NodeJS worker listening"
+  },
+  "Plaintext-NodeJs": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-NodeJs": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-NodeJs": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesPostgreSql-NodeJs": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/JavaScript/nodejs/nodejs-postgres.dockerfile",
+      "DockerImageName": "nodejs_postgres"
+    }
+  }
+}

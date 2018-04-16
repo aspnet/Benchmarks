@@ -320,6 +320,7 @@ namespace BenchmarkServer
                         string dotnetDir = dotnetHome;
                         string benchmarksDir = null;
                         var standardOutput = new StringBuilder();
+                        var startMonitorTime = DateTime.UtcNow;
 
                         var perfviewEnabled = job.Collect && OperatingSystem == OperatingSystem.Windows;
 
@@ -339,7 +340,10 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.KestrelSockets && job.WebHost != WebHost.KestrelLibuv)
+                                if (OperatingSystem == OperatingSystem.Linux && 
+                                    (job.WebHost == WebHost.IISInProcess || 
+                                    job.WebHost == WebHost.IISOutOfProcess)
+                                    )
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
@@ -371,11 +375,12 @@ namespace BenchmarkServer
                                     }
                                     else
                                     {
+                                        Log.WriteLine($"Job failed with CloneRestoreAndBuild");
                                         job.State = ServerState.Failed;
                                     }
                                 }
 
-                                var startMonitorTime = DateTime.UtcNow;
+                                startMonitorTime = DateTime.UtcNow;
                                 var lastMonitorTime = startMonitorTime;
                                 var oldCPUTime = TimeSpan.Zero;
 
@@ -443,9 +448,14 @@ namespace BenchmarkServer
                                         }
                                         else if (!String.IsNullOrEmpty(dockerImage))
                                         {
+                                            var output = new StringBuilder();
+
                                             // Get docker stats
-                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId);
-                                            var data = result.StandardOutput.Trim().Split('-');
+                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId, 
+                                                outputDataReceived: d => output.AppendLine(d),
+                                                log: false);
+
+                                            var data = output.ToString().Trim().Split('-');
 
                                             // Format is {value}%
                                             var cpuPercentRaw = data[0];
@@ -521,7 +531,16 @@ namespace BenchmarkServer
                                 // Start perfview
                                 var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
+                                Log.WriteLine("Trace collected");
                                 job.State = ServerState.TraceCollected;
+                            }
+                        }
+                        else if (job.State == ServerState.Starting)
+                        {
+                            if (DateTime.UtcNow - startMonitorTime > TimeSpan.FromSeconds(30))
+                            {
+                                Log.WriteLine($"Job didn't start during the expected delay");
+                                job.State = ServerState.Stopping;
                             }
                         }
 
@@ -529,10 +548,10 @@ namespace BenchmarkServer
                         {
                             lock (executionLock)
                             {
+                                disposed = true;
+
                                 timer?.Dispose();
                                 timer = null;
-
-                                disposed = true;
                             }
 
                             if (process != null)
@@ -689,52 +708,103 @@ namespace BenchmarkServer
         {
             var source = job.Source;
             // Docker image names must be lowercase
-            var imageName = $"benchmarks_{Path.GetDirectoryName(source.Project)}".ToLowerInvariant();
+            var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
             var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository));
+            var workingDirectory = Path.Combine(cloneDir, source.DockerContextDirectory);
 
             if (!string.IsNullOrEmpty(source.BranchOrCommit))
             {
                 Git.Checkout(cloneDir, source.BranchOrCommit);
             }
 
-            ProcessUtil.Run("docker", $"build -t {imageName} -f {source.DockerFile} .", workingDirectory: cloneDir);
+            ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: cloneDir);
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
 
-            var command = useHostNetworking ? $"run -d --network host {imageName}" :
-                                              $"run -d -p {job.Port}:{job.Port} {imageName}";
-            var result = ProcessUtil.Run("docker", $"{command} {job.Arguments}");
+            var environmentArguments = "";
+
+            foreach (var env in job.EnvironmentVariables)
+            {
+                environmentArguments += $"--env {env.Key}={env.Value} ";
+            }
+
+            var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
+                                              $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
+
+            var result = ProcessUtil.Run("docker", $"{command} ");
             var containerId = result.StandardOutput.Trim();
-            var url = ComputeServerUrl(hostname, job);
+            job.Url = ComputeServerUrl(hostname, job);
 
-            // Wait until the service is reachable to avoid races where the container started but isn't
-            // listening yet. We only try 5 times, if it keeps failing we ignore it. If the port
-            // is unreachable then clients will fail to connect and the job will be cleaned up properl
-            await WaitToListen(job, hostname);
+            if (!String.IsNullOrEmpty(job.ReadyStateText))
+            {
+                Log.WriteLine($"Waiting for startup signal: '{job.ReadyStateText}'...");
 
-            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
+                var process = new Process()
+                {
+                    StartInfo = {
+                    FileName = "docker",
+                    Arguments = $"logs -f {containerId}",
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                },
+                    EnableRaisingEvents = true
+                };
 
-            job.Url = url;
-            job.State = ServerState.Running;
+                process.OutputDataReceived += (_, e) =>
+                {
+                    if (e != null && e.Data != null)
+                    {
+                        Log.WriteLine(e.Data);
+
+                        if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            Log.WriteLine($"Application is now running...");
+                            job.State = ServerState.Running;
+                        }
+                    }
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+            }
+            else
+            {
+                Log.WriteLine($"Waiting for application to startup...");
+
+                // Wait until the service is reachable to avoid races where the container started but isn't
+                // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients 
+                // will fail to connect and the job will be cleaned up properly
+                if (await WaitToListen(job, hostname, 30))
+                {
+                    Log.WriteLine($"Application is now running...");
+                }
+                else
+                {
+                    Log.WriteLine($"Application MAY be running, continuing...");
+                }
+
+                job.State = ServerState.Running;
+            }
 
             return (containerId, imageName);
         }
 
-        private static async Task WaitToListen(ServerJob job, string hostname)
+        private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
-            const int maxRetries = 5;
-            for (var i = 0; i < maxRetries; ++i)
+            for (var i = 1; i <= maxRetries; ++i)
             {
                 try
                 {
+                    Log.WriteLine($"Trying to access server, attemp #{i} ...");
                     using (var tcpClient = new TcpClient())
                     {
                         var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
-                        await Task.WhenAny(connectTask, Task.Delay(300));
+                        await Task.WhenAny(connectTask, Task.Delay(1000));
                         if (connectTask.IsCompleted)
                         {
-                            break;
+                            return true;
                         }
                     }
                 }
@@ -743,6 +813,8 @@ namespace BenchmarkServer
                     await Task.Delay(300);
                 }
             }
+
+            return false;
         }
 
         private static void DockerCleanUp(string containerId, string imageName)
@@ -1347,6 +1419,8 @@ namespace BenchmarkServer
                 case WebHost.IISOutOfProcess:
                     arguments += $" --server IISOutOfProcess";
                     break;
+                default:
+                    throw new NotSupportedException("Invalid WebHost value for benchmarks");
             }
 
             if (job.KestrelThreadCount.HasValue)
@@ -1411,14 +1485,12 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                     standardOutput.AppendLine(e.Data);
 
-                    if (job.State == ServerState.Starting &&
-                        (e.Data.ToLowerInvariant().Contains("started") || e.Data.ToLowerInvariant().Contains("listening")))
+                    if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
                     }
                 }
             };
-
 
             // Start perfview?
             if (perfview)
