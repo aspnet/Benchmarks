@@ -25,28 +25,12 @@
     "Path": "/json",
     "PresetHeaders": "Json"
   },
-  "FortunesMySql-Undertow": {
-    "Path": "/fortunes",
-    "PresetHeaders": "Html",
-    "Source": {
-      "DockerFile": "frameworks/Java/undertow/undertow-mysql.dockerfile",
-      "DockerImageName": "undertow_mysql"
-    }
-  },
   "FortunesPostgreSql-Undertow": {
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
       "DockerFile": "frameworks/Java/undertow/undertow-postgresql.dockerfile",
       "DockerImageName": "undertow_postgresql"
-    }
-  },
-  "FortunesMongoDb-Undertow": {
-    "Path": "/fortunes",
-    "PresetHeaders": "Html",
-    "Source": {
-      "DockerFile": "frameworks/Java/undertow/undertow-mongodb.dockerfile",
-      "DockerImageName": "undertow_mongodb"
     }
   }
 }
