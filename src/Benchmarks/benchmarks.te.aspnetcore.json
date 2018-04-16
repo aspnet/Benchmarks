@@ -30,7 +30,7 @@
     "DockerImageName": "aspnetcore_json",
     "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
   },
-  "FortunesPostgreSql-Undertow": {
+  "FortunesPostgreSql-AspNetCore": {
     "Path": "/fortunes/raw",
     "PresetHeaders": "Html",
     "Source": {
