@@ -36,22 +36,22 @@ undertowJobs="$defaultArgs -j $ROOT/src/Benchmarks/benchmarks.te.undertow.json"
 jobs=(
 
   # Undertow
-  "-n Plaintext-Actix $undertowJobs"
-  "-n PlaintextNonPipelined-Actix $undertowJobs"
-  "-n Json-Actix $undertowJobs"
-  "-n FortunesPostgreSql-Actix $undertowJobs"
+  "-n Plaintext-Undertow $undertowJobs"
+  "-n PlaintextNonPipelined-Undertow $undertowJobs"
+  "-n Json-Undertow $undertowJobs"
+  "-n FortunesPostgreSql-Undertow $undertowJobs"
 
   # NodeJs
-  "-n Plaintext-Actix $nodejsJobs"
-  "-n PlaintextNonPipelined-Actix $nodejsJobs"
-  "-n Json-Actix $nodejsJobs"
-  "-n FortunesPostgreSql-Actix $nodejsJobs"
+  "-n Plaintext-NodeJs $nodejsJobs"
+  "-n PlaintextNonPipelined-NodeJs $nodejsJobs"
+  "-n Json-NodeJs $nodejsJobs"
+  "-n FortunesPostgreSql-NodeJs $nodejsJobs"
 
   # AspNetCore
-  "-n Plaintext-Actix $aspnetcoreJobs"
-  "-n PlaintextNonPipelined-Actix $aspnetcoreJobs"
-  "-n Json-Actix $aspnetcoreJobs"
-  "-n FortunesPostgreSql-Actix $aspnetcoreJobs"
+  "-n Plaintext-AspNetCore $aspnetcoreJobs"
+  "-n PlaintextNonPipelined-AspNetCore $aspnetcoreJobs"
+  "-n Json-AspNetCore $aspnetcoreJobs"
+  "-n FortunesPostgreSql-AspNetCore $aspnetcoreJobs"
 
   # Actix
   "-n Plaintext-Actix $actixJobs"
