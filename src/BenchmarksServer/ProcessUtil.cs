@@ -12,7 +12,7 @@ namespace BenchmarkServer
     public static class ProcessUtil
     {
         public static ProcessResult Run(string filename, string arguments, TimeSpan? timeout = null, string workingDirectory = null,
-            bool throwOnError = true, IDictionary<string, string> environmentVariables = null)
+            bool throwOnError = true, IDictionary<string, string> environmentVariables = null, Action<string> outputDataReceived = null)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
             Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
@@ -47,8 +47,15 @@ namespace BenchmarkServer
                 var outputBuilder = new StringBuilder();
                 process.OutputDataReceived += (_, e) =>
                 {
-                    outputBuilder.AppendLine(e.Data);
-                    Log.WriteLine(e.Data);
+                    if (outputDataReceived != null)
+                    {
+                        outputDataReceived.Invoke(e.Data);
+                    }
+                    else
+                    {
+                        outputBuilder.AppendLine(e.Data);
+                        Log.WriteLine(e.Data);
+                    }
                 };
 
                 var errorBuilder = new StringBuilder();

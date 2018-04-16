@@ -320,6 +320,7 @@ namespace BenchmarkServer
                         string dotnetDir = dotnetHome;
                         string benchmarksDir = null;
                         var standardOutput = new StringBuilder();
+                        var startMonitorTime = DateTime.UtcNow;
 
                         var perfviewEnabled = job.Collect && OperatingSystem == OperatingSystem.Windows;
 
@@ -375,9 +376,9 @@ namespace BenchmarkServer
                                     }
                                 }
 
-                                var startMonitorTime = DateTime.UtcNow;
                                 var lastMonitorTime = startMonitorTime;
                                 var oldCPUTime = TimeSpan.Zero;
+                                startMonitorTime = DateTime.UtcNow;
 
                                 disposed = false;
 
@@ -443,9 +444,11 @@ namespace BenchmarkServer
                                         }
                                         else if (!String.IsNullOrEmpty(dockerImage))
                                         {
+                                            var output = new StringBuilder();
+
                                             // Get docker stats
-                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId);
-                                            var data = result.StandardOutput.Trim().Split('-');
+                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId, outputDataReceived: d => output.AppendLine(d));
+                                            var data = output.ToString().Trim().Split('-');
 
                                             // Format is {value}%
                                             var cpuPercentRaw = data[0];
@@ -522,6 +525,15 @@ namespace BenchmarkServer
                                 var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
                                 job.State = ServerState.TraceCollected;
+                            }
+                        }
+                        else if (job.State == ServerState.Starting)
+                        {
+                            Log.WriteLine($"Job didn't start during the expected delay");
+
+                            if (DateTime.UtcNow - startMonitorTime > TimeSpan.FromSeconds(30))
+                            {
+                                job.State = ServerState.Stopping;
                             }
                         }
 
@@ -737,6 +749,8 @@ namespace BenchmarkServer
                 {
                     if (e != null && e.Data != null)
                     {
+                        Log.WriteLine(e.Data);
+
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             Log.WriteLine($"Application is now running...");
