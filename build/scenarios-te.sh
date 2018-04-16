@@ -26,12 +26,11 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
 
-defaultArgs = "--description TechEmpower --webHost Docker"
+defaultArgs = "--description TechEmpower --webHost Docker -t TechEmpower"
 actixJobs="$defaultArgs -j $ROOT/src/Benchmarks/benchmarks.te.actix.json"
 aspnetcoreJobs="$defaultArgs -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore.json"
 nodejsJobs="$defaultArgs -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json"
 undertowJobs="$defaultArgs -j $ROOT/src/Benchmarks/benchmarks.te.undertow.json"
-
 
 jobs=(
 
