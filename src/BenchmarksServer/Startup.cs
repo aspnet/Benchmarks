@@ -372,13 +372,14 @@ namespace BenchmarkServer
                                     }
                                     else
                                     {
+                                        Log.WriteLine($"Job failed with CloneRestoreAndBuild");
                                         job.State = ServerState.Failed;
                                     }
                                 }
 
+                                startMonitorTime = DateTime.UtcNow;
                                 var lastMonitorTime = startMonitorTime;
                                 var oldCPUTime = TimeSpan.Zero;
-                                startMonitorTime = DateTime.UtcNow;
 
                                 disposed = false;
 
@@ -527,6 +528,7 @@ namespace BenchmarkServer
                                 // Start perfview
                                 var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
                                 var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
+                                Log.WriteLine("Trace collected");
                                 job.State = ServerState.TraceCollected;
                             }
                         }
