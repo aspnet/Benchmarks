@@ -93,7 +93,7 @@ namespace Benchmarks.ServerJob
         public string Url { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public WebHost WebHost { get; set; } = WebHost.KestrelLibuv;
+        public WebHost WebHost { get; set; } = WebHost.KestrelSockets;
 
         public bool UseRuntimeStore { get; set; }
 

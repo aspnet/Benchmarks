@@ -340,7 +340,10 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (OperatingSystem != OperatingSystem.Windows && job.WebHost != WebHost.KestrelSockets && job.WebHost != WebHost.KestrelLibuv)
+                                if (OperatingSystem == OperatingSystem.Linux && 
+                                    (job.WebHost == WebHost.IISInProcess || 
+                                    job.WebHost != WebHost.IISOutOfProcess)
+                                    )
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
@@ -1416,6 +1419,8 @@ namespace BenchmarkServer
                 case WebHost.IISOutOfProcess:
                     arguments += $" --server IISOutOfProcess";
                     break;
+                default:
+                    throw new NotSupportedException("Invalid WebHost value for benchmarks");
             }
 
             if (job.KestrelThreadCount.HasValue)
