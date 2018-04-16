@@ -447,7 +447,10 @@ namespace BenchmarkServer
                                             var output = new StringBuilder();
 
                                             // Get docker stats
-                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId, outputDataReceived: d => output.AppendLine(d));
+                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId, 
+                                                outputDataReceived: d => output.AppendLine(d),
+                                                log: false);
+
                                             var data = output.ToString().Trim().Split('-');
 
                                             // Format is {value}%
@@ -529,10 +532,9 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Starting)
                         {
-                            Log.WriteLine($"Job didn't start during the expected delay");
-
                             if (DateTime.UtcNow - startMonitorTime > TimeSpan.FromSeconds(30))
                             {
+                                Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Stopping;
                             }
                         }

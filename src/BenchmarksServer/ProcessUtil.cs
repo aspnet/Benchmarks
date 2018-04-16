@@ -11,11 +11,22 @@ namespace BenchmarkServer
 {
     public static class ProcessUtil
     {
-        public static ProcessResult Run(string filename, string arguments, TimeSpan? timeout = null, string workingDirectory = null,
-            bool throwOnError = true, IDictionary<string, string> environmentVariables = null, Action<string> outputDataReceived = null)
+        public static ProcessResult Run(
+            string filename, 
+            string arguments, 
+            TimeSpan? timeout = null, 
+            string workingDirectory = null,
+            bool throwOnError = true, 
+            IDictionary<string, string> environmentVariables = null, 
+            Action<string> outputDataReceived = null,
+            bool log = false)
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
-            Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
+
+            if (log)
+            {
+                Log.WriteLine($"[{logWorkingDirectory}] {filename} {arguments}");
+            }
 
             var process = new Process()
             {
