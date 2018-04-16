@@ -159,6 +159,9 @@ namespace BenchmarksClient.Workers
             }
             try
             {
+                _stopped = true;
+                _workTimer.Stop();
+
                 foreach (var callback in _recvCallbacks)
                 {
                     // stops stat collection from happening quicker than StopAsync
@@ -166,16 +169,12 @@ namespace BenchmarksClient.Workers
                     callback.Dispose();
                 }
 
-                _workTimer.Stop();
-
-                _stopped = true;
-
                 // stop connections
                 Log("Stopping connections");
                 var tasks = new List<Task>(_connections.Count);
                 foreach (var connection in _connections)
                 {
-                    tasks.Add(connection.StopAsync());
+                    tasks.Add(connection.DisposeAsync());
                 }
 
                 CalculateStatistics();
@@ -220,7 +219,7 @@ namespace BenchmarksClient.Workers
                 var hubConnectionBuilder = new HubConnectionBuilder()
                 .WithUrl(_job.ServerBenchmarkUri, httpConnectionOptions =>
                 {
-                    httpConnectionOptions.MessageHandlerFactory = _ => _httpClientHandler;
+                    httpConnectionOptions.HttpMessageHandlerFactory = _ => _httpClientHandler;
                     httpConnectionOptions.Transports = transportType;
 
                     // REVIEW: Is there a CopyTo overload or something that turns this into a one liner?
@@ -234,7 +233,7 @@ namespace BenchmarksClient.Workers
                 {
                     if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
                     {
-                        hubConnectionBuilder.WithLogging(builder =>
+                        hubConnectionBuilder.ConfigureLogging(builder =>
                         {
                             builder.AddConsole();
                             builder.SetMinimumLevel(level);
@@ -269,6 +268,10 @@ namespace BenchmarksClient.Workers
                 // setup event handlers
                 _recvCallbacks.Add(connection.On<DateTime>("send", utcNow =>
                 {
+                    if (_stopped)
+                    {
+                        return;
+                    }
                     // TODO: Collect all the things
                     _requestsPerConnection[id] += 1;
 
@@ -292,9 +295,11 @@ namespace BenchmarksClient.Workers
                     if (!_stopped)
                     {
                         var error = $"Connection closed early: {e}";
-                        _job.Error += Environment.NewLine + error;
+                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}]" + error;
                         Log(error);
                     }
+
+                    return Task.CompletedTask;
                 };
             }
         }
