@@ -710,8 +710,8 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
-            var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
-                                              $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
+            var command = useHostNetworking ? $"run -d --pull {environmentArguments} {job.Arguments} --network host {imageName}" :
+                                              $"run -d --pull {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
 
             var result = ProcessUtil.Run("docker", $"{command} ");
             var containerId = result.StandardOutput.Trim();
