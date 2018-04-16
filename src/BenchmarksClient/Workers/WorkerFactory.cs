@@ -20,7 +20,7 @@ namespace BenchmarksClient.Workers
             // SignalR
             Workers[Worker.SignalR] = clientJob => new SignalRWorker(clientJob);
 
-            // SignalR
+            // Wait
             Workers[Worker.Wait] = clientJob => new WaitWorker(clientJob);
         }
 
