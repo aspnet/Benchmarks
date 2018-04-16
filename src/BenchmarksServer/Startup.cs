@@ -719,6 +719,8 @@ namespace BenchmarkServer
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
+                Log.WriteLine($"Waiting for startup signal: '{job.ReadyStateText}'...");
+
                 var process = new Process()
                 {
                     StartInfo = {
@@ -730,8 +732,6 @@ namespace BenchmarkServer
                 },
                     EnableRaisingEvents = true
                 };
-
-                Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}' in container {containerId}");
 
                 process.OutputDataReceived += (_, e) =>
                 {
@@ -750,6 +750,8 @@ namespace BenchmarkServer
             }
             else
             {
+                Log.WriteLine($"Waiting for application to startup...");
+
                 // Wait until the service is reachable to avoid races where the container started but isn't
                 // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients 
                 // will fail to connect and the job will be cleaned up properly
@@ -770,10 +772,11 @@ namespace BenchmarkServer
 
         private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
-            for (var i = 0; i < maxRetries; ++i)
+            for (var i = 1; i <= maxRetries; ++i)
             {
                 try
                 {
+                    Log.WriteLine($"Trying to access server, attemp #{i} ...");
                     using (var tcpClient = new TcpClient())
                     {
                         var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
