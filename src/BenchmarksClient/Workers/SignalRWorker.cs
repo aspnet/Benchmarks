@@ -159,16 +159,15 @@ namespace BenchmarksClient.Workers
             }
             try
             {
+                _stopped = true;
+                _workTimer.Stop();
+
                 foreach (var callback in _recvCallbacks)
                 {
                     // stops stat collection from happening quicker than StopAsync
                     // and we can do all the calculations while close is occurring
                     callback.Dispose();
                 }
-
-                _workTimer.Stop();
-
-                _stopped = true;
 
                 // stop connections
                 Log("Stopping connections");
@@ -234,7 +233,7 @@ namespace BenchmarksClient.Workers
                 {
                     if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
                     {
-                        hubConnectionBuilder.WithLogging(builder =>
+                        hubConnectionBuilder.ConfigureLogging(builder =>
                         {
                             builder.AddConsole();
                             builder.SetMinimumLevel(level);
@@ -269,6 +268,10 @@ namespace BenchmarksClient.Workers
                 // setup event handlers
                 _recvCallbacks.Add(connection.On<DateTime>("send", utcNow =>
                 {
+                    if (_stopped)
+                    {
+                        return;
+                    }
                     // TODO: Collect all the things
                     _requestsPerConnection[id] += 1;
 
@@ -292,9 +295,11 @@ namespace BenchmarksClient.Workers
                     if (!_stopped)
                     {
                         var error = $"Connection closed early: {e}";
-                        _job.Error += Environment.NewLine + error;
+                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}]" + error;
                         Log(error);
                     }
+
+                    return Task.CompletedTask;
                 };
             }
         }
