@@ -529,10 +529,10 @@ namespace BenchmarkServer
                         {
                             lock (executionLock)
                             {
+                                disposed = true;
+
                                 timer?.Dispose();
                                 timer = null;
-
-                                disposed = true;
                             }
 
                             if (process != null)
