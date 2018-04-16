@@ -174,7 +174,7 @@ namespace BenchmarksClient.Workers
                 var tasks = new List<Task>(_connections.Count);
                 foreach (var connection in _connections)
                 {
-                    tasks.Add(connection.StopAsync());
+                    tasks.Add(connection.DisposeAsync());
                 }
 
                 CalculateStatistics();
