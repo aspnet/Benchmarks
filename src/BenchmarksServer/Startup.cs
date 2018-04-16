@@ -342,7 +342,7 @@ namespace BenchmarkServer
                             {
                                 if (OperatingSystem == OperatingSystem.Linux && 
                                     (job.WebHost == WebHost.IISInProcess || 
-                                    job.WebHost != WebHost.IISOutOfProcess)
+                                    job.WebHost == WebHost.IISOutOfProcess)
                                     )
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
