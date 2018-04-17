@@ -16,13 +16,13 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
+    <ProjectReference Include="..\Benchmarks.ServerJob\Benchmarks.ServerJob.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.1" PrivateAssets="All" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" PrivateAssets="All" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
