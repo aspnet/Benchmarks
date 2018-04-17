@@ -1,5 +1,5 @@
+BEGIN;
 
-DROP TABLE IF EXISTS World;
 CREATE TABLE  World (
   id integer NOT NULL,
   randomNumber integer NOT NULL default 0,
@@ -8,9 +8,8 @@ CREATE TABLE  World (
 GRANT SELECT, UPDATE ON World to benchmarkdbuser;
 
 INSERT INTO World (id, randomnumber)
-SELECT x.id, random() * 10000 + 1 FROM generate_series(1,10000) as x(id);
+SELECT x.id, floor(random() * 10000 + 1) FROM generate_series(1,10000) as x(id);
 
-DROP TABLE IF EXISTS Fortune;
 CREATE TABLE Fortune (
   id integer NOT NULL,
   message varchar(2048) NOT NULL,
@@ -31,8 +30,6 @@ INSERT INTO Fortune (id, message) VALUES (10, 'Computers make very fast, very ac
 INSERT INTO Fortune (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO Fortune (id, message) VALUES (12, 'フレームワークのベンチマーク');
 
-
-DROP TABLE IF EXISTS "World";
 CREATE TABLE  "World" (
   id integer NOT NULL,
   randomNumber integer NOT NULL default 0,
@@ -41,9 +38,8 @@ CREATE TABLE  "World" (
 GRANT SELECT, UPDATE ON "World" to benchmarkdbuser;
 
 INSERT INTO "World" (id, randomnumber)
-SELECT x.id, random() * 10000 + 1 FROM generate_series(1,10000) as x(id);
+SELECT x.id, floor(random() * 10000 + 1) FROM generate_series(1,10000) as x(id);
 
-DROP TABLE IF EXISTS "Fortune";
 CREATE TABLE "Fortune" (
   id integer NOT NULL,
   message varchar(2048) NOT NULL,
@@ -63,3 +59,5 @@ INSERT INTO "Fortune" (id, message) VALUES (9, 'Feature: A bug with seniority.')
 INSERT INTO "Fortune" (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.');
 INSERT INTO "Fortune" (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO "Fortune" (id, message) VALUES (12, 'フレームワークのベンチマーク');
+
+COMMIT;
