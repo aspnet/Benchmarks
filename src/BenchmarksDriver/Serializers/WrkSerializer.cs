@@ -306,7 +306,6 @@ namespace BenchmarksDriver.Serializers
                         [Framework] [nvarchar](50) NOT NULL,
                         [RuntimeStore] [bit] NOT NULL,
                         [Scheme] [nvarchar](50) NOT NULL,
-                        [Sources] [nvarchar](50) NULL,
                         [ConnectionFilter] [nvarchar](50) NULL,
                         [WebHost] [nvarchar](50) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
@@ -378,7 +377,6 @@ namespace BenchmarksDriver.Serializers
                            ,[Framework]
                            ,[RuntimeStore]
                            ,[Scheme]
-                           ,[Sources]
                            ,[ConnectionFilter]
                            ,[WebHost]
                            ,[KestrelThreadCount]
@@ -404,7 +402,6 @@ namespace BenchmarksDriver.Serializers
                            ,@Framework
                            ,@RuntimeStore
                            ,@Scheme
-                           ,@Sources
                            ,@ConnectionFilter
                            ,@WebHost
                            ,@KestrelThreadCount
@@ -438,7 +435,6 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
-                    p.AddWithValue("@Sources", source != null ? (object)ConvertToSqlString(source) : DBNull.Value);
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
@@ -456,11 +452,6 @@ namespace BenchmarksDriver.Serializers
                     await command.ExecuteNonQueryAsync();
                 }
             }
-        }
-
-        private static string ConvertToSqlString(IEnumerable<Source> sources)
-        {
-            return string.Join(",", sources.Select(s => ConvertToSqlString(s)));
         }
 
         private static string ConvertToSqlString(Source source)
