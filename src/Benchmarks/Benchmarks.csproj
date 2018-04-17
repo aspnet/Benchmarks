@@ -29,6 +29,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+    <!-- Temporary fix for MVC compiled views -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
+    
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
 
