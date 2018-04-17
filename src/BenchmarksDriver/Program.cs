@@ -818,9 +818,7 @@ namespace BenchmarksDriver
 
                             Console.WriteLine(serverJob.Error);
 
-                            response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
-                            LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-
+                            // Returning will also send a Delete message to the server
                             return -1;
                         }
                         else if (serverJob.State == ServerState.NotSupported)
