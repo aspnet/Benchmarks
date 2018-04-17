@@ -26,9 +26,10 @@
   "Json-AspNetCore": {
     "Path": "/json",
     "PresetHeaders": "Json",
-    "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
-    "DockerImageName": "aspnetcore_json",
-    "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-json.dockerfile",
+      "DockerImageName": "aspnetcore_json"
+    }
   },
   "FortunesPostgreSql-AspNetCore": {
     "Path": "/fortunes/raw",
