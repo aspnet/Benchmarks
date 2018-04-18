@@ -1485,7 +1485,10 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                     standardOutput.AppendLine(e.Data);
 
-                    if (job.State == ServerState.Starting && (job.ReadyStateText == null || e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0))
+                    if (job.State == ServerState.Starting && 
+                        ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        e.Data.ToLowerInvariant().Contains("started") || 
+                        e.Data.ToLowerInvariant().Contains("listening")))
                     {
                         MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
                     }
