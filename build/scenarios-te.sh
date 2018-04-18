@@ -30,6 +30,7 @@ common="--description TechEmpower --webHost Docker -t TechEmpower"
 actixJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.actix.json"
 aspnetcoreJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore.json"
 aspnetcore21Jobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore21.json"
+nettyJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.netty.json"
 nodejsJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json"
 undertowJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.undertow.json"
 
@@ -64,6 +65,11 @@ jobs=(
   "-n PlaintextNonPipelined-Actix $actixJobs"
   "-n Json-Actix $actixJobs"
   "-n FortunesPostgreSql-Actix $actixJobs"
+
+    # Netty
+  "-n Plaintext-Netty $nettyJobs"
+  "-n PlaintextNonPipelined-Netty $nettyJobs"
+  "-n Json-Netty $nettyJobs"
 )
 
 # build driver

@@ -1,0 +1,28 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/Java/netty/netty.dockerfile",
+      "DockerImageName": "netty",
+      "DockerContextDirectory": "frameworks/Java/netty/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-Netty": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-Netty": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-Netty": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  }
+}
