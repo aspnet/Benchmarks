@@ -8,7 +8,7 @@ namespace BenchmarkServer
 {
     public static class Git
     {
-        private static readonly TimeSpan CloneTimeout = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan CloneTimeout = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan CheckoutTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan SubModuleTimeout = TimeSpan.FromSeconds(30);
 
