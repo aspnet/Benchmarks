@@ -31,7 +31,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private const string CurrentAspNetCoreVersion = "2.0.6";
+        private const string CurrentAspNetCoreVersion = "2.0.7";
         private const string PerfViewVersion = "P2.0.12";
 
         private static readonly HttpClient _httpClient;
@@ -944,7 +944,7 @@ namespace BenchmarkServer
                     actualAspNetCoreVersion = CurrentAspNetCoreVersion;
                     break;
                 case "latest":
-                    aspNetCoreVersion = "2.1-*";
+                    aspNetCoreVersion = "2.2-*";
                     actualAspNetCoreVersion = await GetLatestAspNetCoreRuntimeVersion(buildToolsPath);
                     break;
                 default:
@@ -986,7 +986,7 @@ namespace BenchmarkServer
                 }
 
                 // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
-                if (targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                if (job.UseRuntimeStore && targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install aspnet runtime required for this scenario
                     ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath",
@@ -1027,7 +1027,7 @@ namespace BenchmarkServer
                 }
 
                 // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
-                if (targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                if (job.UseRuntimeStore && targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install runtime required by coherence universe
                     ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path",
