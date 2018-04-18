@@ -1,17 +1,17 @@
 ﻿{
   "Default": {
     "Source": {
-      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
-      "BranchOrCommit": "master",
+      "Repository": "https://github.com/aspnet/FrameworkBenchmarks.git",
+      "BranchOrCommit": "netcoreapp21",
       "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
-      "DockerImageName": "aspnetcore",
+      "DockerImageName": "aspnetcore21",
       "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
     },
     "Client": "Wrk",
     "Port": 8080,
     "ReadyStateText": "Application started."
   },
-  "Plaintext-AspNetCore": {
+  "Plaintext-AspNetCore21": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
@@ -19,24 +19,24 @@
       "PipelineDepth": 16
     }
   },
-  "PlaintextNonPipelined-AspNetCore": {
+  "PlaintextNonPipelined-AspNetCore21": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext"
   },
-  "Json-AspNetCore": {
+  "Json-AspNetCore21": {
     "Path": "/json",
     "PresetHeaders": "Json",
     "Source": {
       "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-json.dockerfile",
-      "DockerImageName": "aspnetcore_json"
+      "DockerImageName": "aspnetcore21_json"
     }
   },
-  "FortunesPostgreSql-AspNetCore": {
+  "FortunesPostgreSql-AspNetCore21": {
     "Path": "/fortunes/raw",
     "PresetHeaders": "Html",
     "Source": {
       "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-raw.dockerfile",
-      "DockerImageName": "aspnetcore_middleware_raw"
+      "DockerImageName": "aspnetcore21_middleware_raw"
     }
   }
 }
