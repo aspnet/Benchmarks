@@ -1141,21 +1141,18 @@ namespace BenchmarkServer
             // Copy all runtime attachments in all runtime folders
             foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Runtime))
             {
-                var runtimeRoot = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App");
+                var runtimeFolder = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeFrameworkVersion);
 
-                foreach (var runtimeFolder in Directory.GetDirectories(runtimeRoot))
+                var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
+
+                Log.WriteLine($"Creating runtime file: {filename}");
+
+                if (File.Exists(filename))
                 {
-                    var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
-
-                    Log.WriteLine($"Creating runtime file: {filename}");
-
-                    if (File.Exists(filename))
-                    {
-                        File.Delete(filename);
-                    }
-
-                    File.Copy(attachment.TempFilename, filename);
+                    File.Delete(filename);
                 }
+
+                File.Copy(attachment.TempFilename, filename);
             }
 
             return (benchmarkedDir, dotnetDir);

@@ -1240,7 +1240,7 @@ namespace BenchmarksDriver
                 requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(attachmentFilename));
                 requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
                 requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
-                requestContent.Add(new StringContent(AttachmentLocation.Output.ToString()), nameof(AttachmentViewModel.Location));
+                requestContent.Add(new StringContent(location.ToString()), nameof(AttachmentViewModel.Location));
 
                 await _httpClient.PostAsync(serverJobUri + "/attachment", requestContent);
             }
