@@ -83,6 +83,7 @@ namespace BenchmarkServer
 
             // Use the same root temporary folder so we can clean it on restarts
             _rootTempDir = Path.Combine(Path.GetTempPath(), "BenchmarksServer");
+            Directory.CreateDirectory(_rootTempDir);
             Log.WriteLine($"Cleaning temporary job files '{_rootTempDir}' ...");
             foreach (var tempFolder in Directory.GetDirectories(_rootTempDir))
             {
