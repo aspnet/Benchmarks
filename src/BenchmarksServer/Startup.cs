@@ -82,14 +82,9 @@ namespace BenchmarkServer
             }
 
             // Use the same root temporary folder so we can clean it on restarts
-            Log.WriteLine($"Cleaning temporary job files '{_rootTempDir}'");
             _rootTempDir = Path.Combine(Path.GetTempPath(), "BenchmarksServer");
+            Log.WriteLine($"Cleaning temporary job files '{_rootTempDir}'");
             File.Delete(_rootTempDir);
-
-
-            _rootTempDir = Path.Combine(_rootTempDir, Path.GetRandomFileName());
-            Directory.CreateDirectory(_rootTempDir);
-            Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
 
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
