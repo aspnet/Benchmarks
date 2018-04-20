@@ -32,10 +32,9 @@ namespace BenchmarksClient.Workers
             _httpClient = new HttpClient(_httpClientHandler);
         }
 
-        public WrkWorker(ClientJob clientJob)
-        {
-            _job = clientJob;            
 
+        private void InitializeJob()
+        {
             _job.ClientProperties.TryGetValue("ScriptName", out var scriptName);
 
             if (_job.ClientProperties.TryGetValue("PipelineDepth", out var pipelineDepth))
@@ -66,8 +65,11 @@ namespace BenchmarksClient.Workers
             JobLogText = jobLogText;
         }
 
-        public async Task StartAsync()
+        public async Task StartJobAsync(ClientJob job)
         {
+            _job = job;
+            InitializeJob();
+
             await MeasureFirstRequestLatencyAsync(_job);
 
             _job.State = ClientState.Running;
@@ -76,7 +78,7 @@ namespace BenchmarksClient.Workers
             _process = StartProcess(_job);
         }
 
-        public Task StopAsync()
+        public Task StopJobAsync()
         {
             if (_process != null && !_process.HasExited)
             {
@@ -380,6 +382,13 @@ namespace BenchmarksClient.Workers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        public Task DisposeAsync()
+        {
+            _process.Dispose();
+            _process = null;
+            return Task.CompletedTask;
         }
     }
 }

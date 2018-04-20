@@ -32,12 +32,15 @@ namespace BenchmarksClient.Workers
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
+        private TimeSpan _sendDelay = TimeSpan.FromMinutes(10);
         private List<(double sum, int count)> _latencyAverage;
         private double _clientToServerOffset;
+        private DateTime _whenLastJobCompleted;
+        private int _totalRequests;
 
-        public SignalRWorker(ClientJob job)
+        private void InitializeJob()
         {
-            _job = job;
+            _stopped = false;
 
             Debug.Assert(_job.Connections > 0, "There must be more than 0 connections");
 
@@ -85,14 +88,24 @@ namespace BenchmarksClient.Workers
                 throw new Exception("Scenario wasn't specified");
             }
 
+            if (_job.ClientProperties.TryGetValue("SendDelay", out var sendDelay))
+            {
+                _sendDelay = TimeSpan.FromMinutes(int.Parse(sendDelay));
+            }
+
             jobLogText += "]";
             JobLogText = jobLogText;
-
-            CreateConnections(transportType);
+            if (_connections == null)
+            {
+                CreateConnections(transportType);
+            }
         }
 
-        public async Task StartAsync()
+        public async Task StartJobAsync(ClientJob job)
         {
+            _job = job;
+            Log($"Starting Job");
+            InitializeJob();
             // start connections
             var tasks = new List<Task>(_connections.Count);
             foreach (var connection in _connections)
@@ -107,8 +120,7 @@ namespace BenchmarksClient.Workers
 
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
-
-            _workTimer.Start();
+            _workTimer.Restart();
 
             try
             {
@@ -144,6 +156,16 @@ namespace BenchmarksClient.Workers
                             }
                         }
                         break;
+                    case "echoIdle":
+                        while (!cts.IsCancellationRequested)
+                        {
+                            await Task.Delay(_sendDelay);
+                            for (var i = 0; i < _connections.Count; i++)
+                            {
+                                await _connections[i].SendAsync("Echo", DateTime.UtcNow);
+                            }
+                        }
+                        break;
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
                 }
@@ -156,11 +178,12 @@ namespace BenchmarksClient.Workers
             }
 
             cts.Token.WaitHandle.WaitOne();
-            await StopAsync();
+            await StopJobAsync();
         }
 
-        public async Task StopAsync()
+        public async Task StopJobAsync()
         {
+            Log($"Stoping Job: {_job.SpanId}");
             if (_stopped || !await _lock.WaitAsync(0))
             {
                 // someone else is stopping, we only need to do it once
@@ -170,36 +193,44 @@ namespace BenchmarksClient.Workers
             {
                 _stopped = true;
                 _workTimer.Stop();
-
-                foreach (var callback in _recvCallbacks)
-                {
-                    // stops stat collection from happening quicker than StopAsync
-                    // and we can do all the calculations while close is occurring
-                    callback.Dispose();
-                }
-
-                // stop connections
-                Log("Stopping connections");
-                var tasks = new List<Task>(_connections.Count);
-                foreach (var connection in _connections)
-                {
-                    tasks.Add(connection.DisposeAsync());
-                }
-
                 CalculateStatistics();
-
-                await Task.WhenAll(tasks);
-
-                // TODO: Remove when clients no longer take a long time to "cool down"
-                await Task.Delay(5000);
-
-                Log("Stopped worker");
             }
             finally
             {
                 _lock.Release();
                 _job.State = ClientState.Completed;
+                _whenLastJobCompleted = DateTime.UtcNow;
             }
+        }
+
+        // We want to move code from StopAsync into Release(). Any code that would prevent
+        // us from reusing the connnections. 
+        public async Task DisposeAsync()
+        {
+            foreach (var callback in _recvCallbacks)
+            {
+                // stops stat collection from happening quicker than StopAsync
+                // and we can do all the calculations while close is occurring
+                callback.Dispose();
+            }
+
+            // stop connections
+            Log("Stopping connections");
+            var tasks = new List<Task>(_connections.Count);
+            foreach (var connection in _connections)
+            {
+                tasks.Add(connection.DisposeAsync());
+            }
+
+            await Task.WhenAll(tasks);
+            Log("Connections have been disposed");
+
+            _httpClientHandler.Dispose();
+
+            // TODO: Remove when clients no longer take a long time to "cool down"
+            await Task.Delay(5000);
+
+            Log("Stopped worker");
         }
 
         public void Dispose()
@@ -321,12 +352,13 @@ namespace BenchmarksClient.Workers
         private void CalculateStatistics()
         {
             // RPS
-            var totalRequests = 0;
+            var requestDelta = 0;
+            var newTotalRequests = 0;
             var min = int.MaxValue;
             var max = 0;
             for (var i = 0; i < _requestsPerConnection.Count; i++)
             {
-                totalRequests += _requestsPerConnection[i];
+                newTotalRequests += _requestsPerConnection[i];
 
                 if (_requestsPerConnection[i] > max)
                 {
@@ -337,6 +369,10 @@ namespace BenchmarksClient.Workers
                     min = _requestsPerConnection[i];
                 }
             }
+
+            requestDelta = newTotalRequests - _totalRequests;
+            _totalRequests = newTotalRequests;
+
             // Review: This could be interesting information, see the gap between most active and least active connection
             // Ideally they should be within a couple percent of each other, but if they aren't something could be wrong
             Log($"Least Requests per Connection: {min}");
@@ -348,10 +384,10 @@ namespace BenchmarksClient.Workers
                 return;
             }
 
-            var rps = (double)totalRequests / _workTimer.ElapsedMilliseconds * 1000;
+            var rps = (double)requestDelta / _workTimer.ElapsedMilliseconds * 1000;
             Log($"Total RPS: {rps}");
             _job.RequestsPerSecond = rps;
-            _job.Requests = totalRequests;
+            _job.Requests = requestDelta;
 
             // Latency
             CalculateLatency();
@@ -445,6 +481,11 @@ namespace BenchmarksClient.Workers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        public DateTime GetWhenLastJobFinished()
+        {
+            return _whenLastJobCompleted;
         }
     }
 }

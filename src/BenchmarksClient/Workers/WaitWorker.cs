@@ -16,13 +16,9 @@ namespace BenchmarksClient.Workers
 
         public string JobLogText { get; set; }
 
-        public WaitWorker(ClientJob clientJob)
+        public Task StartJobAsync(ClientJob job)
         {
-            _job = clientJob;            
-        }
-
-        public Task StartAsync()
-        {
+            _job = job;
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
@@ -37,7 +33,7 @@ namespace BenchmarksClient.Workers
             return Task.CompletedTask;
         }
 
-        public async Task StopAsync()
+        public async Task StopJobAsync()
         {
             try
             {
@@ -57,6 +53,11 @@ namespace BenchmarksClient.Workers
             return;
         }
 
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public void Dispose()
         {
         }
@@ -65,6 +66,11 @@ namespace BenchmarksClient.Workers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        public DateTime GetWhenLastJobFinished()
+        {
+            return DateTime.UtcNow;
         }
     }
 }

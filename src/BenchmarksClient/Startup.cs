@@ -100,30 +100,53 @@ namespace BenchmarkClient
         private static async Task ProcessJobs(CancellationToken cancellationToken)
         {
             IWorker worker = null;
-
+            ClientJob job = null;
+            var whenLastJobCompleted = DateTime.MinValue;
+            var waitForMoreJobs = false;
             while (!cancellationToken.IsCancellationRequested)
             {
                 var allJobs = _jobs.GetAll();
-                var job = allJobs.FirstOrDefault();
+                // Dequeue the first job. We will only pass jobs that have
+                // the same SpanId to the current worker.
+                job = allJobs.FirstOrDefault(newJob =>
+                {
+                    // If the job is null then we don't have a span id to match against. 
+                    // Otherwise we want to pick jobs with the same span id.
+                    return job == null || string.Equals(newJob.SpanId, job.SpanId, StringComparison.OrdinalIgnoreCase);
+                });
+
                 if (job != null)
                 {
+                    // A spanId means that a span is defined and we might run
+                    // multiple jobs.
+                    if (!string.IsNullOrEmpty(job.SpanId))
+                    {
+                        Log($"We have a span: {job.SpanId}");
+                        waitForMoreJobs = true;
+                    }
+                    Log($"Current Job state: {job.State}");
                     if (job.State == ClientState.Waiting)
                     {
                         Log($"Starting '{job.Client}' worker");
+                        Log($"Current Job SpanId '{job.SpanId}'");
                         job.State = ClientState.Starting;
 
                         try
                         {
-                            worker = WorkerFactory.CreateWorker(job);
+                            if (worker == null)
+                            {
+                                worker = WorkerFactory.CreateWorker(job);
+                            }
 
                             if (worker == null)
                             {
                                 Log($"Error while creating the worker");
                                 job.State = ClientState.Deleting;
+                                whenLastJobCompleted = DateTime.UtcNow;
                             }
                             else
                             {
-                                await worker.StartAsync();
+                                await worker.StartJobAsync(job);
                             }
                         }
                         catch (Exception e)
@@ -153,19 +176,48 @@ namespace BenchmarkClient
                         {
                             if (worker != null)
                             {
-                                await worker.StopAsync();
+                                await worker.StopJobAsync();
+
+                                // Reset the last job completed indicator. 
+                                whenLastJobCompleted = DateTime.UtcNow;
                             }
                         }
                         finally
                         {
-                            worker?.Dispose();
-                            worker = null;
-
                             _jobs.Remove(job.Id);
+                            job = null;
                         }
                     }
                 }
                 await Task.Delay(100);
+
+                // job will be null if there aren't any more jobs with the same spanId.
+                if (job == null)
+                {
+                    // Currently no jobs with the same span id exist so we check if we can
+                    // clearn out the worker to signal to the worker factory to create
+                    // a new one.
+                    if (worker != null)
+                    {
+                        var now = DateTime.UtcNow;
+
+                        // Disposing the worker conditions
+                        // 1. A span isn't defined so there won't be any more jobs for this worker
+                        // 2. We check that whenLastJob completed is something other that it's default value 
+                        //    and 10 seconds have passed since the last job was completed.
+                        if (!waitForMoreJobs || (whenLastJobCompleted != DateTime.MinValue &&  now - whenLastJobCompleted > TimeSpan.FromSeconds(10)))
+                        {
+                            Log("We've waited long enough. Let's get rid of the worker");
+                            waitForMoreJobs = false;
+                            await worker.DisposeAsync();
+                            worker = null;
+                        }
+                        else
+                        {
+                            Log("Waiting for a new job to enter the queue");
+                        }
+                    }
+                }
             }
         }
 

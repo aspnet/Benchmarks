@@ -548,6 +548,10 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Query = querystringOption.Value();
                 }
+                if (span > TimeSpan.Zero)
+                {
+                    _clientJob.SpanId = Guid.NewGuid().ToString("n");
+                }
 
                 switch (headers)
                 {
@@ -941,7 +945,6 @@ namespace BenchmarksDriver
                                 Latency99Percentile = clientJob.Latency.Within99thPercentile,
                                 TotalRequests = clientJob.Requests,
                                 Duration = clientJob.ActualDuration.TotalMilliseconds
-
                             };
 
                             results.Add(statistics);
