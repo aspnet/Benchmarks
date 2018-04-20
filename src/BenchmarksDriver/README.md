@@ -17,7 +17,7 @@ Options:
   -i|--iterations        The number of iterations.
   -x|--exclude           The number of best and worst and jobs to skip.  
   --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.
-  -f|--connectionFilter  Assembly-qualified name of the ConnectionFilter
+  -cf|--connectionFilter Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
   -n|--scenario          Benchmark scenario to run
   -m|--scheme            Scheme (http or https).  Default is http.
@@ -56,6 +56,8 @@ Options:
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
+  --fetch                Downloads the published application locally.
+  --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
 
 Properties of the Wrk client
 

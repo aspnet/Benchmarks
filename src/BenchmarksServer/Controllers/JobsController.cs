@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -217,7 +218,29 @@ namespace BenchmarkServer.Controllers
                 try
                 {
                     var job = _jobs.Find(id);
-                    return File(System.IO.File.ReadAllBytes(job.PerfViewTraceFile + ".zip"), "application/object");
+                    return File(System.IO.File.OpenRead(job.PerfViewTraceFile + ".zip"), "application/object");
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpGet("{id}/fetch")]
+        public IActionResult Fetch(int id)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+
+                    Log($"Driver fetching published application '{id}'");
+                    var zipPath = Path.Combine(Directory.GetParent(job.BasePath).FullName, "published.zip");
+                    ZipFile.CreateFromDirectory(job.BasePath, zipPath);
+
+                    return File(System.IO.File.OpenRead(zipPath), "application/object");
                 }
                 catch
                 {
