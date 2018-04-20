@@ -170,6 +170,8 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var jobsOptions = app.Option("-j|--jobs",
                 "The path or url to the jobs definition.", CommandOptionType.SingleValue);
+            var sendDelayOption = app.Option("-- sendDelay",
+                "Delay in minutes between sends for long running connection tests", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -548,6 +550,14 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Query = querystringOption.Value();
                 }
+                if (span > TimeSpan.Zero)
+                {
+                    _clientJob.SpanId = new Guid().ToString();
+                }
+                if (sendDelayOption.HasValue())
+                {
+                    _clientJob.SendDelay = TimeSpan.FromMinutes(int.Parse(sendDelayOption.Value()));
+                }
 
                 switch (headers)
                 {
@@ -885,7 +895,7 @@ namespace BenchmarksDriver
 
                         clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
-                        if (clientJob.State == ClientState.Completed)
+                        if (clientJob.State == ClientJobState.Completed)
                         {
                             LogVerbose($"Client Job completed");
 
@@ -1328,7 +1338,7 @@ namespace BenchmarksDriver
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
-                    if (clientJob.State == ClientState.Running || clientJob.State == ClientState.Completed)
+                    if (clientJob.State == ClientJobState.Running || clientJob.State == ClientJobState.Completed)
                     {
                         break;
                     }
@@ -1361,7 +1371,7 @@ namespace BenchmarksDriver
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
-                    if (clientJob.State == ClientState.Completed)
+                    if (clientJob.State == ClientJobState.Completed)
                     {
                         Log($"Scenario {scenarioName} completed on benchmark client");
                         LogVerbose($"Output: {clientJob.Output}");

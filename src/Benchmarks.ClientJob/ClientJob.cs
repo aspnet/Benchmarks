@@ -19,6 +19,8 @@ namespace Benchmarks.ClientJob
         {
             Id = clientJob.Id;
             Threads = clientJob.Threads;
+            SpanId = clientJob.SpanId;
+            SendDelay = clientJob.SendDelay;
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
             ClientProperties = new Dictionary<string, string>(clientJob.ClientProperties);
@@ -38,9 +40,14 @@ namespace Benchmarks.ClientJob
 
         public int Id { get; set; }
 
+        public string SpanId { get; set; }
+
         public Worker Client { get; set; } = Worker.Wrk;
 
         public int Threads { get; set; } = 32;
+
+        // Send delay in minutes for long running connection tests.
+        public TimeSpan SendDelay { get; set; } = TimeSpan.FromMinutes(10);
 
         public int Connections { get; set; } = 256;
 
@@ -57,7 +64,7 @@ namespace Benchmarks.ClientJob
         public string Query { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public ClientState State { get; set; }
+        public ClientJobState State { get; set; }
 
         public double RequestsPerSecond { get; set; }
         public int Requests { get; set; }

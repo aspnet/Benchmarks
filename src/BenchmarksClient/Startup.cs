@@ -100,30 +100,34 @@ namespace BenchmarkClient
         private static async Task ProcessJobs(CancellationToken cancellationToken)
         {
             IWorker worker = null;
-
+            var allJobs = _jobs.GetAll();
+            // Dequeue the first job. We will only pass jobs that have
+            // the same SpanId to the current worker.
+            var job = allJobs.FirstOrDefault();
             while (!cancellationToken.IsCancellationRequested)
             {
-                var allJobs = _jobs.GetAll();
-                var job = allJobs.FirstOrDefault();
                 if (job != null)
                 {
-                    if (job.State == ClientState.Waiting)
+                    if (job.State == ClientJobState.Waiting)
                     {
                         Log($"Starting '{job.Client}' worker");
-                        job.State = ClientState.Starting;
+                        job.State = ClientJobState.Starting;
 
                         try
                         {
-                            worker = WorkerFactory.CreateWorker(job);
+                            if (worker == null)
+                            {
+                                worker = WorkerFactory.CreateWorker(job);
+                            }
 
                             if (worker == null)
                             {
                                 Log($"Error while creating the worker");
-                                job.State = ClientState.Deleting;
+                                job.State = ClientJobState.Deleting;
                             }
                             else
                             {
-                                await worker.StartAsync();
+                                await worker.StartJobAsync(job);
                             }
                         }
                         catch (Exception e)
@@ -131,10 +135,10 @@ namespace BenchmarkClient
                             Log($"An unexpected error occured while starting the job {job.Id}");
                             Log(e.ToString());
 
-                            job.State = ClientState.Deleting;
+                            job.State = ClientJobState.Deleting;
                         }
                     }
-                    else if (job.State == ClientState.Running || job.State == ClientState.Completed)
+                    else if (job.State == ClientJobState.Running || job.State == ClientJobState.Completed)
                     {
                         var now = DateTime.UtcNow;
 
@@ -142,10 +146,10 @@ namespace BenchmarkClient
                         if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
                         {
                             Log($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
-                            job.State = ClientState.Deleting;
+                            job.State = ClientJobState.Deleting;
                         }
                     }
-                    else if (job.State == ClientState.Deleting)
+                    else if (job.State == ClientJobState.Deleting)
                     {
                         Log($"Deleting job {worker?.JobLogText ?? "no worker found"}");
 
@@ -153,19 +157,34 @@ namespace BenchmarkClient
                         {
                             if (worker != null)
                             {
-                                await worker.StopAsync();
+                                // We stop the worker but 
+                                await worker.StopJobAsync();
                             }
                         }
                         finally
                         {
-                            worker?.Dispose();
-                            worker = null;
-
                             _jobs.Remove(job.Id);
                         }
                     }
                 }
                 await Task.Delay(100);
+
+                allJobs = _jobs.GetAll();
+                job = allJobs.FirstOrDefault(clientJob =>
+                {
+                    return string.Equals(clientJob.SpanId, job.SpanId);
+                });
+                // If no more jobs with the span id exist then we can clear
+                // out the worker to signal to the worker factory to create
+                // a new worker.
+                if (job == null && worker != null)
+                {
+                    await worker.DisposeAsync();
+                    worker = null;
+
+                    // Get another job for the new worker we are going to create
+                    job = allJobs.FirstOrDefault();
+                }
             }
         }
 

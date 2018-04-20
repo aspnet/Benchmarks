@@ -34,9 +34,9 @@ namespace BenchmarksClient.Workers
         private string _scenario;
         private List<(double sum, int count)> _latencyAverage;
 
-        public SignalRWorker(ClientJob job)
+        private void InitializeJob()
         {
-            _job = job;
+            _stopped = false;
 
             Debug.Assert(_job.Connections > 0, "There must be more than 0 connections");
 
@@ -86,12 +86,16 @@ namespace BenchmarksClient.Workers
 
             jobLogText += "]";
             JobLogText = jobLogText;
-
-            CreateConnections(transportType);
+            if (_connections == null)
+            {
+                CreateConnections(transportType);
+            }
         }
 
-        public async Task StartAsync()
+        public async Task StartJobAsync(ClientJob job)
         {
+            _job = job;
+            InitializeJob();
             // start connections
             var tasks = new List<Task>(_connections.Count);
             foreach (var connection in _connections)
@@ -101,7 +105,7 @@ namespace BenchmarksClient.Workers
 
             await Task.WhenAll(tasks);
 
-            _job.State = ClientState.Running;
+            _job.State = ClientJobState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
             var cts = new CancellationTokenSource();
@@ -135,6 +139,16 @@ namespace BenchmarksClient.Workers
                             }
                         }
                         break;
+                    case "echoLongRunning":
+                        while (!cts.IsCancellationRequested)
+                        {
+                            await Task.Delay(_job.SendDelay);
+                            for (var i = 0; i < _connections.Count; i++)
+                            {
+                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
+                            }
+                        }
+                        break;
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
                 }
@@ -147,10 +161,10 @@ namespace BenchmarksClient.Workers
             }
 
             cts.Token.WaitHandle.WaitOne();
-            await StopAsync();
+            await StopJobAsync();
         }
 
-        public async Task StopAsync()
+        public async Task StopJobAsync()
         {
             if (_stopped || !await _lock.WaitAsync(0))
             {
@@ -162,24 +176,7 @@ namespace BenchmarksClient.Workers
                 _stopped = true;
                 _workTimer.Stop();
 
-                foreach (var callback in _recvCallbacks)
-                {
-                    // stops stat collection from happening quicker than StopAsync
-                    // and we can do all the calculations while close is occurring
-                    callback.Dispose();
-                }
-
-                // stop connections
-                Log("Stopping connections");
-                var tasks = new List<Task>(_connections.Count);
-                foreach (var connection in _connections)
-                {
-                    tasks.Add(connection.DisposeAsync());
-                }
-
                 CalculateStatistics();
-
-                await Task.WhenAll(tasks);
 
                 // TODO: Remove when clients no longer take a long time to "cool down"
                 await Task.Delay(5000);
@@ -189,8 +186,31 @@ namespace BenchmarksClient.Workers
             finally
             {
                 _lock.Release();
-                _job.State = ClientState.Completed;
+                _job.State = ClientJobState.Completed;
             }
+        }
+
+        // We want to move code from StopAsync into Release(). Any code that would prevent
+        // us from reusing the connnections. 
+        public async Task DisposeAsync()
+        {
+            foreach (var callback in _recvCallbacks)
+            {
+                // stops stat collection from happening quicker than StopAsync
+                // and we can do all the calculations while close is occurring
+                callback.Dispose();
+            }
+
+            // stop connections
+            Log("Stopping connections");
+            var tasks = new List<Task>(_connections.Count);
+            foreach (var connection in _connections)
+            {
+                tasks.Add(connection.DisposeAsync());
+            }
+
+            await Task.WhenAll(tasks);
+            _httpClientHandler.Dispose();
         }
 
         public void Dispose()
