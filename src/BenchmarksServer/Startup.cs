@@ -81,8 +81,13 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
 
-            _rootTempDir = Path.GetTempFileName();
+            // Use the same root temporary folder so we can clean it on restarts
+            Log.WriteLine($"Cleaning temporary job files '{_rootTempDir}'");
+            _rootTempDir = Path.Combine(Path.GetTempPath(), "BenchmarksServer");
             File.Delete(_rootTempDir);
+
+
+            _rootTempDir = Path.Combine(_rootTempDir, Path.GetRandomFileName());
             Directory.CreateDirectory(_rootTempDir);
             Log.WriteLine($"Created root temp directory '{_rootTempDir}'");
 
