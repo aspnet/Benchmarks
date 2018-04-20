@@ -1133,7 +1133,7 @@ namespace BenchmarkServer
                 return (null, null);
             }
 
-            Log.WriteLine($"Application published successfully in {DateTime.Now - startPublish}");
+            Log.WriteLine($"Application published successfully in {DateTime.UtcNow - startPublish}");
 
             // Copy all output attachments
             foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
