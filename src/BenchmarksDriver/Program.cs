@@ -136,6 +136,10 @@ namespace BenchmarksDriver
                 "Download specific server files. This argument can be used multiple times. e.g., -d \"published/wwwroot/picture.png\"", CommandOptionType.MultipleValue);
             var noCleanOption = app.Option("--no-clean",
                 "Don't delete the application on the server.", CommandOptionType.NoValue);
+            var fetchOption = app.Option("--fetch",
+                "Downloads the published application locally.", CommandOptionType.NoValue);
+            var fetchOutputOption = app.Option("--fetch-output",
+                @"Can be a file prefix (app will add *.DATE.RPS*.zip) , or a specific name (end in *.zip) and no DATE.RPS* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -605,7 +609,9 @@ namespace BenchmarksDriver
                     exclude, 
                     shutdownOption.Value(), 
                     span, 
-                    downloadFilesOption.Values, 
+                    downloadFilesOption.Values,
+                    fetchOption.HasValue(),
+                    traceOutputOption.Value(),
                     collectR2RLogOption.HasValue(),
                     traceOutputOption.Value(),
                     outputFileOption,
@@ -650,6 +656,8 @@ namespace BenchmarksDriver
             string shutdownEndpoint,
             TimeSpan span,
             List<string> downloadFiles,
+            bool fetch,
+            string fetchDestination,
             bool collectR2RLog,
             string traceDestination,
             CommandOption outputFileOption,
@@ -1001,14 +1009,37 @@ namespace BenchmarksDriver
                                 {
                                     // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
                                     if (String.IsNullOrEmpty(traceDestination))
+                                    {
                                         traceDestination = "trace";
+                                    }
 
-                                    string rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
+                                    var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
                                     traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".etl.zip";
                                 }
+
                                 Log($"Creating trace: {traceDestination}");
                                 await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
 
+                            }
+
+                            if (fetch)
+                            {
+                                Log($"Downloading published application...");
+                                if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // If it does not end with a *.zip then we add a DATE.zip to it
+                                    if (String.IsNullOrEmpty(fetchDestination))
+                                    {
+                                        fetchDestination = "published";
+                                    }
+
+                                    var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
+                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".zip";
+                                }
+
+                                var uri = serverJobUri + "/fetch";
+                                Log($"Creating published archive: {fetchDestination}");
+                                await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
