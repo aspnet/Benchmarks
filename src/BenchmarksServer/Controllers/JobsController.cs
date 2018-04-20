@@ -236,6 +236,7 @@ namespace BenchmarkServer.Controllers
                 {
                     var job = _jobs.Find(id);
 
+                    Log($"Driver fetching published application '{id}'");
                     var zipPath = Path.Combine(Directory.GetParent(job.BasePath).FullName, "published.zip");
                     ZipFile.CreateFromDirectory(job.BasePath, zipPath);
 

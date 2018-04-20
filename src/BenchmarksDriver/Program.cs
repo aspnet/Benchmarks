@@ -79,7 +79,7 @@ namespace BenchmarksDriver
             // ServerJob Options
             var databaseOption = app.Option("--database",
                 "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.", CommandOptionType.SingleValue);
-            var connectionFilterOption = app.Option("-f|--connectionFilter",
+            var connectionFilterOption = app.Option("-cf|--connectionFilter",
                 "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
                 "Maps to KestrelServerOptions.ThreadCount.",
@@ -139,7 +139,7 @@ namespace BenchmarksDriver
             var fetchOption = app.Option("--fetch",
                 "Downloads the published application locally.", CommandOptionType.NoValue);
             var fetchOutputOption = app.Option("--fetch-output",
-                @"Can be a file prefix (app will add *.DATE.RPS*.zip) , or a specific name (end in *.zip) and no DATE.RPS* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
+                @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -610,8 +610,8 @@ namespace BenchmarksDriver
                     shutdownOption.Value(), 
                     span, 
                     downloadFilesOption.Values,
-                    fetchOption.HasValue(),
-                    traceOutputOption.Value(),
+                    fetchOption.HasValue() || fetchOutputOption.HasValue(),
+                    fetchOutputOption.Value(),
                     collectR2RLogOption.HasValue(),
                     traceOutputOption.Value(),
                     outputFileOption,
@@ -1022,26 +1022,6 @@ namespace BenchmarksDriver
 
                             }
 
-                            if (fetch)
-                            {
-                                Log($"Downloading published application...");
-                                if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // If it does not end with a *.zip then we add a DATE.zip to it
-                                    if (String.IsNullOrEmpty(fetchDestination))
-                                    {
-                                        fetchDestination = "published";
-                                    }
-
-                                    var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
-                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".zip";
-                                }
-
-                                var uri = serverJobUri + "/fetch";
-                                Log($"Creating published archive: {fetchDestination}");
-                                await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
-                            }
-
                             var shouldComputeResults = results.Any() && iterations == i;
 
                             if (shouldComputeResults)
@@ -1179,6 +1159,26 @@ namespace BenchmarksDriver
                         }
 
                     } while (serverJob.State != ServerState.Stopped);
+
+                    // Download published application
+                    if (fetch)
+                    {
+                        Log($"Downloading published application...");
+                        if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // If it does not end with a *.zip then we add a DATE.zip to it
+                            if (String.IsNullOrEmpty(fetchDestination))
+                            {
+                                fetchDestination = "published";
+                            }
+
+                            fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
+                        }
+
+                        var uri = serverJobUri + "/fetch";
+                        Log($"Creating published archive: {fetchDestination}");
+                        await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
+                    }
 
                     // Download files
                     if (downloadFiles != null && downloadFiles.Any())
