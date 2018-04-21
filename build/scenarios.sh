@@ -51,7 +51,7 @@ jobs=(
   "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelLibuv $baseline $plaintextJobs"
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
-  "-n Plaintext --webHost KestrelSockets -f Benchmarks.PassthroughConnectionFilter $trend $plaintextJobs" 
+  "-n Plaintext --webHost KestrelSockets -cf Benchmarks.PassthroughConnectionFilter $trend $plaintextJobs" 
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs" 
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 
   "-n JsonPlatform --webHost KestrelLibuv $trend $jsonPlatformJobs" 
