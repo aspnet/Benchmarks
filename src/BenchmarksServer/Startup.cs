@@ -916,7 +916,7 @@ namespace BenchmarkServer
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
 
-            var sdkVersion = await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5).Trim();
+            var sdkVersion = (await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5)).Trim();
             Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             // In theory the actual latest runtime version should be taken from the dependencies.pros file from
