@@ -36,11 +36,11 @@ namespace BenchmarkServer
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
-        private static readonly string _dotnetInstallRepoUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/";
+        private static readonly string _dotnetInstallShUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh";
+        private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
         private static readonly string _latestAspnetCoreRuntimeUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
         private static readonly string _currentDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/Current/latest.version";
         private static readonly string _edgeDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
-        private static readonly string[] _dotnetInstallPaths = new string[] { "dotnet-install.sh", "dotnet-install.ps1" };
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
@@ -53,6 +53,7 @@ namespace BenchmarkServer
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
         private static readonly string _perfviewPath;
+        private static readonly string _dotnetInstallPath;
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
@@ -120,6 +121,28 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Found PerfView locally at '{_perfviewPath}'");
                 }
+            }
+
+            // Download dotnet-install at startup, once.
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName(), Path.GetFileName(_dotnetInstallPs1Url));
+
+                // Ensure the folder already exists
+                Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
+
+                Log.WriteLine($"Downloading dotnet-install.sh to '{_perfviewPath}'");
+                DownloadFileAsync(_dotnetInstallPs1Url, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
+            }
+            else
+            {
+                _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName(), Path.GetFileName(_dotnetInstallShUrl));
+
+                // Ensure the folder already exists
+                Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
+
+                Log.WriteLine($"Downloading dotnet-install.ps1 to '{_perfviewPath}'");
+                DownloadFileAsync(_dotnetInstallShUrl, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
             }
 
             Action shutdown = () =>
@@ -890,8 +913,6 @@ namespace BenchmarkServer
             //   are already using it.
             var buildToolsPath = Path.Combine(path, "buildtools");
 
-            await DownloadBuildTools(buildToolsPath);
-
             Log.WriteLine("Installing dotnet runtimes and sdk");
 
             // Computes the location of the benchmarked app
@@ -1234,27 +1255,6 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Detecting current runtime version: {currentDotnetRuntime}");
             return currentDotnetRuntime;
-        }
-
-        private static async Task DownloadBuildTools(string buildToolsPath)
-        {
-            if (!Directory.Exists(buildToolsPath))
-            {
-                Log.WriteLine("Creating build tools folder");
-
-                Directory.CreateDirectory(buildToolsPath);
-            }
-
-            const int maxRetries = 5;
-
-            foreach (var file in _dotnetInstallPaths)
-            {
-                var url = _dotnetInstallRepoUrl + file;
-
-                // If any of the files completely fails to download the entire thing will fail
-                var path = Path.Combine(buildToolsPath, file);
-                await DownloadFileAsync(url, path, maxRetries);
-            }
         }
 
         private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5)
