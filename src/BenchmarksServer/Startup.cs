@@ -996,7 +996,7 @@ namespace BenchmarkServer
                 {
                     // Install latest stable 2.0 SDK version (and associated runtime)
                     ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current -NoPath -SkipNonVersionedFiles",
-                        workingDirectory: buildToolsPath,
+                        workingDirectory: _dotnetInstallPath,
                         environmentVariables: env);
 
                     _installedRuntimes.Add("Current");
@@ -1006,7 +1006,7 @@ namespace BenchmarkServer
                 {
                     // Install latest SDK version (and associated runtime)
                     ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
 
                     _installedSdks.Add(sdkVersion);
@@ -1016,7 +1016,7 @@ namespace BenchmarkServer
                 {
                     // Install runtime required for this scenario
                     ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeFrameworkVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
@@ -1027,7 +1027,7 @@ namespace BenchmarkServer
                 {
                     // Install aspnet runtime required for this scenario
                     ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
 
                     _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
@@ -1039,7 +1039,7 @@ namespace BenchmarkServer
                 {
                     // Install latest stable 2.0 SDK version (and associated runtime)
                     ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current --no-path --skip-non-versioned-files",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
                     _installedRuntimes.Add("Current");
                 }
@@ -1048,7 +1048,7 @@ namespace BenchmarkServer
                 {
                     // Install latest SDK version (and associated runtime)
                     ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
                     _installedSdks.Add(sdkVersion);
                 }
@@ -1057,7 +1057,7 @@ namespace BenchmarkServer
                 {
                     // Install runtime required by coherence universe
                     ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeFrameworkVersion} --runtime dotnet --no-path --skip-non-versioned-files",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
 
                     _installedRuntimes.Add(runtimeFrameworkVersion);
@@ -1068,7 +1068,7 @@ namespace BenchmarkServer
                 {
                     // Install runtime required by coherence universe
                     ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
-                    workingDirectory: buildToolsPath,
+                    workingDirectory: _dotnetInstallPath,
                     environmentVariables: env);
 
                     _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
