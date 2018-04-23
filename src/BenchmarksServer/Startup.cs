@@ -924,7 +924,7 @@ namespace BenchmarkServer
 
             // Downloading latest SDK version
             var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
-            await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5);
+            await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5, timeout: 10);
 
             var sdkVersion = File.ReadAllText(sdkVersionPath).Trim();
             Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
@@ -1201,7 +1201,7 @@ namespace BenchmarkServer
         private static async Task<string> GetLatestRuntimeVersion(string buildToolsPath)
         {
             var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
-            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5);
+            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5, timeout: 10);
             var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
                 .Element("PropertyGroup")
                 .Element("MicrosoftNETCoreAppPackageVersion")
@@ -1217,7 +1217,7 @@ namespace BenchmarkServer
         private static async Task<string> GetLatestAspNetCoreRuntimeVersion(string buildToolsPath)
         {
             var aspnetCoreRuntimePath = Path.Combine(buildToolsPath, "aspnetCoreRuntimePath.json");
-            await DownloadFileAsync(_latestAspnetCoreRuntimeUrl, aspnetCoreRuntimePath, maxRetries: 5);
+            await DownloadFileAsync(_latestAspnetCoreRuntimeUrl, aspnetCoreRuntimePath, maxRetries: 5, timeout: 10);
             var aspnetCoreRuntime = JObject.Parse(File.ReadAllText(aspnetCoreRuntimePath));
 
             var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Last()["upper"];
@@ -1235,7 +1235,7 @@ namespace BenchmarkServer
         private static async Task<string> GetEdgeRuntimeVersion(string buildToolsPath)
         {
             var edgeRuntimePath = Path.Combine(buildToolsPath, "edgeDotnetRuntimeVersion.txt");
-            await DownloadFileAsync(_edgeDotnetRuntimeUrl, edgeRuntimePath, maxRetries: 5);
+            await DownloadFileAsync(_edgeDotnetRuntimeUrl, edgeRuntimePath, maxRetries: 5, timeout: 10);
             var content = await File.ReadAllLinesAsync(edgeRuntimePath);
 
             // Read the last line that contains the version
@@ -1251,7 +1251,7 @@ namespace BenchmarkServer
         private static async Task<string> GetCurrentRuntimeVersion(string buildToolsPath)
         {
             var currentRuntimePath = Path.Combine(buildToolsPath, "currentDotnetRuntimeVersion.txt");
-            await DownloadFileAsync(_currentDotnetRuntimeUrl, currentRuntimePath, maxRetries: 5);
+            await DownloadFileAsync(_currentDotnetRuntimeUrl, currentRuntimePath, maxRetries: 5, timeout: 10);
             var content = await File.ReadAllLinesAsync(currentRuntimePath);
 
             // Read the last line that contains the version
