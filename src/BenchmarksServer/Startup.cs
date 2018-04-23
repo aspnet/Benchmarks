@@ -131,7 +131,7 @@ namespace BenchmarkServer
                 // Ensure the folder already exists
                 Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
 
-                Log.WriteLine($"Downloading dotnet-install.sh to '{_perfviewPath}'");
+                Log.WriteLine($"Downloading dotnet-install.ps1 to '{_perfviewPath}'");
                 DownloadFileAsync(_dotnetInstallPs1Url, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
             }
             else
@@ -141,7 +141,7 @@ namespace BenchmarkServer
                 // Ensure the folder already exists
                 Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
 
-                Log.WriteLine($"Downloading dotnet-install.ps1 to '{_perfviewPath}'");
+                Log.WriteLine($"Downloading dotnet-install.sh to '{_perfviewPath}'");
                 DownloadFileAsync(_dotnetInstallShUrl, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
             }
 
@@ -912,6 +912,10 @@ namespace BenchmarkServer
             // * Use custom install dir to avoid changing the default install, which is impossible if other processes
             //   are already using it.
             var buildToolsPath = Path.Combine(path, "buildtools");
+            if (!Directory.Exists(buildToolsPath))
+            {
+                Directory.CreateDirectory(buildToolsPath);
+            }
 
             Log.WriteLine("Installing dotnet runtimes and sdk");
 
