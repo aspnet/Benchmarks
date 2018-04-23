@@ -124,26 +124,20 @@ namespace BenchmarkServer
             }
 
             // Download dotnet-install at startup, once.
-            if (OperatingSystem == OperatingSystem.Windows)
-            {
-                _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName(), Path.GetFileName(_dotnetInstallPs1Url));
+            _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName());
 
-                // Ensure the folder already exists
-                Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
+            // Ensure the folder already exists
+            Directory.CreateDirectory(_dotnetInstallPath);
 
-                Log.WriteLine($"Downloading dotnet-install.ps1 to '{_perfviewPath}'");
-                DownloadFileAsync(_dotnetInstallPs1Url, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-            }
-            else
-            {
-                _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName(), Path.GetFileName(_dotnetInstallShUrl));
+            var _dotnetInstallUrl = OperatingSystem == OperatingSystem.Windows
+                ? _dotnetInstallPs1Url
+                : _dotnetInstallShUrl
+                ;
 
-                // Ensure the folder already exists
-                Directory.CreateDirectory(Path.GetDirectoryName(_dotnetInstallPath));
-
-                Log.WriteLine($"Downloading dotnet-install.sh to '{_perfviewPath}'");
-                DownloadFileAsync(_dotnetInstallShUrl, _dotnetInstallPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-            }
+            var dotnetInstallFilename = Path.Combine(_dotnetInstallPath, Path.GetFileName(_dotnetInstallUrl));
+            
+            Log.WriteLine($"Downloading dotnet-install to '{dotnetInstallFilename}'");
+            DownloadFileAsync(_dotnetInstallUrl, dotnetInstallFilename, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
 
             Action shutdown = () =>
             {
@@ -922,11 +916,7 @@ namespace BenchmarkServer
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
 
-            // Downloading latest SDK version
-            var sdkVersionPath = Path.Combine(buildToolsPath, Path.GetFileName(_sdkVersionUrl));
-            await DownloadFileAsync(_sdkVersionUrl, sdkVersionPath, maxRetries: 5, timeout: 10);
-
-            var sdkVersion = File.ReadAllText(sdkVersionPath).Trim();
+            var sdkVersion = await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5);
             Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             // In theory the actual latest runtime version should be taken from the dependencies.pros file from
@@ -1282,6 +1272,40 @@ namespace BenchmarkServer
                     }
 
                     return;
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.WriteLine($"Timeout trying to download {url}, attempt {i + 1}");
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
+                }
+            }
+
+            throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
+        }
+
+        private static async Task<string> ReadUrlStringAsync(string url, int maxRetries, int timeout = 5)
+        {
+            Log.WriteLine($"Downloading {url}");
+
+            for (var i = 0; i < maxRetries; ++i)
+            {
+                try
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
+                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    // This probably won't use async IO on windows since the stream
+                    // needs to created with the right flags
+                    using (var stream = new MemoryStream())
+                    {
+                        // Copy the response stream directly to the file stream
+                        await response.Content.CopyToAsync(stream);
+                        return Encoding.UTF8.GetString(stream.ToArray());
+                    }                    
                 }
                 catch (OperationCanceledException)
                 {
