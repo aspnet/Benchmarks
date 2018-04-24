@@ -41,29 +41,7 @@ namespace BenchmarkServer
 
         private static ProcessResult RunGitCommand(string path, string command, TimeSpan? timeout, bool throwOnError = true, int retries = 0)
         {
-            return RetryOnException(retries, () => ProcessUtil.Run("git", command, timeout, workingDirectory: path, throwOnError: throwOnError));
-        }
-
-        private static T RetryOnException<T>(int retries, Func<T> operation)
-        {
-            var attempts = 0;
-            do
-            {
-                try
-                {
-                    attempts++;
-                    return operation();
-                }
-                catch(Exception e)
-                {
-                    if (attempts == retries + 1)
-                    {
-                        throw;
-                    }
-
-                    Log.WriteLine($"Attempt {attempts} failed: {e.Message}");
-                }
-            } while (true);
+            return ProcessUtil.RetryOnException(retries, () => ProcessUtil.Run("git", command, timeout, workingDirectory: path, throwOnError: throwOnError));
         }
     }
 }

@@ -95,7 +95,29 @@ namespace BenchmarkServer
                 }
 
                 return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
-            }            
+            }
+        }
+
+        public static T RetryOnException<T>(int retries, Func<T> operation)
+        {
+            var attempts = 0;
+            do
+            {
+                try
+                {
+                    attempts++;
+                    return operation();
+                }
+                catch (Exception e)
+                {
+                    if (attempts == retries + 1)
+                    {
+                        throw;
+                    }
+
+                    Log.WriteLine($"Attempt {attempts} failed: {e.Message}");
+                }
+            } while (true);
         }
     }
 }
