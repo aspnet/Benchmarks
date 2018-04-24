@@ -169,20 +169,26 @@ namespace BenchmarkClient
                 await Task.Delay(100);
 
                 allJobs = _jobs.GetAll();
-                job = allJobs.FirstOrDefault(clientJob =>
+                if (job != null)
                 {
-                    return string.Equals(clientJob.SpanId, job.SpanId);
-                });
-                // If no more jobs with the span id exist then we can clear
-                // out the worker to signal to the worker factory to create
-                // a new worker.
-                if (job == null && worker != null)
+                    job = allJobs.FirstOrDefault(clientJob =>
+                    {
+                        return string.Equals(clientJob.SpanId, job.SpanId);
+                    });
+                }
+                else 
                 {
-                    await worker.DisposeAsync();
-                    worker = null;
-
                     // Get another job for the new worker we are going to create
                     job = allJobs.FirstOrDefault();
+
+                    // No more jobs with the same span id exist so we can clear
+                    // out the worker to signal to the worker factory to create
+                    // a new one.
+                    if (worker != null)
+                    {
+                        await worker.DisposeAsync();
+                        worker = null;
+                    }
                 }
             }
         }
