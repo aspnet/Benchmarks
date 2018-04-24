@@ -32,6 +32,7 @@ namespace BenchmarksClient.Workers
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
+        private TimeSpan _sendDelay = TimeSpan.FromMinutes(10);
         private List<(double sum, int count)> _latencyAverage;
 
         private void InitializeJob()
@@ -82,6 +83,11 @@ namespace BenchmarksClient.Workers
             else
             {
                 throw new Exception("Scenario wasn't specified");
+            }
+
+            if(_job.ClientProperties.TryGetValue("SendDelay", out var sendDelay))
+            {
+                _sendDelay = TimeSpan.FromMinutes(int.Parse(sendDelay));
             }
 
             jobLogText += "]";
@@ -142,10 +148,10 @@ namespace BenchmarksClient.Workers
                     case "echoLongRunning":
                         while (!cts.IsCancellationRequested)
                         {
-                            await Task.Delay(_job.SendDelay);
+                            await Task.Delay(_sendDelay);
                             for (var i = 0; i < _connections.Count; i++)
                             {
-                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
+                                await _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
                             }
                         }
                         break;
@@ -177,11 +183,6 @@ namespace BenchmarksClient.Workers
                 _workTimer.Stop();
 
                 CalculateStatistics();
-
-                // TODO: Remove when clients no longer take a long time to "cool down"
-                await Task.Delay(5000);
-
-                Log("Stopped worker");
             }
             finally
             {
@@ -210,7 +211,14 @@ namespace BenchmarksClient.Workers
             }
 
             await Task.WhenAll(tasks);
+            Log("Connections have been disposed");
+
             _httpClientHandler.Dispose();
+
+            // TODO: Remove when clients no longer take a long time to "cool down"
+            await Task.Delay(5000);
+
+            Log("Stopped worker");
         }
 
         public void Dispose()

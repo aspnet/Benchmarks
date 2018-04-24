@@ -157,7 +157,6 @@ namespace BenchmarkClient
                         {
                             if (worker != null)
                             {
-                                // We stop the worker but 
                                 await worker.StopJobAsync();
                             }
                         }

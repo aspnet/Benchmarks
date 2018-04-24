@@ -170,8 +170,6 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var jobsOptions = app.Option("-j|--jobs",
                 "The path or url to the jobs definition.", CommandOptionType.SingleValue);
-            var sendDelayOption = app.Option("-- sendDelay",
-                "Delay in minutes between sends for long running connection tests", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -553,10 +551,6 @@ namespace BenchmarksDriver
                 if (span > TimeSpan.Zero)
                 {
                     _clientJob.SpanId = new Guid().ToString();
-                }
-                if (sendDelayOption.HasValue())
-                {
-                    _clientJob.SendDelay = TimeSpan.FromMinutes(int.Parse(sendDelayOption.Value()));
                 }
 
                 switch (headers)
