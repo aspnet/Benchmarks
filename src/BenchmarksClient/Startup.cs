@@ -176,7 +176,8 @@ namespace BenchmarkClient
                         return string.Equals(clientJob.SpanId, job.SpanId);
                     });
                 }
-                else 
+                // job will be null if there aren't any more jobs with the same spanId.
+                if (job == null)
                 {
                     // Get another job for the new worker we are going to create
                     job = allJobs.FirstOrDefault();
