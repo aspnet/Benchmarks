@@ -44,7 +44,7 @@ namespace BenchmarkClient.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] ClientJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ClientState.Waiting)
+            if (job == null || job.Id != 0 || job.State != ClientJobState.Waiting)
             {
                 return BadRequest();
             }
@@ -61,7 +61,7 @@ namespace BenchmarkClient.Controllers
             try
             {
                 var job = _jobs.Find(id);
-                job.State = ClientState.Deleting;
+                job.State = ClientJobState.Deleting;
                 _jobs.Update(job);
 
                 Response.Headers["Location"] = $"/jobs/{job.Id}";
@@ -72,6 +72,5 @@ namespace BenchmarkClient.Controllers
                 return NotFound();
             }
         }
-
     }
 }

@@ -1,37 +1,28 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
-using System;
-using System.Collections.Generic;
 using Benchmarks.ClientJob;
 
 namespace BenchmarksClient.Workers
 {
     static public class WorkerFactory
     {
-        public static Dictionary<Worker, Func<ClientJob, IWorker>> Workers = new Dictionary<Worker, Func<ClientJob, IWorker>>();
-
-        static WorkerFactory()
-        {
-            // Wrk
-            Workers[Worker.Wrk] = clientJob => new WrkWorker(clientJob);
-
-            // SignalR
-            Workers[Worker.SignalR] = clientJob => new SignalRWorker(clientJob);
-
-            // Wait
-            Workers[Worker.Wait] = clientJob => new WaitWorker(clientJob);
-        }
-
         static public IWorker CreateWorker(ClientJob clientJob)
         {
-            if (Workers.TryGetValue(clientJob.Client, out var workerFactory))
+            IWorker worker = null;
+            switch (clientJob.Client)
             {
-                return workerFactory(clientJob);
+                case Worker.Wrk:
+                    worker = new WrkWorker();
+                    break;
+                case Worker.SignalR:
+                    worker = new SignalRWorker();
+                    break;
+                case Worker.Wait:
+                    worker = new WaitWorker();
+                    break;
             }
-
-            return null;
+            return worker;
         }
     }
 }

@@ -3,7 +3,7 @@
 
 namespace Benchmarks.ClientJob
 {
-    public enum ClientState
+    public enum ClientJobState
     {
         Waiting,
         Starting,

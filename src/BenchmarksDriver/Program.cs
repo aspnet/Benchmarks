@@ -548,6 +548,10 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Query = querystringOption.Value();
                 }
+                if (span > TimeSpan.Zero)
+                {
+                    _clientJob.SpanId = new Guid().ToString();
+                }
 
                 switch (headers)
                 {
@@ -885,7 +889,7 @@ namespace BenchmarksDriver
 
                         clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
 
-                        if (clientJob.State == ClientState.Completed)
+                        if (clientJob.State == ClientJobState.Completed)
                         {
                             LogVerbose($"Client Job completed");
 
@@ -1328,7 +1332,7 @@ namespace BenchmarksDriver
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
-                    if (clientJob.State == ClientState.Running || clientJob.State == ClientState.Completed)
+                    if (clientJob.State == ClientJobState.Running || clientJob.State == ClientJobState.Completed)
                     {
                         break;
                     }
@@ -1361,7 +1365,7 @@ namespace BenchmarksDriver
 
                     clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
-                    if (clientJob.State == ClientState.Completed)
+                    if (clientJob.State == ClientJobState.Completed)
                     {
                         Log($"Scenario {scenarioName} completed on benchmark client");
                         LogVerbose($"Output: {clientJob.Output}");

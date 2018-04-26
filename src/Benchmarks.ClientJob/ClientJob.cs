@@ -19,6 +19,7 @@ namespace Benchmarks.ClientJob
         {
             Id = clientJob.Id;
             Threads = clientJob.Threads;
+            SpanId = clientJob.SpanId;
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
             ClientProperties = new Dictionary<string, string>(clientJob.ClientProperties);
@@ -37,6 +38,8 @@ namespace Benchmarks.ClientJob
         }
 
         public int Id { get; set; }
+
+        public string SpanId { get; set; }
 
         public Worker Client { get; set; } = Worker.Wrk;
 
@@ -57,7 +60,7 @@ namespace Benchmarks.ClientJob
         public string Query { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public ClientState State { get; set; }
+        public ClientJobState State { get; set; }
 
         public double RequestsPerSecond { get; set; }
         public int Requests { get; set; }
