@@ -111,6 +111,7 @@ namespace BenchmarkClient
                     if (job.State == ClientJobState.Waiting)
                     {
                         Log($"Starting '{job.Client}' worker");
+                        Log($"Current Job SpanId '{job.SpanId}'");
                         job.State = ClientJobState.Starting;
 
                         try
