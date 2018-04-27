@@ -41,6 +41,10 @@
   "ResponseCachingPlaintextCached": {
     "Path": "/responsecaching/plaintext/cached"
   },
+  "ResponseCachingPlaintextCachedDelete": {
+    "Method": "DELETE",
+    "Path": "/responsecaching/plaintext/cached"
+  },
   "ResponseCachingPlaintextResponseNoCache": {
     "Path": "/responsecaching/plaintext/responsenocache"
   },
