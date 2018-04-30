@@ -3,9 +3,9 @@
     "Source": {
       "Repository": "https://github.com/aspnet/FrameworkBenchmarks.git",
       "BranchOrCommit": "netcoreapp21",
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
-      "DockerImageName": "aspnetcore21",
-      "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+      "DockerContextDirectory": "frameworks/CSharp/aspnetcore/",
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore.dockerfile",
+      "DockerImageName": "aspnetcore21"
     },
     "Client": "Wrk",
     "Port": 8080,
@@ -25,18 +25,14 @@
   },
   "Json-AspNetCore21": {
     "Path": "/json",
-    "PresetHeaders": "Json",
-    "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-json.dockerfile",
-      "DockerImageName": "aspnetcore21_json"
-    }
+    "PresetHeaders": "Json"
   },
   "FortunesPostgreSql-AspNetCore21": {
     "Path": "/fortunes/raw",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-raw.dockerfile",
-      "DockerImageName": "aspnetcore21_middleware_raw"
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-ado-pg.dockerfile",
+      "DockerImageName": "aspnetcore21_mw_ado_pg"
     }
   }
 }
