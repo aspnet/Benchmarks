@@ -1544,7 +1544,7 @@ namespace BenchmarkServer
                 {
                     foreach (var tuple in job.CollectArguments.Split(';'))
                     {
-                        var values = tuple.Split('=');
+                        var values = tuple.Split(new char[] { '=' }, 2);
                         perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
                     }
                 }
