@@ -24,10 +24,11 @@
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
     <MongoDbVersion>2.5.0</MongoDbVersion>
     <DapperVersion>1.50.4</DapperVersion>
-    <NpgsqlVersion>3.2.7</NpgsqlVersion>
+    <NpgsqlVersion20>3.2.7</NpgsqlVersion20>
+    <NpgsqlVersion21>4.0.0-preview2</NpgsqlVersion21>
     <MySqlConnectorVersion>0.38</MySqlConnectorVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0-preview2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion>2.0.1</PomeloEntityFrameworkCoreMySqlVersion>
   </PropertyGroup>
 </Project>
