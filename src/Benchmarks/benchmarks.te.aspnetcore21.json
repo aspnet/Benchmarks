@@ -33,13 +33,14 @@
     "Source": {
       "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-ado-pg.dockerfile",
       "DockerImageName": "aspnetcore21_mw_ado_pg"
-    },
-    "FortunesMySql-AspNetCore21": {
-      "Path": "/fortunes/raw",
-      "PresetHeaders": "Html",
-      "Source": {
-        "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-ado-my.dockerfile",
-        "DockerImageName": "aspnetcore21_mw_ado_my"
-      }
+    }
+  },
+  "FortunesMySql-AspNetCore21": {
+    "Path": "/fortunes/raw",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-ado-my.dockerfile",
+      "DockerImageName": "aspnetcore21_mw_ado_my"
+    }
   }
 }
