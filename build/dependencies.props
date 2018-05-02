@@ -22,7 +22,7 @@
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
-    <MongoDbVersion>2.5.0</MongoDbVersion>
+    <MongoDbVersion>2.6.0</MongoDbVersion>
     <DapperVersion>1.50.4</DapperVersion>
     <NpgsqlVersion20>3.2.7</NpgsqlVersion20>
     <NpgsqlVersion21>4.0.0-preview2</NpgsqlVersion21>
