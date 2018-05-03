@@ -1113,6 +1113,9 @@ namespace BenchmarkServer
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
             }
 
+            // Specify tfm in case the project targets multiple one
+            buildParameters += $"--framework {targetFramework} ";
+
             if (job.SelfContained)
             {
                 buildParameters += $"--self-contained ";
