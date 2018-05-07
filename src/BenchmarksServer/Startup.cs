@@ -826,7 +826,7 @@ namespace BenchmarkServer
             {
                 try
                 {
-                    Log.WriteLine($"Trying to access server, attemp #{i} ...");
+                    Log.WriteLine($"Trying to access server, attempt #{i} ...");
                     using (var tcpClient = new TcpClient())
                     {
                         var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
@@ -1481,6 +1481,7 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
+            Log.WriteLine($"Invoking executable: {executable}, with arguments: {arguments}");
             var process = new Process()
             {
                 StartInfo = {
@@ -1610,8 +1611,8 @@ namespace BenchmarkServer
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "processPath", executable);
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "arguments", arguments);
 
-                var ancmPath = Path.Combine(job.BasePath, benchmarksBin, "x64\\aspnetcore.dll");
-                SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[@name='AspNetCoreModule']", "image", ancmPath);
+                var ancmPath = Path.Combine(job.BasePath, benchmarksBin, "x64\\aspnetcorev2.dll");
+                SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[@name='AspNetCoreModuleV2']", "image", ancmPath);
 
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{job.Port}:");
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/application/virtualDirectory", "physicalPath", job.BasePath);
