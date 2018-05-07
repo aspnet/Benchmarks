@@ -118,11 +118,40 @@ namespace BenchmarksClient.Workers
                         await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
                     case "echo":
-                        while (!cts.IsCancellationRequested)
+                        //while (!cts.IsCancellationRequested)
                         {
                             for (var i = 0; i < _connections.Count; i++)
                             {
-                                _ = _connections[i].SendAsync("Echo", DateTime.UtcNow);
+                                var id = i;
+                                _ = Task.Run(async () =>
+                                {
+                                    while (!cts.IsCancellationRequested)
+                                    {
+                                        var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
+
+                                        if (_stopped)
+                                        {
+                                            return;
+                                        }
+                                        // TODO: Collect all the things
+                                        _requestsPerConnection[id] += 1;
+
+                                        var latency = DateTime.UtcNow - time;
+                                        if (_detailedLatency)
+                                        {
+                                            _latencyPerConnection[id].Add(latency.TotalMilliseconds);
+                                        }
+                                        else
+                                        {
+                                            (var sum, var count) = _latencyAverage[id];
+                                            sum += latency.TotalMilliseconds;
+                                            count++;
+                                            _latencyAverage[id] = (sum, count);
+
+                                        }
+                                    }
+                                });
+                                //_ = _connections[i].SendAsync("Echo", DateTime.UtcNow, cts.Token);
                             }
                         }
                         break;
@@ -131,7 +160,7 @@ namespace BenchmarksClient.Workers
                         {
                             for (var i = 0; i < _connections.Count; i++)
                             {
-                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
+                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow, cts.Token);
                             }
                         }
                         break;
@@ -295,7 +324,7 @@ namespace BenchmarksClient.Workers
                     if (!_stopped)
                     {
                         var error = $"Connection closed early: {e}";
-                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}]" + error;
+                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}] " + error;
                         Log(error);
                     }
 
