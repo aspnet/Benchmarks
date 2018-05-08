@@ -298,6 +298,7 @@ namespace BenchmarksClient.Workers
             {
                 return;
             }
+
             // TODO: Collect all the things
             _requestsPerConnection[connectionId] += 1;
 
@@ -312,7 +313,6 @@ namespace BenchmarksClient.Workers
                 sum += latency.TotalMilliseconds;
                 count++;
                 _latencyAverage[connectionId] = (sum, count);
-
             }
         }
 
@@ -369,7 +369,6 @@ namespace BenchmarksClient.Workers
                         avg[i] += _latencyPerConnection[i][j];
                     }
                     avg[i] /= _latencyPerConnection[i].Count;
-                    Log($"Average latency for connection #{i}: {avg[i]}");
 
                     _latencyPerConnection[i].Sort();
                     totalAvg += avg[i];
