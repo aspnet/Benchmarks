@@ -119,7 +119,7 @@ namespace Benchmarks
                 }
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETCOREAPP2_2
                     webHostBuilder.UseSockets(x =>
                     {
                         if (threadCount > 0)

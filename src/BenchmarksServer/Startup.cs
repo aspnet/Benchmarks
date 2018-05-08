@@ -932,8 +932,6 @@ namespace BenchmarkServer
 
             if (!String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                targetFramework = "netcoreapp2.1";
-
                 if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
                 {
                     runtimeFrameworkVersion = await GetLatestRuntimeVersion(buildToolsPath);
@@ -950,6 +948,14 @@ namespace BenchmarkServer
                     if (runtimeFrameworkVersion.StartsWith("2.0"))
                     {
                         targetFramework = "netcoreapp2.0";
+                    }
+                    else if (runtimeFrameworkVersion.StartsWith("2.1"))
+                    {
+                        targetFramework = "netcoreapp2.1";
+                    }
+                    else
+                    {
+                        targetFramework = "netcoreapp2.2";
                     }
                 }
             }
@@ -1012,8 +1018,8 @@ namespace BenchmarkServer
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
 
-                // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
-                if (job.UseRuntimeStore && targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
+                if (job.UseRuntimeStore && targetFramework != "netcoreapp2.0" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install aspnet runtime required for this scenario
                     ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles",
@@ -1053,8 +1059,8 @@ namespace BenchmarkServer
                     _installedRuntimes.Add(runtimeFrameworkVersion);
                 }
 
-                // The aspnet core runtime is only available for 2.1, in 2.0 the dlls are contained in the runtime store
-                if (job.UseRuntimeStore && targetFramework == "netcoreapp2.1" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
+                if (job.UseRuntimeStore && targetFramework != "netcoreapp2.0" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
                     // Install runtime required by coherence universe
                     ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
@@ -1103,6 +1109,14 @@ namespace BenchmarkServer
             else if (targetFramework == "netcoreapp2.1")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
+                }
+            }
+            else if (targetFramework == "netcoreapp2.2")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp22PackageVersion={runtimeFrameworkVersion} ";
                 if (!job.UseRuntimeStore)
                 {
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
