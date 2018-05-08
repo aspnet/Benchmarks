@@ -118,41 +118,19 @@ namespace BenchmarksClient.Workers
                         await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
                     case "echo":
-                        //while (!cts.IsCancellationRequested)
+                        for (var i = 0; i < _connections.Count; i++)
                         {
-                            for (var i = 0; i < _connections.Count; i++)
+                            var id = i;
+                            // kick off a task per connection so they don't wait for other connections when sending "Echo"
+                            _ = Task.Run(async () =>
                             {
-                                var id = i;
-                                _ = Task.Run(async () =>
+                                while (!cts.IsCancellationRequested)
                                 {
-                                    while (!cts.IsCancellationRequested)
-                                    {
-                                        var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
+                                    var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
 
-                                        if (_stopped)
-                                        {
-                                            return;
-                                        }
-                                        // TODO: Collect all the things
-                                        _requestsPerConnection[id] += 1;
-
-                                        var latency = DateTime.UtcNow - time;
-                                        if (_detailedLatency)
-                                        {
-                                            _latencyPerConnection[id].Add(latency.TotalMilliseconds);
-                                        }
-                                        else
-                                        {
-                                            (var sum, var count) = _latencyAverage[id];
-                                            sum += latency.TotalMilliseconds;
-                                            count++;
-                                            _latencyAverage[id] = (sum, count);
-
-                                        }
-                                    }
-                                });
-                                //_ = _connections[i].SendAsync("Echo", DateTime.UtcNow, cts.Token);
-                            }
+                                    ReceivedDateTime(time, id);
+                                }
+                            });
                         }
                         break;
                     case "echoAll":
@@ -297,26 +275,7 @@ namespace BenchmarksClient.Workers
                 // setup event handlers
                 _recvCallbacks.Add(connection.On<DateTime>("send", utcNow =>
                 {
-                    if (_stopped)
-                    {
-                        return;
-                    }
-                    // TODO: Collect all the things
-                    _requestsPerConnection[id] += 1;
-
-                    var latency = DateTime.UtcNow - utcNow;
-                    if (_detailedLatency)
-                    {
-                        _latencyPerConnection[id].Add(latency.TotalMilliseconds);
-                    }
-                    else
-                    {
-                        (var sum, var count) = _latencyAverage[id];
-                        sum += latency.TotalMilliseconds;
-                        count++;
-                        _latencyAverage[id] = (sum, count);
-
-                    }
+                    ReceivedDateTime(utcNow, id);
                 }));
 
                 connection.Closed += e =>
@@ -330,6 +289,30 @@ namespace BenchmarksClient.Workers
 
                     return Task.CompletedTask;
                 };
+            }
+        }
+
+        private void ReceivedDateTime(DateTime dateTime, int connectionId)
+        {
+            if (_stopped)
+            {
+                return;
+            }
+            // TODO: Collect all the things
+            _requestsPerConnection[connectionId] += 1;
+
+            var latency = DateTime.UtcNow - dateTime;
+            if (_detailedLatency)
+            {
+                _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
+            }
+            else
+            {
+                (var sum, var count) = _latencyAverage[connectionId];
+                sum += latency.TotalMilliseconds;
+                count++;
+                _latencyAverage[connectionId] = (sum, count);
+
             }
         }
 
