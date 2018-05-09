@@ -33,7 +33,7 @@ namespace BenchmarksClient.Workers
         private bool _detailedLatency;
         private string _scenario;
         private List<(double sum, int count)> _latencyAverage;
-        private double _serverClientOffset;
+        private double _clientToServerOffset;
 
         public SignalRWorker(ClientJob job)
         {
@@ -304,7 +304,7 @@ namespace BenchmarksClient.Workers
             _requestsPerConnection[connectionId] += 1;
 
             var latency = DateTime.UtcNow - dateTime;
-            latency.Add(TimeSpan.FromMilliseconds(_serverClientOffset));
+            latency.Add(TimeSpan.FromMilliseconds(_clientToServerOffset));
             if (_detailedLatency)
             {
                 _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
@@ -420,7 +420,7 @@ namespace BenchmarksClient.Workers
         private async Task DoNTP()
         {
             var offsets = new List<TimeSpan>(5);
-            for (var i = 0; i < 5; ++i)
+            for (var i = 0; i < 9; ++i)
             {
                 var t0 = DateTime.UtcNow;
                 var t1 = await _connections[0].InvokeAsync<DateTime>("NTP");
@@ -430,16 +430,15 @@ namespace BenchmarksClient.Workers
             }
 
             offsets.Sort();
-            // Discard first and last
-            var range = offsets.GetRange(1, 3);
+            // Discard first 3 and last 3
+            var range = offsets.GetRange(3, 3);
             var totalOffset = 0.0;
             range.ForEach(span =>
             {
                 totalOffset += span.TotalMilliseconds;
             });
 
-            _serverClientOffset = totalOffset / 3;
-            Log(_serverClientOffset.ToString());
+            _clientToServerOffset = totalOffset / 3;
         }
 
         private static void Log(string message)
