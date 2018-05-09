@@ -28,7 +28,7 @@
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion20)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1' or $(TargetFramework) == 'netcoreapp2.2'">
     <!-- Temporary fix for MVC compiled views -->
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
     
