@@ -114,8 +114,6 @@ namespace BenchmarkClient
                         Log($"Starting '{job.Client}' worker");
                         job.State = ClientState.Starting;
 
-                        SynchronizeMachineTime(job.ServerBenchmarkUri);
-
                         try
                         {
                             worker = WorkerFactory.CreateWorker(job);
@@ -177,48 +175,6 @@ namespace BenchmarkClient
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
-        }
-
-        private static void SynchronizeMachineTime(string uri)
-        {
-            var ips = Dns.GetHostAddresses(uri);
-
-            Debug.Assert(ips.Length > 0);
-
-            using (var process = new Process()
-            {
-                StartInfo = {
-                    FileName = "net",
-                    Arguments = $"time set -S {ips[0]}",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                },
-                EnableRaisingEvents = true
-            })
-            {
-
-                process.OutputDataReceived += (_, e) =>
-                {
-                    if (e != null && e.Data != null)
-                    {
-                        Log(e.Data);
-                    }
-                };
-
-                process.ErrorDataReceived += (_, e) =>
-                {
-                    if (e != null && e.Data != null)
-                    {
-                        Log(e.Data);
-                    }
-                };
-
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                process.WaitForExit(1000);
-            }
         }
     }
 }
