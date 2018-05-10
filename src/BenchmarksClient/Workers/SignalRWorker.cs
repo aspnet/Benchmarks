@@ -299,7 +299,6 @@ namespace BenchmarksClient.Workers
                 return;
             }
 
-            // TODO: Collect all the things
             _requestsPerConnection[connectionId] += 1;
 
             var latency = DateTime.UtcNow - dateTime;
@@ -309,7 +308,7 @@ namespace BenchmarksClient.Workers
             }
             else
             {
-                (var sum, var count) = _latencyAverage[connectionId];
+                var (sum, count) = _latencyAverage[connectionId];
                 sum += latency.TotalMilliseconds;
                 count++;
                 _latencyAverage[connectionId] = (sum, count);
