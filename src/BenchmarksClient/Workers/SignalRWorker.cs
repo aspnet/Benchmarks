@@ -118,12 +118,19 @@ namespace BenchmarksClient.Workers
                         await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
                     case "echo":
-                        while (!cts.IsCancellationRequested)
+                        for (var i = 0; i < _connections.Count; i++)
                         {
-                            for (var i = 0; i < _connections.Count; i++)
+                            var id = i;
+                            // kick off a task per connection so they don't wait for other connections when sending "Echo"
+                            _ = Task.Run(async () =>
                             {
-                                _ = _connections[i].SendAsync("Echo", DateTime.UtcNow);
-                            }
+                                while (!cts.IsCancellationRequested)
+                                {
+                                    var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
+
+                                    ReceivedDateTime(time, id);
+                                }
+                            });
                         }
                         break;
                     case "echoAll":
@@ -131,7 +138,7 @@ namespace BenchmarksClient.Workers
                         {
                             for (var i = 0; i < _connections.Count; i++)
                             {
-                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow);
+                                _ = _connections[i].SendAsync("EchoAll", DateTime.UtcNow, cts.Token);
                             }
                         }
                         break;
@@ -268,26 +275,7 @@ namespace BenchmarksClient.Workers
                 // setup event handlers
                 _recvCallbacks.Add(connection.On<DateTime>("send", utcNow =>
                 {
-                    if (_stopped)
-                    {
-                        return;
-                    }
-                    // TODO: Collect all the things
-                    _requestsPerConnection[id] += 1;
-
-                    var latency = DateTime.UtcNow - utcNow;
-                    if (_detailedLatency)
-                    {
-                        _latencyPerConnection[id].Add(latency.TotalMilliseconds);
-                    }
-                    else
-                    {
-                        (var sum, var count) = _latencyAverage[id];
-                        sum += latency.TotalMilliseconds;
-                        count++;
-                        _latencyAverage[id] = (sum, count);
-
-                    }
+                    ReceivedDateTime(utcNow, id);
                 }));
 
                 connection.Closed += e =>
@@ -295,12 +283,35 @@ namespace BenchmarksClient.Workers
                     if (!_stopped)
                     {
                         var error = $"Connection closed early: {e}";
-                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}]" + error;
+                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}] " + error;
                         Log(error);
                     }
 
                     return Task.CompletedTask;
                 };
+            }
+        }
+
+        private void ReceivedDateTime(DateTime dateTime, int connectionId)
+        {
+            if (_stopped)
+            {
+                return;
+            }
+
+            _requestsPerConnection[connectionId] += 1;
+
+            var latency = DateTime.UtcNow - dateTime;
+            if (_detailedLatency)
+            {
+                _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
+            }
+            else
+            {
+                var (sum, count) = _latencyAverage[connectionId];
+                sum += latency.TotalMilliseconds;
+                count++;
+                _latencyAverage[connectionId] = (sum, count);
             }
         }
 
@@ -357,7 +368,6 @@ namespace BenchmarksClient.Workers
                         avg[i] += _latencyPerConnection[i][j];
                     }
                     avg[i] /= _latencyPerConnection[i].Count;
-                    Log($"Average latency for connection #{i}: {avg[i]}");
 
                     _latencyPerConnection[i].Sort();
                     totalAvg += avg[i];
