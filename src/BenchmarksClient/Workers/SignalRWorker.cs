@@ -419,7 +419,7 @@ namespace BenchmarksClient.Workers
 
         private async Task CalculateClientToServerOffset()
         {
-            var offsets = new List<TimeSpan>(5);
+            var offsets = new List<TimeSpan>(9);
             for (var i = 0; i < 9; ++i)
             {
                 var t0 = DateTime.UtcNow;
