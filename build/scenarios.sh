@@ -124,6 +124,8 @@ jobs=(
   # IIS
   "-n Plaintext --webHost IISInProcess $trend $plaintextJobs --windows-only"
   "-n Plaintext --webHost IISOutOfProcess $trend $plaintextJobs --windows-only"
+  "-n PlaintextNonPipelined --webHost IISInProcess $trend $plaintextJobs --windows-only"
+  "-n PlaintextNonPipelined --webHost IISOutOfProcess $trend $plaintextJobs --windows-only"
   "-n Json --webHost IISInProcess $trend $jsonJobs --windows-only"
   "-n Json --webHost IISOutOfProcess $trend $jsonJobs --windows-only"
 
