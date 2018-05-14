@@ -33,6 +33,7 @@ namespace BenchmarksClient.Workers
         private bool _detailedLatency;
         private string _scenario;
         private List<(double sum, int count)> _latencyAverage;
+        private double _clientToServerOffset;
 
         public SignalRWorker(ClientJob job)
         {
@@ -114,6 +115,7 @@ namespace BenchmarksClient.Workers
                 switch (_scenario)
                 {
                     case "broadcast":
+                        await CalculateClientToServerOffset();
                         // SendAsync will return as soon as the request has been sent (non-blocking)
                         await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
@@ -302,6 +304,7 @@ namespace BenchmarksClient.Workers
             _requestsPerConnection[connectionId] += 1;
 
             var latency = DateTime.UtcNow - dateTime;
+            latency.Add(TimeSpan.FromMilliseconds(_clientToServerOffset));
             if (_detailedLatency)
             {
                 _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
@@ -412,6 +415,30 @@ namespace BenchmarksClient.Workers
             var fractionPart = i - Math.Truncate(i);
 
             return (1.0 - fractionPart) * sortedData[(int)Math.Truncate(i)] + fractionPart * sortedData[(int)Math.Ceiling(i)];
+        }
+
+        private async Task CalculateClientToServerOffset()
+        {
+            var offsets = new List<TimeSpan>(9);
+            for (var i = 0; i < 9; ++i)
+            {
+                var t0 = DateTime.UtcNow;
+                var t1 = await _connections[0].InvokeAsync<DateTime>("GetCurrentTime");
+                var t2 = DateTime.UtcNow;
+
+                offsets.Add(((t1 - t0) + (t1 - t2)) / 2);
+            }
+
+            offsets.Sort();
+            // Discard first 3 and last 3
+            var range = offsets.GetRange(3, 3);
+            var totalOffset = 0.0;
+            foreach (var offset in range)
+            {
+                totalOffset += offset.TotalMilliseconds;
+            }
+
+            _clientToServerOffset = totalOffset / 3;
         }
 
         private static void Log(string message)
