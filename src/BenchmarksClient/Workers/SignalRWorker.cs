@@ -115,7 +115,7 @@ namespace BenchmarksClient.Workers
                 switch (_scenario)
                 {
                     case "broadcast":
-                        await DoNTP();
+                        await CalculateClientToServerOffset();
                         // SendAsync will return as soon as the request has been sent (non-blocking)
                         await _connections[0].SendAsync("Broadcast", _job.Duration + 1);
                         break;
@@ -417,13 +417,13 @@ namespace BenchmarksClient.Workers
             return (1.0 - fractionPart) * sortedData[(int)Math.Truncate(i)] + fractionPart * sortedData[(int)Math.Ceiling(i)];
         }
 
-        private async Task DoNTP()
+        private async Task CalculateClientToServerOffset()
         {
             var offsets = new List<TimeSpan>(5);
             for (var i = 0; i < 9; ++i)
             {
                 var t0 = DateTime.UtcNow;
-                var t1 = await _connections[0].InvokeAsync<DateTime>("NTP");
+                var t1 = await _connections[0].InvokeAsync<DateTime>("GetCurrentTime");
                 var t2 = DateTime.UtcNow;
 
                 offsets.Add(((t1 - t0) + (t1 - t2)) / 2);
@@ -433,10 +433,10 @@ namespace BenchmarksClient.Workers
             // Discard first 3 and last 3
             var range = offsets.GetRange(3, 3);
             var totalOffset = 0.0;
-            range.ForEach(span =>
+            foreach (var offset in range)
             {
-                totalOffset += span.TotalMilliseconds;
-            });
+                totalOffset += offset.TotalMilliseconds;
+            }
 
             _clientToServerOffset = totalOffset / 3;
         }
