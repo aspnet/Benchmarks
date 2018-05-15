@@ -304,7 +304,7 @@ namespace BenchmarksClient.Workers
             _requestsPerConnection[connectionId] += 1;
 
             var latency = DateTime.UtcNow - dateTime;
-            latency.Add(TimeSpan.FromMilliseconds(_clientToServerOffset));
+            latency = latency.Add(TimeSpan.FromMilliseconds(_clientToServerOffset));
             if (_detailedLatency)
             {
                 _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
