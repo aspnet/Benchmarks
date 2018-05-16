@@ -149,10 +149,12 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
+#if NETCOREAPP2_1 || NETCOREAPP2_2
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
-                webHostBuilder = webHostBuilder.UseIISIntegration();
+                webHostBuilder = webHostBuilder.UseIIS();
             }
+#endif
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
