@@ -91,7 +91,7 @@ namespace BenchmarksClient.Workers
 
             if (_job.ClientProperties.TryGetValue("SendDelay", out var sendDelay))
             {
-                _sendDelay = TimeSpan.FromMinutes(int.Parse(sendDelay));
+                _sendDelay = TimeSpan.FromSeconds(int.Parse(sendDelay));
             }
 
             jobLogText += "]";
