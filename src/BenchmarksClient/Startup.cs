@@ -195,7 +195,7 @@ namespace BenchmarkClient
                 if (job == null)
                 {
                     // Currently no jobs with the same span id exist so we check if we can
-                    // clearn out the worker to signal to the worker factory to create
+                    // clear out the worker to signal to the worker factory to create
                     // a new one.
                     if (worker != null)
                     {
