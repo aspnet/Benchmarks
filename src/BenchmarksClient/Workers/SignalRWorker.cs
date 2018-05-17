@@ -158,18 +158,21 @@ namespace BenchmarksClient.Workers
                         }
                         break;
                     case "echoIdle":
-
-                        if(_sendDelayTimer == null)
+                        if (_sendDelayTimer == null)
                         {
                             _sendDelayTimer = new Timer(async (timer) =>
                             {
-                                if (!cts.IsCancellationRequested)
+                                for (var id = 0; id < _connections.Count; id++)
                                 {
-                                    for (var id = 0; id < _connections.Count; id++)
+                                    try
                                     {
-                                        var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
-
+                                        var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow);
                                         ReceivedDateTime(time, id);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        var text = "Exception from test: " + ex.Message;
+                                        Log(text);
                                     }
                                 }
                             }, null, TimeSpan.Zero, _sendDelay);
@@ -235,7 +238,7 @@ namespace BenchmarksClient.Workers
             Log("Connections have been disposed");
 
             _httpClientHandler.Dispose();
-            _sendDelayTimer.Dispose();
+            _sendDelayTimer?.Dispose();
             // TODO: Remove when clients no longer take a long time to "cool down"
             await Task.Delay(5000);
 
@@ -493,11 +496,6 @@ namespace BenchmarksClient.Workers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
-        }
-
-        public DateTime GetWhenLastJobFinished()
-        {
-            return _whenLastJobCompleted;
         }
     }
 }
