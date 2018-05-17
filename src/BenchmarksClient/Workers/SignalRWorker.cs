@@ -32,11 +32,12 @@ namespace BenchmarksClient.Workers
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
-        private TimeSpan _sendDelay = TimeSpan.FromMinutes(10);
+        private TimeSpan _sendDelay = TimeSpan.FromSeconds(60*10);
         private List<(double sum, int count)> _latencyAverage;
         private double _clientToServerOffset;
         private DateTime _whenLastJobCompleted;
         private int _totalRequests;
+        private Timer _sendDelayTimer;
 
         private void InitializeJob()
         {
@@ -121,7 +122,7 @@ namespace BenchmarksClient.Workers
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
             _workTimer.Restart();
-
+            
             try
             {
                 switch (_scenario)
@@ -157,13 +158,21 @@ namespace BenchmarksClient.Workers
                         }
                         break;
                     case "echoIdle":
-                        while (!cts.IsCancellationRequested)
+
+                        if(_sendDelayTimer == null)
                         {
-                            await Task.Delay(_sendDelay);
-                            for (var i = 0; i < _connections.Count; i++)
+                            _sendDelayTimer = new Timer(async (timer) =>
                             {
-                                await _connections[i].SendAsync("Echo", DateTime.UtcNow);
-                            }
+                                if (!cts.IsCancellationRequested)
+                                {
+                                    for (var id = 0; id < _connections.Count; id++)
+                                    {
+                                        var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow, cts.Token);
+
+                                        ReceivedDateTime(time, id);
+                                    }
+                                }
+                            }, null, TimeSpan.Zero, _sendDelay);
                         }
                         break;
                     default:
@@ -226,7 +235,7 @@ namespace BenchmarksClient.Workers
             Log("Connections have been disposed");
 
             _httpClientHandler.Dispose();
-
+            _sendDelayTimer.Dispose();
             // TODO: Remove when clients no longer take a long time to "cool down"
             await Task.Delay(5000);
 
@@ -440,7 +449,10 @@ namespace BenchmarksClient.Workers
                     totalCount += average.count;
                 }
 
-                totalSum /= totalCount;
+                if (totalCount != 0)
+                {
+                    totalSum /= totalCount;
+                }
                 _job.Latency.Average = totalSum;
             }
         }
