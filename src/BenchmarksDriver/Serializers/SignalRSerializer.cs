@@ -39,7 +39,7 @@ namespace BenchmarksDriver.Serializers
                         [WebHost] [nvarchar](50) NOT NULL,
                         [Transport] [nvarchar](50) NOT NULL,
                         [HubProtocol] [nvarchar](50) NOT NULL,
-                        [ClientProperties] [nvarchar](max) NOT NULL,
+                        [ClientProperties] [nvarchar](2048) NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [Path] [nvarchar](200) NULL,
