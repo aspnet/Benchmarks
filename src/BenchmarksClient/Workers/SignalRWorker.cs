@@ -169,9 +169,9 @@ namespace BenchmarksClient.Workers
                                         var time = await _connections[id].InvokeAsync<DateTime>("Echo", DateTime.UtcNow);
                                         ReceivedDateTime(time, id);
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
-                                        var text = "Exception from test: " + ex.Message;
+                                        var text = "Error while invoking hub method" + ex.Message;
                                         Log(text);
                                     }
                                 }
@@ -195,7 +195,7 @@ namespace BenchmarksClient.Workers
 
         public async Task StopJobAsync()
         {
-            Log($"Stoping Job: {_job.SpanId}");
+            Log($"Stopping Job: {_job.SpanId}");
             if (_stopped || !await _lock.WaitAsync(0))
             {
                 // someone else is stopping, we only need to do it once
