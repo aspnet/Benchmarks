@@ -121,10 +121,8 @@ namespace BenchmarkClient
                     // multiple jobs.
                     if (!string.IsNullOrEmpty(job.SpanId))
                     {
-                        Log($"We have a span: {job.SpanId}");
                         waitForMoreJobs = true;
                     }
-                    Log($"Current Job state: {job.State}");
                     if (job.State == ClientState.Waiting)
                     {
                         Log($"Starting '{job.Client}' worker");
@@ -207,14 +205,10 @@ namespace BenchmarkClient
                         //    and 10 seconds have passed since the last job was completed.
                         if (!waitForMoreJobs || (whenLastJobCompleted != DateTime.MinValue &&  now - whenLastJobCompleted > TimeSpan.FromSeconds(10)))
                         {
-                            Log("We've waited long enough. Let's get rid of the worker");
+                            Log("Job queuing timeout reached. Disposing worker.");
                             waitForMoreJobs = false;
                             await worker.DisposeAsync();
                             worker = null;
-                        }
-                        else
-                        {
-                            Log("Waiting for a new job to enter the queue");
                         }
                     }
                 }
