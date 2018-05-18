@@ -69,6 +69,7 @@ Properties of the SignalR client
   TransportType          Name of the transport to communicate over.
   LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'.
   CollectLatency         Turns on collection of detailed latency, used for Percentiles, by default we just collect average Latency.
+  SendDelay		 Specifies the delay(in seconds) between sends for the echo idle scenario.
 
 Properties of the Wait client
 

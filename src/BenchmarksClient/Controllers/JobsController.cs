@@ -72,6 +72,5 @@ namespace BenchmarkClient.Controllers
                 return NotFound();
             }
         }
-
     }
 }

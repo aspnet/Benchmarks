@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Benchmarks.ClientJob;
 
 namespace BenchmarksClient.Workers
 {
@@ -10,7 +11,8 @@ namespace BenchmarksClient.Workers
     {
         string JobLogText { get; set; }
 
-        Task StartAsync();
-        Task StopAsync();
+        Task StartJobAsync(ClientJob job);
+        Task StopJobAsync();
+        Task DisposeAsync();
     }
 }

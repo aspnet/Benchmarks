@@ -19,6 +19,7 @@ namespace Benchmarks.ClientJob
         {
             Id = clientJob.Id;
             Threads = clientJob.Threads;
+            SpanId = clientJob.SpanId;
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
             ClientProperties = new Dictionary<string, string>(clientJob.ClientProperties);
@@ -37,6 +38,8 @@ namespace Benchmarks.ClientJob
         }
 
         public int Id { get; set; }
+
+        public string SpanId { get; set; }
 
         public Worker Client { get; set; } = Worker.Wrk;
 
