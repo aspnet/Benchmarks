@@ -39,7 +39,7 @@ namespace BenchmarksDriver.Serializers
                         [WebHost] [nvarchar](50) NOT NULL,
                         [Transport] [nvarchar](50) NOT NULL,
                         [HubProtocol] [nvarchar](50) NOT NULL,
-                        [ClientProperties] [nvarchar](200) NOT NULL,
+                        [ClientProperties] [nvarchar](max) NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [Path] [nvarchar](200) NULL,
@@ -198,14 +198,13 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
                     p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
                     p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
-                    p.AddWithValue("@ClientProperties", string.Join(',', clientJob.ClientProperties.ToArray()));
+                    p.AddWithValue("@ClientProperties", JsonConvert.SerializeObject(clientJob.ClientProperties));
                     p.AddWithValue("@Connections", clientJob.Connections);
                     p.AddWithValue("@Duration", clientJob.Duration);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
                     p.AddWithValue("@Headers", clientJob.Headers.Any() ? JsonConvert.SerializeObject(clientJob.Headers) : (object)DBNull.Value);
                     p.AddWithValue("@Dimension", dimension);
                     p.AddWithValue("@Value", value);
-
                     await command.ExecuteNonQueryAsync();
                 }
             }
