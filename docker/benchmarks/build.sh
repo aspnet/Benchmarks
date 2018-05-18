@@ -3,4 +3,4 @@
 #echo on
 set -x
 
-docker build -t benchmarks -f Dockerfile ../../
+docker build --pull -t benchmarks -f Dockerfile ../../
