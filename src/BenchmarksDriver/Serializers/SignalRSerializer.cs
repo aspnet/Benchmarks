@@ -39,6 +39,7 @@ namespace BenchmarksDriver.Serializers
                         [WebHost] [nvarchar](50) NOT NULL,
                         [Transport] [nvarchar](50) NOT NULL,
                         [HubProtocol] [nvarchar](50) NOT NULL,
+                        [ClientProperties] [nvarchar](200) NOT NULL,
                         [Connections] [int] NOT NULL,
                         [Duration] [int] NOT NULL,
                         [Path] [nvarchar](200) NULL,
@@ -141,6 +142,7 @@ namespace BenchmarksDriver.Serializers
                            ,[WebHost]
                            ,[Transport]
                            ,[HubProtocol]
+                           ,[ClientProperties]
                            ,[Connections]
                            ,[Duration]
                            ,[Path]
@@ -164,6 +166,7 @@ namespace BenchmarksDriver.Serializers
                            ,@WebHost
                            ,@Transport
                            ,@HubProtocol
+                           ,@ClientProperties
                            ,@Connections
                            ,@Duration
                            ,@Path
@@ -195,6 +198,7 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
                     p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
                     p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
+                    p.AddWithValue("@ClientProperties", string.Join(',', clientJob.ClientProperties.ToArray()));
                     p.AddWithValue("@Connections", clientJob.Connections);
                     p.AddWithValue("@Duration", clientJob.Duration);
                     p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
