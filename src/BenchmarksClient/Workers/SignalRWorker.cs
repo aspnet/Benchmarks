@@ -171,7 +171,7 @@ namespace BenchmarksClient.Workers
                                     }
                                     catch (Exception ex)
                                     {
-                                        var text = "Error while invoking hub method" + ex.Message;
+                                        var text = "Error while invoking hub method " + ex.Message;
                                         Log(text);
                                     }
                                 }
