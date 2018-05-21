@@ -1142,7 +1142,18 @@ namespace BenchmarksDriver
                         spanLoop = spanLoop + 1;
                     } while (DateTime.UtcNow - startTime < span);
 
-                    await sqlTask;
+                    if (!sqlTask.IsCompleted)
+                    {
+                        Log("Job finished, waiting for SQL to complete.");
+                        try
+                        {
+                            await sqlTask;
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"SQL threw an exception: {ex}");
+                        }
+                    }
 
                     Log($"Stopping scenario {scenario} on benchmark server...");
 
