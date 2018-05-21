@@ -1080,7 +1080,6 @@ namespace BenchmarksDriver
                                     // Headers
                                     foreach (var field in fields)
                                     {
-                                        
                                         var size = Math.Max(field.Key.Length, field.Value.Length);
                                         header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
                                         separator.Append("| ").Append(new String('-', size)).Append(" ");
@@ -1113,16 +1112,26 @@ namespace BenchmarksDriver
                                 {
                                     Log("Writing results to SQL...");
 
-                                    await serializer.WriteJobResultsToSqlAsync(
-                                        serverJob: serverJob,
-                                        clientJob: clientJob,
-                                        connectionString: sqlConnectionString,
-                                        tableName: _tableName,
-                                        path: serverJob.Path,
-                                        session: session,
-                                        description: description,
-                                        statistics: average,
-                                        longRunning: span > TimeSpan.Zero);
+                                    _ = Task.Run(async () =>
+                                    {
+                                        try
+                                        {
+                                            await serializer.WriteJobResultsToSqlAsync(
+                                                serverJob: serverJob,
+                                                clientJob: clientJob,
+                                                connectionString: sqlConnectionString,
+                                                tableName: _tableName,
+                                                path: serverJob.Path,
+                                                session: session,
+                                                description: description,
+                                                statistics: average,
+                                                longRunning: span > TimeSpan.Zero);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Log("Error writing results to SQL: " + ex);
+                                        }
+                                    });
                                 }
                             }
                         }
