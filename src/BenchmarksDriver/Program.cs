@@ -1145,14 +1145,7 @@ namespace BenchmarksDriver
                     if (!sqlTask.IsCompleted)
                     {
                         Log("Job finished, waiting for SQL to complete.");
-                        try
-                        {
-                            await sqlTask;
-                        }
-                        catch (Exception ex)
-                        {
-                            Log($"SQL threw an exception: {ex}");
-                        }
+                        await sqlTask;
                     }
 
                     Log($"Stopping scenario {scenario} on benchmark server...");
