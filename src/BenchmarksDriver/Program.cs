@@ -872,6 +872,7 @@ namespace BenchmarksDriver
                     Log("Measuring");
                     var startTime = DateTime.UtcNow;
                     var spanLoop = 0;
+                    var sqlTask = Task.CompletedTask;
                     do
                     {
                         if (span > TimeSpan.Zero)
@@ -1110,10 +1111,9 @@ namespace BenchmarksDriver
 
                                 if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                                 {
-                                    Log("Writing results to SQL...");
-
-                                    _ = Task.Run(async () =>
+                                    sqlTask = sqlTask.ContinueWith(async t =>
                                     {
+                                        Log("Writing results to SQL...");
                                         try
                                         {
                                             await serializer.WriteJobResultsToSqlAsync(
@@ -1130,7 +1130,10 @@ namespace BenchmarksDriver
                                         catch (Exception ex)
                                         {
                                             Log("Error writing results to SQL: " + ex);
+                                            return;
                                         }
+
+                                        Log("Finished writing results to SQL.");
                                     });
                                 }
                             }
@@ -1138,6 +1141,8 @@ namespace BenchmarksDriver
 
                         spanLoop = spanLoop + 1;
                     } while (DateTime.UtcNow - startTime < span);
+
+                    await sqlTask;
 
                     Log($"Stopping scenario {scenario} on benchmark server...");
 
