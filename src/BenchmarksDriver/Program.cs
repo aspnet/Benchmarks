@@ -872,6 +872,7 @@ namespace BenchmarksDriver
                     Log("Measuring");
                     var startTime = DateTime.UtcNow;
                     var spanLoop = 0;
+                    var sqlTask = Task.CompletedTask;
                     do
                     {
                         if (span > TimeSpan.Zero)
@@ -1080,7 +1081,6 @@ namespace BenchmarksDriver
                                     // Headers
                                     foreach (var field in fields)
                                     {
-                                        
                                         var size = Math.Max(field.Key.Length, field.Value.Length);
                                         header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
                                         separator.Append("| ").Append(new String('-', size)).Append(" ");
@@ -1111,24 +1111,42 @@ namespace BenchmarksDriver
 
                                 if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                                 {
-                                    Log("Writing results to SQL...");
+                                    sqlTask = sqlTask.ContinueWith(async t =>
+                                    {
+                                        Log("Writing results to SQL...");
+                                        try
+                                        {
+                                            await serializer.WriteJobResultsToSqlAsync(
+                                                serverJob: serverJob,
+                                                clientJob: clientJob,
+                                                connectionString: sqlConnectionString,
+                                                tableName: _tableName,
+                                                path: serverJob.Path,
+                                                session: session,
+                                                description: description,
+                                                statistics: average,
+                                                longRunning: span > TimeSpan.Zero);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Log("Error writing results to SQL: " + ex);
+                                            return;
+                                        }
 
-                                    await serializer.WriteJobResultsToSqlAsync(
-                                        serverJob: serverJob,
-                                        clientJob: clientJob,
-                                        connectionString: sqlConnectionString,
-                                        tableName: _tableName,
-                                        path: serverJob.Path,
-                                        session: session,
-                                        description: description,
-                                        statistics: average,
-                                        longRunning: span > TimeSpan.Zero);
+                                        Log("Finished writing results to SQL.");
+                                    });
                                 }
                             }
                         }
 
                         spanLoop = spanLoop + 1;
                     } while (DateTime.UtcNow - startTime < span);
+
+                    if (!sqlTask.IsCompleted)
+                    {
+                        Log("Job finished, waiting for SQL to complete.");
+                        await sqlTask;
+                    }
 
                     Log($"Stopping scenario {scenario} on benchmark server...");
 
