@@ -71,6 +71,8 @@ namespace BenchmarksDriver
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
             var markdownOption = app.Option("-md|--markdown",
                 "Formats the output in markdown", CommandOptionType.NoValue);
+            var writeToFileOption = app.Option("-wf|--write-file",
+                "Writes the results to a file", CommandOptionType.NoValue);
             var windowsOnlyOption = app.Option("--windows-only", 
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
             var linuxOnlyOption = app.Option("--linux-only", 
@@ -535,7 +537,7 @@ namespace BenchmarksDriver
                         }
                         else
                         {
-                            _clientJob.ClientProperties.Add(property.Substring(0, index), property.Substring(index + 1));
+                            _clientJob.ClientProperties[property.Substring(0, index)] = property.Substring(index + 1);
                         }
                     }
                 }
@@ -621,6 +623,7 @@ namespace BenchmarksDriver
                     outputFileOption,
                     runtimeFileOption,
                     markdownOption,
+                    writeToFileOption,
                     requiredOperatingSystem).Result;
             });
 
@@ -667,6 +670,7 @@ namespace BenchmarksDriver
             CommandOption outputFileOption,
             CommandOption runtimeFileOption,
             CommandOption markdownOption,
+            CommandOption writeToFileOption,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
             )
         {
@@ -1058,8 +1062,6 @@ namespace BenchmarksDriver
                                     serializer.ComputeAverages(average, samples);
                                 }
 
-                                if (markdownOption.HasValue())
-                                {
                                     var fields = new List<KeyValuePair<string, string>>();
                                     if (!String.IsNullOrEmpty(description))
                                     {
@@ -1087,6 +1089,26 @@ namespace BenchmarksDriver
                                         values.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
                                     }
 
+                                if (writeToFileOption.HasValue())
+                                {
+                                    var writeToFilename = "results.md";
+                                    
+                                    if (!File.Exists(writeToFilename))
+                                    {
+                                        File.CreateText(writeToFilename).Dispose();
+                                    }
+
+                                    if (!File.ReadLines(writeToFilename).Any())
+                                    {
+                                        File.AppendAllText(writeToFilename, header + "|" + Environment.NewLine);
+                                        File.AppendAllText(writeToFilename, separator + "|" + Environment.NewLine);
+                                    }
+
+                                    File.AppendAllText(writeToFilename, values + "|" + Environment.NewLine);
+                                }
+
+                                if (markdownOption.HasValue())
+                                {
                                     Log(header + "|");
                                     Log(separator + "|");
                                     Log(values + "|");
