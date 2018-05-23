@@ -423,7 +423,7 @@ namespace BenchmarksDriver.Serializers
 
                 try
                 {
-                    using (var command = new SqlCommand(insertCmd, connection))
+                    using (var command = new SqlCommand(insertCmd, connection, transaction))
                     {
                         var p = command.Parameters;
                         p.AddWithValue("@DateTime", utcNow);
