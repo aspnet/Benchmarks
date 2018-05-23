@@ -583,7 +583,7 @@ namespace BenchmarkServer
                                 timer = null;
                             }
 
-                            if (process != null)
+                            if (process != null && !process.HasExited)
                             {
                                 var processId = process.Id;
 

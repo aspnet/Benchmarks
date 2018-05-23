@@ -56,6 +56,7 @@ Options:
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
+  -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
 
