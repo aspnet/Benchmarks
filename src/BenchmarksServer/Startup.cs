@@ -593,33 +593,52 @@ namespace BenchmarkServer
                                     var perfViewProcess = RunPerfview("abort", Path.GetPathRoot(_perfviewPath));
                                 }
 
-                                process.CloseMainWindow();
+                                // Tentatively invoke the shutdown endpoint on the client application
+                                var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
+
+                                // Shutdown invoked successfully, wait for the application to stop by itself
+                                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                {
+                                    var epoch = DateTime.UtcNow;
+
+                                    do
+                                    {
+                                        Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
+                                        await Task.Delay(1000);
+
+                                    } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                }
 
                                 if (!process.HasExited)
                                 {
-                                    process.Kill();
+                                    Log.WriteLine($"Forcing process to stop ...");
+                                    process.CloseMainWindow();
+
+                                    if (!process.HasExited)
+                                    {
+                                        process.Kill();
+                                    }
+
+                                    process.Dispose();
+
+                                    do
+                                    {
+                                        Log.WriteLine($"Waiting for process {processId} to stop ...");
+
+                                        await Task.Delay(1000);
+
+                                        try
+                                        {
+                                            process = Process.GetProcessById(processId);
+                                            process.Refresh();
+                                        }
+                                        catch
+                                        {
+                                            process = null;
+                                        }
+
+                                    } while (process != null && !process.HasExited);
                                 }
-
-                                process.Dispose();
-
-                                do
-                                {
-                                    Log.WriteLine($"Waiting for process {processId} to stop ...");
-
-                                    await Task.Delay(1000);
-
-                                    try
-                                    {
-                                        process = Process.GetProcessById(processId);
-                                        process.Refresh();
-                                    }
-                                    catch
-                                    {
-                                        process = null;
-                                    }
-
-                                } while (process != null && !process.HasExited);
-
                                 Log.WriteLine($"Process has stopped");
 
                                 process = null;
