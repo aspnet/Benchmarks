@@ -419,37 +419,52 @@ namespace BenchmarksDriver.Serializers
             using (var connection = new SqlConnection(connectionString))
             {
                 await connection.OpenAsync();
+                var transaction = connection.BeginTransaction();
 
-                using (var command = new SqlCommand(insertCmd, connection))
+                try
                 {
-                    var p = command.Parameters;
-                    p.AddWithValue("@DateTime", utcNow);
-                    p.AddWithValue("@Session", session);
-                    p.AddWithValue("@Description", description);
-                    p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
-                    p.AddWithValue("@RuntimeVersion", runtimeVersion);
-                    p.AddWithValue("@Scenario", scenario.ToString());
-                    p.AddWithValue("@Hardware", hardware.ToString());
-                    p.AddWithValue("@HardwareVersion", hardwareVersion);
-                    p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
-                    p.AddWithValue("@Framework", "Core");
-                    p.AddWithValue("@RuntimeStore", runtimeStore);
-                    p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
-                    p.AddWithValue("@ConnectionFilter",
-                        string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
-                    p.AddWithValue("@WebHost", webHost.ToString());
-                    p.AddWithValue("@KestrelThreadCount", (object)kestrelThreadCount ?? DBNull.Value);
-                    p.AddWithValue("@ClientThreads", clientThreads);
-                    p.AddWithValue("@Connections", connections);
-                    p.AddWithValue("@Duration", duration);
-                    p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
-                    p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
-                    p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
-                    p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : (object)DBNull.Value);
-                    p.AddWithValue("@Dimension", dimension);
-                    p.AddWithValue("@Value", value);
+                    using (var command = new SqlCommand(insertCmd, connection))
+                    {
+                        var p = command.Parameters;
+                        p.AddWithValue("@DateTime", utcNow);
+                        p.AddWithValue("@Session", session);
+                        p.AddWithValue("@Description", description);
+                        p.AddWithValue("@AspNetCoreVersion", aspnetCoreVersion);
+                        p.AddWithValue("@RuntimeVersion", runtimeVersion);
+                        p.AddWithValue("@Scenario", scenario.ToString());
+                        p.AddWithValue("@Hardware", hardware.ToString());
+                        p.AddWithValue("@HardwareVersion", hardwareVersion);
+                        p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
+                        p.AddWithValue("@Framework", "Core");
+                        p.AddWithValue("@RuntimeStore", runtimeStore);
+                        p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
+                        p.AddWithValue("@ConnectionFilter",
+                            string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
+                        p.AddWithValue("@WebHost", webHost.ToString());
+                        p.AddWithValue("@KestrelThreadCount", (object)kestrelThreadCount ?? DBNull.Value);
+                        p.AddWithValue("@ClientThreads", clientThreads);
+                        p.AddWithValue("@Connections", connections);
+                        p.AddWithValue("@Duration", duration);
+                        p.AddWithValue("@PipelineDepth", (object)pipelineDepth ?? DBNull.Value);
+                        p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
+                        p.AddWithValue("@Method", method.ToString().ToUpperInvariant());
+                        p.AddWithValue("@Headers", headers.Any() ? JsonConvert.SerializeObject(headers) : (object)DBNull.Value);
+                        p.AddWithValue("@Dimension", dimension);
+                        p.AddWithValue("@Value", value);
 
-                    await command.ExecuteNonQueryAsync();
+                        await command.ExecuteNonQueryAsync();
+
+                        transaction.Commit();
+                    }
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    transaction.Dispose();
                 }
             }
         }
