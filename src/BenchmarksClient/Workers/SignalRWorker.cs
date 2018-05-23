@@ -410,23 +410,20 @@ namespace BenchmarksClient.Workers
         {
             if (_detailedLatency)
             {
-                var avg = new List<double>(_latencyPerConnection.Count);
-                var totalAvg = 0.0;
+                var totalCount = 0;
+                var totalSum = 0.0;
                 for (var i = 0; i < _latencyPerConnection.Count; i++)
                 {
-                    avg.Add(0.0);
                     for (var j = 0; j < _latencyPerConnection[i].Count; j++)
                     {
-                        avg[i] += _latencyPerConnection[i][j];
+                        totalSum += _latencyPerConnection[i][j];
+                        totalCount++;
                     }
-                    avg[i] /= _latencyPerConnection[i].Count;
 
                     _latencyPerConnection[i].Sort();
-                    totalAvg += avg[i];
                 }
 
-                totalAvg /= avg.Count;
-                _job.Latency.Average = totalAvg;
+                _job.Latency.Average = totalSum / totalCount;
 
                 var allConnections = new List<double>();
                 foreach (var connectionLatency in _latencyPerConnection)
@@ -468,7 +465,7 @@ namespace BenchmarksClient.Workers
                 return sortedData[sortedData.Count - 1];
             }
 
-            var i = (percent * sortedData.Count) / 100.0 + 0.5;
+            var i = ((long)percent * sortedData.Count) / 100.0 + 0.5;
             var fractionPart = i - Math.Truncate(i);
 
             return (1.0 - fractionPart) * sortedData[(int)Math.Truncate(i) - 1] + fractionPart * sortedData[(int)Math.Ceiling(i) - 1];
