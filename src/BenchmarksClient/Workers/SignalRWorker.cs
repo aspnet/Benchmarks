@@ -122,7 +122,7 @@ namespace BenchmarksClient.Workers
             var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
             _workTimer.Restart();
-            
+
             try
             {
                 switch (_scenario)
@@ -211,12 +211,13 @@ namespace BenchmarksClient.Workers
             {
                 _lock.Release();
                 _job.State = ClientState.Completed;
+                _job.ActualDuration = _workTimer.Elapsed;
                 _whenLastJobCompleted = DateTime.UtcNow;
             }
         }
 
         // We want to move code from StopAsync into Release(). Any code that would prevent
-        // us from reusing the connnections. 
+        // us from reusing the connnections.
         public async Task DisposeAsync()
         {
             foreach (var callback in _recvCallbacks)
@@ -462,10 +463,15 @@ namespace BenchmarksClient.Workers
 
         private double GetPercentile(int percent, List<double> sortedData)
         {
+            if (percent == 100)
+            {
+                return sortedData[sortedData.Count - 1];
+            }
+
             var i = (percent * sortedData.Count) / 100.0 + 0.5;
             var fractionPart = i - Math.Truncate(i);
 
-            return (1.0 - fractionPart) * sortedData[(int)Math.Truncate(i)] + fractionPart * sortedData[(int)Math.Ceiling(i)];
+            return (1.0 - fractionPart) * sortedData[(int)Math.Truncate(i) - 1] + fractionPart * sortedData[(int)Math.Ceiling(i) - 1];
         }
 
         private async Task CalculateClientToServerOffset()
