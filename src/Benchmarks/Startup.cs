@@ -313,6 +313,8 @@ namespace Benchmarks
                 app.UseResponseCachingPlaintextVaryByCached();
             }
 
+            app.UseAutoShutdown();
+            
             app.RunDebugInfoPage();
         }
     }
