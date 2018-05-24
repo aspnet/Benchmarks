@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
+using Benchmarks.Data;
 using Jil;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,7 @@ namespace Benchmarks.Middleware
 
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
-                    JSON.Serialize(new { message = "Hello, World!" }, sw);
+                    JSON.Serialize(new JsonMessage() { message = "Hello, World!" }, sw);
                     return sw.FlushAsync();
                 }
             }
