@@ -182,36 +182,34 @@ namespace BenchmarksDriver.Serializers
 
                 try
                 {
-                    using (var command = new SqlCommand(insertCmd, connection, transaction))
-                    {
-                        var p = command.Parameters;
-                        p.AddWithValue("@DateTime", utcNow);
-                        p.AddWithValue("@Session", session);
-                        p.AddWithValue("@Description", description);
-                        p.AddWithValue("@AspNetCoreVersion", serverJob.AspNetCoreVersion);
-                        p.AddWithValue("@RuntimeVersion", serverJob.RuntimeVersion);
-                        p.AddWithValue("@Scenario", serverJob.Scenario.ToString());
-                        p.AddWithValue("@Hardware", serverJob.Hardware.ToString());
-                        p.AddWithValue("@HardwareVersion", serverJob.HardwareVersion);
-                        p.AddWithValue("@OperatingSystem", serverJob.OperatingSystem.ToString());
-                        p.AddWithValue("@Framework", "Core");
-                        p.AddWithValue("@RuntimeStore", serverJob.UseRuntimeStore);
-                        p.AddWithValue("@Scheme", serverJob.Scheme.ToString().ToLowerInvariant());
-                        p.AddWithValue("@Sources", serverJob.Source != null ? ConvertToSqlString(serverJob.Source) : (object)DBNull.Value);
-                        p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
-                        p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
-                        p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
-                        p.AddWithValue("@ClientProperties", JsonConvert.SerializeObject(clientJob.ClientProperties));
-                        p.AddWithValue("@Connections", clientJob.Connections);
-                        p.AddWithValue("@Duration", clientJob.Duration);
-                        p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
-                        p.AddWithValue("@Headers", clientJob.Headers.Any() ? JsonConvert.SerializeObject(clientJob.Headers) : (object)DBNull.Value);
-                        p.AddWithValue("@Dimension", dimension);
-                        p.AddWithValue("@Value", value);
-                        await command.ExecuteNonQueryAsync();
+                    var command = new SqlCommand(insertCmd, connection, transaction);
+                    var p = command.Parameters;
+                    p.AddWithValue("@DateTime", utcNow);
+                    p.AddWithValue("@Session", session);
+                    p.AddWithValue("@Description", description);
+                    p.AddWithValue("@AspNetCoreVersion", serverJob.AspNetCoreVersion);
+                    p.AddWithValue("@RuntimeVersion", serverJob.RuntimeVersion);
+                    p.AddWithValue("@Scenario", serverJob.Scenario.ToString());
+                    p.AddWithValue("@Hardware", serverJob.Hardware.ToString());
+                    p.AddWithValue("@HardwareVersion", serverJob.HardwareVersion);
+                    p.AddWithValue("@OperatingSystem", serverJob.OperatingSystem.ToString());
+                    p.AddWithValue("@Framework", "Core");
+                    p.AddWithValue("@RuntimeStore", serverJob.UseRuntimeStore);
+                    p.AddWithValue("@Scheme", serverJob.Scheme.ToString().ToLowerInvariant());
+                    p.AddWithValue("@Sources", serverJob.Source != null ? ConvertToSqlString(serverJob.Source) : (object)DBNull.Value);
+                    p.AddWithValue("@WebHost", serverJob.WebHost.ToString());
+                    p.AddWithValue("@Transport", clientJob.ClientProperties["TransportType"]);
+                    p.AddWithValue("@HubProtocol", clientJob.ClientProperties["HubProtocol"]);
+                    p.AddWithValue("@ClientProperties", JsonConvert.SerializeObject(clientJob.ClientProperties));
+                    p.AddWithValue("@Connections", clientJob.Connections);
+                    p.AddWithValue("@Duration", clientJob.Duration);
+                    p.AddWithValue("@Path", string.IsNullOrEmpty(path) ? (object)DBNull.Value : path);
+                    p.AddWithValue("@Headers", clientJob.Headers.Any() ? JsonConvert.SerializeObject(clientJob.Headers) : (object)DBNull.Value);
+                    p.AddWithValue("@Dimension", dimension);
+                    p.AddWithValue("@Value", value);
+                    await command.ExecuteNonQueryAsync();
 
-                        transaction.Commit();
-                    }
+                    transaction.Commit();
                 }
                 catch
                 {
