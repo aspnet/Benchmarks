@@ -10,5 +10,6 @@ namespace Benchmarks.ClientJob
         public double Within75thPercentile { get; set; } = -1;
         public double Within90thPercentile { get; set; } = -1;
         public double Within99thPercentile { get; set; } = -1;
+        public double Within100thPercentile { get; set; } = -1;
     }
 }

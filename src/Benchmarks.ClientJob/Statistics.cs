@@ -18,6 +18,7 @@ namespace Benchmarks.ClientJob
         public double Latency75Percentile { get; set; }
         public double Latency90Percentile { get; set; }
         public double Latency99Percentile { get; set; }
+        public double Latency100Percentile { get; set; }
         public double TotalRequests { get; set; }
         public double Duration { get; set; }
         public Dictionary<string, object> Other = new Dictionary<string, object>();
