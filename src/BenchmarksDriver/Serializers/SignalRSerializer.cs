@@ -124,7 +124,7 @@ namespace BenchmarksDriver.Serializers
             {
                 await RetryOnExceptionAsync(5, async () =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency100Percentile (ms)", statistics.MaxLatency);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "MaxLatency (ms)", statistics.MaxLatency);
                 });
             }
         }
