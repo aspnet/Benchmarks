@@ -191,7 +191,7 @@ namespace BenchmarksDriver.Serializers
                 value: statistics.Latency99Percentile);
             }
 
-            if (statistics.Latency100Percentile != -1)
+            if (statistics.MaxLatency != -1)
             {
                 await WriteJobsToSql(
                 serverJob: serverJob,
@@ -203,7 +203,7 @@ namespace BenchmarksDriver.Serializers
                 session: session,
                 description: description,
                 dimension: "Latency100Percentile (ms)",
-                value: statistics.Latency100Percentile);
+                value: statistics.MaxLatency);
             }
 
             if (statistics.SocketErrors != -1)
