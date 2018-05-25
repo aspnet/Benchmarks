@@ -233,6 +233,9 @@ namespace BenchmarksClient.Workers
                 var p99Match = Regex.Match(job.Output, String.Format(LatencyPattern, "99%"));
                 job.Latency.Within99thPercentile = ReadLatency(p99Match);
 
+                var p100Match = Regex.Match(job.Output, @"\s+Latency\s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
+                job.Latency.MaxLatency = ReadLatency(p100Match);
+
                 var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
                 job.SocketErrors = CountSocketErrors(socketErrorsMatch);
 
