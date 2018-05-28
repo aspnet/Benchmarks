@@ -122,6 +122,11 @@ namespace Benchmarks
                 services.AddScoped<MongoDb>();
             }
 
+            if (Scenarios.Any("Update"))
+            {
+                BatchUpdateString.Initalize();
+            }
+
             if (Scenarios.Any("Fortunes"))
             {
                 var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
