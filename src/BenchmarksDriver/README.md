@@ -26,8 +26,12 @@ Options:
   --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
   --arguments            Arguments to pass to the application. (e.g., "--raw true")
   --port                 The port used to request the benchmarked application. Default is 5000.
+  --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
   -r|--repository        Git repository containing the project to test.
-  --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj)"
+  --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj")
+  -df|--docker-file      File path of the Docker script. (e.g, "frameworks/CSharp/aspnetcore/aspcore.dockerfile")
+  -dc|--docker-context   Docker context directory. Defaults to the Docker file directory. (e.g., "frameworks/CSharp/aspnetcore/")
+  -di|--docker-image     The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., "aspnetcore21")
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
@@ -40,7 +44,7 @@ Options:
   --header               Header added to request.
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.
-  -p|--properties        Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16"
+  -p|--properties        Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.

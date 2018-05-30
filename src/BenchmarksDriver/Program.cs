@@ -102,8 +102,16 @@ namespace BenchmarksDriver
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
             var portOption = app.Option("--port",
                 "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
+            var readyTextOption = app.Option("--ready-text",
+                "The text that is displayed when the application is ready to accept requests. (e.g., \"Application started.\")", CommandOptionType.SingleValue);
             var repositoryOption = app.Option("-r|--repository",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            var dockerFileOption = app.Option("-df|--docker-file",
+                "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
+            var dockerContextOption = app.Option("-dc|--docker-context",
+                "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
+            var dockerImageOption = app.Option("-di|--docker-image",
+                "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
@@ -288,8 +296,9 @@ namespace BenchmarksDriver
                         return 8;
                     }
 
-                    if (!repositoryOption.HasValue() ||
-                        !projectOption.HasValue())
+                    if ((!repositoryOption.HasValue() ||
+                        !projectOption.HasValue()) &&
+                        !dockerFileOption.HasValue())
                     {
                         Console.WriteLine($"Repository and project are mandatory when no job definition is specified.");
                         return 9;
@@ -398,6 +407,28 @@ namespace BenchmarksDriver
                     }
 
                     serverJob.Source.Repository = repository;
+                }
+                if (dockerFileOption.HasValue())
+                {
+                    serverJob.Source.DockerFile = dockerFileOption.Value();
+
+                    if (dockerContextOption.HasValue())
+                    {
+                        serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
+                    }
+                    else
+                    {
+                        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                    }
+
+                    if (dockerImageOption.HasValue())
+                    {
+                        serverJob.Source.DockerImageName = dockerImageOption.Value();
+                    }
+                    else
+                    {
+                        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
+                    }
                 }
                 if (projectOption.HasValue())
                 {
