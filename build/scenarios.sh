@@ -33,6 +33,7 @@ multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarkapps/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
 plaintextPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.json.json"
+routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/dev/benchmarkapps/Benchmarks/benchmarks.json"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
@@ -64,6 +65,7 @@ jobs=(
   "-n MvcJson --webHost KestrelLibuv $trend $jsonJobs" 
   "-n MvcJson --webHost KestrelLibuv $baseline $jsonJobs"
   "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
+  "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs" 
 
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
