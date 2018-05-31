@@ -979,6 +979,7 @@ namespace BenchmarksDriver
                                 Latency75Percentile = clientJob.Latency.Within75thPercentile,
                                 Latency90Percentile = clientJob.Latency.Within90thPercentile,
                                 Latency99Percentile = clientJob.Latency.Within99thPercentile,
+                                MaxLatency = clientJob.Latency.MaxLatency,
                                 TotalRequests = clientJob.Requests,
                                 Duration = clientJob.ActualDuration.TotalMilliseconds
                             };
@@ -1084,6 +1085,7 @@ namespace BenchmarksDriver
                                     Latency75Percentile = Math.Round(samples.Average(x => x.Latency75Percentile), 1),
                                     Latency90Percentile = Math.Round(samples.Average(x => x.Latency90Percentile), 1),
                                     Latency99Percentile = Math.Round(samples.Average(x => x.Latency99Percentile), 1),
+                                    MaxLatency = Math.Round(samples.Average(x => x.MaxLatency), 1),
                                     TotalRequests = Math.Round(samples.Average(x => x.TotalRequests)),
                                     Duration = Math.Round(samples.Average(x => x.Duration))
                                 };
@@ -1123,7 +1125,7 @@ namespace BenchmarksDriver
                                 if (writeToFileOption.HasValue())
                                 {
                                     var writeToFilename = "results.md";
-                                    
+
                                     if (!File.Exists(writeToFilename))
                                     {
                                         File.CreateText(writeToFilename).Dispose();

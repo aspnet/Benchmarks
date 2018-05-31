@@ -191,6 +191,21 @@ namespace BenchmarksDriver.Serializers
                 value: statistics.Latency99Percentile);
             }
 
+            if (statistics.MaxLatency != -1)
+            {
+                await WriteJobsToSql(
+                serverJob: serverJob,
+                clientJob: clientJob,
+                utcNow: utcNow,
+                connectionString: sqlConnectionString,
+                tableName: tableName,
+                path: serverJob.Path,
+                session: session,
+                description: description,
+                dimension: "MaxLatency (ms)",
+                value: statistics.MaxLatency);
+            }
+
             if (statistics.SocketErrors != -1)
             {
                 await WriteJobsToSql(

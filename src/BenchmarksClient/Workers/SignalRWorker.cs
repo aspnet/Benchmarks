@@ -439,6 +439,7 @@ namespace BenchmarksClient.Workers
                 _job.Latency.Within75thPercentile = GetPercentile(75, allConnections);
                 _job.Latency.Within90thPercentile = GetPercentile(90, allConnections);
                 _job.Latency.Within99thPercentile = GetPercentile(99, allConnections);
+                _job.Latency.MaxLatency = GetPercentile(100, allConnections);
             }
             else
             {

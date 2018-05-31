@@ -119,6 +119,14 @@ namespace BenchmarksDriver.Serializers
                     await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile);
                 });
             }
+
+            if (statistics.MaxLatency != -1)
+            {
+                await RetryOnExceptionAsync(5, async () =>
+                {
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "MaxLatency (ms)", statistics.MaxLatency);
+                });
+            }
         }
 
         private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value)
