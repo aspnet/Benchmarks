@@ -80,31 +80,39 @@ namespace BenchmarkClient.Controllers
         [HttpPost("{id}/script")]
         public async Task<IActionResult> UploadScript(ScriptViewModel attachment)
         {
-            var job = _jobs.Find(attachment.Id);
-
-            if (job == null)
+            try
             {
-                return NotFound();
+                var job = _jobs.Find(attachment.Id);
+
+                if (job == null)
+                {
+                    return NotFound();
+                }
+
+                var tempFilename = Path.GetTempFileName();
+
+                Log($"Creating {Path.GetFileName(attachment.SourceFileName)} in {tempFilename}");
+
+                using (var fs = System.IO.File.Create(tempFilename))
+                {
+                    await attachment.Content.CopyToAsync(fs);
+                }
+
+                job.Attachments.Add(new ScriptAttachment
+                {
+                    TempFilename = tempFilename,
+                    Filename = attachment.SourceFileName
+                });
+
+                _jobs.Update(job);
+
+                return Ok();
             }
-
-            var tempFilename = Path.GetTempFileName();
-
-            Log($"Creating {Path.GetFileName(attachment.SourceFileName)} in {tempFilename}");
-
-            using (var fs = System.IO.File.Create(tempFilename))
+            catch(Exception e)
             {
-                await attachment.Content.CopyToAsync(fs);
+                Log(e.Message);
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
             }
-
-            job.Attachments.Add(new ScriptAttachment
-            {
-                TempFilename = tempFilename,
-                Filename = attachment.SourceFileName
-            });
-
-            _jobs.Update(job);
-
-            return Ok();
         }
 
         private static void Log(string message)
