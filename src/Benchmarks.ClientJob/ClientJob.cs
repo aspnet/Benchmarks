@@ -35,6 +35,7 @@ namespace Benchmarks.ClientJob
             Error = clientJob.Error;
             Method = clientJob.Method;
             SkipStartupLatencies = clientJob.SkipStartupLatencies;
+            Attachments = new List<ScriptAttachment>(clientJob.Attachments);
         }
 
         public int Id { get; set; }
