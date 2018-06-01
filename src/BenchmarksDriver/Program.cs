@@ -1396,7 +1396,7 @@ namespace BenchmarksDriver
 
                 requestContent.Add(new StringContent(clientJob.Id.ToString()), nameof(ScriptViewModel.Id));
                 requestContent.Add(fileContent, nameof(ScriptViewModel.Content), Path.GetFileName(filename));
-                requestContent.Add(new StringContent(filename), nameof(ScriptViewModel.SourceFileName));
+                requestContent.Add(new StringContent(Path.GetFileName(filename)), nameof(ScriptViewModel.SourceFileName));
 
                 Log($"Sending {Path.GetFileName(filename)}");
 
@@ -1432,11 +1432,15 @@ namespace BenchmarksDriver
 
                 clientJobUri = new Uri(clientUri, response.Headers.Location);
 
+                LogVerbose($"GET {clientJobUri}...");
+                response = await _httpClient.GetAsync(clientJobUri);
+                responseContent = await response.Content.ReadAsStringAsync();
+                clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
+
                 if (scriptFileOption.HasValue())
                 {
                     foreach (var scriptFile in scriptFileOption.Values)
                     {
-                        Log(clientJobUri.ToString());
                         var result = await UploadScriptAsync(scriptFile, clientJob, clientJobUri);
 
                         if (result != 0)

@@ -157,9 +157,9 @@ namespace BenchmarksClient.Workers
                     Directory.CreateDirectory("scripts/custom");
                 }
 
-                Log("Copying script: " + Path.GetFileName(script.Filename));
+                Log("Copying script: " + script.Filename);
 
-                var destination = "scripts/custom/" + Path.GetFileName(script.Filename);
+                var destination = "scripts/custom/" + script.Filename;
 
                 if (File.Exists(destination))
                 {

@@ -103,7 +103,7 @@ namespace BenchmarkClient.Controllers
 
                 var tempFilename = Path.GetTempFileName();
 
-                Log($"Creating {Path.GetFileName(attachment.SourceFileName)} in {tempFilename}");
+                Log($"Creating {attachment.SourceFileName} in {tempFilename}");
 
                 using (var fs = System.IO.File.Create(tempFilename))
                 {
