@@ -5,6 +5,7 @@ namespace Benchmarks.ClientJob
 {
     public enum ClientState
     {
+        Initializing,
         Waiting,
         Starting,
         Running,

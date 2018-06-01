@@ -1384,7 +1384,7 @@ namespace BenchmarksDriver
             {
                 if (!File.Exists(filename))
                 {
-                    Console.WriteLine($"SCript File '{filename}' could not be loaded.");
+                    Console.WriteLine($"Script File '{filename}' could not be loaded.");
                     return 8;
                 }
 
@@ -1397,6 +1397,8 @@ namespace BenchmarksDriver
                 requestContent.Add(new StringContent(clientJob.Id.ToString()), nameof(ScriptViewModel.Id));
                 requestContent.Add(fileContent, nameof(ScriptViewModel.Content), Path.GetFileName(filename));
                 requestContent.Add(new StringContent(filename), nameof(ScriptViewModel.SourceFileName));
+
+                Log("Sending request to " + clientJobUri + "/script");
 
                 var result = await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
                 result.EnsureSuccessStatusCode();
@@ -1434,6 +1436,7 @@ namespace BenchmarksDriver
                 {
                     foreach (var scriptFile in scriptFileOption.Values)
                     {
+                        Log(clientJobUri.ToString());
                         var result = await UploadScriptAsync(scriptFile, clientJob, clientJobUri);
 
                         if (result != 0)
@@ -1443,6 +1446,14 @@ namespace BenchmarksDriver
                         }
                     }
                 }
+
+                response = await _httpClient.PostAsync(clientJobUri + "/start", new StringContent(""));
+                responseContent = await response.Content.ReadAsStringAsync();
+                LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+                response.EnsureSuccessStatusCode();
+
+                Log($"Client Job started: {serverJobUri}");
+
 
                 while (true)
                 {

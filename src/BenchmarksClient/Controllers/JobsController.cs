@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
-using BenchmarksClient.Workers;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 
@@ -48,7 +46,7 @@ namespace BenchmarkClient.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] ClientJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ClientState.Waiting)
+            if (job == null || job.Id != 0 || job.State != ClientState.Initializing)
             {
                 return BadRequest();
             }
@@ -57,6 +55,17 @@ namespace BenchmarkClient.Controllers
 
             Response.Headers["Location"] = $"/jobs/{job.Id}";
             return new StatusCodeResult((int)HttpStatusCode.Accepted);
+        }
+
+
+        [HttpPost("{id}/start")]
+        public IActionResult Start(int id)
+        {
+            var job = _jobs.Find(id);
+            job.State = ClientState.Waiting;
+            _jobs.Update(job);
+
+            return Ok();
         }
 
         [HttpDelete("{id}")]
