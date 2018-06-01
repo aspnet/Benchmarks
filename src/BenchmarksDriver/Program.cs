@@ -1437,17 +1437,26 @@ namespace BenchmarksDriver
                 responseContent = await response.Content.ReadAsStringAsync();
                 clientJob = JsonConvert.DeserializeObject<ClientJob>(responseContent);
 
+                var allWrkScripts = new List<string>();
+
                 if (scriptFileOption.HasValue())
                 {
-                    foreach (var scriptFile in scriptFileOption.Values)
-                    {
-                        var result = await UploadScriptAsync(scriptFile, clientJob, clientJobUri);
+                    allWrkScripts.AddRange(scriptFileOption.Values);
+                }
 
-                        if (result != 0)
-                        {
-                            Log($"Error while sending custom script to client. interrupting");
-                            return null;
-                        }
+                if (clientJob.Client == Worker.Wrk && clientJob.ClientProperties.ContainsKey("Scripts"))
+                {
+                    allWrkScripts.AddRange(clientJob.ClientProperties["Scripts"].Split(';'));
+                }
+
+                foreach (var scriptFile in allWrkScripts)
+                {
+                    var result = await UploadScriptAsync(scriptFile, clientJob, clientJobUri);
+
+                    if (result != 0)
+                    {
+                        Log($"Error while sending custom script to client. interrupting");
+                        return null;
                     }
                 }
 

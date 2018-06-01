@@ -45,6 +45,7 @@ Options:
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.
   -p|--properties        Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16
+  --script"              Wrk script path. File path can be a URL. e.g., --script c:\scripts\post.lua
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
@@ -68,6 +69,7 @@ Properties of the Wrk client
 
   ScriptName             Name of the script used by wrk.
   PipelineDepth          Depth of pipeline used by clients.
+  Scripts                List of paths or urls to lua scripts to use, sperater by semi-colons (;).
 
 Properties of the SignalR client
   HubProtocol            Name of the hub protocol to be used between client and server.
