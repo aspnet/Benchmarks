@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.0.2" />
   </ItemGroup>
 
 </Project>

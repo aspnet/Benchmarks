@@ -3,8 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Reflection;
+using System.Threading.Tasks;
 using Benchmarks.ClientJob;
+using BenchmarksClient.Workers;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 
@@ -71,6 +75,40 @@ namespace BenchmarkClient.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpPost("{id}/script")]
+        public async Task<IActionResult> UploadScript(ScriptViewModel attachment)
+        {
+            var job = _jobs.Find(attachment.Id);
+
+            var tempFilename = Path.GetTempFileName();
+
+            Log($"Creating {Path.GetFileName(attachment.SourceFileName)} in {tempFilename}");
+
+            using (var fs = System.IO.File.Create(tempFilename))
+            {
+                await attachment.Content.CopyToAsync(fs);
+            }
+
+            job.Attachments.Add(new ScriptAttachment
+            {
+                TempFilename = tempFilename,
+                Filename = attachment.SourceFileName
+            });
+
+            using (var fs = System.IO.File.Create(tempFilename))
+            {
+                await attachment.Content.CopyToAsync(fs);
+            }
+
+            return Ok();
+        }
+
+        private static void Log(string message)
+        {
+            var time = DateTime.Now.ToString("hh:mm:ss.fff");
+            Console.WriteLine($"[{time}] {message}");
         }
     }
 }

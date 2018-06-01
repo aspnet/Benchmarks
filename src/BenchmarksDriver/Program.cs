@@ -123,6 +123,10 @@ namespace BenchmarksDriver
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
+            var scriptFileOption = app.Option("--script",
+                "WRK script path. File path can be a URL. e.g., " +
+                "\"--script c:\\scripts\\post.lua\"",
+                CommandOptionType.MultipleValue);
             var runtimeFileOption = app.Option("--runtimeFile",
                 "Runtime file attachment. Format is 'path[;destination]', e.g., " +
                 "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
@@ -500,6 +504,19 @@ namespace BenchmarksDriver
                     }
                 }
 
+                // Check all scripts exist
+                if (scriptFileOption.HasValue())
+                {
+                    foreach (var scriptFile in scriptFileOption.Values)
+                    {
+                        if (!File.Exists(scriptFile))
+                        {
+                            Console.WriteLine($"Script file '{scriptFile}' could not be loaded.");
+                            return 8;
+                        }
+                    }
+                }
+
                 if (runtimeFileOption.HasValue())
                 {
                     foreach (var runtimeFile in runtimeFileOption.Values)
@@ -652,6 +669,7 @@ namespace BenchmarksDriver
                     collectR2RLogOption.HasValue(),
                     traceOutputOption.Value(),
                     outputFileOption,
+                    scriptFileOption,
                     runtimeFileOption,
                     markdownOption,
                     writeToFileOption,
@@ -699,6 +717,7 @@ namespace BenchmarksDriver
             bool collectR2RLog,
             string traceDestination,
             CommandOption outputFileOption,
+            CommandOption scriptFileOption,
             CommandOption runtimeFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
@@ -892,7 +911,7 @@ namespace BenchmarksDriver
                         var duration = _clientJob.Duration;
 
                         _clientJob.Duration = _clientJob.Warmup;
-                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
+                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
 
                         // Store the latency as measured on the warmup job
                         latencyNoLoad = clientJob.LatencyNoLoad;
@@ -923,7 +942,7 @@ namespace BenchmarksDriver
                             }
                         }
 
-                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri);
+                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
 
                         if (clientJob.State == ClientState.Completed)
                         {
@@ -1359,7 +1378,37 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri)
+        private static async Task<int> UploadScriptAsync(string filename, ClientJob clientJob, Uri clientJobUri)
+        {
+            try
+            {
+                if (!File.Exists(filename))
+                {
+                    Console.WriteLine($"SCript File '{filename}' could not be loaded.");
+                    return 8;
+                }
+
+                var requestContent = new MultipartFormDataContent();
+
+                var fileContent = filename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? new StreamContent(await _httpClient.GetStreamAsync(filename))
+                    : new StreamContent(new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1, FileOptions.Asynchronous | FileOptions.SequentialScan));
+
+                requestContent.Add(new StringContent(clientJob.Id.ToString()), nameof(ScriptViewModel.Id));
+                requestContent.Add(fileContent, nameof(ScriptViewModel.Content), Path.GetFileName(filename));
+                requestContent.Add(new StringContent(filename), nameof(ScriptViewModel.SourceFileName));
+
+                await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"An error occured while uploading a file.", e);
+            }
+
+            return 0;
+        }
+
+        private static async Task<ClientJob> RunClientJob(string scenarioName, Uri clientUri, Uri serverJobUri, string serverBenchmarkUri, CommandOption scriptFileOption)
         {
             var clientJob = new ClientJob(_clientJob) { ServerBenchmarkUri = serverBenchmarkUri };
             var benchmarkUri = new Uri(serverBenchmarkUri);
@@ -1379,6 +1428,20 @@ namespace BenchmarksDriver
                 response.EnsureSuccessStatusCode();
 
                 clientJobUri = new Uri(clientUri, response.Headers.Location);
+
+                if (scriptFileOption.HasValue())
+                {
+                    foreach (var scriptFile in scriptFileOption.Values)
+                    {
+                        var result = await UploadScriptAsync(scriptFile, clientJob, clientJobUri);
+
+                        if (result != 0)
+                        {
+                            Log($"Error while sending custom script to client. interrupting");
+                            return null;
+                        }
+                    }
+                }
 
                 while (true)
                 {
