@@ -82,6 +82,11 @@ namespace BenchmarkClient.Controllers
         {
             var job = _jobs.Find(attachment.Id);
 
+            if (job == null)
+            {
+                return NotFound();
+            }
+
             var tempFilename = Path.GetTempFileName();
 
             Log($"Creating {Path.GetFileName(attachment.SourceFileName)} in {tempFilename}");
@@ -98,11 +103,6 @@ namespace BenchmarkClient.Controllers
             });
 
             _jobs.Update(job);
-
-            using (var fs = System.IO.File.Create(tempFilename))
-            {
-                await attachment.Content.CopyToAsync(fs);
-            }
 
             return Ok();
         }

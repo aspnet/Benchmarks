@@ -1398,7 +1398,8 @@ namespace BenchmarksDriver
                 requestContent.Add(fileContent, nameof(ScriptViewModel.Content), Path.GetFileName(filename));
                 requestContent.Add(new StringContent(filename), nameof(ScriptViewModel.SourceFileName));
 
-                await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
+                var result = await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
+                result.EnsureSuccessStatusCode();
             }
             catch (Exception e)
             {
