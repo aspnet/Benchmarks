@@ -2,6 +2,8 @@ FROM microsoft/dotnet:2.1-sdk
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+# dotnet dependencies?
+        libunwind-dev \
 # wrk dependencies
         build-essential \
         libssl-dev \
