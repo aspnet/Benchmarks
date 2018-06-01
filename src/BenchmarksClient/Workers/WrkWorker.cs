@@ -159,7 +159,9 @@ namespace BenchmarksClient.Workers
 
                 Log("Copying script: " + script.Filename);
 
-                var destination = "scripts/custom/" + script.Filename;
+                var destination = Path.Combine(Path.GetDirectoryName(typeof(WrkWorker).GetTypeInfo().Assembly.Location), "scripts/custom/" + script.Filename);
+
+                Directory.CreateDirectory(destination);
 
                 if (File.Exists(destination))
                 {
@@ -168,7 +170,7 @@ namespace BenchmarksClient.Workers
 
                 File.Move(script.TempFilename, destination);
 
-                customScripts.Add(destination);
+                customScripts.Add("scripts/custom/" + script.Filename);
             }
 
             var command = "wrk";
