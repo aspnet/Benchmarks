@@ -97,6 +97,8 @@ namespace BenchmarkClient.Controllers
                 Filename = attachment.SourceFileName
             });
 
+            _jobs.Update(job);
+
             using (var fs = System.IO.File.Create(tempFilename))
             {
                 await attachment.Content.CopyToAsync(fs);
