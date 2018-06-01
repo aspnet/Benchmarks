@@ -161,7 +161,7 @@ namespace BenchmarksClient.Workers
 
                 var destination = Path.Combine(Path.GetDirectoryName(typeof(WrkWorker).GetTypeInfo().Assembly.Location), "scripts/custom/" + script.Filename);
 
-                Directory.CreateDirectory(destination);
+                Directory.CreateDirectory(Path.GetDirectoryName(destination));
 
                 if (File.Exists(destination))
                 {
