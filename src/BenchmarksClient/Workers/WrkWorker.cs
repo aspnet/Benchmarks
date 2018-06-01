@@ -168,7 +168,9 @@ namespace BenchmarksClient.Workers
                     File.Delete(destination);
                 }
 
-                File.Move(script.TempFilename, destination);
+                File.Copy(script.TempFilename, destination, true);
+
+                File.Delete(script.TempFilename);
 
                 customScripts.Add("scripts/custom/" + script.Filename);
             }
