@@ -65,6 +65,7 @@ namespace BenchmarkClient.Controllers
             job.State = ClientState.Waiting;
             _jobs.Update(job);
 
+            Log($"Client job {id} started");
             return Ok();
         }
 
@@ -91,6 +92,8 @@ namespace BenchmarkClient.Controllers
         {
             try
             {
+                Log($"Receiving script for job '{attachment.Id}'");
+
                 var job = _jobs.Find(attachment.Id);
 
                 if (job == null)

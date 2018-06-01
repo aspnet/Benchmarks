@@ -832,7 +832,7 @@ namespace BenchmarksDriver
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                             response.EnsureSuccessStatusCode();
 
-                            Log($"Job started: {serverJobUri}");
+                            Log($"Server Job ready: {serverJobUri}");
 
                             break;
                         }
@@ -1384,7 +1384,7 @@ namespace BenchmarksDriver
             {
                 if (!File.Exists(filename))
                 {
-                    Console.WriteLine($"Script File '{filename}' could not be loaded.");
+                    Log($"Script File '{filename}' could not be loaded.");
                     return 8;
                 }
 
@@ -1398,7 +1398,7 @@ namespace BenchmarksDriver
                 requestContent.Add(fileContent, nameof(ScriptViewModel.Content), Path.GetFileName(filename));
                 requestContent.Add(new StringContent(filename), nameof(ScriptViewModel.SourceFileName));
 
-                Log("Sending request to " + clientJobUri + "/script");
+                Log($"Sending {Path.GetFileName(filename)}");
 
                 var result = await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
                 result.EnsureSuccessStatusCode();
@@ -1452,8 +1452,7 @@ namespace BenchmarksDriver
                 LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
-                Log($"Client Job started: {serverJobUri}");
-
+                Log($"Client Job ready: {clientJobUri}");
 
                 while (true)
                 {
