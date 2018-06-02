@@ -83,6 +83,7 @@ docker run \
     --name $dockername \
     --network host \
     --restart always \
+    --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     benchmarks \
     bash -c \

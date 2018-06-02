@@ -13,10 +13,22 @@ RUN apt-get update \
 # BenchmarksServer dependencies
         git \
         procps \
+# Perfview dependencies
+        zip \
+        linux-tools \
+        lttng-tools \
+        liblttng-ust-dev \
+        binutils \
+# make dependencies
+        flex \
+        bison \
     && rm -rf /var/lib/apt/lists/*
 
+# Make perf visible for perfcollect
+RUN cp /usr/bin/perf_4.9 /usr/bin/perf
+
 # Build and install wrk
-ENV WRK_VERSION 4.0.2
+ENV WRK_VERSION 4.1.0
 RUN cd /tmp \
     && wget https://github.com/wg/wrk/archive/$WRK_VERSION.tar.gz -O wrk.tar.gz \
     && tar xvzf wrk.tar.gz \
