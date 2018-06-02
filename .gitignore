@@ -286,3 +286,4 @@ __pycache__/
 *.etl.zip
 *.orig
 /src/BenchmarksDriver/results.md
+*.trace.zip

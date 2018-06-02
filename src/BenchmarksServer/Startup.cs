@@ -835,7 +835,6 @@ namespace BenchmarkServer
                 perfCollectProcess.StandardInput.Close();
 
                 ProcessUtil.Run("kill", $"--signal SIGINT {processId}", throwOnError: false);
-                ProcessUtil.Run("kill", $"--signal SIGTERM {processId}", throwOnError: false);
 
                 // Max delay for perfcollect to stop
                 var delay = Task.Delay(30000);
