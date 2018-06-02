@@ -794,7 +794,7 @@ namespace BenchmarkServer
             {
                 StartInfo = {
                     FileName = "/usr/bin/env",
-                    Arguments = $"bash {_perfcollectPath} {arguments}",
+                    Arguments = $"bash {_perfcollectPath} {arguments} -collectsec 5",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
@@ -832,15 +832,18 @@ namespace BenchmarkServer
 
                 Log.WriteLine($"Stopping PerfCollect");
 
-                await perfCollectProcess.StandardInput.WriteAsync("\x3");
-                await perfCollectProcess.StandardOutput.ReadToEndAsync();
                 perfCollectProcess.StandardInput.Close();
 
                 ProcessUtil.Run("kill", $"--signal SIGINT {processId}", throwOnError: false);
                 ProcessUtil.Run("kill", $"--signal SIGTERM {processId}", throwOnError: false);
 
-                // Wait 10 seconds
-                await Task.Delay(10000);
+                // Max delay for perfcollect to stop
+                var delay = Task.Delay(30000);
+
+                while(!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
+                {
+                    await Task.Delay(1000);
+                }
 
                 if (!perfCollectProcess.HasExited)
                 {
@@ -1715,7 +1718,7 @@ namespace BenchmarkServer
             {
                 if (OperatingSystem == OperatingSystem.Windows)
                 {
-                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl");
+                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl.zip");
                     var perfViewArguments = new Dictionary<string, string>();
                     perfViewArguments["AcceptEula"] = "";
                     perfViewArguments["NoGui"] = "";
@@ -1737,7 +1740,7 @@ namespace BenchmarkServer
                         perfviewArguments += $" /{customArg.Key}{value}";
                     }
 
-                    perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
+                    perfviewArguments += $" \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"";
                     RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
                     Log.WriteLine($"Starting PerfView {perfviewArguments}");
                 }
