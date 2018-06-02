@@ -73,6 +73,9 @@ mysql="--mysql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuse
 mssql="--mssql \"Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;\""
 mongodb="--mongodb \"mongodb://TFB-database:27017?maxPoolSize=1024\""
 
+# Clean temp folder from previous runs
+rm -rf /tmp/BenchmarksServer
+
 # "--network host" - Better performance than the default "bridge" driver
 # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
 docker run \
