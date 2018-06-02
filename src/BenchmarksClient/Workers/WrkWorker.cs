@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -145,6 +146,35 @@ namespace BenchmarksClient.Workers
 
         private static Process StartProcess(ClientJob job)
         {
+
+            var customScripts = new List<string>();
+
+            // Copying custom scripts
+            foreach(var script in job.Attachments)
+            {
+                if (!Directory.Exists("scripts/custom"))
+                {
+                    Directory.CreateDirectory("scripts/custom");
+                }
+
+                Log("Copying script: " + script.Filename);
+
+                var destination = Path.Combine(Path.GetDirectoryName(typeof(WrkWorker).GetTypeInfo().Assembly.Location), "scripts/custom/" + script.Filename);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(destination));
+
+                if (File.Exists(destination))
+                {
+                    File.Delete(destination);
+                }
+
+                File.Copy(script.TempFilename, destination, true);
+
+                File.Delete(script.TempFilename);
+
+                customScripts.Add("scripts/custom/" + script.Filename);
+            }
+
             var command = "wrk";
 
             if (job.Headers != null)
@@ -156,6 +186,11 @@ namespace BenchmarksClient.Workers
             }
 
             command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}  {job.ServerBenchmarkUri}{job.Query}";
+
+            foreach(var customScript in customScripts)
+            {
+                command += $" -s {customScript}";
+            }
 
             if (job.ClientProperties.TryGetValue("ScriptName", out var scriptName) && !string.IsNullOrEmpty(scriptName))
             {

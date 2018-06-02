@@ -35,6 +35,7 @@ namespace Benchmarks.ClientJob
             Error = clientJob.Error;
             Method = clientJob.Method;
             SkipStartupLatencies = clientJob.SkipStartupLatencies;
+            Attachments = new List<ScriptAttachment>(clientJob.Attachments);
         }
 
         public int Id { get; set; }
@@ -82,5 +83,6 @@ namespace Benchmarks.ClientJob
         // Latency with a single connection
         public TimeSpan LatencyNoLoad { get; set; }
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
+        public List<ScriptAttachment> Attachments { get; set; } = new List<ScriptAttachment>();
     }
 }

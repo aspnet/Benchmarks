@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
@@ -44,7 +46,7 @@ namespace BenchmarkClient.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] ClientJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ClientState.Waiting)
+            if (job == null || job.Id != 0 || job.State != ClientState.Initializing)
             {
                 return BadRequest();
             }
@@ -53,6 +55,18 @@ namespace BenchmarkClient.Controllers
 
             Response.Headers["Location"] = $"/jobs/{job.Id}";
             return new StatusCodeResult((int)HttpStatusCode.Accepted);
+        }
+
+
+        [HttpPost("{id}/start")]
+        public IActionResult Start(int id)
+        {
+            var job = _jobs.Find(id);
+            job.State = ClientState.Waiting;
+            _jobs.Update(job);
+
+            Log($"Client job {id} started");
+            return Ok();
         }
 
         [HttpDelete("{id}")]
@@ -71,6 +85,52 @@ namespace BenchmarkClient.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpPost("{id}/script")]
+        public async Task<IActionResult> UploadScript(ScriptViewModel attachment)
+        {
+            try
+            {
+                Log($"Receiving script for job '{attachment.Id}'");
+
+                var job = _jobs.Find(attachment.Id);
+
+                if (job == null)
+                {
+                    return NotFound();
+                }
+
+                var tempFilename = Path.GetTempFileName();
+
+                Log($"Creating {attachment.SourceFileName} in {tempFilename}");
+
+                using (var fs = System.IO.File.Create(tempFilename))
+                {
+                    await attachment.Content.CopyToAsync(fs);
+                }
+
+                job.Attachments.Add(new ScriptAttachment
+                {
+                    TempFilename = tempFilename,
+                    Filename = attachment.SourceFileName
+                });
+
+                _jobs.Update(job);
+
+                return Ok();
+            }
+            catch(Exception e)
+            {
+                Log(e.Message);
+                return new StatusCodeResult((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private static void Log(string message)
+        {
+            var time = DateTime.Now.ToString("hh:mm:ss.fff");
+            Console.WriteLine($"[{time}] {message}");
         }
     }
 }
