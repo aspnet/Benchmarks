@@ -342,6 +342,12 @@ namespace BenchmarksClient.Workers
 
         private static int ReadBadReponses(Match badResponsesMatch)
         {
+            if (!badResponsesMatch.Success)
+            {
+                // wrk does not display the expected line when no bad responses occur
+                return 0;
+            }
+
             if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 2)
             {
                 Log("Failed to parse bad responses");
@@ -361,9 +367,15 @@ namespace BenchmarksClient.Workers
 
         private static int CountSocketErrors(Match socketErrorsMatch)
         {
-            if (!socketErrorsMatch.Success || socketErrorsMatch.Groups.Count != 5)
+            if (!socketErrorsMatch.Success)
             {
-                Log("Failed to parse bad responses");
+                // wrk does not display the expected line when no errors occur
+                return 0;
+            }
+
+            if (socketErrorsMatch.Groups.Count != 5)
+            {
+                Log("Failed to parse socket errors");
                 return 0;
             }
 
