@@ -792,7 +792,7 @@ namespace BenchmarkServer
             {
                 StartInfo = {
                     FileName = "/usr/bin/env",
-                    Arguments = $"bash {_perfcollectPath} {arguments}\"",
+                    Arguments = $"bash {_perfcollectPath} {arguments}",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
