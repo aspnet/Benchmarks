@@ -153,6 +153,7 @@ namespace BenchmarkServer
 
                 Log.WriteLine($"Downloading PerfCollect to '{_perfcollectPath}'");
                 DownloadFileAsync(_perfCollectUrl, _perfcollectPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
+                ProcessUtil.Run("chmod", "+x perfcollect", workingDirectory: Path.Combine(Path.GetTempPath(), PerfViewVersion));
             }
 
             Action shutdown = () =>
@@ -811,8 +812,8 @@ namespace BenchmarkServer
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = "/usr/bin/env",
-                    Arguments = $"bash {_perfcollectPath} {arguments}",
+                    FileName = _perfcollectPath,
+                    Arguments = arguments,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
