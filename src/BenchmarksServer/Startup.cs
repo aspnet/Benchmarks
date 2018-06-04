@@ -793,8 +793,8 @@ namespace BenchmarkServer
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = "/bin/bash",
-                    Arguments = $"-c \"sudo {_perfcollectPath} {arguments}\"",
+                    FileName = "/usr/bin/env",
+                    Arguments = $"bash {_perfcollectPath} {arguments}\"",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -814,6 +814,9 @@ namespace BenchmarkServer
 
             process.Start();
             process.BeginOutputReadLine();
+
+            Log.WriteLine($"Process {process.Id} started");
+
             return process;
         }
 
