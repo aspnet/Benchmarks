@@ -621,20 +621,40 @@ namespace BenchmarkServer
                                     }
                                 }
 
-                                // Tentatively invoke the shutdown endpoint on the client application
-                                var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
-
-                                // Shutdown invoked successfully, wait for the application to stop by itself
-                                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                if (OperatingSystem == OperatingSystem.Linux)
                                 {
-                                    var epoch = DateTime.UtcNow;
+                                    Mono.Unix.Native.Syscall.kill(process.Id, Mono.Unix.Native.Signum.SIGINT);
 
-                                    do
+                                    // Tentatively invoke SIGINT
+                                    var waitForShutdownDelay = Task.Delay(TimeSpan.FromSeconds(5));
+                                    while (!process.HasExited && !waitForShutdownDelay.IsCompletedSuccessfully)
                                     {
-                                        Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
-                                        await Task.Delay(1000);
+                                        await Task.Delay(200);
+                                    }
+                                }
 
-                                    } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                if (!process.HasExited)
+                                {
+                                    if (OperatingSystem == OperatingSystem.Linux)
+                                    {
+                                        Log.WriteLine($"SIGINT was not handled, checking /shutdown endpoint ...");
+                                    }
+
+                                    // Tentatively invoke the shutdown endpoint on the client application
+                                    var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
+
+                                    // Shutdown invoked successfully, wait for the application to stop by itself
+                                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                    {
+                                        var epoch = DateTime.UtcNow;
+
+                                        do
+                                        {
+                                            Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
+                                            await Task.Delay(1000);
+
+                                        } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                    }
                                 }
 
                                 if (!process.HasExited)
