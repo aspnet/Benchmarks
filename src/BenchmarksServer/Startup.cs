@@ -843,60 +843,60 @@ namespace BenchmarkServer
                 return;
             }
 
+            if (perfCollectProcess.HasExited)
+            {
+                Log.WriteLine($"PerfCollect is not running");
+                return;
+            }
+
+            var processId = perfCollectProcess.Id;
+
+            Log.WriteLine($"Stopping PerfCollect");
+
+            Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
+
+            // Max delay for perfcollect to stop
+            var delay = Task.Delay(30000);
+
+            while(!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
+            {
+                await Task.Delay(1000);
+            }
+
             if (!perfCollectProcess.HasExited)
             {
-                var processId = perfCollectProcess.Id;
-
-                Log.WriteLine($"Stopping PerfCollect");
-
-                Mono.Unix.Native.Syscall.kill(perfCollectProcess.Id, Mono.Unix.Native.Signum.SIGINT);
-
-                // Max delay for perfcollect to stop
-                var delay = Task.Delay(30000);
-
-                while(!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
-                {
-                    await Task.Delay(1000);
-                }
+                Log.WriteLine($"Forcing process to stop ...");
+                perfCollectProcess.CloseMainWindow();
 
                 if (!perfCollectProcess.HasExited)
                 {
-                    Log.WriteLine($"Forcing process to stop ...");
-                    perfCollectProcess.CloseMainWindow();
+                    perfCollectProcess.Kill();
+                }
 
-                    if (!perfCollectProcess.HasExited)
+                perfCollectProcess.Dispose();
+
+                do
+                {
+                    Log.WriteLine($"Waiting for process {processId} to stop ...");
+
+                    await Task.Delay(1000);
+
+                    try
                     {
-                        perfCollectProcess.Kill();
+                        perfCollectProcess = Process.GetProcessById(processId);
+                        perfCollectProcess.Refresh();
+                    }
+                    catch
+                    {
+                        perfCollectProcess = null;
                     }
 
-                    perfCollectProcess.Dispose();
-
-                    do
-                    {
-                        Log.WriteLine($"Waiting for process {processId} to stop ...");
-
-                        await Task.Delay(1000);
-
-                        try
-                        {
-                            perfCollectProcess = Process.GetProcessById(processId);
-                            perfCollectProcess.Refresh();
-                        }
-                        catch
-                        {
-                            perfCollectProcess = null;
-                        }
-
-                    } while (perfCollectProcess != null && !perfCollectProcess.HasExited);
-                }
-                Log.WriteLine($"Process has stopped");
-
-                perfCollectProcess = null;
+                } while (perfCollectProcess != null && !perfCollectProcess.HasExited);
             }
-            else
-            {
-                Log.WriteLine($"PerfCollect is not running");
-            }
+            Log.WriteLine($"Process has stopped");
+
+            perfCollectProcess = null;
+            
         }
 
         private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
