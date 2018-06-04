@@ -808,10 +808,9 @@ namespace BenchmarkServer
             };
 
             process.Start();
+            process.BeginOutputReadLine();
 
             Log.WriteLine($"Process {process.Id} started");
-
-            process.BeginOutputReadLine();
 
             return process;
         }
@@ -831,7 +830,6 @@ namespace BenchmarkServer
                 Log.WriteLine($"Stopping PerfCollect");
 
                 Mono.Unix.Native.Syscall.kill(perfCollectProcess.Id, Mono.Unix.Native.Signum.SIGINT);
-                Mono.Unix.Native.Syscall.kill(perfCollectProcess.SessionId, Mono.Unix.Native.Signum.SIGINT);
 
                 // Max delay for perfcollect to stop
                 var delay = Task.Delay(30000);
