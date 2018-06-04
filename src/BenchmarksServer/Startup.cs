@@ -788,8 +788,6 @@ namespace BenchmarkServer
                 return null;
             }
 
-            Log.WriteLine($"Starting process ''");
-
             var process = new Process()
             {
                 StartInfo = {
@@ -809,13 +807,11 @@ namespace BenchmarkServer
                 }
             };
 
-            process.StartInfo.Environment.Add("COMPlus_PerfMapEnabled", "1");
-            process.StartInfo.Environment.Add("COMPlus_EnableEventLog", "1");
-
             process.Start();
-            process.BeginOutputReadLine();
 
             Log.WriteLine($"Process {process.Id} started");
+
+            process.BeginOutputReadLine();
 
             return process;
         }
