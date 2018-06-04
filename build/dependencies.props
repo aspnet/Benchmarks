@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <AspNetCoreVersion>2.0.6</AspNetCoreVersion>
+    <AspNetCoreVersion>2.1.0</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
@@ -12,7 +12,7 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp22PackageVersion>
-    <DefaultTargetFramework>netcoreapp2.0</DefaultTargetFramework>
+    <DefaultTargetFramework>netcoreapp2.1</DefaultTargetFramework>
 
     <!--
       Following properties are specific to src/Benchmarks/Benchmarks.csproj.
