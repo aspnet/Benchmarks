@@ -74,7 +74,7 @@ mssql="--mssql \"Server=TFB-database;Database=hello_world;User Id=sa;Password=Be
 mongodb="--mongodb \"mongodb://TFB-database:27017?maxPoolSize=1024\""
 
 # Clean temp folder from previous runs
-rm -rf /mnt/BenchmarksServer
+sudo rm -rf /mnt/BenchmarksServer
 
 # "--network host" - Better performance than the default "bridge" driver
 # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
