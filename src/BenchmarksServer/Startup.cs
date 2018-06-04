@@ -834,7 +834,9 @@ namespace BenchmarkServer
 
                 perfCollectProcess.StandardInput.Close();
 
-                ProcessUtil.Run("kill", $"--signal SIGINT {processId}", throwOnError: false);
+                Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
+
+                // ProcessUtil.Run("kill", $"--signal SIGINT {processId}", throwOnError: false);
 
                 // Max delay for perfcollect to stop
                 var delay = Task.Delay(30000);
