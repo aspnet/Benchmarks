@@ -1382,12 +1382,6 @@ namespace BenchmarksDriver
         {
             try
             {
-                if (!File.Exists(filename))
-                {
-                    Log($"Script File '{filename}' could not be loaded.");
-                    return 8;
-                }
-
                 var requestContent = new MultipartFormDataContent();
 
                 var fileContent = filename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
