@@ -793,13 +793,12 @@ namespace BenchmarkServer
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = "/usr/bin/env",
-                    Arguments = $"bash {_perfcollectPath} {arguments} -collectsec 5",
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"sudo {_perfcollectPath} {arguments}\"",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                },
-                EnableRaisingEvents = true,
+                    UseShellExecute = false,
+                }
             };
 
             process.OutputDataReceived += (_, e) =>
@@ -832,11 +831,8 @@ namespace BenchmarkServer
 
                 Log.WriteLine($"Stopping PerfCollect");
 
-                perfCollectProcess.StandardInput.Close();
-
-                Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
-
-                // ProcessUtil.Run("kill", $"--signal SIGINT {processId}", throwOnError: false);
+                Mono.Unix.Native.Syscall.kill(perfCollectProcess.Id, Mono.Unix.Native.Signum.SIGINT);
+                Mono.Unix.Native.Syscall.kill(perfCollectProcess.SessionId, Mono.Unix.Native.Signum.SIGINT);
 
                 // Max delay for perfcollect to stop
                 var delay = Task.Delay(30000);
