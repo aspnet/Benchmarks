@@ -27,6 +27,10 @@ RUN apt-get update \
 # Make perf visible for perfcollect
 RUN cp /usr/bin/perf_4.9 /usr/bin/perf
 
+# downloading perfcollect
+ADD https://raw.githubusercontent.com/dotnet/corefx-tools/master/src/performance/perfcollect/perfcollect /usr/bin/perfcollect
+RUN chmod +x /usr/bin/perfcollect
+
 # Build and install wrk
 ENV WRK_VERSION 4.1.0
 RUN cd /tmp \

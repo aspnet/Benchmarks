@@ -44,7 +44,6 @@ namespace BenchmarkServer
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
         private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
-        private static readonly string _perfCollectUrl = "https://raw.githubusercontent.com/dotnet/corefx-tools/master/src/performance/perfcollect/perfcollect";
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -55,7 +54,6 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
         private static readonly string _perfviewPath;
         private static readonly string _dotnetInstallPath;
-        private static readonly string _perfcollectPath;
         
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
@@ -142,19 +140,6 @@ namespace BenchmarkServer
             
             Log.WriteLine($"Downloading dotnet-install to '{dotnetInstallFilename}'");
             DownloadFileAsync(_dotnetInstallUrl, dotnetInstallFilename, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-
-            // Download PerfCollect
-            if (OperatingSystem == OperatingSystem.Linux)
-            {
-                _perfcollectPath = Path.Combine(Path.GetTempPath(), PerfViewVersion, Path.GetFileName(_perfCollectUrl));
-
-                // Ensure the folder already exists
-                Directory.CreateDirectory(Path.GetDirectoryName(_perfcollectPath));
-
-                Log.WriteLine($"Downloading PerfCollect to '{_perfcollectPath}'");
-                DownloadFileAsync(_perfCollectUrl, _perfcollectPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-                ProcessUtil.Run("chmod", "+x perfcollect", workingDirectory: Path.Combine(Path.GetTempPath(), PerfViewVersion));
-            }
 
             Action shutdown = () =>
             {
@@ -812,7 +797,7 @@ namespace BenchmarkServer
             var process = new Process()
             {
                 StartInfo = {
-                    FileName = _perfcollectPath,
+                    FileName = "perfcollect",
                     Arguments = arguments,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
@@ -831,7 +816,7 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
-            Log.WriteLine($"Process {process.Id} started");
+            Log.WriteLine($"Perfcollect started [{process.Id}]");
 
             return process;
         }
@@ -855,6 +840,7 @@ namespace BenchmarkServer
             Log.WriteLine($"Stopping PerfCollect");
 
             Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
+            ProcessUtil.Run("kill", $"--signal SIGINT {perfCollectProcess.Id}", throwOnError: false);
 
             // Max delay for perfcollect to stop
             var delay = Task.Delay(30000);
