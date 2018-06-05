@@ -1693,8 +1693,10 @@ namespace BenchmarkServer
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
                 // c.f. https://github.com/dotnet/coreclr/blob/master/Documentation/project-docs/linux-performance-tracing.md#collecting-a-trace
+                // The Task library EventSource events are distorting the trace quite a bit.   
+                // It is better at least for now to turn off EventSource events when collecting linux data.
+                // Thus don’t set COMPlus_EnableEventLog = 1
                 process.StartInfo.Environment.Add("COMPlus_PerfMapEnabled", "1");
-                process.StartInfo.Environment.Add("COMPlus_EnableEventLog", "1");
             }
 
             foreach(var env in job.EnvironmentVariables)
