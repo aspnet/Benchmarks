@@ -1746,8 +1746,27 @@ namespace BenchmarkServer
                 }
                 else
                 {
+                    var perfViewArguments = new Dictionary<string, string>();
+
+                    if (!String.IsNullOrEmpty(job.CollectArguments))
+                    {
+                        foreach (var tuple in job.CollectArguments.Split(';'))
+                        {
+                            var values = tuple.Split(new char[] { '=' }, 2);
+                            perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                        }
+                    }
+
+                    var perfviewArguments = "collect benchmarks";
+
+                    foreach (var customArg in perfViewArguments)
+                    {
+                        var value = String.IsNullOrEmpty(customArg.Value.ToLowerInvariant()) ? "" : $" {customArg.Value}";
+                        perfviewArguments += $" {customArg.Key}{value}";
+                    }
+
                     job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
-                    perfCollectProcess = RunPerfcollect("collect benchmarks -collectsec 10 " + job.CollectArguments, Path.Combine(benchmarksRepo, job.BasePath));
+                    perfCollectProcess = RunPerfcollect(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
                 }
             }
 

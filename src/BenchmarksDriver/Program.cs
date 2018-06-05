@@ -29,7 +29,7 @@ namespace BenchmarksDriver
         private static string _tableName = "AspNetBenchmarks";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
-        private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
+        private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;CollectSec=10";
 
         public static int Main(string[] args)
         {
@@ -1067,7 +1067,7 @@ namespace BenchmarksDriver
 
                                 var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
                                     ? ".etl.zip"
-                                    : "trace.zip" ;
+                                    : ".trace.zip" ;
 
                                 if (traceDestination == null || !traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
