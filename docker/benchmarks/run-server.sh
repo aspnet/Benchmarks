@@ -95,4 +95,4 @@ docker run \
     --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true;Enlist=false;Max Auto Prepare=3" \
     --mysql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;SslMode=None;ConnectionReset=false" \
     --mssql "Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;" \
-    --mongodb "mongodb://TFB-database:27017?maxPoolSize=1024""
+    --mongodb "mongodb://TFB-database:27017?maxPoolSize=1024"
