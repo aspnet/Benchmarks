@@ -22,6 +22,7 @@ namespace Benchmarks.ClientJob
             SpanId = clientJob.SpanId;
             Connections = clientJob.Connections;
             Duration = clientJob.Duration;
+            Warmup = clientJob.Warmup;
             ClientProperties = new Dictionary<string, string>(clientJob.ClientProperties);
             Client = clientJob.Client;
             ScriptName = clientJob.ScriptName;

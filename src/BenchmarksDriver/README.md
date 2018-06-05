@@ -16,7 +16,7 @@ Options:
   --description          The description of the job.
   -i|--iterations        The number of iterations.
   -x|--exclude           The number of best and worst and jobs to skip.  
-  --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is PostgreSql.
+  --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.
   -cf|--connectionFilter Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
   -n|--scenario          Benchmark scenario to run
