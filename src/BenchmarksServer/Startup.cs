@@ -1323,6 +1323,13 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Application published successfully in {DateTime.UtcNow - startPublish}");
 
+            // Copy crossgen in the app folder
+            if (job.Collect && OperatingSystem == OperatingSystem.Linux)
+            {
+                Log.WriteLine("Copying crossgen to application folder");
+                ProcessUtil.Run("usr/bin/env", $"bash cp ~/.nuget/packages/runtime.linux-x64.microsoft.netcore.app/{runtimeFrameworkVersion}/tools/crossgen {outputFolder}/crossgen");
+            }
+
             // Copy all output attachments
             foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
             {
