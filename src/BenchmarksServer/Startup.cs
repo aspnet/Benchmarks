@@ -1327,7 +1327,8 @@ namespace BenchmarkServer
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
                 Log.WriteLine("Copying crossgen to application folder");
-                ProcessUtil.Run("usr/bin/env", $"bash cp ~/.nuget/packages/runtime.linux-x64.microsoft.netcore.app/{runtimeFrameworkVersion}/tools/crossgen {outputFolder}/crossgen");
+                var home = Environment.GetEnvironmentVariable("HOME");
+                File.Copy($"{home}/.nuget/packages/runtime.linux-x64.microsoft.netcore.app/{runtimeFrameworkVersion}/tools/crossgen", outputFolder);
             }
 
             // Copy all output attachments
