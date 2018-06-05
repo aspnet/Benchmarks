@@ -1064,7 +1064,12 @@ namespace BenchmarksDriver
                                 }
 
                                 Log($"Downloading trace...");
-                                if (traceDestination == null || !traceDestination.EndsWith(".etl.zip", StringComparison.OrdinalIgnoreCase))
+
+                                var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
+                                    ? ".etl.zip"
+                                    : "trace.zip" ;
+
+                                if (traceDestination == null || !traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
                                     if (String.IsNullOrEmpty(traceDestination))
@@ -1073,7 +1078,7 @@ namespace BenchmarksDriver
                                     }
 
                                     var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
-                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".etl.zip";
+                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
                                 Log($"Creating trace: {traceDestination}");

@@ -1747,7 +1747,7 @@ namespace BenchmarkServer
                 else
                 {
                     job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
-                    perfCollectProcess = RunPerfcollect("collect benchmarks", Path.Combine(benchmarksRepo, job.BasePath));
+                    perfCollectProcess = RunPerfcollect("collect benchmarks -collectsec 10 " + job.CollectArguments, Path.Combine(benchmarksRepo, job.BasePath));
                 }
             }
 
