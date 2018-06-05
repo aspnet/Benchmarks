@@ -68,10 +68,6 @@ else
     hardware=Physical
 fi
 
-postgresql="--postgresql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true;Enlist=false;Max Auto Prepare=3\""
-mysql="--mysql \"Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;SslMode=None;ConnectionReset=false\""
-mssql="--mssql \"Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;\""
-mongodb="--mongodb \"mongodb://TFB-database:27017?maxPoolSize=1024\""
 
 # Clean temp folder from previous runs
 sudo rm -rf /mnt/BenchmarksServer
@@ -80,6 +76,7 @@ sudo rm -rf /mnt/BenchmarksServer
 # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
 docker run \
     -d \
+    -it \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
     --mount type=bind,source=/mnt,target=/tmp \
@@ -88,15 +85,14 @@ docker run \
     --restart always \
     --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    --entrypoint dotnet \
     benchmarks \
-    bash -c \
-    "dotnet run -c Release --project src/BenchmarksServer/BenchmarksServer.csproj \
+    run -c Release --project src/BenchmarksServer/BenchmarksServer.csproj \
     -n $server_ip \
     --url $url \
     --hardware $hardware \
     --hardware-version $hardware_version \
-    $postgresql  \
-    $mysql  \
-    $mssql \
-    $mongodb \
-    $@"
+    --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true;Enlist=false;Max Auto Prepare=3" \
+    --mysql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;SslMode=None;ConnectionReset=false" \
+    --mssql "Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;" \
+    --mongodb "mongodb://TFB-database:27017?maxPoolSize=1024""
