@@ -66,6 +66,7 @@ jobs=(
   "-n MvcJson --webHost KestrelLibuv $baseline $jsonJobs"
   "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
   "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs" 
+  "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs" 
 
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
