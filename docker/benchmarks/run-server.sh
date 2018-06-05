@@ -77,6 +77,7 @@ sudo rm -rf /mnt/BenchmarksServer
 docker run \
     -d \
     -it \
+    --init \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
     --mount type=bind,source=/mnt,target=/tmp \
