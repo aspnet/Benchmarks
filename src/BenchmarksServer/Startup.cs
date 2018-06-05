@@ -1761,8 +1761,8 @@ namespace BenchmarkServer
 
                     foreach (var customArg in perfViewArguments)
                     {
-                        var value = String.IsNullOrEmpty(customArg.Value.ToLowerInvariant()) ? "" : $" {customArg.Value}";
-                        perfviewArguments += $" {customArg.Key}{value}";
+                        var value = String.IsNullOrEmpty(customArg.Value) ? "" : $" {customArg.Value.ToLowerInvariant()}";
+                        perfviewArguments += $" -{customArg.Key}{value}";
                     }
 
                     job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
