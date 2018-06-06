@@ -135,7 +135,7 @@ namespace BenchmarksDriver
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
             var enableEventPipeOption = app.Option("--enable-eventpipe",
-                "Enable EventPipe perf collection. --collect-trace is required in order to use this argument.", CommandOptionType.NoValue);
+                "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             var traceArgumentsOption = app.Option("--trace-arguments",
                 $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
