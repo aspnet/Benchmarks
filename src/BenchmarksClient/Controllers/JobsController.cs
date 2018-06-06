@@ -46,8 +46,21 @@ namespace BenchmarkClient.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] ClientJob job)
         {
-            if (job == null || job.Id != 0 || job.State != ClientState.Initializing)
+            if (job == null)
             {
+                Log("Invalid job");
+                return BadRequest();
+            }
+
+            if (job.Id != 0)
+            {
+                Log("Can't create an existing job");
+                return BadRequest();
+            }
+
+            if (job.State != ClientState.Initializing)
+            {
+                Log("Job should have ne in Initializing state");
                 return BadRequest();
             }
 

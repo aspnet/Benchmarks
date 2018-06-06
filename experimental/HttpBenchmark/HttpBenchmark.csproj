@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>HTTP benchmarking tool</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
