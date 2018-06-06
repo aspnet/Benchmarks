@@ -454,19 +454,18 @@ namespace BenchmarksDriver
                         serverJob.CollectArguments = string.Join(';', serverJob.CollectArguments, traceArgumentsOption.Value());
                     }
 
-                    if (enableEventPipeOption.HasValue())
-                    {
-                        // Enable Event Pipes
-                        serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
+                }
+                if (enableEventPipeOption.HasValue())
+                {
+                    // Enable Event Pipes
+                    serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
 
-                        // By default it will turn on all EventSources (like PerfCollect) but we can influence this by setting. 
-                        // Also turning off EventSources in EventPipe
-                        serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", "Name:Keywords:Level;Dummy:0:0");
+                    // By default it will turn on all EventSources (like PerfCollect) but we can influence this by setting. 
+                    // Also turning off EventSources in EventPipe
+                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", "Name:Keywords:Level;Dummy:0:0");
 
-                        // Set a specific name to find it more easily
-                        serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
-                    }
-
+                    // Set a specific name to find it more easily
+                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
                 }
                 if (disableR2ROption.HasValue())
                 {
@@ -1102,11 +1101,11 @@ namespace BenchmarksDriver
 
                                 Log($"Creating trace: {traceDestination}");
                                 await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
+                            }
 
-                                if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
-                                {
-                                    downloadFiles.Add(EventPipeOutputFile);
-                                }
+                            if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
+                            {
+                                downloadFiles.Add(EventPipeOutputFile);
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
