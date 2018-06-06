@@ -287,3 +287,4 @@ __pycache__/
 *.orig
 /src/BenchmarksDriver/results.md
 *.trace.zip
+/src/BenchmarksDriver/*.zip

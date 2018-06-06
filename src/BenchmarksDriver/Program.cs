@@ -27,6 +27,7 @@ namespace BenchmarksDriver
 
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
+        private const string EventPipeOutputFile = "eventpipe.netperf";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
@@ -133,6 +134,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
+            var enableEventPipeOption = app.Option("--enable-eventpipe",
+                "Enable EventPipe perf collection. --collect-trace is required in order to use this argument.", CommandOptionType.NoValue);
             var traceArgumentsOption = app.Option("--trace-arguments",
                 $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
@@ -450,6 +453,20 @@ namespace BenchmarksDriver
                     {
                         serverJob.CollectArguments = string.Join(';', serverJob.CollectArguments, traceArgumentsOption.Value());
                     }
+
+                    if (enableEventPipeOption.HasValue())
+                    {
+                        // Enable Event Pipes
+                        serverJob.EnvironmentVariables.Add("COMPLUS_EnableEventPipe", "1");
+
+                        // By default it will turn on all EventSources (like PerfCollect) but we can influence this by setting. 
+                        // Also turning off EventSources in EventPipe
+                        serverJob.EnvironmentVariables.Add("COMPLUS_EventPipeConfig", "Name:Keywords:Level;Dummy:0:0");
+
+                        // Set a specific name to find it more easily
+                        serverJob.EnvironmentVariables.Add("COMPLUS_EventPipeOutputFile", EventPipeOutputFile);
+                    }
+
                 }
                 if (disableR2ROption.HasValue())
                 {
@@ -673,6 +690,7 @@ namespace BenchmarksDriver
                     runtimeFileOption,
                     markdownOption,
                     writeToFileOption,
+                    enableEventPipeOption.HasValue(),
                     requiredOperatingSystem).Result;
             });
 
@@ -721,6 +739,7 @@ namespace BenchmarksDriver
             CommandOption runtimeFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
+            bool enableEventPipe,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
             )
         {
@@ -1084,6 +1103,10 @@ namespace BenchmarksDriver
                                 Log($"Creating trace: {traceDestination}");
                                 await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
 
+                                if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
+                                {
+                                    downloadFiles.Add(EventPipeOutputFile);
+                                }
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;

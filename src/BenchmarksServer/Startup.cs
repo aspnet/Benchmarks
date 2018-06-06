@@ -1701,6 +1701,7 @@ namespace BenchmarkServer
 
             foreach(var env in job.EnvironmentVariables)
             {
+                Log.WriteLine("Setting ENV: {env.Key} = {env.Value}");
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
