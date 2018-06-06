@@ -457,14 +457,14 @@ namespace BenchmarksDriver
                     if (enableEventPipeOption.HasValue())
                     {
                         // Enable Event Pipes
-                        serverJob.EnvironmentVariables.Add("COMPLUS_EnableEventPipe", "1");
+                        serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
 
                         // By default it will turn on all EventSources (like PerfCollect) but we can influence this by setting. 
                         // Also turning off EventSources in EventPipe
-                        serverJob.EnvironmentVariables.Add("COMPLUS_EventPipeConfig", "Name:Keywords:Level;Dummy:0:0");
+                        serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", "Name:Keywords:Level;Dummy:0:0");
 
                         // Set a specific name to find it more easily
-                        serverJob.EnvironmentVariables.Add("COMPLUS_EventPipeOutputFile", EventPipeOutputFile);
+                        serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
                     }
 
                 }
