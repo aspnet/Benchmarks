@@ -13,10 +13,27 @@ RUN apt-get update \
 # BenchmarksServer dependencies
         git \
         procps \
+# Perfview dependencies
+        zip \
+        linux-tools \
+        lttng-tools \
+        liblttng-ust-dev \
+        binutils \
+# make dependencies
+        flex \
+        bison \
     && rm -rf /var/lib/apt/lists/*
 
+# Make perf visible for perfcollect
+RUN cp /usr/bin/perf_4.9 /usr/bin/perf
+
+# downloading perfcollect
+#ADD https://raw.githubusercontent.com/dotnet/corefx-tools/master/src/performance/perfcollect/perfcollect /usr/bin/perfcollect
+ADD https://gist.githubusercontent.com/sebastienros/6c28f099d579e37df4000fe457f277d6/raw/b3a585225053a2009ec4c7a8aff68d2c3359c61d/perfcollect /usr/bin/perfcollect
+RUN chmod +x /usr/bin/perfcollect
+
 # Build and install wrk
-ENV WRK_VERSION 4.0.2
+ENV WRK_VERSION 4.1.0
 RUN cd /tmp \
     && wget https://github.com/wg/wrk/archive/$WRK_VERSION.tar.gz -O wrk.tar.gz \
     && tar xvzf wrk.tar.gz \

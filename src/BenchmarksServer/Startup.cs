@@ -54,9 +54,11 @@ namespace BenchmarkServer
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
         private static readonly string _perfviewPath;
         private static readonly string _dotnetInstallPath;
+        
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
+        private static Process perfCollectProcess;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -351,8 +353,6 @@ namespace BenchmarkServer
                         var standardOutput = new StringBuilder();
                         var startMonitorTime = DateTime.UtcNow;
 
-                        var perfviewEnabled = job.Collect && OperatingSystem == OperatingSystem.Windows;
-
                         if (job.State == ServerState.Failed)
                         {
                             var now = DateTime.UtcNow;
@@ -398,7 +398,7 @@ namespace BenchmarkServer
                                     if (benchmarksDir != null && dotnetDir != null)
                                     {
                                         Debug.Assert(process == null);
-                                        process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, perfviewEnabled, standardOutput);
+                                        process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, standardOutput);
 
                                         job.ProcessId = process.Id;
                                     }
@@ -554,15 +554,22 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.TraceCollecting)
                         {
-                            // Collection perfview results
-                            if (perfviewEnabled)
+                            // Stop perfview
+                            if (job.Collect)
                             {
-                                // Start perfview
-                                var perfviewArguments = $"stop /AcceptEula /NoNGenRundown /NoView";
-                                var perfViewProcess = RunPerfview(perfviewArguments, benchmarksDir);
+                                if (OperatingSystem == OperatingSystem.Windows)
+                                {
+                                    RunPerfview("stop /AcceptEula /NoNGenRundown /NoView", benchmarksDir);
+                                }
+                                else if (OperatingSystem == OperatingSystem.Linux)
+                                {
+                                    await StopPerfcollectAsync(perfCollectProcess);
+                                }
+
                                 Log.WriteLine("Trace collected");
                                 job.State = ServerState.TraceCollected;
                             }
+
                         }
                         else if (job.State == ServerState.Starting)
                         {
@@ -587,26 +594,53 @@ namespace BenchmarkServer
                             {
                                 var processId = process.Id;
 
-                                if (perfviewEnabled)
+                                if (job.Collect)
                                 {
                                     // Abort all perfview processes
-                                    var perfViewProcess = RunPerfview("abort", Path.GetPathRoot(_perfviewPath));
+                                    if (OperatingSystem == OperatingSystem.Windows)
+                                    {
+                                        var perfViewProcess = RunPerfview("abort", Path.GetPathRoot(_perfviewPath));
+                                    }
+                                    else if (OperatingSystem == OperatingSystem.Linux)
+                                    {
+                                        // TODO: Stop perfcollect
+                                    }
                                 }
 
-                                // Tentatively invoke the shutdown endpoint on the client application
-                                var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
-
-                                // Shutdown invoked successfully, wait for the application to stop by itself
-                                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                if (OperatingSystem == OperatingSystem.Linux)
                                 {
-                                    var epoch = DateTime.UtcNow;
+                                    Mono.Unix.Native.Syscall.kill(process.Id, Mono.Unix.Native.Signum.SIGINT);
 
-                                    do
+                                    // Tentatively invoke SIGINT
+                                    var waitForShutdownDelay = Task.Delay(TimeSpan.FromSeconds(5));
+                                    while (!process.HasExited && !waitForShutdownDelay.IsCompletedSuccessfully)
                                     {
-                                        Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
-                                        await Task.Delay(1000);
+                                        await Task.Delay(200);
+                                    }
+                                }
 
-                                    } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                if (!process.HasExited)
+                                {
+                                    if (OperatingSystem == OperatingSystem.Linux)
+                                    {
+                                        Log.WriteLine($"SIGINT was not handled, checking /shutdown endpoint ...");
+                                    }
+
+                                    // Tentatively invoke the shutdown endpoint on the client application
+                                    var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
+
+                                    // Shutdown invoked successfully, wait for the application to stop by itself
+                                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                    {
+                                        var epoch = DateTime.UtcNow;
+
+                                        do
+                                        {
+                                            Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
+                                            await Task.Delay(1000);
+
+                                        } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                    }
                                 }
 
                                 if (!process.HasExited)
@@ -750,6 +784,105 @@ namespace BenchmarkServer
 
             process.Close();
             return output.ToString();
+        }
+
+        private static Process RunPerfcollect(string arguments, string workingDirectory)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Log.WriteLine($"PerfCollect is only supported on Linux");
+                return null;
+            }
+
+            var process = new Process()
+            {
+                StartInfo = {
+                    FileName = "perfcollect",
+                    Arguments = arguments,
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                }
+            };
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Log.WriteLine(e.Data);
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+
+            Log.WriteLine($"Perfcollect started [{process.Id}]");
+
+            return process;
+        }
+
+        private static async Task StopPerfcollectAsync(Process perfCollectProcess)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Log.WriteLine($"PerfCollect is only supported on Linux");
+                return;
+            }
+
+            if (perfCollectProcess.HasExited)
+            {
+                Log.WriteLine($"PerfCollect is not running");
+                return;
+            }
+
+            var processId = perfCollectProcess.Id;
+
+            Log.WriteLine($"Stopping PerfCollect");
+
+            Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
+
+            // Max delay for perfcollect to stop
+            var delay = Task.Delay(30000);
+
+            while(!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
+            {
+                await Task.Delay(1000);
+            }
+
+            if (!perfCollectProcess.HasExited)
+            {
+                Log.WriteLine($"Forcing process to stop ...");
+                perfCollectProcess.CloseMainWindow();
+
+                if (!perfCollectProcess.HasExited)
+                {
+                    perfCollectProcess.Kill();
+                }
+
+                perfCollectProcess.Dispose();
+
+                do
+                {
+                    Log.WriteLine($"Waiting for process {processId} to stop ...");
+
+                    await Task.Delay(1000);
+
+                    try
+                    {
+                        perfCollectProcess = Process.GetProcessById(processId);
+                        perfCollectProcess.Refresh();
+                    }
+                    catch
+                    {
+                        perfCollectProcess = null;
+                    }
+
+                } while (perfCollectProcess != null && !perfCollectProcess.HasExited);
+            }
+            Log.WriteLine($"Process has stopped");
+
+            perfCollectProcess = null;
+            
         }
 
         private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
@@ -1170,9 +1303,10 @@ namespace BenchmarkServer
 
             var startPublish = DateTime.UtcNow;
 
-            Log.WriteLine($"Publishing application in {outputFolder}");
-
             var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
+
+            Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
+
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
                 environmentVariables: env,
@@ -1188,6 +1322,14 @@ namespace BenchmarkServer
             }
 
             Log.WriteLine($"Application published successfully in {DateTime.UtcNow - startPublish}");
+
+            // Copy crossgen in the app folder
+            if (job.Collect && OperatingSystem == OperatingSystem.Linux)
+            {
+                Log.WriteLine("Copying crossgen to application folder");
+                var home = Environment.GetEnvironmentVariable("HOME");
+                File.Copy($"{home}/.nuget/packages/runtime.linux-x64.microsoft.netcore.app/{runtimeFrameworkVersion}/tools/crossgen", outputFolder);
+            }
 
             // Copy all output attachments
             foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
@@ -1440,7 +1582,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, bool perfview, StringBuilder standardOutput)
+        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
             var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
@@ -1548,8 +1690,18 @@ namespace BenchmarkServer
                 }
             }
 
+            if (job.Collect && OperatingSystem == OperatingSystem.Linux)
+            {
+                // c.f. https://github.com/dotnet/coreclr/blob/master/Documentation/project-docs/linux-performance-tracing.md#collecting-a-trace
+                // The Task library EventSource events are distorting the trace quite a bit.   
+                // It is better at least for now to turn off EventSource events when collecting linux data.
+                // Thus don’t set COMPlus_EnableEventLog = 1
+                process.StartInfo.Environment.Add("COMPlus_PerfMapEnabled", "1");
+            }
+
             foreach(var env in job.EnvironmentVariables)
             {
+                Log.WriteLine("Setting ENV: {env.Key} = {env.Value}");
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
@@ -1573,33 +1725,60 @@ namespace BenchmarkServer
             };
 
             // Start perfview?
-            if (perfview)
+            if (job.Collect)
             {
-                job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl");
-                var perfViewArguments = new Dictionary<string, string>();
-                perfViewArguments["AcceptEula"] = "";
-                perfViewArguments["NoGui"] = "";
-
-                if (!String.IsNullOrEmpty(job.CollectArguments))
+                if (OperatingSystem == OperatingSystem.Windows)
                 {
-                    foreach (var tuple in job.CollectArguments.Split(';'))
+                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl.zip");
+                    var perfViewArguments = new Dictionary<string, string>();
+                    perfViewArguments["AcceptEula"] = "";
+                    perfViewArguments["NoGui"] = "";
+
+                    if (!String.IsNullOrEmpty(job.CollectArguments))
                     {
-                        var values = tuple.Split(new char[] { '=' }, 2);
-                        perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                        foreach (var tuple in job.CollectArguments.Split(';'))
+                        {
+                            var values = tuple.Split(new char[] { '=' }, 2);
+                            perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                        }
                     }
+
+                    var perfviewArguments = $"start";
+
+                    foreach (var customArg in perfViewArguments)
+                    {
+                        var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
+                        perfviewArguments += $" /{customArg.Key}{value}";
+                    }
+
+                    perfviewArguments += $" \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"";
+                    RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
+                    Log.WriteLine($"Starting PerfView {perfviewArguments}");
                 }
-
-                var perfviewArguments = $"start";
-
-                foreach (var customArg in perfViewArguments)
+                else
                 {
-                    var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
-                    perfviewArguments += $" /{customArg.Key}{value}";
-                }
+                    var perfViewArguments = new Dictionary<string, string>();
 
-                perfviewArguments += $" \"{job.PerfViewTraceFile}\"";
-                RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
-                Log.WriteLine($"Starting PerfView {perfviewArguments}");
+                    if (!String.IsNullOrEmpty(job.CollectArguments))
+                    {
+                        foreach (var tuple in job.CollectArguments.Split(';'))
+                        {
+                            var values = tuple.Split(new char[] { '=' }, 2);
+                            perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                        }
+                    }
+
+                    var perfviewArguments = "collect benchmarks";
+
+                    foreach (var customArg in perfViewArguments)
+                    {
+                        var value = String.IsNullOrEmpty(customArg.Value) ? "" : $" {customArg.Value.ToLowerInvariant()}";
+                        perfviewArguments += $" -{customArg.Key}{value}";
+                    }
+
+                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
+                    perfCollectProcess = RunPerfcollect(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
+                }
             }
 
             stopwatch.Start();

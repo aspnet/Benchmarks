@@ -27,6 +27,7 @@ namespace BenchmarksDriver
 
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
+        private const string EventPipeOutputFile = "eventpipe.netperf";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
@@ -133,6 +134,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
+            var enableEventPipeOption = app.Option("--enable-eventpipe",
+                "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             var traceArgumentsOption = app.Option("--trace-arguments",
                 $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
@@ -450,6 +453,15 @@ namespace BenchmarksDriver
                     {
                         serverJob.CollectArguments = string.Join(';', serverJob.CollectArguments, traceArgumentsOption.Value());
                     }
+
+                }
+                if (enableEventPipeOption.HasValue())
+                {
+                    // Enable Event Pipes
+                    serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
+
+                    // Set a specific name to find it more easily
+                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
                 }
                 if (disableR2ROption.HasValue())
                 {
@@ -673,6 +685,7 @@ namespace BenchmarksDriver
                     runtimeFileOption,
                     markdownOption,
                     writeToFileOption,
+                    enableEventPipeOption.HasValue(),
                     requiredOperatingSystem).Result;
             });
 
@@ -721,6 +734,7 @@ namespace BenchmarksDriver
             CommandOption runtimeFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
+            bool enableEventPipe,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
             )
         {
@@ -1064,7 +1078,12 @@ namespace BenchmarksDriver
                                 }
 
                                 Log($"Downloading trace...");
-                                if (traceDestination == null || !traceDestination.EndsWith(".etl.zip", StringComparison.OrdinalIgnoreCase))
+
+                                var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
+                                    ? ".etl.zip"
+                                    : ".trace.zip" ;
+
+                                if (traceDestination == null || !traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
                                     if (String.IsNullOrEmpty(traceDestination))
@@ -1073,12 +1092,16 @@ namespace BenchmarksDriver
                                     }
 
                                     var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
-                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".etl.zip";
+                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
                                 Log($"Creating trace: {traceDestination}");
                                 await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
+                            }
 
+                            if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
+                            {
+                                downloadFiles.Add(EventPipeOutputFile);
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;

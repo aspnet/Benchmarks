@@ -51,7 +51,8 @@ Options:
   -j|--jobs              The path or url to the jobs definition.
   --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
   --trace-output         Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace
-  --trace-arguments      Arguments used when collecting a PerfView trace, e.g., Providers=.NETTasks:0:0 (Defaults are BufferSizeMB=1024;CircularMB=1024)
+  --trace-arguments      Arguments used when collecting a PerfView trace, e.g., Providers=.NETTasks:0:0 (Defaults are BufferSizeMB=1024;CircularMB=1024 on Windows and -collectsec 10 on Linux)
+  --enable-eventpipe     Enables EventPipe perf collection.
   --before-shutdown      An endpoint to call before the application has shut down.
   -sp|--span             The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days
   -t|--table             Table name of the SQL Database to store results
