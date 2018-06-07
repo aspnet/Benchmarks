@@ -25,19 +25,17 @@ namespace Benchmarks.Middleware
             _htmlEncoder = htmlEncoder;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 var db = httpContext.RequestServices.GetService<RawDb>();
                 var rows = db.LoadFortunesRowsSync();
 
-                await MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
-
-                return;
+                return MiddlewareHelpers.RenderFortunesHtml(rows, httpContext, _htmlEncoder);
             }
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 
