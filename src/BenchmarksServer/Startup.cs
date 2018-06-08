@@ -32,7 +32,9 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private const string CurrentAspNetCoreVersion = "2.0.7";
+        private static string CurrentAspNetCoreVersion = "2.1.0";
+        private static string CurrentTargetFramework = "netcoreapp2.1";
+
         private const string PerfViewVersion = "P2.0.12";
 
         private static readonly HttpClient _httpClient;
@@ -1118,7 +1120,7 @@ namespace BenchmarkServer
             else
             {
                 runtimeFrameworkVersion = await GetCurrentRuntimeVersion(buildToolsPath);
-                targetFramework = "netcoreapp2.0";
+                targetFramework = CurrentTargetFramework;
             }
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
@@ -1129,7 +1131,7 @@ namespace BenchmarkServer
             switch (job.AspNetCoreVersion.ToLowerInvariant())
             {
                 case "current":
-                    aspNetCoreVersion = "2.0.*";
+                    aspNetCoreVersion = "2.1.*";
                     actualAspNetCoreVersion = CurrentAspNetCoreVersion;
                     break;
                 case "latest":
@@ -1189,7 +1191,7 @@ namespace BenchmarkServer
             {
                 if (!_installedRuntimes.Contains("Current"))
                 {
-                    // Install latest stable 2.0 SDK version (and associated runtime)
+                    // Install latest stable SDK version (and associated runtime)
                     ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current --no-path --skip-non-versioned-files",
                     workingDirectory: _dotnetInstallPath,
                     environmentVariables: env));
