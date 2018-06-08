@@ -65,72 +65,80 @@ namespace BenchmarksDriver.Serializers
         {
             var utcNow = DateTime.UtcNow;
 
-            await RetryOnExceptionAsync(5, async () =>
+            await RetryOnExceptionAsync(5, async (retry) =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond, retry);
             });
 
-            await RetryOnExceptionAsync(5, async () =>
+            await RetryOnExceptionAsync(5, async (retry) =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu, retry);
             });
 
-            await RetryOnExceptionAsync(5, async () =>
+            await RetryOnExceptionAsync(5, async (retry) =>
             {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet);
+                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet, retry);
             });
 
             if (statistics.LatencyAverage != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage, retry);
                 });
             }
 
             if (statistics.Latency50Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile, retry);
                 });
             }
 
             if (statistics.Latency75Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile, retry);
                 });
             }
 
             if (statistics.Latency90Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile, retry);
                 });
             }
 
             if (statistics.Latency99Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile, retry);
                 });
             }
 
             if (statistics.MaxLatency != -1)
             {
-                await RetryOnExceptionAsync(5, async () =>
+                await RetryOnExceptionAsync(5, async (retry) =>
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "MaxLatency (ms)", statistics.MaxLatency);
+                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "MaxLatency (ms)", statistics.MaxLatency, retry);
                 });
             }
         }
 
-        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value)
+        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value, bool isRetry)
         {
+            if (isRetry)
+            {
+                if (await CheckForRow(connectionString, tableName, utcNow, dimension, session) == true)
+                {
+                    return;
+                }
+            }
+
             string insertCmd =
                 @"
                 INSERT INTO [dbo].[" + tableName + @"]
@@ -231,6 +239,27 @@ namespace BenchmarksDriver.Serializers
             }
         }
 
+        private async Task<bool> CheckForRow(string connectionString, string tableName, DateTime utcNow, string dimension, string session)
+        {
+            string insertCmd =
+                @"
+                SELECT COUNT(*) FROM [dbo].[" + tableName + @"]
+                     WHERE [DateTime]='@DateTime' AND [Dimension]='@Dimension' AND [Session]='@Session'";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = new SqlCommand(insertCmd, connection);
+                var p = command.Parameters;
+                p.AddWithValue("@DateTime", utcNow);
+                p.AddWithValue("@Session", session);
+                p.AddWithValue("@Dimension", dimension);
+
+                return (int)await command.ExecuteScalarAsync() > 0;
+            }
+        }
+
         private static string ConvertToSqlString(IEnumerable<Source> sources)
         {
             return string.Join(",", sources.Select(s => ConvertToSqlString(s)));
@@ -263,7 +292,7 @@ namespace BenchmarksDriver.Serializers
             }
         }
 
-        private async static Task RetryOnExceptionAsync(int retries, Func<Task> operation, int milliSecondsDelay = 0)
+        private async static Task RetryOnExceptionAsync(int retries, Func<bool, Task> operation, int milliSecondsDelay = 0)
         {
             var attempts = 0;
             do
@@ -271,7 +300,7 @@ namespace BenchmarksDriver.Serializers
                 try
                 {
                     attempts++;
-                    await operation();
+                    await operation(attempts > 1);
                     return;
                 }
                 catch (Exception e)
