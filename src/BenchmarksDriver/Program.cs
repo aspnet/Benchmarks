@@ -1037,6 +1037,11 @@ namespace BenchmarksDriver
                                 }
                             }
 
+                            if (String.IsNullOrEmpty(traceDestination))
+                            {
+                                traceDestination = "trace";
+                            }
+
                             // Collect Trace
                             if (serverJob.Collect)
                             {
@@ -1077,31 +1082,46 @@ namespace BenchmarksDriver
                                     await Task.Delay(1000);
                                 }
 
-                                Log($"Downloading trace...");
-
                                 var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
                                     ? ".etl.zip"
                                     : ".trace.zip" ;
 
-                                if (traceDestination == null || !traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
+                                var traceOutputFileName = traceDestination;
+                                if (traceOutputFileName == null || !traceOutputFileName.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // If it does not end with a *.etl.zip then we add a DATE.etl.zip to it
-                                    if (String.IsNullOrEmpty(traceDestination))
-                                    {
-                                        traceDestination = "trace";
-                                    }
-
                                     var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
-                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
+                                    traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
-                                Log($"Creating trace: {traceDestination}");
-                                await File.WriteAllBytesAsync(traceDestination, await _httpClient.GetByteArrayAsync(uri));
+                                Log($"Downloading trace: {traceOutputFileName}");
+
+                                await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
                             }
 
+                            // Download netperf file
                             if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
                             {
-                                downloadFiles.Add(EventPipeOutputFile);
+                                var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(EventPipeOutputFile);
+                                LogVerbose("GET " + uri);
+
+                                try
+                                {
+                                    var traceOutputFileName = traceDestination;
+                                    if (traceOutputFileName == null || !traceOutputFileName.EndsWith(".netperf", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
+                                        traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".netperf";
+                                    }
+
+                                    Log($"Downloading trace: {traceOutputFileName}");
+                                    await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                                }
+                                catch (Exception e)
+                                {
+                                    Log($"Error while downloading trace file {EventPipeOutputFile}");
+                                    LogVerbose(e.Message);
+                                    continue;
+                                }
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
@@ -1316,8 +1336,7 @@ namespace BenchmarksDriver
                                     filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                 }
 
-                                var base64 = await _httpClient.GetStringAsync(uri);
-                                await File.WriteAllBytesAsync(filename, Convert.FromBase64String(base64));
+                                await DownloadBigFile(uri, serverJobUri, filename);
                             }
                             catch (Exception e)
                             {
@@ -1582,6 +1601,30 @@ namespace BenchmarksDriver
             }
 
             return clientJob;
+        }
+
+        private static async Task DownloadBigFile(string uri, Uri serverJobUri, string destinationFileName)
+        {
+            using (var downloadStream = await _httpClient.GetStreamAsync(uri))
+            {
+                using (var fileStream = File.Create(destinationFileName))
+                {
+                    var downloadTask = downloadStream.CopyToAsync(fileStream);
+
+                    while (!downloadTask.IsCompleted)
+                    {
+                        // Ping server job to keep it alive while downloading the file
+                        LogVerbose($"GET {serverJobUri}/touch...");
+                        var response = await _httpClient.GetAsync(serverJobUri + "/touch");
+
+                        await Task.Delay(1000);
+                    }
+
+                    await downloadTask;
+                }
+            }
+
+            return;
         }
 
         private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)

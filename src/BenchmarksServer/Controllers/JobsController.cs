@@ -266,8 +266,9 @@ namespace BenchmarkServer.Controllers
                     return NotFound();
                 }
 
-                var base64 = Convert.ToBase64String(System.IO.File.ReadAllBytes(fullPath));
-                return Content(base64);
+                Log($"Uploading {path} ({new FileInfo(fullPath).Length / 1024 + 1} KB)");
+
+                return File(System.IO.File.OpenRead(fullPath), "application/object");
             }
             catch (Exception e)
             {

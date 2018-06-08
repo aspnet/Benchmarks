@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -1327,8 +1328,47 @@ namespace BenchmarkServer
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
                 Log.WriteLine("Copying crossgen to application folder");
-                var home = Environment.GetEnvironmentVariable("HOME");
-                File.Copy($"{home}/.nuget/packages/runtime.linux-x64.microsoft.netcore.app/{runtimeFrameworkVersion}/tools/crossgen", outputFolder);
+
+                // Downloading corresponding package
+
+                var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeFrameworkVersion}.nupkg");
+
+                // Ensure the folder already exists
+                Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
+
+                if (!File.Exists(runtimePath))
+                {
+                    Log.WriteLine($"Downloading runtime package");
+                    await DownloadFileAsync($"https://dotnet.myget.org/F/dotnet-core/api/v2/package/runtime.linux-x64.Microsoft.NETCore.App/{runtimeFrameworkVersion}", runtimePath, maxRetries: 5, timeout: 60);
+                }
+                else
+                {
+                    Log.WriteLine($"Found runtime package at '{runtimePath}'");
+                }
+
+                using (var archive = ZipFile.OpenRead(runtimePath))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        if (entry.FullName.EndsWith("/crossgen", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var crossgenFolder = job.SelfContained
+                                ? Path.Combine(outputFolder, "crossgen")
+                                : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeFrameworkVersion)
+                                ;
+
+                            var crossgenFilename = Path.Combine(crossgenFolder, "crossgen");
+
+                            if (!File.Exists(crossgenFilename))
+                            {
+                                entry.ExtractToFile(crossgenFilename);
+                                Log.WriteLine($"Copied crossgen to {crossgenFolder}");
+                            }
+
+                            break;
+                        }
+                    }
+                }
             }
 
             // Copy all output attachments
@@ -1701,7 +1741,7 @@ namespace BenchmarkServer
 
             foreach(var env in job.EnvironmentVariables)
             {
-                Log.WriteLine("Setting ENV: {env.Key} = {env.Value}");
+                Log.WriteLine($"Setting ENV: {env.Key} = {env.Value}");
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
