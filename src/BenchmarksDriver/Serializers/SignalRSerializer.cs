@@ -188,9 +188,10 @@ namespace BenchmarksDriver.Serializers
                 await connection.OpenAsync();
                 var transaction = connection.BeginTransaction();
 
+                var command = new SqlCommand(insertCmd, connection, transaction);
+
                 try
                 {
-                    var command = new SqlCommand(insertCmd, connection, transaction);
                     var p = command.Parameters;
                     p.AddWithValue("@DateTime", utcNow);
                     p.AddWithValue("@Session", session);
@@ -217,11 +218,17 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@Value", value);
                     await command.ExecuteNonQueryAsync();
 
-                    transaction.Commit();
+                    if (transaction.Connection != null)
+                    {
+                        transaction.Commit();
+                    }
                 }
                 catch
                 {
-                    transaction.Rollback();
+                    if (transaction.Connection != null)
+                    {
+                        transaction.Rollback();
+                    }
                     throw;
                 }
                 finally
