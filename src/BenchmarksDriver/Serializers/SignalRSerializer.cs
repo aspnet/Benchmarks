@@ -129,9 +129,9 @@ namespace BenchmarksDriver.Serializers
             }
         }
 
-        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value, bool isRetry)
+        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value, bool checkExisting)
         {
-            if (isRetry)
+            if (checkExisting)
             {
                 if (await CheckForRow(connectionString, tableName, utcNow, dimension, session) == true)
                 {
