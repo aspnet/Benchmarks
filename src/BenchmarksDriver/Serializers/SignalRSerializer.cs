@@ -241,7 +241,7 @@ namespace BenchmarksDriver.Serializers
 
         private async Task<bool> CheckForRow(string connectionString, string tableName, DateTime utcNow, string dimension, string session)
         {
-            string insertCmd =
+            string countCmd =
                 @"
                 SELECT COUNT(*) FROM [dbo].[" + tableName + @"]
                      WHERE [DateTime]='@DateTime' AND [Dimension]='@Dimension' AND [Session]='@Session'";
@@ -250,7 +250,7 @@ namespace BenchmarksDriver.Serializers
             {
                 await connection.OpenAsync();
 
-                var command = new SqlCommand(insertCmd, connection);
+                var command = new SqlCommand(countCmd, connection);
                 var p = command.Parameters;
                 p.AddWithValue("@DateTime", utcNow);
                 p.AddWithValue("@Session", session);
