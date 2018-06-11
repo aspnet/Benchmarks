@@ -941,6 +941,8 @@ namespace BenchmarksDriver
                     var startTime = DateTime.UtcNow;
                     var spanLoop = 0;
                     var sqlTask = Task.CompletedTask;
+                    string rpsStr = "";
+
                     do
                     {
                         if (span > TimeSpan.Zero)
@@ -955,6 +957,7 @@ namespace BenchmarksDriver
                                 response.EnsureSuccessStatusCode();
                             }
                         }
+
 
                         clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
 
@@ -1042,6 +1045,8 @@ namespace BenchmarksDriver
                                 traceDestination = "trace";
                             }
 
+                            rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
+
                             // Collect Trace
                             if (serverJob.Collect)
                             {
@@ -1089,39 +1094,12 @@ namespace BenchmarksDriver
                                 var traceOutputFileName = traceDestination;
                                 if (traceOutputFileName == null || !traceOutputFileName.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond+500) / 1000)) + "K";
                                     traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
                                 Log($"Downloading trace: {traceOutputFileName}");
 
                                 await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
-                            }
-
-                            // Download netperf file
-                            if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
-                            {
-                                var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(EventPipeOutputFile);
-                                LogVerbose("GET " + uri);
-
-                                try
-                                {
-                                    var traceOutputFileName = traceDestination;
-                                    if (traceOutputFileName == null || !traceOutputFileName.EndsWith(".netperf", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        var rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
-                                        traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".netperf";
-                                    }
-
-                                    Log($"Downloading trace: {traceOutputFileName}");
-                                    await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
-                                }
-                                catch (Exception e)
-                                {
-                                    Log($"Error while downloading trace file {EventPipeOutputFile}");
-                                    LogVerbose(e.Message);
-                                    continue;
-                                }
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i;
@@ -1297,6 +1275,31 @@ namespace BenchmarksDriver
                         }
 
                     } while (serverJob.State != ServerState.Stopped);
+
+                    // Download netperf file
+                    if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
+                    {
+                        var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(EventPipeOutputFile);
+                        LogVerbose("GET " + uri);
+
+                        try
+                        {
+                            var traceOutputFileName = traceDestination;
+                            if (traceOutputFileName == null || !traceOutputFileName.EndsWith(".netperf", StringComparison.OrdinalIgnoreCase))
+                            {
+                                traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + ".netperf";
+                            }
+
+                            Log($"Downloading trace: {traceOutputFileName}");
+                            await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                        }
+                        catch (Exception e)
+                        {
+                            Log($"Error while downloading trace file {EventPipeOutputFile}");
+                            LogVerbose(e.Message);
+                            continue;
+                        }
+                    }
 
                     // Download published application
                     if (fetch)

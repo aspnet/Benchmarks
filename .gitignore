@@ -289,3 +289,4 @@ __pycache__/
 *.trace.zip
 /src/BenchmarksDriver/*.zip
 eventpipe.netperf
+*.netperf
