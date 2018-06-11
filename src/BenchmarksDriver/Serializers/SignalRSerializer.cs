@@ -244,7 +244,7 @@ namespace BenchmarksDriver.Serializers
             string countCmd =
                 @"
                 SELECT COUNT(*) FROM [dbo].[" + tableName + @"]
-                     WHERE [DateTime]='@DateTime' AND [Dimension]='@Dimension' AND [Session]='@Session'";
+                     WHERE [DateTime]=@DateTime AND [Dimension]=@Dimension AND [Session]=@Session";
 
             using (var connection = new SqlConnection(connectionString))
             {
