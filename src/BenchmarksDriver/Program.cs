@@ -28,6 +28,7 @@ namespace BenchmarksDriver
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
         private const string EventPipeOutputFile = "eventpipe.netperf";
+        private const string DefaultEventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:FFFF:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
@@ -462,6 +463,9 @@ namespace BenchmarksDriver
 
                     // Set a specific name to find it more easily
                     serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
+
+                    // Default EventPipeConfig value
+                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", DefaultEventPipeConfig);
                 }
                 if (disableR2ROption.HasValue())
                 {
@@ -491,11 +495,11 @@ namespace BenchmarksDriver
                         }
                         else if (index == env.Length - 1)
                         {
-                            serverJob.EnvironmentVariables.Add(env.Substring(0, index), "");
+                            serverJob.EnvironmentVariables[env.Substring(0, index)] = "";
                         }
                         else 
                         {
-                            serverJob.EnvironmentVariables.Add(env.Substring(0, index), env.Substring(index + 1));
+                            serverJob.EnvironmentVariables[env.Substring(0, index)] = env.Substring(index + 1);
                         }
                     }
                 }
