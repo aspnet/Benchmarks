@@ -1018,9 +1018,12 @@ namespace BenchmarkServer
 
             if (job.Source.SourceCode != null)
             {
-                benchmarkedDir = Path.Combine(path, "src");
+                benchmarkedDir = "src";
 
-                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, benchmarkedDir);
+                var src = Path.Combine(path, benchmarkedDir);
+                Log.WriteLine($"Extracting source code to {src}");
+
+                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, src);
             }
             else
             {
