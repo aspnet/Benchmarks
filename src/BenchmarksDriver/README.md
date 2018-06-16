@@ -35,7 +35,7 @@ Options:
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
-  --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
+  -src|--source          Local folder containing the project to test.
   --clientThreads        Number of threads used by client. Default is 32.
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
