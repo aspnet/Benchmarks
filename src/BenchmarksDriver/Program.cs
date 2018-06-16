@@ -828,10 +828,13 @@ namespace BenchmarksDriver
 
                                 var result = await UploadFileAsync(tempFilename, serverJob, serverJobUri + "/source");
 
+                                File.Delete(tempFilename);
+
                                 if (result != 0)
                                 {
                                     return result;
                                 }
+
                             }
 
                             // Uploading attachments

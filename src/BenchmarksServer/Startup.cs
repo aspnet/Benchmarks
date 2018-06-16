@@ -705,19 +705,6 @@ namespace BenchmarkServer
                                 DeleteDir(dotnetDir);
                             }
 
-                            // Clean attachments
-                            foreach (var attachment in job.Attachments)
-                            {
-                                try
-                                {
-                                    File.Delete(attachment.TempFilename);
-                                }
-                                catch
-                                {
-                                    Log.WriteLine($"Error while deleting attachment '{attachment.TempFilename}'");
-                                }
-                            }
-
                             tempDir = null;
 
                             _jobs.Remove(job.Id);
@@ -1024,6 +1011,8 @@ namespace BenchmarkServer
                 Log.WriteLine($"Extracting source code to {src}");
 
                 ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, src);
+
+                File.Delete(job.Source.SourceCode.TempFilename);
             }
             else
             {
@@ -1387,6 +1376,7 @@ namespace BenchmarkServer
                 }
 
                 File.Copy(attachment.TempFilename, filename);
+                File.Delete(attachment.TempFilename);
             }
 
             return (benchmarkedDir, dotnetDir);
