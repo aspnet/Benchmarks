@@ -1024,23 +1024,30 @@ namespace BenchmarkServer
 
             // Clone
             string benchmarkedDir = null;
-            var dirs = new List<string>();
-            foreach (var source in repos)
+
+            if (job.Source.SourceCode != null)
             {
-                var dir = Git.Clone(path, source.Repository);
-                if (SourceRepoComparer.Instance.Equals(source, job.Source))
+                benchmarkedDir = Path.Combine(path, "src");
+
+                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, benchmarkedDir)
+            }
+            else
+            {
+                foreach (var source in repos)
                 {
-                    benchmarkedDir = dir;
+                    var dir = Git.Clone(path, source.Repository);
+                    if (SourceRepoComparer.Instance.Equals(source, job.Source))
+                    {
+                        benchmarkedDir = dir;
+                    }
+
+                    if (!string.IsNullOrEmpty(source.BranchOrCommit))
+                    {
+                        Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
+                    }
+
+                    Git.InitSubModules(Path.Combine(path, dir));
                 }
-
-                if (!string.IsNullOrEmpty(source.BranchOrCommit))
-                {
-                    Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
-                }
-
-                Git.InitSubModules(Path.Combine(path, dir));
-
-                dirs.Add(dir);
             }
 
             Debug.Assert(benchmarkedDir != null);
@@ -1230,15 +1237,6 @@ namespace BenchmarkServer
             }
 
             var dotnetDir = dotnetHome;
-
-            // If there is no custom runtime attachment we don't need to copy the dotnet folder
-            if (job.Attachments.Any(x => x.Location == AttachmentLocation.Runtime))
-            {
-                dotnetDir = GetTempDir();
-
-                Log.WriteLine($"Cloning dotnet folder for customization in {dotnetDir}");
-                CloneDir(dotnetHome, dotnetDir);
-            }
 
             // Updating ServerJob to reflect actual versions used
             job.AspNetCoreVersion = actualAspNetCoreVersion;
@@ -1556,20 +1554,6 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(temp);
                 Log.WriteLine($"Created temp directory '{temp}'");
                 return temp;
-            }
-        }
-
-        private static void CloneDir(string source, string dest)
-        {
-            foreach (string dirPath in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
-            {
-                Directory.CreateDirectory(dirPath.Replace(source, dest));
-            }
-
-            // Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(source, "*.*", SearchOption.AllDirectories))
-            {
-                File.Copy(newPath, newPath.Replace(source, dest), true);
             }
         }
 

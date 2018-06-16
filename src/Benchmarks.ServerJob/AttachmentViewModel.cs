@@ -6,7 +6,6 @@ namespace Benchmarks.ServerJob
     {
         public int Id { get; set; }
         public string DestinationFilename { get; set; }
-        public AttachmentLocation Location { get; set; }
         public IFormFile Content { get; set; }
     }
 }

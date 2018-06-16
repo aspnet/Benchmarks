@@ -200,8 +200,29 @@ namespace BenchmarkServer.Controllers
             {
                 TempFilename = tempFilename,
                 Filename = attachment.DestinationFilename,
-                Location = attachment.Location
             });
+
+            job.LastDriverCommunicationUtc = DateTime.UtcNow;
+
+            return Ok();
+        }
+
+        [HttpPost("{id}/source")]
+        public async Task<IActionResult> UploadSource(AttachmentViewModel attachment)
+        {
+            var job = _jobs.Find(attachment.Id);
+            var tempFilename = Path.GetTempFileName();
+
+            using (var fs = System.IO.File.Create(tempFilename))
+            {
+                await attachment.Content.CopyToAsync(fs);
+            }
+
+            job.Source.SourceCode = new Attachment
+            {
+                TempFilename = tempFilename,
+                Filename = attachment.DestinationFilename,
+            };
 
             job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
