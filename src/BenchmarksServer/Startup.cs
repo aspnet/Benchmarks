@@ -1029,7 +1029,7 @@ namespace BenchmarkServer
             {
                 benchmarkedDir = Path.Combine(path, "src");
 
-                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, benchmarkedDir)
+                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, benchmarkedDir);
             }
             else
             {
