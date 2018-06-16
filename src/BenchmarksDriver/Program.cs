@@ -826,7 +826,7 @@ namespace BenchmarksDriver
                                     DoCreateFromDirectory(sourceDir, tempFilename);
                                 }
 
-                                var result = await UploadFileAsync(tempFilename, serverJob, new Uri(serverJobUri, "/source"));
+                                var result = await UploadFileAsync(tempFilename, serverJob, serverJobUri + "/source");
 
                                 if (result != 0)
                                 {
@@ -839,7 +839,7 @@ namespace BenchmarksDriver
                             {
                                 foreach (var outputFile in outputFileOption.Values)
                                 {
-                                    var result = await UploadFileAsync(outputFile, serverJob, new Uri(serverJobUri, "/attachment"));
+                                    var result = await UploadFileAsync(outputFile, serverJob, serverJobUri + "/attachment");
 
                                     if (result != 0)
                                     {
@@ -1392,8 +1392,10 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, Uri uri)
+        private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
         {
+            Log($"Uploading {filename} to {uri}");
+
             try
             {
                 var outputFileSegments = filename.Split(';');

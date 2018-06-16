@@ -1013,15 +1013,6 @@ namespace BenchmarkServer
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
-            // It's possible that the user specified a custom branch/commit for the benchmarks repo,
-            // so we need to add that to the set of sources to restore if it's not already there.
-            //
-            // Note that this is also going to de-dupe the repos if the same one was specified twice at
-            // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(SourceRepoComparer.Instance);
-
-            repos.Add(job.Source);
-
             // Clone
             string benchmarkedDir = null;
 
@@ -1033,6 +1024,15 @@ namespace BenchmarkServer
             }
             else
             {
+                // It's possible that the user specified a custom branch/commit for the benchmarks repo,
+                // so we need to add that to the set of sources to restore if it's not already there.
+                //
+                // Note that this is also going to de-dupe the repos if the same one was specified twice at
+                // the command-line (last first to support overrides).
+                var repos = new HashSet<Source>(SourceRepoComparer.Instance);
+
+                repos.Add(job.Source);
+
                 foreach (var source in repos)
                 {
                     var dir = Git.Clone(path, source.Repository);
@@ -1372,28 +1372,11 @@ namespace BenchmarkServer
             }
 
             // Copy all output attachments
-            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
+            foreach (var attachment in job.Attachments)
             {
                 var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
 
                 Log.WriteLine($"Creating output file: {filename}");
-
-                if (File.Exists(filename))
-                {
-                    File.Delete(filename);
-                }
-
-                File.Copy(attachment.TempFilename, filename);
-            }
-
-            // Copy all runtime attachments in all runtime folders
-            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Runtime))
-            {
-                var runtimeFolder = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeFrameworkVersion);
-
-                var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
-
-                Log.WriteLine($"Creating runtime file: {filename}");
 
                 if (File.Exists(filename))
                 {
