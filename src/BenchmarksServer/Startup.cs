@@ -1660,22 +1660,20 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            if (job.NoArguments)
+            commandLine += $" {job.Arguments}";
+
+            if (!job.NoArguments)
             {
-                arguments = job.Arguments;
-            }
-            else
-            {
-                arguments = $" {job.Arguments}" + arguments;
+                commandLine += $" {arguments}";
             }
 
-            Log.WriteLine($"Invoking executable: {executable}, with arguments: {arguments}");
+            Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
 
             var process = new Process()
             {
                 StartInfo = {
                     FileName = executable,
-                    Arguments = arguments,
+                    Arguments = commandLine,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
