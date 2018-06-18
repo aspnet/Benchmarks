@@ -1593,7 +1593,7 @@ namespace BenchmarkServer
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
-            var arguments = benchmarksDll;
+            var commandLine = benchmarksDll ?? "";
 
             if (job.SelfContained)
             {
@@ -1608,13 +1608,12 @@ namespace BenchmarkServer
                     executable = Path.Combine(workingDirectory, projectFilename);
                 }
 
-                arguments = "";
+                commandLine = "";
             }
 
             job.BasePath = workingDirectory;
 
-            arguments += $" {job.Arguments}" +
-                    $" --nonInteractive true" +
+            var arguments = $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
@@ -1664,6 +1663,10 @@ namespace BenchmarkServer
             if (job.NoArguments)
             {
                 arguments = job.Arguments;
+            }
+            else
+            {
+                arguments = $" {job.Arguments}" + arguments;
             }
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {arguments}");
