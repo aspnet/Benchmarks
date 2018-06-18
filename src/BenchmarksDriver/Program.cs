@@ -105,6 +105,8 @@ namespace BenchmarksDriver
                 ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
+            var noArgumentsOptions = app.Option("--no-arguments",
+                "Removes any predefined arguments.", CommandOptionType.SingleValue);
             var portOption = app.Option("--port",
                 "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
             var readyTextOption = app.Option("--ready-text",
@@ -390,6 +392,10 @@ namespace BenchmarksDriver
                 if (argumentsOption.HasValue())
                 {
                     serverJob.Arguments = argumentsOption.Value();
+                }
+                if (noArgumentsOptions.HasValue())
+                {
+                    serverJob.NoArguments = true;
                 }
                 if (portOption.HasValue())
                 {
@@ -1414,17 +1420,21 @@ namespace BenchmarksDriver
                     ? outputFileSegments[1]
                     : Path.GetFileName(uploadFilename);
 
-                var requestContent = new MultipartFormDataContent();
+                using (var requestContent = new MultipartFormDataContent())
+                {
+                    var fileContent = uploadFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? new StreamContent(await _httpClient.GetStreamAsync(uploadFilename))
+                        : new StreamContent(new FileStream(uploadFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1, FileOptions.Asynchronous | FileOptions.SequentialScan));
 
-                var fileContent = uploadFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                    ? new StreamContent(await _httpClient.GetStreamAsync(uploadFilename))
-                    : new StreamContent(new FileStream(uploadFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1, FileOptions.Asynchronous | FileOptions.SequentialScan));
+                    using (fileContent)
+                    {
+                        requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(uploadFilename));
+                        requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
+                        requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
 
-                requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(uploadFilename));
-                requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
-                requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
-
-                await _httpClient.PostAsync(uri, requestContent);
+                        await _httpClient.PostAsync(uri, requestContent);
+                    }
+                }
             }
             catch (Exception e)
             {

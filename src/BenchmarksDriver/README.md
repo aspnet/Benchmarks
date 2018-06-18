@@ -25,6 +25,7 @@ Options:
   --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
   --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
   --arguments            Arguments to pass to the application. (e.g., "--raw true")
+  --no-arguments         Removes any predefined arguments.
   --port                 The port used to request the benchmarked application. Default is 5000.
   --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
   -r|--repository        Git repository containing the project to test.

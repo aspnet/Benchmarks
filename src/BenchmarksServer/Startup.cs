@@ -1661,7 +1661,13 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
+            if (job.NoArguments)
+            {
+                arguments = job.Arguments;
+            }
+
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {arguments}");
+
             var process = new Process()
             {
                 StartInfo = {
