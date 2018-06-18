@@ -38,6 +38,7 @@ Options:
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
   -src|--source          Local folder containing the project to test.
   --clientThreads        Number of threads used by client. Default is 32.
+  --timeout              Timeout for client connections. e.g., 2s
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
   --warmup               Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.

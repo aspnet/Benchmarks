@@ -165,6 +165,8 @@ namespace BenchmarksDriver
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
+            var timeout = app.Option("--timeout",
+                "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
