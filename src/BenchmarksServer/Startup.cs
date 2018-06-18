@@ -1794,11 +1794,8 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
-            if (iis)
-            {
-                await WaitToListen(job, hostname);
-                MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
-            }
+            await WaitToListen(job, hostname);
+            MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
 
             return process;
         }
@@ -1806,13 +1803,22 @@ namespace BenchmarkServer
         private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, Stopwatch stopwatch,
             Process process)
         {
-            job.StartupMainMethod = stopwatch.Elapsed;
+            lock (job)
+            {
+                // Already executed this method?
+                if (job.State == ServerState.Running)
+                {
+                    return;
+                }
 
-            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-            job.Url = ComputeServerUrl(hostname, job);
+                job.StartupMainMethod = stopwatch.Elapsed;
 
-            // Mark the job as running to allow the Client to start the test
-            job.State = ServerState.Running;
+                Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                job.Url = ComputeServerUrl(hostname, job);
+
+                // Mark the job as running to allow the Client to start the test
+                job.State = ServerState.Running;
+            }
         }
 
         private static string GenerateApplicationHostConfig(ServerJob job, string benchmarksBin, string executable, string arguments,
