@@ -185,7 +185,7 @@ namespace BenchmarksClient.Workers
                 }
             }
 
-            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout 8 -t {job.Threads}  {job.ServerBenchmarkUri}{job.Query}";
+            command += $" --latency -d {job.Duration} -c {job.Connections} --timeout {job.Timeout} -t {job.Threads}  {job.ServerBenchmarkUri}{job.Query}";
 
             foreach(var customScript in customScripts)
             {

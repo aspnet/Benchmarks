@@ -705,19 +705,6 @@ namespace BenchmarkServer
                                 DeleteDir(dotnetDir);
                             }
 
-                            // Clean attachments
-                            foreach (var attachment in job.Attachments)
-                            {
-                                try
-                                {
-                                    File.Delete(attachment.TempFilename);
-                                }
-                                catch
-                                {
-                                    Log.WriteLine($"Error while deleting attachment '{attachment.TempFilename}'");
-                                }
-                            }
-
                             tempDir = null;
 
                             _jobs.Remove(job.Id);
@@ -1013,34 +1000,46 @@ namespace BenchmarkServer
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
-            // It's possible that the user specified a custom branch/commit for the benchmarks repo,
-            // so we need to add that to the set of sources to restore if it's not already there.
-            //
-            // Note that this is also going to de-dupe the repos if the same one was specified twice at
-            // the command-line (last first to support overrides).
-            var repos = new HashSet<Source>(SourceRepoComparer.Instance);
-
-            repos.Add(job.Source);
-
             // Clone
             string benchmarkedDir = null;
-            var dirs = new List<string>();
-            foreach (var source in repos)
+
+            if (job.Source.SourceCode != null)
             {
-                var dir = Git.Clone(path, source.Repository);
-                if (SourceRepoComparer.Instance.Equals(source, job.Source))
+                benchmarkedDir = "src";
+
+                var src = Path.Combine(path, benchmarkedDir);
+                Log.WriteLine($"Extracting source code to {src}");
+
+                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, src);
+
+                File.Delete(job.Source.SourceCode.TempFilename);
+            }
+            else
+            {
+                // It's possible that the user specified a custom branch/commit for the benchmarks repo,
+                // so we need to add that to the set of sources to restore if it's not already there.
+                //
+                // Note that this is also going to de-dupe the repos if the same one was specified twice at
+                // the command-line (last first to support overrides).
+                var repos = new HashSet<Source>(SourceRepoComparer.Instance);
+
+                repos.Add(job.Source);
+
+                foreach (var source in repos)
                 {
-                    benchmarkedDir = dir;
+                    var dir = Git.Clone(path, source.Repository);
+                    if (SourceRepoComparer.Instance.Equals(source, job.Source))
+                    {
+                        benchmarkedDir = dir;
+                    }
+
+                    if (!string.IsNullOrEmpty(source.BranchOrCommit))
+                    {
+                        Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
+                    }
+
+                    Git.InitSubModules(Path.Combine(path, dir));
                 }
-
-                if (!string.IsNullOrEmpty(source.BranchOrCommit))
-                {
-                    Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
-                }
-
-                Git.InitSubModules(Path.Combine(path, dir));
-
-                dirs.Add(dir);
             }
 
             Debug.Assert(benchmarkedDir != null);
@@ -1231,15 +1230,6 @@ namespace BenchmarkServer
 
             var dotnetDir = dotnetHome;
 
-            // If there is no custom runtime attachment we don't need to copy the dotnet folder
-            if (job.Attachments.Any(x => x.Location == AttachmentLocation.Runtime))
-            {
-                dotnetDir = GetTempDir();
-
-                Log.WriteLine($"Cloning dotnet folder for customization in {dotnetDir}");
-                CloneDir(dotnetHome, dotnetDir);
-            }
-
             // Updating ServerJob to reflect actual versions used
             job.AspNetCoreVersion = actualAspNetCoreVersion;
             job.RuntimeVersion = runtimeFrameworkVersion;
@@ -1374,7 +1364,7 @@ namespace BenchmarkServer
             }
 
             // Copy all output attachments
-            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Output))
+            foreach (var attachment in job.Attachments)
             {
                 var filename = Path.Combine(outputFolder, attachment.Filename.Replace("\\", "/"));
 
@@ -1386,23 +1376,7 @@ namespace BenchmarkServer
                 }
 
                 File.Copy(attachment.TempFilename, filename);
-            }
-
-            // Copy all runtime attachments in all runtime folders
-            foreach (var attachment in job.Attachments.Where(x => x.Location == AttachmentLocation.Runtime))
-            {
-                var runtimeFolder = Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeFrameworkVersion);
-
-                var filename = Path.Combine(runtimeFolder, attachment.Filename.Replace("\\", "/"));
-
-                Log.WriteLine($"Creating runtime file: {filename}");
-
-                if (File.Exists(filename))
-                {
-                    File.Delete(filename);
-                }
-
-                File.Copy(attachment.TempFilename, filename);
+                File.Delete(attachment.TempFilename);
             }
 
             return (benchmarkedDir, dotnetDir);
@@ -1559,20 +1533,6 @@ namespace BenchmarkServer
             }
         }
 
-        private static void CloneDir(string source, string dest)
-        {
-            foreach (string dirPath in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
-            {
-                Directory.CreateDirectory(dirPath.Replace(source, dest));
-            }
-
-            // Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(source, "*.*", SearchOption.AllDirectories))
-            {
-                File.Copy(newPath, newPath.Replace(source, dest), true);
-            }
-        }
-
         private static void DeleteDir(string path)
         {
             Log.WriteLine($"Deleting directory '{path}'");
@@ -1633,7 +1593,7 @@ namespace BenchmarkServer
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
-            var arguments = benchmarksDll;
+            var commandLine = benchmarksDll ?? "";
 
             if (job.SelfContained)
             {
@@ -1648,13 +1608,12 @@ namespace BenchmarkServer
                     executable = Path.Combine(workingDirectory, projectFilename);
                 }
 
-                arguments = "";
+                commandLine = "";
             }
 
             job.BasePath = workingDirectory;
 
-            arguments += $" {job.Arguments}" +
-                    $" --nonInteractive true" +
+            var arguments = $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
 
             if (!string.IsNullOrEmpty(job.ConnectionFilter))
@@ -1701,12 +1660,20 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            Log.WriteLine($"Invoking executable: {executable}, with arguments: {arguments}");
+            commandLine += $" {job.Arguments}";
+
+            if (!job.NoArguments)
+            {
+                commandLine += $" {arguments}";
+            }
+
+            Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
+
             var process = new Process()
             {
                 StartInfo = {
                     FileName = executable,
-                    Arguments = arguments,
+                    Arguments = commandLine,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
@@ -1827,11 +1794,8 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
-            if (iis)
-            {
-                await WaitToListen(job, hostname);
-                MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
-            }
+            await WaitToListen(job, hostname);
+            MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
 
             return process;
         }
@@ -1839,13 +1803,22 @@ namespace BenchmarkServer
         private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, Stopwatch stopwatch,
             Process process)
         {
-            job.StartupMainMethod = stopwatch.Elapsed;
+            lock (job)
+            {
+                // Already executed this method?
+                if (job.State == ServerState.Running)
+                {
+                    return;
+                }
 
-            Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
-            job.Url = ComputeServerUrl(hostname, job);
+                job.StartupMainMethod = stopwatch.Elapsed;
 
-            // Mark the job as running to allow the Client to start the test
-            job.State = ServerState.Running;
+                Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
+                job.Url = ComputeServerUrl(hostname, job);
+
+                // Mark the job as running to allow the Client to start the test
+                job.State = ServerState.Running;
+            }
         }
 
         private static string GenerateApplicationHostConfig(ServerJob job, string benchmarksBin, string executable, string arguments,

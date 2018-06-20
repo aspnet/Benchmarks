@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,6 +14,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
+using BenchmarksDriver.Ignore;
 using BenchmarksDriver.Serializers;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
@@ -75,9 +78,9 @@ namespace BenchmarksDriver
                 "Formats the output in markdown", CommandOptionType.NoValue);
             var writeToFileOption = app.Option("-wf|--write-file",
                 "Writes the results to a file", CommandOptionType.NoValue);
-            var windowsOnlyOption = app.Option("--windows-only", 
+            var windowsOnlyOption = app.Option("--windows-only",
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
-            var linuxOnlyOption = app.Option("--linux-only", 
+            var linuxOnlyOption = app.Option("--linux-only",
                 "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
 
             // ServerJob Options
@@ -102,12 +105,16 @@ namespace BenchmarksDriver
                 ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
+            var noArgumentsOptions = app.Option("--no-arguments",
+                "Removes any predefined arguments.", CommandOptionType.NoValue);
             var portOption = app.Option("--port",
                 "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
             var readyTextOption = app.Option("--ready-text",
                 "The text that is displayed when the application is ready to accept requests. (e.g., \"Application started.\")", CommandOptionType.SingleValue);
             var repositoryOption = app.Option("-r|--repository",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            var sourceOption = app.Option("-src|--source",
+                "Local folder containing the project to test.", CommandOptionType.SingleValue);
             var dockerFileOption = app.Option("-df|--docker-file",
                 "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
             var dockerContextOption = app.Option("-dc|--docker-context",
@@ -128,10 +135,6 @@ namespace BenchmarksDriver
             var scriptFileOption = app.Option("--script",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
-                CommandOptionType.MultipleValue);
-            var runtimeFileOption = app.Option("--runtimeFile",
-                "Runtime file attachment. Format is 'path[;destination]', e.g., " +
-                "\"--runtimeFile c:\\build\\System.Net.Security.dll\"",
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
@@ -162,6 +165,8 @@ namespace BenchmarksDriver
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
+            var timeout = app.Option("--timeout",
+                "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
@@ -304,11 +309,11 @@ namespace BenchmarksDriver
                         return 8;
                     }
 
-                    if ((!repositoryOption.HasValue() ||
+                    if ((!(repositoryOption.HasValue() || sourceOption.HasValue()) ||
                         !projectOption.HasValue()) &&
                         !dockerFileOption.HasValue())
                     {
-                        Console.WriteLine($"Repository and project are mandatory when no job definition is specified.");
+                        Console.WriteLine($"Repository or source folder and project are mandatory when no job definition is specified.");
                         return 9;
                     }
 
@@ -389,6 +394,10 @@ namespace BenchmarksDriver
                 if (argumentsOption.HasValue())
                 {
                     serverJob.Arguments = argumentsOption.Value();
+                }
+                if (noArgumentsOptions.HasValue())
+                {
+                    serverJob.NoArguments = true;
                 }
                 if (portOption.HasValue())
                 {
@@ -481,7 +490,7 @@ namespace BenchmarksDriver
                 }
                 if (environmentVariablesOption.HasValue())
                 {
-                    foreach(var env in environmentVariablesOption.Values)
+                    foreach (var env in environmentVariablesOption.Values)
                     {
                         var index = env.IndexOf('=');
 
@@ -497,7 +506,7 @@ namespace BenchmarksDriver
                         {
                             serverJob.EnvironmentVariables[env.Substring(0, index)] = "";
                         }
-                        else 
+                        else
                         {
                             serverJob.EnvironmentVariables[env.Substring(0, index)] = env.Substring(index + 1);
                         }
@@ -528,21 +537,6 @@ namespace BenchmarksDriver
                         if (!File.Exists(scriptFile))
                         {
                             Console.WriteLine($"Script file '{scriptFile}' could not be loaded.");
-                            return 8;
-                        }
-                    }
-                }
-
-                if (runtimeFileOption.HasValue())
-                {
-                    foreach (var runtimeFile in runtimeFileOption.Values)
-                    {
-                        var fileSegments = runtimeFile.Split(';');
-                        var filename = fileSegments[0];
-
-                        if (!File.Exists(filename))
-                        {
-                            Console.WriteLine($"Runtime File '{filename}' could not be loaded.");
                             return 8;
                         }
                     }
@@ -669,24 +663,24 @@ namespace BenchmarksDriver
                 }
 
                 return Run(
-                    new Uri(server), 
-                    new Uri(client), 
-                    sqlConnectionString, 
-                    serverJob, 
-                    session, 
-                    description, 
-                    iterations, 
-                    exclude, 
-                    shutdownOption.Value(), 
-                    span, 
+                    new Uri(server),
+                    new Uri(client),
+                    sqlConnectionString,
+                    serverJob,
+                    session,
+                    description,
+                    iterations,
+                    exclude,
+                    shutdownOption.Value(),
+                    span,
                     downloadFilesOption.Values,
                     fetchOption.HasValue() || fetchOutputOption.HasValue(),
                     fetchOutputOption.Value(),
                     collectR2RLogOption.HasValue(),
                     traceOutputOption.Value(),
                     outputFileOption,
+                    sourceOption,
                     scriptFileOption,
-                    runtimeFileOption,
                     markdownOption,
                     writeToFileOption,
                     enableEventPipeOption.HasValue(),
@@ -702,6 +696,7 @@ namespace BenchmarksDriver
                     try
                     {
                         var tempFilename = Path.GetTempFileName();
+
                         var filecontent = _httpClient.GetStringAsync(args[i].Substring(1)).GetAwaiter().GetResult();
                         File.WriteAllText(tempFilename, filecontent);
                         args[i] = "@" + tempFilename;
@@ -734,8 +729,8 @@ namespace BenchmarksDriver
             bool collectR2RLog,
             string traceDestination,
             CommandOption outputFileOption,
+            CommandOption sourceOption,
             CommandOption scriptFileOption,
-            CommandOption runtimeFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
             bool enableEventPipe,
@@ -818,25 +813,44 @@ namespace BenchmarksDriver
 
                         if (serverJob.State == ServerState.Initializing)
                         {
+                            // Uploading source code
+                            if (sourceOption.HasValue())
+                            {
+                                // Zipping the folder
+                                var tempFilename = Path.GetTempFileName();
+                                File.Delete(tempFilename);
+
+                                Log("Zipping the source folder in " + tempFilename);
+
+                                var sourceDir = sourceOption.Value();
+
+                                if (!File.Exists(Path.Combine(sourceDir, ".gitignore")))
+                                {
+                                    ZipFile.CreateFromDirectory(sourceOption.Value(), tempFilename);
+                                }
+                                else
+                                {
+                                    LogVerbose(".gitignore file found");
+                                    DoCreateFromDirectory(sourceDir, tempFilename);
+                                }
+
+                                var result = await UploadFileAsync(tempFilename, serverJob, serverJobUri + "/source");
+
+                                File.Delete(tempFilename);
+
+                                if (result != 0)
+                                {
+                                    return result;
+                                }
+
+                            }
+
                             // Uploading attachments
                             if (outputFileOption.HasValue())
                             {
                                 foreach (var outputFile in outputFileOption.Values)
                                 {
-                                    var result = await UploadFileAsync(outputFile, AttachmentLocation.Output, serverJob, serverJobUri);
-
-                                    if (result != 0)
-                                    {
-                                        return result;
-                                    }                                    
-                                }
-                            }
-
-                            if (runtimeFileOption.HasValue())
-                            {
-                                foreach (var runtimeFile in runtimeFileOption.Values)
-                                {
-                                    var result = await UploadFileAsync(runtimeFile, AttachmentLocation.Runtime, serverJob, serverJobUri);
+                                    var result = await UploadFileAsync(outputFile, serverJob, serverJobUri + "/attachment");
 
                                     if (result != 0)
                                     {
@@ -1093,7 +1107,7 @@ namespace BenchmarksDriver
 
                                 var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
                                     ? ".etl.zip"
-                                    : ".trace.zip" ;
+                                    : ".trace.zip";
 
                                 var traceOutputFileName = traceDestination;
                                 if (traceOutputFileName == null || !traceOutputFileName.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
@@ -1139,32 +1153,32 @@ namespace BenchmarksDriver
                                     serializer.ComputeAverages(average, samples);
                                 }
 
-                                    var fields = new List<KeyValuePair<string, string>>();
-                                    if (!String.IsNullOrEmpty(description))
-                                    {
-                                        fields.Add(new KeyValuePair<string, string>("Description", description.ToString()));
-                                    }
+                                var fields = new List<KeyValuePair<string, string>>();
+                                if (!String.IsNullOrEmpty(description))
+                                {
+                                    fields.Add(new KeyValuePair<string, string>("Description", description.ToString()));
+                                }
 
-                                    fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
-                                    fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
-                                    fields.Add(new KeyValuePair<string, string>("Memory (MB)",$"{average.WorkingSet:n0}"));
-                                    fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)",$"{average.LatencyOnLoad}"));
-                                    fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
-                                    fields.Add(new KeyValuePair<string, string>("First Request (ms)",$"{average.FirstRequest}"));
-                                    fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
+                                fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
+                                fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
+                                fields.Add(new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"));
+                                fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"));
+                                fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
+                                fields.Add(new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"));
+                                fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
 
-                                    var header = new StringBuilder();
-                                    var separator = new StringBuilder();
-                                    var values = new StringBuilder();
+                                var header = new StringBuilder();
+                                var separator = new StringBuilder();
+                                var values = new StringBuilder();
 
-                                    // Headers
-                                    foreach (var field in fields)
-                                    {
-                                        var size = Math.Max(field.Key.Length, field.Value.Length);
-                                        header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
-                                        separator.Append("| ").Append(new String('-', size)).Append(" ");
-                                        values.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
-                                    }
+                                // Headers
+                                foreach (var field in fields)
+                                {
+                                    var size = Math.Max(field.Key.Length, field.Value.Length);
+                                    header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
+                                    separator.Append("| ").Append(new String('-', size)).Append(" ");
+                                    values.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
+                                }
 
                                 if (writeToFileOption.HasValue())
                                 {
@@ -1389,35 +1403,40 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task<int> UploadFileAsync(string filename, AttachmentLocation location, ServerJob serverJob, Uri serverJobUri)
+        private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
         {
+            Log($"Uploading {filename} to {uri}");
+
             try
             {
                 var outputFileSegments = filename.Split(';');
-                var attachmentFilename = outputFileSegments[0];
+                var uploadFilename = outputFileSegments[0];
 
-                if (!File.Exists(attachmentFilename))
+                if (!File.Exists(uploadFilename))
                 {
-                    Console.WriteLine($"Output File '{attachmentFilename}' could not be loaded.");
+                    Console.WriteLine($"File '{uploadFilename}' could not be loaded.");
                     return 8;
                 }
 
                 var destinationFilename = outputFileSegments.Length > 1
                     ? outputFileSegments[1]
-                    : Path.GetFileName(attachmentFilename);
+                    : Path.GetFileName(uploadFilename);
 
-                var requestContent = new MultipartFormDataContent();
+                using (var requestContent = new MultipartFormDataContent())
+                {
+                    var fileContent = uploadFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? new StreamContent(await _httpClient.GetStreamAsync(uploadFilename))
+                        : new StreamContent(new FileStream(uploadFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1, FileOptions.Asynchronous | FileOptions.SequentialScan));
 
-                var fileContent = attachmentFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                    ? new StreamContent(await _httpClient.GetStreamAsync(attachmentFilename))
-                    : new StreamContent(new FileStream(attachmentFilename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1, FileOptions.Asynchronous | FileOptions.SequentialScan));
+                    using (fileContent)
+                    {
+                        requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(uploadFilename));
+                        requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
+                        requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
 
-                requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(attachmentFilename));
-                requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
-                requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
-                requestContent.Add(new StringContent(location.ToString()), nameof(AttachmentViewModel.Location));
-
-                await _httpClient.PostAsync(serverJobUri + "/attachment", requestContent);
+                        await _httpClient.PostAsync(uri, requestContent);
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -1685,6 +1704,28 @@ namespace BenchmarksDriver
                     }
                 }
             } while (true);
+        }
+
+        private static void DoCreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
+        {
+            sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
+            destinationArchiveFileName = Path.GetFullPath(destinationArchiveFileName);
+
+            DirectoryInfo di = new DirectoryInfo(sourceDirectoryName);
+
+            using (ZipArchive archive = ZipFile.Open(destinationArchiveFileName, ZipArchiveMode.Create))
+            {
+                string basePath = di.FullName;
+                
+                var ignoreFile = IgnoreFile.Parse(Path.Combine(sourceDirectoryName, ".gitignore"));
+
+                foreach (var gitFile in ignoreFile.ListDirectory(sourceDirectoryName))
+                {
+                    var localPath = gitFile.Path.Substring(sourceDirectoryName.Length + 1);
+                    LogVerbose($"Adding {localPath}");
+                    var entry = archive.CreateEntryFromFile(gitFile.Path, localPath);
+                }
+            }
         }
     }
 }

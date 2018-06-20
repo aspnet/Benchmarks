@@ -86,6 +86,7 @@ namespace Benchmarks.ServerJob
         public Source Source { get; set; } = new Source();
 
         public string Arguments { get; set; }
+        public bool NoArguments { get; set; } = false;
 
         [JsonConverter(typeof(StringEnumConverter))]
         public ServerState State { get; set; }

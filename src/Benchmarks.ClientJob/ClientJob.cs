@@ -47,7 +47,7 @@ namespace Benchmarks.ClientJob
         public int Threads { get; set; } = 32;
 
         public int Connections { get; set; } = 256;
-
+        public string Timeout { get; set; } = "2s";
         public int Duration { get; set; } = 15;
         public int Warmup { get; set; } = 15;
         public Dictionary<string, string> ClientProperties { get; set; } = new Dictionary<string, string>();

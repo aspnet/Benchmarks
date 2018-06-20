@@ -25,6 +25,7 @@ Options:
   --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
   --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
   --arguments            Arguments to pass to the application. (e.g., "--raw true")
+  --no-arguments         Removes any predefined arguments.
   --port                 The port used to request the benchmarked application. Default is 5000.
   --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
   -r|--repository        Git repository containing the project to test.
@@ -35,8 +36,9 @@ Options:
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
-  --runtimeFile          Runtime file attachment. Format is 'path[;destination]', e.g., "--runtimeFile c:\build\System.Net.Security.dll"  
+  -src|--source          Local folder containing the project to test.
   --clientThreads        Number of threads used by client. Default is 32.
+  --timeout              Timeout for client connections. e.g., 2s
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
   --warmup               Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.
