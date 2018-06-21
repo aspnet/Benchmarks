@@ -436,8 +436,12 @@ namespace BenchmarksClient.Workers
 
         public Task DisposeAsync()
         {
-            _process.Dispose();
-            _process = null;
+            if (_process != null)
+            {
+                _process.Dispose();
+                _process = null;
+            }
+
             return Task.CompletedTask;
         }
     }

@@ -1794,8 +1794,11 @@ namespace BenchmarkServer
             process.Start();
             process.BeginOutputReadLine();
 
-            await WaitToListen(job, hostname);
-            MarkAsRunning(hostname, benchmarksRepo, job,  stopwatch, process);
+            if (iis)
+            {
+                await WaitToListen(job, hostname);
+                MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
+            }
 
             return process;
         }
