@@ -34,6 +34,8 @@ signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/dev/benchmarkap
 plaintextPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/dev/benchmarkapps/PlatformBenchmarks/benchmarks.json.json"
 routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/dev/benchmarkapps/Benchmarks/benchmarks.json"
+basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicApi/benchmarks.json --duration 60"
+basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/dev/benchmarkapps/BasicViews/benchmarks.json --duration 60"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
@@ -148,6 +150,14 @@ jobs=(
   "-n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $trend $signalRJobs"
   "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $trend $signalRJobs"
   "-n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $trend $signalRJobs"
+
+  # BasicApi
+  "--scenario BasicApi.GetUsingRouteValue $trend $basicApiJobs"
+  "--scenario BasicApi.Post $trend $basicApiJobs"
+
+  # BasicViews
+  "--scenario BasicViews.GetTagHelpers $trend $basicViewsJobs"
+  "--scenario BasicViews.Post $trend $basicViewsJobs"
 )
 
 # build driver
