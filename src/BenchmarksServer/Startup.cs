@@ -45,7 +45,7 @@ namespace BenchmarkServer
         private static readonly string _currentDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/Current/latest.version";
         private static readonly string _edgeDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/dev/files/KoreBuild/config/sdk.version";
-        private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/dev/build/dependencies.props";
+        private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/release/2.2/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
@@ -1407,7 +1407,7 @@ namespace BenchmarkServer
             await DownloadFileAsync(_latestAspnetCoreRuntimeUrl, aspnetCoreRuntimePath, maxRetries: 5, timeout: 10);
             var aspnetCoreRuntime = JObject.Parse(File.ReadAllText(aspnetCoreRuntimePath));
 
-            var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Last()["upper"];
+            var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Where(t => ((string)t["upper"]).StartsWith("2.2")).Last()["upper"];
 
 
             Log.WriteLine($"Detecting ASP.NET runtime version: {latestAspNetCoreRuntime}");
