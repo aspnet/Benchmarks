@@ -128,7 +128,7 @@ Also if no named job is requested on the command line, the _default_ job will be
         },
         "Source": {
             "Repository": "https://github.com/aspnet/benchmarks.git",
-            "BranchOrCommit": "dev",
+            "BranchOrCommit": "master",
             "Project": "src/Benchmarks/Benchmarks.csproj"
         },
 
