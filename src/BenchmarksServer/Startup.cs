@@ -1647,15 +1647,7 @@ namespace BenchmarkServer
                 arguments += $" --threadCount {job.KestrelThreadCount.Value}";
             }
 
-            if (iis)
-            {
-                Log.WriteLine($"Generating application host config for '{executable} {arguments}'");
-
-                var apphost = GenerateApplicationHostConfig(job, "published", executable, arguments, hostname);
-                arguments = $"-h \"{apphost}\"";
-                executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
-            }
-            else
+            if (!iis)
             {
                 arguments += $" --server.urls {serverUrl}";
             }
@@ -1665,6 +1657,15 @@ namespace BenchmarkServer
             if (!job.NoArguments)
             {
                 commandLine += $" {arguments}";
+            }
+
+            if (iis)
+            {
+                Log.WriteLine($"Generating application host config for '{executable} {commandLine}'");
+
+                var apphost = GenerateApplicationHostConfig(job, "published", executable, commandLine, hostname);
+                commandLine = $"-h \"{apphost}\"";
+                executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
