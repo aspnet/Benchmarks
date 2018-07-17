@@ -16,7 +16,7 @@ namespace BenchmarkServer
         {
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
 
-            var result = RunGitCommand(path, $"clone {branchParam} {repository}", CloneTimeout, retries: 5);
+            var result = RunGitCommand(path, $"clone -c core.longpaths=true {branchParam} {repository}", CloneTimeout, retries: 5);
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)
