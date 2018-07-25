@@ -1403,12 +1403,22 @@ namespace BenchmarkServer
         /// </summary>
         private static async Task<string> GetLatestAspNetCoreRuntimeVersion(string buildToolsPath)
         {
+            // This document contains links to pages of packages
+            // The 'lower' and 'upper' properties represent the range of version each pages contain
             var aspnetCoreRuntimePath = Path.Combine(buildToolsPath, "aspnetCoreRuntimePath.json");
             await DownloadFileAsync(_latestAspnetCoreRuntimeUrl, aspnetCoreRuntimePath, maxRetries: 5, timeout: 10);
             var aspnetCoreRuntime = JObject.Parse(File.ReadAllText(aspnetCoreRuntimePath));
 
-            var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"].Where(t => ((string)t["upper"]).StartsWith("2.2")).Last()["upper"];
+            // Find the page which contains the latest 2.2 packages
+            var latestPageUrl = (string)aspnetCoreRuntime["items"].Where(t => ((string)t["lower"]).StartsWith("2.2")).Last()["@id"];
+            await DownloadFileAsync(latestPageUrl, aspnetCoreRuntimePath, maxRetries: 5, timeout: 10);
+            aspnetCoreRuntime = JObject.Parse(File.ReadAllText(aspnetCoreRuntimePath));
 
+            // Extract the highest 2.2 version
+            var latestAspNetCoreRuntime = (string)aspnetCoreRuntime["items"]
+                .Where(t => ((string)t["catalogEntry"]["version"]).StartsWith("2.2")).Last()
+                ["catalogEntry"]["version"]
+                ;
 
             Log.WriteLine($"Detecting ASP.NET runtime version: {latestAspNetCoreRuntime}");
             return latestAspNetCoreRuntime;
