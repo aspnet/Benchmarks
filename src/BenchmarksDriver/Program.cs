@@ -351,7 +351,8 @@ namespace BenchmarksDriver
                 }
 
                 // If the KnownHeaders property of the job definition is a string, fetch it from the Headers enum
-                if (!String.IsNullOrEmpty(jobOptions.PresetHeaders))
+                // We only look at it no Preset is defined on the commandline
+                if (!String.IsNullOrEmpty(jobOptions.PresetHeaders) && !headersOption.HasValue())
                 {
                     if (!Enum.TryParse(jobOptions.PresetHeaders, ignoreCase: true, result: out headers))
                     {
