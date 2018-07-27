@@ -264,6 +264,9 @@ namespace Benchmarks
 
                 if (urlPrefix.IsHttps)
                 {
+#if NETCOREAPP2_2
+                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+#endif
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
             });
