@@ -21,6 +21,9 @@ namespace BenchmarksClient.Workers
                 case Worker.Wait:
                     worker = new WaitWorker();
                     break;
+                case Worker.H2Load:
+                    worker = new H2LoadWorker();
+                    break;
             }
             return worker;
         }
