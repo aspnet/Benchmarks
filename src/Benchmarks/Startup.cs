@@ -51,15 +51,15 @@ namespace Benchmarks
 
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
-            services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
 
             Console.WriteLine($"Database: {appSettings.Database}");
-            
+
             switch (appSettings.Database)
             {
                 case DatabaseServer.PostgreSql:
+                    services.AddEntityFrameworkNpgsql();
                      var settings = new NpgsqlConnectionStringBuilder(appSettings.ConnectionString);
                      if (!settings.NoResetOnClose)
                          throw new ArgumentException("No Reset On Close=true must be specified for Npgsql");
@@ -75,6 +75,7 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.SqlServer:
+                    services.AddEntityFrameworkSqlServer();
                     services.AddDbContextPool<ApplicationDbContext>(options => options.UseSqlServer(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -84,6 +85,7 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.MySql:
+                    services.AddEntityFrameworkMySql();
                     services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -91,15 +93,14 @@ namespace Benchmarks
                         services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
                     }
                     break;
-                case DatabaseServer.MongoDb:
 
+                case DatabaseServer.MongoDb:
                     var mongoClient = new MongoClient(appSettings.ConnectionString);
                     var mongoDatabase = mongoClient.GetDatabase("hello_world");
                     services.AddSingleton(mongoClient);
                     services.AddSingleton(mongoDatabase);
                     services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortune"));
                     services.AddSingleton(sp => mongoDatabase.GetCollection<World>("world"));
-
                     break;
             }
 
@@ -323,7 +324,7 @@ namespace Benchmarks
             }
 
             app.UseAutoShutdown();
-            
+
             app.RunDebugInfoPage();
         }
     }

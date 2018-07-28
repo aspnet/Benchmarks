@@ -32,7 +32,7 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private static string CurrentAspNetCoreVersion = "2.1.0";
+        private static string CurrentAspNetCoreVersion = "2.1.2";
         private static string CurrentTargetFramework = "netcoreapp2.1";
 
         private const string PerfViewVersion = "P2.0.12";
@@ -140,7 +140,7 @@ namespace BenchmarkServer
                 ;
 
             var dotnetInstallFilename = Path.Combine(_dotnetInstallPath, Path.GetFileName(_dotnetInstallUrl));
-            
+
             Log.WriteLine($"Downloading dotnet-install to '{dotnetInstallFilename}'");
             DownloadFileAsync(_dotnetInstallUrl, dotnetInstallFilename, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
 
@@ -181,7 +181,7 @@ namespace BenchmarkServer
 
         public static int Main(string[] args)
         {
-            // Prevent unhandled exceptions in the benchmarked apps from displaying a popup that would block 
+            // Prevent unhandled exceptions in the benchmarked apps from displaying a popup that would block
             // the main process on Windows
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -372,8 +372,8 @@ namespace BenchmarkServer
                             // TODO: Race condition if DELETE is called during this code
                             try
                             {
-                                if (OperatingSystem == OperatingSystem.Linux && 
-                                    (job.WebHost == WebHost.IISInProcess || 
+                                if (OperatingSystem == OperatingSystem.Linux &&
+                                    (job.WebHost == WebHost.IISInProcess ||
                                     job.WebHost == WebHost.IISOutOfProcess)
                                     )
                                 {
@@ -481,7 +481,7 @@ namespace BenchmarkServer
                                             var output = new StringBuilder();
 
                                             // Get docker stats
-                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId, 
+                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
                                                 outputDataReceived: d => output.AppendLine(d),
                                                 log: false);
 
@@ -872,7 +872,7 @@ namespace BenchmarkServer
             Log.WriteLine($"Process has stopped");
 
             perfCollectProcess = null;
-            
+
         }
 
         private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
@@ -945,7 +945,7 @@ namespace BenchmarkServer
                 Log.WriteLine($"Waiting for application to startup...");
 
                 // Wait until the service is reachable to avoid races where the container started but isn't
-                // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients 
+                // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients
                 // will fail to connect and the job will be cleaned up properly
                 if (await WaitToListen(job, hostname, 30))
                 {
@@ -1512,7 +1512,7 @@ namespace BenchmarkServer
                         // Copy the response stream directly to the file stream
                         await response.Content.CopyToAsync(stream);
                         return Encoding.UTF8.GetString(stream.ToArray());
-                    }                    
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -1713,7 +1713,7 @@ namespace BenchmarkServer
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
                 // c.f. https://github.com/dotnet/coreclr/blob/master/Documentation/project-docs/linux-performance-tracing.md#collecting-a-trace
-                // The Task library EventSource events are distorting the trace quite a bit.   
+                // The Task library EventSource events are distorting the trace quite a bit.
                 // It is better at least for now to turn off EventSource events when collecting linux data.
                 // Thus don’t set COMPlus_EnableEventLog = 1
                 process.StartInfo.Environment.Add("COMPlus_PerfMapEnabled", "1");
@@ -1734,9 +1734,9 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                     standardOutput.AppendLine(e.Data);
 
-                    if (job.State == ServerState.Starting && 
+                    if (job.State == ServerState.Starting &&
                         ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        e.Data.ToLowerInvariant().Contains("started") || 
+                        e.Data.ToLowerInvariant().Contains("started") ||
                         e.Data.ToLowerInvariant().Contains("listening")))
                     {
                         MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
