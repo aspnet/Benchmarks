@@ -137,7 +137,6 @@ namespace Benchmarks
             {
                 var mvcBuilder = services
                     .AddMvcCore()
-                    .AddControllersAsServices()
 #if NETCOREAPP2_1 || NETCOREAPP2_2
                     .SetCompatibilityVersion(CompatibilityVersion.Latest)
 #endif
