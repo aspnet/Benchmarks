@@ -138,7 +138,10 @@ namespace Benchmarks
                 var mvcBuilder = services
                     .AddMvcCore()
                     .AddControllersAsServices()
-                    .SetCompatibilityVersion(CompatibilityVersion.Latest);
+#if NETCOREAPP2_1 || NETCOREAPP2_2
+                    .SetCompatibilityVersion(CompatibilityVersion.Latest)
+#endif
+;
 
                 if (Scenarios.MvcJson || Scenarios.Any("MvcDbSingle") || Scenarios.Any("MvcDbMulti"))
                 {
