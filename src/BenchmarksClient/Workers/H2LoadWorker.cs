@@ -213,7 +213,7 @@ namespace BenchmarksClient.Workers
                 job.Requests = ReadRequests(requestsCountMatch);
 
                 var durationMatch = Regex.Match(job.Output, @"finished in ([\d\.]+)(\w+)");
-                job.ActualDuration = ReadDuration(requestsCountMatch);
+                job.ActualDuration = ReadDuration(durationMatch);
 
                 job.State = ClientState.Completed;
             };
