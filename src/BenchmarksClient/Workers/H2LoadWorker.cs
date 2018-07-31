@@ -183,40 +183,36 @@ namespace BenchmarksClient.Workers
                 // Wait for all Output messages to be flushed and available in job.Output
                 Thread.Sleep(100);
 
-                var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
+                var rpsMatch = Regex.Match(job.Output, @"([\d\.]+) req/s");
                 if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
                 {
                     job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
                 }
 
-                const string LatencyPattern = @"\s+{0}\s+([\d\.]+)(\w+)";
-
-                var latencyMatch = Regex.Match(job.Output, String.Format(LatencyPattern, "Latency"));
+                var latencyMatch = Regex.Match(job.Output, @"time to 1st byte: \s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
                 job.Latency.Average = ReadLatency(latencyMatch);
 
-                var p50Match = Regex.Match(job.Output, String.Format(LatencyPattern, "50%"));
-                job.Latency.Within50thPercentile = ReadLatency(p50Match);
+                job.Latency.Within50thPercentile = -1;
 
-                var p75Match = Regex.Match(job.Output, String.Format(LatencyPattern, "75%"));
-                job.Latency.Within75thPercentile = ReadLatency(p75Match);
+                job.Latency.Within75thPercentile = -1;
 
-                var p90Match = Regex.Match(job.Output, String.Format(LatencyPattern, "90%"));
-                job.Latency.Within90thPercentile = ReadLatency(p90Match);
+                job.Latency.Within90thPercentile = -1;
 
-                var p99Match = Regex.Match(job.Output, String.Format(LatencyPattern, "99%"));
-                job.Latency.Within99thPercentile = ReadLatency(p99Match);
+                job.Latency.Within99thPercentile = -1;
 
-                var p100Match = Regex.Match(job.Output, @"\s+Latency\s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
+                var p100Match = Regex.Match(job.Output, @"time to 1st byte: \s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
                 job.Latency.MaxLatency = ReadLatency(p100Match);
 
-                var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
+                var socketErrorsMatch = Regex.Match(job.Output, @"([\d\.]+) failed, ([\d\.]+) errored, ([\d\.]+) timeout");
                 job.SocketErrors = CountSocketErrors(socketErrorsMatch);
 
-                var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
+                var badResponsesMatch = Regex.Match(job.Output, @"status codes: ([\d\.]+) 2xx, ([\d\.]+) 3xx, ([\d\.]+) 4xx, ([\d\.]+) 5xx");
                 job.BadResponses = ReadBadReponses(badResponsesMatch);
 
-                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(\w*)");
+                var requestsCountMatch = Regex.Match(job.Output, @"requests: ([\d\.]+) total");
                 job.Requests = ReadRequests(requestsCountMatch);
+
+                var durationMatch = Regex.Match(job.Output, @"finished in ([\d\.]+)(\w+)");
                 job.ActualDuration = ReadDuration(requestsCountMatch);
 
                 job.State = ClientState.Completed;
@@ -231,7 +227,7 @@ namespace BenchmarksClient.Workers
 
         private static TimeSpan ReadDuration(Match responseCountMatch)
         {
-            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 3)
             {
                 Log("Failed to parse duration");
                 return TimeSpan.Zero;
@@ -239,9 +235,9 @@ namespace BenchmarksClient.Workers
 
             try
             {
-                var value = double.Parse(responseCountMatch.Groups[2].Value);
+                var value = double.Parse(responseCountMatch.Groups[1].Value);
 
-                var unit = responseCountMatch.Groups[3].Value;
+                var unit = responseCountMatch.Groups[2].Value;
 
                 switch (unit)
                 {
@@ -261,7 +257,7 @@ namespace BenchmarksClient.Workers
 
         private static int ReadRequests(Match responseCountMatch)
         {
-            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 4)
+            if (!responseCountMatch.Success || responseCountMatch.Groups.Count != 2)
             {
                 Log("Failed to parse requests");
                 return -1;
@@ -286,7 +282,7 @@ namespace BenchmarksClient.Workers
                 return 0;
             }
 
-            if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 2)
+            if (!badResponsesMatch.Success || badResponsesMatch.Groups.Count != 5)
             {
                 Log("Failed to parse bad responses");
                 return 0;
@@ -294,7 +290,10 @@ namespace BenchmarksClient.Workers
 
             try
             {
-                return int.Parse(badResponsesMatch.Groups[1].Value);
+                return 
+                    int.Parse(badResponsesMatch.Groups[3].Value) +
+                    int.Parse(badResponsesMatch.Groups[4].Value)
+                    ;
             }
             catch
             {
@@ -311,7 +310,7 @@ namespace BenchmarksClient.Workers
                 return 0;
             }
 
-            if (socketErrorsMatch.Groups.Count != 5)
+            if (socketErrorsMatch.Groups.Count != 4)
             {
                 Log("Failed to parse socket errors");
                 return 0;
@@ -322,8 +321,7 @@ namespace BenchmarksClient.Workers
                 return
                     int.Parse(socketErrorsMatch.Groups[1].Value) +
                     int.Parse(socketErrorsMatch.Groups[2].Value) +
-                    int.Parse(socketErrorsMatch.Groups[3].Value) +
-                    int.Parse(socketErrorsMatch.Groups[4].Value)
+                    int.Parse(socketErrorsMatch.Groups[3].Value) 
                     ;
 
             }
