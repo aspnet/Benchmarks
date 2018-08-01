@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -100,9 +99,9 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
-                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).", CommandOptionType.SingleValue);
+                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("--runtimeVersion",
-                ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).", CommandOptionType.SingleValue);
+                ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
             var noArgumentsOptions = app.Option("--no-arguments",
@@ -933,7 +932,7 @@ namespace BenchmarksDriver
                             await Task.Delay(1000);
                         }
                     }
-                    System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.  
+                    System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
@@ -951,7 +950,7 @@ namespace BenchmarksDriver
                         _clientJob.SkipStartupLatencies = false;
 
                         _clientJob.Duration = duration;
-                        System.Threading.Thread.Sleep(200);  // Make it clear on traces when warmup stops and measuring begins. 
+                        System.Threading.Thread.Sleep(200);  // Make it clear on traces when warmup stops and measuring begins.
                     }
 
 
@@ -1716,7 +1715,7 @@ namespace BenchmarksDriver
             using (ZipArchive archive = ZipFile.Open(destinationArchiveFileName, ZipArchiveMode.Create))
             {
                 string basePath = di.FullName;
-                
+
                 var ignoreFile = IgnoreFile.Parse(Path.Combine(sourceDirectoryName, ".gitignore"));
 
                 foreach (var gitFile in ignoreFile.ListDirectory(sourceDirectoryName))

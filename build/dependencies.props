@@ -1,16 +1,18 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <AspNetCoreVersion>2.1.0</AspNetCoreVersion>
+    <AspNetCoreVersion>2.1.2</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
     <SignalRVersion>1.1.0-*</SignalRVersion>
+    <MicrosoftNETSdkRazorPackageVersion212>2.1.1</MicrosoftNETSdkRazorPackageVersion212>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
+
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
-    <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect --> 
+    <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp22PackageVersion>
     <DefaultTargetFramework>netcoreapp2.1</DefaultTargetFramework>
 
@@ -23,13 +25,15 @@
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
+
     <MongoDbVersion>2.6.1</MongoDbVersion>
     <DapperVersion>1.50.5</DapperVersion>
     <NpgsqlVersion20>3.2.7</NpgsqlVersion20>
-    <NpgsqlVersion21>4.0.0</NpgsqlVersion21>
-    <MySqlConnectorVersion>0.40.4</MySqlConnectorVersion>
+    <NpgsqlVersion21>4.0.2</NpgsqlVersion21>
+    <MySqlConnectorVersion>0.43.0</MySqlConnectorVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
-    <PomeloEntityFrameworkCoreMySqlVersion>2.0.1</PomeloEntityFrameworkCoreMySqlVersion>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.1.1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
+    <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
+    <PomeloEntityFrameworkCoreMySqlVersion21>2.1.1</PomeloEntityFrameworkCoreMySqlVersion21>
   </PropertyGroup>
 </Project>
