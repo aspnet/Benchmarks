@@ -152,6 +152,8 @@ namespace BenchmarksDriver
                 "Download the Ready To Run log.", CommandOptionType.NoValue);
             var environmentVariablesOption = app.Option("-e|--env",
                 "Defines custom environment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
+            var buildProperties = app.Option("-b|--build-property",
+                "Defines custom build properties to use with the benchmarked application e.g., -bp \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
             var downloadFilesOption = app.Option("-d|--download",
                 "Downloads specific server files. This argument can be used multiple times. e.g., -d \"published/wwwroot/picture.png\"", CommandOptionType.MultipleValue);
             var noCleanOption = app.Option("--no-clean",
@@ -508,6 +510,30 @@ namespace BenchmarksDriver
                         else
                         {
                             serverJob.EnvironmentVariables[env.Substring(0, index)] = env.Substring(index + 1);
+                        }
+                    }
+                }
+                if (buildProperties.HasValue())
+                {
+                    foreach (var bp in buildProperties.Values)
+                    {
+                        var index = bp.IndexOf('=');
+
+                        if (index == -1)
+                        {
+                            if (index == -1)
+                            {
+                                Console.WriteLine($"Invalid build property, '=' not found: '{bp}'");
+                                return 9;
+                            }
+                        }
+                        else if (index == bp.Length - 1)
+                        {
+                            serverJob.BuildProperties[bp.Substring(0, index)] = "";
+                        }
+                        else
+                        {
+                            serverJob.BuildProperties[bp.Substring(0, index)] = bp.Substring(index + 1);
                         }
                     }
                 }

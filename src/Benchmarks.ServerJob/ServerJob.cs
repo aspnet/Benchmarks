@@ -108,6 +108,7 @@ namespace Benchmarks.ServerJob
         public string BasePath { get; set; }
         public int ProcessId { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool NoClean { get; set; }
         public string Error { get; set; }
         public bool SelfContained { get; set; }
