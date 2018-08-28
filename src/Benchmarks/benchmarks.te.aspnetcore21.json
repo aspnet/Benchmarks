@@ -1,8 +1,8 @@
 ﻿{
   "Default": {
     "Source": {
-      "Repository": "https://github.com/aspnet/FrameworkBenchmarks.git",
-      "BranchOrCommit": "netcoreapp21",
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
       "DockerContextDirectory": "frameworks/CSharp/aspnetcore/",
       "DockerFile": "frameworks/CSharp/aspnetcore/aspcore.dockerfile",
       "DockerImageName": "aspnetcore21"
