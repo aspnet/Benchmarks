@@ -7,6 +7,7 @@ namespace Benchmarks.ClientJob
     {
         Wrk,
         SignalR,
-        Wait
+        Wait,
+        H2Load,
     }
 }

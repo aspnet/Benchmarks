@@ -80,11 +80,16 @@ Properties of the SignalR client
   TransportType          Name of the transport to communicate over.
   LogLevel               LogLevel name for SignalR connections to use. e.g. 'Trace' or 'Warning'.
   CollectLatency         Turns on collection of detailed latency, used for Percentiles, by default we just collect average Latency.
-  SendDelay		 Specifies the delay(in seconds) between sends for the echo idle scenario.
+  SendDelay		         Specifies the delay(in seconds) between sends for the echo idle scenario.
 
 Properties of the Wait client
 
-  None
+  None  
+
+Properties of the H2Load client
+
+  Streams                Max concurrent streams to issue per session. When http/1.1 is used, this specifies the number of HTTP pipelining requests in-flight. Default is 1.
+
 ```
 
 ### Examples
