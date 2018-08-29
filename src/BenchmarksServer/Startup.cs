@@ -629,20 +629,27 @@ namespace BenchmarkServer
                                         Log.WriteLine($"SIGINT was not handled, checking /shutdown endpoint ...");
                                     }
 
-                                    // Tentatively invoke the shutdown endpoint on the client application
-                                    var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
-
-                                    // Shutdown invoked successfully, wait for the application to stop by itself
-                                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                                    try
                                     {
-                                        var epoch = DateTime.UtcNow;
+                                        // Tentatively invoke the shutdown endpoint on the client application
+                                        var response = await _httpClient.GetAsync(new Uri(new Uri(job.Url), "/shutdown"));
 
-                                        do
+                                        // Shutdown invoked successfully, wait for the application to stop by itself
+                                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
                                         {
-                                            Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
-                                            await Task.Delay(1000);
+                                            var epoch = DateTime.UtcNow;
 
-                                        } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                            do
+                                            {
+                                                Log.WriteLine($"Shutdown successfully invoked, waiting for graceful shutdown ...");
+                                                await Task.Delay(1000);
+
+                                            } while (!process.HasExited && (DateTime.UtcNow - epoch < TimeSpan.FromSeconds(5)));
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Log.WriteLine($"/shutdown endpoint failed...");
                                     }
                                 }
 
