@@ -84,7 +84,7 @@ Properties of the SignalR client
 
 Properties of the Wait client
 
-  None  
+  None                   By default the client will use the value of the `--duration` property.
 
 Properties of the H2Load client
 
@@ -94,7 +94,19 @@ Properties of the H2Load client
 
 ### Examples
 
-Running a job without any job definition file
+#### Using a local job definition file
+
+Running the "Plaintext" job defined in the `benchmaks.json` file, targeting the latest stable release of ASP.NET Core.
+
+```powershell
+dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion Current
+```
+
+Any path can point to a raw online resource, like `https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/benchmarks.plaintext.json`
+
+#### Running a job without any job definition file
+
+A job definition file is useful for executing jobs repeatedly, but all its properties can be set or redefined on the command line.
 
 ```powershell
 dotnet run -c release 
@@ -110,11 +122,16 @@ dotnet run -c release
     --headers Plaintext 
 ```
 
-Running the "Plaintext" job defined in the __benchmaks.json__ file, targeting 2.0.0
+#### Collecting a PerfView trace
 
-```powershell
-dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion Current
-```
+To gather meaningful information from a PerfView collection, a set of good arguments is:
+
+`--collect-trace --trace-arguments "clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile"`
+
+The following example also adds the GC information:
+
+`--collect-trace --trace-arguments "clrEvents=JITSymbols+GC;kernelEvents=process+thread+ImageLoad+Profile"`
+
 
 ## Job definition format
 
