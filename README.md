@@ -8,10 +8,10 @@ The current results tracked by the ASP.NET team are available [at this location]
 ## Components
 
 The benchmarking infrastructure is made of these components:
-- [Benchmarks](https://github.com/aspnet/benchmarks/tree/dev/src/Benchmarks), a web application that contains different scenarios to benchmark.
-- [BenchmarksServer](https://github.com/aspnet/benchmarks/tree/dev/src/BenchmarksServer), a web application that queues jobs that are able to run custom web applications to be benchmarked.
-- [BenchmarksClient](https://github.com/aspnet/benchmarks/tree/dev/src/BenchmarksClient), a web application that queues jobs that can create custom client loads on a web application.
-- [BenchmarksDriver](https://github.com/aspnet/benchmarks/tree/dev/src/BenchmarksDriver), a command-line application that can enqueue server and client jobs and display the results locally.
+- [Benchmarks](https://github.com/aspnet/benchmarks/tree/master/src/Benchmarks), a web application that contains different scenarios to benchmark.
+- [BenchmarksServer](https://github.com/aspnet/benchmarks/tree/master/src/BenchmarksServer), a web application that queues jobs that are able to run custom web applications to be benchmarked.
+- [BenchmarksClient](https://github.com/aspnet/benchmarks/tree/master/src/BenchmarksClient), a web application that queues jobs that can create custom client loads on a web application.
+- [BenchmarksDriver](https://github.com/aspnet/benchmarks/tree/master/src/BenchmarksDriver), a command-line application that can enqueue server and client jobs and display the results locally.
 - A database server that can run any or all of PostgreSql, Sql Server, MySql, MongoDb
 
 ## Setting up the infrastructure
@@ -20,7 +20,7 @@ This will assume you have Docker installed and are familiar with it.
 
 ### Setup the Benchmark Server
 
-- Clone https://github.com/aspnet/benchmarks on the __dev__ branch
+- Clone https://github.com/aspnet/benchmarks on the __master__ branch
 - Run `cd docker/benchmarks` 
 - Run `./build.sh`, which will build a Docker image containing the benchmarking dependencies
 - Add the following environment variables to the file `/etc/environment`
@@ -34,7 +34,7 @@ The application should start on port `5001`. Open a browser on this page and `OK
 
 ### Setup the Benchmark Client
 
-- Clone https://github.com/aspnet/benchmarks on the __dev__ branch
+- Clone https://github.com/aspnet/benchmarks on the __master__ branch
 - Run `cd docker/benchmarks` 
 - Run `./build.sh`, which will build a Docker image containing the benchmarking dependencies
 - Then run `./run-client.sh`
@@ -43,7 +43,7 @@ The application should start on port `5002`. Open a browser on this page and `OK
 
 ### Setup the Database Server
 
-- Clone https://github.com/aspnet/benchmarks on the __dev__ branch
+- Clone https://github.com/aspnet/benchmarks on the __master__ branch
 
 #### PostgreSql
 
@@ -57,7 +57,7 @@ This will create and run a Docker image containing PostgreSql and the Fortunes d
 
 On your computer,
 
-- Clone https://github.com/aspnet/benchmarks on the __dev__ branch
+- Clone https://github.com/aspnet/benchmarks on the __master__ branch
 - Run `cd src/BenchmarkDriver`
 - Then run the following command after replacing the IP addresses to the ones you are using, 
 ```
@@ -68,8 +68,8 @@ dotnet run -c Debug `
  -n Json
 ```
 
-This will start the `Json` scenario using the `Benchmarks` application that is provided in https://github.com/aspnet/benchmarks/tree/dev/src/Benchmarks.
-You can use another application by setting the correct arguments described on [this page](https://github.com/aspnet/benchmarks/blob/dev/src/BenchmarksDriver/README.md).
+This will start the `Json` scenario using the `Benchmarks` application that is provided in https://github.com/aspnet/benchmarks/tree/master/src/Benchmarks.
+You can use another application by setting the correct arguments described on [this page](https://github.com/aspnet/benchmarks/blob/master/src/BenchmarksDriver/README.md).
 
 #### Selecting a database provider
 
