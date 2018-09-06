@@ -451,7 +451,7 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@OperatingSystem", operatingSystem.ToString());
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);
-                    p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
+                    p.AddWithValue("@Scheme", "h2");
                     p.AddWithValue("@ConnectionFilter",
                         string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
