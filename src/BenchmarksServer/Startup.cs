@@ -1676,6 +1676,8 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
+            arguments += $" --protocol {job.Scheme.ToString().ToLowerInvariant()}";
+
             commandLine += $" {job.Arguments}";
 
             if (!job.NoArguments)
@@ -1683,7 +1685,6 @@ namespace BenchmarkServer
                 commandLine += $" {arguments}";
             }
 
-            arguments += $" --protocol {job.Scheme.ToString().ToLowerInvariant()}";
 
             if (iis)
             {
