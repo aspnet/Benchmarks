@@ -68,6 +68,7 @@ Options:
   -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
+  -wf|--write-file       Writes the results to a file named "results.md". NB: Use the --description argument to differentiate multiple results.
 
 Properties of the Wrk client
 
