@@ -162,7 +162,7 @@ namespace BenchmarksDriver
                 "Downloads the published application locally.", CommandOptionType.NoValue);
             var fetchOutputOption = app.Option("--fetch-output",
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
-            var protocolOption = app.Option("-p|--protocol",
+            var protocolOption = app.Option("--protocol",
                 "The supported protocol for the server application e.g., \"Http1\", \"Http2\". Default is \"Http1\" on netcoreapp2.1 and \"Http1AndHttp2\" on netcoreapp2.2.", CommandOptionType.SingleValue);
 
             // ClientJob Options

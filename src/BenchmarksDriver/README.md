@@ -68,7 +68,7 @@ Options:
   -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
-  -p|--protocol          The supported protocol for the server application e.g., "Http1", "Http2". Default is "Http1" on netcoreapp2.1 and "Http1AndHttp2" on netcoreapp2.2.
+  --protocol          The supported protocol for the server application e.g., "Http1", "Http2". Default is "Http1" on netcoreapp2.1 and "Http1AndHttp2" on netcoreapp2.2.
 
 Properties of the Wrk client
 
