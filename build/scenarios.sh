@@ -80,7 +80,8 @@ jobs=(
   "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
   "-n Json -m https --webHost KestrelSockets $baseline $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
-
+  "-n PlaintextNonPipelined -m https --webHost KestrelSockets $baseline $plaintextJobs"
+  
   # Http2
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs $http2Jobs"
   "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs"

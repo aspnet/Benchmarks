@@ -1675,6 +1675,11 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
+            if (!String.IsNullOrWhiteSpace(job.Protocol))
+            {
+                arguments += $" --protocol {job.Protocol}";
+            }
+
             commandLine += $" {job.Arguments}";
 
             if (!job.NoArguments)

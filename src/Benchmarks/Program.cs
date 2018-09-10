@@ -24,6 +24,7 @@ namespace Benchmarks
     {
         public static string[] Args;
         public static string Server;
+        public static string Protocol;
 
         public static void Main(string[] args)
         {
@@ -43,6 +44,8 @@ namespace Benchmarks
                 .Build();
 
             Server = config["server"] ?? "Kestrel";
+
+            Protocol = config["protocol"] ?? "";
 
             var webHostBuilder = new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -262,11 +265,23 @@ namespace Benchmarks
                     listenOptions.ConnectionAdapters.Add(connectionFilter);
                 }
 
+#if NETCOREAPP2_2
                 if (urlPrefix.IsHttps)
                 {
-#if NETCOREAPP2_2
                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                }
+
+                if (!String.IsNullOrEmpty(Protocol))
+                {
+                    if (Enum.TryParse(Protocol, ignoreCase: true, result: out HttpProtocols protocol))
+                    {
+                        listenOptions.Protocols = protocol;
+                    }
+                }
 #endif
+
+                if (urlPrefix.IsHttps)
+                {
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
             });

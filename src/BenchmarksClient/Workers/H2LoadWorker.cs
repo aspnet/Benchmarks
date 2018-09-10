@@ -139,7 +139,7 @@ namespace BenchmarksClient.Workers
                 }
             }
 
-            command += $" -D {job.Duration} -c {job.Connections} -T {job.Timeout} -t {job.Threads}";
+            command += $" -D {job.Duration} -c {job.Connections} -T {job.Timeout} -t {job.Threads} --no-tls-proto=h2c ";
 
             if (job.ClientProperties.TryGetValue("Streams", out var m))
             {
