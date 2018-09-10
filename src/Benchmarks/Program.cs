@@ -270,13 +270,9 @@ namespace Benchmarks
                 {
                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                 }
-
-                if (!String.IsNullOrEmpty(Protocol))
+                else if (Protocol.StartsWith("h2", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (Enum.TryParse(Protocol, ignoreCase: true, result: out HttpProtocols protocol))
-                    {
-                        listenOptions.Protocols = protocol;
-                    }
+                    listenOptions.Protocols = HttpProtocols.Http2;
                 }
 #endif
 

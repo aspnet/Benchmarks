@@ -93,7 +93,7 @@ namespace BenchmarksDriver
             var scenarioOption = app.Option("-n|--scenario",
                 "Benchmark scenario to run", CommandOptionType.SingleValue);
             var schemeOption = app.Option("-m|--scheme",
-                "Scheme (http or https).  Default is http.", CommandOptionType.SingleValue);
+                "Scheme (http, https, h2, h2c). Default is http.", CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
@@ -162,8 +162,6 @@ namespace BenchmarksDriver
                 "Downloads the published application locally.", CommandOptionType.NoValue);
             var fetchOutputOption = app.Option("--fetch-output",
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
-            var protocolOption = app.Option("--protocol",
-                "The supported protocol for the server application e.g., \"Http1\", \"Http2\". Default is \"Http1\" on netcoreapp2.1 and \"Http1AndHttp2\" on netcoreapp2.2.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -491,10 +489,6 @@ namespace BenchmarksDriver
                 if (tieredCompilationOption.HasValue())
                 {
                     serverJob.EnvironmentVariables.Add("COMPlus_TieredCompilation", "1");
-                }
-                if (protocolOption.HasValue())
-                {
-                    serverJob.Protocol = protocolOption.Value();
                 }
                 if (environmentVariablesOption.HasValue())
                 {

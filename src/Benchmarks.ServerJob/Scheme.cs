@@ -6,6 +6,8 @@ namespace Benchmarks.ServerJob
     public enum Scheme
     {
         Http,
-        Https
+        Https,
+        H2,
+        H2c
     }
 }

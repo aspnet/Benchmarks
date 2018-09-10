@@ -112,6 +112,5 @@ namespace Benchmarks.ServerJob
         public bool NoClean { get; set; }
         public string Error { get; set; }
         public bool SelfContained { get; set; }
-        public string Protocol { get; set; }
     }
 }

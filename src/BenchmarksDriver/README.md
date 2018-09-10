@@ -20,7 +20,7 @@ Options:
   -cf|--connectionFilter Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
   -n|--scenario          Benchmark scenario to run
-  -m|--scheme            Scheme (http or https).  Default is http.
+  -m|--scheme            Scheme (http, https, h2, h2c). Default is http.
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
   --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
   --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
@@ -68,7 +68,6 @@ Options:
   -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
-  --protocol          The supported protocol for the server application e.g., "Http1", "Http2". Default is "Http1" on netcoreapp2.1 and "Http1AndHttp2" on netcoreapp2.2.
 
 Properties of the Wrk client
 

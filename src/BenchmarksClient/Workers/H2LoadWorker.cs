@@ -91,6 +91,14 @@ namespace BenchmarksClient.Workers
 
         private static async Task MeasureFirstRequestLatencyAsync(ClientJob job)
         {
+            // Ignoring startup latency when using h2c as HttpClient doesn't support
+
+            if (job.ServerBenchmarkUri.StartsWith("http:", StringComparison.OrdinalIgnoreCase))
+            {
+                Log("Ignoring first request latencies on h2c");
+                return;
+            }
+
             if (job.SkipStartupLatencies)
             {
                 return;

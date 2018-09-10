@@ -1610,7 +1610,8 @@ namespace BenchmarkServer
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
-            var serverUrl = $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}";
+            var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
+            var serverUrl = $"{scheme}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
@@ -1675,17 +1676,14 @@ namespace BenchmarkServer
                 arguments += $" --server.urls {serverUrl}";
             }
 
-            if (!String.IsNullOrWhiteSpace(job.Protocol))
-            {
-                arguments += $" --protocol {job.Protocol}";
-            }
-
             commandLine += $" {job.Arguments}";
 
             if (!job.NoArguments)
             {
                 commandLine += $" {arguments}";
             }
+
+            arguments += $" --protocol {job.Scheme.ToString().ToLowerInvariant()}";
 
             if (iis)
             {
@@ -1894,7 +1892,8 @@ namespace BenchmarkServer
 
         private static string ComputeServerUrl(string hostname, ServerJob job)
         {
-            return $"{job.Scheme.ToString().ToLowerInvariant()}://{hostname}:{job.Port}/{job.Path.TrimStart('/')}";
+            var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
+            return $"{scheme}://{hostname}:{job.Port}/{job.Path.TrimStart('/')}";
         }
 
         private static string GetRepoName(Source source)

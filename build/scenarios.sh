@@ -36,7 +36,7 @@ jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/
 routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/release/2.2/benchmarkapps/Benchmarks/benchmarks.json"
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicViews/benchmarks.json --duration 60"
-http2Jobs="-m https --clientName H2Load -p Streams=100 --headers None"
+http2Jobs="--clientName H2Load -p Streams=100 --headers None"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
@@ -83,8 +83,10 @@ jobs=(
   "-n PlaintextNonPipelined -m https --webHost KestrelSockets $baseline $plaintextJobs"
   
   # Http2
-  "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs $http2Jobs"
-  "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs"
+  "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2"
+  "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2"
+  "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2"
+  "-n PlaintextNonPipelined --webHost KestrelSockets $plaintextJobs $http2Jobs -m h2c"
 
   # Caching
   "-n MemoryCachePlaintext --webHost KestrelSockets $trend $plaintextJobs"
