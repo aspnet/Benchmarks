@@ -812,6 +812,12 @@ namespace BenchmarksDriver
 
                         serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                        if (serverJob == null)
+                        {
+                            Log(responseContent);
+                            throw new InvalidOperationException("Invalid response from the server");
+                        }
+
                         if (!serverJob.Hardware.HasValue)
                         {
                             throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
