@@ -36,7 +36,7 @@ jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/
 routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/release/2.2/benchmarkapps/Benchmarks/benchmarks.json"
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicViews/benchmarks.json --duration 60"
-http2Jobs="--clientName H2Load -p Streams=100 --headers None"
+http2Jobs="--clientName H2Load -p Streams=20 --headers None --connections 12"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
