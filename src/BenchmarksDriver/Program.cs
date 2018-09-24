@@ -805,21 +805,23 @@ namespace BenchmarksDriver
                     var retryCount = 0;
 
                     serverJobUri = new Uri(serverUri, response.Headers.Location);
+
+                    Log($"Fetching job: {serverJobUri}");
+
                     while (true)
                     {
                         LogVerbose($"GET {serverJobUri}...");
                         response = await _httpClient.GetAsync(serverJobUri);
                         responseContent = await response.Content.ReadAsStringAsync();
 
-                        LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
-
                         serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+                        // Server might be busy and send a retry response
                         if (serverJob == null)
                         {
                             if (retryCount++ < 5)
                             {
-                                Log($"Invalid response content detected (Status: {response.StatusCode}, attempt {retryCount} ...");
+                                Log($"Invalid response content detected {(int)response.StatusCode} ({response.StatusCode}), attempt {retryCount} ...");
                                 continue;
                             }
 
