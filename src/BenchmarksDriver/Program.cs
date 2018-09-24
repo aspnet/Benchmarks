@@ -799,7 +799,10 @@ namespace BenchmarksDriver
                     response = await _httpClient.PostAsync(serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
                     responseContent = await response.Content.ReadAsStringAsync();
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
+
                     response.EnsureSuccessStatusCode();
+
+                    var retryCount = 0;
 
                     serverJobUri = new Uri(serverUri, response.Headers.Location);
                     while (true)
@@ -814,6 +817,12 @@ namespace BenchmarksDriver
 
                         if (serverJob == null)
                         {
+                            if (retryCount++ < 5)
+                            {
+                                Log($"Invalid response content detected (Status: {response.StatusCode}, attempt {retryCount} ...");
+                                continue;
+                            }
+
                             Log(responseContent);
                             throw new InvalidOperationException("Invalid response from the server");
                         }
@@ -843,7 +852,7 @@ namespace BenchmarksDriver
                             return 0;
                         }
 
-                        if (serverJob.State == ServerState.Initializing)
+                        if (serverJob?.State == ServerState.Initializing)
                         {
                             // Uploading source code
                             if (sourceOption.HasValue())
