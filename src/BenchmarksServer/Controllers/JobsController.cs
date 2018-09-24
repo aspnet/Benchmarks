@@ -82,6 +82,8 @@ namespace BenchmarkServer.Controllers
                 job.Hardware = Startup.Hardware;
                 job.HardwareVersion = Startup.HardwareVersion;
                 job.OperatingSystem = Startup.OperatingSystem;
+                // Use server-side date and time to prevent issues fron time drifting
+                job.LastDriverCommunicationUtc = DateTime.UtcNow; 
                 job = _jobs.Add(job);
 
                 Response.Headers["Location"] = $"/jobs/{job.Id}";
@@ -98,6 +100,12 @@ namespace BenchmarkServer.Controllers
                 {
                     Log($"Driver deleting job '{id}'");
                     var job = _jobs.Find(id);
+
+                    if (job == null)
+                    {
+                        return NoContent();
+                    }
+
                     job.State = ServerState.Deleting;
                     _jobs.Update(job);
 
