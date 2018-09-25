@@ -114,6 +114,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchm
 		docker\benchmarks-driver\run.sh = docker\benchmarks-driver\run.sh
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy", "src\Proxy\Proxy.csproj", "{80142ADF-3E71-4089-ABD1-C5C80C367731}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proxy", "proxy", "{E7086C49-9001-4D01-9AA2-13FF03129A6E}"
+	ProjectSection(SolutionItems) = preProject
+		docker\proxy\build.sh = docker\proxy\build.sh
+		docker\proxy\Dockerfile = docker\proxy\Dockerfile
+		docker\proxy\run-proxy.sh = docker\proxy\run-proxy.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -186,6 +195,14 @@ Global
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|Any CPU.Build.0 = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.ActiveCfg = Release|Any CPU
 		{174DC3AC-F883-4B85-BE90-EA5B7BB01961}.Release|x86.Build.0 = Release|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Debug|x86.Build.0 = Debug|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Release|x86.ActiveCfg = Release|Any CPU
+		{80142ADF-3E71-4089-ABD1-C5C80C367731}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -206,6 +223,8 @@ Global
 		{FA7BA2F5-47DA-418F-B29F-458714F44C89} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{80EE0663-7860-4756-8A0E-6A5B6FA5E546} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
+		{80142ADF-3E71-4089-ABD1-C5C80C367731} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
+		{E7086C49-9001-4D01-9AA2-13FF03129A6E} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
