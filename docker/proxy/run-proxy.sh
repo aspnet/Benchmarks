@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 
-# --proxy-url http://server:port/path
-docker run -d -it --network host --restart always "$@"
+# Configure which server to proxy to    
+#   --proxy-url http://server:port/path 
+# Configure which port to listen to
+#   --url http:*:PORT
+
+docker run -d -it --network host --name benchmarks-proxy --restart always benchmarks-proxy "$@"
