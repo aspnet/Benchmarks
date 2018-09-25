@@ -907,7 +907,7 @@ namespace BenchmarksDriver
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                             response.EnsureSuccessStatusCode();
 
-                            Log($"Server Job ready: {serverJobUri}");
+                            Log($"Server Job ready");
 
                             break;
                         }
