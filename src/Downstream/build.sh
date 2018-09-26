@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build -t downstream . "$@"
+docker build -t benchmarks-downstream . "$@"
