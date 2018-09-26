@@ -37,7 +37,7 @@
     <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.2'" Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion212)" PrivateAssets="All" />
 
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
-    <!--<PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />-->
+    <PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
 
