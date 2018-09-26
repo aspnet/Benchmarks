@@ -1,0 +1,29 @@
+{
+  "Default": {
+
+    "Client": "Wrk",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    },
+
+    "PresetHeaders": "Plaintext",
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "Project": "src/Proxy/Proxy.csproj"
+    },
+    "Arguments": "downstream=http://TFB-DATABASE:5001",
+    "ReadyStateText": "Application started."
+  },
+  "Plaintext": {
+    "Path": "/"
+  },
+  "PlaintextNonPipelined": {
+    "Path": "/",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    }
+  }
+}
