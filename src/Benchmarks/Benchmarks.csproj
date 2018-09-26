@@ -30,7 +30,7 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion20)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1' or $(TargetFramework) == 'netcoreapp2.2'">
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1' or $(TargetFramework) == 'netcoreapp2.2' or $(TargetFramework) == 'netcoreapp3.0'">
     <!-- Temporary fix for MVC compiled views -->
     <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' != '2.1.2'" Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
     <!-- Override Razor SDK version when using Microsoft.AspNetCore.App 2.1.2. This package lacks a 2.1.2 version. -->
@@ -45,7 +45,7 @@
   </ItemGroup>
 
   <!-- IIS -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2' or $(TargetFramework) == 'netcoreapp3.0'">
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>

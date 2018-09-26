@@ -32,10 +32,13 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        private static string CurrentAspNetCoreVersion = "2.1.2";
+        // Version of ASP.NET used when targetting the Current versions
+        private static string CurrentAspNetCoreVersion = "2.1.4";
+
+        // TFM when using the Current versions
         private static string CurrentTargetFramework = "netcoreapp2.1";
 
-        private const string PerfViewVersion = "P2.0.12";
+        private const string PerfViewVersion = "P2.0.26";
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
@@ -1077,9 +1080,6 @@ namespace BenchmarkServer
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
 
-            var sdkVersion = (await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5)).Trim();
-            Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
-
             // In theory the actual latest runtime version should be taken from the dependencies.pros file from
             // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
             // however this is different only if the coherence build didn't go through.
@@ -1087,7 +1087,7 @@ namespace BenchmarkServer
             // Define which Runtime and SDK will be installed.
 
             string targetFramework;
-            string runtimeFrameworkVersion;
+            string runtimeVersion;
             string aspNetCoreVersion;
             string actualAspNetCoreVersion;
 
@@ -1098,36 +1098,39 @@ namespace BenchmarkServer
 
                 if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
                 {
-                    runtimeFrameworkVersion = await GetLatestRuntimeVersion(buildToolsPath);
+                    runtimeVersion = await GetLatestRuntimeVersion(buildToolsPath);
                 }
                 else if (String.Equals(job.RuntimeVersion, "Edge", StringComparison.OrdinalIgnoreCase))
                 {
-                    runtimeFrameworkVersion = await GetEdgeRuntimeVersion(buildToolsPath);
+                    runtimeVersion = await GetEdgeRuntimeVersion(buildToolsPath);
                 }
                 else
                 {
                     // Custom version
-                    runtimeFrameworkVersion = job.RuntimeVersion;
+                    runtimeVersion = job.RuntimeVersion;
 
-                    if (runtimeFrameworkVersion.StartsWith("2.0"))
+                    if (runtimeVersion.StartsWith("2.0"))
                     {
                         targetFramework = "netcoreapp2.0";
                     }
-                    else if (runtimeFrameworkVersion.StartsWith("2.1"))
+                    else if (runtimeVersion.StartsWith("2.1"))
                     {
                         targetFramework = "netcoreapp2.1";
                     }
-                    else
+                    else if (runtimeVersion.StartsWith("3.0"))
                     {
-                        targetFramework = "netcoreapp2.2";
+                        targetFramework = "netcoreapp3.0";
                     }
                 }
             }
             else
             {
-                runtimeFrameworkVersion = await GetCurrentRuntimeVersion(buildToolsPath);
+                runtimeVersion = await GetCurrentRuntimeVersion(buildToolsPath);
                 targetFramework = CurrentTargetFramework;
             }
+
+            var sdkVersion = (await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5)).Trim();
+            Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
             Log.WriteLine($"Writing global.json with content: {globalJson}");
@@ -1172,14 +1175,14 @@ namespace BenchmarkServer
                     _installedSdks.Add(sdkVersion);
                 }
 
-                if (!_installedRuntimes.Contains(runtimeFrameworkVersion))
+                if (!_installedRuntimes.Contains(runtimeVersion))
                 {
                     // Install runtime required for this scenario
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeFrameworkVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
+                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
                     workingDirectory: _dotnetInstallPath,
                     environmentVariables: env));
 
-                    _installedRuntimes.Add(runtimeFrameworkVersion);
+                    _installedRuntimes.Add(runtimeVersion);
                 }
 
                 // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -1213,14 +1216,14 @@ namespace BenchmarkServer
                     _installedSdks.Add(sdkVersion);
                 }
 
-                if (!_installedRuntimes.Contains(runtimeFrameworkVersion))
+                if (!_installedRuntimes.Contains(runtimeVersion))
                 {
                     // Install runtime required by coherence universe
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeFrameworkVersion} --runtime dotnet --no-path --skip-non-versioned-files",
+                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files",
                     workingDirectory: _dotnetInstallPath,
                     environmentVariables: env));
 
-                    _installedRuntimes.Add(runtimeFrameworkVersion);
+                    _installedRuntimes.Add(runtimeVersion);
                 }
 
                 // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -1239,7 +1242,7 @@ namespace BenchmarkServer
 
             // Updating ServerJob to reflect actual versions used
             job.AspNetCoreVersion = actualAspNetCoreVersion;
-            job.RuntimeVersion = runtimeFrameworkVersion;
+            job.RuntimeVersion = runtimeVersion;
             job.SdkVersion = sdkVersion;
 
             // Build and Restore
@@ -1250,12 +1253,14 @@ namespace BenchmarkServer
                 $"/p:MicrosoftAspNetCoreAppPackageVersion={actualAspNetCoreVersion} " +
                 $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
-                $"/p:BenchmarksRuntimeFrameworkVersion={runtimeFrameworkVersion} " +
-                $"/p:BenchmarksTargetFramework={targetFramework} ";
+                $"/p:BenchmarksRuntimeFrameworkVersion={runtimeVersion} " +
+                $"/p:BenchmarksTargetFramework={targetFramework} " +
+                $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
+;
 
             if (targetFramework == "netcoreapp2.0")
             {
-                buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeFrameworkVersion} ";
+                buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeVersion} ";
                 if (!job.UseRuntimeStore)
                 {
                     buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false ";
@@ -1263,7 +1268,7 @@ namespace BenchmarkServer
             }
             else if (targetFramework == "netcoreapp2.1")
             {
-                buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeFrameworkVersion} ";
+                buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeVersion} ";
                 if (!job.UseRuntimeStore)
                 {
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
@@ -1271,7 +1276,15 @@ namespace BenchmarkServer
             }
             else if (targetFramework == "netcoreapp2.2")
             {
-                buildParameters += $"/p:MicrosoftNETCoreApp22PackageVersion={runtimeFrameworkVersion} ";
+                buildParameters += $"/p:MicrosoftNETCoreApp22PackageVersion={runtimeVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
+                }
+            }
+            else if (targetFramework == "netcoreapp3.0")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp30PackageVersion={runtimeVersion} ";
                 if (!job.UseRuntimeStore)
                 {
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
@@ -1336,7 +1349,7 @@ namespace BenchmarkServer
 
                 // Downloading corresponding package
 
-                var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeFrameworkVersion}.nupkg");
+                var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeVersion}.nupkg");
 
                 // Ensure the folder already exists
                 Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
@@ -1344,7 +1357,7 @@ namespace BenchmarkServer
                 if (!File.Exists(runtimePath))
                 {
                     Log.WriteLine($"Downloading runtime package");
-                    await DownloadFileAsync($"https://dotnet.myget.org/F/dotnet-core/api/v2/package/runtime.linux-x64.Microsoft.NETCore.App/{runtimeFrameworkVersion}", runtimePath, maxRetries: 5, timeout: 60);
+                    await DownloadFileAsync($"https://dotnet.myget.org/F/dotnet-core/api/v2/package/runtime.linux-x64.Microsoft.NETCore.App/{runtimeVersion}", runtimePath, maxRetries: 5, timeout: 60);
                 }
                 else
                 {
@@ -1359,7 +1372,7 @@ namespace BenchmarkServer
                         {
                             var crossgenFolder = job.SelfContained
                                 ? Path.Combine(outputFolder, "crossgen")
-                                : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeFrameworkVersion)
+                                : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeVersion)
                                 ;
 
                             var crossgenFilename = Path.Combine(crossgenFolder, "crossgen");
