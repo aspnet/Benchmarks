@@ -37,7 +37,6 @@
     <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.2'" Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion212)" PrivateAssets="All" />
 
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
 
@@ -51,6 +50,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
+    <!-- This package is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. -->
+    <!-- It is necessary though for if the SDK doesn't have knowledge of the runtime version, e.g. using SDK 2.1.400 with 3.0.0-preview runtime. -->
+    <PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <None Update="testCert.pfx">
