@@ -1255,8 +1255,8 @@ namespace BenchmarkServer
                 $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} " +
+                $"/p:MicrosoftNETCoreAppPackageVersion={runtimeVersion}" +
                 $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
-;
 
             if (targetFramework == "netcoreapp2.0")
             {
