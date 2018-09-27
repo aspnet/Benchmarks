@@ -3,7 +3,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "master",
-      "DockerFile": "docker/nginx/reverseproxy.dockerfile",
+      "DockerFile": "docker/nginx/nginx.dockerfile",
       "DockerImageName": "nginx-reverseproxy",
       "DockerContextDirectory": "docker/nginx/"
     },
