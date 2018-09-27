@@ -53,18 +53,21 @@ namespace Proxy
             _httpClient.BaseAddress = new Uri(downstream);
             _httpClientPool.BaseAddress = _httpClient.BaseAddress;
 
-            new WebHostBuilder()
+            var builder = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseConfiguration(config)
-                .Configure(app => app.Run(async (context) =>
+                .UseConfiguration(config);
+
+            if (pool)
+            {
+                builder = builder.Configure(app => app.Run(async (context) =>
                 {
                     var path = context.Request.Path.Value;
 
                     var tasks = new Task<string>[concurrency];
                     for (var i = 0; i < concurrency; i++)
                     {
-                        var httpClient = pool ? _httpClientPool.GetInstance() : _httpClient;
+                        var httpClient = _httpClientPool.GetInstance();
                         try
                         {
                             tasks[i] = httpClient.GetStringAsync(path);
@@ -81,7 +84,42 @@ namespace Proxy
                     await Task.WhenAll(tasks);
 
                     await context.Response.WriteAsync(await tasks[0]);
-                }))
+                }));
+            }
+            else
+            {
+                if (concurrency == 1)
+                {
+                    // Optimized path when no pooling and concurrency is 1, which is the recommended
+                    // scenario for customers
+                    builder = builder.Configure(app => app.Run(async (context) =>
+                    {
+                        var path = context.Request.Path.Value;
+
+                        await context.Response.WriteAsync(await _httpClient.GetStringAsync(path));
+                    }));
+                }
+                else
+                {
+                    builder = builder.Configure(app => app.Run(async (context) =>
+                    {
+                        var path = context.Request.Path.Value;
+
+                        var tasks = new Task<string>[concurrency];
+                        for (var i = 0; i < concurrency; i++)
+                        {
+
+                            tasks[i] = _httpClient.GetStringAsync(path);
+                        }
+
+                        await Task.WhenAll(tasks);
+
+                        await context.Response.WriteAsync(await tasks[0]);
+                    }));
+                }
+            }
+
+            builder
                 .Build()
                 .Run();
         }
