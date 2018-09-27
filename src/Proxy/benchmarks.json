@@ -13,7 +13,9 @@
       "BranchOrCommit": "master",
       "Project": "src/Proxy/Proxy.csproj"
     },
-    "Arguments": "downstream=http://TFB-DATABASE:5001",
+    "EnvironmentVariables": {
+      "ASPNETCORE_Downstream": "http//TFB-DATABASE:5001"
+    },
     "ReadyStateText": "Application started."
   },
   "Plaintext": {
