@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
-    <TargetFramework Condition="$(TargetFramework) == ''">netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="$(BenchmarksTargetFramework) == ''">netcoreapp2.1</TargetFramework>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <!-- Prevent the SDK from validating the supported tfm. Can be removed when a new SDK supporting netcoreapp2.2 is available. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
