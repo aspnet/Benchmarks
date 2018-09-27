@@ -14,7 +14,7 @@
       "Project": "src/Proxy/Proxy.csproj"
     },
     "EnvironmentVariables": {
-      "ASPNETCORE_Downstream": "http//TFB-DATABASE:5001"
+      "ASPNETCORE_Downstream": "http://TFB-DATABASE:5001"
     },
     "ReadyStateText": "Application started."
   },
