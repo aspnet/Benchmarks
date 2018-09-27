@@ -21,6 +21,10 @@
   "Plaintext": {
     "Path": "/"
   },
+  "PlaintextPooled": {
+    "Path": "/",
+    "Arguments": "--pool true"
+  },
   "PlaintextNonPipelined": {
     "Path": "/",
     "ClientProperties": {
