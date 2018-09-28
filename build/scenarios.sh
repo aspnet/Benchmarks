@@ -30,13 +30,14 @@ plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
+httpClientJobs="-j $ROOT/src/Benchmarks/benchmarks.httpclient.json"
 signalRJobs="-j https://raw.githubusercontent.com/aspnet/SignalR/release/2.2/benchmarkapps/BenchmarkServer/signalr.json -t SignalR -r signalr --projectFile benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
 plaintextPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/release/2.2/benchmarkapps/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/release/2.2/benchmarkapps/PlatformBenchmarks/benchmarks.json.json"
 routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/release/2.2/benchmarkapps/Benchmarks/benchmarks.json"
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicViews/benchmarks.json --duration 60"
-http2Jobs="--clientName H2Load -p Streams=20 --headers None --connections 12 --clientThreads 12"
+http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections 12 --clientThreads 12"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
@@ -166,6 +167,12 @@ jobs=(
   # BasicViews
   "--scenario BasicViews.GetTagHelpers $trend $basicViewsJobs"
   "--scenario BasicViews.Post $trend $basicViewsJobs"
+
+  # HttpClient
+  "--scenario HttpClient $trend $httpClientJobs"
+  "--scenario HttpClientNonPipelined $trend $httpClientJobs"
+  "--scenario HttpClientParallel $trend $httpClientJobs"
+  "--scenario HttpClientNonPipelinedParallel $trend $httpClientJobs"
 )
 
 # build driver

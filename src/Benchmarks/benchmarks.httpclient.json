@@ -18,14 +18,26 @@
     },
     "ReadyStateText": "Application started."
   },
-  "Plaintext": {
+  "HttpClient": {
     "Path": "/"
   },
-  "PlaintextNonPipelined": {
+  "HttpClientParallel": {
+    "Path": "/",
+    "Arguments": "--concurrency 10"
+  },
+  "HttpClientNonPipelined": {
     "Path": "/",
     "ClientProperties": {
       "ScriptName": "",
       "PipelineDepth": 0
     }
+  },
+  "HttpClientNonPipelinedParallel": {
+    "Path": "/",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "Arguments": "--concurrency 10"
   }
 }
