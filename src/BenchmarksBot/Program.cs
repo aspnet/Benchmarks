@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Octokit;
 
-namespace BechmarksBot
+namespace BenchmarksBot
 {
     class Program
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace BechmarksBot
+namespace BenchmarksBot
 {
     public class Regression
     {

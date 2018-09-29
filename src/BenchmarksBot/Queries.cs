@@ -1,4 +1,4 @@
-﻿namespace BechmarksBot
+﻿namespace BenchmarksBot
 {
     public class Queries
     {
