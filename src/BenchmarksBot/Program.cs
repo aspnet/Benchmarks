@@ -47,7 +47,7 @@ namespace BenchmarksBot
             }
             else
             {
-                Console.WriteLine("No regressions where found for the current day");
+                Console.WriteLine("No new regressions where found.");
             }
         }
 
