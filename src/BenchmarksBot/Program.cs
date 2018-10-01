@@ -165,7 +165,14 @@ namespace BenchmarksBot
                 }
             }
 
-            var createIssue = new NewIssue("Performance regression")
+            var title = "Performance regression: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
+
+            if (regressions.Count() > 5)
+            {
+                title += " ...";
+            }
+
+            var createIssue = new NewIssue(title)
             {
                 Body = body.ToString()
             };
