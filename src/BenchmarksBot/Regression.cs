@@ -1,13 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 
 namespace BenchmarksBot
 {
     public class Regression
     {
-        static string NumberFormat = "##,#";
-
         public DateTimeOffset DateTimeUtc { get; set; }
         public string Scenario { get; set; }
         public string Hardware { get; set; }
@@ -25,10 +21,5 @@ namespace BenchmarksBot
         public string[] AspNetCoreHashes { get; set; }
         public string[] CoreFxHashes { get; set; }
         public string[] CoreClrHashes { get; set; }
-
-        public void WriteTableRow(TextWriter writer)
-        {
-            writer.WriteLine($"| {Scenario} | {OperatingSystem}, {Scheme}, {WebHost} | {DateTimeUtc.ToString("u")} | {Values.Skip(1).First().ToString(NumberFormat)} -> {Values.Last().ToString(NumberFormat)} | {((int)Stdev).ToString(NumberFormat)} |");
-        }
     }
 }

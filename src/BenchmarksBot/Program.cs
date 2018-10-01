@@ -16,6 +16,8 @@ namespace BenchmarksBot
 {
     class Program
     {
+        static string NumberFormat = "##,#";
+
         static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.App/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
@@ -38,11 +40,6 @@ namespace BenchmarksBot
             Console.WriteLine("Looking for regressions...");
 
             var regressions = await FindRegression();
-
-            foreach (var r in regressions)
-            {
-                r.WriteTableRow(Console.Out);
-            }
 
             Console.WriteLine("Excluding the ones already reported...");
 
@@ -107,14 +104,16 @@ namespace BenchmarksBot
             {
                 body.AppendLine();
                 body.AppendLine();
-                body.AppendLine("| Scenario | Environment | Date | RPS | Std. Dev |");
-                body.AppendLine("| -------- | ----------- | ---- | --- | -------- |");
+                body.AppendLine("| Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation |");
+                body.AppendLine("| -------- | ----------- | ---- | ------- | ------- | ------ | --------- |");
 
-                using (var sw = new StringWriter())
-                {
-                    r.WriteTableRow(sw);
-                    body.AppendLine(sw.ToString());
-                }
+                var prevRPS = r.Values.Skip(2).First();
+                var rps = r.Values.Last();
+                var change = Math.Round((double)(rps - prevRPS) / prevRPS * 100, 2);
+                var deviation = Math.Round((double)(rps - prevRPS) / r.Stdev, 2);
+
+                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc.ToString("u")} | {prevRPS.ToString(NumberFormat)} | {rps.ToString(NumberFormat)} | {change} % | {deviation} σ |");
+
 
                 body.AppendLine();
                 body.AppendLine("Before versions:");
@@ -176,6 +175,8 @@ namespace BenchmarksBot
             {
                 Body = body.ToString()
             };
+
+            Console.Write(createIssue.Body);
 
             var issue = await client.Issue.Create(_username, _repository, createIssue);
         }

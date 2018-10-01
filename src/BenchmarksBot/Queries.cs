@@ -19,7 +19,6 @@
             (
                 SELECT [Current].*, 
                     BaseLines.STDEV,                                                -- standard deviation
-                    BaseLines.STDEV / RequestsPerSecond * 100 As STDEVPER,          -- standard deviation as a percentage of RPS
                     (RequestsPerSecond - PreviousRPS3) * 100 / STDEV as [PDev1],    -- 3 measures after inflection point
                     (PreviousRPS1 - PreviousRPS3) * 100 / STDEV as [PDev2],         -- 2 measures after inflection point
                     (PreviousRPS2 - PreviousRPS3) * 100 / STDEV as [PDev3],         -- 1 measures after inflection point
