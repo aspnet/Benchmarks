@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.1.1.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.1" />
     <PackageReference Include="Octokit" Version="0.32.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
   </ItemGroup>

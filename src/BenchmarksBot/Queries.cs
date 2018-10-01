@@ -3,40 +3,43 @@
     public class Queries
     {
         public const string Regressions = @"
-            DECLARE @startDate DateTime = DATEADD(month, -1, GETDATE())
-            DECLARE @oneMonthAgo DateTime = DATEADD(month, -1, GETDATE())
-            DECLARE @oneWeekAgo DateTime = DATEADD(day, -7, GETDATE())
-            DECLARE @threeMonthsAgo DateTime = DATEADD(month, -3, GETDATE())
-            DECLARE @now DateTime = GETDATE()
-            DECLARE @oneDayAgo DateTime = DATEADD(day, -1, GETDATE())
-            DECLARE @threeDaysAgo DateTime = DATEADD(day, -3, GETDATE())
-            DECLARE @tenDaysAgo DateTime = DATEADD(day, -10, GETDATE())
+            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- when we start detected issues
+            DECLARE @stdevStartDate DateTime = DATEADD(day, -14, @startDate)    -- how long before @startDate we use to measure Std. Dev
+            DECLARE @deviationTolerance int = -200;                             -- percentage of Std. Dev is tolerated to flag a measure as abnormal
 
             -- Only measurements on Physical hardware is taken into account.
-            -- The STDEV is measured for each scenario from all the values in the previous week.
+            -- The STDEV is measured for each scenario from all the values in the previous week of the measurement.
             -- We measure the deviation between two measurements in percentage of the STDEV. For instance -100 meansthe RPS went down by the value of the STDEV.
             -- We flag a regression if:
-            --  - The three measures in a row have a deviation below -200 compared to the same measurement
-            --  - The baseline measurement was not a spike, i.e. its deviation is below +100.
+            --  - The three measures in a row have a deviation below -@deviationTolerance compared to the same measurement
+            --  - The baseline measurement was not a spike, i.e. its deviation is below +100 for two measures.
 
             SELECT *
             FROM
             (
-                SELECT [Current].*, BaseLines.STDEV, 
-                    (RequestsPerSecond - PreviousRPS3) * 100 / STDEV as [PDev1], 
-                    (PreviousRPS1 - PreviousRPS3) * 100 / STDEV as [PDev2], 
-                    (PreviousRPS2 - PreviousRPS3) * 100 / STDEV as [PDev3], 
-                    (PreviousRPS3 - PreviousRPS4) * 100 / STDEV as [PDev4] 
+                SELECT [Current].*, 
+                    BaseLines.STDEV,                                                -- standard deviation
+                    BaseLines.STDEV / RequestsPerSecond * 100 As STDEVPER,          -- standard deviation as a percentage of RPS
+                    (RequestsPerSecond - PreviousRPS3) * 100 / STDEV as [PDev1],    -- 3 measures after inflection point
+                    (PreviousRPS1 - PreviousRPS3) * 100 / STDEV as [PDev2],         -- 2 measures after inflection point
+                    (PreviousRPS2 - PreviousRPS3) * 100 / STDEV as [PDev3],         -- 1 measures after inflection point
+                    (PreviousRPS3 - PreviousRPS4) * 100 / STDEV as [PDev4],         -- 1 measures before inflection point
+                    (PreviousRPS3 - PreviousRPS5) * 100 / STDEV as [PDev5]          -- 2 measures before inflection point
                 FROM
                 (
-                    SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [DateTime], 
+                    SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [DateTime], [Session],
                         LAG(RequestsPerSecond, 1, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS1,
                         LAG(RequestsPerSecond, 2, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS2,
-                        LAG(RequestsPerSecond, 3, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS3,
+                        LAG(RequestsPerSecond, 3, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS3, -- The inflection measure
                         LAG(RequestsPerSecond, 4, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS4,
-                        [RequestsPerSecond]
+                        LAG(RequestsPerSecond, 5, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS PreviousRPS5,
+                        [RequestsPerSecond],
+                        LAG([AspNetCoreVersion], 3, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS [PreviousAspNetCoreVersion],
+                        LAG([AspNetCoreVersion], 2, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS [CurrentAspNetCoreVersion],
+                        LAG([RuntimeVersion], 3, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS [PreviousRuntimeVersion],
+                        LAG([RuntimeVersion], 2, 0) OVER (Partition BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY [DateTime]) AS [CurrentRuntimeVersion]
                     FROM [dbo].[AspNetBenchmarksTrends]
-                    WHERE [DateTime] > @tenDaysAgo
+                    WHERE [DateTime] > @startDate
                     AND Hardware = 'Physical'
                 ) AS [Current]
                 INNER JOIN 
@@ -44,21 +47,26 @@
                     -- Standard deviations on trends
                     SELECT DISTINCT Scenario, Hardware, OperatingSystem, Scheme, WebHost, STDEV([RequestsPerSecond]) OVER (PARTITION BY Scenario, Hardware, OperatingSystem, Scheme, WebHost ORDER BY Scenario) As STDEV
                     FROM [dbo].[AspNetBenchmarksTrends]
-                    WHERE [DateTime] > @oneWeekAgo
+                    WHERE [DateTime] > @stdevStartDate and [DateTime] <= @startDate
                     AND Hardware = 'Physical'
                 ) AS Baselines
                 ON [Current].Scenario = Baselines.Scenario
-                -- AND [Current].Hardware = Baselines.Hardware
+                AND [Current].Hardware = Baselines.Hardware
                 AND [Current].OperatingSystem = Baselines.OperatingSystem
                 AND [Current].Scheme = Baselines.Scheme
                 AND [Current].WebHost = Baselines.WebHost
 
                 -- Ignore rows without previous values
-                WHERE PreviousRPS1 != 0 AND PreviousRPS2 !=0
-   
+                WHERE PreviousRPS5 != 0   
             ) AS Results
-            WHERE PDev1 < -200 AND PDev2 < -200 AND PDev3 < -200 AND PDev4 <= 100
-            ORDER BY [DateTime] DESC, [PDev1] + [PDev2] + [PDev3], Scenario, Hardware, OperatingSystem, Scheme, WebHost
+            WHERE 
+                -- thre abnormal measurements in a row
+                PDev1 < @deviationTolerance AND PDev2 < @deviationTolerance AND PDev3 < @deviationTolerance
+                -- two precending measurements inside Std. Dev
+                AND PDev4 <= 100 AND PDev5 <= 100
+                -- there is actually a change in the framework                                                  
+                AND ([PreviousAspNetCoreVersion] != [CurrentAspNetCoreVersion] OR [PreviousRuntimeVersion] != [CurrentRuntimeVersion])
+            ORDER BY [DateTime] DESC
         ";
     }
 }

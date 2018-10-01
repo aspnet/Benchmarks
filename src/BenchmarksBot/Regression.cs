@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 
 namespace BenchmarksBot
@@ -15,10 +16,19 @@ namespace BenchmarksBot
         public string WebHost { get; set; }
         public int[] Values { get; set; }
         public double Stdev { get; set; }
+        public string Session { get; set; }
+        public string PreviousAspNetCoreVersion { get; set; }
+        public string CurrentAspNetCoreVersion { get; set; }
+        public string PreviousRuntimeVersion { get; set; }
+        public string CurrentRuntimeVersion { get; set; }
 
-        internal string ToMarkdownString()
+        public string[] AspNetCoreHashes { get; set; }
+        public string[] CoreFxHashes { get; set; }
+        public string[] CoreClrHashes { get; set; }
+
+        public void WriteTableRow(TextWriter writer)
         {
-            return $"| {Scenario} | {OperatingSystem}, {Scheme}, {WebHost} | {DateTimeUtc.ToString("u")} | {Values.Skip(1).First().ToString(NumberFormat)} -> {Values.Last().ToString(NumberFormat)} | {((int)Stdev).ToString(NumberFormat)} |";
+            writer.WriteLine($"| {Scenario} | {OperatingSystem}, {Scheme}, {WebHost} | {DateTimeUtc.ToString("u")} | {Values.Skip(1).First().ToString(NumberFormat)} -> {Values.Last().ToString(NumberFormat)} | {((int)Stdev).ToString(NumberFormat)} |");
         }
     }
 }

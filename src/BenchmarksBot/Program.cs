@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.Configuration;
 using Octokit;
 
@@ -11,6 +16,10 @@ namespace BenchmarksBot
 {
     class Program
     {
+        static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.App/";
+        static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
+        static readonly HttpClient _httpClient = new HttpClient();
+
         static ProductHeaderValue _productHeaderValue = new ProductHeaderValue("BenchmarksBot");
         static string _repository;
         static string _accessToken;
@@ -30,15 +39,17 @@ namespace BenchmarksBot
 
             var regressions = await FindRegression();
 
-            foreach(var r in regressions)
+            foreach (var r in regressions)
             {
-                Console.WriteLine(r.ToMarkdownString());
+                r.WriteTableRow(Console.Out);
             }
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            var newRegressions = await RemoveReportedRegressions(regressions);
-            
+            var newRegressions = regressions; // await RemoveReportedRegressions(regressions);
+
+            await PopulateHashes(newRegressions);
+
             if (newRegressions.Any())
             {
                 Console.WriteLine("Reporting new regressions...");
@@ -91,14 +102,67 @@ namespace BenchmarksBot
 
             var body = new StringBuilder();
             body.Append("A performance regression has been detected for the following scenarios:");
-            body.AppendLine();
-            body.AppendLine();
-            body.AppendLine("| Scenario | Environment | Date | RPS | Std. Dev |");
-            body.AppendLine("| -------- | ----------- | ---- | --- | -------- |");
 
             foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
             {
-                body.AppendLine(r.ToMarkdownString());
+                body.AppendLine();
+                body.AppendLine();
+                body.AppendLine("| Scenario | Environment | Date | RPS | Std. Dev |");
+                body.AppendLine("| -------- | ----------- | ---- | --- | -------- |");
+
+                using (var sw = new StringWriter())
+                {
+                    r.WriteTableRow(sw);
+                    body.AppendLine(sw.ToString());
+                }
+
+                body.AppendLine();
+                body.AppendLine("Before versions:");
+
+                body.AppendLine($"Microsoft.AspNetCore.App __{r.PreviousAspNetCoreVersion}__");
+                body.AppendLine($"Microsoft.NetCore.App __{r.PreviousRuntimeVersion}__");
+
+                body.AppendLine();
+                body.AppendLine("After versions:");
+
+                body.AppendLine($"Microsoft.AspNetCore.App __{r.CurrentAspNetCoreVersion}__");
+                body.AppendLine($"Microsoft.NetCore.App __{r.CurrentRuntimeVersion}__");
+
+                var aspNetChanged = r.PreviousAspNetCoreVersion != r.CurrentAspNetCoreVersion;
+                var runtimeChanged = r.PreviousRuntimeVersion != r.CurrentRuntimeVersion;
+
+                if (aspNetChanged || runtimeChanged)
+                {
+                    body.AppendLine();
+                    body.AppendLine("Commits:");
+
+                    if (aspNetChanged)
+                    {
+                        if (r.AspNetCoreHashes != null && r.AspNetCoreHashes.Length == 2 && r.AspNetCoreHashes[0] != null && r.AspNetCoreHashes[1] != null)
+                        {
+                            body.AppendLine();
+                            body.AppendLine("__Microsoft.AspNetCore.App__");
+                            body.AppendLine($"https://github.com/aspnet/Universe/compare/{r.AspNetCoreHashes[0]}...{r.AspNetCoreHashes[1]}");
+                        }
+                    }
+
+                    if (runtimeChanged)
+                    {
+                        if (r.CoreFxHashes != null && r.CoreFxHashes.Length == 2 && r.CoreFxHashes[0] != null && r.CoreFxHashes[1] != null)
+                        {
+                            body.AppendLine();
+                            body.AppendLine("__Microsoft.NetCore.App / Core FX__");
+                            body.AppendLine($"https://github.com/dotnet/corefx/compare/{r.CoreFxHashes[0]}...{r.CoreFxHashes[1]}");
+                        }
+
+                        if (r.CoreClrHashes != null && r.CoreClrHashes.Length == 2 && r.CoreClrHashes[0] != null && r.CoreClrHashes[1] != null)
+                        {
+                            body.AppendLine();
+                            body.AppendLine("__Microsoft.NetCore.App / Core CLR__");
+                            body.AppendLine($"https://github.com/dotnet/coreclr/compare/{r.CoreClrHashes[0]}...{r.CoreClrHashes[1]}");
+                        }
+                    }
+                }
             }
 
             var createIssue = new NewIssue("Performance regression")
@@ -126,14 +190,26 @@ namespace BenchmarksBot
                     {
                         regressions.Add(new Regression
                         {
-                            Scenario = reader.GetString(0),
-                            Hardware = reader.GetString(1),
-                            OperatingSystem = reader.GetString(2),
-                            Scheme = reader.GetString(3),
-                            WebHost = reader.GetString(4),
-                            DateTimeUtc = reader.GetDateTimeOffset(5),
-                            Values = new[] { (int)reader.GetDouble(9), (int)reader.GetDouble(8), (int)reader.GetDouble(7), (int)reader.GetDouble(6), (int)reader.GetDouble(10) },
-                            Stdev = reader.GetDouble(11)
+                            Session = Convert.ToString(reader["Session"]),
+                            Scenario = Convert.ToString(reader["Scenario"]),
+                            Hardware = Convert.ToString(reader["Hardware"]),
+                            OperatingSystem = Convert.ToString(reader["OperatingSystem"]),
+                            Scheme = Convert.ToString(reader["Scheme"]),
+                            WebHost = Convert.ToString(reader["WebHost"]),
+                            DateTimeUtc = (DateTimeOffset)(reader["DateTime"]),
+                            Values = new[] {
+                                Convert.ToInt32(reader["PreviousRPS5"]),
+                                Convert.ToInt32(reader["PreviousRPS4"]),
+                                Convert.ToInt32(reader["PreviousRPS3"]),
+                                Convert.ToInt32(reader["PreviousRPS2"]),
+                                Convert.ToInt32(reader["PreviousRPS1"]),
+                                Convert.ToInt32(reader["RequestsPerSecond"])
+                            },
+                            Stdev = (double)reader["STDEV"],
+                            PreviousAspNetCoreVersion = Convert.ToString(reader["PreviousAspNetCoreVersion"]),
+                            CurrentAspNetCoreVersion = Convert.ToString(reader["CurrentAspNetCoreVersion"]),
+                            PreviousRuntimeVersion = Convert.ToString(reader["PreviousRuntimeVersion"]),
+                            CurrentRuntimeVersion = Convert.ToString(reader["CurrentRuntimeVersion"]),
                         });
                     }                    
                 }
@@ -178,6 +254,202 @@ namespace BenchmarksBot
             }
 
             return filtered;
+        }
+
+        private static async Task PopulateHashes(IEnumerable<Regression> regressions)
+        {
+            foreach (var r in regressions)
+            {
+                if (r.PreviousAspNetCoreVersion != r.CurrentAspNetCoreVersion)
+                {
+                    r.AspNetCoreHashes = new [] 
+                    {
+                        await GetAspNetUniverseCommitHash(r.PreviousAspNetCoreVersion),
+                        await GetAspNetUniverseCommitHash(r.CurrentAspNetCoreVersion)
+                    };
+                }
+
+                if (r.PreviousRuntimeVersion != r.CurrentRuntimeVersion)
+                {
+                    r.CoreClrHashes = new[]
+                    {
+                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "SOS.NETCore.dll"),
+                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "SOS.NETCore.dll")
+                    };
+
+                    r.CoreFxHashes = new[]
+                    {
+                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "System.Collections.dll"),
+                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "System.Collections.dll")
+                    };
+                }
+            }
+        }
+
+        private static async Task<bool> DownloadFileAsync(string url, string outputPath, int maxRetries = 3, int timeout = 5)
+        {
+            for (var i = 0; i < maxRetries; ++i)
+            {
+                try
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
+                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+                    response.EnsureSuccessStatusCode();
+
+                    // This probably won't use async IO on windows since the stream
+                    // needs to created with the right flags
+                    using (var stream = File.Create(outputPath))
+                    {
+                        // Copy the response stream directly to the file stream
+                        await response.Content.CopyToAsync(stream);
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error while downloading {url}:");
+                    Console.WriteLine(e);
+                }
+            }
+
+            return false;
+        }
+
+        private static async Task<string> GetAspNetUniverseCommitHash(string aspNetCoreVersion)
+        {
+            var packagePath = Path.GetTempFileName();
+
+            try
+            {
+                // Download Microsoft.AspNet.App
+
+                var aspNetAppUrl = _aspNetCoreUrlPrevix + aspNetCoreVersion;
+                if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
+                {
+                    return null;
+                }
+
+                // Extract the .nuspec file
+
+                using (var archive = ZipFile.OpenRead(packagePath))
+                {
+                    var aspNetCoreNuSpecPath = Path.GetTempFileName();
+
+                    try
+                    {
+                        var entry = archive.GetEntry("Microsoft.AspNetCore.App.nuspec");
+                        entry.ExtractToFile(aspNetCoreNuSpecPath, true);
+
+                        var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
+
+                        XNamespace xmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
+                        return root
+                            .Element(xmlns + "metadata")
+                            .Element(xmlns + "repository")
+                            .Attribute("commit").Value;
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            File.Delete(aspNetCoreNuSpecPath);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(packagePath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
+                    Console.WriteLine(e);
+                }
+            }
+        }
+
+        private static async Task<string> GetRuntimeAssemblyCommitHash(string netCoreAppVersion, string assemblyName)
+        {
+            var packagePath = Path.GetTempFileName();
+
+            try
+            {
+                // Download the runtime
+
+                var netCoreAppUrl = String.Format(_netCoreUrlPrevix, netCoreAppVersion);
+                if (!await DownloadFileAsync(netCoreAppUrl, packagePath))
+                {
+                    return null;
+                }
+
+                // Extract the .nuspec file
+
+                using (var archive = ZipFile.OpenRead(packagePath))
+                {
+                    var versionAssemblyPath = Path.GetTempFileName();
+
+                    try
+                    {
+                        var entry = archive.GetEntry($@"shared\Microsoft.NETCore.App\{netCoreAppVersion}\{assemblyName}");
+                        entry.ExtractToFile(versionAssemblyPath, true);
+
+                        using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(versionAssemblyPath))
+                        {
+                            var informationalVersionAttribute = assembly.CustomAttributes.Where(x => x.AttributeType.Name == "AssemblyInformationalVersionAttribute").FirstOrDefault();
+                            var argumentValule = informationalVersionAttribute.ConstructorArguments[0].Value.ToString();
+
+                            var srcCodeIndex = argumentValule.IndexOf("@SrcCode: ");
+
+                            if (srcCodeIndex == -1)
+                            {
+                                return null;
+                            }
+
+                            srcCodeIndex = srcCodeIndex + 10;
+
+                            var end = argumentValule.IndexOf(' ', srcCodeIndex);
+
+                            if (end == -1)
+                            {
+                                return argumentValule.Substring(srcCodeIndex).Split('/').LastOrDefault();
+                            }
+                            else
+                            {
+                                return argumentValule.Substring(srcCodeIndex, end - srcCodeIndex).Split('/').LastOrDefault();
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            File.Delete(versionAssemblyPath);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(packagePath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
+                    Console.WriteLine(e);
+                }
+            }
         }
     }
 }
