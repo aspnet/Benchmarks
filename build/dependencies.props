@@ -5,14 +5,14 @@
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
     <SignalRVersion>1.1.0-*</SignalRVersion>
-    <MicrosoftNETSdkRazorPackageVersion212>2.1.1</MicrosoftNETSdkRazorPackageVersion212>
+    <MicrosoftNETSdkRazorPackageVersion212>2.1.2</MicrosoftNETSdkRazorPackageVersion212>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
 
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
     <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.4</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp22PackageVersion>
     <DefaultTargetFramework>netcoreapp2.1</DefaultTargetFramework>
 
