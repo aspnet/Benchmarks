@@ -16,8 +16,6 @@ namespace BenchmarksBot
 {
     class Program
     {
-        static string NumberFormat = "##,#";
-
         static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.App/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
@@ -43,7 +41,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            var newRegressions = regressions; // await RemoveReportedRegressions(regressions);
+            var newRegressions = await RemoveReportedRegressions(regressions);
 
             await PopulateHashes(newRegressions);
 
@@ -112,7 +110,7 @@ namespace BenchmarksBot
                 var change = Math.Round((double)(rps - prevRPS) / prevRPS * 100, 2);
                 var deviation = Math.Round((double)(rps - prevRPS) / r.Stdev, 2);
 
-                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc.ToString("u")} | {prevRPS.ToString(NumberFormat)} | {rps.ToString(NumberFormat)} | {change} % | {deviation} σ |");
+                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc.ToString("u")} | {prevRPS.ToString("n0")} | {rps.ToString("n0")} | {change} % | {deviation} σ |");
 
 
                 body.AppendLine();
