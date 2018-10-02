@@ -31,15 +31,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1' or $(TargetFramework) == 'netcoreapp2.2' or $(TargetFramework) == 'netcoreapp3.0'">
-    <!-- Temporary fix for MVC compiled views -->
+    <!-- Razor SDK doesn't have a specific package for 2.1.4 and is not available in Microsoft.AspNetCore.App -->
     <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' != '2.1.4'" Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
-    <!-- Override Razor SDK version when using Microsoft.AspNetCore.App 2.1.4. This package lacks a 2.1.4 version. -->
-    <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.4'" Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion212)" PrivateAssets="All" />
+    <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.4'" Include="Microsoft.NET.Sdk.Razor" Version="$(BaselineMicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+
+    <!-- Libuv doesn't have a specific package for 2.1.4 and is not available in Microsoft.AspNetCore.App -->
+    <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' != '2.1.4'" Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Condition="'$(BenchmarksAspNetCoreVersion)' == '2.1.4'" Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BaselineLibuvPackageVersion)" />
 
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
-
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
-
+    
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
