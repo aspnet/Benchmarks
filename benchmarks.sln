@@ -116,13 +116,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks-driver", "benchm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "src\Proxy\Proxy.csproj", "{80142ADF-3E71-4089-ABD1-C5C80C367731}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "proxy", "proxy", "{E7086C49-9001-4D01-9AA2-13FF03129A6E}"
-	ProjectSection(SolutionItems) = preProject
-		docker\proxy\build.sh = docker\proxy\build.sh
-		docker\proxy\Dockerfile = docker\proxy\Dockerfile
-		docker\proxy\run-proxy.sh = docker\proxy\run-proxy.sh
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Downstream", "src\Downstream\Downstream.csproj", "{6FD9CE9A-C398-4B30-8DDF-AA9EFC20260E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarksBot", "src\BenchmarksBot\BenchmarksBot.csproj", "{0E7ACF12-5E66-4EFF-B114-835512171214}"
@@ -244,7 +237,6 @@ Global
 		{13B1DC5E-AD37-4958-B22D-FAE26F6D4058} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{80EE0663-7860-4756-8A0E-6A5B6FA5E546} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{80142ADF-3E71-4089-ABD1-C5C80C367731} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
-		{E7086C49-9001-4D01-9AA2-13FF03129A6E} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{6FD9CE9A-C398-4B30-8DDF-AA9EFC20260E} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 		{0E7ACF12-5E66-4EFF-B114-835512171214} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 	EndGlobalSection
