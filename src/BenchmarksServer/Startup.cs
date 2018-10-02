@@ -471,8 +471,8 @@ namespace BenchmarkServer
 
                                                 process.Refresh();
 
-                                                // Ignore first measure as it could be corrupted 
-                                                if (lastMonitorTime != startMonitorTime)
+                                                // Ignore first measure
+                                                if (oldCPUTime != TimeSpan.Zero)
                                                 {
                                                     job.AddServerCounter(new ServerCounter
                                                     {
