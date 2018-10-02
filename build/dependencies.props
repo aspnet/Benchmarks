@@ -8,8 +8,8 @@
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
 
-    <BaselineMicrosoftNETSdkRazorPackageVersion>2.1.2</BaselineMicrosoftNETSdkRazorPackageVersion>
-    <BaselineLibuvPackageVersion>2.1.3</BaselineLibuvPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion21></MicrosoftNETSdkRazorPackageVersion21>
+    <MicrosoftAspNetCoreLibuvPackageVersion21>2.1.3</MicrosoftAspNetCoreLibuvPackageVersion21>
 
     <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
     <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
