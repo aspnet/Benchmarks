@@ -19,7 +19,7 @@
       "PipelineDepth": 16
     }
   },
-  "HAProxyPipelined": {
+  "HAProxyNonPipelined": {
     "Path": "/",
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
