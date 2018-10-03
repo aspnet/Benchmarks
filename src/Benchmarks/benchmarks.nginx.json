@@ -21,10 +21,6 @@
   },
   "NginxNonPipelined": {
     "Path": "/",
-    "PresetHeaders": "Plaintext",
-    "ClientProperties": {
-      "ScriptName": "",
-      "PipelineDepth": 0
-    }
+    "PresetHeaders": "Plaintext"
   }
 }
