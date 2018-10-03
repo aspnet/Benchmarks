@@ -2,10 +2,6 @@
   "Default": {
 
     "Client": "Wrk",
-    "ClientProperties": {
-      "ScriptName": "pipeline",
-      "PipelineDepth": 16
-    },
 
     "PresetHeaders": "Plaintext",
     "Source": {
@@ -14,7 +10,7 @@
       "Project": "src/Proxy/Proxy.csproj"
     },
     "EnvironmentVariables": {
-      "ASPNETCORE_Downstream": "http://TFB-DATABASE:5001"
+      "ASPNETCORE_BaseUri": "http://TFB-database:5001"
     },
     "ReadyStateText": "Application started."
   },
@@ -23,21 +19,6 @@
   },
   "HttpClientParallel": {
     "Path": "/",
-    "Arguments": "--concurrency 10"
-  },
-  "HttpClientNonPipelined": {
-    "Path": "/",
-    "ClientProperties": {
-      "ScriptName": "",
-      "PipelineDepth": 0
-    }
-  },
-  "HttpClientNonPipelinedParallel": {
-    "Path": "/",
-    "ClientProperties": {
-      "ScriptName": "",
-      "PipelineDepth": 0
-    },
     "Arguments": "--concurrency 10"
   }
 }
