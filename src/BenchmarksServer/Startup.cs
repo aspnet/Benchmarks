@@ -33,6 +33,7 @@ namespace BenchmarkServer
     public class Startup
     {
         // Version of ASP.NET used when targetting the Current versions
+        // TODO: Update the condition in Benchmarks.csproj whenever this version is changed
         private static string CurrentAspNetCoreVersion = "2.1.4";
 
         // TFM when using the Current versions
