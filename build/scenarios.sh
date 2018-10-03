@@ -170,9 +170,7 @@ jobs=(
 
   # HttpClient
   "--scenario HttpClient $trend $httpClientJobs"
-  "--scenario HttpClientNonPipelined $trend $httpClientJobs"
   "--scenario HttpClientParallel $trend $httpClientJobs"
-  "--scenario HttpClientNonPipelinedParallel $trend $httpClientJobs"
 )
 
 # build driver

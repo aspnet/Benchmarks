@@ -1,0 +1,26 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "docker/haproxy/haproxy.dockerfile",
+      "DockerImageName": "haproxy-reverseproxy",
+      "DockerContextDirectory": "docker/haproxy/"
+    },
+    "Client": "Wrk",
+    "Port": 8080
+    //"ReadyStateText": ""
+  },
+  "HAProxy": {
+    "Path": "/",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "HAProxyNonPipelined": {
+    "Path": "/",
+    "PresetHeaders": "Plaintext"
+  }
+}

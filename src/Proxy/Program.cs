@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 
 namespace Proxy
@@ -17,6 +18,11 @@ namespace Proxy
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly HttpClientPool _httpClientPool = new HttpClientPool(Environment.ProcessorCount * 2);
 
+        private static string _scheme;
+        private static HostString _host;
+        private static string _pathBase;
+        private static QueryString _appendQuery;
+
         public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -25,14 +31,22 @@ namespace Proxy
                 .Build();
 
             // The url all requests will be forwarded to
-            var downstream = config["downstream"];
+            var baseUriArg = config["baseUri"];
             
-            if (String.IsNullOrWhiteSpace(downstream))
+            if (String.IsNullOrWhiteSpace(baseUriArg))
             {
-                throw new ArgumentException("--downstream is required");
+                throw new ArgumentException("--baseUri is required");
             }
 
-            Console.WriteLine($"Downstream: {downstream}");
+            var baseUri = new Uri(baseUriArg);
+
+            // Cache base URI values
+            _scheme = baseUri.Scheme;
+            _host = new HostString(baseUri.Authority);
+            _pathBase = baseUri.AbsolutePath;
+            _appendQuery = new QueryString(baseUri.Query);
+
+            Console.WriteLine($"Base URI: {baseUriArg}");
 
             // The number of outbound requests to send per inbound request
             if (!int.TryParse(config["concurrency"], out var concurrency) || concurrency == 0)
@@ -50,7 +64,6 @@ namespace Proxy
 
             Console.WriteLine($"Pool HttpClient instances: {pool}");
 
-            _httpClient.BaseAddress = new Uri(downstream);
             _httpClientPool.BaseAddress = _httpClient.BaseAddress;
 
             var builder = new WebHostBuilder()
@@ -62,15 +75,20 @@ namespace Proxy
             {
                 builder = builder.Configure(app => app.Run(async (context) =>
                 {
-                    var path = context.Request.Path.Value;
+                    var destinationUri = BuildDestinationUri(context);
 
-                    var tasks = new Task<string>[concurrency];
+                    var tasks = new Task<HttpResponseMessage>[concurrency];
+
                     for (var i = 0; i < concurrency; i++)
                     {
                         var httpClient = _httpClientPool.GetInstance();
+
                         try
                         {
-                            tasks[i] = httpClient.GetStringAsync(path);
+                            using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
+                            {
+                                tasks[i] = httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+                            }
                         }
                         finally
                         {
@@ -83,38 +101,47 @@ namespace Proxy
 
                     await Task.WhenAll(tasks);
 
-                    await context.Response.WriteAsync(await tasks[0]);
+                    await context.CopyProxyHttpResponse(tasks[0].Result);
+
                 }));
             }
             else
             {
+                // Optimized path when no pooling and concurrency is 1, which is the recommended scenario for customers
                 if (concurrency == 1)
                 {
-                    // Optimized path when no pooling and concurrency is 1, which is the recommended
-                    // scenario for customers
                     builder = builder.Configure(app => app.Run(async (context) =>
                     {
-                        var path = context.Request.Path.Value;
+                        var destinationUri = BuildDestinationUri(context);
 
-                        await context.Response.WriteAsync(await _httpClient.GetStringAsync(path));
+                        using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
+                        {
+                            using (var responseMessage = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted))
+                            {
+                                await context.CopyProxyHttpResponse(responseMessage);
+                            }
+                        }
                     }));
                 }
                 else
                 {
                     builder = builder.Configure(app => app.Run(async (context) =>
                     {
-                        var path = context.Request.Path.Value;
+                        var destinationUri = BuildDestinationUri(context);
 
-                        var tasks = new Task<string>[concurrency];
+                        var tasks = new Task<HttpResponseMessage>[concurrency];
+
                         for (var i = 0; i < concurrency; i++)
                         {
+                            using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
+                            {
+                                tasks[i] = _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+                            }
 
-                            tasks[i] = _httpClient.GetStringAsync(path);
+                            await Task.WhenAll(tasks);
+
+                            await context.CopyProxyHttpResponse(tasks[0].Result);
                         }
-
-                        await Task.WhenAll(tasks);
-
-                        await context.Response.WriteAsync(await tasks[0]);
                     }));
                 }
             }
@@ -123,6 +150,8 @@ namespace Proxy
                 .Build()
                 .Run();
         }
-    }
 
+        private static Uri BuildDestinationUri(HttpContext context) => new Uri(UriHelper.BuildAbsolute(_scheme, _host, _pathBase, context.Request.Path, context.Request.QueryString.Add(_appendQuery)));
+
+    }
 }

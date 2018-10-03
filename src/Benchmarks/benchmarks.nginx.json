@@ -1,0 +1,26 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "docker/nginx/nginx.dockerfile",
+      "DockerImageName": "nginx-reverseproxy",
+      "DockerContextDirectory": "docker/nginx/"
+    },
+    "Client": "Wrk",
+    "Port": 8080
+    //"ReadyStateText": ""
+  },
+  "Nginx": {
+    "Path": "/",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "NginxNonPipelined": {
+    "Path": "/",
+    "PresetHeaders": "Plaintext"
+  }
+}

@@ -472,12 +472,16 @@ namespace BenchmarkServer
 
                                                 process.Refresh();
 
-                                                job.AddServerCounter(new ServerCounter
+                                                // Ignore first measure
+                                                if (oldCPUTime != TimeSpan.Zero)
                                                 {
-                                                    Elapsed = now - startMonitorTime,
-                                                    WorkingSet = process.WorkingSet64,
-                                                    CpuPercentage = cpu
-                                                });
+                                                    job.AddServerCounter(new ServerCounter
+                                                    {
+                                                        Elapsed = now - startMonitorTime,
+                                                        WorkingSet = process.WorkingSet64,
+                                                        CpuPercentage = cpu
+                                                    });
+                                                }
                                             }
                                         }
                                         else if (!String.IsNullOrEmpty(dockerImage))
@@ -524,7 +528,7 @@ namespace BenchmarkServer
                                             {
                                                 Elapsed = now - startMonitorTime,
                                                 WorkingSet = workingSet,
-                                                CpuPercentage = cpu
+                                                CpuPercentage = cpu > 100 ? 0 : cpu
                                             });
                                         }
 
