@@ -103,6 +103,11 @@ namespace Proxy
 
                     await context.CopyProxyHttpResponse(tasks[0].Result);
 
+                    for (var i = 0; i < concurrency; i++)
+                    {
+                        tasks[i].Result.Dispose();
+                    }
+
                 }));
             }
             else
@@ -137,10 +142,15 @@ namespace Proxy
                             {
                                 tasks[i] = _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
                             }
+                        }
 
-                            await Task.WhenAll(tasks);
+                        await Task.WhenAll(tasks);
 
-                            await context.CopyProxyHttpResponse(tasks[0].Result);
+                        await context.CopyProxyHttpResponse(tasks[0].Result);
+
+                        for (var i = 0; i < concurrency; i++)
+                        {
+                            tasks[i].Result.Dispose();
                         }
                     }));
                 }
