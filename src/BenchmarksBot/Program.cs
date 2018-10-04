@@ -25,6 +25,7 @@ namespace BenchmarksBot
         static string _accessToken;
         static string _username;
         static string _connectionString;
+        static HashSet<string> _ignoredScenarios;
 
         static async Task Main(string[] args)
         {
@@ -63,6 +64,7 @@ namespace BenchmarksBot
             _accessToken = config["AccessToken"];
             _username = config["Username"];
             _connectionString = config["ConnectionString"];
+            _ignoredScenarios = new HashSet<string>();
 
             if (String.IsNullOrEmpty(_repository))
             {
@@ -82,6 +84,13 @@ namespace BenchmarksBot
             if (String.IsNullOrEmpty(_connectionString))
             {
                 throw new ArgumentException("ConnectionString argument is missing");
+            }
+
+            var ignore = config["Ignore"];
+
+            if (!String.IsNullOrEmpty(ignore))
+            {
+                _ignoredScenarios = new HashSet<string>(ignore.Split(new [] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -247,6 +256,12 @@ namespace BenchmarksBot
                 foreach(var issue in issues)
                 {
                     if (issue.Body != null && issue.Body.Contains(r.DateTimeUtc.ToString("u")))
+                    {
+                        filter = true;
+                        break;
+                    }
+
+                    if (_ignoredScenarios.Contains(r.Scenario))
                     {
                         filter = true;
                         break;
