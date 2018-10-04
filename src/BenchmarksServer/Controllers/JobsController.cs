@@ -194,6 +194,7 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost("{id}/attachment")]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> UploadAttachment(AttachmentViewModel attachment)
         {
             Log($"Uploading attachent");
@@ -218,6 +219,7 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost("{id}/source")]
+        [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> UploadSource(AttachmentViewModel attachment)
         {
             Log($"Uploading source code");
