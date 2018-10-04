@@ -24,6 +24,7 @@ namespace BenchmarksDriver
     public class Program
     {
         private static bool _verbose;
+        private static bool _quiet;
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
@@ -33,7 +34,7 @@ namespace BenchmarksDriver
         private const string DefaultEventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:FFFF:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
-        private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024";
+        private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
         public static int Main(string[] args)
         {
@@ -61,6 +62,8 @@ namespace BenchmarksDriver
                 "Table name of the SQL Database to store results", CommandOptionType.SingleValue);
             var verboseOption = app.Option("-v|--verbose",
                 "Verbose output", CommandOptionType.NoValue);
+            var quietOption = app.Option("--quiet",
+                "Quiet output, only the results are displayed", CommandOptionType.NoValue);
             var sessionOption = app.Option("--session",
                 "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             var descriptionOption = app.Option("--description",
@@ -68,7 +71,7 @@ namespace BenchmarksDriver
             var iterationsOption = app.Option("-i|--iterations",
                 "The number of iterations.", CommandOptionType.SingleValue);
             var excludeOption = app.Option("-x|--exclude",
-                "The number of best and worst and jobs to skip.", CommandOptionType.SingleValue);
+                "The number of best and worst jobs to skip.", CommandOptionType.SingleValue);
             var shutdownOption = app.Option("--before-shutdown",
                 "An endpoint to call before the application has shut down.", CommandOptionType.SingleValue);
             var spanOption = app.Option("-sp|--span",
@@ -81,6 +84,8 @@ namespace BenchmarksDriver
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
             var linuxOnlyOption = app.Option("--linux-only",
                 "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
+            var saveOption = app.Option("--save",
+                "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -198,6 +203,7 @@ namespace BenchmarksDriver
             app.OnExecute(() =>
             {
                 _verbose = verboseOption.HasValue();
+                _quiet = quietOption.HasValue();
 
                 var schemeValue = schemeOption.Value();
                 if (string.IsNullOrEmpty(schemeValue))
@@ -461,11 +467,30 @@ namespace BenchmarksDriver
                 {
                     serverJob.Collect = true;
                     serverJob.CollectArguments = _defaultTraceArguments;
+
                     if (traceArgumentsOption.HasValue())
                     {
-                        serverJob.CollectArguments = string.Join(';', serverJob.CollectArguments, traceArgumentsOption.Value());
-                    }
+                        var allDefaultArguments = ExpandTraceArguments(_defaultTraceArguments);
+                        var allTraceArguments = ExpandTraceArguments(traceArgumentsOption.Value());
 
+                        foreach (var item in allTraceArguments)
+                        {
+                            if (String.IsNullOrEmpty(item.Value))
+                            {
+                                allDefaultArguments.Remove(item.Key);
+                            }
+                            else
+                            {
+                                allDefaultArguments[item.Key] = item.Value;
+                            }
+                        }
+
+                        serverJob.CollectArguments = String.Join(";", allDefaultArguments.Select(x => $"{x.Key}={x.Value}"));
+                    }
+                    else
+                    {
+                        serverJob.CollectArguments = _defaultTraceArguments;
+                    }
                 }
                 if (enableEventPipeOption.HasValue())
                 {
@@ -710,7 +735,9 @@ namespace BenchmarksDriver
                     markdownOption,
                     writeToFileOption,
                     enableEventPipeOption.HasValue(),
-                    requiredOperatingSystem).Result;
+                    requiredOperatingSystem,
+                    saveOption
+                    ).Result;
             });
 
             // Resolve reponse files from urls
@@ -735,7 +762,16 @@ namespace BenchmarksDriver
                 }
             }
 
-            return app.Execute(args);
+            try
+            {
+                return app.Execute(args);
+            }
+            catch(CommandParsingException e)
+            {
+                Console.WriteLine();
+                Console.WriteLine(e.Message);
+                return -1;
+            }
         }
 
         private static async Task<int> Run(
@@ -760,7 +796,8 @@ namespace BenchmarksDriver
             CommandOption markdownOption,
             CommandOption writeToFileOption,
             bool enableEventPipe,
-            Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem
+            Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
+            CommandOption saveOption
             )
         {
             var scenario = serverJob.Scenario;
@@ -998,7 +1035,6 @@ namespace BenchmarksDriver
                     }
 
 
-                    Log("Measuring");
                     var startTime = DateTime.UtcNow;
                     var spanLoop = 0;
                     var sqlTask = Task.CompletedTask;
@@ -1112,6 +1148,16 @@ namespace BenchmarksDriver
                             if (serverJob.Collect)
                             {
                                 Log($"Post-processing profiler trace, this can take 10s of seconds...");
+
+                                if (serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows)
+                                {
+                                    Log($"Trace arguments: {serverJob.CollectArguments}");
+                                }
+                                else
+                                {
+                                    Log($"EventPipe config: {DefaultEventPipeConfig}");
+                                }
+
                                 var uri = serverJobUri + "/trace";
                                 response = await _httpClient.PostAsync(uri, new StringContent(""));
                                 response.EnsureSuccessStatusCode();
@@ -1171,6 +1217,8 @@ namespace BenchmarksDriver
 
                                 var average = new Statistics
                                 {
+                                    Description = description,
+
                                     RequestsPerSecond = Math.Round(samples.Average(x => x.RequestsPerSecond)),
                                     LatencyOnLoad = Math.Round(samples.Average(x => x.LatencyOnLoad), 1),
                                     Cpu = Math.Round(samples.Average(x => x.Cpu)),
@@ -1243,26 +1291,47 @@ namespace BenchmarksDriver
 
                                 if (markdownOption.HasValue())
                                 {
-                                    Log(header + "|");
-                                    Log(separator + "|");
-                                    Log(values + "|");
+                                    QuietLog(header + "|");
+                                    QuietLog(separator + "|");
+                                    QuietLog(values + "|");
                                 }
                                 else
                                 {
-                                    Log($"RequestsPerSecond:           {average.RequestsPerSecond:n0}");
-                                    Log($"Max CPU (%):                 {average.Cpu}");
-                                    Log($"WorkingSet (MB):             {average.WorkingSet:n0}");
-                                    Log($"Avg. Latency (ms):           {average.LatencyOnLoad}");
-                                    Log($"Startup (ms):                {average.StartupMain}");
-                                    Log($"First Request (ms):          {average.FirstRequest}");
-                                    Log($"Latency (ms):                {average.Latency}");
-                                    Log($"Total Requests:              {average.TotalRequests:n0}");
-                                    Log($"Duration: (ms)               {average.Duration:n0}");
-                                    Log($"Socket Errors:               {average.SocketErrors:n0}");
-                                    Log($"Bad Responses:               {average.BadResponses:n0}");
-                                    Log($"SDK:                         {serverJob.SdkVersion}");
-                                    Log($"Runtime:                     {serverJob.RuntimeVersion}");
-                                    Log($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
+                                    QuietLog($"RequestsPerSecond:           {average.RequestsPerSecond:n0}");
+                                    QuietLog($"Max CPU (%):                 {average.Cpu}");
+                                    QuietLog($"WorkingSet (MB):             {average.WorkingSet:n0}");
+                                    QuietLog($"Avg. Latency (ms):           {average.LatencyOnLoad}");
+                                    QuietLog($"Startup (ms):                {average.StartupMain}");
+                                    QuietLog($"First Request (ms):          {average.FirstRequest}");
+                                    QuietLog($"Latency (ms):                {average.Latency}");
+                                    QuietLog($"Total Requests:              {average.TotalRequests:n0}");
+                                    QuietLog($"Duration: (ms)               {average.Duration:n0}");
+                                    QuietLog($"Socket Errors:               {average.SocketErrors:n0}");
+                                    QuietLog($"Bad Responses:               {average.BadResponses:n0}");
+                                    QuietLog($"SDK:                         {serverJob.SdkVersion}");
+                                    QuietLog($"Runtime:                     {serverJob.RuntimeVersion}");
+                                    QuietLog($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
+                                }
+
+                                if (saveOption.HasValue())
+                                {
+                                    var saveFilename = saveOption.Value();
+
+                                    // If the filename has no extensions, add a default one
+                                    if (!Path.HasExtension(saveFilename))
+                                    {
+                                        saveFilename += ".bench.json";
+                                    }
+
+                                    // Existing files are overriden
+                                    if (File.Exists(saveFilename))
+                                    {
+                                        File.Delete(saveFilename);
+                                    }
+
+                                    File.WriteAllText(saveFilename, JsonConvert.SerializeObject(average));
+
+                                    Log($"Results saved in '{saveFilename}'");
                                 }
 
                                 if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
@@ -1704,18 +1773,21 @@ namespace BenchmarksDriver
 
         private static void QuietLog(string message)
         {
-            Console.Write(message);
+              Console.WriteLine(message);
         }
 
         private static void Log(string message)
         {
-            var time = DateTime.Now.ToString("hh:mm:ss.fff");
-            Console.WriteLine($"[{time}] {message}");
+            if (!_quiet)
+            {
+                var time = DateTime.Now.ToString("hh:mm:ss.fff");
+                Console.WriteLine($"[{time}] {message}");
+            }
         }
 
         private static void LogVerbose(string message)
         {
-            if (_verbose)
+            if (_verbose && !_quiet)
             {
                 Log(message);
             }
@@ -1769,6 +1841,27 @@ namespace BenchmarksDriver
                     var entry = archive.CreateEntryFromFile(gitFile.Path, localPath);
                 }
             }
+        }
+
+        private static Dictionary<string, string> ExpandTraceArguments(string arguments)
+        {
+            var segments = arguments.Split(';');
+
+            var result = new Dictionary<string, string>(segments.Length);
+
+            foreach(var segment in segments)
+            {
+                var values = segment.Split('=');
+
+                if (values.Length != 2)
+                {
+                    continue;
+                }
+
+                result[values[0].Trim()] = values[1].Trim();
+            }
+
+            return result;
         }
     }
 }

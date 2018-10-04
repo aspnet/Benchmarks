@@ -7,6 +7,7 @@ namespace Benchmarks.ClientJob
 {
     public class Statistics
     {
+        public string Description { get; set; }
         public double RequestsPerSecond { get; set; }
         public double LatencyOnLoad { get; set; }
         public double Cpu { get; set; }

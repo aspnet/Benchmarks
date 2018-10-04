@@ -12,10 +12,11 @@ Options:
   -q|--sql               Connection string of SQL Database to store results
   --clientName           Name of client to use for testing, e.g. Wrk
   -v|--verbose           Verbose output
+  --quiet                Quiet output, only the results are displayed
   --session              A logical identifier to group related jobs.
   --description          The description of the job.
   -i|--iterations        The number of iterations.
-  -x|--exclude           The number of best and worst and jobs to skip.  
+  -x|--exclude           The number of best and worst jobs to skip.  
   --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.
   -cf|--connectionFilter Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
@@ -65,6 +66,7 @@ Options:
   -b|--build-property    Defines custom build properties to use with the benchmarked application e.g., -bp KEY=VALUE -e "A=B"
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
+  --save                 Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.
   -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
@@ -123,16 +125,11 @@ dotnet run -c release
     --headers Plaintext 
 ```
 
-#### Collecting a PerfView trace
-
-To gather meaningful information from a PerfView collection, a set of good arguments is:
-
-`--collect-trace --trace-arguments "clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile"`
+#### Customizing a PerfView trace
 
 The following example also adds the GC information:
 
-`--collect-trace --trace-arguments "clrEvents=JITSymbols+GC;kernelEvents=process+thread+ImageLoad+Profile"`
-
+`--collect-trace --trace-arguments "clrEvents=JITSymbols+GC"`
 
 ## Job definition format
 

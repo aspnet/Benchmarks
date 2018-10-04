@@ -290,3 +290,4 @@ __pycache__/
 /src/BenchmarksDriver/*.zip
 eventpipe.netperf
 *.netperf
+*.bench.json
