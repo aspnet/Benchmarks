@@ -118,10 +118,13 @@ namespace BenchmarksClient.Workers
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
+            using (var message = CreateHttpMessage(job))
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                job.LatencyFirstRequest = stopwatch.Elapsed;
+                using (var response = await _httpClient.SendAsync(message))
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    job.LatencyFirstRequest = stopwatch.Elapsed;
+                }
             }
 
             Log($"{job.LatencyFirstRequest.TotalMilliseconds} ms");
@@ -132,12 +135,15 @@ namespace BenchmarksClient.Workers
             {
                 stopwatch.Restart();
 
-                using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
+                using (var message = CreateHttpMessage(job))
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
+                    using (var response = await _httpClient.SendAsync(message))
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
 
-                    // We keep the last measure to simulate a warmup phase.
-                    job.LatencyNoLoad = stopwatch.Elapsed;
+                        // We keep the last measure to simulate a warmup phase.
+                        job.LatencyNoLoad = stopwatch.Elapsed;
+                    }
                 }
             }
 

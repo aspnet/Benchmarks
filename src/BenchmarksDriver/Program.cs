@@ -201,6 +201,8 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var jobsOptions = app.Option("-j|--jobs",
                 "The path or url to the jobs definition.", CommandOptionType.SingleValue);
+            var noStartupLatencyOption = app.Option("-nsl|--no-startup-latency",
+                "Skip startup latency measurement.", CommandOptionType.NoValue);
 
             app.OnExecute(() =>
             {
@@ -676,6 +678,10 @@ namespace BenchmarksDriver
                 if (span > TimeSpan.Zero)
                 {
                     _clientJob.SpanId = Guid.NewGuid().ToString("n");
+                }
+                if (noStartupLatencyOption.HasValue())
+                {
+                    _clientJob.SkipStartupLatencies = true;
                 }
 
                 switch (headers)
