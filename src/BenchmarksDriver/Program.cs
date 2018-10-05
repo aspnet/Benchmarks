@@ -86,6 +86,8 @@ namespace BenchmarksDriver
                 "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
             var saveOption = app.Option("--save",
                 "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
+            var diffOption = app.Option("--diff",
+                "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -564,6 +566,18 @@ namespace BenchmarksDriver
                     }
                 }
 
+                if (saveOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
+                {
+                    Console.WriteLine($"The --description argument is mandatory when using --save.");
+                    return -1;
+                }
+
+                if (diffOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
+                {
+                    Console.WriteLine($"The --description argument is mandatory when using --diff.");
+                    return -1;
+                }
+
                 // Check all attachments exist
                 if (outputFileOption.HasValue())
                 {
@@ -736,7 +750,8 @@ namespace BenchmarksDriver
                     writeToFileOption,
                     enableEventPipeOption.HasValue(),
                     requiredOperatingSystem,
-                    saveOption
+                    saveOption,
+                    diffOption
                     ).Result;
             });
 
@@ -797,7 +812,8 @@ namespace BenchmarksDriver
             CommandOption writeToFileOption,
             bool enableEventPipe,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
-            CommandOption saveOption
+            CommandOption saveOption,
+            CommandOption diffOption
             )
         {
             var scenario = serverJob.Scenario;
@@ -1244,19 +1260,7 @@ namespace BenchmarksDriver
                                     serializer.ComputeAverages(average, samples);
                                 }
 
-                                var fields = new List<KeyValuePair<string, string>>();
-                                if (!String.IsNullOrEmpty(description))
-                                {
-                                    fields.Add(new KeyValuePair<string, string>("Description", description.ToString()));
-                                }
-
-                                fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
-                                fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
-                                fields.Add(new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"));
-                                fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"));
-                                fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
-                                fields.Add(new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"));
-                                fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
+                                var fields = BuildFields(average);
 
                                 var header = new StringBuilder();
                                 var separator = new StringBuilder();
@@ -1289,7 +1293,55 @@ namespace BenchmarksDriver
                                     File.AppendAllText(writeToFilename, values + "|" + Environment.NewLine);
                                 }
 
-                                if (markdownOption.HasValue())
+                                if (diffOption.HasValue())
+                                {
+                                    var diffFilename = diffOption.Value();
+
+                                    // If the filename has no extensions, add a default one
+                                    if (!Path.HasExtension(diffFilename))
+                                    {
+                                        diffFilename += ".bench.json";
+                                    }
+
+                                    if (!File.Exists(diffFilename))
+                                    {
+                                        QuietLog($"Could not find the specified file '{diffFilename}'");
+                                        return -1;
+                                    }
+                                    else
+                                    {
+                                        var compareTo = JsonConvert.DeserializeObject<Statistics>(File.ReadAllText(diffFilename));
+
+                                        var compareToFields = BuildFields(compareTo);
+                                        var compareToBuilder = new StringBuilder();
+
+                                        header.Clear();
+                                        separator.Clear();
+                                        values.Clear();
+
+                                        compareToFields.Add(new KeyValuePair<string, string>("Ratio", $"{1:f2}"));
+                                        fields.Add(new KeyValuePair<string, string>("Ratio", $"{(average.RequestsPerSecond / compareTo.RequestsPerSecond):f2}"));
+
+                                        // Headers
+                                        for (var f = 0; f < fields.Count; f++)
+                                        {
+                                            var field = fields[f];
+                                            var comparedToField = compareToFields[f];
+
+                                            var size = Math.Max(Math.Max(field.Key.Length, field.Value.Length), comparedToField.Value.Length);
+                                            header.Append("| ").Append(field.Key.PadLeft(size)).Append(" ");
+                                            separator.Append("| ").Append(new String('-', size)).Append(" ");
+                                            compareToBuilder.Append("| ").Append(comparedToField.Value.PadLeft(size)).Append(" ");
+                                            values.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
+                                        }
+
+                                        QuietLog(header + "|");
+                                        QuietLog(separator + "|");
+                                        QuietLog(compareToBuilder + "|");
+                                        QuietLog(values + "|");
+                                    }
+                                }
+                                else if (markdownOption.HasValue())
                                 {
                                     QuietLog(header + "|");
                                     QuietLog(separator + "|");
@@ -1513,6 +1565,24 @@ namespace BenchmarksDriver
             }
 
             return 0;
+        }
+
+        private static List<KeyValuePair<string, string>> BuildFields(Statistics average)
+        {
+            var fields = new List<KeyValuePair<string, string>>();
+            if (!String.IsNullOrEmpty(average.Description))
+            {
+                fields.Add(new KeyValuePair<string, string>("Description", average.Description));
+            }
+
+            fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
+            fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
+            fields.Add(new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"));
+            fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"));
+            fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
+            fields.Add(new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"));
+            fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
+            return fields;
         }
 
         private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
