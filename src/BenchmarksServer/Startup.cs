@@ -468,7 +468,6 @@ namespace BenchmarkServer
                                                 var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
                                                 var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
                                                 lastMonitorTime = now;
-                                                oldCPUTime = newCPUTime;
 
                                                 process.Refresh();
 
@@ -482,6 +481,8 @@ namespace BenchmarkServer
                                                         CpuPercentage = cpu
                                                     });
                                                 }
+
+                                                oldCPUTime = newCPUTime;
                                             }
                                         }
                                         else if (!String.IsNullOrEmpty(dockerImage))
