@@ -62,7 +62,7 @@ namespace BenchmarksBot
         {
             // Tip: The repository id van be found using this endpoint: https://api.github.com/repos/aspnet/Benchmarks
 
-            long.TryParse(config["RepositoryId"], out var _repositoryId);
+            long.TryParse(config["RepositoryId"], out _repositoryId);
             _accessToken = config["AccessToken"];
             _username = config["Username"];
             _connectionString = config["ConnectionString"];
