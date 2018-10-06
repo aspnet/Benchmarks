@@ -21,7 +21,7 @@ namespace BenchmarksBot
         static readonly HttpClient _httpClient = new HttpClient();
 
         static ProductHeaderValue _productHeaderValue = new ProductHeaderValue("BenchmarksBot");
-        static string _repository;
+        static long _repositoryId;
         static string _accessToken;
         static string _username;
         static string _connectionString;
@@ -60,15 +60,17 @@ namespace BenchmarksBot
 
         private static void LoadSettings(IConfiguration config)
         {
-            _repository = config["Repository"];
+            // Tip: The repository id van be found using this endpoint: https://api.github.com/repos/aspnet/Benchmarks
+
+            long.TryParse(config["RepositoryId"], out var _repositoryId);
             _accessToken = config["AccessToken"];
             _username = config["Username"];
             _connectionString = config["ConnectionString"];
             _ignoredScenarios = new HashSet<string>();
 
-            if (String.IsNullOrEmpty(_repository))
+            if (_repositoryId == 0)
             {
-                throw new ArgumentException("Repository argument is missing");
+                throw new ArgumentException("RepositoryId argument is missing or invalid");
             }
 
             if (String.IsNullOrEmpty(_accessToken))
@@ -184,8 +186,8 @@ namespace BenchmarksBot
             };
 
             Console.Write(createIssue.Body);
-
-            var issue = await client.Issue.Create(_username, _repository, createIssue);
+            
+            var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
 
         private static async Task<IEnumerable<Regression>> FindRegression()
@@ -245,7 +247,7 @@ namespace BenchmarksBot
                 Since = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(3))
             };
 
-            var issues = await client.Issue.GetAllForRepository(_username, _repository, recently);
+            var issues = await client.Issue.GetAllForRepository(_repositoryId, recently);
 
             var filtered = new List<Regression>();
 
