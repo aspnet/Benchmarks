@@ -22,6 +22,12 @@ then
     exit 1
 fi
 
+if [ -z "$CPU_COUNT" ]
+then
+    echo "\$CPU_COUNT is not set"
+    exit 1
+fi
+
 # compute current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
@@ -37,7 +43,7 @@ jsonPlatformJobs="-j https://raw.githubusercontent.com/aspnet/KestrelHttpServer/
 routingJobs="-j https://raw.githubusercontent.com/aspnet/routing/release/2.2/benchmarkapps/Benchmarks/benchmarks.json"
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/Mvc/release/2.2/benchmarkapps/BasicViews/benchmarks.json --duration 60"
-http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections 12 --clientThreads 12"
+http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
 
 trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
@@ -171,7 +177,7 @@ jobs=(
   # HttpClient
   "--scenario HttpClient $trend $httpClientJobs"
   "--scenario HttpClientParallel $trend $httpClientJobs"
-  "--scenario HttpClientFactory $trend $httpClientJobs"
+  "--scenario HttpClientFactory $trend $httpClientJobs --duration 20" # custom duration to ensure the DNS refresh is exercized
 )
 
 # build driver
