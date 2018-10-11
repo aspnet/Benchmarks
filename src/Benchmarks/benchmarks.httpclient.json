@@ -20,5 +20,9 @@
   "HttpClientParallel": {
     "Path": "/",
     "Arguments": "--concurrency 10"
+  },
+  "HttpClientFactory": {
+    "Path": "/",
+    "Arguments": "--httpClientFactory true"
   }
 }

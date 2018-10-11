@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Proxy
 {
@@ -63,6 +64,19 @@ namespace Proxy
             }
 
             Console.WriteLine($"Pool HttpClient instances: {pool}");
+
+            IHttpClientFactory httpClientFactory = null;
+
+            // Whether to use HttpClientFactory instances
+            if (bool.TryParse(config["httpClientFactory"], out var factory) && factory)
+            {
+                var services = new ServiceCollection();
+                services.AddHttpClient();
+                var container = services.BuildServiceProvider();
+
+                // The default implementation is registered as a singleton, so we can reuse it
+                httpClientFactory = container.GetRequiredService<IHttpClientFactory>();
+            }
 
             _httpClientPool.BaseAddress = _httpClient.BaseAddress;
 
@@ -119,9 +133,11 @@ namespace Proxy
                     {
                         var destinationUri = BuildDestinationUri(context);
 
+                        var httpClient = httpClientFactory != null ? httpClientFactory.CreateClient() : _httpClient;
+
                         using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
                         {
-                            using (var responseMessage = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted))
+                            using (var responseMessage = await httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted))
                             {
                                 await context.CopyProxyHttpResponse(responseMessage);
                             }
@@ -138,9 +154,11 @@ namespace Proxy
 
                         for (var i = 0; i < concurrency; i++)
                         {
+                            var httpClient = httpClientFactory != null ? httpClientFactory.CreateClient() : _httpClient;
+
                             using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
                             {
-                                tasks[i] = _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+                                tasks[i] = httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
                             }
                         }
 
