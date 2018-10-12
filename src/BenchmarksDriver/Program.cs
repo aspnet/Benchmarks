@@ -423,6 +423,10 @@ namespace BenchmarksDriver
                 {
                     serverJob.RuntimeVersion = runtimeVersionOption.Value();
                 }
+                if (readyTextOption.HasValue())
+                {
+                    serverJob.ReadyStateText = readyTextOption.Value();
+                }
                 if (repositoryOption.HasValue())
                 {
                     var source = repositoryOption.Value();
@@ -1039,7 +1043,7 @@ namespace BenchmarksDriver
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
-                    if (_clientJob.Warmup != 0)
+                    if (_clientJob.Client != Worker.None && _clientJob.Warmup != 0)
                     {
                         Log("Warmup");
                         var duration = _clientJob.Duration;
@@ -1077,8 +1081,14 @@ namespace BenchmarksDriver
                             }
                         }
 
-
-                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+                        if (_clientJob.Client != Worker.None)
+                        {
+                            clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+                        }
+                        else
+                        {
+                            // Wait until the server has stopped
+                        }
 
                         if (clientJob.State == ClientState.Completed)
                         {

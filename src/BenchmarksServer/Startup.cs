@@ -452,12 +452,20 @@ namespace BenchmarkServer
 
                                         if (process != null)
                                         {
-                                            if (process.HasExited && process.ExitCode != 0)
+                                            if (process.HasExited)
                                             {
-                                                Log.WriteLine($"Job failed");
+                                                if (process.ExitCode != 0)
+                                                {
+                                                    Log.WriteLine($"Job failed");
 
-                                                job.Error = "Job failed at runtime\n" + standardOutput.ToString();
-                                                job.State = ServerState.Failed;
+                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                    job.State = ServerState.Failed;
+                                                }
+                                                else
+                                                {
+                                                    job.State = ServerState.Stopped;
+                                                    Log.WriteLine($"Process has stopped");
+                                                }
                                             }
                                             else
                                             {
