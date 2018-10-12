@@ -5,10 +5,11 @@ namespace Benchmarks.ClientJob
 {
     public enum Worker
     {
-        None,
         Wrk,
         SignalR,
         Wait,
         H2Load,
+        None,
+        BenchmarkDotNet,
     }
 }

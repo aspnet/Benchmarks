@@ -25,6 +25,7 @@ namespace BenchmarksDriver
     {
         private static bool _verbose;
         private static bool _quiet;
+        private static bool _displayOutput;
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
@@ -88,7 +89,9 @@ namespace BenchmarksDriver
                 "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var diffOption = app.Option("--diff",
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
-
+            var displayOutputOption = app.Option("--display-output",
+                "Displays the standard output from the server job.", CommandOptionType.NoValue);
+            
             // ServerJob Options
             var databaseOption = app.Option("--database",
                 "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.", CommandOptionType.SingleValue);
@@ -208,6 +211,7 @@ namespace BenchmarksDriver
             {
                 _verbose = verboseOption.HasValue();
                 _quiet = quietOption.HasValue();
+                _displayOutput = displayOutputOption.HasValue();
 
                 var schemeValue = schemeOption.Value();
                 if (string.IsNullOrEmpty(schemeValue))
@@ -423,10 +427,6 @@ namespace BenchmarksDriver
                 {
                     serverJob.RuntimeVersion = runtimeVersionOption.Value();
                 }
-                if (readyTextOption.HasValue())
-                {
-                    serverJob.ReadyStateText = readyTextOption.Value();
-                }
                 if (repositoryOption.HasValue())
                 {
                     var source = repositoryOption.Value();
@@ -631,6 +631,17 @@ namespace BenchmarksDriver
                 }
 
                 Log($"Using worker {_clientJob.Client}");
+
+                if (_clientJob.Client == Worker.BenchmarkDotNet)
+                {
+                    serverJob.ReadyStateText = "BenchmarkRunner: Start";
+                }
+
+                // The ready state option overrides BenchmarDotNet's value
+                if (readyTextOption.HasValue())
+                {
+                    serverJob.ReadyStateText = readyTextOption.Value();
+                }
 
                 // Override default ClientJob settings if options are set
                 if (connectionsOption.HasValue())
@@ -1043,7 +1054,7 @@ namespace BenchmarksDriver
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
-                    if (_clientJob.Client != Worker.None && _clientJob.Warmup != 0)
+                    if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet && _clientJob.Warmup != 0)
                     {
                         Log("Warmup");
                         var duration = _clientJob.Duration;
@@ -1081,16 +1092,18 @@ namespace BenchmarksDriver
                             }
                         }
 
-                        if (_clientJob.Client != Worker.None)
+                        // Don'e run the client job for None and BenchmarkDotNet
+                        if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet)
                         {
                             clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
                         }
                         else
                         {
                             // Don't wait for the client job as we are not starting it
-                            clientJob.State = ClientState.Completed;
-
-                            Log(serverJob.Output, notime: true);
+                            clientJob = new ClientJob
+                            {
+                                State = ClientState.Completed
+                            };
 
                             // Wait until the server has stopped
                             var now = DateTime.UtcNow;
@@ -1111,12 +1124,12 @@ namespace BenchmarksDriver
                                 await Task.Delay(1000);
                             }
 
-                            if (serverJob.State != ServerState.Stopped)
+                            if (serverJob.State == ServerState.Stopped)
                             {
                                 // Try to extract BenchmarkDotNet statistics
-                                if (_clientJob.ClientProperties.ContainsKey("benchmark"))
+                                if (_clientJob.Client == Worker.BenchmarkDotNet && _clientJob.ClientProperties.ContainsKey("benchmark"))
                                 {
-                                    var benchmarkFile = _clientJob.ClientProperties["benchmark"];
+                                    var benchmarkFile = $"published/BenchmarkDotNet.Artifacts/results/{_clientJob.ClientProperties["benchmark"]}-report.csv";
 
                                     Log($"Downloading file {benchmarkFile}");
                                     var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(benchmarkFile);
@@ -1140,7 +1153,6 @@ namespace BenchmarksDriver
                                     }
 
                                     clientJob.RequestsPerSecond = 1000;
-
                                 }
                             }
                             else
@@ -1158,6 +1170,11 @@ namespace BenchmarksDriver
                             {
                                 Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
                                 await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
+                            }
+
+                            if (_displayOutput)
+                            {
+                                Log(serverJob.Output, notime: true);
                             }
 
                             // Load latest state of server job

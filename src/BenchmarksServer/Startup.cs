@@ -463,9 +463,12 @@ namespace BenchmarkServer
                                                 }
                                                 else
                                                 {
-                                                    job.Output = standardOutput.ToString();
-                                                    job.State = ServerState.Stopped;
-                                                    Log.WriteLine($"Process has stopped");
+                                                    if (job.State != ServerState.Stopped && job.State != ServerState.Deleting)
+                                                    {
+                                                        job.Output = standardOutput.ToString();
+                                                        job.State = ServerState.Stopped;
+                                                        Log.WriteLine($"Process has stopped");
+                                                    }
                                                 }
                                             }
                                             else
