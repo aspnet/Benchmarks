@@ -1043,6 +1043,14 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Stopped)
                         {
+                            // If there is no ReadyStateText defined, the server will never fo in Running state
+                            // and we'll reach the Stopped state eventually, but that's a normal behavior.
+                            if (_clientJob.Client == Worker.None || _clientJob.Client == Worker.BenchmarkDotNet)
+                            {
+                                serverBenchmarkUri = serverJob.Url;
+                                break;
+                            }
+
                             return -1;
                         }
                         else
@@ -1092,7 +1100,7 @@ namespace BenchmarksDriver
                             }
                         }
 
-                        // Don'e run the client job for None and BenchmarkDotNet
+                        // Don't run the client job for None and BenchmarkDotNet
                         if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet)
                         {
                             clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
