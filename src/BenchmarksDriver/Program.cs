@@ -1087,7 +1087,67 @@ namespace BenchmarksDriver
                         }
                         else
                         {
+                            // Don't wait for the client job as we are not starting it
+                            clientJob.State = ClientState.Completed;
+
+                            Log(serverJob.Output, notime: true);
+
                             // Wait until the server has stopped
+                            var now = DateTime.UtcNow;
+
+                            while(serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < TimeSpan.FromMinutes(5)))
+                            {
+                                // Load latest state of server job
+                                LogVerbose($"GET {serverJobUri}...");
+
+                                response = await _httpClient.GetAsync(serverJobUri);
+                                response.EnsureSuccessStatusCode();
+                                responseContent = await response.Content.ReadAsStringAsync();
+
+                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                await Task.Delay(1000);
+                            }
+
+                            if (serverJob.State != ServerState.Stopped)
+                            {
+                                // Try to extract BenchmarkDotNet statistics
+                                if (_clientJob.ClientProperties.ContainsKey("benchmark"))
+                                {
+                                    var benchmarkFile = _clientJob.ClientProperties["benchmark"];
+
+                                    Log($"Downloading file {benchmarkFile}");
+                                    var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(benchmarkFile);
+                                    LogVerbose("GET " + uri);
+
+                                    try
+                                    {
+                                        var filename = benchmarkFile;
+                                        var counter = 1;
+                                        while (File.Exists(filename))
+                                        {
+                                            filename = Path.GetFileNameWithoutExtension(benchmarkFile) + counter++ + Path.GetExtension(benchmarkFile);
+                                        }
+
+                                        await DownloadBigFile(uri, serverJobUri, filename);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log($"Error while downloading file {benchmarkFile}, skipping ...");
+                                        LogVerbose(e.Message);
+                                    }
+
+                                    clientJob.RequestsPerSecond = 1000;
+
+                                }
+                            }
+                            else
+                            {
+                                // The job has been running for too long
+                            }
+
                         }
 
                         if (clientJob.State == ClientState.Completed)
@@ -1862,12 +1922,19 @@ namespace BenchmarksDriver
               Console.WriteLine(message);
         }
 
-        private static void Log(string message)
+        private static void Log(string message, bool notime = false)
         {
             if (!_quiet)
             {
                 var time = DateTime.Now.ToString("hh:mm:ss.fff");
-                Console.WriteLine($"[{time}] {message}");
+                if (notime)
+                {
+                    Console.WriteLine(message);
+                }
+                else
+                {
+                    Console.WriteLine($"[{time}] {message}");
+                }
             }
         }
 

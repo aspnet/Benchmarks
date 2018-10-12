@@ -463,13 +463,13 @@ namespace BenchmarkServer
                                                 }
                                                 else
                                                 {
+                                                    job.Output = standardOutput.ToString();
                                                     job.State = ServerState.Stopped;
                                                     Log.WriteLine($"Process has stopped");
                                                 }
                                             }
                                             else
                                             {
-
                                                 // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
                                                 // We need to dig into this
                                                 var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
