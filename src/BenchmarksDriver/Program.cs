@@ -15,6 +15,7 @@ using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Ignore;
 using BenchmarksDriver.Serializers;
+using CsvHelper;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -25,6 +26,8 @@ namespace BenchmarksDriver
     {
         private static bool _verbose;
         private static bool _quiet;
+        private static bool _displayOutput;
+        private static string _benchmarkdotnet;
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
@@ -88,6 +91,10 @@ namespace BenchmarksDriver
                 "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var diffOption = app.Option("--diff",
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
+            var displayOutputOption = app.Option("--display-output",
+                "Displays the standard output from the server job.", CommandOptionType.NoValue);
+            var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
+                "Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Md5VsSha256.Sha256.", CommandOptionType.SingleValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -208,6 +215,7 @@ namespace BenchmarksDriver
             {
                 _verbose = verboseOption.HasValue();
                 _quiet = quietOption.HasValue();
+                _displayOutput = displayOutputOption.HasValue();
 
                 var schemeValue = schemeOption.Value();
                 if (string.IsNullOrEmpty(schemeValue))
@@ -626,7 +634,24 @@ namespace BenchmarksDriver
                     _clientJob.Client = worker;
                 }
 
+                if (benchmarkdotnetOption.HasValue())
+                {
+                    _clientJob.Client = Worker.BenchmarkDotNet;
+                    _benchmarkdotnet = benchmarkdotnetOption.Value();
+                }
+
                 Log($"Using worker {_clientJob.Client}");
+
+                if (_clientJob.Client == Worker.BenchmarkDotNet)
+                {
+                    serverJob.ReadyStateText = "BenchmarkRunner: Start";
+                }
+
+                // The ready state option overrides BenchmarDotNet's value
+                if (readyTextOption.HasValue())
+                {
+                    serverJob.ReadyStateText = readyTextOption.Value();
+                }
 
                 // Override default ClientJob settings if options are set
                 if (connectionsOption.HasValue())
@@ -1028,6 +1053,14 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Stopped)
                         {
+                            // If there is no ReadyStateText defined, the server will never fo in Running state
+                            // and we'll reach the Stopped state eventually, but that's a normal behavior.
+                            if (_clientJob.Client == Worker.None || _clientJob.Client == Worker.BenchmarkDotNet)
+                            {
+                                serverBenchmarkUri = serverJob.Url;
+                                break;
+                            }
+
                             return -1;
                         }
                         else
@@ -1039,7 +1072,7 @@ namespace BenchmarksDriver
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
-                    if (_clientJob.Warmup != 0)
+                    if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet && _clientJob.Warmup != 0)
                     {
                         Log("Warmup");
                         var duration = _clientJob.Duration;
@@ -1077,8 +1110,95 @@ namespace BenchmarksDriver
                             }
                         }
 
+                        // Don't run the client job for None and BenchmarkDotNet
+                        if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet)
+                        {
+                            clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+                        }
+                        else
+                        {
+                            // Don't wait for the client job as we are not starting it
+                            clientJob = new ClientJob
+                            {
+                                State = ClientState.Completed
+                            };
 
-                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+                            // Wait until the server has stopped
+                            var now = DateTime.UtcNow;
+
+                            while(serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < TimeSpan.FromMinutes(5)))
+                            {
+                                // Load latest state of server job
+                                LogVerbose($"GET {serverJobUri}...");
+
+                                response = await _httpClient.GetAsync(serverJobUri);
+                                response.EnsureSuccessStatusCode();
+                                responseContent = await response.Content.ReadAsStringAsync();
+
+                                LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                await Task.Delay(1000);
+                            }
+
+                            if (serverJob.State == ServerState.Stopped)
+                            {
+                                // Try to extract BenchmarkDotNet statistics
+                                if (_clientJob.Client == Worker.BenchmarkDotNet)
+                                {
+                                    var benchmarkFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report.csv";
+
+                                    Log($"Downloading file {benchmarkFile}");
+                                    var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(benchmarkFile);
+                                    LogVerbose("GET " + uri);
+
+                                    var filename = benchmarkFile;
+
+                                    try
+                                    {
+                                        var csvContent = await DownloadFileContent(uri, serverJobUri);
+
+                                        using (var sr = new StringReader(csvContent))
+                                        {
+                                            using (var csv = new CsvReader(sr))
+                                            {
+                                                csv.Configuration.RegisterClassMap<CsvResultMap>();
+
+                                                var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
+                                                benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>();
+                                            }
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log($"Error while downloading file {benchmarkFile}, skipping ...");
+                                        LogVerbose(e.Message);
+                                    }
+
+                                    var markdownFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report-github.md";
+
+                                    try
+                                    {
+                                        // Download markdown file for output
+                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFile);
+                                        QuietLog(await DownloadFileContent(uri, serverJobUri));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log($"Error while downloading file {markdownFile}, skipping ...");
+                                        LogVerbose(e.Message);
+                                    }                                 
+
+                                   
+                                }
+                            }
+                            else
+                            {
+                                // The job has been running for too long
+                            }
+
+                        }
 
                         if (clientJob.State == ClientState.Completed)
                         {
@@ -1088,6 +1208,11 @@ namespace BenchmarksDriver
                             {
                                 Log($"Invoking '{shutdownEndpoint}' on benchmarked application...");
                                 await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
+                            }
+
+                            if (_displayOutput)
+                            {
+                                Log(serverJob.Output, notime: true);
                             }
 
                             // Load latest state of server job
@@ -1141,7 +1266,7 @@ namespace BenchmarksDriver
 
                             results.Add(statistics);
 
-                            if (iterations > 1)
+                            if (iterations > 1 && !IsConsoleApp)
                             {
                                 LogVerbose($"RequestsPerSecond:           {statistics.RequestsPerSecond}");
                                 LogVerbose($"Max CPU (%):                 {statistics.Cpu}");
@@ -1228,10 +1353,10 @@ namespace BenchmarksDriver
 
                                 Log($"Downloading trace: {traceOutputFileName}");
 
-                                await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                                await DownloadFile(uri, serverJobUri, traceOutputFileName);
                             }
 
-                            var shouldComputeResults = results.Any() && iterations == i;
+                            var shouldComputeResults = results.Any() && iterations == i && !IsConsoleApp;
 
                             if (shouldComputeResults)
                             {
@@ -1479,7 +1604,7 @@ namespace BenchmarksDriver
                             }
 
                             Log($"Downloading trace: {traceOutputFileName}");
-                            await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                            await DownloadFile(uri, serverJobUri, traceOutputFileName);
                         }
                         catch (Exception e)
                         {
@@ -1527,7 +1652,7 @@ namespace BenchmarksDriver
                                     filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                 }
 
-                                await DownloadBigFile(uri, serverJobUri, filename);
+                                await DownloadFile(uri, serverJobUri, filename);
                             }
                             catch (Exception e)
                             {
@@ -1817,7 +1942,7 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
-        private static async Task DownloadBigFile(string uri, Uri serverJobUri, string destinationFileName)
+        private static async Task DownloadFile(string uri, Uri serverJobUri, string destinationFileName)
         {
             using (var downloadStream = await _httpClient.GetStreamAsync(uri))
             {
@@ -1841,6 +1966,17 @@ namespace BenchmarksDriver
             return;
         }
 
+        private static async Task<string> DownloadFileContent(string uri, Uri serverJobUri)
+        {
+            using (var downloadStream = await _httpClient.GetStreamAsync(uri))
+            {
+                using (var stringReader = new StreamReader(downloadStream))
+                {
+                    return await stringReader.ReadToEndAsync();
+                }
+            }
+        }
+
         private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)
         {
             var uri = serverJobUri + "/invoke?path=" + HttpUtility.UrlEncode(path);
@@ -1852,12 +1988,19 @@ namespace BenchmarksDriver
               Console.WriteLine(message);
         }
 
-        private static void Log(string message)
+        private static void Log(string message, bool notime = false)
         {
             if (!_quiet)
             {
                 var time = DateTime.Now.ToString("hh:mm:ss.fff");
-                Console.WriteLine($"[{time}] {message}");
+                if (notime)
+                {
+                    Console.WriteLine(message);
+                }
+                else
+                {
+                    Console.WriteLine($"[{time}] {message}");
+                }
             }
         }
 
@@ -1939,5 +2082,7 @@ namespace BenchmarksDriver
 
             return result;
         }
+
+        private static bool IsConsoleApp => _clientJob.Client == Worker.None || _clientJob.Client == Worker.BenchmarkDotNet;
     }
 }

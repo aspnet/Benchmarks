@@ -296,6 +296,8 @@ namespace BenchmarkServer.Controllers
 
                 var fullPath = Path.Combine(job.BasePath, path);
 
+                Log($"Download requested: '{fullPath}'");
+
                 if (!System.IO.File.Exists(fullPath))
                 {
                     return NotFound();

@@ -25,6 +25,9 @@ namespace BenchmarksDriver.Serializers
 
             // H2Load
             ResultSerializers[Worker.H2Load] = () => new H2LoadSerializer();
+
+            // BenchmarkDotNet
+            ResultSerializers[Worker.BenchmarkDotNet] = () => new BenchmarkDotNetSerializer();
         }
 
         static public IResultsSerializer CreateResultSerializer(ClientJob clientJob)

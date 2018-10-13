@@ -15,7 +15,7 @@
     <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26424-04</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
     <DefaultTargetFramework>netcoreapp2.1</DefaultTargetFramework>
 
     <!--
@@ -28,11 +28,11 @@
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
 
-    <MongoDbVersion>2.6.1</MongoDbVersion>
+    <MongoDbVersion>2.7.0</MongoDbVersion>
     <DapperVersion>1.50.5</DapperVersion>
     <NpgsqlVersion20>3.2.7</NpgsqlVersion20>
-    <NpgsqlVersion21>4.0.2</NpgsqlVersion21>
-    <MySqlConnectorVersion>0.43.0</MySqlConnectorVersion>
+    <NpgsqlVersion21>4.0.3</NpgsqlVersion21>
+    <MySqlConnectorVersion>0.45.1</MySqlConnectorVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.1.1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>

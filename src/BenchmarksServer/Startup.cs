@@ -452,16 +452,27 @@ namespace BenchmarkServer
 
                                         if (process != null)
                                         {
-                                            if (process.HasExited && process.ExitCode != 0)
+                                            if (process.HasExited)
                                             {
-                                                Log.WriteLine($"Job failed");
+                                                if (process.ExitCode != 0)
+                                                {
+                                                    Log.WriteLine($"Job failed");
 
-                                                job.Error = "Job failed at runtime\n" + standardOutput.ToString();
-                                                job.State = ServerState.Failed;
+                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                    job.State = ServerState.Failed;
+                                                }
+                                                else
+                                                {
+                                                    if (job.State != ServerState.Stopped && job.State != ServerState.Deleting)
+                                                    {
+                                                        job.Output = standardOutput.ToString();
+                                                        job.State = ServerState.Stopped;
+                                                        Log.WriteLine($"Process has stopped");
+                                                    }
+                                                }
                                             }
                                             else
                                             {
-
                                                 // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
                                                 // We need to dig into this
                                                 var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;

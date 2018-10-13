@@ -291,3 +291,4 @@ __pycache__/
 eventpipe.netperf
 *.netperf
 *.bench.json
+BenchmarkDotNet.Artifacts/

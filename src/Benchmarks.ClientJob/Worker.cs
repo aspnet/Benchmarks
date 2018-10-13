@@ -9,5 +9,7 @@ namespace Benchmarks.ClientJob
         SignalR,
         Wait,
         H2Load,
+        None,
+        BenchmarkDotNet,
     }
 }
