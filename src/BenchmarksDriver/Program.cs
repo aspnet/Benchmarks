@@ -1157,21 +1157,18 @@ namespace BenchmarksDriver
 
                                     try
                                     {
-                                        var counter = 1;
-                                        while (File.Exists(filename))
+                                        var csvContent = await DownloadFileContent(uri, serverJobUri);
+
+                                        using (var sr = new StringReader(csvContent))
                                         {
-                                            filename = Path.GetFileNameWithoutExtension(benchmarkFile) + counter++ + Path.GetExtension(benchmarkFile);
+                                            using (var csv = new CsvReader(sr))
+                                            {
+                                                csv.Configuration.RegisterClassMap<CsvResultMap>();
+
+                                                var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
+                                                benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>();
+                                            }
                                         }
-
-                                        await DownloadBigFile(uri, serverJobUri, filename);
-
-                                        // Download markdown file for output
-                                        var markdownFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report-github.md";
-                                        var tempFile = Path.GetTempFileName();
-                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFile);
-                                        await DownloadBigFile(uri, serverJobUri, tempFile);
-                                        QuietLog(File.ReadAllText(tempFile));
-                                        File.Delete(tempFile);
                                     }
                                     catch (Exception e)
                                     {
@@ -1179,16 +1176,21 @@ namespace BenchmarksDriver
                                         LogVerbose(e.Message);
                                     }
 
-                                    using (var sr = File.OpenText(filename))
-                                    {
-                                        using (var csv = new CsvReader(sr))
-                                        {
-                                            csv.Configuration.RegisterClassMap<CsvResultMap>();
+                                    var markdownFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report-github.md";
 
-                                            var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                            benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>();
-                                        }
+                                    try
+                                    {
+                                        // Download markdown file for output
+                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFile);
+                                        QuietLog(await DownloadFileContent(uri, serverJobUri));
                                     }
+                                    catch (Exception e)
+                                    {
+                                        Log($"Error while downloading file {markdownFile}, skipping ...");
+                                        LogVerbose(e.Message);
+                                    }                                 
+
+                                   
                                 }
                             }
                             else
@@ -1264,7 +1266,7 @@ namespace BenchmarksDriver
 
                             results.Add(statistics);
 
-                            if (iterations > 1)
+                            if (iterations > 1 && !IsConsoleApp)
                             {
                                 LogVerbose($"RequestsPerSecond:           {statistics.RequestsPerSecond}");
                                 LogVerbose($"Max CPU (%):                 {statistics.Cpu}");
@@ -1351,10 +1353,10 @@ namespace BenchmarksDriver
 
                                 Log($"Downloading trace: {traceOutputFileName}");
 
-                                await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                                await DownloadFile(uri, serverJobUri, traceOutputFileName);
                             }
 
-                            var shouldComputeResults = results.Any() && iterations == i;
+                            var shouldComputeResults = results.Any() && iterations == i && !IsConsoleApp;
 
                             if (shouldComputeResults)
                             {
@@ -1602,7 +1604,7 @@ namespace BenchmarksDriver
                             }
 
                             Log($"Downloading trace: {traceOutputFileName}");
-                            await DownloadBigFile(uri, serverJobUri, traceOutputFileName);
+                            await DownloadFile(uri, serverJobUri, traceOutputFileName);
                         }
                         catch (Exception e)
                         {
@@ -1650,7 +1652,7 @@ namespace BenchmarksDriver
                                     filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                 }
 
-                                await DownloadBigFile(uri, serverJobUri, filename);
+                                await DownloadFile(uri, serverJobUri, filename);
                             }
                             catch (Exception e)
                             {
@@ -1940,7 +1942,7 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
-        private static async Task DownloadBigFile(string uri, Uri serverJobUri, string destinationFileName)
+        private static async Task DownloadFile(string uri, Uri serverJobUri, string destinationFileName)
         {
             using (var downloadStream = await _httpClient.GetStreamAsync(uri))
             {
@@ -1962,6 +1964,17 @@ namespace BenchmarksDriver
             }
 
             return;
+        }
+
+        private static async Task<string> DownloadFileContent(string uri, Uri serverJobUri)
+        {
+            using (var downloadStream = await _httpClient.GetStreamAsync(uri))
+            {
+                using (var stringReader = new StreamReader(downloadStream))
+                {
+                    return await stringReader.ReadToEndAsync();
+                }
+            }
         }
 
         private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)
@@ -2069,5 +2082,7 @@ namespace BenchmarksDriver
 
             return result;
         }
+
+        private static bool IsConsoleApp => _clientJob.Client == Worker.None || _clientJob.Client == Worker.BenchmarkDotNet;
     }
 }

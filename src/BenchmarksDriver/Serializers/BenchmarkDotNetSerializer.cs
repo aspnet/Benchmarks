@@ -67,6 +67,8 @@ namespace BenchmarksDriver.Serializers
                     dimension: "WorkingSet (MB)",
                     value: result.Allocated);
             }
+
+            serverJob.Scenario = scenario;
         }
 
         private Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, string dimension, double value)
