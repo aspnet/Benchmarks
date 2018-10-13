@@ -15,6 +15,7 @@ using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Ignore;
 using BenchmarksDriver.Serializers;
+using CsvHelper;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -26,6 +27,7 @@ namespace BenchmarksDriver
         private static bool _verbose;
         private static bool _quiet;
         private static bool _displayOutput;
+        private static string _benchmarkdotnet;
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
@@ -91,7 +93,9 @@ namespace BenchmarksDriver
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var displayOutputOption = app.Option("--display-output",
                 "Displays the standard output from the server job.", CommandOptionType.NoValue);
-            
+            var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
+                "Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Md5VsSha256.Sha256.", CommandOptionType.SingleValue);
+
             // ServerJob Options
             var databaseOption = app.Option("--database",
                 "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.", CommandOptionType.SingleValue);
@@ -630,6 +634,12 @@ namespace BenchmarksDriver
                     _clientJob.Client = worker;
                 }
 
+                if (benchmarkdotnetOption.HasValue())
+                {
+                    _clientJob.Client = Worker.BenchmarkDotNet;
+                    _benchmarkdotnet = benchmarkdotnetOption.Value();
+                }
+
                 Log($"Using worker {_clientJob.Client}");
 
                 if (_clientJob.Client == Worker.BenchmarkDotNet)
@@ -1135,17 +1145,18 @@ namespace BenchmarksDriver
                             if (serverJob.State == ServerState.Stopped)
                             {
                                 // Try to extract BenchmarkDotNet statistics
-                                if (_clientJob.Client == Worker.BenchmarkDotNet && _clientJob.ClientProperties.ContainsKey("benchmark"))
+                                if (_clientJob.Client == Worker.BenchmarkDotNet)
                                 {
-                                    var benchmarkFile = $"published/BenchmarkDotNet.Artifacts/results/{_clientJob.ClientProperties["benchmark"]}-report.csv";
+                                    var benchmarkFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report.csv";
 
                                     Log($"Downloading file {benchmarkFile}");
                                     var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(benchmarkFile);
                                     LogVerbose("GET " + uri);
 
+                                    var filename = benchmarkFile;
+
                                     try
                                     {
-                                        var filename = benchmarkFile;
                                         var counter = 1;
                                         while (File.Exists(filename))
                                         {
@@ -1153,6 +1164,14 @@ namespace BenchmarksDriver
                                         }
 
                                         await DownloadBigFile(uri, serverJobUri, filename);
+
+                                        // Download markdown file for output
+                                        var markdownFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report-github.md";
+                                        var tempFile = Path.GetTempFileName();
+                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFile);
+                                        await DownloadBigFile(uri, serverJobUri, tempFile);
+                                        QuietLog(File.ReadAllText(tempFile));
+                                        File.Delete(tempFile);
                                     }
                                     catch (Exception e)
                                     {
@@ -1160,7 +1179,18 @@ namespace BenchmarksDriver
                                         LogVerbose(e.Message);
                                     }
 
-                                    clientJob.RequestsPerSecond = 1000;
+                                    var benchmark = _clientJob.ClientProperties["_benchmarkdotnet"];
+
+                                    using (var sr = File.OpenText(filename))
+                                    {
+                                        using (var csv = new CsvReader(sr))
+                                        {
+                                            csv.Configuration.RegisterClassMap<CsvResultMap>();
+
+                                            var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
+                                            benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>();
+                                        }
+                                    }
                                 }
                             }
                             else

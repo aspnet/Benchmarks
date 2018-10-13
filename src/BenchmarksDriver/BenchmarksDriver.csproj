@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.1" />
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
+    <PackageReference Include="CsvHelper" Version="8.0.0-beta01" />
   </ItemGroup>
 
 </Project>
