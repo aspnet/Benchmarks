@@ -1179,8 +1179,6 @@ namespace BenchmarksDriver
                                         LogVerbose(e.Message);
                                     }
 
-                                    var benchmark = _clientJob.ClientProperties["_benchmarkdotnet"];
-
                                     using (var sr = File.OpenText(filename))
                                     {
                                         using (var csv = new CsvReader(sr))

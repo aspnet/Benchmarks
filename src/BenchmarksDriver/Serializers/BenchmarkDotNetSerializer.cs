@@ -64,7 +64,7 @@ namespace BenchmarksDriver.Serializers
                     path: serverJob.Path,
                     session: session,
                     description: description,
-                    dimension: "Allocated (KB)",
+                    dimension: "WorkingSet (MB)",
                     value: result.Allocated);
             }
         }
