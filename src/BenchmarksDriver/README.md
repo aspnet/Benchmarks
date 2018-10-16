@@ -23,10 +23,9 @@ Options:
   -n|--scenario          Benchmark scenario to run
   -m|--scheme            Scheme (http, https, h2, h2c). Default is http.
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
-  --aspnetCoreVersion    ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
-  --runtimeVersion       .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
-  --arguments            Arguments to pass to the application. (e.g., "--raw true")
-  --no-arguments         Removes any predefined arguments.
+  --aspnet               ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
+  --dotnet               .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
+  -a|--arg                Argument to pass to the application. (e.g., --arg --raw=true --arg "single_value")
   --port                 The port used to request the benchmarked application. Default is 5000.
   --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
   -r|--repository        Git repository containing the project to test.
@@ -35,10 +34,9 @@ Options:
   -dc|--docker-context   Docker context directory. Defaults to the Docker file directory. (e.g., "frameworks/CSharp/aspnetcore/")
   -di|--docker-image     The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., "aspnetcore21")
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
-  --timeout              The max delay to wait to the job to run. Default is 00:05:00.
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
   -src|--source          Local folder containing the project to test.
-  --clientThreads        Number of threads used by client. Default is 32.
+  --client-threads        Number of threads used by client. Default is 32.
   --timeout              Timeout for client connections. e.g., 2s
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
@@ -48,7 +46,7 @@ Options:
   --headers              Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.
   --method               HTTP method of the request. Default is GET.
   -p|--properties        Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16
-  --script"              Wrk script path. File path can be a URL. e.g., --script c:\scripts\post.lua
+  --script               Wrk script path. File path can be a URL. e.g., --script c:\scripts\post.lua
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
