@@ -49,7 +49,7 @@ trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
-routingBenchmarks="--projectFile benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments"
+routingBenchmarks="--projectFile benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks"
 
 jobs=(
   # Plaintext
@@ -182,7 +182,7 @@ jobs=(
   "--scenario HttpClientFactory $trend $httpClientJobs --duration 20" # custom duration to ensure the DNS refresh is exercized
 
   # Routing Benchmarks
-  "$routingBenchmarks --benchmarkdotnet RouteValueDictionaryBenchmark --arguments \"RouteValueDictionaryBenchmark --config perflab\""
+  "$routingBenchmarks --benchmarkdotnet RouteValueDictionaryBenchmark --arguments "\""RouteValueDictionaryBenchmark --config perflab"\"""
 )
 
 # build driver
