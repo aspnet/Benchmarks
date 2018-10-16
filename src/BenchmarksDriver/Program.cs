@@ -112,12 +112,12 @@ namespace BenchmarksDriver
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
-            var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion",
+            var aspnetCoreVersionOption = app.Option("--aspnetCoreVersion|--aspnet",
                 "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
-            var runtimeVersionOption = app.Option("--runtimeVersion",
+            var runtimeVersionOption = app.Option("--runtimeVersion|--dotnet",
                 ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
-            var argumentsOption = app.Option("--arguments",
-                "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
+            var argOption = app.Option("-a|--arg",
+                "Argument to pass to the application. (e.g., --arg \"--raw=true\" --arg \"single_value\")", CommandOptionType.MultipleValue);
             var noArgumentsOptions = app.Option("--no-arguments",
                 "Removes any predefined arguments.", CommandOptionType.NoValue);
             var portOption = app.Option("--port",
@@ -178,7 +178,7 @@ namespace BenchmarksDriver
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
 
             // ClientJob Options
-            var clientThreadsOption = app.Option("--clientThreads",
+            var clientThreadsOption = app.Option("--clientThreads|--client-threads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
             var timeout = app.Option("--timeout",
                 "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
@@ -411,13 +411,27 @@ namespace BenchmarksDriver
                 {
                     serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
                 }
-                if (argumentsOption.HasValue())
-                {
-                    serverJob.Arguments = argumentsOption.Value();
-                }
                 if (noArgumentsOptions.HasValue())
                 {
                     serverJob.NoArguments = true;
+                }
+                if (argOption.HasValue())
+                {
+                    serverJob.Arguments = serverJob.Arguments ?? "";
+
+                    foreach (var arg in argOption.Values)
+                    {
+                        var equalSignIndex = arg.IndexOf('=');
+
+                        if (equalSignIndex == -1)
+                        {
+                            serverJob.Arguments += arg;
+                        }
+                        else
+                        {
+                            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
+                        }                        
+                    }
                 }
                 if (portOption.HasValue())
                 {
