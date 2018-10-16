@@ -435,7 +435,7 @@ namespace BenchmarksDriver
                         }
                         else
                         {
-                            serverJob.Arguments += arg.Substring(0, equalSignIndex) + " " + arg.Substring(equalSignIndex + 1);
+                            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
                         }                        
                     }
                 }
