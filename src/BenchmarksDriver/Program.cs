@@ -636,6 +636,7 @@ namespace BenchmarksDriver
 
                 if (benchmarkdotnetOption.HasValue())
                 {
+                    serverJob.Scenario = benchmarkdotnetOption.Value();
                     _clientJob.Client = Worker.BenchmarkDotNet;
                     _benchmarkdotnet = benchmarkdotnetOption.Value();
                 }
