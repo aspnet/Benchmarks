@@ -118,6 +118,8 @@ namespace BenchmarksDriver
                 ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
             var argumentsOption = app.Option("--arguments",
                 "Arguments to pass to the application. (e.g., \"--raw true\")", CommandOptionType.SingleValue);
+            var argOption = app.Option("--arg",
+                "Argument to pass to the application. (e.g., --arg \"--raw=true\" --arg \"single_value\")", CommandOptionType.MultipleValue);
             var noArgumentsOptions = app.Option("--no-arguments",
                 "Removes any predefined arguments.", CommandOptionType.NoValue);
             var portOption = app.Option("--port",
@@ -418,6 +420,24 @@ namespace BenchmarksDriver
                 if (noArgumentsOptions.HasValue())
                 {
                     serverJob.NoArguments = true;
+                }
+                if (argOption.HasValue())
+                {
+                    serverJob.Arguments = serverJob.Arguments ?? "";
+
+                    foreach (var arg in argOption.Values)
+                    {
+                        var equalSignIndex = arg.IndexOf('=');
+
+                        if (equalSignIndex == -1)
+                        {
+                            serverJob.Arguments += arg;
+                        }
+                        else
+                        {
+                            serverJob.Arguments += arg.Substring(0, equalSignIndex) + " " + arg.Substring(equalSignIndex + 1);
+                        }                        
+                    }
                 }
                 if (portOption.HasValue())
                 {
