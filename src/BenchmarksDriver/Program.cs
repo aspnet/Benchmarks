@@ -425,7 +425,7 @@ namespace BenchmarksDriver
 
                         if (equalSignIndex == -1)
                         {
-                            serverJob.Arguments += arg;
+                            serverJob.Arguments += " " + arg;
                         }
                         else
                         {
