@@ -1383,11 +1383,13 @@ namespace BenchmarksDriver
 
                             var shouldComputeResults = results.Any() && iterations == i && !IsConsoleApp;
 
+                            Statistics average = null;
+
                             if (shouldComputeResults)
                             {
                                 var samples = results.OrderBy(x => x.RequestsPerSecond).Skip(exclude).SkipLast(exclude).ToList();
 
-                                var average = new Statistics
+                                average = new Statistics
                                 {
                                     Description = description,
 
@@ -1541,34 +1543,34 @@ namespace BenchmarksDriver
 
                                     Log($"Results saved in '{saveFilename}'");
                                 }
+                            }
 
-                                if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
+                            if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
+                            {
+                                sqlTask = sqlTask.ContinueWith(async t =>
                                 {
-                                    sqlTask = sqlTask.ContinueWith(async t =>
+                                    Log("Writing results to SQL...");
+                                    try
                                     {
-                                        Log("Writing results to SQL...");
-                                        try
-                                        {
-                                            await serializer.WriteJobResultsToSqlAsync(
-                                                serverJob: serverJob,
-                                                clientJob: clientJob,
-                                                connectionString: sqlConnectionString,
-                                                tableName: _tableName,
-                                                path: serverJob.Path,
-                                                session: session,
-                                                description: description,
-                                                statistics: average,
-                                                longRunning: span > TimeSpan.Zero);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log("Error writing results to SQL: " + ex);
-                                            return;
-                                        }
+                                        await serializer.WriteJobResultsToSqlAsync(
+                                            serverJob: serverJob,
+                                            clientJob: clientJob,
+                                            connectionString: sqlConnectionString,
+                                            tableName: _tableName,
+                                            path: serverJob.Path,
+                                            session: session,
+                                            description: description,
+                                            statistics: average,
+                                            longRunning: span > TimeSpan.Zero);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log("Error writing results to SQL: " + ex);
+                                        return;
+                                    }
 
-                                        Log("Finished writing results to SQL.");
-                                    });
-                                }
+                                    Log("Finished writing results to SQL.");
+                                });
                             }
                         }
 
