@@ -52,7 +52,7 @@ namespace BenchmarksDriver.Serializers
                     path: serverJob.Path,
                     session: session,
                     description: description,
-                    dimension: "RequestsPerSecond",
+                    dimension: "OperationsPerSecond",
                     value: result.OperationsPerSecond);
 
                 await WriteJobsToSql(
@@ -64,7 +64,7 @@ namespace BenchmarksDriver.Serializers
                     path: serverJob.Path,
                     session: session,
                     description: description,
-                    dimension: "WorkingSet (MB)",
+                    dimension: "Allocated (KB)",
                     value: result.Allocated);
             }
 
