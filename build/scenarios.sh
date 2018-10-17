@@ -49,7 +49,7 @@ trend="--description Trend/Latest"
 baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
-routingBenchmarks="-r routing@release/2.2 --projectFile benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab"
+routingBenchmarks="-r routing@release/2.2 --projectFile benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:10:00"
 
 jobs=(
   # Plaintext
@@ -89,6 +89,7 @@ jobs=(
   "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
   "-n Json -m https --webHost KestrelSockets $baseline $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
+  "-n PlaintextNonPipelined -m https --webHost KestrelSockets $trend $plaintextJobs"
   "-n PlaintextNonPipelined -m https --webHost KestrelSockets $baseline $plaintextJobs"
   
   # Http2

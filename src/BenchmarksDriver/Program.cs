@@ -28,6 +28,7 @@ namespace BenchmarksDriver
         private static bool _quiet;
         private static bool _displayOutput;
         private static string _benchmarkdotnet;
+        private static TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
         private static readonly HttpClient _httpClient = new HttpClient();
 
@@ -176,11 +177,13 @@ namespace BenchmarksDriver
                 "Downloads the published application locally.", CommandOptionType.NoValue);
             var fetchOutputOption = app.Option("--fetch-output",
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
+            var serverTimeoutOption = app.Option("--server-timeout",
+                "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
-            var timeout = app.Option("--timeout",
+            var clientTimeoutOption = app.Option("--client-timeout",
                 "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
@@ -216,6 +219,11 @@ namespace BenchmarksDriver
                 _verbose = verboseOption.HasValue();
                 _quiet = quietOption.HasValue();
                 _displayOutput = displayOutputOption.HasValue();
+                
+                if (serverTimeoutOption.HasValue())
+                {
+                    TimeSpan.TryParse(serverTimeoutOption.Value(), out _timeout);
+                }
 
                 var schemeValue = schemeOption.Value();
                 if (string.IsNullOrEmpty(schemeValue))
@@ -1140,8 +1148,8 @@ namespace BenchmarksDriver
 
                             // Wait until the server has stopped
                             var now = DateTime.UtcNow;
-
-                            while(serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < TimeSpan.FromMinutes(5)))
+                            
+                            while(serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < _timeout))
                             {
                                 // Load latest state of server job
                                 LogVerbose($"GET {serverJobUri}...");
@@ -1210,7 +1218,9 @@ namespace BenchmarksDriver
                             }
                             else
                             {
-                                // The job has been running for too long
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Log($"Server job running for more than {_timeout}, stopping...");
+                                Console.ResetColor();
                             }
 
                         }
