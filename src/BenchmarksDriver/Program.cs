@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -16,6 +17,7 @@ using Benchmarks.ServerJob;
 using BenchmarksDriver.Ignore;
 using BenchmarksDriver.Serializers;
 using CsvHelper;
+using CsvHelper.TypeConversion;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -1187,9 +1189,10 @@ namespace BenchmarksDriver
                                             using (var csv = new CsvReader(sr))
                                             {
                                                 csv.Configuration.RegisterClassMap<CsvResultMap>();
+                                                csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
 
                                                 var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                                benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>();
+                                                benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>().ToList();
                                             }
                                         }
                                     }
@@ -1221,11 +1224,12 @@ namespace BenchmarksDriver
                                 Console.ForegroundColor = ConsoleColor.White;
                                 Log($"Server job running for more than {_timeout}, stopping...");
                                 Console.ResetColor();
+                                serverJob.State = ServerState.Failed;
                             }
 
                         }
 
-                        if (clientJob.State == ClientState.Completed)
+                        if (clientJob.State == ClientState.Completed && serverJob.State != ServerState.Failed)
                         {
                             LogVerbose($"Client Job completed");
 

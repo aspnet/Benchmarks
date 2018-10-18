@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CsvHelper.Configuration;
+﻿using CsvHelper.Configuration;
 
 namespace BenchmarksDriver
 {
     public class CsvResult
     {
         public string Method { get; set; }
-        public float Mean { get; set; }
-        public float Error { get; set; }
-        public float StdDev { get; set; }
-        public float OperationsPerSecond { get; set; }
-        public float Allocated { get; set; }
+        public double Mean { get; set; }
+        public double Error { get; set; }
+        public double StdDev { get; set; }
+        public double OperationsPerSecond { get; set; }
+        public double Allocated { get; set; }
     }
 
     public sealed class CsvResultMap : ClassMap<CsvResult>
