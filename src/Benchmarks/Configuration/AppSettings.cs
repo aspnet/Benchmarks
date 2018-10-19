@@ -5,7 +5,7 @@ namespace Benchmarks.Configuration
 {
     public class AppSettings
     {
-        public string AiInstrumenationKey { get; set; }
+        public string AiInstrumentationKey { get; set; }
 
         public bool EnableAi { get; set; }
 
