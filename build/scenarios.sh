@@ -184,6 +184,10 @@ jobs=(
 
   # Routing Benchmarks
   "$routingBenchmarks --benchmarkdotnet RouteValueDictionaryBenchmark --arg RouteValueDictionaryBenchmark"
+  "$routingBenchmarks --benchmarkdotnet LinkGenerationGithubBenchmark --arg LinkGenerationGithubBenchmark"
+  "$routingBenchmarks --benchmarkdotnet MatcherAzureBenchmark --arg MatcherAzureBenchmark"
+  "$routingBenchmarks --benchmarkdotnet MatcherBuilderAzureBenchmark --arg MatcherBuilderAzureBenchmark"
+  "$routingBenchmarks --benchmarkdotnet MatcherSingleEntryBenchmark --arg MatcherSingleEntryBenchmark"
 )
 
 # build driver
