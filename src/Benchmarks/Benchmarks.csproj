@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Jil" Version="$(JilVersion)" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.0" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
   </ItemGroup>

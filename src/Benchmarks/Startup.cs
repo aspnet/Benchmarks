@@ -53,6 +53,12 @@ namespace Benchmarks
             services.AddSingleton<IRandom, DefaultRandom>();
 
             var appSettings = Configuration.Get<AppSettings>();
+            
+            // Add AI Auto-Collection
+            if (appSettings.EnableAi)
+            {
+                services.AddApplicationInsightsTelemetry(appSettings.AiInstrumenationKey);
+            }
 
             Console.WriteLine($"Database: {appSettings.Database}");
 

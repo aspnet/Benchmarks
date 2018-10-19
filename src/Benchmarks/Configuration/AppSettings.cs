@@ -5,6 +5,10 @@ namespace Benchmarks.Configuration
 {
     public class AppSettings
     {
+        public string AiInstrumenationKey { get; set; }
+
+        public bool EnableAi { get; set; }
+
         public string ConnectionString { get; set; }
 
         public DatabaseServer Database { get; set; } = DatabaseServer.None;
