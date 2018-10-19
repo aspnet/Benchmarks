@@ -98,6 +98,8 @@ namespace BenchmarksDriver
                 "Displays the standard output from the server job.", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Md5VsSha256.Sha256.", CommandOptionType.SingleValue);
+            var consoleOption = app.Option("--console",
+                "Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.", CommandOptionType.NoValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
@@ -665,6 +667,11 @@ namespace BenchmarksDriver
                     _benchmarkdotnet = benchmarkdotnetOption.Value();
                 }
 
+                if (consoleOption.HasValue())
+                {
+                    _clientJob.Client = Worker.None;
+                }
+
                 Log($"Using worker {_clientJob.Client}");
 
                 if (_clientJob.Client == Worker.BenchmarkDotNet)
@@ -1080,7 +1087,7 @@ namespace BenchmarksDriver
                         {
                             // If there is no ReadyStateText defined, the server will never fo in Running state
                             // and we'll reach the Stopped state eventually, but that's a normal behavior.
-                            if (_clientJob.Client == Worker.None || _clientJob.Client == Worker.BenchmarkDotNet)
+                            if (IsConsoleApp)
                             {
                                 serverBenchmarkUri = serverJob.Url;
                                 break;
@@ -1097,7 +1104,7 @@ namespace BenchmarksDriver
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
-                    if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet && _clientJob.Warmup != 0)
+                    if (!IsConsoleApp && _clientJob.Warmup != 0)
                     {
                         Log("Warmup");
                         var duration = _clientJob.Duration;
@@ -1136,7 +1143,7 @@ namespace BenchmarksDriver
                         }
 
                         // Don't run the client job for None and BenchmarkDotNet
-                        if (_clientJob.Client != Worker.None && _clientJob.Client != Worker.BenchmarkDotNet)
+                        if (!IsConsoleApp)
                         {
                             clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
                         }

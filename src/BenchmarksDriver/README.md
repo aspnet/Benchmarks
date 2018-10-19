@@ -71,6 +71,7 @@ Options:
   -wf|--write-file       Writes the results to a file named "results.md". NB: Use the --description argument to differentiate multiple results.
   --display-output       Displays the standard output from the server job.
   --benchmarkdotnet      Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Benchmarks.LabPerf.Md5VsSha256
+  --console              Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.
 
 
 Properties of the Wrk client
