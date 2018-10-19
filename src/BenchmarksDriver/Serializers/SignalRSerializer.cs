@@ -28,7 +28,7 @@ namespace BenchmarksDriver.Serializers
                         [Description] [nvarchar](200),
                         [AspNetCoreVersion] [nvarchar](50) NOT NULL,
                         [RuntimeVersion] [nvarchar](50) NOT NULL,
-                        [Scenario] [nvarchar](50) NOT NULL,
+                        [Scenario] [nvarchar](200) NOT NULL,
                         [Hardware] [nvarchar](50) NOT NULL,
                         [HardwareVersion] [nvarchar](128) NOT NULL,
                         [OperatingSystem] [nvarchar](50) NOT NULL,
