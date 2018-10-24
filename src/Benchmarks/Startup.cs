@@ -57,6 +57,7 @@ namespace Benchmarks
             // Add AI Auto-Collection
             if (appSettings.EnableAi)
             {
+                Console.WriteLine("Using Application Insights");
                 services.AddApplicationInsightsTelemetry(appSettings.AiInstrumentationKey);
             }
 
