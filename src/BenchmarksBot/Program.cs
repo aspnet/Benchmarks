@@ -150,7 +150,7 @@ namespace BenchmarksBot
                         {
                             body.AppendLine();
                             body.AppendLine("__Microsoft.AspNetCore.App__");
-                            body.AppendLine($"https://github.com/aspnet/Universe/compare/{r.AspNetCoreHashes[0]}...{r.AspNetCoreHashes[1]}");
+                            body.AppendLine($"https://github.com/aspnet/AspNetCore/compare/{r.AspNetCoreHashes[0]}...{r.AspNetCoreHashes[1]}");
                         }
                     }
 
@@ -287,8 +287,8 @@ namespace BenchmarksBot
                 {
                     r.AspNetCoreHashes = new [] 
                     {
-                        await GetAspNetUniverseCommitHash(r.PreviousAspNetCoreVersion),
-                        await GetAspNetUniverseCommitHash(r.CurrentAspNetCoreVersion)
+                        await GetAspNetCoreCommitHash(r.PreviousAspNetCoreVersion),
+                        await GetAspNetCoreCommitHash(r.CurrentAspNetCoreVersion)
                     };
                 }
 
@@ -339,7 +339,7 @@ namespace BenchmarksBot
             return false;
         }
 
-        private static async Task<string> GetAspNetUniverseCommitHash(string aspNetCoreVersion)
+        private static async Task<string> GetAspNetCoreCommitHash(string aspNetCoreVersion)
         {
             var packagePath = Path.GetTempFileName();
 

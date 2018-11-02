@@ -47,9 +47,9 @@ namespace BenchmarkServer
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
         private static readonly string _latestAspnetCoreRuntimeUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
         private static readonly string _currentDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/Current/latest.version";
-        private static readonly string _edgeDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
+        private static readonly string _edgeDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.2/latest.version";
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/release/2.2/files/KoreBuild/config/sdk.version";
-        private static readonly string _universeDependenciesUrl = "https://raw.githubusercontent.com/aspnet/Universe/release/2.2/build/dependencies.props";
+        private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/release/2.2/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
@@ -1097,10 +1097,6 @@ namespace BenchmarkServer
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
 
-            // In theory the actual latest runtime version should be taken from the dependencies.pros file from
-            // https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Internal.AspNetCore.Universe.Lineup
-            // however this is different only if the coherence build didn't go through.
-
             // Define which Runtime and SDK will be installed.
 
             string targetFramework;
@@ -1235,7 +1231,7 @@ namespace BenchmarkServer
 
                 if (!_installedRuntimes.Contains(runtimeVersion))
                 {
-                    // Install runtime required by coherence universe
+                    // Install required runtime 
                     ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files",
                     workingDirectory: _dotnetInstallPath,
                     environmentVariables: env));
@@ -1246,7 +1242,7 @@ namespace BenchmarkServer
                 // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
                 if (job.UseRuntimeStore && targetFramework != "netcoreapp2.0" && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
                 {
-                    // Install runtime required by coherence universe
+                    // Install required runtime 
                     ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
                     workingDirectory: _dotnetInstallPath,
                     environmentVariables: env));
@@ -1388,7 +1384,7 @@ namespace BenchmarkServer
                         if (entry.FullName.EndsWith("/crossgen", StringComparison.OrdinalIgnoreCase))
                         {
                             var crossgenFolder = job.SelfContained
-                                ? Path.Combine(outputFolder, "crossgen")
+                                ? outputFolder
                                 : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeVersion)
                                 ;
 
@@ -1396,6 +1392,9 @@ namespace BenchmarkServer
 
                             if (!File.Exists(crossgenFilename))
                             {
+                                // Ensure the target folder is created
+                                Directory.CreateDirectory(Path.GetDirectoryName(crossgenFilename));
+
                                 entry.ExtractToFile(crossgenFilename);
                                 Log.WriteLine($"Copied crossgen to {crossgenFolder}");
                             }
@@ -1430,14 +1429,14 @@ namespace BenchmarkServer
         /// </summary>
         private static async Task<string> GetLatestRuntimeVersion(string buildToolsPath)
         {
-            var universeDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_universeDependenciesUrl));
-            await DownloadFileAsync(_universeDependenciesUrl, universeDependenciesPath, maxRetries: 5, timeout: 10);
-            var latestRuntimeVersion = XDocument.Load(universeDependenciesPath).Root
+            var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
+            await DownloadFileAsync(_aspNetCoreDependenciesUrl, aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+            var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                 .Element("PropertyGroup")
                 .Element("MicrosoftNETCoreAppPackageVersion")
                 .Value;
 
-            Log.WriteLine($"Detecting Universe Coherence runtime version: {latestRuntimeVersion}");
+            Log.WriteLine($"Detecting AspNetCore repository runtime version: {latestRuntimeVersion}");
             return latestRuntimeVersion;
         }
 
