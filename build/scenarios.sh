@@ -50,6 +50,7 @@ baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Cu
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
 routingBenchmarks="-r routing@release/2.2 --projectFile benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:20:00"
+signalrBenchmarks="-r signalr@release/2.2 --projectFile benchmarks/Microsoft.AspNetCore.SignalR.Microbenchmarks/Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj --no-arguments --description Benchmarks --arg --config=perflab"
 
 jobs=(
   # Plaintext
@@ -188,6 +189,13 @@ jobs=(
   "$routingBenchmarks --benchmarkdotnet MatcherAzureBenchmark --arg MatcherAzureBenchmark"
   "$routingBenchmarks --benchmarkdotnet MatcherBuilderAzureBenchmark --arg MatcherBuilderAzureBenchmark"
   "$routingBenchmarks --benchmarkdotnet MatcherSingleEntryBenchmark --arg MatcherSingleEntryBenchmark"
+
+  # SignalR Benchmarks
+  "$signalrBenchmarks --benchmarkdotnet HubConnectionSendBenchmark --arg HubConnectionSendBenchmark"
+  "$signalrBenchmarks --benchmarkdotnet HubConnectionReceiveBenchmark --arg HubConnectionReceiveBenchmark"
+  "$signalrBenchmarks --benchmarkdotnet HubProtocolBenchmark --arg HubProtocolBenchmark"
+  "$signalrBenchmarks --benchmarkdotnet HubConnectionContextBenchmark --arg HubConnectionContextBenchmark"
+  "$signalrBenchmarks --benchmarkdotnet DefaultHubDispatcherBenchmark --arg DefaultHubDispatcherBenchmark"
 )
 
 # build driver
