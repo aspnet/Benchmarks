@@ -185,6 +185,8 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
+            createIssue.Labels.Add("perf-regression");
+
             Console.Write(createIssue.Body);
             
             var issue = await client.Issue.Create(_repositoryId, createIssue);
