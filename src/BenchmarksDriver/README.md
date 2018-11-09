@@ -56,6 +56,7 @@ Options:
   --enable-eventpipe     Enables EventPipe perf collection.
   --before-shutdown      An endpoint to call before the application has shut down.
   -sp|--span             The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days
+  -md|--markdown         Formats the output in markdown
   -t|--table             Table name of the SQL Database to store results
   --no-crossgen          Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.
   --tiered-compilation   Enables tiered-compilation.
@@ -65,6 +66,7 @@ Options:
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
   --save                 Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.
+  --diff                 Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.
   -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
