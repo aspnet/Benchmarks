@@ -22,14 +22,14 @@ namespace CommitResolver
             var app = new CommandLineApplication();
 
             app.HelpOption();
-            var aspNetVersion = app.Option("-a|--aspnet <VERSIONS>", "The ASP.NET Core versions", CommandOptionType.MultipleValue);
-            var runtimeVersion = app.Option<int>("-r|--runtime <VERSIONS>", "The .NET Core Runtime versions", CommandOptionType.MultipleValue);
+            var aspNetVersion = app.Option("-a|--aspnet <VERSION>", "The ASP.NET Core versions", CommandOptionType.MultipleValue);
+            var runtimeVersion = app.Option("-r|--runtime <VERSION>", "The .NET Core Runtime versions", CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
             {
                 Task.Run(async () =>
                 {
-                    if (!aspNetVersion.HasValue() && !runtimeVersion.HasValue())
+                    if (aspNetVersion.HasValue() && runtimeVersion.HasValue())
                     {
                         Console.WriteLine("Either -a|--aspnet or -r|--runtime parameters is required");
                         return;
@@ -62,7 +62,6 @@ namespace CommitResolver
 
                     if (runtimeVersion.HasValue())
                     {
-
                         var coreClrValues = new List<string>();
                         var coreFxValues = new List<string>();
 
