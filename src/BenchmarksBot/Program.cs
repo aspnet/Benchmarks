@@ -246,7 +246,7 @@ namespace BenchmarksBot
             {
                 Filter = IssueFilter.Created,
                 State = ItemStateFilter.All,
-                Since = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(3))
+                Since = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(8))
             };
 
             var issues = await client.Issue.GetAllForRepository(_repositoryId, recently);
