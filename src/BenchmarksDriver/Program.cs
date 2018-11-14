@@ -124,7 +124,7 @@ namespace BenchmarksDriver
             var argOption = app.Option("-a|--arg",
                 "Argument to pass to the application. (e.g., --arg \"--raw=true\" --arg \"single_value\")", CommandOptionType.MultipleValue);
             var noArgumentsOptions = app.Option("--no-arguments",
-                "Removes any predefined arguments.", CommandOptionType.NoValue);
+                "Removes any predefined arguments from the server application command line.", CommandOptionType.NoValue);
             var portOption = app.Option("--port",
                 "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
             var readyTextOption = app.Option("--ready-text",

@@ -197,7 +197,7 @@ namespace BenchmarkServer.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> UploadAttachment(AttachmentViewModel attachment)
         {
-            Log($"Uploading attachent");
+            Log($"Uploading attachment: {attachment.DestinationFilename}");
 
             var job = _jobs.Find(attachment.Id);
             var tempFilename = Path.GetTempFileName();
