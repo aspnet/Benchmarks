@@ -62,6 +62,9 @@
     <!-- This package is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. -->
     <!-- It is necessary though for if the SDK doesn't have knowledge of the runtime version, e.g. using SDK 2.1.400 with 3.0.0-preview runtime. -->
     <PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+
+    <!-- In netcoreapp3.0 the EF package is not part of the .App package anymore -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />
   </ItemGroup>
 
 
