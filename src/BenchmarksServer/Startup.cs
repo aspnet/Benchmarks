@@ -1150,7 +1150,7 @@ namespace BenchmarkServer
                 targetFramework = CurrentTargetFramework;
             }
 
-            var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, targetFramework), maxRetries: 5)).Trim();
+            var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, TfmToBranches[targetFramework]), maxRetries: 5)).Trim();
             Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
@@ -1438,7 +1438,7 @@ namespace BenchmarkServer
         private static async Task<string> GetRuntimeVersion(string buildToolsPath, string targetFramework)
         {
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
-            await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, targetFramework), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+            await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, TfmToBranches[targetFramework]), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
             var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                 .Element("PropertyGroup")
                 .Element("MicrosoftNETCoreAppPackageVersion")
