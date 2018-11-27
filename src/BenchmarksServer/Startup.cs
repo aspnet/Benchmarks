@@ -32,12 +32,20 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        // Version of ASP.NET used when targetting the Current versions
-        // TODO: Update the condition in Benchmarks.csproj whenever this version is changed
-        private static string CurrentAspNetCoreVersion = "2.1.4";
+        // Maps a TFM to the github branch of several repositories
+        private static Dictionary<string, string> TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {"netcoreapp2.1", "release/2.1"},
+            {"netcoreapp2.2", "release/2.2"},
+            {"netcoreapp3.0", "master"}
+        };
+
+        private static string CurrentAspNetCoreVersionTFM = "netcoreapp2.1";
+        private static string LatestAspNetCoreVersionTFM = "netcoreapp2.2";
 
         // TFM when using the Current versions
         private static string CurrentTargetFramework = "netcoreapp2.1";
+        private static string CurrentAspNetCoreVersion = "2.1.6";
 
         private const string PerfViewVersion = "P2.0.26";
 
@@ -48,8 +56,8 @@ namespace BenchmarkServer
         private static readonly string _latestAspnetCoreRuntimeUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
         private static readonly string _currentDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/Current/latest.version";
         private static readonly string _edgeDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.2/latest.version";
-        private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/release/2.2/files/KoreBuild/config/sdk.version";
-        private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/release/2.2/build/dependencies.props";
+        private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/{0}/files/KoreBuild/config/sdk.version";
+        private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
 
         // Cached lists of SDKs and runtimes already installed
@@ -1106,12 +1114,12 @@ namespace BenchmarkServer
 
             if (!String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                // Default targetFramework
-                targetFramework = "netcoreapp2.2";
+                // Default targetFramework (Latest)
+                targetFramework = LatestAspNetCoreVersionTFM;
 
                 if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
                 {
-                    runtimeVersion = await GetLatestRuntimeVersion(buildToolsPath);
+                    runtimeVersion = await GetRuntimeVersion(buildToolsPath, LatestAspNetCoreVersionTFM);
                 }
                 else if (String.Equals(job.RuntimeVersion, "Edge", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1142,7 +1150,7 @@ namespace BenchmarkServer
                 targetFramework = CurrentTargetFramework;
             }
 
-            var sdkVersion = (await ReadUrlStringAsync(_sdkVersionUrl, maxRetries: 5)).Trim();
+            var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, targetFramework), maxRetries: 5)).Trim();
             Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
@@ -1427,10 +1435,10 @@ namespace BenchmarkServer
         /// <summary>
         /// Retrieves the runtime version used on ASP.NET Coherence builds
         /// </summary>
-        private static async Task<string> GetLatestRuntimeVersion(string buildToolsPath)
+        private static async Task<string> GetRuntimeVersion(string buildToolsPath, string targetFramework)
         {
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
-            await DownloadFileAsync(_aspNetCoreDependenciesUrl, aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+            await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, targetFramework), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
             var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                 .Element("PropertyGroup")
                 .Element("MicrosoftNETCoreAppPackageVersion")
