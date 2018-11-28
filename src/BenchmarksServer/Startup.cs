@@ -40,7 +40,6 @@ namespace BenchmarkServer
             {"netcoreapp3.0", "master"}
         };
 
-        private static string CurrentAspNetCoreVersionTFM = "netcoreapp2.1";
         private static string LatestAspNetCoreVersionTFM = "netcoreapp2.2";
 
         // TFM when using the Current versions
@@ -1151,7 +1150,16 @@ namespace BenchmarkServer
             }
 
             var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, TfmToBranches[targetFramework]), maxRetries: 5)).Trim();
-            Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
+
+            if (targetFramework == "netcoreapp3.0")
+            {
+                sdkVersion = "3.0.100-preview-009799";
+                Log.WriteLine($"Detected netcoreapp3.0, forcing SDK version: {sdkVersion}");
+            }
+            else
+            {
+                Log.WriteLine($"Found compatible SDK version: {sdkVersion}");
+            }
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
             Log.WriteLine($"Writing global.json with content: {globalJson}");
