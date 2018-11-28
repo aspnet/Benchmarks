@@ -41,7 +41,7 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
   </ItemGroup>
   
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.2' or $(TargetFramework) == 'netcoreapp3.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
 
@@ -59,9 +59,23 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
+
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
+                                  DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+                                  LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+                                  TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
+
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
+
     <!-- This package is implicitly referenced by the .NET SDK and you do not typically need to reference it from your project. -->
     <!-- It is necessary though for if the SDK doesn't have knowledge of the runtime version, e.g. using SDK 2.1.400 with 3.0.0-preview runtime. -->
-    <PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <!--<PackageReference Include="Microsoft.NetCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" />-->
 
     <!-- In netcoreapp3.0 the EF package is not part of the .App package anymore -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />
