@@ -62,7 +62,12 @@
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
 
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
+                                  DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+                                  LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+                                  TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
