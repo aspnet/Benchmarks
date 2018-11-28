@@ -40,8 +40,8 @@
   </ItemGroup>
   
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.2'">
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
 
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
 
