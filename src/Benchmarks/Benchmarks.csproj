@@ -62,8 +62,13 @@
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(BenchmarksAspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
 
+    <!-- This is not necessary when targetting Microsoft.NET.Sdk.Web on 3.x-->
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
+    <!--
+    The KnownFrameworkReference is defined in “dotnet/sdk/3.x.x-x-x/Microsoft.NETCoreSdk.BundledVersions.props” 
+    Is needs to be updated to reference the specific AspNetCore.App version, but this will likely break in the near future.
+    -->
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
                                   DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
