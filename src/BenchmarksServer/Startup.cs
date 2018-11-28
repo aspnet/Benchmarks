@@ -1100,7 +1100,7 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(buildToolsPath);
             }
 
-            Log.WriteLine("Installing dotnet runtimes and sdk");
+            Log.WriteLine($"Installing dotnet runtimes and sdk in: {_dotnetInstallPath}");
 
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
