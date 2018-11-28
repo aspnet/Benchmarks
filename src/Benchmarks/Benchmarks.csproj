@@ -46,8 +46,10 @@
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(BenchmarksAspNetCoreVersion)" />
-
+    <!--<PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(BenchmarksAspNetCoreVersion)" />-->
+    <!-- Temporary pinned version until the package is built again -->
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.1" />
+    
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
