@@ -15,6 +15,7 @@ namespace BenchmarkServer
         public static string Clone(string path, string repository, bool shallow = true, string branch = null)
         {
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
+
             var depth = shallow ? "--depth 1" : "";
 
             var result = RunGitCommand(path, $"clone -c core.longpaths=true {depth} {branchParam} {repository}", CloneTimeout, retries: 5);

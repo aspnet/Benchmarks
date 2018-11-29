@@ -914,13 +914,8 @@ namespace BenchmarkServer
             var source = job.Source;
             // Docker image names must be lowercase
             var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
-            var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository));
+            var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit));
             var workingDirectory = Path.Combine(cloneDir, source.DockerContextDirectory);
-
-            if (!string.IsNullOrEmpty(source.BranchOrCommit))
-            {
-                Git.Checkout(cloneDir, source.BranchOrCommit);
-            }
 
             ProcessUtil.Run("docker", $"build --pull --no-cache -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: cloneDir);
 
@@ -1061,15 +1056,10 @@ namespace BenchmarkServer
 
                 foreach (var source in repos)
                 {
-                    var dir = Git.Clone(path, source.Repository);
+                    var dir = Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit);
                     if (SourceRepoComparer.Instance.Equals(source, job.Source))
                     {
                         benchmarkedDir = dir;
-                    }
-
-                    if (!string.IsNullOrEmpty(source.BranchOrCommit))
-                    {
-                        Git.Checkout(Path.Combine(path, dir), source.BranchOrCommit);
                     }
 
                     Git.InitSubModules(Path.Combine(path, dir));
