@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -77,7 +78,7 @@ namespace CommitResolver
                             Console.WriteLine($"https://github.com/dotnet/corefx/commit/{coreFxValues[0]}");
                             Console.WriteLine();
                             Console.WriteLine("Microsoft.NetCore.App / Core CLR");
-                            Console.WriteLine($"https://github.com/dotnet/corefx/commit/{coreClrValues[0]}");
+                            Console.WriteLine($"https://github.com/dotnet/coreclr/commit/{coreClrValues[0]}");
                         }
                         else 
                         {
@@ -87,7 +88,7 @@ namespace CommitResolver
                                 Console.WriteLine($"https://github.com/dotnet/corefx/compare/{coreFxValues[i-1]}...{coreFxValues[i]}");
                                 Console.WriteLine();
                                 Console.WriteLine("Microsoft.NetCore.App / Core CLR");
-                                Console.WriteLine($"https://github.com/dotnet/corefx/compare/{coreClrValues[i-1]}...{coreClrValues[i]}");
+                                Console.WriteLine($"https://github.com/dotnet/coreclr/compare/{coreClrValues[i-1]}...{coreClrValues[i]}");
                             }
                         }
                     }
@@ -188,24 +189,17 @@ namespace CommitResolver
                             var informationalVersionAttribute = assembly.CustomAttributes.Where(x => x.AttributeType.Name == "AssemblyInformationalVersionAttribute").FirstOrDefault();
                             var argumentValule = informationalVersionAttribute.ConstructorArguments[0].Value.ToString();
 
-                            var srcCodeIndex = argumentValule.IndexOf("@SrcCode: ");
+                            var commitHashRegex = new Regex("[0-9a-f]{40}");
 
-                            if (srcCodeIndex == -1)
+                            var match = commitHashRegex.Match(argumentValule);
+
+                            if (match.Success)
                             {
-                                return null;
-                            }
-
-                            srcCodeIndex = srcCodeIndex + 10;
-
-                            var end = argumentValule.IndexOf(' ', srcCodeIndex);
-
-                            if (end == -1)
-                            {
-                                return argumentValule.Substring(srcCodeIndex).Split('/').LastOrDefault();
+                                return match.Value;
                             }
                             else
                             {
-                                return argumentValule.Substring(srcCodeIndex, end - srcCodeIndex).Split('/').LastOrDefault();
+                                return null;
                             }
                         }
                     }
