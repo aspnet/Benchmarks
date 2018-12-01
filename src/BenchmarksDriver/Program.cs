@@ -183,6 +183,8 @@ namespace BenchmarksDriver
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
+            var frameworkOption = app.Option("--framework",
+                "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -500,6 +502,10 @@ namespace BenchmarksDriver
                 if (noCleanOption.HasValue())
                 {
                     serverJob.NoClean = true;
+                }
+                if (frameworkOption.HasValue())
+                {
+                    serverJob.Framework = frameworkOption.Value();
                 }
                 if (collectTraceOption.HasValue())
                 {

@@ -1139,6 +1139,12 @@ namespace BenchmarkServer
                 targetFramework = CurrentTargetFramework;
             }
 
+            // If a specific framework is set, use it instead of the detected one
+            if (!String.IsNullOrEmpty(job.Framework))
+            {
+                targetFramework = job.Framework;
+            }
+
             var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, TfmToBranches[targetFramework]), maxRetries: 5)).Trim();
 
             if (targetFramework == "netcoreapp3.0")

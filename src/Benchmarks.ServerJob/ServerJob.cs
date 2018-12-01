@@ -110,6 +110,7 @@ namespace Benchmarks.ServerJob
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, string> BuildProperties { get; set; } = new Dictionary<string, string>();
         public bool NoClean { get; set; }
+        public string Framework { get; set; }
         public string Error { get; set; }
         public string Output { get; set; }
         public bool SelfContained { get; set; }
