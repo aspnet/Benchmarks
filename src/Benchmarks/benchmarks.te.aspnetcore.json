@@ -3,7 +3,7 @@
     "Source": {
       "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
       "BranchOrCommit": "master",
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore.dockerfile",
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore.dockerfile",
       "DockerImageName": "aspnetcore",
       "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
     },
