@@ -1320,10 +1320,10 @@ namespace BenchmarkServer
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
             }
 
-            // Apply custom build properties sent from the driver
-            foreach (var bp in job.BuildProperties)
+            // Apply custom build arguments sent from the driver
+            foreach (var argument in job.BuildArguments)
             {
-                buildParameters += $"/p:{bp.Key}={bp.Value} ";
+                buildParameters += $"{argument} ";
             }
 
             // Specify tfm in case the project targets multiple one

@@ -63,7 +63,7 @@ Options:
   --tiered-compilation   Enables tiered-compilation.
   --self-contained       Publishes the .NET Core runtime with the application.
   -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
-  -b|--build-property    Defines custom build properties to use with the benchmarked application e.g., -bp KEY=VALUE -e "A=B"
+  -b|--build-arg         Defines custom build arguments to use with the benchmarked application e.g., -b "/p:foo=bar" --build-arg "quiet"
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
   --save                 Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.
