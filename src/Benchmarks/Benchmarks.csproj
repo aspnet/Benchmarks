@@ -17,6 +17,9 @@
     <PackageReference Include="Jil" Version="$(JilVersion)" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
     <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
+    
+    <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
+    <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
