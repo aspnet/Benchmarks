@@ -185,6 +185,8 @@ namespace BenchmarksDriver
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
             var frameworkOption = app.Option("--framework",
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
+            var sdkOption = app.Option("--sdk",
+                "SDK version to use", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -506,6 +508,10 @@ namespace BenchmarksDriver
                 if (frameworkOption.HasValue())
                 {
                     serverJob.Framework = frameworkOption.Value();
+                }
+                if (sdkOption.HasValue())
+                {
+                    serverJob.SdkVersion = sdkOption.Value();
                 }
                 if (collectTraceOption.HasValue())
                 {

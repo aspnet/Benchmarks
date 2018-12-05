@@ -75,7 +75,9 @@ Options:
   --display-output       Displays the standard output from the server job.
   --benchmarkdotnet      Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Benchmarks.LabPerf.Md5VsSha256
   --console              Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.
-
+  --server-timeout       Timeout for server jobs. e.g., 00:05:00
+  --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
+  --sdk                  SDK version to use
 
 Properties of the Wrk client
 
