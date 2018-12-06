@@ -36,9 +36,10 @@
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.1.1</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
-    <PomeloEntityFrameworkCoreMySqlVersion21>2.1.1</PomeloEntityFrameworkCoreMySqlVersion21>
+    <PomeloEntityFrameworkCoreMySqlVersion21>2.1.2</PomeloEntityFrameworkCoreMySqlVersion21>
 
-    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview-181114-02</MicrosoftEntityFrameworkCoreSqlServerVersion30>
+    <!-- The Npqsql driver for EF Core 3.0 doesn't exist yet -->
+    <MicrosoftEntityFrameworkCoreSqlServerVersion30>2.2.0</MicrosoftEntityFrameworkCoreSqlServerVersion30>
     <MicrosoftAspNetCoreLibuvPackageVersion30>3.0.0-preview-18577-0035</MicrosoftAspNetCoreLibuvPackageVersion30>
     
   </PropertyGroup>
