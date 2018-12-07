@@ -1186,90 +1186,116 @@ namespace BenchmarkServer
 
             var installAspNetSharedFramework = (job.UseRuntimeStore && targetFramework != "netcoreapp2.0") || actualAspNetCoreVersion.StartsWith("3.0");
 
+            var dotnetInstallStep = "";
 
-            if (OperatingSystem == OperatingSystem.Windows)
+            try
             {
-                if (!_installedRuntimes.Contains("Current"))
+                if (OperatingSystem == OperatingSystem.Windows)
                 {
-                    // Install latest stable 2.0 SDK version (and associated runtime)
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current -NoPath -SkipNonVersionedFiles",
+                    if (!_installedRuntimes.Contains("Current"))
+                    {
+                        dotnetInstallStep = "Current Core CLR runtime";
+
+                        // Install latest stable 2.0 SDK version (and associated runtime)
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current -NoPath -SkipNonVersionedFiles",
+                            workingDirectory: _dotnetInstallPath,
+                            environmentVariables: env));
+
+                        _installedRuntimes.Add("Current");
+                    }
+
+                    if (!_installedSdks.Contains(sdkVersion))
+                    {
+                        dotnetInstallStep = $"SDK version '{sdkVersion}'";
+
+                        // Install latest SDK version (and associated runtime)
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles",
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
-                    _installedRuntimes.Add("Current");
+                        _installedSdks.Add(sdkVersion);
+                    }
+
+                    if (!_installedRuntimes.Contains(runtimeVersion))
+                    {
+                        dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
+
+                        // Install runtime required for this scenario
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+
+                        _installedRuntimes.Add(runtimeVersion);
+                    }
+
+                    // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
+                    if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                    {
+                        dotnetInstallStep = $"ASP.NET version '{actualAspNetCoreVersion}'";
+
+                        // Install aspnet runtime required for this scenario
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+
+                        _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
+                    }
                 }
-
-                if (!_installedSdks.Contains(sdkVersion))
+                else
                 {
-                    // Install latest SDK version (and associated runtime)
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
+                    if (!_installedRuntimes.Contains("Current"))
+                    {
+                        dotnetInstallStep = "Current Core CLR runtime";
 
-                    _installedSdks.Add(sdkVersion);
-                }
+                        // Install latest stable SDK version (and associated runtime)
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current --no-path --skip-non-versioned-files",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+                        _installedRuntimes.Add("Current");
+                    }
 
-                if (!_installedRuntimes.Contains(runtimeVersion))
-                {
-                    // Install runtime required for this scenario
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
+                    if (!_installedSdks.Contains(sdkVersion))
+                    {
+                        dotnetInstallStep = $"SDK version '{sdkVersion}'";
+                        
+                        // Install latest SDK version (and associated runtime)
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+                        _installedSdks.Add(sdkVersion);
+                    }
 
-                    _installedRuntimes.Add(runtimeVersion);
-                }
+                    if (!_installedRuntimes.Contains(runtimeVersion))
+                    {
+                        dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
 
-                // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
-                if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
-                {
-                    // Install aspnet runtime required for this scenario
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {actualAspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
+                        // Install required runtime 
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
 
-                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
+                        _installedRuntimes.Add(runtimeVersion);
+                    }
+
+                    // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
+                    if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
+                    {
+                        dotnetInstallStep = $"ASP.NET version '{actualAspNetCoreVersion}'";
+
+                        // Install required runtime 
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+
+                        _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
+                    }
                 }
             }
-            else
+            catch (InvalidOperationException e)
             {
-                if (!_installedRuntimes.Contains("Current"))
-                {
-                    // Install latest stable SDK version (and associated runtime)
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current --no-path --skip-non-versioned-files",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
-                    _installedRuntimes.Add("Current");
-                }
+                job.Error = $"The requested version could not be found: {dotnetInstallStep}";
 
-                if (!_installedSdks.Contains(sdkVersion))
-                {
-                    // Install latest SDK version (and associated runtime)
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
-                    _installedSdks.Add(sdkVersion);
-                }
-
-                if (!_installedRuntimes.Contains(runtimeVersion))
-                {
-                    // Install required runtime 
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
-
-                    _installedRuntimes.Add(runtimeVersion);
-                }
-
-                // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
-                if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(actualAspNetCoreVersion))
-                {
-                    // Install required runtime 
-                    ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {actualAspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
-                    workingDirectory: _dotnetInstallPath,
-                    environmentVariables: env));
-
-                    _installedAspNetRuntimes.Add(actualAspNetCoreVersion);
-                }
+                return (null, null);
             }
 
             var dotnetDir = dotnetHome;
