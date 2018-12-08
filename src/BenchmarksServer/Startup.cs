@@ -1291,7 +1291,7 @@ namespace BenchmarkServer
                     }
                 }
             }
-            catch (InvalidOperationException e)
+            catch
             {
                 job.Error = $"The requested version could not be found: {dotnetInstallStep}";
 
