@@ -14,35 +14,35 @@
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
       "ScriptName": "pipeline",
-      "PipelineDepth": 16,
-      "Source": {
-        "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw.dockerfile",
-        "DockerImageName": "aspnetcore_mw"
-      }
+      "PipelineDepth": 16
+    },
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw.dockerfile",
+      "DockerImageName": "aspcore_mw"
     }
   },
   "PlaintextNonPipelined-AspNetCoreMiddleware": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw.dockerfile",
-      "DockerImageName": "aspnetcore_mw"
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw.dockerfile",
+      "DockerImageName": "aspcore_mw"
     }
   },
   "Json-AspNetCoreMiddleware": {
     "Path": "/json",
     "PresetHeaders": "Json",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw-json.dockerfile",
-      "DockerImageName": "aspnetcore_mw_json"
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-json.dockerfile",
+      "DockerImageName": "aspcore_mw_json"
     }
   },
   "FortunesPostgreSql-AspNetCoreMiddleware": {
     "Path": "/fortunes/raw",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw-ado-pg.dockerfile",
-      "DockerImageName": "aspnetcore_mw_ado_pg"
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-mw-ado-pg.dockerfile",
+      "DockerImageName": "aspcore_mw_ado_pg"
     }
   }
 }

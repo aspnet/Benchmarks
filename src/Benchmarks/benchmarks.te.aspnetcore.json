@@ -31,7 +31,7 @@
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-ado-pg.dockerfile",
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-ado-pg.dockerfile",
       "DockerImageName": "aspnetcore_ado_pg"
     }
   }
