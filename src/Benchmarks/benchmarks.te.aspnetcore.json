@@ -25,18 +25,14 @@
   },
   "Json-AspNetCore": {
     "Path": "/json",
-    "PresetHeaders": "Json",
-    "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-json.dockerfile",
-      "DockerImageName": "aspnetcore_json"
-    }
+    "PresetHeaders": "Json"
   },
   "FortunesPostgreSql-AspNetCore": {
-    "Path": "/fortunes/raw",
+    "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-middleware-raw.dockerfile",
-      "DockerImageName": "aspnetcore_middleware_raw"
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-ado-pg.dockerfile",
+      "DockerImageName": "aspnetcore_ado_pg"
     }
   }
 }

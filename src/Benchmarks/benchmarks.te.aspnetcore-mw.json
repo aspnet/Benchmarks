@@ -1,0 +1,48 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+    },
+    "Client": "Wrk",
+    "Port": 8080,
+    "ReadyStateText": "Application started."
+  },
+  "Plaintext-AspNetCoreMiddleware": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16,
+      "Source": {
+        "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw.dockerfile",
+        "DockerImageName": "aspnetcore_mw"
+      }
+    }
+  },
+  "PlaintextNonPipelined-AspNetCoreMiddleware": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw.dockerfile",
+      "DockerImageName": "aspnetcore_mw"
+    }
+  },
+  "Json-AspNetCoreMiddleware": {
+    "Path": "/json",
+    "PresetHeaders": "Json",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw-json.dockerfile",
+      "DockerImageName": "aspnetcore_mw_json"
+    }
+  },
+  "FortunesPostgreSql-AspNetCoreMiddleware": {
+    "Path": "/fortunes/raw",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspnetcore-mw-ado-pg.dockerfile",
+      "DockerImageName": "aspnetcore_mw_ado_pg"
+    }
+  }
+}
