@@ -265,12 +265,12 @@ namespace Benchmarks
                     listenOptions.ConnectionAdapters.Add(connectionFilter);
                 }
 
-#if NETCOREAPP2_2
-                if (urlPrefix.IsHttps)
+#if !NETCOREAPP2_0 && !NETCOREAPP2_1
+                if (Protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
                 {
                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                 }
-                else if (Protocol.StartsWith("h2", StringComparison.OrdinalIgnoreCase))
+                else if (Protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 }
