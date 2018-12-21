@@ -54,7 +54,6 @@ namespace BenchmarkServer
         // Substituion values when "Latest" is passed as the version
         private static string LatestTargetFramework = "netcoreapp3.0";
         private static string LatestAspNetCorePrefix = "3.0";
-        private static string LatestRuntimeVersion = "3.0.*";
 
         // Substituion values when "Current" is passed as the version
         private static string CurrentTargetFramework = "netcoreapp2.2";
@@ -67,8 +66,6 @@ namespace BenchmarkServer
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallShUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh";
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
-        private static readonly string _latestAspnetCoreRuntimeUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
-        private static readonly string _currentDotnetRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/Current/latest.version";
         private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/{0}/files/KoreBuild/config/sdk.version";
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
@@ -1201,7 +1198,7 @@ namespace BenchmarkServer
 
             if (String.Equals(job.AspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, CurrentRuntimeChannel + ".");
+                aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, CurrentAspNetCoreChannel + ".");
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
