@@ -1205,7 +1205,7 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetCoreRuntimeUrl, LatestAspNetCorePrefix);
+                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestAspNetCorePrefix);
             }
             else
             {
@@ -1217,7 +1217,7 @@ namespace BenchmarkServer
                     // Prefixed version
                     // Detect the latest available version with this prefix
 
-                    aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetCoreRuntimeUrl, runtimeVersion.TrimEnd('*'));
+                    aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, runtimeVersion.TrimEnd('*'));
                 }
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
