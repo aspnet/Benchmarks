@@ -1534,7 +1534,7 @@ namespace BenchmarkServer
             var content = await DownloadContentAsync(_releaseMetadata);
 
             var index = JObject.Parse(content);
-            var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-release").ToString();
+            var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-runtime").ToString();
 
             Log.WriteLine($"Detecting current runtime version for channel {channel}: {channelDotnetRuntime}");
             return channelDotnetRuntime;
