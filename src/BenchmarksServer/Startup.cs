@@ -2009,6 +2009,7 @@ namespace BenchmarkServer
 
         private static async Task<string> GetLatestPackageVersion(string packageIndexUrl, string versionPrefix)
         {
+            Log.WriteLine($"GetLatestPackageVersion for latest version of ");
             var index = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
             var compatiblePages = index["items"].Where(t => ((string)t["lower"]).StartsWith(versionPrefix)).ToArray();
@@ -2025,8 +2026,13 @@ namespace BenchmarkServer
 
                 var lastPage = JObject.Parse(await DownloadContentAsync(lastPageUrl));
 
+                var entries = packageIndexUrl.Contains("myget", StringComparison.OrdinalIgnoreCase)
+                                    ? lastPage["items"]
+                                    : lastPage["items"][0]["items"]
+                                    ;
+
                 // Extract the highest version
-                var lastEntry = lastPage["items"]
+                var lastEntry = entries
                     .Where(t => ((string)t["catalogEntry"]["version"]).StartsWith(versionPrefix)).LastOrDefault();
 
                 if (lastEntry != null)
