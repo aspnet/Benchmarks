@@ -1175,10 +1175,6 @@ namespace BenchmarkServer
                 sdkVersion = "3.0.100-preview-009799";
                 Log.WriteLine($"Detected netcoreapp3.0, forcing SDK version: {sdkVersion}");
             }
-            else
-            {
-                Log.WriteLine($"Found compatible SDK version: {sdkVersion}");
-            }
 
             if (!String.IsNullOrEmpty(job.SdkVersion))
             {
@@ -1209,14 +1205,16 @@ namespace BenchmarkServer
                     // Prefixed version
                     // Detect the latest available version with this prefix
 
-                    aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, runtimeVersion.TrimEnd('*'));
+                    aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, aspNetCoreVersion.TrimEnd('*'));
                 }
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
                     // Channel version with a prefix, e.g. 2.1
-                    aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, job.AspNetCoreVersion + ".");
+                    aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
                 }
             }
+
+            Log.WriteLine($"Detected ASP.NET version: {aspNetCoreVersion}");
 
             var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0");
 
@@ -1958,7 +1956,7 @@ namespace BenchmarkServer
 
         private static async Task<string> GetLatestPackageVersion(string packageIndexUrl, string versionPrefix)
         {
-            Log.WriteLine($"Getting latest package version for {versionPrefix}");
+            Log.WriteLine($"Downloading package metadata ...");
             var index = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
             var compatiblePages = index["items"].Where(t => ((string)t["lower"]).StartsWith(versionPrefix)).ToArray();
