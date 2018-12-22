@@ -32,14 +32,6 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-        // Maps a TFM to the github branch of several repositories
-        private static Dictionary<string, string> TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            {"netcoreapp2.1", "release/2.1"},
-            {"netcoreapp2.2", "release/2.2"},
-            {"netcoreapp3.0", "master"}
-        };
-
 
         /*
          * List of accepted values for AspNetCoreVersion and RuntimeVersion
@@ -53,12 +45,11 @@ namespace BenchmarkServer
 
         // Substituion values when "Latest" is passed as the version
         private static string LatestTargetFramework = "netcoreapp3.0";
-        private static string LatestAspNetCorePrefix = "3.0";
+        private static string LatestChannel = "3.0";
 
         // Substituion values when "Current" is passed as the version
         private static string CurrentTargetFramework = "netcoreapp2.2";
-        private static string CurrentAspNetCoreChannel = "2.2";
-        private static string CurrentRuntimeChannel = "2.2";
+        private static string CurrentChannel = "2.2";
 
         private const string PerfViewVersion = "P2.0.26";
 
@@ -66,7 +57,6 @@ namespace BenchmarkServer
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallShUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh";
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
-        private static readonly string _sdkVersionUrl = "https://raw.githubusercontent.com/aspnet/BuildTools/{0}/files/KoreBuild/config/sdk.version";
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}/build/dependencies.props";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
@@ -1114,21 +1104,23 @@ namespace BenchmarkServer
             string targetFramework;
             string runtimeVersion;
             string aspNetCoreVersion;
-
+            string channel;
 
             // Default targetFramework (Latest)
             targetFramework = LatestTargetFramework;
 
             if (String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                runtimeVersion = await GetRuntimeChannelVersion(CurrentRuntimeChannel);
+                runtimeVersion = await GetRuntimeChannelVersion(CurrentChannel);
                 targetFramework = CurrentTargetFramework;
+                channel = CurrentChannel;
             }
             else if(String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
                 // Get the version that is defined by the ASP.NET repository
                 // Note: to use the latest version available, use a value like 3.0.*
                 runtimeVersion = await GetAspNetRuntimeVersion(buildToolsPath, LatestTargetFramework);
+                channel = LatestChannel;
             }
             else
             {
@@ -1140,12 +1132,19 @@ namespace BenchmarkServer
                     // Prefixed version
                     // Detect the latest available version with this prefix
 
+                    channel = runtimeVersion.TrimEnd('*', '.');
                     runtimeVersion = await GetLatestPackageVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
                 }
                 else if (runtimeVersion.Split('.').Length == 2)
                 {
                     // Channel version with a prefix, e.g. 2.1
+                    channel = runtimeVersion;
                     runtimeVersion = await GetRuntimeChannelVersion(runtimeVersion);
+                }
+                else
+                {
+                    // Specific version
+                    channel = String.Join(".", runtimeVersion.Split('.').Take(2));
                 }
 
                 if (runtimeVersion.StartsWith("2.0"))
@@ -1172,7 +1171,7 @@ namespace BenchmarkServer
                 targetFramework = job.Framework;
             }
 
-            var sdkVersion = (await ReadUrlStringAsync(String.Format(_sdkVersionUrl, TfmToBranches[targetFramework]), maxRetries: 5)).Trim();
+            var sdkVersion = await GetSdkChannelVersion(channel);
 
             if (targetFramework == "netcoreapp3.0")
             {
@@ -1198,11 +1197,11 @@ namespace BenchmarkServer
 
             if (String.Equals(job.AspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, CurrentAspNetCoreChannel + ".");
+                aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, CurrentChannel + ".");
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestAspNetCorePrefix);
+                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestChannel + ".");
             }
             else
             {
@@ -1515,6 +1514,15 @@ namespace BenchmarkServer
         /// </summary>
         private static async Task<string> GetAspNetRuntimeVersion(string buildToolsPath, string targetFramework)
         {
+            // Maps a TFM to the github branch of several repositories
+            var TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                {"netcoreapp2.0", "release/2.1"},
+                {"netcoreapp2.1", "release/2.1"},
+                {"netcoreapp2.2", "release/2.2"},
+                {"netcoreapp3.0", "master"}
+            };
+
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
             await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, TfmToBranches[targetFramework]), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
             var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
@@ -1535,6 +1543,20 @@ namespace BenchmarkServer
 
             var index = JObject.Parse(content);
             var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-runtime").ToString();
+
+            Log.WriteLine($"Detecting current runtime version for channel {channel}: {channelDotnetRuntime}");
+            return channelDotnetRuntime;
+        }
+
+        /// <summary>
+        /// Retrieves the current sdk version for a channel
+        /// </summary>
+        private static async Task<string> GetSdkChannelVersion(string channel)
+        {
+            var content = await DownloadContentAsync(_releaseMetadata);
+
+            var index = JObject.Parse(content);
+            var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
 
             Log.WriteLine($"Detecting current runtime version for channel {channel}: {channelDotnetRuntime}");
             return channelDotnetRuntime;
@@ -1561,40 +1583,6 @@ namespace BenchmarkServer
                     }
 
                     return;
-                }
-                catch (OperationCanceledException)
-                {
-                    Log.WriteLine($"Timeout trying to download {url}, attempt {i + 1}");
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
-                }
-            }
-
-            throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
-        }
-
-        private static async Task<string> ReadUrlStringAsync(string url, int maxRetries, int timeout = 5)
-        {
-            Log.WriteLine($"Downloading {url}");
-
-            for (var i = 0; i < maxRetries; ++i)
-            {
-                try
-                {
-                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
-                    response.EnsureSuccessStatusCode();
-
-                    // This probably won't use async IO on windows since the stream
-                    // needs to created with the right flags
-                    using (var stream = new MemoryStream())
-                    {
-                        // Copy the response stream directly to the file stream
-                        await response.Content.CopyToAsync(stream);
-                        return Encoding.UTF8.GetString(stream.ToArray());
-                    }
                 }
                 catch (OperationCanceledException)
                 {
