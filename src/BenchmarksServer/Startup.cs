@@ -38,9 +38,9 @@ namespace BenchmarkServer
          * 
             Current The latest stable version
             Latest  The latest available version
-            2.0     The latest stable version for 2.0, e.g. 2.0.9 (channel version)
-            2.0.*   The latest service release for 2.0, e.g. 2.0.10-servicing-12345
-            2.0.8   This specific version
+            2.1     The latest stable version for 2.1, e.g. 2.1.9 (channel version)
+            2.1.*   The latest service release for 2.1, e.g. 2.1.10-servicing-12345
+            2.1.8   This specific version
          */
 
         // Substituion values when "Latest" is passed as the version
@@ -1147,11 +1147,7 @@ namespace BenchmarkServer
                     channel = String.Join(".", runtimeVersion.Split('.').Take(2));
                 }
 
-                if (runtimeVersion.StartsWith("2.0"))
-                {
-                    targetFramework = "netcoreapp2.0";
-                }
-                else if (runtimeVersion.StartsWith("2.1"))
+                if (runtimeVersion.StartsWith("2.1"))
                 {
                     targetFramework = "netcoreapp2.1";
                 }
@@ -1222,7 +1218,7 @@ namespace BenchmarkServer
                 }
             }
 
-            var installAspNetSharedFramework = (job.UseRuntimeStore && targetFramework != "netcoreapp2.0") || aspNetCoreVersion.StartsWith("3.0");
+            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0");
 
             var dotnetInstallStep = "";
 
@@ -1230,18 +1226,6 @@ namespace BenchmarkServer
             {
                 if (OperatingSystem == OperatingSystem.Windows)
                 {
-                    if (!_installedRuntimes.Contains("Current"))
-                    {
-                        dotnetInstallStep = "Current Core CLR runtime";
-
-                        // Install latest stable 2.0 SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel Current -NoPath -SkipNonVersionedFiles",
-                            workingDirectory: _dotnetInstallPath,
-                            environmentVariables: env));
-
-                        _installedRuntimes.Add("Current");
-                    }
-
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
@@ -1281,17 +1265,6 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    if (!_installedRuntimes.Contains("Current"))
-                    {
-                        dotnetInstallStep = "Current Core CLR runtime";
-
-                        // Install latest stable SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --channel Current --no-path --skip-non-versioned-files",
-                        workingDirectory: _dotnetInstallPath,
-                        environmentVariables: env));
-                        _installedRuntimes.Add("Current");
-                    }
-
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
@@ -1356,15 +1329,7 @@ namespace BenchmarkServer
                 $"/p:MicrosoftNETCoreAppPackageVersion={runtimeVersion} " +
                 $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
 
-            if (targetFramework == "netcoreapp2.0")
-            {
-                buildParameters += $"/p:MicrosoftNETCoreApp20PackageVersion={runtimeVersion} ";
-                if (!job.UseRuntimeStore)
-                {
-                    buildParameters += $"/p:PublishWithAspNetCoreTargetManifest=false ";
-                }
-            }
-            else if (targetFramework == "netcoreapp2.1")
+            if (targetFramework == "netcoreapp2.1")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp21PackageVersion={runtimeVersion} ";
                 if (!job.UseRuntimeStore)
@@ -1517,7 +1482,6 @@ namespace BenchmarkServer
             // Maps a TFM to the github branch of several repositories
             var TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                {"netcoreapp2.0", "release/2.1"},
                 {"netcoreapp2.1", "release/2.1"},
                 {"netcoreapp2.2", "release/2.2"},
                 {"netcoreapp3.0", "master"}
@@ -1556,10 +1520,10 @@ namespace BenchmarkServer
             var content = await DownloadContentAsync(_releaseMetadata);
 
             var index = JObject.Parse(content);
-            var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
+            var channelSdk = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
 
-            Log.WriteLine($"Detecting current runtime version for channel {channel}: {channelDotnetRuntime}");
-            return channelDotnetRuntime;
+            Log.WriteLine($"Detecting current SDK version for channel {channel}: {channelSdk}");
+            return channelSdk;
         }
 
         private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5)
@@ -1994,7 +1958,7 @@ namespace BenchmarkServer
 
         private static async Task<string> GetLatestPackageVersion(string packageIndexUrl, string versionPrefix)
         {
-            Log.WriteLine($"GetLatestPackageVersion for latest version of ");
+            Log.WriteLine($"Getting latest package version for {versionPrefix}");
             var index = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
             var compatiblePages = index["items"].Where(t => ((string)t["lower"]).StartsWith(versionPrefix)).ToArray();
