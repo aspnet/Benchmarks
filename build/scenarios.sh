@@ -46,7 +46,6 @@ basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet
 http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
 
 trend="--description Trend/Latest"
-baseline="--description Baseline --aspnetCoreVersion Current --runtimeVersion Current"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
 routingBenchmarks="-r AspNetCore@master --projectFile src/Routing/benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:20:00"
@@ -56,11 +55,8 @@ jobs=(
   "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
   "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
-  "-n Plaintext --webHost KestrelSockets $baseline $plaintextJobs -i 3"
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
-  "-n PlaintextNonPipelined --webHost KestrelSockets $baseline $plaintextJobs"
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs" 
-  "-n MvcPlaintext --webHost KestrelSockets $baseline $plaintextJobs -i 3"
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
   "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
@@ -68,11 +64,9 @@ jobs=(
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3" 
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 
   "-n JsonPlatform --webHost KestrelLibuv $trend $jsonPlatformJobs" 
-  "-n Json --webHost KestrelSockets $baseline $jsonJobs"
   "-n Json --webHost KestrelSockets $trend $jsonJobs" 
   "-n Json --webHost KestrelLibuv $trend $jsonJobs"
   "-n Jil --webHost KestrelSockets $trend $jsonJobs"
-  "-n MvcJson --webHost KestrelSockets $baseline $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $trend $jsonJobs" 
   "-n MvcJson --webHost KestrelLibuv $trend $jsonJobs" 
   "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
@@ -80,16 +74,13 @@ jobs=(
   "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs" 
 
   # Https
-  "-n Plaintext -m https --webHost KestrelSockets $baseline $plaintextJobs"
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
   "-n Plaintext -m https --webHost KestrelLibuv $trend $plaintextJobs"
   "-n Plaintext -m https --webHost HttpSys $trend $plaintextJobs --windows-only"
   "-n Json -m https --webHost KestrelSockets $trend $jsonJobs"
   "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
-  "-n Json -m https --webHost KestrelSockets $baseline $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
   "-n PlaintextNonPipelined -m https --webHost KestrelSockets $trend $plaintextJobs"
-  "-n PlaintextNonPipelined -m https --webHost KestrelSockets $baseline $plaintextJobs"
   
   # Http2
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2"
@@ -134,11 +125,9 @@ jobs=(
 
   # Database Fortunes
   "-n DbFortunesRaw --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
-  "-n DbFortunesRaw --webHost KestrelSockets $baseline $htmlJobs --database PostgreSql"
   "-n DbFortunesDapper --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n DbFortunesMongoDb --webHost KestrelSockets $trend $htmlJobs --database MongoDb"
   "-n DbFortunesEf --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
-  "-n DbFortunesEf --webHost KestrelSockets $baseline $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesRaw --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesDapper --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesEf --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
