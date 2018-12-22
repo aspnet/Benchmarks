@@ -1132,7 +1132,7 @@ namespace BenchmarkServer
                     // Prefixed version
                     // Detect the latest available version with this prefix
 
-                    channel = runtimeVersion.TrimEnd('*', '.');
+                    channel = String.Join(".", runtimeVersion.Split('.').Take(2));
                     runtimeVersion = await GetLatestPackageVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
                 }
                 else if (runtimeVersion.Split('.').Length == 2)
