@@ -1551,7 +1551,7 @@ namespace BenchmarksDriver
                                 }
                             }
 
-                            if (serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
+                            if (i == iterations && serializer != null && !String.IsNullOrEmpty(sqlConnectionString))
                             {
                                 sqlTask = sqlTask.ContinueWith(async t =>
                                 {
