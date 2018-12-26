@@ -38,19 +38,23 @@ jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
 baselines=(
   # Stable 2.1
-  "--description Baseline --aspnetCoreVersion 2.1 --runtimeVersion 2.1" 
+  "--description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1" 
   
   # Servicing 2.1
-  "--description Baseline --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*"
+  "--description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*"
 
   # Stable 2.2
-  "--description Baseline --aspnetCoreVersion 2.2 --runtimeVersion 2.2"
+  "--description Baseline22 --aspnetCoreVersion 2.2 --runtimeVersion 2.2"
 
   # Servicing 2.2
-  "--description Baseline --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.*"
+  "--description Baseline22Servicing --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.*"
 
-  # Current dev
+  # Current dev, running close to other baselines, with same repeat parameters
   "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest"
+
+  # Stable 2.2, Tiered Compilation on
+  "--description Baseline22TC --aspnetCoreVersion 2.2 --runtimeVersion 2.2 --tiered-compilation"
+
 )
 
 jobs=(
