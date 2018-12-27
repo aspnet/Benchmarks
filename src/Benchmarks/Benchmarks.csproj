@@ -3,6 +3,7 @@
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
+    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
@@ -79,12 +80,6 @@
                                   DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
-
-    <ImplicitPackageReferenceVersion 
-      Include="Microsoft.NETCore.App" 
-      TargetFrameworkVersion="3.0" 
-      DefaultVersion="$(MicrosoftNETCoreApp30PackageVersion)" 
-      LatestVersion="$(MicrosoftNETCoreApp30PackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
