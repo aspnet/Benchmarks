@@ -36,6 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 		build\dependencies.props = build\dependencies.props
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		build\scenarios-baselines.sh = build\scenarios-baselines.sh
 		build\scenarios-te.sh = build\scenarios-te.sh
 		build\scenarios.sh = build\scenarios.sh
 	EndProjectSection
@@ -134,7 +135,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "haproxy", "haproxy", "{662D
 		docker\haproxy\haproxy.dockerfile = docker\haproxy\haproxy.dockerfile
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommitResolver", "src\CommitResolver\CommitResolver.csproj", "{618BFF48-F91C-47F3-90CB-99AF637D0757}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommitResolver", "src\CommitResolver\CommitResolver.csproj", "{618BFF48-F91C-47F3-90CB-99AF637D0757}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
