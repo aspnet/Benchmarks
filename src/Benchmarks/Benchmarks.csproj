@@ -80,6 +80,12 @@
                                   LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
 
+    <ImplicitPackageReferenceVersion 
+        Include="Microsoft.NETCore.App" 
+        TargetFrameworkVersion="3.0" 
+        DefaultVersion="$(MicrosoftNETCoreAppPackageVersion)" 
+        LatestVersion="$(MicrosoftNETCoreAppPackageVersion)"/>
+    
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />

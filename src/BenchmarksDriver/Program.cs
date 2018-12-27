@@ -1618,6 +1618,8 @@ namespace BenchmarksDriver
                         {
                             // The job needs to be deleted
                             Log($"Server didn't stop the job in the expected time, deleting it ...");
+
+                            break;
                         }
 
                     } while (serverJob.State != ServerState.Stopped);
