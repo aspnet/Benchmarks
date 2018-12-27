@@ -31,6 +31,7 @@ fi
 # compute current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
+SESSION=`date '+%Y%m%d%H%M%S'`
 
 plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
@@ -86,7 +87,7 @@ do
         for baseline in "${baselines[@]}"
         do
             echo "New job  on '$s': $job"
-            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 3 --duration 10 --warmup 3 --quiet -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS
+            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 3 --duration 10 --warmup 3 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS
             # error code in $?
         done
     done
