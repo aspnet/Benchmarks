@@ -1169,13 +1169,6 @@ namespace BenchmarkServer
 
             var sdkVersion = await GetSdkChannelVersion(channel);
 
-            if (targetFramework == "netcoreapp3.0")
-            {
-                // TODO: Remove when ASP.NET is using a SDK that handles <FrameworkReference />
-                sdkVersion = "3.0.100-preview-009799";
-                Log.WriteLine($"Detected netcoreapp3.0, forcing SDK version: {sdkVersion}");
-            }
-
             if (!String.IsNullOrEmpty(job.SdkVersion))
             {
                 sdkVersion = job.SdkVersion;
