@@ -3,6 +3,7 @@
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
+    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
