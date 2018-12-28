@@ -10,6 +10,7 @@ docker run \
     --init \
     --name benchmarks-downstream \
     --network host \
+    --rm \
     --restart always \
     benchmarks-downstream \
     --urls http://*:5001
