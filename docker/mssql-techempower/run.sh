@@ -9,7 +9,6 @@ docker run \
     --log-opt max-file=3 \
     --name mssql-techempower \
     --network host \
-    --rm \
     --restart always \
     -e ACCEPT_EULA=Y \
     -e MSSQL_PID=Enterprise \

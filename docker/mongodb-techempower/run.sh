@@ -11,7 +11,6 @@ docker run \
     --log-opt max-file=3 \
     --name mongodb-techempower \
     --network host \
-    --rm \
     --restart always \
     -e MONGO_INITDB_DATABASE=hello_world \
     mongodb-techempower

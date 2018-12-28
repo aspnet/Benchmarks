@@ -9,6 +9,5 @@ docker run \
     --log-opt max-file=3 \
     --name mysql-techempower \
     --network host \
-    --rm \
     --restart always \
     mysql-techempower
