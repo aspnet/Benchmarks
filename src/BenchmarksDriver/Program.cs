@@ -42,6 +42,8 @@ namespace BenchmarksDriver
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
+        private static CommandOption _buildIdOption, _buildArtifactsOption, _includeOption;
+
         public static int Main(string[] args)
         {
             var app = new CommandLineApplication()
@@ -150,7 +152,13 @@ namespace BenchmarksDriver
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
-            var scriptFileOption = app.Option("--script",
+            _buildIdOption = app.Option("--build-id",
+                "AspNetCore CI build id. e.g., \"--build-id 1234\"", CommandOptionType.SingleValue);
+            _buildArtifactsOption = app.Option("--artifacts-url",
+                "CI artifacts url.", CommandOptionType.SingleValue);
+            _includeOption = app.Option("-inc|--include",
+                "Build filter prefix specifying which packages to include. Can be repeated. e.g., \"--include Microsoft.AspNetCore.Http.*\"", CommandOptionType.MultipleValue);
+            var scriptFileOption = app.Option("--scrbipt",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
                 CommandOptionType.MultipleValue);
@@ -609,6 +617,16 @@ namespace BenchmarksDriver
                     return -1;
                 }
 
+                // Check CI build parameters
+                if (_buildIdOption.HasValue() || _buildArtifactsOption.HasValue())
+                {
+                    if (!_includeOption.HasValue())
+                    {
+                        Console.WriteLine($"Include option is required when using the build id or artifacts option.");
+                        return 8;
+                    }
+                }
+
                 // Check all attachments exist
                 if (outputFileOption.HasValue())
                 {
@@ -997,6 +1015,108 @@ namespace BenchmarksDriver
                                     return result;
                                 }
 
+                            }
+
+                            // Downloading custom CI build
+
+                            if (_buildIdOption.HasValue() || _buildArtifactsOption.HasValue())
+                            {
+                                string artifactsUrl;
+
+                                if (_buildIdOption.HasValue())
+                                {
+                                    var buildId = _buildIdOption.Value();
+                                    artifactsUrl = $"https://dnceng.visualstudio.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/build/builds/63525/artifacts?artifactName=artifacts-{serverJob.OperatingSystem.ToString()}-Release&api-version=5.0&%24format=zip";
+                                }
+                                else
+                                {
+                                    artifactsUrl = _buildArtifactsOption.Value();
+                                }
+
+                                Log($"Downloading CI build artifacts from '{artifactsUrl}'");
+
+                                var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+                                if (Directory.Exists(tempFolder))
+                                {
+                                    Directory.Delete(tempFolder, true);
+                                }
+
+                                Directory.CreateDirectory(tempFolder);
+
+                                var tempFilename = Path.Combine(tempFolder, "artifacts.zip");
+
+                                // Download the CI build, while pinging the server to keep the job alive
+                                await DownloadFile(artifactsUrl, serverJobUri, tempFilename);
+
+                                // Seek required packages
+
+                                using (var stream = File.OpenRead(tempFilename))
+                                {
+                                    using (var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read))
+                                    {
+                                        foreach(var entry in zipArchive.Entries)
+                                        {
+                                            var packageName = entry.Name;
+
+                                            if (!packageName.EndsWith(".nupkg"))
+                                            {
+                                                continue;
+                                            }
+
+                                            if (packageName.EndsWith(".symbols.nupkg"))
+                                            {
+                                                continue;
+                                            }
+
+                                            // Remove the last 2 elements of the filename (.nupkg and .x.y.x<version>)
+                                            packageName = String.Join(".", packageName.Split('.').SkipLast(4));
+
+                                            foreach(var filter in _includeOption.Values)
+                                            {
+                                                if (filter.EndsWith('*') && packageName.StartsWith(filter.TrimEnd('*'), StringComparison.OrdinalIgnoreCase)
+                                                    || packageName.Equals(filter, StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    var packageFilename = Path.Combine(tempFolder, entry.Name);
+
+                                                    Log($"Extracting package '{entry.Name}'");
+
+                                                    if (!File.Exists(packageFilename))
+                                                    {
+                                                        entry.ExtractToFile(packageFilename);
+                                                    }
+
+                                                    using (var packageStream = File.OpenRead(packageFilename))
+                                                    {
+                                                        using (var packageArchive = new ZipArchive(packageStream, ZipArchiveMode.Read))
+                                                        {
+                                                            foreach(var packageEntry in packageArchive.Entries)
+                                                            {
+                                                                if (packageEntry.FullName.StartsWith("lib/netcoreapp3.0") && packageEntry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                                                                {
+                                                                    var assemblyFilename = Path.Combine(tempFolder, packageEntry.Name);
+
+                                                                    Log($"Extracting assembly '{packageEntry.Name}'");
+
+                                                                    if (!File.Exists(assemblyFilename))
+                                                                    {
+                                                                        entry.ExtractToFile(assemblyFilename);
+                                                                    }
+                                                                    
+                                                                    await UploadFileAsync(assemblyFilename, serverJob, serverJobUri + "/attachment");
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                }
+
+                                // Delete artifacts folder
+                                Directory.Delete(tempFolder, true);
                             }
 
                             // Uploading attachments
