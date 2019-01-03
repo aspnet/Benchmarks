@@ -81,6 +81,7 @@ Options:
   --build-id             AspNetCore CI build id. e.g., "--build-id 1234"
   --artifacts-url        CI artifacts url.
   -inc|--include         Build filter prefix specifying which packages to include. Can be repeated. e.g., "--include Microsoft.AspNetCore.Http.*"
+  -nupkg|--nuget-package Path of a Nuget package to include. Can be repeated. e.g., "--package c:\release\Microsoft.AspNetCore.Http.*.nupkg"
 
 
 Properties of the Wrk client

@@ -42,7 +42,12 @@ namespace BenchmarksDriver
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
-        private static CommandOption _buildIdOption, _buildArtifactsOption, _includeOption;
+        private static CommandOption 
+            _buildIdOption, 
+            _buildArtifactsOption, 
+            _includeOption,
+            _packageOption
+            ;
 
         public static int Main(string[] args)
         {
@@ -158,6 +163,8 @@ namespace BenchmarksDriver
                 "CI artifacts url.", CommandOptionType.SingleValue);
             _includeOption = app.Option("-inc|--include",
                 "Build filter prefix specifying which packages to include. Can be repeated. e.g., \"--include Microsoft.AspNetCore.Http.*\"", CommandOptionType.MultipleValue);
+            _packageOption = app.Option("-nupkg|--nuget-package",
+                "Path of a Nuget package to include. Can be repeated. e.g., \"-nupkg c:\\release\\Microsoft.AspNetCore.Http.*.nupkg\"", CommandOptionType.MultipleValue);
             var scriptFileOption = app.Option("--scrbipt",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
@@ -1069,7 +1076,7 @@ namespace BenchmarksDriver
                                                 continue;
                                             }
 
-                                            // Remove the last 2 elements of the filename (.nupkg and .x.y.x<version>)
+                                            // Remove the last 4 elements of the filename (.nupkg and .x.y.x<version>)
                                             packageName = String.Join(".", packageName.Split('.').SkipLast(4));
 
                                             foreach(var filter in _includeOption.Values)
@@ -1086,32 +1093,56 @@ namespace BenchmarksDriver
                                                         entry.ExtractToFile(packageFilename);
                                                     }
 
-                                                    using (var packageStream = File.OpenRead(packageFilename))
-                                                    {
-                                                        using (var packageArchive = new ZipArchive(packageStream, ZipArchiveMode.Read))
-                                                        {
-                                                            foreach(var packageEntry in packageArchive.Entries)
-                                                            {
-                                                                if (packageEntry.FullName.StartsWith("lib/netcoreapp3.0") && packageEntry.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                                                                {
-                                                                    var assemblyFilename = Path.Combine(tempFolder, packageEntry.Name);
-
-                                                                    Log($"Extracting assembly '{packageEntry.Name}'");
-
-                                                                    if (!File.Exists(assemblyFilename))
-                                                                    {
-                                                                        entry.ExtractToFile(assemblyFilename);
-                                                                    }
-                                                                    
-                                                                    await UploadFileAsync(assemblyFilename, serverJob, serverJobUri + "/attachment");
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                                                    await UploadPackageAsync(serverJob, serverJobUri, tempFolder, packageFilename);
                                                 }
                                             }
                                         }
+                                    }
+                                }
 
+                                // Delete artifacts folder
+                                Directory.Delete(tempFolder, true);
+                            }
+
+                            // 
+
+                            if (_packageOption.HasValue())
+                            {
+                                var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+                                if (Directory.Exists(tempFolder))
+                                {
+                                    Directory.Delete(tempFolder, true);
+                                }
+
+                                Directory.CreateDirectory(tempFolder);
+
+                                foreach(var filter in _packageOption.Values)
+                                {
+                                    var filterPackageName = String.Join(".", Path.GetFileName(filter).Split('.').SkipLast(4));
+
+                                    var directory = Path.GetDirectoryName(filter);
+
+                                    foreach (var file in Directory.GetFiles(directory))
+                                    {
+                                        if (!file.EndsWith(".nupkg"))
+                                        {
+                                            continue;
+                                        }
+
+                                        if (file.EndsWith(".symbols.nupkg"))
+                                        {
+                                            continue;
+                                        }
+
+                                        // Remove the last 4 elements of the filename (.nupkg and .x.y.x<version>)
+                                        var packageName = String.Join(".", Path.GetFileName(file).Split('.').SkipLast(4));
+
+                                        if (filterPackageName.EndsWith('*') && packageName.StartsWith(filterPackageName.TrimEnd('*'), StringComparison.OrdinalIgnoreCase)
+                                            || packageName.Equals(filterPackageName, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            await UploadPackageAsync(serverJob, serverJobUri, tempFolder, file);
+                                        }
                                     }
                                 }
 
@@ -1851,6 +1882,32 @@ namespace BenchmarksDriver
             }
 
             return 0;
+        }
+
+        private static async Task UploadPackageAsync(ServerJob serverJob, Uri serverJobUri, string tempFolder, string packageFilename)
+        {
+            using (var packageStream = File.OpenRead(packageFilename))
+            {
+                using (var packageArchive = new ZipArchive(packageStream, ZipArchiveMode.Read))
+                {
+                    foreach (var packageEntry in packageArchive.Entries)
+                    {
+                        if (packageEntry.FullName.StartsWith("lib/netcoreapp3.0"))
+                        {
+                            var assemblyFilename = Path.Combine(tempFolder, packageEntry.Name);
+
+                            Log($"Extracting '{packageEntry.Name}'");
+
+                            if (!File.Exists(assemblyFilename))
+                            {
+                                packageEntry.ExtractToFile(assemblyFilename);
+                            }
+
+                            await UploadFileAsync(assemblyFilename, serverJob, serverJobUri + "/attachment");
+                        }
+                    }
+                }
+            }
         }
 
         private static List<KeyValuePair<string, string>> BuildFields(Statistics average)
