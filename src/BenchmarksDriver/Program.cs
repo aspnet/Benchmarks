@@ -1033,7 +1033,7 @@ namespace BenchmarksDriver
                                 if (_buildIdOption.HasValue())
                                 {
                                     var buildId = _buildIdOption.Value();
-                                    artifactsUrl = $"https://dnceng.visualstudio.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/build/builds/63525/artifacts?artifactName=artifacts-{serverJob.OperatingSystem.ToString()}-Release&api-version=5.0&%24format=zip";
+                                    artifactsUrl = $"https://dnceng.visualstudio.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/build/builds/{buildId}/artifacts?artifactName=artifacts-{serverJob.OperatingSystem.ToString()}-Release&api-version=5.0&%24format=zip";
                                 }
                                 else
                                 {
