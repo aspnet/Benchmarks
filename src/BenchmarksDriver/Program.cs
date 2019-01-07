@@ -160,7 +160,7 @@ namespace BenchmarksDriver
             _buildIdOption = app.Option("--build-id",
                 "AspNetCore CI build id. e.g., \"--build-id 1234\"", CommandOptionType.SingleValue);
             _buildArtifactsOption = app.Option("--artifacts-url",
-                "CI artifacts url.", CommandOptionType.SingleValue);
+                "URL or local path of the CI artifacts.", CommandOptionType.SingleValue);
             _includeOption = app.Option("-inc|--include",
                 "Build filter prefix specifying which packages to include. Can be repeated. e.g., \"--include Microsoft.AspNetCore.Http.*\"", CommandOptionType.MultipleValue);
             _packageOption = app.Option("-nupkg|--nuget-package",
@@ -870,6 +870,10 @@ namespace BenchmarksDriver
                 Console.WriteLine(e.Message);
                 return -1;
             }
+            finally
+            {
+                CleanTemporaryFiles();
+            }
         }
 
         private static async Task<int> Run(
@@ -1051,14 +1055,14 @@ namespace BenchmarksDriver
 
                                 Directory.CreateDirectory(tempFolder);
 
-                                var tempFilename = Path.Combine(tempFolder, "artifacts.zip");
-
                                 // Download the CI build, while pinging the server to keep the job alive
-                                await DownloadFile(artifactsUrl, serverJobUri, tempFilename);
+                                var artifactsFilename = artifactsUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                                    ? await DownloadTemporaryFileAsync(artifactsUrl, serverJobUri)
+                                    : artifactsUrl;
 
                                 // Seek required packages
 
-                                using (var stream = File.OpenRead(tempFilename))
+                                using (var stream = File.OpenRead(artifactsFilename))
                                 {
                                     using (var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read))
                                     {
@@ -2152,6 +2156,36 @@ namespace BenchmarksDriver
             }
 
             return clientJob;
+        }
+
+        private static string _temporaryFolder;
+
+        private static async Task<string> DownloadTemporaryFileAsync(string uri, Uri serverJobUri)
+        {
+            if (_temporaryFolder == null)
+            {
+                _temporaryFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            }
+
+
+            Directory.CreateDirectory(_temporaryFolder);
+
+            var filehashname = Path.Combine(_temporaryFolder, uri.GetHashCode().ToString());
+
+            if (!File.Exists(filehashname))
+            {
+                await DownloadFile(uri, serverJobUri, filehashname);
+            }
+
+            return filehashname;
+        }
+
+        private static void CleanTemporaryFiles()
+        {
+            if (_temporaryFolder != null && Directory.Exists(_temporaryFolder))
+            {
+                Directory.Delete(_temporaryFolder, true);
+            }
         }
 
         private static async Task DownloadFile(string uri, Uri serverJobUri, string destinationFileName)
