@@ -78,11 +78,7 @@ Options:
   --server-timeout       Timeout for server jobs. e.g., 00:05:00
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
   --sdk                  SDK version to use
-  --build-id             AspNetCore CI build id. e.g., "--build-id 1234"
-  --artifacts-url        URL or local path of the CI artifacts.
-  -inc|--include         Build filter prefix specifying which packages to include. Can be repeated. e.g., "--include Microsoft.AspNetCore.Http.*"
-  -nupkg|--nuget-package Path of a Nuget package to include. Can be repeated. e.g., "--package c:\release\Microsoft.AspNetCore.Http.*.nupkg"
-
+  -nupkg|--nuget-package URL or local path of a runtime file. e.g., "--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg"
 
 Properties of the Wrk client
 

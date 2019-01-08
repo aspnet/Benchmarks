@@ -43,9 +43,6 @@ namespace BenchmarksDriver
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
         private static CommandOption 
-            _buildIdOption, 
-            _buildArtifactsOption, 
-            _includeOption,
             _packageOption
             ;
 
@@ -157,14 +154,8 @@ namespace BenchmarksDriver
                 "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
-            _buildIdOption = app.Option("--build-id",
-                "AspNetCore CI build id. e.g., \"--build-id 1234\"", CommandOptionType.SingleValue);
-            _buildArtifactsOption = app.Option("--artifacts-url",
-                "URL or local path of the CI artifacts.", CommandOptionType.SingleValue);
-            _includeOption = app.Option("-inc|--include",
-                "Build filter prefix specifying which packages to include. Can be repeated. e.g., \"--include Microsoft.AspNetCore.Http.*\"", CommandOptionType.MultipleValue);
             _packageOption = app.Option("-nupkg|--nuget-package",
-                "Path of a Nuget package to include. Can be repeated. e.g., \"-nupkg c:\\release\\Microsoft.AspNetCore.Http.*.nupkg\"", CommandOptionType.MultipleValue);
+                "URL or local path of a nuget package file. e.g., \"--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg\"", CommandOptionType.MultipleValue);
             var scriptFileOption = app.Option("--scrbipt",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
@@ -624,16 +615,6 @@ namespace BenchmarksDriver
                     return -1;
                 }
 
-                // Check CI build parameters
-                if (_buildIdOption.HasValue() || _buildArtifactsOption.HasValue())
-                {
-                    if (!_includeOption.HasValue())
-                    {
-                        Console.WriteLine($"Include option is required when using the build id or artifacts option.");
-                        return 8;
-                    }
-                }
-
                 // Check all attachments exist
                 if (outputFileOption.HasValue())
                 {
@@ -1028,88 +1009,7 @@ namespace BenchmarksDriver
 
                             }
 
-                            // Downloading custom CI build
-
-                            if (_buildIdOption.HasValue() || _buildArtifactsOption.HasValue())
-                            {
-                                string artifactsUrl;
-
-                                if (_buildIdOption.HasValue())
-                                {
-                                    var buildId = _buildIdOption.Value();
-                                    artifactsUrl = $"https://dnceng.visualstudio.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/build/builds/{buildId}/artifacts?artifactName=artifacts-{serverJob.OperatingSystem.ToString()}-Release&api-version=5.0&%24format=zip";
-                                }
-                                else
-                                {
-                                    artifactsUrl = _buildArtifactsOption.Value();
-                                }
-
-                                Log($"Downloading CI build artifacts from '{artifactsUrl}'");
-
-                                var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-                                if (Directory.Exists(tempFolder))
-                                {
-                                    Directory.Delete(tempFolder, true);
-                                }
-
-                                Directory.CreateDirectory(tempFolder);
-
-                                // Download the CI build, while pinging the server to keep the job alive
-                                var artifactsFilename = artifactsUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                                    ? await DownloadTemporaryFileAsync(artifactsUrl, serverJobUri)
-                                    : artifactsUrl;
-
-                                // Seek required packages
-
-                                using (var stream = File.OpenRead(artifactsFilename))
-                                {
-                                    using (var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read))
-                                    {
-                                        foreach(var entry in zipArchive.Entries)
-                                        {
-                                            var packageName = entry.Name;
-
-                                            if (!packageName.EndsWith(".nupkg"))
-                                            {
-                                                continue;
-                                            }
-
-                                            if (packageName.EndsWith(".symbols.nupkg"))
-                                            {
-                                                continue;
-                                            }
-
-                                            // Remove the last 4 elements of the filename (.nupkg and .x.y.x<version>)
-                                            packageName = String.Join(".", packageName.Split('.').SkipLast(4));
-
-                                            foreach(var filter in _includeOption.Values)
-                                            {
-                                                if (filter.EndsWith('*') && packageName.StartsWith(filter.TrimEnd('*'), StringComparison.OrdinalIgnoreCase)
-                                                    || packageName.Equals(filter, StringComparison.OrdinalIgnoreCase))
-                                                {
-                                                    var packageFilename = Path.Combine(tempFolder, entry.Name);
-
-                                                    Log($"Extracting package '{entry.Name}'");
-
-                                                    if (!File.Exists(packageFilename))
-                                                    {
-                                                        entry.ExtractToFile(packageFilename);
-                                                    }
-
-                                                    await UploadPackageAsync(serverJob, serverJobUri, tempFolder, packageFilename);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Delete artifacts folder
-                                Directory.Delete(tempFolder, true);
-                            }
-
-                            // 
-
+                            // Upload custom package contents
                             if (_packageOption.HasValue())
                             {
                                 var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -1121,33 +1021,17 @@ namespace BenchmarksDriver
 
                                 Directory.CreateDirectory(tempFolder);
 
-                                foreach(var filter in _packageOption.Values)
+                                foreach (var value in _packageOption.Values)
                                 {
-                                    var filterPackageName = String.Join(".", Path.GetFileName(filter).Split('.').SkipLast(4));
+                                    var packageFilename = value;
 
-                                    var directory = Path.GetDirectoryName(filter);
-
-                                    foreach (var file in Directory.GetFiles(directory))
+                                    // Download the CI build, while pinging the server to keep the job alive
+                                    if (packageFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (!file.EndsWith(".nupkg"))
-                                        {
-                                            continue;
-                                        }
-
-                                        if (file.EndsWith(".symbols.nupkg"))
-                                        {
-                                            continue;
-                                        }
-
-                                        // Remove the last 4 elements of the filename (.nupkg and .x.y.x<version>)
-                                        var packageName = String.Join(".", Path.GetFileName(file).Split('.').SkipLast(4));
-
-                                        if (filterPackageName.EndsWith('*') && packageName.StartsWith(filterPackageName.TrimEnd('*'), StringComparison.OrdinalIgnoreCase)
-                                            || packageName.Equals(filterPackageName, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            await UploadPackageAsync(serverJob, serverJobUri, tempFolder, file);
-                                        }
+                                        packageFilename = await DownloadTemporaryFileAsync(packageFilename, serverJobUri);
                                     }
+
+                                    await UploadPackageAsync(serverJob, serverJobUri, tempFolder, packageFilename);
                                 }
 
                                 // Delete artifacts folder
@@ -1896,11 +1780,11 @@ namespace BenchmarksDriver
                 {
                     foreach (var packageEntry in packageArchive.Entries)
                     {
-                        if (packageEntry.FullName.StartsWith("lib/netcoreapp3.0"))
+                        if (packageEntry.FullName.Contains("lib/netcoreapp3.0", StringComparison.OrdinalIgnoreCase))
                         {
                             var assemblyFilename = Path.Combine(tempFolder, packageEntry.Name);
 
-                            Log($"Extracting '{packageEntry.Name}'");
+                            LogVerbose($"Extracting '{packageEntry.Name}'");
 
                             if (!File.Exists(assemblyFilename))
                             {
