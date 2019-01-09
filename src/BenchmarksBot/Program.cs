@@ -369,7 +369,7 @@ namespace BenchmarksBot
 
                         var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
 
-                        XNamespace xmlns = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
+                        XNamespace xmlns = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd";
                         return root
                             .Element(xmlns + "metadata")
                             .Element(xmlns + "repository")
