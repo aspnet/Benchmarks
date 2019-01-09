@@ -55,6 +55,7 @@ namespace Benchmarks
                 {
                     if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
                     {
+                        Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
                         loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
                 })

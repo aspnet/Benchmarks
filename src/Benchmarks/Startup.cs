@@ -55,6 +55,7 @@ namespace Benchmarks
             var appSettings = Configuration.Get<AppSettings>();
 
             Console.WriteLine($"Database: {appSettings.Database}");
+            Console.WriteLine($"ConnectionString: {appSettings.ConnectionString}");
 
             switch (appSettings.Database)
             {
