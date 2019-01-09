@@ -127,7 +127,7 @@ namespace CommitResolver
 
                         var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
 
-                        XNamespace xmlns = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd";
+                        XNamespace xmlns = root.Attribute("xmlns").Value;
                         return root
                             .Element(xmlns + "metadata")
                             .Element(xmlns + "repository")
