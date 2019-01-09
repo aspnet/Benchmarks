@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -430,24 +431,17 @@ namespace BenchmarksBot
                             var informationalVersionAttribute = assembly.CustomAttributes.Where(x => x.AttributeType.Name == "AssemblyInformationalVersionAttribute").FirstOrDefault();
                             var argumentValule = informationalVersionAttribute.ConstructorArguments[0].Value.ToString();
 
-                            var srcCodeIndex = argumentValule.IndexOf("@SrcCode: ");
+                            var commitHashRegex = new Regex("[0-9a-f]{40}");
 
-                            if (srcCodeIndex == -1)
+                            var match = commitHashRegex.Match(argumentValule);
+
+                            if (match.Success)
                             {
-                                return null;
-                            }
-
-                            srcCodeIndex = srcCodeIndex + 10;
-
-                            var end = argumentValule.IndexOf(' ', srcCodeIndex);
-
-                            if (end == -1)
-                            {
-                                return argumentValule.Substring(srcCodeIndex).Split('/').LastOrDefault();
+                                return match.Value;
                             }
                             else
                             {
-                                return argumentValule.Substring(srcCodeIndex, end - srcCodeIndex).Split('/').LastOrDefault();
+                                return null;
                             }
                         }
                     }
