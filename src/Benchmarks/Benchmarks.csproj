@@ -65,6 +65,7 @@
     <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
 
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreMvcNewtonsoftJson30)" />
 
     <!-- This is not necessary when targetting Microsoft.NET.Sdk.Web on 3.x-->
     <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->

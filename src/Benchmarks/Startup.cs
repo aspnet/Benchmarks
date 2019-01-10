@@ -61,11 +61,11 @@ namespace Benchmarks
             {
                 case DatabaseServer.PostgreSql:
                     services.AddEntityFrameworkNpgsql();
-                     var settings = new NpgsqlConnectionStringBuilder(appSettings.ConnectionString);
-                     if (!settings.NoResetOnClose)
-                         throw new ArgumentException("No Reset On Close=true must be specified for Npgsql");
-                     if (settings.Enlist)
-                         throw new ArgumentException("Enlist=false must be specified for Npgsql");
+                    var settings = new NpgsqlConnectionStringBuilder(appSettings.ConnectionString);
+                    if (!settings.NoResetOnClose)
+                        throw new ArgumentException("No Reset On Close=true must be specified for Npgsql");
+                    if (settings.Enlist)
+                        throw new ArgumentException("Enlist=false must be specified for Npgsql");
 
                     services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
 
@@ -151,7 +151,13 @@ namespace Benchmarks
 
                 if (Scenarios.MvcJson || Scenarios.Any("MvcDbSingle") || Scenarios.Any("MvcDbMulti"))
                 {
+#if NETCOREAPP2_1 || NETCOREAPP2_2
                     mvcBuilder.AddJsonFormatters();
+#elif NETCOREAPP3_0
+                    mvcBuilder.AddNewtonsoftJson();
+#else
+#error "Unsupported TFM"
+#endif
                 }
 
                 if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
