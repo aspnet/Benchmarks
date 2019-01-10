@@ -62,9 +62,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
-    <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
 
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreMvcNewtonsoftJson30)" />
+
+    <!-- Using latest specified version -->
+    <PackageReference Condition="$(BenchmarksAspNetCoreVersion) != ''" Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Condition="$(BenchmarksAspNetCoreVersion) != ''" Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <!-- This is not necessary when targetting Microsoft.NET.Sdk.Web on 3.x-->
     <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
