@@ -41,7 +41,7 @@
     <!-- The Npqsql driver for EF Core 3.0 doesn't exist yet -->
     <MicrosoftEntityFrameworkCoreSqlServerVersion30>2.2.0</MicrosoftEntityFrameworkCoreSqlServerVersion30>
     <MicrosoftAspNetCoreLibuvPackageVersion30>3.0.0-preview-19059-0308</MicrosoftAspNetCoreLibuvPackageVersion30>
-    <MicrosoftAspNetCoreMvcNewtonsoftJson30> 3.0.0-preview-19059-0308</MicrosoftAspNetCoreMvcNewtonsoftJson30>
+    <MicrosoftAspNetCoreMvcNewtonsoftJson30>3.0.0-preview-19059-0308</MicrosoftAspNetCoreMvcNewtonsoftJson30>
     
   </PropertyGroup>
 </Project>
