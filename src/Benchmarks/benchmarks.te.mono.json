@@ -1,0 +1,38 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/CSharp/aspnetcore-mono/aspcore-mono.dockerfile",
+      "DockerImageName": "aspnetcore-mono",
+      "DockerContextDirectory": "frameworks/CSharp/aspnetcore-mono/"
+    },
+    "Client": "Wrk",
+    "Port": 8080,
+    "ReadyStateText": "Application started."
+  },
+  "Plaintext-AspNetCoreMono": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-AspNetCoreMono": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-AspNetCoreMono": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesPostgreSql-AspNetCoreMono": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore-mono/aspcore-mono-pg.dockerfile",
+      "DockerImageName": "aspnetcore_mono_pg"
+    }
+  }
+}

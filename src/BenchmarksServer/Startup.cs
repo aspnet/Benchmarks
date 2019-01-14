@@ -57,7 +57,7 @@ namespace BenchmarkServer
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallShUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh";
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
-        private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}/build/dependencies.props";
+        private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
         private static readonly string _latestAspnetApiUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
@@ -1473,9 +1473,9 @@ namespace BenchmarkServer
             // Maps a TFM to the github branch of several repositories
             var TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                {"netcoreapp2.1", "release/2.1"},
-                {"netcoreapp2.2", "release/2.2"},
-                {"netcoreapp3.0", "master"}
+                {"netcoreapp2.1", "release/2.1/build/dependencies.props"},
+                {"netcoreapp2.2", "release/2.2/build/dependencies.props"},
+                {"netcoreapp3.0", "master/eng/Versions.props"}
             };
 
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
