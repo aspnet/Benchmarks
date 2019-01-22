@@ -17,6 +17,7 @@ RUN apt-get update \
         zip \
         linux-tools \
         lttng-tools \
+        lttng-modules-dkms \
         liblttng-ust-dev \
         binutils \
 # make dependencies
