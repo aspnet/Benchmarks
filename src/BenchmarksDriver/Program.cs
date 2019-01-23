@@ -1662,7 +1662,7 @@ namespace BenchmarksDriver
 
                         serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
-                        if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(10))
+                        if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(30))
                         {
                             // The job needs to be deleted
                             Log($"Server didn't stop the job in the expected time, deleting it ...");
