@@ -348,7 +348,7 @@ namespace BenchmarkServer
                     // Find the first job that is not in Initializing state
                     foreach(var j in _jobs.GetAll())
                     {
-                        if (j.State == ServerState.Initializing || job.State == ServerState.Stopped)
+                        if (j.State == ServerState.Initializing || j.State == ServerState.Stopped)
                         {
                             var now = DateTime.UtcNow;
 
