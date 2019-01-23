@@ -348,7 +348,7 @@ namespace BenchmarkServer
                     // Find the first job that is not in Initializing state
                     foreach(var j in _jobs.GetAll())
                     {
-                        if (j.State == ServerState.Initializing)
+                        if (j.State == ServerState.Initializing || job.State == ServerState.Stopped)
                         {
                             var now = DateTime.UtcNow;
 
@@ -577,6 +577,10 @@ namespace BenchmarkServer
                             Log.WriteLine($"Stopping job '{job.Id}' with scenario '{job.Scenario}'");
 
                             await StopJobAsync();
+                        }
+                        else if (job.State == ServerState.Stopped)
+                        {
+                            Log.WriteLine($"Job '{job.Id}' is stopped, waiting for the driver to delete it");
                         }
                         else if (job.State == ServerState.Deleting)
                         {
@@ -1043,12 +1047,11 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName)
         {
-            var result = ProcessUtil.Run("docker", $"logs {containerId}");
-            Console.WriteLine(result.StandardOutput);
+            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: true);
 
-            ProcessUtil.Run("docker", $"stop {containerId}");
+            result = ProcessUtil.Run("docker", $"stop {containerId}", log: true);
 
-            ProcessUtil.Run("docker", $"rmi --force {imageName}");
+            result = ProcessUtil.Run("docker", $"rmi --force {imageName}", log: true);
         }
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)

@@ -94,6 +94,11 @@ namespace BenchmarkServer
                     throw new InvalidOperationException($"Command {filename} {arguments} returned exit code {process.ExitCode}");
                 }
 
+                if (log)
+                {
+                    Log.WriteLine($"Exit code: {process.ExitCode}");
+                }
+
                 return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
             }
         }
