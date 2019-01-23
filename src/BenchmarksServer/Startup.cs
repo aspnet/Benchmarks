@@ -722,22 +722,22 @@ namespace BenchmarkServer
                                 Log.WriteLine($"Process has stopped");
 
                                 process = null;
-
-                                // Running BeforeScript
-                                if (!String.IsNullOrEmpty(job.AfterScript))
-                                {
-                                    var segments = job.AfterScript.Split(' ', 2);
-                                    var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", log: true, workingDirectory: workingDirectory);
-                                    standardOutput.AppendLine(processResult.StandardOutput);
-                                }
-
-                                job.Output = standardOutput.ToString();
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
                                 DockerCleanUp(dockerContainerId, dockerImage);
                                 dockerImage = null;
                             }
+
+                            // Running AfterScript
+                            if (!String.IsNullOrEmpty(job.AfterScript))
+                            {
+                                var segments = job.AfterScript.Split(' ', 2);
+                                var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", log: true, workingDirectory: workingDirectory);
+                                standardOutput.AppendLine(processResult.StandardOutput);
+                            }
+
+                            job.Output = standardOutput.ToString();
 
                             job.State = ServerState.Stopped;
                             Log.WriteLine($"Process stopped");
