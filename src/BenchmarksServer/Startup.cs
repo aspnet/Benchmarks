@@ -332,6 +332,10 @@ namespace BenchmarkServer
                 Timer timer = null;
                 var executionLock = new object();
                 var disposed = false;
+                var standardOutput = new StringBuilder();
+                string dotnetDir = dotnetHome;
+                string benchmarksDir = null;
+                var startMonitorTime = DateTime.UtcNow;
 
                 string tempDir = null;
                 string dockerImage = null;
@@ -367,11 +371,6 @@ namespace BenchmarkServer
 
                     if (job != null)
                     {
-                        string dotnetDir = dotnetHome;
-                        string benchmarksDir = null;
-                        var standardOutput = new StringBuilder();
-                        var startMonitorTime = DateTime.UtcNow;
-
                         if (job.State == ServerState.Failed)
                         {
                             var now = DateTime.UtcNow;
@@ -402,12 +401,15 @@ namespace BenchmarkServer
                                 Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
                                 job.State = ServerState.Starting;
 
+                                standardOutput.Clear();
+                                startMonitorTime = DateTime.UtcNow;
+
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname);
+                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
                                 }
                                 else
                                 {
@@ -475,12 +477,7 @@ namespace BenchmarkServer
                                                 }
                                                 else
                                                 {
-                                                    if (job.State != ServerState.Stopped && job.State != ServerState.Deleting)
-                                                    {
-                                                        job.Output = standardOutput.ToString();
-                                                        job.State = ServerState.Stopped;
-                                                        Log.WriteLine($"Process has stopped");
-                                                    }
+                                                    job.State = ServerState.Stopped;
                                                 }
                                             }
                                             else
@@ -654,6 +651,8 @@ namespace BenchmarkServer
                                     }
                                 }
 
+                                var workingDirectory = process.StartInfo.WorkingDirectory;
+
                                 if (!process.HasExited)
                                 {
                                     if (OperatingSystem == OperatingSystem.Linux)
@@ -715,9 +714,20 @@ namespace BenchmarkServer
 
                                     } while (process != null && !process.HasExited);
                                 }
+
                                 Log.WriteLine($"Process has stopped");
 
                                 process = null;
+
+                                // Running BeforeScript
+                                if (!String.IsNullOrEmpty(job.AfterScript))
+                                {
+                                    var segments = job.AfterScript.Split(' ', 2);
+                                    var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", log: true, workingDirectory: workingDirectory);
+                                    standardOutput.AppendLine(processResult.StandardOutput);
+                                }
+
+                                job.Output = standardOutput.ToString();
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
@@ -914,13 +924,21 @@ namespace BenchmarkServer
 
         }
 
-        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname)
+        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput)
         {
             var source = job.Source;
             // Docker image names must be lowercase
             var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
             var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit));
             var workingDirectory = Path.Combine(cloneDir, source.DockerContextDirectory);
+
+            // Running BeforeScript
+            if (!String.IsNullOrEmpty(job.BeforeScript))
+            {
+                var segments = job.BeforeScript.Split(' ', 2);
+                var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
+                standardOutput.AppendLine(processResult.StandardOutput);
+            }
 
             ProcessUtil.Run("docker", $"build --pull --no-cache -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: cloneDir);
 
@@ -962,6 +980,7 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
+                        standardOutput.AppendLine(e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
@@ -1628,6 +1647,14 @@ namespace BenchmarkServer
             var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
+
+            // Running BeforeScript
+            if (!String.IsNullOrEmpty(job.BeforeScript))
+            {
+                var segments = job.BeforeScript.Split(' ', 2);
+                var result = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
+                standardOutput.AppendLine(result.StandardOutput);
+            }
 
             var commandLine = benchmarksDll ?? "";
 

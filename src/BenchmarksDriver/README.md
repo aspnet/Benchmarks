@@ -79,6 +79,8 @@ Options:
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
   --sdk                  SDK version to use
   -nupkg|--nuget-package URL or local path of a runtime file. e.g., "--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg"
+  --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
+  --clean                A script to run after the application has stopped, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
 
 Properties of the Wrk client
 

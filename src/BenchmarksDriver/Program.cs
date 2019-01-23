@@ -43,7 +43,9 @@ namespace BenchmarksDriver
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
         private static CommandOption 
-            _packageOption
+            _packageOption,
+            _initializeOption,
+            _cleanOption
             ;
 
         public static int Main(string[] args)
@@ -156,7 +158,7 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             _packageOption = app.Option("-nupkg|--nuget-package",
                 "URL or local path of a nuget package file. e.g., \"--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg\"", CommandOptionType.MultipleValue);
-            var scriptFileOption = app.Option("--scrbipt",
+            var scriptFileOption = app.Option("--script",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
                 CommandOptionType.MultipleValue);
@@ -193,6 +195,10 @@ namespace BenchmarksDriver
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
             var sdkOption = app.Option("--sdk",
                 "SDK version to use", CommandOptionType.SingleValue);
+            _initializeOption = app.Option("--initialize",
+                "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
+            _cleanOption = app.Option("--clean",
+                "A script to run after the application has stopped, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -405,6 +411,14 @@ namespace BenchmarksDriver
                 serverJob.Scenario = scenarioName;
                 serverJob.WebHost = webHost;
 
+                if (_initializeOption.HasValue())
+                {
+                    serverJob.BeforeScript = _initializeOption.Value();
+                }
+                if (_cleanOption.HasValue())
+                {
+                    serverJob.AfterScript = _cleanOption.Value();
+                }
                 if (databaseOption.HasValue())
                 {
                     serverJob.Database = Enum.Parse<Database>(databaseOption.Value(), ignoreCase: true);
@@ -1280,11 +1294,6 @@ namespace BenchmarksDriver
                                 await InvokeApplicationEndpoint(serverJobUri, shutdownEndpoint);
                             }
 
-                            if (_displayOutput)
-                            {
-                                Log(serverJob.Output, notime: true);
-                            }
-
                             // Load latest state of server job
                             LogVerbose($"GET {serverJobUri}...");
 
@@ -1662,6 +1671,11 @@ namespace BenchmarksDriver
                         }
 
                     } while (serverJob.State != ServerState.Stopped);
+
+                    if (_displayOutput)
+                    {
+                        Log(serverJob.Output, notime: true);
+                    }
 
                     // Download netperf file
                     if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)

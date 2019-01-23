@@ -114,5 +114,7 @@ namespace Benchmarks.ServerJob
         public string Error { get; set; }
         public string Output { get; set; }
         public bool SelfContained { get; set; }
+        public string BeforeScript { get; set; }
+        public string AfterScript { get; set; }
     }
 }
