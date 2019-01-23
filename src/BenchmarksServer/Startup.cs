@@ -329,6 +329,7 @@ namespace BenchmarkServer
                 dotnetHome = GetTempDir();
 
                 Process process = null;
+                string workingDirectory = null;
                 Timer timer = null;
                 var executionLock = new object();
                 var disposed = false;
@@ -406,10 +407,11 @@ namespace BenchmarkServer
 
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
+                                workingDirectory = null;
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+                                    (dockerContainerId, dockerImage, workingDirectory) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
                                 }
                                 else
                                 {
@@ -422,9 +424,12 @@ namespace BenchmarkServer
                                         process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, standardOutput);
 
                                         job.ProcessId = process.Id;
+
+                                        workingDirectory = process.StartInfo.WorkingDirectory;
                                     }
                                     else
                                     {
+                                        workingDirectory = null;
                                         Log.WriteLine($"Job failed with CloneRestoreAndBuild");
                                         job.State = ServerState.Failed;
                                     }
@@ -654,8 +659,6 @@ namespace BenchmarkServer
                                         await Task.Delay(200);
                                     }
                                 }
-
-                                var workingDirectory = process.StartInfo.WorkingDirectory;
 
                                 if (!process.HasExited)
                                 {
@@ -928,7 +931,7 @@ namespace BenchmarkServer
 
         }
 
-        private static async Task<(string containerId, string imageName)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput)
+        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput)
         {
             var source = job.Source;
             // Docker image names must be lowercase
@@ -1016,7 +1019,7 @@ namespace BenchmarkServer
                 job.State = ServerState.Running;
             }
 
-            return (containerId, imageName);
+            return (containerId, imageName, workingDirectory);
         }
 
         private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
