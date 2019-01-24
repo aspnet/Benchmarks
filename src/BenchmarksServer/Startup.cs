@@ -976,7 +976,7 @@ namespace BenchmarkServer
                 standardOutput.AppendLine(processResult.StandardOutput);
             }
 
-            ProcessUtil.Run("docker", $"build --pull --no-cache -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir);
+            ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir);
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
