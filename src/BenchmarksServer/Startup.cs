@@ -514,48 +514,61 @@ namespace BenchmarkServer
                                         {
                                             var output = new StringBuilder();
 
-                                            // Get docker stats
-                                            var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
+                                            // Check the container is still running
+                                            ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
                                                 outputDataReceived: d => output.AppendLine(d),
                                                 log: false);
 
-                                            var data = output.ToString().Trim().Split('-');
-
-                                            // Format is {value}%
-                                            var cpuPercentRaw = data[0];
-
-                                            // Format is {used}M/GiB/{total}M/GiB
-                                            var workingSetRaw = data[1];
-                                            var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
-                                            var cpu = Math.Round(double.Parse(cpuPercentRaw.Trim('%')) / Environment.ProcessorCount);
-
-                                            // MiB, GiB, B ?
-                                            var factor = 1;
-                                            double memory;
-
-                                            if (usedMemoryRaw.EndsWith("GiB"))
+                                            if (output.ToString().Trim().Contains("false"))
                                             {
-                                                factor = 1024 * 1024 * 1024;
-                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
-                                            }
-                                            else if (usedMemoryRaw.EndsWith("MiB"))
-                                            {
-                                                factor = 1024 * 1024;
-                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                job.State = ServerState.Stopped;
                                             }
                                             else
                                             {
-                                                memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
+                                                // Get docker stats
+                                                output.Clear();
+                                                var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
+                                                    outputDataReceived: d => output.AppendLine(d),
+                                                    log: false);
+
+                                                var data = output.ToString().Trim().Split('-');
+
+                                                // Format is {value}%
+                                                var cpuPercentRaw = data[0];
+
+                                                // Format is {used}M/GiB/{total}M/GiB
+                                                var workingSetRaw = data[1];
+                                                var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
+                                                var cpu = Math.Round(double.Parse(cpuPercentRaw.Trim('%')) / Environment.ProcessorCount);
+
+                                                // MiB, GiB, B ?
+                                                var factor = 1;
+                                                double memory;
+
+                                                if (usedMemoryRaw.EndsWith("GiB"))
+                                                {
+                                                    factor = 1024 * 1024 * 1024;
+                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                }
+                                                else if (usedMemoryRaw.EndsWith("MiB"))
+                                                {
+                                                    factor = 1024 * 1024;
+                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                }
+                                                else
+                                                {
+                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
+                                                }
+
+                                                var workingSet = (long)(memory * factor);
+
+                                                job.AddServerCounter(new ServerCounter
+                                                {
+                                                    Elapsed = now - startMonitorTime,
+                                                    WorkingSet = workingSet,
+                                                    CpuPercentage = cpu > 100 ? 0 : cpu
+                                                });
                                             }
-
-                                            var workingSet = (long)(memory * factor);
-
-                                            job.AddServerCounter(new ServerCounter
-                                            {
-                                                Elapsed = now - startMonitorTime,
-                                                WorkingSet = workingSet,
-                                                CpuPercentage = cpu > 100 ? 0 : cpu
-                                            });
                                         }
 
                                         // Resume once we finished processing all connections
@@ -966,6 +979,8 @@ namespace BenchmarkServer
             var containerId = result.StandardOutput.Trim();
             job.Url = ComputeServerUrl(hostname, job);
 
+            var stopwatch = new Stopwatch();
+
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
                 Log.WriteLine($"Waiting for startup signal: '{job.ReadyStateText}'...");
@@ -992,7 +1007,7 @@ namespace BenchmarkServer
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             Log.WriteLine($"Application is now running...");
-                            job.State = ServerState.Running;
+                            MarkAsRunning(hostname, job, stopwatch);
                         }
                     }
                 };
@@ -1016,7 +1031,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Application MAY be running, continuing...");
                 }
 
-                job.State = ServerState.Running;
+                MarkAsRunning(hostname, job, stopwatch);
             }
 
             return (containerId, imageName, workingDirectory);
@@ -1048,13 +1063,13 @@ namespace BenchmarkServer
             return false;
         }
 
-        private static void DockerCleanUp(string containerId, string imageName)
+        private static void DockerCleanUp(string containerId, string imageName, ServerJob job)
         {
             var result = ProcessUtil.Run("docker", $"logs {containerId}", log: true);
 
             result = ProcessUtil.Run("docker", $"stop {containerId}", log: true);
 
-            result = ProcessUtil.Run("docker", $"rmi --force {imageName}", log: true);
+            result = ProcessUtil.Run("docker", $"rmi --force {imageName}" + (job.NoClean ? " --no-prune" : ""), log: true);
         }
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
@@ -1801,7 +1816,7 @@ namespace BenchmarkServer
                         e.Data.ToLowerInvariant().Contains("started") ||
                         e.Data.ToLowerInvariant().Contains("listening")))
                     {
-                        MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
+                        MarkAsRunning(hostname, job, stopwatch);
                     }
                 }
             };
@@ -1870,14 +1885,13 @@ namespace BenchmarkServer
             if (iis)
             {
                 await WaitToListen(job, hostname);
-                MarkAsRunning(hostname, benchmarksRepo, job, stopwatch, process);
+                MarkAsRunning(hostname, job, stopwatch);
             }
 
             return process;
         }
 
-        private static void MarkAsRunning(string hostname, string benchmarksRepo, ServerJob job, Stopwatch stopwatch,
-            Process process)
+        private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
         {
             lock (job)
             {
