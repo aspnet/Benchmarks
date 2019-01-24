@@ -741,7 +741,7 @@ namespace BenchmarkServer
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
-                                DockerCleanUp(dockerContainerId, dockerImage, job);
+                                DockerCleanUp(dockerContainerId, dockerImage, job, standardOutput);
                                 dockerImage = null;
                             }
 
@@ -1063,9 +1063,9 @@ namespace BenchmarkServer
             return false;
         }
 
-        private static void DockerCleanUp(string containerId, string imageName, ServerJob job)
+        private static void DockerCleanUp(string containerId, string imageName, ServerJob job, StringBuilder standardOutput)
         {
-            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: true);
+            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: true, outputDataReceived: d => standardOutput.AppendLine(d));
 
             result = ProcessUtil.Run("docker", $"stop {containerId}", log: true);
 
