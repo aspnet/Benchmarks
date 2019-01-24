@@ -947,11 +947,27 @@ namespace BenchmarkServer
         private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput)
         {
             var source = job.Source;
+            string srcDir;
+
             // Docker image names must be lowercase
             var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
-            var cloneDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit));
-            var workingDirectory = Path.Combine(cloneDir, source.DockerContextDirectory);
 
+            if (source.SourceCode != null)
+            {
+                srcDir = Path.Combine(path, "src");
+                Log.WriteLine($"Extracting source code to {srcDir}");
+
+                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, srcDir);
+
+                File.Delete(job.Source.SourceCode.TempFilename);
+            }
+            else
+            {
+                srcDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit));
+            }
+
+            var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
+            
             // Running BeforeScript
             if (!String.IsNullOrEmpty(job.BeforeScript))
             {
@@ -960,7 +976,7 @@ namespace BenchmarkServer
                 standardOutput.AppendLine(processResult.StandardOutput);
             }
 
-            ProcessUtil.Run("docker", $"build --pull --no-cache -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: cloneDir);
+            ProcessUtil.Run("docker", $"build --pull --no-cache -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir);
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
@@ -1065,9 +1081,9 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName, ServerJob job, StringBuilder standardOutput)
         {
-            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: true, outputDataReceived: d => standardOutput.AppendLine(d));
+            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: false, outputDataReceived: d => standardOutput.AppendLine(d));
 
-            result = ProcessUtil.Run("docker", $"stop {containerId}", log: true);
+            result = ProcessUtil.Run("docker", $"stop {containerId}", log: false);
 
             result = ProcessUtil.Run("docker", $"rmi --force {imageName}" + (job.NoClean ? " --no-prune" : ""), log: true);
         }
