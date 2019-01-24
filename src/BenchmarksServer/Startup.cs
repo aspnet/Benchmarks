@@ -411,27 +411,41 @@ namespace BenchmarkServer
 
                                 if (job.Source.DockerFile != null)
                                 {
-                                    (dockerContainerId, dockerImage, workingDirectory) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+                                    try
+                                    {
+                                        (dockerContainerId, dockerImage, workingDirectory) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        workingDirectory = null;
+                                        Log.WriteLine($"Job failed with DockerBuildAndRun: " + e.Message);
+                                        job.State = ServerState.Failed;
+                                    }
                                 }
                                 else
                                 {
-                                    // returns the application directory and the dotnet directory to use
-                                    (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
-
-                                    if (benchmarksDir != null && dotnetDir != null)
+                                    try
                                     {
-                                        Debug.Assert(process == null);
-                                        process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, standardOutput);
-
-                                        job.ProcessId = process.Id;
-
-                                        workingDirectory = process.StartInfo.WorkingDirectory;
+                                        // returns the application directory and the dotnet directory to use
+                                        (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
                                     }
-                                    else
+                                    finally
                                     {
-                                        workingDirectory = null;
-                                        Log.WriteLine($"Job failed with CloneRestoreAndBuild");
-                                        job.State = ServerState.Failed;
+                                        if (benchmarksDir != null && dotnetDir != null)
+                                        {
+                                            Debug.Assert(process == null);
+                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, standardOutput);
+
+                                            job.ProcessId = process.Id;
+
+                                            workingDirectory = process.StartInfo.WorkingDirectory;
+                                        }
+                                        else
+                                        {
+                                            workingDirectory = null;
+                                            Log.WriteLine($"Job failed with CloneRestoreAndBuild");
+                                            job.State = ServerState.Failed;
+                                        }
                                     }
                                 }
 
