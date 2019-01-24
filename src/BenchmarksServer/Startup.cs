@@ -741,7 +741,7 @@ namespace BenchmarkServer
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
-                                DockerCleanUp(dockerContainerId, dockerImage);
+                                DockerCleanUp(dockerContainerId, dockerImage, job);
                                 dockerImage = null;
                             }
 
