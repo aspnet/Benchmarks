@@ -84,6 +84,7 @@ namespace BenchmarkServer
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(30);
+        public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
         static Startup()
         {
@@ -415,7 +416,35 @@ namespace BenchmarkServer
                                 {
                                     try
                                     {
-                                        (dockerContainerId, dockerImage, workingDirectory) = await DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+                                        var buildStart = DateTime.UtcNow;
+
+                                        var buildAndRunTask = DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+
+                                        while (true)
+                                        {
+                                            if (buildAndRunTask.IsCompleted)
+                                            {
+                                                (dockerContainerId, dockerImage, workingDirectory) = buildAndRunTask.Result;
+                                                break;
+                                            }
+
+                                            // Cancel the build if the driver timed out
+                                            if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
+                                            {
+                                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
+                                                job.State = ServerState.Failed;
+                                                break;
+                                            }
+
+                                            // Cancel the build if it's taking too long
+                                            if (DateTime.UtcNow - buildStart > BuildTimeout)
+                                            {
+                                                Log.WriteLine($"Build is taking too long. Halting build.");
+                                                job.Error = "Build is taking too long. Halting build.";
+                                                job.State = ServerState.Failed;
+                                                break;
+                                            }
+                                        }
                                     }
                                     catch(Exception e)
                                     {
