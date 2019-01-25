@@ -83,7 +83,7 @@ namespace BenchmarkServer
         public static Hardware Hardware { get; private set; }
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
-        public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(30);
+        public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
         public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
         static Startup()
@@ -417,8 +417,8 @@ namespace BenchmarkServer
                                     try
                                     {
                                         var buildStart = DateTime.UtcNow;
-
-                                        var buildAndRunTask = DockerBuildAndRun(tempDir, job, hostname, standardOutput);
+                                        var cts = new CancellationTokenSource();
+                                        var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, hostname, standardOutput, cancellationToken: cts.Token));
 
                                         while (true)
                                         {
@@ -432,6 +432,9 @@ namespace BenchmarkServer
                                             if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                                             {
                                                 Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
+                                                cts.Cancel();
+                                                await buildAndRunTask;
+
                                                 job.State = ServerState.Failed;
                                                 break;
                                             }
@@ -440,10 +443,15 @@ namespace BenchmarkServer
                                             if (DateTime.UtcNow - buildStart > BuildTimeout)
                                             {
                                                 Log.WriteLine($"Build is taking too long. Halting build.");
+                                                cts.Cancel();
+                                                await buildAndRunTask;
+
                                                 job.Error = "Build is taking too long. Halting build.";
                                                 job.State = ServerState.Failed;
                                                 break;
                                             }
+
+                                            await Task.Delay(1000);
                                         }
                                     }
                                     catch(Exception e)
@@ -672,7 +680,7 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Starting)
                         {
-                            if (DateTime.UtcNow - startMonitorTime > TimeSpan.FromSeconds(30))
+                            if (DateTime.UtcNow - startMonitorTime > DriverTimeout)
                             {
                                 Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Stopping;
@@ -990,7 +998,7 @@ namespace BenchmarkServer
 
         }
 
-        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput)
+        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput, CancellationToken cancellationToken = default(CancellationToken))
         {
             var source = job.Source;
             string srcDir;
@@ -1022,7 +1030,12 @@ namespace BenchmarkServer
                 standardOutput.AppendLine(processResult.StandardOutput);
             }
 
-            ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir);
+            ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return (null, null, null);
+            }
 
             // Only run on the host network on linux
             var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
