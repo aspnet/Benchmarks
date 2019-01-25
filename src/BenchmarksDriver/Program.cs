@@ -1071,7 +1071,9 @@ namespace BenchmarksDriver
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
                             response.EnsureSuccessStatusCode();
 
-                            Log($"Server Job ready");
+                            serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                            Log($"Job submitted, waiting...");
 
                             break;
                         }
@@ -1084,6 +1086,8 @@ namespace BenchmarksDriver
                     var serverBenchmarkUri = (string)null;
                     while (true)
                     {
+                        var previousJob = serverJob;
+
                         LogVerbose($"GET {serverJobUri}...");
                         response = await _httpClient.GetAsync(serverJobUri);
                         responseContent = await response.Content.ReadAsStringAsync();
@@ -1114,6 +1118,11 @@ namespace BenchmarksDriver
 
                         if (serverJob.State == ServerState.Running)
                         {
+                            if (previousJob.State == ServerState.Waiting)
+                            {
+                                Log($"Job acquired");
+                            }
+
                             serverBenchmarkUri = serverJob.Url;
                             break;
                         }
@@ -1121,7 +1130,7 @@ namespace BenchmarksDriver
                         {
                             Log($"Job failed on benchmark server, stopping...");
 
-                            Console.WriteLine(serverJob.Error);
+                            Log(serverJob.Error, notime: true, error: true);
 
                             // Returning will also send a Delete message to the server
                             return -1;
@@ -1133,6 +1142,8 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Stopped)
                         {
+                            Log($"Job finished");
+
                             // If there is no ReadyStateText defined, the server will never fo in Running state
                             // and we'll reach the Stopped state eventually, but that's a normal behavior.
                             if (IsConsoleApp)
@@ -1148,6 +1159,7 @@ namespace BenchmarksDriver
                             await Task.Delay(1000);
                         }
                     }
+
                     System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
@@ -1637,7 +1649,7 @@ namespace BenchmarksDriver
                         await sqlTask;
                     }
 
-                    Log($"Stopping scenario {scenario} on benchmark server...");
+                    Log($"Stopping scenario '{scenario}' on benchmark server...");
 
                     response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -1762,7 +1774,7 @@ namespace BenchmarksDriver
                 {
                     if (serverJobUri != null)
                     {
-                        Log($"Deleting scenario {scenario} on benchmark server...");
+                        Log($"Deleting scenario '{scenario}' on benchmark server...");
 
                         LogVerbose($"DELETE {serverJobUri}...");
                         response = await _httpClient.DeleteAsync(serverJobUri);
@@ -2132,8 +2144,13 @@ namespace BenchmarksDriver
               Console.WriteLine(message);
         }
 
-        private static void Log(string message, bool notime = false)
+        private static void Log(string message, bool notime = false, bool error = false)
         {
+            if (error)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
             if (!_quiet)
             {
                 var time = DateTime.Now.ToString("hh:mm:ss.fff");
@@ -2146,6 +2163,8 @@ namespace BenchmarksDriver
                     Console.WriteLine($"[{time}] {message}");
                 }
             }
+
+            Console.ResetColor();
         }
 
         private static void LogVerbose(string message)

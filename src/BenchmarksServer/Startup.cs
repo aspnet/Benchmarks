@@ -83,6 +83,7 @@ namespace BenchmarkServer
         public static Hardware Hardware { get; private set; }
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
+        public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(30);
 
         static Startup()
         {
@@ -353,10 +354,10 @@ namespace BenchmarkServer
                         {
                             var now = DateTime.UtcNow;
 
-                            if (now - j.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                            if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
-                                Log.WriteLine($"Driver didn't communicate for {now - j.LastDriverCommunicationUtc}. Halting job.");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
                                 j.State = ServerState.Deleting;
                             }
                             else
@@ -377,9 +378,9 @@ namespace BenchmarkServer
                             var now = DateTime.UtcNow;
 
                             // Clean the job in case the driver is not running
-                            if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                             {
-                                Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
                                 job.State = ServerState.Deleting;
                             }
                         }
@@ -408,6 +409,7 @@ namespace BenchmarkServer
                                 Debug.Assert(tempDir == null);
                                 tempDir = GetTempDir();
                                 workingDirectory = null;
+                                dockerImage = null;
 
                                 if (job.Source.DockerFile != null)
                                 {
@@ -477,9 +479,9 @@ namespace BenchmarkServer
                                         var now = DateTime.UtcNow;
 
                                         // Clean the job in case the driver is not running
-                                        if (now - job.LastDriverCommunicationUtc > TimeSpan.FromSeconds(30))
+                                        if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                         {
-                                            Log.WriteLine($"Driver didn't communicate for {now - job.LastDriverCommunicationUtc}. Halting job.");
+                                            Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
                                             job.State = ServerState.Deleting;
                                         }
 
@@ -533,9 +535,9 @@ namespace BenchmarkServer
                                                 outputDataReceived: d => output.AppendLine(d),
                                                 log: false);
 
-                                            if (output.ToString().Trim().Contains("false"))
+                                            if (output.ToString().Contains("false"))
                                             {
-                                                job.State = ServerState.Stopped;
+                                                job.State = ServerState.Stopping;
                                             }
                                             else
                                             {
@@ -610,7 +612,7 @@ namespace BenchmarkServer
 
                             await StopJobAsync();
                         }
-                        else if (job.State == ServerState.Stopped)
+                        else if (job.State == ServerState.Stopped || job.State == ServerState.Failed)
                         {
                             Log.WriteLine($"Job '{job.Id}' is stopped, waiting for the driver to delete it");
                         }
@@ -751,12 +753,13 @@ namespace BenchmarkServer
 
                                 Log.WriteLine($"Process has stopped");
 
+                                job.State = ServerState.Stopped;
+
                                 process = null;
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
                                 DockerCleanUp(dockerContainerId, dockerImage, job, standardOutput);
-                                dockerImage = null;
                             }
 
                             // Running AfterScript
@@ -768,9 +771,8 @@ namespace BenchmarkServer
                             }
 
                             job.Output = standardOutput.ToString();
-
-                            job.State = ServerState.Stopped;
-                            Log.WriteLine($"Process stopped");
+                            
+                            Log.WriteLine($"Process stopped ({job.State})");
                         }
 
                         async Task DeleteJobAsync()
@@ -793,7 +795,8 @@ namespace BenchmarkServer
                             _jobs.Remove(job.Id);
                         }
                     }
-                    await Task.Delay(100);
+
+                    await Task.Delay(1000);
                 }
             }
             finally
@@ -1005,7 +1008,8 @@ namespace BenchmarkServer
             var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
                                               $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
 
-            var result = ProcessUtil.Run("docker", $"{command} ");
+            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false);
+
             var containerId = result.StandardOutput.Trim();
             job.Url = ComputeServerUrl(hostname, job);
 
@@ -1095,11 +1099,30 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName, ServerJob job, StringBuilder standardOutput)
         {
-            var result = ProcessUtil.Run("docker", $"logs {containerId}", log: false, outputDataReceived: d => standardOutput.AppendLine(d));
+            var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId).StandardOutput;
 
-            result = ProcessUtil.Run("docker", $"stop {containerId}", log: false);
+            // container is already stopped
+            if (state.Contains("false"))
+            {
+                if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId).StandardOutput.Trim() != "0")
+                {
+                    Log.WriteLine("Job failed");
+                    job.Error = ProcessUtil.Run("docker", "logs " + containerId).StandardError;
+                    job.State = ServerState.Failed;
+                }
+                else
+                {
+                    job.State = ServerState.Stopped;
+                }
+            }
+            else
+            {
+                ProcessUtil.Run("docker", $"stop {containerId}");
 
-            result = ProcessUtil.Run("docker", $"rmi --force {imageName}" + (job.NoClean ? " --no-prune" : ""), log: true);
+                job.State = ServerState.Stopped;
+            }
+
+            ProcessUtil.Run("docker", $"rmi --force {imageName}");
         }
 
         private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)

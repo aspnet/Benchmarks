@@ -65,8 +65,13 @@ namespace BenchmarkServer
                     else
                     {
                         outputBuilder.AppendLine(e.Data);
+                    }
+
+                    if (log)
+                    {
                         Log.WriteLine(e.Data);
                     }
+
                 };
 
                 var errorBuilder = new StringBuilder();
