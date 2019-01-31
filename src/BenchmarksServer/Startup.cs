@@ -822,7 +822,7 @@ namespace BenchmarkServer
                             }
 
                             // If a custom dotnet directory was used, clean it
-                            if (_cleanup && !job.NoClean && dotnetDir != dotnetHome)
+                            if (_cleanup && !job.NoClean && dotnetDir != null && dotnetDir != dotnetHome)
                             {
                                 DeleteDir(dotnetDir);
                             }
@@ -1705,6 +1705,11 @@ namespace BenchmarkServer
 
         private static void DeleteDir(string path)
         {
+            if (String.IsNullOrEmpty(path) || !Directory.Exists(path))
+            {
+                return;
+            }
+
             Log.WriteLine($"Deleting directory '{path}'");
 
             // Delete occasionally fails with the following exception:

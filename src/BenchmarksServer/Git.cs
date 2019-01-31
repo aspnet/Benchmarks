@@ -14,6 +14,8 @@ namespace BenchmarkServer
 
         public static string Clone(string path, string repository, bool shallow = true, string branch = null)
         {
+            Log.WriteLine("Cloning {repository} with branch '{branch}'");
+
             var branchParam = string.IsNullOrEmpty(branch) ? string.Empty : $"-b {branch}";
 
             var depth = shallow ? "--depth 1" : "";
