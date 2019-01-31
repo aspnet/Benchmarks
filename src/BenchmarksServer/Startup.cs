@@ -326,8 +326,10 @@ namespace BenchmarkServer
         private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
+
             try
             {
+                // Create a temporary folder to store all installed dotnet runtimes/sdk
                 dotnetHome = GetTempDir();
 
                 Process process = null;
@@ -336,7 +338,6 @@ namespace BenchmarkServer
                 var executionLock = new object();
                 var disposed = false;
                 var standardOutput = new StringBuilder();
-                string dotnetDir = dotnetHome;
                 string benchmarksDir = null;
                 var startMonitorTime = DateTime.UtcNow;
 
@@ -466,14 +467,14 @@ namespace BenchmarkServer
                                     try
                                     {
                                         // returns the application directory and the dotnet directory to use
-                                        (benchmarksDir, dotnetDir) = await CloneRestoreAndBuild(tempDir, job, dotnetDir);
+                                        benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
                                     }
                                     finally
                                     {
-                                        if (benchmarksDir != null && dotnetDir != null)
+                                        if (benchmarksDir != null)
                                         {
                                             Debug.Assert(process == null);
-                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetDir, standardOutput);
+                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome, standardOutput);
 
                                             job.ProcessId = process.Id;
 
@@ -821,12 +822,6 @@ namespace BenchmarkServer
                                 DeleteDir(tempDir);
                             }
 
-                            // If a custom dotnet directory was used, clean it
-                            if (_cleanup && !job.NoClean && dotnetDir != null && dotnetDir != dotnetHome)
-                            {
-                                DeleteDir(dotnetDir);
-                            }
-
                             tempDir = null;
 
                             _jobs.Remove(job.Id);
@@ -1167,7 +1162,7 @@ namespace BenchmarkServer
             ProcessUtil.Run("docker", $"rmi --force {imageName}");
         }
 
-        private static async Task<(string benchmarkDir, string dotnetDir)> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
+        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
         {
             // Clone
             string benchmarkedDir = null;
@@ -1357,7 +1352,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
 
                         // Install latest SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}", 
+                        log:true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1369,7 +1365,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
 
                         // Install runtime required for this scenario
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        log: true, 
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1382,7 +1379,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"ASP.NET version '{aspNetCoreVersion}'";
 
                         // Install aspnet runtime required for this scenario
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1396,7 +1394,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
                         
                         // Install latest SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
                         _installedSdks.Add(sdkVersion);
@@ -1407,7 +1406,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
 
                         // Install required runtime 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1420,7 +1420,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"ASP.NET version '{aspNetCoreVersion}'";
 
                         // Install required runtime 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1432,7 +1433,7 @@ namespace BenchmarkServer
             {
                 job.Error = $"The requested version could not be found: {dotnetInstallStep}";
 
-                return (null, null);
+                return null;
             }
 
             var dotnetDir = dotnetHome;
@@ -1526,7 +1527,7 @@ namespace BenchmarkServer
                     buildResults.StandardOutput + "\n" +
                     buildResults.StandardError;
 
-                return (null, null);
+                return null;
             }
 
             Log.WriteLine($"Application published successfully in {DateTime.UtcNow - startPublish}");
@@ -1597,7 +1598,7 @@ namespace BenchmarkServer
                 File.Delete(attachment.TempFilename);
             }
 
-            return (benchmarkedDir, dotnetDir);
+            return benchmarkedDir;
         }
 
         /// <summary>
