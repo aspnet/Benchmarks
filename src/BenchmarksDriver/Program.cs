@@ -781,15 +781,15 @@ namespace BenchmarksDriver
                 {
                     foreach (var header in headerOption.Values)
                     {
-                        var index = header.IndexOf('=');
+                        var segments = header.Split('=', 2);
 
-                        if (index == -1)
+                        if (segments.Length != 2)
                         {
                             Console.WriteLine($"Invalid http header, '=' not found: '{header}'");
                             return 9;
                         }
 
-                        _clientJob.Headers[header.Substring(0, index)] = header.Substring(index + 1, header.Length - index - 1);
+                        _clientJob.Headers[segments[0].Trim()] = segments[1].Trim();
                     }
                 }
 

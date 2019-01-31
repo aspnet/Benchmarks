@@ -55,7 +55,7 @@ namespace Benchmarks.ClientJob
         // TODO: Remove when Clients have been upgraded to the new protocol
         public string ScriptName { get; set; }
         public int PipelineDepth { get; set; }
-        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public string ServerBenchmarkUri { get; set; }
 
