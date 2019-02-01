@@ -92,7 +92,7 @@ namespace BenchmarksClient.Workers
         {
             // Ignoring startup latency when using h2c as HttpClient doesn't support
 
-            if (job.ServerBenchmarkUri.StartsWith("http:", StringComparison.OrdinalIgnoreCase))
+            if (job.ClientProperties.TryGetValue("protocol", out var protocol) && protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
             {
                 Log("Ignoring first request latencies on h2c");
                 return;
