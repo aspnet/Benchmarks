@@ -51,7 +51,7 @@ namespace Benchmarks.ClientJob
         public string Timeout { get; set; } = "2s";
         public int Duration { get; set; } = 15;
         public int Warmup { get; set; } = 15;
-        public Dictionary<string, string> ClientProperties { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> ClientProperties { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         // TODO: Remove when Clients have been upgraded to the new protocol
         public string ScriptName { get; set; }
         public int PipelineDepth { get; set; }

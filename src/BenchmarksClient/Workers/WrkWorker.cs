@@ -30,9 +30,9 @@ namespace BenchmarksClient.Workers
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            _httpClientHandler.MaxConnectionsPerServer = 1;
             _httpClient = new HttpClient(_httpClientHandler);
         }
-
 
         private void InitializeJob()
         {
@@ -122,7 +122,6 @@ namespace BenchmarksClient.Workers
             {
                 using (var response = await _httpClient.SendAsync(message))
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
                     job.LatencyFirstRequest = stopwatch.Elapsed;
                 }
             }
@@ -139,8 +138,6 @@ namespace BenchmarksClient.Workers
                 {
                     using (var response = await _httpClient.SendAsync(message))
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-
                         // We keep the last measure to simulate a warmup phase.
                         job.LatencyNoLoad = stopwatch.Elapsed;
                     }

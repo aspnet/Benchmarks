@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -30,9 +29,9 @@ namespace BenchmarksClient.Workers
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            _httpClientHandler.MaxConnectionsPerServer = 1;
             _httpClient = new HttpClient(_httpClientHandler);
         }
-
 
         private void InitializeJob()
         {
@@ -111,7 +110,6 @@ namespace BenchmarksClient.Workers
 
             using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
                 job.LatencyFirstRequest = stopwatch.Elapsed;
             }
 
@@ -125,8 +123,6 @@ namespace BenchmarksClient.Workers
 
                 using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync();
-
                     // We keep the last measure to simulate a warmup phase.
                     job.LatencyNoLoad = stopwatch.Elapsed;
                 }
@@ -147,11 +143,31 @@ namespace BenchmarksClient.Workers
                 }
             }
 
-            command += $" -D {job.Duration} -c {job.Connections} -T {job.Timeout} -t {job.Threads} --no-tls-proto=h2c ";
+            command += $" -c {job.Connections} -T {job.Timeout} -t {job.Threads}";
 
             if (job.ClientProperties.TryGetValue("Streams", out var m))
             {
                 command += $" -m {m}";
+            }
+
+            if (job.ClientProperties.TryGetValue("protocol", out var protocol))
+            {
+                switch (protocol)
+                {
+                    case "http": command += " --h1"; break;
+                    case "https": command += " --h1"; break;
+                    case "h2": break;
+                    case "h2c": command += " --no-tls-proto=h2c"; break;
+                }
+            }
+
+            if (job.ClientProperties.TryGetValue("n", out var n) && int.TryParse(n, out var number))
+            {
+                command += $" -n{n}";
+            }
+            else
+            {
+                command += $" -D {job.Duration}";
             }
 
             Log(command);

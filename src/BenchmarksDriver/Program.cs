@@ -739,6 +739,8 @@ namespace BenchmarksDriver
                     }
                 }
 
+                _clientJob.ClientProperties["protocol"] = schemeValue;
+
                 if (methodOption.HasValue())
                 {
                     _clientJob.Method = methodOption.Value();
