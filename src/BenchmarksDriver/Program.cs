@@ -2208,19 +2208,26 @@ namespace BenchmarksDriver
         private static void DoCreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
             sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
+
+            // We ensure the name ends with '\' or '/'
+            if (!sourceDirectoryName.EndsWith(Path.AltDirectorySeparatorChar))
+            {
+                sourceDirectoryName += Path.AltDirectorySeparatorChar;
+            }
+
             destinationArchiveFileName = Path.GetFullPath(destinationArchiveFileName);
 
             DirectoryInfo di = new DirectoryInfo(sourceDirectoryName);
 
             using (ZipArchive archive = ZipFile.Open(destinationArchiveFileName, ZipArchiveMode.Create))
             {
-                string basePath = di.FullName;
+                var basePath = di.FullName;
 
                 var ignoreFile = IgnoreFile.Parse(Path.Combine(sourceDirectoryName, ".gitignore"));
 
                 foreach (var gitFile in ignoreFile.ListDirectory(sourceDirectoryName))
                 {
-                    var localPath = gitFile.Path.Substring(sourceDirectoryName.Length + 1);
+                    var localPath = gitFile.Path.Substring(sourceDirectoryName.Length);
                     LogVerbose($"Adding {localPath}");
                     var entry = archive.CreateEntryFromFile(gitFile.Path, localPath);
                 }
