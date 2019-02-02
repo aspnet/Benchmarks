@@ -1431,7 +1431,7 @@ namespace BenchmarkServer
             }
             catch
             {
-                job.Error = $"dotnet-install could not instsall this runtime: {dotnetInstallStep}";
+                job.Error = $"dotnet-install could not install this runtime: {dotnetInstallStep}";
 
                 return null;
             }
