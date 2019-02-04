@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
@@ -33,16 +34,30 @@ namespace Benchmarks.Middleware
         }
 
 #if NETCOREAPP3_0
-        public async static Task WriteResponse(HttpResponse response)
+        public static Task WriteResponse(HttpResponse response)
         {
             var payloadLength = _helloWorldPayload.Length;
             response.StatusCode = 200;
             response.ContentType = "text/plain";
             response.ContentLength = payloadLength;
 
-            var pipe = response.BodyPipe;
-            pipe.Write(_helloWorldPayload);
-            await pipe.FlushAsync();
+            var vt = response.BodyPipe.WriteAsync(_helloWorldPayload);
+
+            if (vt.IsCompletedSuccessfully)
+            {
+                // Signal consumption to the IValueTaskSource
+                vt.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return AwaitResult(vt);
+            }
+
+            async Task AwaitResult(ValueTask<FlushResult> flushResult)
+            {
+                await flushResult;
+            }
         }
 #else
         public static Task WriteResponse(HttpResponse response)
@@ -58,15 +73,6 @@ namespace Benchmarks.Middleware
 
     public static class PlaintextMiddlewareExtensions
     {
-#if NETCOREAPP3_0
-        internal static void Write(this PipeWriter pipe, byte[] payload)
-        {
-            var span = pipe.GetSpan(sizeHint: payload.Length);
-            payload.CopyTo(span);
-            pipe.Advance(payload.Length);
-        }
-#endif
-
         public static IApplicationBuilder UsePlainText(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<PlaintextMiddleware>();
