@@ -32,6 +32,19 @@ namespace Benchmarks.Middleware
             return _next(httpContext);
         }
 
+#if NETCOREAPP3_0
+        public async static Task WriteResponse(HttpResponse response)
+        {
+            var payloadLength = _helloWorldPayload.Length;
+            response.StatusCode = 200;
+            response.ContentType = "text/plain";
+            response.ContentLength = payloadLength;
+
+            var pipe = response.BodyPipe;
+            pipe.Write(_helloWorldPayload);
+            await pipe.FlushAsync();
+        }
+#else
         public static Task WriteResponse(HttpResponse response)
         {
             var payloadLength = _helloWorldPayload.Length;
@@ -40,10 +53,20 @@ namespace Benchmarks.Middleware
             response.ContentLength = payloadLength;
             return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
         }
+#endif
     }
 
     public static class PlaintextMiddlewareExtensions
     {
+#if NETCOREAPP3_0
+        internal static void Write(this PipeWriter pipe, byte[] payload)
+        {
+            var span = pipe.GetSpan(sizeHint: payload.Length);
+            payload.CopyTo(span);
+            pipe.Advance(payload.Length);
+        }
+#endif
+
         public static IApplicationBuilder UsePlainText(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<PlaintextMiddleware>();
