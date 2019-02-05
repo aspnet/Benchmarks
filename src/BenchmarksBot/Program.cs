@@ -284,7 +284,7 @@ namespace BenchmarksBot
                             OperatingSystem = Convert.ToString(reader["OperatingSystem"]),
                             Scheme = Convert.ToString(reader["Scheme"]),
                             WebHost = Convert.ToString(reader["WebHost"]),
-                            DateTimeUtc = (DateTimeOffset)(reader["DateTime"]),
+                            DateTimeUtc = (DateTimeOffset)(reader["LastDateTime"]),
                         });
                     }
                 }
