@@ -335,7 +335,7 @@ namespace BenchmarksBot
 
             foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
             {
-                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} |");
+                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} |");
             }
 
             var title = "Scenarios are not running: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
@@ -408,7 +408,7 @@ namespace BenchmarksBot
 
             foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
             {
-                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} | {r.Errors} |");
+                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} | {r.Errors} |");
             }
 
             var title = "Bad responses: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));

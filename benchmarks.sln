@@ -137,6 +137,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "haproxy", "haproxy", "{662D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommitResolver", "src\CommitResolver\CommitResolver.csproj", "{618BFF48-F91C-47F3-90CB-99AF637D0757}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "redis", "redis", "{5FF28F83-EB16-41C0-8B47-94BD0918A2DF}"
+	ProjectSection(SolutionItems) = preProject
+		docker\redis\build.sh = docker\redis\build.sh
+		docker\redis\Dockerfile = docker\redis\Dockerfile
+		docker\redis\run.sh = docker\redis\run.sh
+		docker\redis\stop.sh = docker\redis\stop.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +275,7 @@ Global
 		{3B18E572-1B3C-440F-9C34-A95080CF8D0D} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{662D547D-7365-4E86-8515-E8AE33316D84} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 		{618BFF48-F91C-47F3-90CB-99AF637D0757} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
+		{5FF28F83-EB16-41C0-8B47-94BD0918A2DF} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
