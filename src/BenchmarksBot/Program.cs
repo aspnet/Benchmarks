@@ -47,7 +47,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            var newRegressions = await RemoveReportedRegressions(regressions);
+            var newRegressions = await RemoveReportedRegressions(regressions, r => r.DateTimeUtc.ToString("u"));
 
             await PopulateHashes(newRegressions);
 
@@ -70,7 +70,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            notRunning = await RemoveReportedRegressions(notRunning);
+            notRunning = await RemoveReportedRegressions(notRunning, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} |");
 
             if (notRunning.Any())
             {
@@ -91,7 +91,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            badResponses = await RemoveReportedRegressions(badResponses);
+            badResponses = await RemoveReportedRegressions(badResponses, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} |");
 
             if (badResponses.Any())
             {
@@ -275,7 +275,7 @@ namespace BenchmarksBot
                             PreviousAspNetCoreVersion = Convert.ToString(reader["PreviousAspNetCoreVersion"]),
                             CurrentAspNetCoreVersion = Convert.ToString(reader["CurrentAspNetCoreVersion"]),
                             PreviousRuntimeVersion = Convert.ToString(reader["PreviousRuntimeVersion"]),
-                            CurrentRuntimeVersion = Convert.ToString(reader["CurrentRuntimeVersion"]),
+                            CurrentRuntimeVersion = Convert.ToString(reader["CurrentRuntimeVersion"])
                         });
                     }                    
                 }
@@ -379,6 +379,7 @@ namespace BenchmarksBot
                             OperatingSystem = Convert.ToString(reader["OperatingSystem"]),
                             Scheme = Convert.ToString(reader["Scheme"]),
                             WebHost = Convert.ToString(reader["WebHost"]),
+                            DateTimeUtc = (DateTimeOffset)(reader["LastDateTime"]),
                             Errors = Convert.ToInt32(reader["Errors"]),
                         });
                     }
@@ -452,7 +453,7 @@ namespace BenchmarksBot
             return _recentIssues = issues;
         }
 
-        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions)
+        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions, Func<Regression, string> textToFind)
         {
             if (!regressions.Any())
             {
@@ -469,7 +470,7 @@ namespace BenchmarksBot
                 var filter = false;
                 foreach(var issue in issues)
                 {
-                    if (issue.Body != null && issue.Body.Contains(r.DateTimeUtc.ToString("u")))
+                    if (issue.Body != null && issue.Body.Contains(textToFind(r)))
                     {
                         filter = true;
                         break;
