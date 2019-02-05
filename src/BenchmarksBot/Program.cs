@@ -74,7 +74,28 @@ namespace BenchmarksBot
             {
                 Console.WriteLine("Reporting new scenarios...");
 
-                await CreateNotRunningIssue(newRegressions);
+                await CreateNotRunningIssue(notRunning);
+            }
+            else
+            {
+                Console.WriteLine("All scenarios are running correctly.");
+            }
+
+            // Bad responses
+
+            Console.WriteLine("Looking for scnearios that are not running...");
+
+            var badResponses = await FindErrors();
+
+            Console.WriteLine("Excluding the ones already reported...");
+
+            badResponses = await RemoveReportedRegressions(badResponses);
+
+            if (badResponses.Any())
+            {
+                Console.WriteLine("Reporting new scenarios...");
+
+                await CreateNotRunningIssue(notRunning);
             }
             else
             {
@@ -315,7 +336,7 @@ namespace BenchmarksBot
                 body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} |");
             }
 
-            var title = "Scnearios are not running: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
+            var title = "Scenarios are not running: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
 
             if (regressions.Count() > 5)
             {
@@ -328,6 +349,79 @@ namespace BenchmarksBot
             };
 
             createIssue.Labels.Add("not-running");
+
+            Console.Write(createIssue.Body);
+
+            var issue = await client.Issue.Create(_repositoryId, createIssue);
+        }
+
+        private static async Task<IEnumerable<Regression>> FindErrors()
+        {
+            var regressions = new List<Regression>();
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand(Queries.Error, connection))
+                {
+                    await connection.OpenAsync();
+
+                    var start = DateTime.UtcNow;
+                    var reader = await command.ExecuteReaderAsync();
+
+                    while (await reader.ReadAsync())
+                    {
+                        regressions.Add(new Regression
+                        {
+                            Scenario = Convert.ToString(reader["Scenario"]),
+                            Hardware = Convert.ToString(reader["Hardware"]),
+                            OperatingSystem = Convert.ToString(reader["OperatingSystem"]),
+                            Scheme = Convert.ToString(reader["Scheme"]),
+                            WebHost = Convert.ToString(reader["WebHost"]),
+                            Errors = Convert.ToInt32(reader["Errors"]),
+                        });
+                    }
+                }
+            }
+
+            return regressions;
+        }
+
+        private static async Task CreateErrorsIssue(IEnumerable<Regression> regressions)
+        {
+            if (regressions == null || !regressions.Any())
+            {
+                return;
+            }
+
+            var client = new GitHubClient(_productHeaderValue);
+            client.Credentials = new Credentials(_accessToken);
+
+            var body = new StringBuilder();
+            body.Append("Some scenarios return errors:");
+
+            foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
+            {
+                body.AppendLine();
+                body.AppendLine();
+                body.AppendLine("| Scenario | Environment | Last Run | Errors |");
+                body.AppendLine("| -------- | ----------- | -------- | ------ |");
+
+                body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} | {r.Errors} |");
+            }
+
+            var title = "Bad responses: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
+
+            if (regressions.Count() > 5)
+            {
+                title += " ...";
+            }
+
+            var createIssue = new NewIssue(title)
+            {
+                Body = body.ToString()
+            };
+
+            createIssue.Labels.Add("bad-response");
 
             Console.Write(createIssue.Body);
 

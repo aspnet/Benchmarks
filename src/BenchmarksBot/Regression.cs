@@ -17,6 +17,7 @@ namespace BenchmarksBot
         public string CurrentAspNetCoreVersion { get; set; }
         public string PreviousRuntimeVersion { get; set; }
         public string CurrentRuntimeVersion { get; set; }
+        public int Errors { get; set; }
 
         public string[] AspNetCoreHashes { get; set; }
         public string[] CoreFxHashes { get; set; }
