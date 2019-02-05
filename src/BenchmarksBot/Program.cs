@@ -328,13 +328,13 @@ namespace BenchmarksBot
             var body = new StringBuilder();
             body.Append("Some scenarios have stopped running:");
 
+            body.AppendLine();
+            body.AppendLine();
+            body.AppendLine("| Scenario | Environment | Last Run |");
+            body.AppendLine("| -------- | ----------- | -------- |");
+
             foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
             {
-                body.AppendLine();
-                body.AppendLine();
-                body.AppendLine("| Scenario | Environment | Last Run |");
-                body.AppendLine("| -------- | ----------- | -------- |");
-
                 body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} |");
             }
 
@@ -401,13 +401,13 @@ namespace BenchmarksBot
             var body = new StringBuilder();
             body.Append("Some scenarios return errors:");
 
+            body.AppendLine();
+            body.AppendLine();
+            body.AppendLine("| Scenario | Environment | Last Run | Errors |");
+            body.AppendLine("| -------- | ----------- | -------- | ------ |");
+
             foreach (var r in regressions.OrderBy(x => x.Scenario).ThenBy(x => x.DateTimeUtc))
             {
-                body.AppendLine();
-                body.AppendLine();
-                body.AppendLine("| Scenario | Environment | Last Run | Errors |");
-                body.AppendLine("| -------- | ----------- | -------- | ------ |");
-
                 body.AppendLine($"| {r.Scenario} | {r.OperatingSystem} | {r.DateTimeUtc} | {r.Errors} |");
             }
 
