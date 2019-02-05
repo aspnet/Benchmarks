@@ -28,6 +28,8 @@ namespace BenchmarksBot
         static string _connectionString;
         static HashSet<string> _ignoredScenarios;
 
+        static IReadOnlyList<Issue> _recentIssues;
+
         static async Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -428,8 +430,13 @@ namespace BenchmarksBot
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
 
-        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions)
+        private static async Task<IReadOnlyList<Issue>> GetRecentIssues()
         {
+            if (_recentIssues != null)
+            {
+                return _recentIssues;
+            }
+
             var client = new GitHubClient(_productHeaderValue);
             client.Credentials = new Credentials(_accessToken);
 
@@ -441,6 +448,18 @@ namespace BenchmarksBot
             };
 
             var issues = await client.Issue.GetAllForRepository(_repositoryId, recently);
+
+            return _recentIssues = issues;
+        }
+
+        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions)
+        {
+            if (!regressions.Any())
+            {
+                return regressions;
+            }
+
+            var issues = await GetRecentIssues();
 
             var filtered = new List<Regression>();
 
