@@ -95,7 +95,7 @@ namespace BenchmarksBot
             {
                 Console.WriteLine("Reporting new scenarios...");
 
-                await CreateNotRunningIssue(notRunning);
+                await CreateErrorsIssue(badResponses);
             }
             else
             {
