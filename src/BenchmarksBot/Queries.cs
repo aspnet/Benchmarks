@@ -67,5 +67,35 @@
                 AND ([PreviousAspNetCoreVersion] != [CurrentAspNetCoreVersion] OR [PreviousRuntimeVersion] != [CurrentRuntimeVersion])
             ORDER BY [DateTime] DESC
         ";
+
+        public const string Error = @"
+            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any sccenario that has worked in the last checked period
+            DECLARE @lastDate DateTime = DATEADD(hour, 12, GETDATE())            -- if any of these scenarios hasn't worked in the last day
+
+            SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [LastDateTime], [Errors]
+            FROM (
+                SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, Max([DateTime]) [LastDateTime], Max([SocketErrors] + [BadResponses]) as [Errors]
+                FROM [dbo].[AspNetBenchmarksTrends]
+                WHERE [DateTime] >= @startDate
+                GROUP BY Scenario, Hardware, OperatingSystem, Scheme, WebHost
+            ) DATA
+            WHERE [Errors] > 0
+            ORDER BY Scenario
+        ";
+
+        public const string NotRunning = @"
+            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any sccenario that has worked in the last checked period
+            DECLARE @lastDate DateTime = DATEADD(hour, 12, GETDATE())            -- if any of these scenarios hasn't worked in the last day
+
+            SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [LastDateTime], [Errors]
+            FROM (
+                SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, Max([DateTime]) [LastDateTime], Max([SocketErrors] + [BadResponses]) as [Errors]
+                FROM [dbo].[AspNetBenchmarksTrends]
+                WHERE [DateTime] >= @startDate
+                GROUP BY Scenario, Hardware, OperatingSystem, Scheme, WebHost
+            ) DATA
+            WHERE [LastDateTime] <= @lastDate
+            ORDER BY Scenario
+        ";
     }
 }
