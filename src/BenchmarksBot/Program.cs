@@ -278,7 +278,6 @@ namespace BenchmarksBot
                     {
                         regressions.Add(new Regression
                         {
-                            Session = Convert.ToString(reader["Session"]),
                             Scenario = Convert.ToString(reader["Scenario"]),
                             Hardware = Convert.ToString(reader["Hardware"]),
                             OperatingSystem = Convert.ToString(reader["OperatingSystem"]),
