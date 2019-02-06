@@ -73,7 +73,7 @@
     <!-- This is not necessary when targetting Microsoft.NET.Sdk.Web on 3.x-->
     <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
 
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
+    <!--<PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(BenchmarksAspNetCoreVersion)" />-->
 
     <!--
     The KnownFrameworkReference is defined in “dotnet/sdk/3.x.x-x-x/Microsoft.NETCoreSdk.BundledVersions.props” 
