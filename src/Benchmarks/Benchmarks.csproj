@@ -17,7 +17,6 @@
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
     <PackageReference Include="Jil" Version="$(JilVersion)" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
-    <PackageReference Include="MySqlConnector" Version="$(MySqlConnectorVersion)" />
     
     <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
     <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
@@ -30,7 +29,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.0.0-preview2-final" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion20)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion20)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion20)" />
   </ItemGroup>
 
@@ -41,7 +39,6 @@
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
   </ItemGroup>
   
@@ -57,14 +54,13 @@
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.1" />
     
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
 
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion30)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreMvcNewtonsoftJson30)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <!-- Using latest specified version -->
     <PackageReference Condition="$(BenchmarksAspNetCoreVersion) != ''" Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(BenchmarksAspNetCoreVersion)" />
@@ -73,7 +69,7 @@
     <!-- This is not necessary when targetting Microsoft.NET.Sdk.Web on 3.x-->
     <!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
 
-    <!--<PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(BenchmarksAspNetCoreVersion)" />-->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(BenchmarksAspNetCoreVersion)" />
 
     <!--
     The KnownFrameworkReference is defined in “dotnet/sdk/3.x.x-x-x/Microsoft.NETCoreSdk.BundledVersions.props” 
@@ -84,9 +80,8 @@
                                   LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
 
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion21)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion30)" />
 
     <!-- In netcoreapp3.0 the EF package is not part of the .App package anymore -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />

@@ -63,6 +63,7 @@ namespace BenchmarkServer
         private static readonly string _latestAspnetApiUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnet.myget.org/F/dotnet-core/api/v3/registration1/Microsoft.NETCore.App/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
+        private static readonly string _sdkVersion = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1297,10 +1298,24 @@ namespace BenchmarkServer
                 targetFramework = job.Framework;
             }
 
-            var sdkVersion = await GetSdkChannelVersion(channel);
+            string sdkVersion;
+
+            if (runtimeVersion.StartsWith("3.0"))
+            {
+                sdkVersion = await GetDevSdkVersion();
+            }
+            else
+            {
+                sdkVersion = await GetReleasedSdkChannelVersion(channel);
+            }
 
             if (!String.IsNullOrEmpty(job.SdkVersion))
             {
+                if (String.Equals(sdkVersion, "stable", StringComparison.OrdinalIgnoreCase))
+                {
+                    sdkVersion = await GetReleasedSdkChannelVersion(channel);
+                }
+
                 sdkVersion = job.SdkVersion;
             }
 
@@ -1642,7 +1657,40 @@ namespace BenchmarkServer
         /// <summary>
         /// Retrieves the current sdk version for a channel
         /// </summary>
-        private static async Task<string> GetSdkChannelVersion(string channel)
+        private static async Task<string> GetReleasedSdkChannelVersion(string channel)
+        {
+            var content = await DownloadContentAsync(_releaseMetadata);
+
+            var index = JObject.Parse(content);
+            var channelSdk = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
+
+            Log.WriteLine($"Detecting current SDK version for channel {channel}: {channelSdk}");
+            return channelSdk;
+        }
+
+        /// <summary>
+        /// Retrieves the latest built sdk version
+        /// </summary>
+        private static async Task<string> GetDevSdkVersion()
+        {
+            var content = await DownloadContentAsync(_sdkVersion);
+
+            string latestSdk;
+            using (var sr = new StringReader(content))
+            {
+                sr.ReadLine();
+                latestSdk = sr.ReadLine();
+
+            }
+            
+            Log.WriteLine($"Detecting latest SDK version: {latestSdk}");
+            return latestSdk;
+        }
+
+        /// <summary>
+        /// Retrieves the current sdk version for a channel
+        /// </summary>
+        private static async Task<string> GetLatestSdkChannelVersion(string channel)
         {
             var content = await DownloadContentAsync(_releaseMetadata);
 
