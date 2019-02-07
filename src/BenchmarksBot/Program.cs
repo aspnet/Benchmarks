@@ -70,7 +70,8 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            notRunning = await RemoveReportedRegressions(notRunning, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} |");
+            // If the LastRun date doesn't match either it's because it was fixed then broke again since last reported issue
+            notRunning = await RemoveReportedRegressions(notRunning, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} |");
 
             if (notRunning.Any())
             {
