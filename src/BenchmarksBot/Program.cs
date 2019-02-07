@@ -47,7 +47,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            var newRegressions = await RemoveReportedRegressions(regressions, r => r.DateTimeUtc.ToString("u"));
+            var newRegressions = await RemoveReportedRegressions(regressions, false, r => r.DateTimeUtc.ToString("u"));
 
             await PopulateHashes(newRegressions);
 
@@ -71,7 +71,7 @@ namespace BenchmarksBot
             Console.WriteLine("Excluding the ones already reported...");
 
             // If the LastRun date doesn't match either it's because it was fixed then broke again since last reported issue
-            notRunning = await RemoveReportedRegressions(notRunning, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} |");
+            notRunning = await RemoveReportedRegressions(notRunning, true, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} |");
 
             if (notRunning.Any())
             {
@@ -92,7 +92,7 @@ namespace BenchmarksBot
 
             Console.WriteLine("Excluding the ones already reported...");
 
-            badResponses = await RemoveReportedRegressions(badResponses, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} |");
+            badResponses = await RemoveReportedRegressions(badResponses, true, r => $"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} |");
 
             if (badResponses.Any())
             {
@@ -454,7 +454,7 @@ namespace BenchmarksBot
             return _recentIssues = issues;
         }
 
-        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions, Func<Regression, string> textToFind)
+        private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions, bool ignoreClosedIssues, Func<Regression, string> textToFind)
         {
             if (!regressions.Any())
             {
@@ -471,6 +471,11 @@ namespace BenchmarksBot
                 var filter = false;
                 foreach(var issue in issues)
                 {
+                    if (ignoreClosedIssues && issue.State == ItemState.Closed)
+                    {
+                        continue;
+                    }
+
                     if (issue.Body != null && issue.Body.Contains(textToFind(r)))
                     {
                         filter = true;
