@@ -45,7 +45,8 @@ namespace BenchmarksDriver
         private static CommandOption 
             _packageOption,
             _initializeOption,
-            _cleanOption
+            _cleanOption,
+            _memoryLimitOption
             ;
 
         public static int Main(string[] args)
@@ -199,6 +200,8 @@ namespace BenchmarksDriver
                 "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
             _cleanOption = app.Option("--clean",
                 "A script to run after the application has stopped, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
+            _memoryLimitOption = app.Option("-mem|--memory",
+                "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--clientThreads",
@@ -411,6 +414,71 @@ namespace BenchmarksDriver
                 serverJob.Scenario = scenarioName;
                 serverJob.WebHost = webHost;
 
+                if(_memoryLimitOption.HasValue())
+                {
+                    var memoryLimitValue = _memoryLimitOption.Value();
+
+                    if (memoryLimitValue.EndsWith("mb", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var megaBytes))
+                        {
+                            serverJob.MemoryLimitInBytes = megaBytes * 1024 * 1024;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid memory limit value");
+                            return -1;
+                        }
+                    }
+                    else if (memoryLimitValue.EndsWith("gb", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var gigaBytes))
+                        {
+                            serverJob.MemoryLimitInBytes = gigaBytes * 1024 * 1024 * 1024;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid memory limit value");
+                            return -1;
+                        }
+                    }
+                    else if (memoryLimitValue.EndsWith("kb", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var kiloBytes))
+                        {
+                            serverJob.MemoryLimitInBytes = kiloBytes * 1024;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid memory limit value");
+                            return -1;
+                        }
+                    }
+                    else if (memoryLimitValue.EndsWith("b", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 1), out var bytes))
+                        {
+                            serverJob.MemoryLimitInBytes = bytes;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid memory limit value");
+                            return -1;
+                        }
+                    }
+                    else
+                    {
+                        if (ulong.TryParse(memoryLimitValue, out var bytes))
+                        {
+                            serverJob.MemoryLimitInBytes = bytes;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid memory limit value");
+                            return -1;
+                        }
+                    }
+                }
                 if (_initializeOption.HasValue())
                 {
                     serverJob.BeforeScript = _initializeOption.Value();

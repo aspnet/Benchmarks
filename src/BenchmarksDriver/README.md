@@ -81,6 +81,7 @@ Options:
   -nupkg|--nuget-package URL or local path of a runtime file. e.g., "--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg"
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   --clean                A script to run after the application has stopped, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
+  -mem|--memory          The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).
 
 Properties of the Wrk client
 

@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Benchmarks.ServerJob;
+using BenchmarksServer;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -1904,6 +1905,27 @@ namespace BenchmarkServer
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
 
+            if (job.MemoryLimitInBytes > 0)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Log.WriteLine($"Creating cgroup with memory limits: {job.MemoryLimitInBytes}");
+
+                    var cgcreate = ProcessUtil.Run("cgcreate", "-g memory:benchmarks\"");
+
+                    if (cgcreate.ExitCode > 0)
+                    {
+                        job.Error += "Could not create cgroup";
+                        return null;
+                    }
+
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks");
+
+                    commandLine = $"-g memory:benchmarks {executable} {commandLine}";
+                    executable = "cgexec";
+                }
+            }
+
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
 
             var process = new Process()
@@ -2030,6 +2052,23 @@ namespace BenchmarkServer
             stopwatch.Start();
             process.Start();
             process.BeginOutputReadLine();
+
+            if (job.MemoryLimitInBytes > 0)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Log.WriteLine($"Creating job oject with memory limits: {job.MemoryLimitInBytes}");
+
+                    var manager = new ChildProcessManager(job.MemoryLimitInBytes);
+                    manager.AddProcess(process);
+
+                    process.Exited += (sender, e) =>
+                    {
+                        Log.WriteLine("Releasing job object");
+                        manager.Dispose();
+                    };
+                }
+            }
 
             if (iis)
             {

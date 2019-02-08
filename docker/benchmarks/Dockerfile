@@ -13,6 +13,7 @@ RUN apt-get update \
 # BenchmarksServer dependencies
         git \
         procps \
+        cgroup-bin \
 # Perfview dependencies
         zip \
         linux-tools \
