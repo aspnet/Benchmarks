@@ -511,6 +511,15 @@ namespace BenchmarksDriver
                 {
                     serverJob.SelfContained = true;
                 }
+                else
+                {
+                    if (outputFileOption.HasValue() || _packageOption.HasValue())
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.WriteLine("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
+                        Console.ResetColor();
+                    }
+                }
                 if (kestrelThreadCountOption.HasValue())
                 {
                     serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
