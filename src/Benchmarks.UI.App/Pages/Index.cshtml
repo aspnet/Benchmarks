@@ -1,0 +1,775 @@
+﻿@page "/"
+@inject JobsService JobsService
+@inject Blazored.Storage.ILocalStorage LocalStorage
+@inject IJSRuntime JSRuntime
+@inject Microsoft.AspNetCore.Blazor.Services.IUriHelper UriHelper
+@using Benchmarks.UI.App.Services
+@using System.Web
+@using System.Text
+@using System.IO
+@using Newtonsoft.Json;
+
+<!-- Nav tabs -->
+<ul class="nav nav-pills" role="tablist">
+    <li class="nav-item"><NavLink href="#home" class="nav-link " role="tab" data-toggle="tab" Match=NavLinkMatch.All>Current Job</NavLink></li>
+    <li class="nav-item"><NavLink href="#saved" class="nav-link" role="tab" data-toggle="tab" >Saved Jobs</NavLink></li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div class="tab-pane show active" id="home" role="tabpanel">
+
+        <div class="row">
+            <div class="form-group col-md-4 col-xl-2">
+                <label>Server</label>
+                <select class="form-control" bind="@currentServer">
+                    @foreach (var serverDefinition in JobsService.GetServerDefinitions())
+                    {
+                        <option value="@serverDefinition.Arguments">@serverDefinition.DisplayName</option>
+                    }
+                </select>
+                <span class="text-muted form-text small">The hardware to run the scenarios on.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-2">
+                <label>Host</label>
+                <select class="form-control" bind="@host">
+                    <option value="">Default</option>
+                    <option value="KestrelSockets">Kestrel/Sockets</option>
+                    <option value="KestrelLibuv">Kestrel/Libuv</option>
+                    <option value="HttpSys">HTTPSys</option>
+                    <option value="IISInProcess">IIS In Proc</option>
+                    <option value="IISOutOfProcess">IIS Out Of Proc</option>
+                    <option value="Docker">Docker</option>
+                </select>
+                <span class="text-muted form-text small">The scenario type to run.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-2">
+                <label>AspNetCore</label>
+                <select class="form-control" bind="@aspnetcore">
+                    <option value="Latest">Latest (3.0.*)</option>
+                    <option value="2.2">2.2.x</option>
+                    <option value="2.2.*">2.2.x servicing</option>
+                    <option value="2.1">2.1.x</option>
+                    <option value="2.1.*">2.1.x servicing</option>
+                    <option value="Custom">Custom</option>
+                </select>
+                <span class="text-muted form-text small">The ASP.NET Core version to use.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-2">
+                <label>Runtime</label>
+                <select class="form-control" bind="@runtime">
+                    <option value="">Matching ASP.NET Core</option>
+                    <option value="3.0.*">Latest (3.0.*)</option>
+                    <option value="2.2">2.2.*</option>
+                    <option value="2.2.*">2.2 servicing</option>
+                    <option value="2.1">2.1.*</option>
+                    <option value="2.1.*">2.1 servicing</option>
+                    <option value="Custom">Custom</option>
+                </select>
+                <span class="text-muted form-text small">The .NET Core runtime version to use.</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6 col-lg-2">
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" class="custom-control-input" id="saveCheckbox" onchange="@OnSaveCheckboxChanged" />
+                    <label class="custom-control-label" for="saveCheckbox">Save results</label>
+                    <span class="text-muted form-text small">Check to save the results for later comparison.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="descriptionInput">Description</label>
+                    <input class="form-control" type="text" id="descriptionInput" bind="description" />
+                    <span class="text-muted form-text small">Provide a description for the saved results.</span>
+                </div>
+
+            </div>
+            @if (savedJobs.Any())
+            {
+            <div class="form-group col-md-6 col-lg-2">
+
+                <div class="custom-control custom-checkbox mb-3">
+                    <input type="checkbox" class="custom-control-input" id="compareCheckbox" onchange="@OnCompareCheckboxChanged" />
+                    <label class="custom-control-label" for="compareCheckbox">Compare to</label>
+                    <span class="text-muted form-text small">Check to compare the results to a previously saved job.</span>
+                </div>
+
+                @if (compare)
+                {
+                    <select class="form-control" bind="@compareToJob">
+                        @foreach (var savedJob in savedJobs)
+                        {
+                            <option value="@savedJob.Key">@savedJob.Key</option>
+                        }
+                    </select>
+                }
+            </div>
+            }
+
+            <div class="form-group col-md-4 col-xl-2">
+                @if (aspnetcore == "Custom")
+                {
+                    <input type="text" class="form-control" bind="customAspNetCore" />
+                    <span class="text-muted form-text small">Specific version of ASP.NET Core. <a target="_blank" href="https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore.App">Complete list.</a></span>
+                }
+            </div>
+
+            <div class="form-group col-md-4 col-xl-2">
+                @if (runtime == "Custom")
+                {
+                    <input type="text" class="form-control" bind="customRuntime" />
+                    <span class="text-muted form-text small">Specific version of.NET Core. <a target="_blank" href="https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.NetCore.App">Complete list.</a></span>
+                }
+            </div>
+
+        </div>
+
+        <div class="row">
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-4 col-xl-2">
+                <label>Scenario</label>
+                <select class="form-control" bind="@scenario">
+                    @foreach (var jobDefinition in JobsService.GetJobDefinitions())
+                    {
+                        <option value="@jobDefinition.Arguments">@jobDefinition.DisplayName</option>
+                    }
+                </select>
+                <span class="text-muted form-text small">The scenario type to run.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-2">
+                <label>Database</label>
+                <select class="form-control" bind="@database">
+                    <option value="">None</option>
+                    <option value="--database PostgreSql">Postgres</option>
+                    <option value="--database SqlServer">SQL Server</option>
+                    <option value="--database MySql">MySQL</option>
+                    <option value="--database MongoDb">MongoDB</option>
+                </select>
+                <span class="text-muted form-text small">The scenario type to run.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-1">
+                <label>Warmup</label>
+                <input type="text" class="form-control" bind="warmup" />
+                <span class="text-muted form-text small">Warmup time, in seconds. '0' to disable it.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-1">
+                <label>Duration</label>
+                <input type="text" class="form-control" bind="duration" />
+                <span class="text-muted form-text small">Duration of the run, in seconds.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-1">
+                <label>Samples</label>
+                <input type="text" class="form-control" bind="samples" />
+                <span class="text-muted form-text small">Number of benchmarks to run.</span>
+            </div>
+
+            <div class="form-group col-md-4 col-xl-1">
+                <label>Extremes</label>
+                <input type="text" class="form-control" bind="extremes" />
+                <span class="text-muted form-text small">Number of benchmarks to exclude from the samples.</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="quietCheckbox" bind="quiet" />
+                <label class="custom-control-label" for="quietCheckbox">Quiet mode</label>
+                <span class="text-muted form-text small">Check to only display the results.</span>
+            </div>
+
+            <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="markdownCheckbox" bind="markdown" />
+                <label class="custom-control-label" for="markdownCheckbox">Markdown</label>
+                <span class="text-muted form-text small">Check to display the results in Markdown.</span>
+            </div>
+
+            <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="collectCheckbox" bind="collect" />
+                <label class="custom-control-label" for="collectCheckbox">Collect Trace</label>
+                <span class="text-muted form-text small">Check to collect a trace.</span>
+            </div>
+
+            <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="fetchCheckbox" bind="fetch" />
+                <label class="custom-control-label" for="fetchCheckbox">Fetch deployed application</label>
+                <span class="text-muted form-text small">Check to fetch the published  output of the application.</span>
+            </div>
+
+            <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="selfContainedCheckbox" bind="selfContained" />
+                <label class="custom-control-label" for="selfContainedCheckbox">Self-contained</label>
+                <span class="text-muted form-text small">Check to publish a self-contained app.</span>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="form-group col-lg-3">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="customFile" ref="outputFile" onchange="@UploadOutputFile" />
+                    <label class="custom-file-label" for="customFile">Custom Files</label>
+                    <span class="text-muted form-text small">This file will be copied in the published folder.</span>
+                </div>
+
+                <ul class="list-group">
+                    @foreach (var entry in _outputFiles)
+                    {
+                        <li class="list-group-item">
+                            <code>@entry.Value</code> 
+                            <a class="btn btn-danger btn-sm float-right ml-1" role="button" href="#" onclick="@(() => DeleteOutputFile(entry.Key))">Delete</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-lg-3">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="customFile" ref="nugetPackage" onchange="@UploadNugetPackage" />
+                    <label class="custom-file-label" for="customFile">Nuget Packages</label>
+                    <span class="text-muted form-text small">These files will be extracted in the published folder.</span>
+                </div>
+
+                <ul class="list-group">
+                    @foreach (var entry in _nugetPackages)
+                    {
+                        <li class="list-group-item">
+                            <code>@entry.Value</code>
+                            <a class="btn btn-danger btn-sm float-right ml-1" role="button" href="#" onclick="@(() => DeleteNugetPackage(entry.Key))">Delete</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <a class="btn btn-primary" role="button" href="#" onclick="@RunJob">Run</a>
+            <a class="btn btn-danger" role="button" href="#" onclick="@StopJob">Stop</a>
+            <a class="btn btn-secondary" role="button" href="#" onclick="@Print">Print</a>
+            <a class="btn btn-secondary" role="button" href="#" onclick="@Share">Permalink</a>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <label>Output</label>
+                <pre class="output" ref="outputPre">@standardOutput</pre>
+            </div>
+
+            @if (_artifacts.Count > 0)
+            {
+                <div class="col-md-6">
+                    <label>Artifacts</label>
+                    <ul class="list-group col-lg-4">
+                        @foreach (var filename in _artifacts)
+                        {
+                            var url = "api/download/" + filename;
+                            <li class="list-group-item">
+                                <a class="nav-link" href="@url" target="_blank">
+                                    @filename
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+        </div>
+    </div>
+    <div class="tab-pane" id="saved" role="tabpanel">
+        <h1>Saved Jobs</h1>
+
+        <div class="row">
+            <div class="col-md-6 col-lg-2">
+                <ul class="list-group">
+                    @foreach (var key in savedCommands.Keys)
+                    {
+                        <li class="list-group-item ">
+                            @key
+                            <a class="btn btn-danger btn-sm float-right ml-1" role="button" href="#" onclick="@(() => DeleteCommand(key))">Delete</a>
+                            <a class="btn btn-primary btn-sm float-right ml-1" role="button" href="#" onclick="@(() => LoadCommand(key))">Load</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-inline row">
+          <div class="mx-sm-3 mt-1">
+            <input class="form-control" type="text" id="saveCommandInput" bind="commandName" placeholder="Name"/>
+          </div>
+          <a class="btn btn-primary mr-sm-2  mt-1" role="button" href="#" onclick="@SaveCommand">Save</a>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string currentServer;
+    string scenario;
+    string warmup, duration, samples, extremes, database, host;
+    string processId;
+    string jobUniqueId, comparedToUniqueId;
+    bool quiet, markdown, collect, fetch, selfContained;
+    bool save, compare;
+    string description, compareToJob;
+    string aspnetcore, runtime;
+    string customAspNetCore, customRuntime;
+    Dictionary<string, string> savedJobs = new Dictionary<string, string>();
+
+    ElementRef outputFile, nugetPackage, outputPre;
+    Dictionary<string, string> _nugetPackages = new Dictionary<string, string>();
+    Dictionary<string, string> _outputFiles = new Dictionary<string, string>();
+    List<string> _artifacts = new List<string>();
+    DateTime _lastOutputChangedUTC;
+
+    StringBuilder standardOutput = new StringBuilder();
+
+    // Commands 
+
+    Dictionary<string, Command> savedCommands = new Dictionary<string, Command>();
+    string commandName;
+
+    protected override async Task OnInitAsync()
+    {
+        var queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(new Uri(UriHelper.GetAbsoluteUri()).Query);
+
+        if (queryString.ContainsKey("command"))
+        {
+            try
+            {
+                var command = JsonConvert.DeserializeObject<Command>(queryString["command"]);
+                await LoadCommand(command);
+            }
+            catch
+            {
+
+            }
+        }
+        else
+        {
+            currentServer = JobsService.GetServerDefinitions().First().Arguments;
+            scenario = JobsService.GetJobDefinitions().First().Arguments;
+            warmup = "15";
+            duration = "15";
+            samples = "1";
+            extremes = "0";
+            database = "";
+            host = "";
+            quiet = false;
+            markdown = false;
+            aspnetcore = "Latest";
+            runtime = "";
+        }
+
+        savedJobs = await GetSavedJobs();
+        compareToJob = savedJobs.FirstOrDefault().Key;
+        savedCommands = await GetSavedCommands();
+    }
+
+    async Task RunJob()
+    {
+        if (save && String.IsNullOrWhiteSpace(description))
+        {
+            standardOutput.Clear();
+            standardOutput.Append("The 'description' field is mandatory when using the 'save' option.");
+            return;
+        }
+
+        if (aspnetcore == "Custom")
+        {
+            // Matching ASP.NET Core is not available in this case
+            if (String.IsNullOrWhiteSpace(runtime))
+            {
+                standardOutput.Append("The 'runtime' field has to be a specific version when using a custom ASP.NET Core version.");
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(customAspNetCore))
+            {
+                standardOutput.Append("A custom ASP.NET Core version needs to be specified.");
+                return;
+            }
+        }
+
+        if (runtime == "Custom")
+        {
+            if (String.IsNullOrWhiteSpace(customRuntime))
+            {
+                standardOutput.Append("A custom.NET Core version needs to be specified.");
+                return;
+            }
+        }
+
+        // Stop any running Job
+        await StopJob();
+
+        standardOutput.Clear();
+        _artifacts.Clear();
+        jobUniqueId = Guid.NewGuid().ToString("n");
+
+        var arguments = await BuildArguments();
+
+        _lastOutputChangedUTC = DateTime.UtcNow;
+        processId = JobsService.StartDriver(arguments, standardOutput, OnStandardOutputChanged, OnJobFinished);
+    }
+
+    async void OnStandardOutputChanged()
+    {
+        var now = DateTime.UtcNow;
+        StateHasChanged();
+        await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+    }
+
+    async Task StopJob()
+    {
+        standardOutput.AppendLine("STOPPING ...");
+        await JobsService.StopProcess(processId);
+        standardOutput.AppendLine("STOPPED !!!");
+        await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+    }
+
+    async Task Print()
+    {
+        standardOutput.Clear();
+        standardOutput.Append(await BuildArguments());
+        await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+    }
+
+    async Task Share()
+    {
+        var uri = UriHelper.GetAbsoluteUri();
+        uri = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(uri, "command", JsonConvert.SerializeObject(await SerializeCommand()));
+
+        standardOutput.Clear();
+        standardOutput.Append(uri);
+    }
+
+    async Task OnJobFinished()
+    {
+        if (save)
+        {
+            var jobResultsFilename = JobsService.GetDriverFileName(jobUniqueId + ".bench.json");
+
+            if (File.Exists(jobResultsFilename))
+            {
+                savedJobs = await GetSavedJobs();
+                savedJobs[description] = File.ReadAllText(jobResultsFilename);
+                await LocalStorage.SetItem("SavedJobs", savedJobs);
+                File.Delete(jobResultsFilename);
+                StateHasChanged();
+            }
+        }
+
+        standardOutput.AppendLine("FINISHED !!!");
+        await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+
+        var output = standardOutput.ToString();
+
+        foreach(var marker in new[] {"Downloading trace: ", "Creating published archive: "})
+        {
+            var index = 0;
+
+            do
+            {
+                index = output.IndexOf(marker, index);
+                if (index != -1)
+                {
+                    index = index + marker.Length;
+
+                    var filename = output.Substring(index, output.IndexOfAny(new char[] { '\n', '\r' }, index) - index);
+                    _artifacts.Add(filename);
+                }
+
+            } while (index != -1);
+        }
+
+        StateHasChanged();
+    }
+
+    MarkupString FormatOutput(string output)
+    {
+        return new MarkupString(HttpUtility.HtmlEncode(output).Replace(Environment.NewLine, "<br />"));
+    }
+
+    async Task<string> BuildArguments()
+    {
+        var args = new StringBuilder();
+
+        args.Append(currentServer).Append(" ");
+
+        args.Append(scenario).Append(" ");
+
+        args.Append($"--warmup {warmup} ");
+
+        args.Append($"--duration {duration} ");
+
+        if (extremes != "0")
+        {
+            args.Append($"-x {extremes} ").Append(" ");
+        }
+
+        if (samples != "1")
+        {
+            args.Append($"-i {samples} ");
+        }
+
+        if (!String.IsNullOrEmpty(database))
+        {
+            args.Append($"{database} ");
+        }
+
+        if (!String.IsNullOrEmpty(host))
+        {
+            args.Append($"--webHost {host} ");
+        }
+
+        foreach (var nugetPackage in _nugetPackages.Keys)
+        {
+            args.Append($"--nuget-package \"{nugetPackage}\" ");
+        }
+
+        foreach (var outputFile in _outputFiles.Keys)
+        {
+            args.Append($"--outputFile \"{outputFile}\" ");
+        }
+
+        if (quiet)
+        {
+            args.Append($"--quiet ");
+        }
+
+        if (markdown)
+        {
+            args.Append($"--markdown ");
+        }
+
+        if (save)
+        {
+            // Create a new unique local file. It will then be saved on local storage using the user provided name and deleted.
+            args.Append($"--save {jobUniqueId} ");
+        }
+
+        if (compare)
+        {
+            var serverJobs = await GetSavedJobs();
+
+            if (serverJobs.TryGetValue(compareToJob, out var job))
+            {
+                comparedToUniqueId = Guid.NewGuid().ToString("n");
+                File.WriteAllText(JobsService.GetDriverFileName(comparedToUniqueId + ".bench.json"), job);
+                args.Append($"--diff {comparedToUniqueId} ");
+            }
+        }
+
+        if (!String.IsNullOrWhiteSpace(description))
+        {
+            args.Append($"--description \"{description}\" ");
+        }
+
+        if (aspnetcore == "Custom")
+        {
+            args.Append($"--aspNetCoreVersion \"{customAspNetCore}\" ");
+
+            if (runtime == "Custom")
+            {
+                args.Append($"--runtimeVersion \"{customRuntime}\" ");
+            }
+            else
+            {
+                args.Append($"--runtimeVersion \"{runtime}\" ");
+            }
+        }
+        else
+        {
+            args.Append($"--aspNetCoreVersion \"{aspnetcore}\" ");
+
+            if (String.IsNullOrEmpty(runtime))
+            {
+                args.Append($"--runtimeVersion \"{aspnetcore}\" ");
+            }
+            else if (runtime == "Custom")
+            {
+                args.Append($"--runtimeVersion \"{customRuntime}\" ");
+            }
+            else
+            {
+                args.Append($"--runtimeVersion \"{runtime}\" ");
+            }
+        }
+
+        if (collect)
+        {
+            args.Append($"--collect-trace ");
+        }
+
+        if (fetch)
+        {
+            args.Append($"--fetch ");
+        }
+
+        if (selfContained)
+        {
+            args.Append($"--self-contained ");
+        }
+
+        return args.ToString();
+    }
+
+    async Task UploadOutputFile()
+    {
+        var fileNameParts = await JSRuntime.InvokeAsync<string>("getFileData", outputFile);
+        var fileNameSegments = fileNameParts.Split(';');
+        _outputFiles.Add(fileNameSegments[0], fileNameSegments[1]);
+
+        selfContained = true;
+    }
+
+    Task DeleteOutputFile(string key)
+    {
+        _outputFiles.Remove(key);
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    async Task UploadNugetPackage()
+    {
+        var fileNameParts = await JSRuntime.InvokeAsync<string>("getFileData", nugetPackage);
+        var fileNameSegments = fileNameParts.Split(';');
+        _nugetPackages.Add(fileNameSegments[0], fileNameSegments[1]);
+
+        selfContained = true;
+    }
+
+    Task DeleteNugetPackage(string key)
+    {
+        _nugetPackages.Remove(key);
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    void OnSaveCheckboxChanged(UIChangeEventArgs e)
+    {
+        save = (bool)e.Value;
+        // TODO: Show/Hide saveInput
+        //return Task.CompletedTask;
+    }
+
+    async Task OnCompareCheckboxChanged(UIChangeEventArgs e)
+    {
+        savedJobs = await GetSavedJobs();
+        compare = (bool)e.Value;
+        StateHasChanged();
+    }
+
+    async Task<Dictionary<string, string>> GetSavedJobs()
+    {
+        return await LocalStorage.GetItem<Dictionary<string, string>>("SavedJobs") ?? new Dictionary<string, string>();
+    }
+
+    async Task<Dictionary<string, Command>> GetSavedCommands()
+    {
+        var serialized = await LocalStorage.GetItem<string>("SavedCommands");
+
+        if (String.IsNullOrEmpty(serialized))
+        {
+            return new Dictionary<string, Command>();
+        }
+
+        return JsonConvert.DeserializeObject<Dictionary<string, Command>>(serialized) ;
+    }
+
+    Task<Command> SerializeCommand()
+    {
+        var command = new Command();
+
+        command.CurrentServer = currentServer;
+        command.Scenario = scenario;
+        command.Warmup = warmup;
+        command.Duration = duration;
+        command.Samples = samples;
+        command.Extremes = extremes;
+        command.Database = database;
+        command.Host = host;
+        command.Quiet = quiet;
+        command.Markdown = markdown;
+        command.AspNetCore = aspnetcore;
+        command.Runtime = runtime;
+        command.OutputFiles = new Dictionary<string, string>(_outputFiles);
+        command.NugetPackages = new Dictionary<string, string>(_nugetPackages);
+
+        // We should be able to save files too, as they are in a temp folder of the server
+        // But it needs to be a folder outside of the Docker image
+
+        return Task.FromResult(command);
+    }
+
+    Task LoadCommand(string key)
+    {
+        if (!savedCommands.TryGetValue(key, out var command))
+        {
+            return Task.CompletedTask;
+        }
+
+        return LoadCommand(command);
+    }
+
+    Task LoadCommand(Command command)
+    {
+        currentServer = command.CurrentServer;
+        scenario = command.Scenario;
+        warmup = command.Warmup;
+        duration = command.Duration;
+        samples = command.Samples;
+        extremes = command.Extremes;
+        database = command.Database;
+        host = command.Host;
+        quiet = command.Quiet;
+        markdown = command.Markdown;
+        aspnetcore = command.AspNetCore;
+        runtime = command.Runtime;
+        _outputFiles = new Dictionary<string, string>(command.OutputFiles);
+        _nugetPackages = new Dictionary<string, string>(command.NugetPackages);
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    Task DeleteCommand(string key)
+    {
+        savedCommands.Remove(key);
+        StateHasChanged();
+        return SaveCommands();
+    }
+
+    async Task SaveCommand()
+    {
+        if (String.IsNullOrWhiteSpace(commandName))
+        {
+            return;
+        }
+
+        var command = await SerializeCommand();
+        savedCommands[commandName] = command;
+        StateHasChanged();
+        await SaveCommands();
+    }
+
+    Task SaveCommands()
+    {
+        return LocalStorage.SetItem("SavedCommands", JsonConvert.SerializeObject(savedCommands));
+    }
+}

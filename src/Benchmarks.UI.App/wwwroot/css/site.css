@@ -1,0 +1,15 @@
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+/*app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}*/
+
+pre.output {
+    padding: 1em;
+    height: 20em;
+    overflow: auto;
+    background-color: darkblue;
+    color: white;
+}
