@@ -169,7 +169,7 @@ namespace BenchmarkServer
             {
                 if (_cleanup && Directory.Exists(_rootTempDir))
                 {
-                    DeleteDir(_rootTempDir);
+                    TryDeleteDir(_rootTempDir, false);
                 }
             };
 
@@ -670,7 +670,7 @@ namespace BenchmarkServer
                             {
                                 if (OperatingSystem == OperatingSystem.Windows)
                                 {
-                                    RunPerfview("stop /AcceptEula /NoNGenRundown /NoView", benchmarksDir);
+                                    RunPerfview("stop /AcceptEula /NoNGenRundown /NoView", Path.Combine(tempDir, benchmarksDir));
                                 }
                                 else if (OperatingSystem == OperatingSystem.Linux)
                                 {
@@ -822,7 +822,7 @@ namespace BenchmarkServer
 
                             if (_cleanup && !job.NoClean && tempDir != null)
                             {
-                                DeleteDir(tempDir);
+                                TryDeleteDir(tempDir, false);
                             }
 
                             tempDir = null;
@@ -834,11 +834,15 @@ namespace BenchmarkServer
                     await Task.Delay(1000);
                 }
             }
+            catch(Exception e)
+            {
+                Log.WriteLine($"Unnexpected error: {e.ToString()}");
+            }
             finally
             {
                 if (_cleanup && dotnetHome != null)
                 {
-                    DeleteDir(dotnetHome);
+                    TryDeleteDir(dotnetHome, false);
                 }
             }
         }
@@ -851,7 +855,7 @@ namespace BenchmarkServer
                 return null;
             }
 
-            Log.WriteLine($"Starting process '{_perfviewPath} {arguments}'");
+            Log.WriteLine($"Starting process '{_perfviewPath} {arguments}' in '{workingDirectory}'");
 
             var process = new Process()
             {
@@ -1759,7 +1763,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static void DeleteDir(string path)
+        private static void TryDeleteDir(string path, bool rethrow = true)
         {
             if (String.IsNullOrEmpty(path) || !Directory.Exists(path))
             {
@@ -1793,16 +1797,20 @@ namespace BenchmarkServer
                 }
                 catch (Exception e)
                 {
-                    Log.WriteLine($"Error deleting directory: {e.ToString()}");
+                    Log.WriteLine("Error, retrying ...");
 
                     if (i < 9)
                     {
-                        Log.WriteLine("RETRYING");
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
                     else
                     {
-                        throw;
+                        Log.WriteLine("All retries failed");
+
+                        if (rethrow)
+                        {
+                            throw;
+                        }
                     }
                 }
             }
