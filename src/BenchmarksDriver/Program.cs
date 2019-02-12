@@ -515,6 +515,8 @@ namespace BenchmarksDriver
                 {
                     if (outputFileOption.HasValue() || _packageOption.HasValue())
                     {
+                        serverJob.SelfContained = true;
+
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
                         Console.WriteLine("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
                         Console.ResetColor();
@@ -714,7 +716,7 @@ namespace BenchmarksDriver
                         var fileSegments = outputFile.Split(';');
                         var filename = fileSegments[0];
 
-                        if (!File.Exists(filename))
+                        if (!filename.Contains("*") && !File.Exists(filename))
                         {
                             Console.WriteLine($"Output File '{filename}' could not be loaded.");
                             return 8;
@@ -1136,11 +1138,14 @@ namespace BenchmarksDriver
                             {
                                 foreach (var outputFile in outputFileOption.Values)
                                 {
-                                    var result = await UploadFileAsync(outputFile, serverJob, serverJobUri + "/attachment");
-
-                                    if (result != 0)
+                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFile), Path.GetFileName(outputFile), SearchOption.TopDirectoryOnly))
                                     {
-                                        return result;
+                                        var result = await UploadFileAsync(resolvedFile, serverJob, serverJobUri + "/attachment");
+
+                                        if (result != 0)
+                                        {
+                                            return result;
+                                        }
                                     }
                                 }
                             }
