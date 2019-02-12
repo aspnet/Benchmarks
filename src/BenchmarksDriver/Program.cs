@@ -2336,24 +2336,26 @@ namespace BenchmarksDriver
             {
                 var values = segment.Split('=', 2);
 
+                var key = values[0].Trim();
+
                 // GCCollectOnly
                 if (values.Length == 1)
                 {
-                    result[values[0].Trim()] = "";
+                    result[key] = "";
                 }
                 else
                 {
-                    if (String.IsNullOrWhiteSpace(values[1]))
+                    var value = values[1].Trim();
+
+                    if (String.IsNullOrWhiteSpace(value))
                     {
-                        continue;
+                        result[key] = null;
                     }
                     else
                     {
-                        result[values[0].Trim()] = values[1].Trim();
+                        result[key] = value;
                     }
-                }
-
-                
+                }                
             }
 
             return result;
