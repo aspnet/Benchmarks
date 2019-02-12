@@ -64,8 +64,9 @@ namespace BenchmarkServer
         private static readonly string _latestAspnetApiUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.App/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnet.myget.org/F/dotnet-core/api/v3/registration1/Microsoft.NETCore.App/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
-        private static readonly string _sdkVersion = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
-
+        private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
+        private static readonly string _latestRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
+        
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1265,7 +1266,15 @@ namespace BenchmarkServer
                     // Detect the latest available version with this prefix
 
                     channel = String.Join(".", runtimeVersion.Split('.').Take(2));
-                    runtimeVersion = await GetLatestPackageVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
+
+                    if (channel == "3.0")
+                    {
+                        runtimeVersion = await ParseLatestVersionFile(_latestRuntimeUrl);
+                    }
+                    else
+                    {
+                        runtimeVersion = await GetLatestPackageVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
+                    }
                 }
                 else if (runtimeVersion.Split('.').Length == 2)
                 {
@@ -1303,7 +1312,8 @@ namespace BenchmarkServer
 
             if (runtimeVersion.StartsWith("3.0"))
             {
-                sdkVersion = await GetDevSdkVersion();
+                sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
+                Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
             }
             else
             {
@@ -1669,12 +1679,9 @@ namespace BenchmarkServer
             return channelSdk;
         }
 
-        /// <summary>
-        /// Retrieves the latest built sdk version
-        /// </summary>
-        private static async Task<string> GetDevSdkVersion()
+        private static async Task<string> ParseLatestVersionFile(string url)
         {
-            var content = await DownloadContentAsync(_sdkVersion);
+            var content = await DownloadContentAsync(url);
 
             string latestSdk;
             using (var sr = new StringReader(content))
@@ -1684,7 +1691,6 @@ namespace BenchmarkServer
 
             }
             
-            Log.WriteLine($"Detecting latest SDK version: {latestSdk}");
             return latestSdk;
         }
 
