@@ -624,7 +624,9 @@ namespace BenchmarksDriver
 
                         foreach (var item in allTraceArguments)
                         {
-                            if (String.IsNullOrEmpty(item.Value))
+                            // null value to remove the argument
+                            // empty value to keep the argument with no value, e.g. /GCCollectOnly
+                            if (item.Value == null)
                             {
                                 allDefaultArguments.Remove(item.Key);
                             }
@@ -1526,9 +1528,16 @@ namespace BenchmarksDriver
                                     traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
-                                Log($"Downloading trace: {traceOutputFileName}");
+                                Log($"Downloading trace {traceOutputFileName}");
 
-                                await DownloadFile(uri, serverJobUri, traceOutputFileName);
+                                try
+                                {
+                                    await DownloadFile(uri, serverJobUri, traceOutputFileName);
+                                }
+                                catch(HttpRequestException)
+                                {
+                                    Log($"FAILED: The trace was not successful");
+                                }
                             }
 
                             var shouldComputeResults = results.Any() && iterations == i && !IsConsoleApp;
@@ -2324,14 +2333,26 @@ namespace BenchmarksDriver
 
             foreach(var segment in segments)
             {
-                var values = segment.Split('=');
+                var values = segment.Split('=', 2);
 
-                if (values.Length != 2)
+                // GCCollectOnly
+                if (values.Length == 1)
                 {
-                    continue;
+                    result[values[0].Trim()] = "";
+                }
+                else
+                {
+                    if (String.IsNullOrWhiteSpace(values[1]))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        result[values[0].Trim()] = values[1].Trim();
+                    }
                 }
 
-                result[values[0].Trim()] = values[1].Trim();
+                
             }
 
             return result;
