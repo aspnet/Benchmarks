@@ -2033,8 +2033,7 @@ namespace BenchmarkServer
                         _startPerfviewArguments += $" /{customArg.Key}{value}";
                     }
 
-                    _startPerfviewArguments += $" \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"";
-                    RunPerfview($"start /AcceptEula /NoGui {_startPerfviewArguments}", Path.Combine(benchmarksRepo, job.BasePath));
+                    RunPerfview($"start /AcceptEula /NoGui {_startPerfviewArguments} \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"", Path.Combine(benchmarksRepo, job.BasePath));
                     Log.WriteLine($"Starting PerfView {_startPerfviewArguments}");
                 }
                 else
