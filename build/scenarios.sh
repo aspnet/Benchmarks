@@ -177,6 +177,12 @@ jobs=(
   "$routingBenchmarks --benchmarkdotnet MatcherAzureBenchmark --arg MatcherAzureBenchmark"
   "$routingBenchmarks --benchmarkdotnet MatcherBuilderAzureBenchmark --arg MatcherBuilderAzureBenchmark"
   "$routingBenchmarks --benchmarkdotnet MatcherSingleEntryBenchmark --arg MatcherSingleEntryBenchmark"
+
+  # Connections
+  "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5" 
+  "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5 -m https"
+  "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5" 
+  "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5 -m https"
 )
 
 # build driver
