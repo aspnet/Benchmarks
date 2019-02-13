@@ -89,6 +89,8 @@ namespace BenchmarkServer
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
         public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
+        private static string _startPerfviewArguments;
+
         static Startup()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -670,7 +672,7 @@ namespace BenchmarkServer
                             {
                                 if (OperatingSystem == OperatingSystem.Windows)
                                 {
-                                    RunPerfview("stop /AcceptEula /NoNGenRundown /NoView", Path.Combine(tempDir, benchmarksDir));
+                                    RunPerfview($"stop /AcceptEula /NoNGenRundown /NoView {_startPerfviewArguments}", Path.Combine(tempDir, benchmarksDir));
                                 }
                                 else if (OperatingSystem == OperatingSystem.Linux)
                                 {
@@ -2013,8 +2015,6 @@ namespace BenchmarkServer
                 {
                     job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl.zip");
                     var perfViewArguments = new Dictionary<string, string>();
-                    perfViewArguments["AcceptEula"] = "";
-                    perfViewArguments["NoGui"] = "";
 
                     if (!String.IsNullOrEmpty(job.CollectArguments))
                     {
@@ -2025,17 +2025,17 @@ namespace BenchmarkServer
                         }
                     }
 
-                    var perfviewArguments = $"start";
+                    _startPerfviewArguments = $"";
 
                     foreach (var customArg in perfViewArguments)
                     {
                         var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
-                        perfviewArguments += $" /{customArg.Key}{value}";
+                        _startPerfviewArguments += $" /{customArg.Key}{value}";
                     }
 
-                    perfviewArguments += $" \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"";
-                    RunPerfview(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
-                    Log.WriteLine($"Starting PerfView {perfviewArguments}");
+                    _startPerfviewArguments += $" \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"";
+                    RunPerfview($"start /AcceptEula /NoGui {_startPerfviewArguments}", Path.Combine(benchmarksRepo, job.BasePath));
+                    Log.WriteLine($"Starting PerfView {_startPerfviewArguments}");
                 }
                 else
                 {
