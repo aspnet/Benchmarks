@@ -1567,54 +1567,67 @@ namespace BenchmarkServer
             // Copy crossgen in the app folder
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
-                /*
                 Log.WriteLine("Copying crossgen to application folder");
 
-                // Downloading corresponding package
-
-                var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeVersion}.nupkg");
-
-                // Ensure the folder already exists
-                Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
-
-                if (!File.Exists(runtimePath))
+                try
                 {
-                    Log.WriteLine($"Downloading runtime package");
-                    
-                    await DownloadFileAsync($"https://dotnetcli.azureedge.net/dotnet/Runtime/{runtimeVersion}/dotnet-runtime-{runtimeVersion}-linux-x64.tar.gz", runtimePath, maxRetries: 5, timeout: 60);
-                }
-                else
-                {
-                    Log.WriteLine($"Found runtime package at '{runtimePath}'");
-                }
+                    // Downloading corresponding package
 
-                using (var archive = ZipFile.OpenRead(runtimePath))
-                {
-                    foreach (var entry in archive.Entries)
+                    var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeVersion}.nupkg");
+
+                    // Ensure the folder already exists
+                    Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
+
+                    if (!File.Exists(runtimePath))
                     {
-                        if (entry.FullName.EndsWith("/crossgen", StringComparison.OrdinalIgnoreCase))
+                        Log.WriteLine($"Downloading runtime package");
+
+                        // For some unknown reason, the version on this feed is not aligned with the netcore.app one
+                        // See https://dotnetfeed.blob.core.windows.net/dotnet-coreclr/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.coreclr/index.json
+                        var segments = runtimeVersion.Split('-');
+                        segments[segments.Length - 1] = "7" + segments[segments.Length - 1];
+                        var hackedRuntimeVersion = String.Join("-", segments);
+
+                        var url = $"https://dotnetfeed.blob.core.windows.net/dotnet-coreclr/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.coreclr/{hackedRuntimeVersion}/runtime.linux-x64.microsoft.netcore.runtime.coreclr.{hackedRuntimeVersion}.nupkg";
+
+                        await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60);
+                    }
+                    else
+                    {
+                        Log.WriteLine($"Found runtime package at '{runtimePath}'");
+                    }
+
+                    using (var archive = ZipFile.OpenRead(runtimePath))
+                    {
+                        foreach (var entry in archive.Entries)
                         {
-                            var crossgenFolder = job.SelfContained
-                                ? outputFolder
-                                : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeVersion)
-                                ;
-
-                            var crossgenFilename = Path.Combine(crossgenFolder, "crossgen");
-
-                            if (!File.Exists(crossgenFilename))
+                            if (entry.FullName.EndsWith("/crossgen", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Ensure the target folder is created
-                                Directory.CreateDirectory(Path.GetDirectoryName(crossgenFilename));
+                                var crossgenFolder = job.SelfContained
+                                    ? outputFolder
+                                    : Path.Combine(dotnetDir, "shared", "Microsoft.NETCore.App", runtimeVersion)
+                                    ;
 
-                                entry.ExtractToFile(crossgenFilename);
-                                Log.WriteLine($"Copied crossgen to {crossgenFolder}");
+                                var crossgenFilename = Path.Combine(crossgenFolder, "crossgen");
+
+                                if (!File.Exists(crossgenFilename))
+                                {
+                                    // Ensure the target folder is created
+                                    Directory.CreateDirectory(Path.GetDirectoryName(crossgenFilename));
+
+                                    entry.ExtractToFile(crossgenFilename);
+                                    Log.WriteLine($"Copied crossgen to {crossgenFolder}");
+                                }
+
+                                break;
                             }
-
-                            break;
                         }
                     }
                 }
-                */
+                catch(Exception e)
+                {
+                    Log.WriteLine("ERROR: Failed to download crossgen. " + e.ToString());
+                }
             }
 
             // Copy all output attachments
