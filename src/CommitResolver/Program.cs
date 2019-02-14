@@ -74,6 +74,8 @@ namespace CommitResolver
 
                         if (coreClrValues.Count == 1)
                         {
+                            Console.WriteLine(runtimeVersion.Values[0]);
+
                             Console.WriteLine("Microsoft.NetCore.App / Core FX");
                             Console.WriteLine($"https://github.com/dotnet/corefx/commit/{coreFxValues[0]}");
                             Console.WriteLine();
@@ -84,6 +86,8 @@ namespace CommitResolver
                         {
                             for (var i = 1; i < coreClrValues.Count; i++)
                             {
+                                Console.WriteLine($"{runtimeVersion.Values[i-1]} -> {runtimeVersion.Values[i]}");
+
                                 Console.WriteLine("Microsoft.NetCore.App / Core FX");
                                 Console.WriteLine($"https://github.com/dotnet/corefx/compare/{coreFxValues[i-1]}...{coreFxValues[i]}");
                                 Console.WriteLine();
@@ -182,6 +186,11 @@ namespace CommitResolver
                     try
                     {
                         var entry = archive.GetEntry($@"shared\Microsoft.NETCore.App\{netCoreAppVersion}\{assemblyName}");
+                        if (entry == null)
+                        {
+                            entry = archive.GetEntry($@"shared/Microsoft.NETCore.App/{netCoreAppVersion}/{assemblyName}");
+                        }
+
                         entry.ExtractToFile(versionAssemblyPath, true);
 
                         using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(versionAssemblyPath))
