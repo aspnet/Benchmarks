@@ -78,8 +78,15 @@
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
                                   DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
                                   LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
-                                  TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
+                                  TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" 
+                             />
 
+    <KnownFrameworkReference Update="Microsoft.NETCore.App"
+                                  DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)"
+                                  LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)"
+                                  TargetingPackVersion="$(MicrosoftNETCoreAppPackageVersion)" 
+                              />
+    
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion22)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion22)" />
 
