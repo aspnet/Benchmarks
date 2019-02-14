@@ -1567,6 +1567,7 @@ namespace BenchmarkServer
             // Copy crossgen in the app folder
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
+                /*
                 Log.WriteLine("Copying crossgen to application folder");
 
                 // Downloading corresponding package
@@ -1613,6 +1614,7 @@ namespace BenchmarkServer
                         }
                     }
                 }
+                */
             }
 
             // Copy all output attachments
