@@ -1579,7 +1579,8 @@ namespace BenchmarkServer
                 if (!File.Exists(runtimePath))
                 {
                     Log.WriteLine($"Downloading runtime package");
-                    await DownloadFileAsync($"https://dotnet.myget.org/F/dotnet-core/api/v2/package/runtime.linux-x64.Microsoft.NETCore.App/{runtimeVersion}", runtimePath, maxRetries: 5, timeout: 60);
+                    
+                    await DownloadFileAsync($"https://dotnetcli.azureedge.net/dotnet/Runtime/{runtimeVersion}/dotnet-runtime-{runtimeVersion}-linux-x64.tar.gz", runtimePath, maxRetries: 5, timeout: 60);
                 }
                 else
                 {
