@@ -8,9 +8,12 @@ function readData(filename)
 end
 
 function init(args)
+   local data = readData("scripts/data.txt")
+   print("Reading data file: " .. table.getn(data) .. " bytes" )
    wrk.method = "POST"
-   wrk.body = readData("scripts/data.txt")
+   wrk.body = data
    wrk.headers["Content-Type"] = "text/plain"
+   wrk.headers["Content-Length"] = table.getn(data)
 
    if args[1] ~= nil then
       pipelineDepth = args[1]
