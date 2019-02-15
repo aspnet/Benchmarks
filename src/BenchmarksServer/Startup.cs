@@ -1813,7 +1813,7 @@ namespace BenchmarkServer
                     Log.WriteLine("Nothing to do");
                     break;
                 }
-                catch (Exception e)
+                catch
                 {
                     Log.WriteLine("Error, retrying ...");
 
