@@ -37,7 +37,7 @@ namespace BenchmarksDriver
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
         private const string EventPipeOutputFile = "eventpipe.netperf";
-        private static string EventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:1:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
+        private static string EventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:FFFF:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
