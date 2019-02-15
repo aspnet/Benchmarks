@@ -260,6 +260,29 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("{id}/eventpipe")]
+        public IActionResult EventPipe(int id)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+
+                    foreach (var file in Directory.GetFiles(job.BasePath, "*.netperf"))
+                    {
+                        return File(System.IO.File.OpenRead(file), "application/object");
+                    }
+
+                    return NotFound();
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
         [HttpGet("{id}/fetch")]
         public IActionResult Fetch(int id)
         {

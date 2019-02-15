@@ -37,7 +37,7 @@ namespace BenchmarksDriver
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
         private const string EventPipeOutputFile = "eventpipe.netperf";
-        private const string DefaultEventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:FFFF:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
+        private static string EventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:1:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
@@ -46,7 +46,9 @@ namespace BenchmarksDriver
             _packageOption,
             _initializeOption,
             _cleanOption,
-            _memoryLimitOption
+            _memoryLimitOption,
+            _enableEventPipeOption,
+            _eventPipeArgumentsOption
             ;
 
         public static int Main(string[] args)
@@ -165,10 +167,12 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
-            var enableEventPipeOption = app.Option("--enable-eventpipe",
+            _enableEventPipeOption = app.Option("--enable-eventpipe",
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
+            _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
+                $"EventPipe configuration. Defaults to \"{EventPipeConfig}\"", CommandOptionType.SingleValue);
             var traceArgumentsOption = app.Option("--trace-arguments",
-                $"Arguments used when collecting a PerfView trace.  Defaults to \"{_defaultTraceArguments}\".",
+                $"Arguments used when collecting a PerfView trace. Defaults to \"{_defaultTraceArguments}\".",
                 CommandOptionType.SingleValue);
             var traceOutputOption = app.Option("--trace-output",
                 @"Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
@@ -643,7 +647,7 @@ namespace BenchmarksDriver
                         serverJob.CollectArguments = _defaultTraceArguments;
                     }
                 }
-                if (enableEventPipeOption.HasValue())
+                if (_enableEventPipeOption.HasValue())
                 {
                     // Enable Event Pipes
                     serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
@@ -651,8 +655,13 @@ namespace BenchmarksDriver
                     // Set a specific name to find it more easily
                     serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
 
+                    if (_eventPipeArgumentsOption.HasValue())
+                    {
+                        EventPipeConfig = _eventPipeArgumentsOption.Value();
+                    }
+
                     // Default EventPipeConfig value
-                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", DefaultEventPipeConfig);
+                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", EventPipeConfig);
                 }
                 if (disableR2ROption.HasValue())
                 {
@@ -909,7 +918,6 @@ namespace BenchmarksDriver
                     scriptFileOption,
                     markdownOption,
                     writeToFileOption,
-                    enableEventPipeOption.HasValue(),
                     requiredOperatingSystem,
                     saveOption,
                     diffOption
@@ -975,7 +983,6 @@ namespace BenchmarksDriver
             CommandOption scriptFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
-            bool enableEventPipe,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
             CommandOption saveOption,
             CommandOption diffOption
@@ -1468,19 +1475,18 @@ namespace BenchmarksDriver
 
                             rpsStr = "RPS-" + ((int)((statistics.RequestsPerSecond + 500) / 1000)) + "K";
 
+                            // EventPipe log
+                            if (_enableEventPipeOption.HasValue())
+                            {
+                                Log($"EventPipe config: {EventPipeConfig}");
+                            }
+
                             // Collect Trace
                             if (serverJob.Collect)
                             {
                                 Log($"Post-processing profiler trace, this can take 10s of seconds...");
 
-                                if (serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows)
-                                {
-                                    Log($"Trace arguments: {serverJob.CollectArguments}");
-                                }
-                                else
-                                {
-                                    Log($"EventPipe config: {DefaultEventPipeConfig}");
-                                }
+                                Log($"Trace arguments: {serverJob.CollectArguments}");
 
                                 var uri = serverJobUri + "/trace";
                                 response = await _httpClient.PostAsync(uri, new StringContent(""));
@@ -1784,9 +1790,9 @@ namespace BenchmarksDriver
                     }
 
                     // Download netperf file
-                    if (enableEventPipe && serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Linux)
+                    if (_enableEventPipeOption.HasValue())
                     {
-                        var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(EventPipeOutputFile);
+                        var uri = serverJobUri + "/eventpipe";
                         LogVerbose("GET " + uri);
 
                         try
@@ -1802,9 +1808,8 @@ namespace BenchmarksDriver
                         }
                         catch (Exception e)
                         {
-                            Log($"Error while downloading trace file {EventPipeOutputFile}");
+                            Log($"Error while downloading EventPipe file {EventPipeOutputFile}");
                             LogVerbose(e.Message);
-                            continue;
                         }
                     }
 
