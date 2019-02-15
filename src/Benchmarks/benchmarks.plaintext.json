@@ -27,7 +27,10 @@
   },
   "CopyToAsync": {
     "Path": "/copytoasync",
-    "ScriptName": "post"
+    "ClientProperties": {
+      "ScriptName": "post",
+      "PipelineDepth": 0
+    }
   },
   "MvcPlaintext": {
     "Path": "/mvc/plaintext"
