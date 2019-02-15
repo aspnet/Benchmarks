@@ -200,6 +200,12 @@
             </div>
 
             <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="eventPipeCheckbox" bind="eventpipe" />
+                <label class="custom-control-label" for="eventPipeCheckbox">Event Pipe</label>
+                <span class="text-muted form-text small">Check to enable Event Pipe.</span>
+            </div>
+
+            <div class="custom-control custom-checkbox mb-3">
                 <input type="checkbox" class="custom-control-input" id="fetchCheckbox" bind="fetch" />
                 <label class="custom-control-label" for="fetchCheckbox">Fetch deployed application</label>
                 <span class="text-muted form-text small">Check to fetch the published  output of the application.</span>
@@ -320,7 +326,7 @@
     string warmup, duration, samples, extremes, database, host;
     string processId;
     string jobUniqueId, comparedToUniqueId;
-    bool quiet, markdown, collect, fetch, selfContained;
+    bool quiet, markdown, collect, eventpipe, fetch, selfContained;
     bool save, compare;
     string description, compareToJob;
     string aspnetcore, runtime;
@@ -611,6 +617,11 @@
         if (collect)
         {
             args.Append($"--collect-trace ");
+        }
+
+        if (eventpipe)
+        {
+            args.Append($"--enable-eventpipe");
         }
 
         if (fetch)
