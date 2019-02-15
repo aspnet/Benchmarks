@@ -9,11 +9,13 @@ end
 
 function init(args)
    local data = readData("scripts/data.txt")
-   print("Reading data file: " .. table.getn(data) .. " bytes" )
+   local contentLength = string.len(data)
+
+   print("Reading data file: " .. contentLength .. " bytes" )
    wrk.method = "POST"
    wrk.body = data
    wrk.headers["Content-Type"] = "text/plain"
-   wrk.headers["Content-Length"] = table.getn(data)
+   wrk.headers["Content-Length"] = contentLength
 
    if args[1] ~= nil then
       pipelineDepth = args[1]
