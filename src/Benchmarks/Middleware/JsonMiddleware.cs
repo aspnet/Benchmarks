@@ -26,7 +26,7 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
@@ -37,12 +37,12 @@ namespace Benchmarks.Middleware
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
-                }
 
-                return Task.CompletedTask;
+                    await sw.FlushAsync();
+                }
             }
 
-            return _next(httpContext);
+            await _next(httpContext);
         }
     }
 
