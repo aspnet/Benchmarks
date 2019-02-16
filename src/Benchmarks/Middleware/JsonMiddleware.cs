@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Newtonsoft.Json;
 
 namespace Benchmarks.Middleware
@@ -26,7 +27,7 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
@@ -34,15 +35,19 @@ namespace Benchmarks.Middleware
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = _bufferSize;
 
+                var syncIOFeature = httpContext.Features.Get<IHttpBodyControlFeature>();
+                if (syncIOFeature != null)
+                {
+                    syncIOFeature.AllowSynchronousIO = true;
+                }
+
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
-
-                    await sw.FlushAsync();
                 }
             }
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 
