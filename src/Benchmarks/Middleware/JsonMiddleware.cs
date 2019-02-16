@@ -45,6 +45,8 @@ namespace Benchmarks.Middleware
                 {
                     _json.Serialize(sw, new { message = "Hello, World!" });
                 }
+
+                return Task.CompletedTask;
             }
 
             return _next(httpContext);
