@@ -1534,12 +1534,10 @@ namespace BenchmarksDriver
                                     traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
                                 }
 
-                                Log($"Downloading trace ... ");
-
                                 try
                                 {
+                                    Log($"Downloading trace: {traceOutputFileName}");
                                     await DownloadFile(uri, serverJobUri, traceOutputFileName);
-                                    Log($"Trace downloaded at '{traceOutputFileName}'");
                                 }
                                 catch (HttpRequestException)
                                 {
