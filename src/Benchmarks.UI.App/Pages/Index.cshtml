@@ -432,9 +432,16 @@
 
     async void OnStandardOutputChanged()
     {
-        var now = DateTime.UtcNow;
         StateHasChanged();
-        await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("scrollToBottom", outputPre);
+        }
+        catch
+        {
+            // async void errors crash the process, if we can't scroll to the bottom it's not a big deal
+        }
     }
 
     async Task StopJob()

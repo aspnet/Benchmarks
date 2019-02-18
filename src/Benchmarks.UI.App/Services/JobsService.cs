@@ -130,13 +130,14 @@ namespace Benchmarks.UI.App.Services
             return new JobDefinition[]
             {
                 new JobDefinition("Plaintext", $"-n Plaintext {_plaintextJobs}"),
-                new JobDefinition("Plaintext Platform", $"-n PlaintextPlatform {_plaintextPlatformJobs}"),
                 new JobDefinition("Plaintext Non-Pipelined", $"-n PlaintextNonPipelined {_plaintextJobs}"),
+                new JobDefinition("Plaintext Platform", $"-n PlaintextPlatform {_plaintextPlatformJobs}"),
+                new JobDefinition("Plaintext Platform Non-Pipelined", $"-n PlaintextNonPipelinedPlatform {_plaintextPlatformJobs}"),
                 new JobDefinition("Plaintext MVC", $"-n MvcPlaintext {_plaintextJobs}"),
                 new JobDefinition("Plaintext Routing", $"-n PlaintextRouting {_routingJobs}"),
 
                 new JobDefinition("Json", $"-n Json {_jsonJobs}"),
-                new JobDefinition("Json Platform", $"-n Json {_jsonPlatformJobs}"),
+                new JobDefinition("Json Platform", $"-n JsonPlatform {_jsonPlatformJobs}"),
                 new JobDefinition("Json MVC", $"-n MvcJson {_jsonJobs}"),
             };
         }
