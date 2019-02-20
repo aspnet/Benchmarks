@@ -93,7 +93,6 @@ jobs=(
   "-n MemoryCachePlaintext --webHost KestrelSockets $trend $plaintextJobs"
   "-n MemoryCachePlaintextSetRemove --webHost KestrelSockets $trend $plaintextJobs"
   "-n ResponseCachingPlaintextCached --webHost KestrelSockets $trend $plaintextJobs"
-  "-n ResponseCachingPlaintextCachedDelete --webHost KestrelSockets $trend $plaintextJobs"
   "-n ResponseCachingPlaintextResponseNoCache --webHost KestrelSockets $trend $plaintextJobs"
   "-n ResponseCachingPlaintextRequestNoCache --webHost KestrelSockets $trend $plaintextJobs"
   "-n ResponseCachingPlaintextVaryByCached --webHost KestrelSockets $trend $plaintextJobs"

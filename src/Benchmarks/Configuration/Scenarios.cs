@@ -23,9 +23,6 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/responsecaching/plaintext/cached")]
         public bool ResponseCachingPlaintextCached { get; set; }
 
-        [ScenarioPath("/responsecaching/plaintext/cached")]
-        public bool ResponseCachingPlaintextCachedDelete { get; set; }
-
         [ScenarioPath("/responsecaching/plaintext/responsenocache")]
         public bool ResponseCachingPlaintextResponseNoCache { get; set; }
 
