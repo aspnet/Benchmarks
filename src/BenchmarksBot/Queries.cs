@@ -76,9 +76,9 @@
                 SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, Max([DateTime]) [LastDateTime], Max([SocketErrors] + [BadResponses]) as [Errors]
                 FROM [dbo].[AspNetBenchmarksTrends]
                 WHERE [DateTime] >= @startDate
+                AND [SocketErrors] + [BadResponses] > [RequestsPerSecond] * 1 / 100
                 GROUP BY Scenario, Hardware, OperatingSystem, Scheme, WebHost
             ) DATA
-            WHERE [Errors] > 0
             ORDER BY Scenario
         ";
 
