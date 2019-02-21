@@ -28,6 +28,9 @@ namespace BenchmarksDriver.Serializers
 
             // BenchmarkDotNet
             ResultSerializers[Worker.BenchmarkDotNet] = () => new BenchmarkDotNetSerializer();
+
+            // Bombardier
+            ResultSerializers[Worker.Bombardier] = () => new WrkSerializer();
         }
 
         static public IResultsSerializer CreateResultSerializer(ClientJob clientJob)

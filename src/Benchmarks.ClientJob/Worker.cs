@@ -11,5 +11,6 @@ namespace Benchmarks.ClientJob
         H2Load,
         None,
         BenchmarkDotNet,
+        Bombardier
     }
 }

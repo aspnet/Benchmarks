@@ -24,6 +24,9 @@ namespace BenchmarksClient.Workers
                 case Worker.H2Load:
                     worker = new H2LoadWorker();
                     break;
+                case Worker.Bombardier:
+                    worker = new BombardierWorker();
+                    break;
             }
             return worker;
         }

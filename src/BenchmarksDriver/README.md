@@ -105,6 +105,11 @@ Properties of the H2Load client
 
   Streams                Max concurrent streams to issue per session. When http/1.1 is used, this specifies the number of HTTP pipelining requests in-flight. Default is 1.
 
+Properties of the Bombardier client
+
+  rate                   Rate limit in requests per second
+  requests               Number of requests (substitutes --duration)
+
 ```
 
 ### Examples
