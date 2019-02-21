@@ -205,17 +205,17 @@ namespace BenchmarksClient.Workers
 
                 job.RequestsPerSecond = result.rps.max; // Using max instead of mean will get us more stable results
 
-                job.Latency.Average = result.latency.mean;
+                job.Latency.Average = result.latency.mean / 1000;
 
-                job.Latency.Within50thPercentile = result.latency.percentiles["50"];
+                job.Latency.Within50thPercentile = result.latency.percentiles["50"] / 1000;
 
-                job.Latency.Within75thPercentile = result.latency.percentiles["75"];
+                job.Latency.Within75thPercentile = result.latency.percentiles["75"] / 1000;
 
-                job.Latency.Within90thPercentile = result.latency.percentiles["90"];
+                job.Latency.Within90thPercentile = result.latency.percentiles["90"] / 1000;
 
-                job.Latency.Within99thPercentile = result.latency.percentiles["99"];
+                job.Latency.Within99thPercentile = result.latency.percentiles["99"] / 1000;
 
-                job.Latency.MaxLatency = result.latency.max;
+                job.Latency.MaxLatency = result.latency.max / 1000;
 
                 job.SocketErrors = 0;
 
