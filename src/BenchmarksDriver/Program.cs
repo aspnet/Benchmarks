@@ -1826,21 +1826,29 @@ namespace BenchmarksDriver
                         // Download published application
                         if (fetch)
                         {
-                            Log($"Downloading published application...");
-                            if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                            try
                             {
-                                // If it does not end with a *.zip then we add a DATE.zip to it
-                                if (String.IsNullOrEmpty(fetchDestination))
+                                Log($"Downloading published application...");
+                                if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    fetchDestination = "published";
+                                    // If it does not end with a *.zip then we add a DATE.zip to it
+                                    if (String.IsNullOrEmpty(fetchDestination))
+                                    {
+                                        fetchDestination = "published";
+                                    }
+
+                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
                                 }
 
-                                fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
+                                var uri = serverJobUri + "/fetch";
+                                Log($"Creating published archive: {fetchDestination}");
+                                await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
                             }
-
-                            var uri = serverJobUri + "/fetch";
-                            Log($"Creating published archive: {fetchDestination}");
-                            await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
+                            catch (Exception e)
+                            {
+                                Log($"Error while downloading published application");
+                                LogVerbose(e.Message);
+                            }
                         }
 
                         // Download files
