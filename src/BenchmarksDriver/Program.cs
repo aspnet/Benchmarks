@@ -1811,54 +1811,6 @@ namespace BenchmarksDriver
                         }
                     }
 
-                    // Download published application
-                    if (fetch)
-                    {
-                        Log($"Downloading published application...");
-                        if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                        {
-                            // If it does not end with a *.zip then we add a DATE.zip to it
-                            if (String.IsNullOrEmpty(fetchDestination))
-                            {
-                                fetchDestination = "published";
-                            }
-
-                            fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
-                        }
-
-                        var uri = serverJobUri + "/fetch";
-                        Log($"Creating published archive: {fetchDestination}");
-                        await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
-                    }
-
-                    // Download files
-                    if (downloadFiles != null && downloadFiles.Any())
-                    {
-                        foreach (var file in downloadFiles)
-                        {
-                            Log($"Downloading file {file}");
-                            var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
-                            LogVerbose("GET " + uri);
-
-                            try
-                            {
-                                var filename = file;
-                                var counter = 1;
-                                while (File.Exists(filename))
-                                {
-                                    filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
-                                }
-
-                                await DownloadFile(uri, serverJobUri, filename);
-                            }
-                            catch (Exception e)
-                            {
-                                Log($"Error while downloading file {file}, skipping ...");
-                                LogVerbose(e.Message);
-                                continue;
-                            }
-                        }
-                    }
                 }
                 catch (Exception e)
                 {
@@ -1871,6 +1823,55 @@ namespace BenchmarksDriver
                 {
                     if (serverJobUri != null)
                     {
+                        // Download published application
+                        if (fetch)
+                        {
+                            Log($"Downloading published application...");
+                            if (fetchDestination == null || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // If it does not end with a *.zip then we add a DATE.zip to it
+                                if (String.IsNullOrEmpty(fetchDestination))
+                                {
+                                    fetchDestination = "published";
+                                }
+
+                                fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
+                            }
+
+                            var uri = serverJobUri + "/fetch";
+                            Log($"Creating published archive: {fetchDestination}");
+                            await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
+                        }
+
+                        // Download files
+                        if (downloadFiles != null && downloadFiles.Any())
+                        {
+                            foreach (var file in downloadFiles)
+                            {
+                                Log($"Downloading file {file}");
+                                var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
+                                LogVerbose("GET " + uri);
+
+                                try
+                                {
+                                    var filename = file;
+                                    var counter = 1;
+                                    while (File.Exists(filename))
+                                    {
+                                        filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
+                                    }
+
+                                    await DownloadFile(uri, serverJobUri, filename);
+                                }
+                                catch (Exception e)
+                                {
+                                    Log($"Error while downloading file {file}, skipping ...");
+                                    LogVerbose(e.Message);
+                                    continue;
+                                }
+                            }
+                        }
+
                         Log($"Deleting scenario '{scenario}' on benchmark server...");
 
                         LogVerbose($"DELETE {serverJobUri}...");
