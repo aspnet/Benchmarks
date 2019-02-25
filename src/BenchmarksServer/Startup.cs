@@ -1316,27 +1316,36 @@ namespace BenchmarkServer
 
             string sdkVersion;
 
-            if (runtimeVersion.StartsWith("3.0"))
+            if (!String.IsNullOrEmpty(job.SdkVersion))
             {
-                //sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
-                //Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
-
-                sdkVersion = "3.0.100-preview4-010399";
-                Log.WriteLine($"Forcing latest working SDK version: {sdkVersion}");
+                if (String.Equals(job.SdkVersion, "stable", StringComparison.OrdinalIgnoreCase))
+                {
+                    sdkVersion = await GetReleasedSdkChannelVersion(channel);
+                    Log.WriteLine($"Using stable channel SDK version: {sdkVersion}");
+                }
+                else if (String.Equals(job.SdkVersion, "latest", StringComparison.OrdinalIgnoreCase))
+                {
+                    sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
+                    Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+                }
+                else
+                {
+                    sdkVersion = job.SdkVersion;
+                    Log.WriteLine($"Using specified SDK version: {sdkVersion}");
+                }
             }
             else
             {
-                sdkVersion = await GetReleasedSdkChannelVersion(channel);
-            }
-
-            if (!String.IsNullOrEmpty(job.SdkVersion))
-            {
-                if (String.Equals(sdkVersion, "stable", StringComparison.OrdinalIgnoreCase))
+                if (runtimeVersion.StartsWith("3.0"))
+                {
+                    sdkVersion = "3.0.100-preview4-010399";
+                    Log.WriteLine($"Forcing latest working SDK version: {sdkVersion}");
+                }
+                else
                 {
                     sdkVersion = await GetReleasedSdkChannelVersion(channel);
+                    Log.WriteLine($"Using stable channel SDK version: {sdkVersion}");
                 }
-
-                sdkVersion = job.SdkVersion;
             }
 
             var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
