@@ -1338,8 +1338,8 @@ namespace BenchmarkServer
             {
                 if (runtimeVersion.StartsWith("3.0"))
                 {
-                    sdkVersion = "3.0.100-preview4-010399";
-                    Log.WriteLine($"Forcing latest working SDK version: {sdkVersion}");
+                    sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
+                    Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
                 }
                 else
                 {
