@@ -13,7 +13,7 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(BenchmarksAspNetCoreVersion) != ''">
+  <ItemGroup Condition="($(BenchmarksAspNetCoreVersion) != '') And ($(TargetFramework) != 'netcoreapp3.0')">
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)"/>
   </ItemGroup>
 
@@ -22,14 +22,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
-    <!--
-    The KnownFrameworkReference is defined in “dotnet/sdk/3.x.x-x-x/Microsoft.NETCoreSdk.BundledVersions.props” 
-    Is needs to be updated to reference the specific AspNetCore.App version, but this will likely break in the near future.
-    -->
-    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
-                                  DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
-                                  LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
-                                  TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>
