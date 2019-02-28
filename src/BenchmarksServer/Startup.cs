@@ -2032,62 +2032,20 @@ namespace BenchmarkServer
                         e.Data.ToLowerInvariant().Contains("listening")))
                     {
                         MarkAsRunning(hostname, job, stopwatch);
+
+                        // Start perfview?
+                        if (job.Collect && !job.CollectStartup)
+                        {
+                            StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                        }
                     }
                 }
             };
 
             // Start perfview?
-            if (job.Collect)
+            if (job.Collect && job.CollectStartup)
             {
-                if (OperatingSystem == OperatingSystem.Windows)
-                {
-                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl.zip");
-                    var perfViewArguments = new Dictionary<string, string>();
-
-                    if (!String.IsNullOrEmpty(job.CollectArguments))
-                    {
-                        foreach (var tuple in job.CollectArguments.Split(';'))
-                        {
-                            var values = tuple.Split(new char[] { '=' }, 2);
-                            perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
-                        }
-                    }
-
-                    _startPerfviewArguments = $"";
-
-                    foreach (var customArg in perfViewArguments)
-                    {
-                        var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
-                        _startPerfviewArguments += $" /{customArg.Key}{value}";
-                    }
-
-                    RunPerfview($"start /AcceptEula /NoGui {_startPerfviewArguments} \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"", Path.Combine(benchmarksRepo, job.BasePath));
-                    Log.WriteLine($"Starting PerfView {_startPerfviewArguments}");
-                }
-                else
-                {
-                    var perfViewArguments = new Dictionary<string, string>();
-
-                    if (!String.IsNullOrEmpty(job.CollectArguments))
-                    {
-                        foreach (var tuple in job.CollectArguments.Split(';'))
-                        {
-                            var values = tuple.Split(new char[] { '=' }, 2);
-                            perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
-                        }
-                    }
-
-                    var perfviewArguments = "collect benchmarks";
-
-                    foreach (var customArg in perfViewArguments)
-                    {
-                        var value = String.IsNullOrEmpty(customArg.Value) ? "" : $" {customArg.Value.ToLowerInvariant()}";
-                        perfviewArguments += $" -{customArg.Key}{value}";
-                    }
-
-                    job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
-                    perfCollectProcess = RunPerfcollect(perfviewArguments, Path.Combine(benchmarksRepo, job.BasePath));
-                }
+                StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
             }
 
             stopwatch.Start();
@@ -2115,9 +2073,68 @@ namespace BenchmarkServer
             {
                 await WaitToListen(job, hostname);
                 MarkAsRunning(hostname, job, stopwatch);
+
+                // Start perfview?
+                if (job.Collect && !job.CollectStartup)
+                {
+                    StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                }
             }
 
             return process;
+        }
+
+        private static void StartCollection(string workingDirectory, ServerJob job)
+        {
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.etl.zip");
+                var perfViewArguments = new Dictionary<string, string>();
+
+                if (!String.IsNullOrEmpty(job.CollectArguments))
+                {
+                    foreach (var tuple in job.CollectArguments.Split(';'))
+                    {
+                        var values = tuple.Split(new char[] { '=' }, 2);
+                        perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                    }
+                }
+
+                _startPerfviewArguments = $"";
+
+                foreach (var customArg in perfViewArguments)
+                {
+                    var value = String.IsNullOrEmpty(customArg.Value) ? "" : $"={customArg.Value}";
+                    _startPerfviewArguments += $" /{customArg.Key}{value}";
+                }
+
+                RunPerfview($"start /AcceptEula /NoGui {_startPerfviewArguments} \"{Path.Combine(job.BasePath, "benchmarks.trace")}\"", workingDirectory);
+                Log.WriteLine($"Starting PerfView {_startPerfviewArguments}");
+            }
+            else
+            {
+                var perfViewArguments = new Dictionary<string, string>();
+
+                if (!String.IsNullOrEmpty(job.CollectArguments))
+                {
+                    foreach (var tuple in job.CollectArguments.Split(';'))
+                    {
+                        var values = tuple.Split(new char[] { '=' }, 2);
+                        perfViewArguments[values[0]] = values.Length > 1 ? values[1] : "";
+                    }
+                }
+
+                var perfviewArguments = "collect benchmarks";
+
+                foreach (var customArg in perfViewArguments)
+                {
+                    var value = String.IsNullOrEmpty(customArg.Value) ? "" : $" {customArg.Value.ToLowerInvariant()}";
+                    perfviewArguments += $" -{customArg.Key}{value}";
+                }
+
+                job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
+                perfCollectProcess = RunPerfcollect(perfviewArguments, workingDirectory);
+            }
         }
 
         private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)

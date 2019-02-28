@@ -103,6 +103,7 @@ namespace Benchmarks.ServerJob
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
 
         public bool Collect { get; set; }
+        public bool CollectStartup { get; set; }
         public string CollectArguments { get; set; }
         public string PerfViewTraceFile { get; set; }
         public string BasePath { get; set; }

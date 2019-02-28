@@ -167,6 +167,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
+            var collectStartup = app.Option("--collect-startup",
+                "Includes the startup phase in the trace.", CommandOptionType.NoValue);
             _enableEventPipeOption = app.Option("--enable-eventpipe",
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
@@ -647,6 +649,10 @@ namespace BenchmarksDriver
                         serverJob.CollectArguments = _defaultTraceArguments;
                     }
                 }
+                if (collectTraceOption.HasValue())
+                {
+                    serverJob.CollectStartup = true;
+                }
                 if (_enableEventPipeOption.HasValue())
                 {
                     // Enable Event Pipes
@@ -707,10 +713,14 @@ namespace BenchmarksDriver
                     }
                 }
 
-                if (saveOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
+                if (saveOption.HasValue())
                 {
-                    Console.WriteLine($"The --description argument is mandatory when using --save.");
-                    return -1;
+                    if (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value()))
+                    {
+                        // Copy the --save value as the description
+                        // It also means that if --diff and --save are used, --diff won't require a --description
+                        descriptionOption = saveOption;
+                    }
                 }
 
                 if (diffOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
@@ -775,6 +785,7 @@ namespace BenchmarksDriver
                 if (consoleOption.HasValue())
                 {
                     _clientJob.Client = Worker.None;
+                    serverJob.CollectStartup = true;
                 }
 
                 Log($"Using worker {_clientJob.Client}");
@@ -782,6 +793,7 @@ namespace BenchmarksDriver
                 if (_clientJob.Client == Worker.BenchmarkDotNet)
                 {
                     serverJob.ReadyStateText = "BenchmarkRunner: Start";
+                    serverJob.CollectStartup = true;
                 }
 
                 // The ready state option overrides BenchmarDotNet's value

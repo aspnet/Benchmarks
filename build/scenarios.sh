@@ -49,7 +49,7 @@ http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_C
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
-routingBenchmarks="-r AspNetCore@master --projectFile src/Routing/benchmarks/Microsoft.AspNetCore.Routing.Performance/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:20:00"
+routingBenchmarks="-r AspNetCore@master --projectFile src/Http/Routing/perf/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:20:00"
 
 jobs=(
   # Plaintext
