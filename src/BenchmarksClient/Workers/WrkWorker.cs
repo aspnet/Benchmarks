@@ -204,11 +204,6 @@ namespace BenchmarksClient.Workers
                 {
                     command += $" {pipeLineDepth}";
                 }
-
-                if (job.Method != "GET")
-                {
-                    command += $" {job.Method}";
-                }
             }
 
             Log(command);
