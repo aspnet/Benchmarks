@@ -61,7 +61,7 @@ namespace BenchmarkServer
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
-        private static readonly string _latestAspnetApiUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv/index.json";
+        private static readonly string _aspnetFlatContainerUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnet.myget.org/F/dotnet-core/api/v3/registration1/Microsoft.NETCore.App/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
@@ -1338,8 +1338,11 @@ namespace BenchmarkServer
             {
                 if (runtimeVersion.StartsWith("3.0"))
                 {
-                    sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
-                    Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+                    var globalJsonUrl = String.Format(_aspNetCoreDependenciesUrl, "master/global.json");
+                    var globalJsonObject = JObject.Parse(await DownloadContentAsync(globalJsonUrl));
+
+                    sdkVersion = globalJsonObject["sdk"]["version"].ToString();
+                    Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
                 }
                 else
                 {
@@ -1360,7 +1363,7 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestChannel + ".");
+                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
             }
             else
             {
@@ -1372,7 +1375,7 @@ namespace BenchmarkServer
                     // Prefixed version
                     // Detect the latest available version with this prefix
 
-                    aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, aspNetCoreVersion.TrimEnd('*'));
+                    aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, aspNetCoreVersion.TrimEnd('*'));
                 }
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
@@ -2272,6 +2275,22 @@ namespace BenchmarkServer
                 {
                     return (string)lastEntry["catalogEntry"]["version"];
                 }
+            }
+
+            return null;
+        }
+
+        private static async Task<string> GetFlatContainerVersion(string packageIndexUrl, string versionPrefix)
+        {
+            Log.WriteLine($"Downloading flatcontainer ...");
+            var root = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
+
+            // Extract the highest version
+            var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
+
+            if (lastEntry != null)
+            {
+                return lastEntry.ToString();
             }
 
             return null;
