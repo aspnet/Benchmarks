@@ -67,7 +67,8 @@ namespace BenchmarkServer
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
         private static readonly string _latestRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
-        
+        private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version";
+
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1339,10 +1340,7 @@ namespace BenchmarkServer
             {
                 if (runtimeVersion.StartsWith("3.0"))
                 {
-                    var globalJsonUrl = String.Format(_aspNetCoreDependenciesUrl, "master/global.json");
-                    var globalJsonObject = JObject.Parse(await DownloadContentAsync(globalJsonUrl));
-
-                    sdkVersion = globalJsonObject["sdk"]["version"].ToString();
+                    sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
                     Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
                 }
                 else
