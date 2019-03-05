@@ -14,7 +14,7 @@ namespace CommitResolver
 {
     class Program
     {
-        static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.App/";
+        static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
 
@@ -126,7 +126,7 @@ namespace CommitResolver
 
                     try
                     {
-                        var entry = archive.GetEntry("Microsoft.AspNetCore.App.nuspec");
+                        var entry = archive.GetEntry("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.nuspec");
                         entry.ExtractToFile(aspNetCoreNuSpecPath, true);
 
                         var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
