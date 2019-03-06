@@ -23,6 +23,7 @@ namespace BenchmarkServer
             IDictionary<string, string> environmentVariables = null, 
             Action<string> outputDataReceived = null,
             bool log = false,
+            Action onStart = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
@@ -86,6 +87,8 @@ namespace BenchmarkServer
                 };
 
                 process.Start();
+                onStart?.Invoke();
+
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 

@@ -1056,13 +1056,12 @@ namespace BenchmarkServer
             var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
                                               $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
 
-            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false);
+            var stopwatch = new Stopwatch();
+
+            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start());
 
             var containerId = result.StandardOutput.Trim();
             job.Url = ComputeServerUrl(hostname, job);
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
