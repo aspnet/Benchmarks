@@ -1027,7 +1027,9 @@ namespace BenchmarkServer
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
-            
+
+            job.BasePath = workingDirectory;
+
             // Running BeforeScript
             if (!String.IsNullOrEmpty(job.BeforeScript))
             {

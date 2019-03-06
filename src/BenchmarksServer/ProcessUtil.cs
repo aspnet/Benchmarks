@@ -86,8 +86,8 @@ namespace BenchmarkServer
                     Log.WriteLine(e.Data);
                 };
 
-                process.Start();
                 onStart?.Invoke();
+                process.Start();
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
