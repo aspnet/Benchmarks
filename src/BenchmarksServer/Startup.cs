@@ -1058,6 +1058,11 @@ namespace BenchmarkServer
 
             var stopwatch = new Stopwatch();
 
+            if (job.Collect && job.CollectStartup)
+            {
+                StartCollection(workingDirectory, job);
+            }
+
             var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start());
 
             var containerId = result.StandardOutput.Trim();
@@ -1093,6 +1098,11 @@ namespace BenchmarkServer
                         {
                             Log.WriteLine($"Application is now running...");
                             MarkAsRunning(hostname, job, stopwatch);
+
+                            if (job.Collect && !job.CollectStartup)
+                            {
+                                StartCollection(workingDirectory, job);
+                            }
                         }
                     }
                 };
