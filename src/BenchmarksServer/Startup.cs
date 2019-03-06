@@ -1062,6 +1062,7 @@ namespace BenchmarkServer
             job.Url = ComputeServerUrl(hostname, job);
 
             var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
@@ -1086,7 +1087,10 @@ namespace BenchmarkServer
                         Log.WriteLine(e.Data);
                         standardOutput.AppendLine(e.Data);
 
-                        if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        if (job.State == ServerState.Starting && 
+                            ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                e.Data.ToLowerInvariant().Contains("started") ||
+                                e.Data.ToLowerInvariant().Contains("listening")))
                         {
                             Log.WriteLine($"Application is now running...");
                             MarkAsRunning(hostname, job, stopwatch);
