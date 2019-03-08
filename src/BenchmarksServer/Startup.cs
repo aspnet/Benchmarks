@@ -1023,7 +1023,16 @@ namespace BenchmarkServer
             }
             else
             {
-                srcDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit));
+                var branchAndCommit = source.BranchOrCommit.Split('#', 2);
+
+                srcDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]));
+
+                if (branchAndCommit.Length > 1)
+                {
+                    Git.Checkout(path, branchAndCommit[1]);
+                }
+
+                Git.InitSubModules(srcDir);
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
@@ -1217,11 +1226,7 @@ namespace BenchmarkServer
 
                 foreach (var source in repos)
                 {
-                    Log.WriteLine($"BranchOrCommit: {source.BranchOrCommit}");
-
                     var branchAndCommit = source.BranchOrCommit.Split('#', 2);
-
-                    Log.WriteLine($"branchAndCommit[0]: {branchAndCommit[0]}");
 
                     var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]);
 
@@ -1232,8 +1237,6 @@ namespace BenchmarkServer
 
                     if (branchAndCommit.Length > 1)
                     {
-                        Log.WriteLine($"branchAndCommit[1]: {branchAndCommit[1]}");
-
                         Git.Checkout(path, branchAndCommit[1]);
                     }
 
