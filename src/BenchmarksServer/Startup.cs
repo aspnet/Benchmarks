@@ -1025,14 +1025,16 @@ namespace BenchmarkServer
             {
                 var branchAndCommit = source.BranchOrCommit.Split('#', 2);
 
-                srcDir = Path.Combine(path, Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]));
+                var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0])
+
+                srcDir = Path.Combine(path, dir);
 
                 if (branchAndCommit.Length > 1)
                 {
                     Git.Checkout(path, branchAndCommit[1]);
                 }
 
-                Git.InitSubModules(srcDir);
+                Git.InitSubModules(Path.Combine(path, dir));
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
