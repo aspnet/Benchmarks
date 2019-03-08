@@ -1025,7 +1025,7 @@ namespace BenchmarkServer
             {
                 var branchAndCommit = source.BranchOrCommit.Split('#', 2);
 
-                var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0])
+                var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]);
 
                 srcDir = Path.Combine(path, dir);
 
