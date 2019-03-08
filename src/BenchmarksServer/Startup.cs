@@ -1031,10 +1031,10 @@ namespace BenchmarkServer
 
                 if (branchAndCommit.Length > 1)
                 {
-                    Git.Checkout(path, branchAndCommit[1]);
+                    Git.Checkout(srcDir, branchAndCommit[1]);
                 }
 
-                Git.InitSubModules(Path.Combine(path, dir));
+                Git.InitSubModules(srcDir);
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
@@ -1232,6 +1232,8 @@ namespace BenchmarkServer
 
                     var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]);
 
+                    var srcDir = Path.Combine(path, dir);
+
                     if (SourceRepoComparer.Instance.Equals(source, job.Source))
                     {
                         benchmarkedDir = dir;
@@ -1239,10 +1241,10 @@ namespace BenchmarkServer
 
                     if (branchAndCommit.Length > 1)
                     {
-                        Git.Checkout(path, branchAndCommit[1]);
+                        Git.Checkout(srcDir, branchAndCommit[1]);
                     }
 
-                    Git.InitSubModules(Path.Combine(path, dir));
+                    Git.InitSubModules(srcDir);
                 }
             }
 
