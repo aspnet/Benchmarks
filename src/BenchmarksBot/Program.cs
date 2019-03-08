@@ -640,7 +640,14 @@ namespace BenchmarksBot
 
                     try
                     {
-                        var entry = archive.GetEntry($@"shared\Microsoft.NETCore.App\{netCoreAppVersion}\{assemblyName}");
+                        var entry = archive.GetEntry($@"shared\Microsoft.NETCore.App\{netCoreAppVersion}\{assemblyName}")
+                            ?? archive.GetEntry($@"shared/Microsoft.NETCore.App/{netCoreAppVersion}/{assemblyName}");
+
+                        if (entry == null)
+                        {
+                            throw new InvalidDataException($"'{netCoreAppUrl}' doesn't contain 'shared/Microsoft.NETCore.App/{netCoreAppVersion}/{assemblyName}'");
+                        }
+
                         entry.ExtractToFile(versionAssemblyPath, true);
 
                         using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(versionAssemblyPath))
