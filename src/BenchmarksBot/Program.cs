@@ -17,7 +17,8 @@ namespace BenchmarksBot
 {
     class Program
     {
-        static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.App/";
+        const string AspNetCorePackage = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv";
+        static readonly string _aspNetCoreUrlPrefix = $"https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/{AspNetCorePackage}/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
 
@@ -566,7 +567,7 @@ namespace BenchmarksBot
             {
                 // Download Microsoft.AspNet.App
 
-                var aspNetAppUrl = _aspNetCoreUrlPrevix + aspNetCoreVersion;
+                var aspNetAppUrl = _aspNetCoreUrlPrefix + aspNetCoreVersion;
                 if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
                 {
                     return null;
@@ -580,7 +581,7 @@ namespace BenchmarksBot
 
                     try
                     {
-                        var entry = archive.GetEntry("Microsoft.AspNetCore.App.nuspec");
+                        var entry = archive.GetEntry($"{AspNetCorePackage}.nuspec");
                         entry.ExtractToFile(aspNetCoreNuSpecPath, true);
 
                         var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
