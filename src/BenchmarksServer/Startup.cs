@@ -1217,10 +1217,18 @@ namespace BenchmarkServer
 
                 foreach (var source in repos)
                 {
-                    var dir = Git.Clone(path, source.Repository, shallow: true, branch: source.BranchOrCommit);
+                    var branchAndCommit = source.BranchOrCommit.Split('#', 2);
+
+                    var dir = Git.Clone(path, source.Repository, shallow: true, branch: branchAndCommit[0]);
+
                     if (SourceRepoComparer.Instance.Equals(source, job.Source))
                     {
                         benchmarkedDir = dir;
+                    }
+
+                    if (branchAndCommit.Length > 1)
+                    {
+                        Git.Checkout(path, branchAndCommit[1]);
                     }
 
                     Git.InitSubModules(Path.Combine(path, dir));
