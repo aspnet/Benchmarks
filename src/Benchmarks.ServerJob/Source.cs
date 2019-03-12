@@ -8,7 +8,7 @@ namespace Benchmarks.ServerJob
         public string BranchOrCommit { get; set; }
         public string Repository { get; set; }
         public string Project { get; set; }
-
+        public bool InitSubmodules { get; set; }
         public string DockerFile { get; set; }
         public string DockerImageName { get; set; }
         public string DockerContextDirectory { get; set; }

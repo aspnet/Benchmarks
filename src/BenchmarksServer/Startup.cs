@@ -1034,7 +1034,10 @@ namespace BenchmarkServer
                     Git.Checkout(srcDir, branchAndCommit[1]);
                 }
 
-                Git.InitSubModules(srcDir);
+                if (source.InitSubmodules)
+                {
+                    Git.InitSubModules(srcDir);
+                }
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
@@ -1244,7 +1247,10 @@ namespace BenchmarkServer
                         Git.Checkout(srcDir, branchAndCommit[1]);
                     }
 
-                    Git.InitSubModules(srcDir);
+                    if (source.InitSubmodules)
+                    {
+                        Git.InitSubModules(srcDir);
+                    }
                 }
             }
 

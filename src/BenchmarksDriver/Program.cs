@@ -48,7 +48,8 @@ namespace BenchmarksDriver
             _cleanOption,
             _memoryLimitOption,
             _enableEventPipeOption,
-            _eventPipeArgumentsOption
+            _eventPipeArgumentsOption,
+            _initSubmodulesOption
             ;
 
         public static int Main(string[] args)
@@ -150,6 +151,8 @@ namespace BenchmarksDriver
                 "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
+            _initSubmodulesOption = app.Option("--init-submodules",
+                "When set will init submodules on the repository.", CommandOptionType.SingleValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
             var selfContainedOption = app.Option("--self-contained",
@@ -601,6 +604,10 @@ namespace BenchmarksDriver
                     {
                         serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
                     }
+                }
+                if (_initSubmodulesOption.HasValue())
+                {
+                    serverJob.Source.InitSubmodules = true;
                 }
                 if (projectOption.HasValue())
                 {
