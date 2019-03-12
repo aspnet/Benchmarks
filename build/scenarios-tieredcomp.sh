@@ -42,7 +42,7 @@ baselines=(
   "--description TC1RR1SA0 --aspnetCoreVersion Latest --runtimeVersion Latest --env COMPlus_TieredCompilation=1 --env COMPlus_ReadyToRun=1"
 
   # Latest (TC=ON; R2R=ON; Standalone=ON)
-  "--description TC1RR1SA1 --aspnetCoreVersion Latest --runtimeVersion Latest --env COMPlus_TieredCompilation=1 --env COMPlus_ReadyToRun=1 --seld-contained"
+  "--description TC1RR1SA1 --aspnetCoreVersion Latest --runtimeVersion Latest --env COMPlus_TieredCompilation=1 --env COMPlus_ReadyToRun=1 --self-contained"
 
   # Latest (TC=ON; R2R=OFF; Standalone=OFF)
   "--description TC1RR0SA0 --aspnetCoreVersion Latest --runtimeVersion Latest --env COMPlus_TieredCompilation=1 --env COMPlus_ReadyToRun=0"
