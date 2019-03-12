@@ -152,7 +152,7 @@ namespace BenchmarksDriver
             var projectOption = app.Option("--projectFile",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             _initSubmodulesOption = app.Option("--init-submodules",
-                "When set will init submodules on the repository.", CommandOptionType.SingleValue);
+                "When set will init submodules on the repository.", CommandOptionType.NoValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
             var selfContainedOption = app.Option("--self-contained",
