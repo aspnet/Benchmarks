@@ -1004,6 +1004,16 @@ namespace BenchmarkServer
 
         }
 
+        private static void ConvertLines(string path)
+        {
+            var content = File.ReadAllText(path);
+
+            if (path.IndexOf("\r\n") >= 0)
+            {
+                File.WriteAllText(path, path.Replace("\r\n", "\n"));
+            }
+        }
+
         private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput, CancellationToken cancellationToken = default(CancellationToken))
         {
             var source = job.Source;
@@ -1018,6 +1028,15 @@ namespace BenchmarkServer
                 Log.WriteLine($"Extracting source code to {srcDir}");
 
                 ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, srcDir);
+
+                // Convert CRLF to LF on Linux
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    foreach (var file in Directory.GetFiles(srcDir, "*.*", SearchOption.AllDirectories))
+                    {
+                        ConvertLines(file);
+                    }
+                }
 
                 File.Delete(job.Source.SourceCode.TempFilename);
             }
