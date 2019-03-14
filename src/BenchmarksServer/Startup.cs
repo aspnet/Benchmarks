@@ -1035,7 +1035,7 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Converting text files ...");
 
-                    foreach (var file in Directory.GetFiles(srcDir, "*.*", SearchOption.AllDirectories))
+                    foreach (var file in Directory.GetFiles(srcDir + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories))
                     {
                         ConvertLines(file);
                     }
