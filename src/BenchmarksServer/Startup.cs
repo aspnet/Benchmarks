@@ -1150,6 +1150,12 @@ namespace BenchmarkServer
 
         private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
+            if (job.IsConsoleApp)
+            {
+                Log.WriteLine($"Console application detected, not waiting");
+                return true;
+            }
+
             for (var i = 1; i <= maxRetries; ++i)
             {
                 try

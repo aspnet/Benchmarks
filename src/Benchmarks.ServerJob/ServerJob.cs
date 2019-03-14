@@ -33,6 +33,7 @@ namespace Benchmarks.ServerJob
         public int Port { get; set; } = 5000;
         public string Path { get; set; } = "/";
         public string ReadyStateText { get; set; }
+        public bool IsConsoleApp { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
         public string SdkVersion { get; set; }

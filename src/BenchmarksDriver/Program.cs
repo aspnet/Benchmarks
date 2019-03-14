@@ -791,6 +791,7 @@ namespace BenchmarksDriver
 
                 if (consoleOption.HasValue())
                 {
+                    serverJob.IsConsoleApp = true;
                     _clientJob.Client = Worker.None;
                     serverJob.CollectStartup = true;
                 }
@@ -799,6 +800,7 @@ namespace BenchmarksDriver
 
                 if (_clientJob.Client == Worker.BenchmarkDotNet)
                 {
+                    serverJob.IsConsoleApp = true;
                     serverJob.ReadyStateText = "BenchmarkRunner: Start";
                     serverJob.CollectStartup = true;
                 }
