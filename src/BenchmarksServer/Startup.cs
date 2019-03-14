@@ -1010,6 +1010,7 @@ namespace BenchmarkServer
 
             if (path.IndexOf("\r\n") >= 0)
             {
+                Log.WriteLine($"Converting '{path}'");
                 File.WriteAllText(path, path.Replace("\r\n", "\n"));
             }
         }
@@ -1032,6 +1033,8 @@ namespace BenchmarkServer
                 // Convert CRLF to LF on Linux
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
+                    Log.WriteLine($"Converting text files ...");
+
                     foreach (var file in Directory.GetFiles(srcDir, "*.*", SearchOption.AllDirectories))
                     {
                         ConvertLines(file);
