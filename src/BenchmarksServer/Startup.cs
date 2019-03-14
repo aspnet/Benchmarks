@@ -1006,11 +1006,12 @@ namespace BenchmarkServer
 
         private static void ConvertLines(string path)
         {
+            Log.WriteLine($"Converting '{path}' ...");
+
             var content = File.ReadAllText(path);
 
             if (path.IndexOf("\r\n") >= 0)
             {
-                Log.WriteLine($"Converting '{path}'");
                 File.WriteAllText(path, path.Replace("\r\n", "\n"));
             }
         }
@@ -1106,21 +1107,21 @@ namespace BenchmarkServer
             var containerId = result.StandardOutput.Trim();
             job.Url = ComputeServerUrl(hostname, job);
 
-            if (!String.IsNullOrEmpty(job.ReadyStateText))
+            var process = new Process()
             {
-                Log.WriteLine($"Waiting for startup signal: '{job.ReadyStateText}'...");
-
-                var process = new Process()
-                {
-                    StartInfo = {
+                StartInfo = {
                     FileName = "docker",
                     Arguments = $"logs -f {containerId}",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
-                    EnableRaisingEvents = true
-                };
+                EnableRaisingEvents = true
+            };
+
+            if (!String.IsNullOrEmpty(job.ReadyStateText))
+            {
+                Log.WriteLine($"Waiting for startup signal: '{job.ReadyStateText}'...");
 
                 process.OutputDataReceived += (_, e) =>
                 {
@@ -1144,13 +1145,19 @@ namespace BenchmarkServer
                         }
                     }
                 };
-
-                process.Start();
-                process.BeginOutputReadLine();
             }
             else
             {
                 Log.WriteLine($"Waiting for application to startup...");
+
+                process.OutputDataReceived += (_, e) =>
+                {
+                    if (e != null && e.Data != null)
+                    {
+                        Log.WriteLine(e.Data);
+                        standardOutput.AppendLine(e.Data);
+                    }
+                };
 
                 // Wait until the service is reachable to avoid races where the container started but isn't
                 // listening yet. If it keeps failing we ignore it. If the port is unreachable then clients
@@ -1165,7 +1172,15 @@ namespace BenchmarkServer
                 }
 
                 MarkAsRunning(hostname, job, stopwatch);
+
+                if (job.Collect && !job.CollectStartup)
+                {
+                    StartCollection(workingDirectory, job);
+                }
             }
+
+            process.Start();
+            process.BeginOutputReadLine();
 
             return (containerId, imageName, workingDirectory);
         }
