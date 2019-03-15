@@ -1242,7 +1242,14 @@ namespace BenchmarkServer
                 job.State = ServerState.Stopped;
             }
 
-            ProcessUtil.Run("docker", $"rmi --force {imageName}");
+            if (job.NoClean)
+            {
+                ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}");
+            }
+            else
+            {
+                ProcessUtil.Run("docker", $"rmi --force {imageName}");
+            }
         }
 
         private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
