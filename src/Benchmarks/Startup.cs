@@ -86,6 +86,10 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.MySql:
+
+#if NETCOREAPP3_0
+                    throw new NotSupportedException("EF/MySQL is unsupported on netcoreapp3.0 until a provider is available");
+#else
                     services.AddEntityFrameworkMySql();
                     services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
 
@@ -93,7 +97,9 @@ namespace Benchmarks
                     {
                         services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
                     }
+
                     break;
+#endif
 
                 case DatabaseServer.MongoDb:
                     var mongoClient = new MongoClient(appSettings.ConnectionString);
