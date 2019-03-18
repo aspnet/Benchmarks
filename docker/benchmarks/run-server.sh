@@ -92,7 +92,7 @@ docker run \
     --url $url \
     --hardware $hardware \
     --hardware-version $hardware_version \
-    --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4" \
-    --mysql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=1024;SslMode=None;ConnectionReset=false" \
-    --mssql "Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=100;" \
-    --mongodb "mongodb://TFB-database:27017?maxPoolSize=1024"
+    --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4" \
+    --mysql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;SslMode=None;ConnectionReset=false" \
+    --mssql "Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Max Pool Size=256;" \
+    --mongodb "mongodb://TFB-database:27017?maxPoolSize=256"
