@@ -31,8 +31,8 @@
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <PackageReference Include="Google.Protobuf" Version="3.6.1" />
-    <PackageReference Include="Grpc.Core" Version="1.17.0-pre3" />
-    <PackageReference Include="Grpc.Tools" Version="1.17.0-pre3" />
+    <PackageReference Include="Grpc.Core" Version="1.19.0" />
+    <PackageReference Include="Grpc.Tools" Version="1.19.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(SignalRVersion)" />

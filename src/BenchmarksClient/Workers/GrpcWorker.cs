@@ -4,15 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
-using Microsoft.AspNetCore.Http.Connections;
-using Newtonsoft.Json;
-using Grpc.Core;
 using Greet;
-using System.IO;
+using Grpc.Core;
 using Grpc.Core.Logging;
 
 namespace BenchmarksClient.Workers
