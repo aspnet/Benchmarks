@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
@@ -22,6 +23,7 @@ namespace BenchmarksClient.Workers
         private List<Channel> _channels;
         private List<IDisposable> _recvCallbacks;
         private List<int> _requestsPerConnection;
+        private List<int> _errorsPerConnection;
         private List<List<double>> _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
@@ -131,6 +133,8 @@ namespace BenchmarksClient.Workers
                                     }
                                     catch (Exception ex)
                                     {
+                                        _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
+
                                         Log($"{id}: Error message: {ex.Message}");
                                     }
                                 }
@@ -223,6 +227,7 @@ namespace BenchmarksClient.Workers
         {
             _channels = new List<Channel>(_job.Connections);
             _requestsPerConnection = new List<int>(_job.Connections);
+            _errorsPerConnection = new List<int>(_job.Connections);
             _latencyPerConnection = new List<List<double>>(_job.Connections);
             _latencyAverage = new List<(double sum, int count)>(_job.Connections);
 
@@ -238,6 +243,7 @@ namespace BenchmarksClient.Workers
             for (var i = 0; i < _job.Connections; i++)
             {
                 _requestsPerConnection.Add(0);
+                _errorsPerConnection.Add(0);
                 _latencyPerConnection.Add(new List<double>());
                 _latencyAverage.Add((0, 0));
 
@@ -321,6 +327,7 @@ namespace BenchmarksClient.Workers
             Log($"Total RPS: {rps}");
             _job.RequestsPerSecond = rps;
             _job.Requests = requestDelta;
+            _job.BadResponses = _errorsPerConnection.Sum();
 
             // Latency
             CalculateLatency();
