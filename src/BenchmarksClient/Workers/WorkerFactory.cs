@@ -18,6 +18,9 @@ namespace BenchmarksClient.Workers
                 case Worker.SignalR:
                     worker = new SignalRWorker();
                     break;
+                case Worker.Grpc:
+                    worker = new GrpcWorker();
+                    break;
                 case Worker.Wait:
                     worker = new WaitWorker();
                     break;

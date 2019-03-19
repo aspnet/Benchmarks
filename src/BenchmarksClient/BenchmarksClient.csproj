@@ -17,12 +17,38 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Requirements (Note that most of these changes will be made to the msbuild targets in Grpc.Tools) -->
+    <!-- 1. Grpc.Tools msbuild files: the Google.Protobuf.Tools.targets file needs to be updated to remove Condition=" '$(DesignTimeBuild)' != 'true' "  -->
+    <!-- 2. Generator metadata: this is the target that's run during the design time build to generate the *.cs files -->
+    <!-- 3. None ItemGroup: Remove the *.proto files from None since the generator metadata for those files are ignored -->
+    <!-- 4. Content ItemGroup: Include the *.proto files in the Content ItemGroup. This isn't required if the file is included in the project directory. I'm not sure about what's going on with this requirement. -->
+    <ProtoBuf Include="Proto\greet.proto" GrpcServices="Client" Generator="MSBuild:Compile" />
+    <None Remove="@(ProtoBuf)" />
+    <Content Include="@(ProtoBuf)" LinkBase="" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
+    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+    <PackageReference Include="Grpc.Core" Version="1.19.0" />
+    <PackageReference Include="Grpc.Tools" Version="1.19.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(SignalRVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(SignalRVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Certs\ca.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Certs\client.crt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Certs\client.key">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

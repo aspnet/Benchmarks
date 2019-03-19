@@ -20,6 +20,9 @@ namespace BenchmarksDriver.Serializers
             // SignalR
             ResultSerializers[Worker.SignalR] = () => new SignalRSerializer();
 
+            // Grpc
+            ResultSerializers[Worker.Grpc] = () => new GrpcSerializer();
+
             // Wait
             ResultSerializers[Worker.Wait] = () => new WaitSerializer();
 

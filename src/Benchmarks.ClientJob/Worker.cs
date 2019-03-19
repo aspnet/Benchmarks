@@ -9,6 +9,7 @@ namespace Benchmarks.ClientJob
         SignalR,
         Wait,
         H2Load,
+        Grpc,
         None,
         BenchmarkDotNet,
         Bombardier
