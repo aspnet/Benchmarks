@@ -40,7 +40,7 @@ namespace BenchmarksClient.Workers
             // MORE LOGGING
             //Environment.SetEnvironmentVariable("GRPC_TRACE", "api");
             //Environment.SetEnvironmentVariable("GRPC_VERBOSITY", "debug");
-            //Grpc.Core.GrpcEnvironment.SetLogger(new CustomLogger(Log));
+            //Grpc.Core.GrpcEnvironment.SetLogger(new CustomGrpcLogger(Log));
 
             _stopped = false;
 
@@ -79,73 +79,6 @@ namespace BenchmarksClient.Workers
                 CreateChannels();
             }
         }
-
-        #region Logger
-        private class CustomLogger : ILogger
-        {
-            private readonly Action<string> _logger;
-
-            public CustomLogger(Action<string> logger)
-            {
-                _logger = logger;
-            }
-
-            public void Debug(string message)
-            {
-                _logger("Debug - " + message);
-            }
-
-            public void Debug(string format, params object[] formatArgs)
-            {
-                _logger("Debug - " + string.Format(format, formatArgs));
-            }
-
-            public void Error(string message)
-            {
-                _logger("Error - " + message);
-            }
-
-            public void Error(string format, params object[] formatArgs)
-            {
-                _logger("Error - " + string.Format(format, formatArgs));
-            }
-
-            public void Error(Exception exception, string message)
-            {
-                _logger("Error - " + message + " " + exception?.ToString());
-            }
-
-            public ILogger ForType<T>()
-            {
-                return this;
-            }
-
-            public void Info(string message)
-            {
-                _logger("Info - " + message);
-            }
-
-            public void Info(string format, params object[] formatArgs)
-            {
-                _logger("Info - " + string.Format(format, formatArgs));
-            }
-
-            public void Warning(string message)
-            {
-                _logger("Warning - " + message);
-            }
-
-            public void Warning(string format, params object[] formatArgs)
-            {
-                _logger("Warning - " + string.Format(format, formatArgs));
-            }
-
-            public void Warning(Exception exception, string message)
-            {
-                _logger("Warning - " + message + " " + exception?.ToString());
-            }
-        }
-        #endregion
 
         public async Task StartJobAsync(ClientJob job)
         {
