@@ -45,6 +45,8 @@ routingJobs="-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/R
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60"
 http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
+grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/NativeServer/grpc-native.json"
+grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/BenchmarkServer/grpc-aspnetcore.json"
 
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
@@ -182,6 +184,10 @@ jobs=(
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5 -m https"
   "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5" 
   "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5 -m https"
+
+  # GRPC
+  "-n GrpcUnaryAspNetCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
+  "-n GrpcUnaryNative --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
 )
 
 # build driver
