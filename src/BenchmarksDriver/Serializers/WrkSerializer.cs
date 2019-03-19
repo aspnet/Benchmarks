@@ -14,14 +14,6 @@ namespace BenchmarksDriver.Serializers
 {
     public class WrkSerializer : IResultsSerializer
     {
-        public string JobLogText { get; set; }
-
-        private static void Log(string message)
-        {
-            var time = DateTime.Now.ToString("hh:mm:ss.fff");
-            Console.WriteLine($"[{time}] {message}");
-        }
-
         public async Task WriteJobResultsToSqlAsync(
             ServerJob serverJob, 
             ClientJob clientJob, 
@@ -482,33 +474,6 @@ namespace BenchmarksDriver.Serializers
             }
         }
 
-        private static string ConvertToSqlString(Source source)
-        {
-            const string aspnetPrefix = "https://github.com/aspnet/";
-            const string gitSuffix = ".git";
-
-            var shortRepository = source.Repository;
-
-            if (shortRepository.StartsWith(aspnetPrefix))
-            {
-                shortRepository = shortRepository.Substring(aspnetPrefix.Length);
-            }
-
-            if (shortRepository.EndsWith(gitSuffix))
-            {
-                shortRepository = shortRepository.Substring(0, shortRepository.Length - gitSuffix.Length);
-            }
-
-            if (string.IsNullOrEmpty(source.BranchOrCommit))
-            {
-                return shortRepository;
-            }
-            else
-            {
-                return shortRepository + "@" + source.BranchOrCommit;
-            }
-        }
-
         private async static Task RetryOnExceptionAsync(int retries, Func<Task> operation, int milliSecondsDelay = 0)
         {
             var attempts = 0;
@@ -544,6 +509,12 @@ namespace BenchmarksDriver.Serializers
         public void ComputeAverages(Statistics average, IEnumerable<Statistics> samples)
         {
             // No custom values
+        }
+
+        private static void Log(string message)
+        {
+            var time = DateTime.Now.ToString("hh:mm:ss.fff");
+            Console.WriteLine($"[{time}] {message}");
         }
     }
 }
