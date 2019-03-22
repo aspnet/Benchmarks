@@ -1951,23 +1951,18 @@ namespace BenchmarksDriver
             }
         }
 
-        private static List<KeyValuePair<string, string>> BuildFields(Statistics average)
-        {
-            var fields = new List<KeyValuePair<string, string>>();
-            if (!String.IsNullOrEmpty(average.Description))
+        private static List<KeyValuePair<string, string>> BuildFields(Statistics average) 
+            => new List<KeyValuePair<string, string>>
             {
-                fields.Add(new KeyValuePair<string, string>("Description", average.Description));
-            }
-
-            fields.Add(new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"));
-            fields.Add(new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"));
-            fields.Add(new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"));
-            fields.Add(new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"));
-            fields.Add(new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"));
-            fields.Add(new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"));
-            fields.Add(new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"));
-            return fields;
-        }
+                new KeyValuePair<string, string>("Description", average.Description),
+                new KeyValuePair<string, string>("RPS", $"{average.RequestsPerSecond:n0}"),
+                new KeyValuePair<string, string>("CPU (%)", $"{average.Cpu}"),
+                new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"),
+                new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"),
+                new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"),
+                new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"),
+                new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}")
+            };
 
         private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
         {
