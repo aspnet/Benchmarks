@@ -190,7 +190,12 @@ namespace BenchmarksClient.Workers
 
             command += $" --latency -d {job.Duration} -c {job.Connections} --timeout {job.Timeout} -t {job.Threads}  {job.ServerBenchmarkUri}{job.Query}";
 
-            foreach(var customScript in customScripts)
+            if (job.ClientProperties.TryGetValue("rate", out var rate) && !string.IsNullOrEmpty(rate))
+            {
+                command += $" --rate {rate}";
+            }
+
+            foreach (var customScript in customScripts)
             {
                 command += $" -s {customScript}";
             }
@@ -204,11 +209,6 @@ namespace BenchmarksClient.Workers
                 {
                     command += $" {pipeLineDepth}";
                 }
-            }
-
-            if (job.ClientProperties.TryGetValue("rate", out var rate) && !string.IsNullOrEmpty(rate))
-            {
-                command += $" --rate {rate}";
             }
 
             Log(command);
