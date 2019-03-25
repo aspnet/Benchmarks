@@ -178,7 +178,7 @@ namespace BenchmarksClient.Workers
                 customScripts.Add("scripts/custom/" + script.Filename);
             }
 
-            var command = "wrk";
+            var command = "wrk2";
 
             if (job.Headers != null)
             {
