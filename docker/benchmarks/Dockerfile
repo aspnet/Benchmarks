@@ -83,6 +83,7 @@ RUN cd /tmp \
     && git clone https://github.com/giltene/wrk2.git wrk2 \
     && cd wrk2 \
     && make \
+    && mv wrk wrk2 \
     && cp wrk2 /usr/local/bin \
     && cd .. \
     && rm -rf wrk2.zip
