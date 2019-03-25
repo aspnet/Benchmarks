@@ -17,6 +17,9 @@ namespace BenchmarksDriver.Serializers
             // Wrk
             ResultSerializers[Worker.Wrk] = () => new WrkSerializer();
 
+            // Wrk2 - Same as Wrk
+            ResultSerializers[Worker.Wrk2] = () => new WrkSerializer();
+
             // SignalR
             ResultSerializers[Worker.SignalR] = () => new SignalRSerializer();
 

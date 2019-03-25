@@ -77,6 +77,16 @@ RUN cd /tmp \
     && chmod +x bombardier \
     && cp bombardier /usr/local/bin
 
+# Build and install wrk2
+ENV WRK_VERSION 4.1.0
+RUN cd /tmp \
+    && git clone https://github.com/giltene/wrk2.git wrk2 \
+    && cd wrk2 \
+    && make \
+    && cp wrk2 /usr/local/bin \
+    && cd .. \
+    && rm -rf wrk2.zip
+
 WORKDIR /benchmarks
 
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true

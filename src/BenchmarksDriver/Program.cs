@@ -2067,7 +2067,7 @@ namespace BenchmarksDriver
                     allWrkScripts.AddRange(scriptFileOption.Values);
                 }
 
-                if (clientJob.Client == Worker.Wrk && clientJob.ClientProperties.ContainsKey("Scripts"))
+                if ( (clientJob.Client == Worker.Wrk || clientJob.Client == Worker.Wrk2) && clientJob.ClientProperties.ContainsKey("Scripts"))
                 {
                     allWrkScripts.AddRange(clientJob.ClientProperties["Scripts"].Split(';'));
                 }

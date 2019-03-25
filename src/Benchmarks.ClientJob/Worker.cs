@@ -6,6 +6,7 @@ namespace Benchmarks.ClientJob
     public enum Worker
     {
         Wrk,
+        Wrk2,
         SignalR,
         Wait,
         H2Load,

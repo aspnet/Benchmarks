@@ -15,6 +15,9 @@ namespace BenchmarksClient.Workers
                 case Worker.Wrk:
                     worker = new WrkWorker();
                     break;
+                case Worker.Wrk2:
+                    worker = new Wrk2Worker();
+                    break;
                 case Worker.SignalR:
                     worker = new SignalRWorker();
                     break;
