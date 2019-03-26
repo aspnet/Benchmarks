@@ -123,7 +123,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Attempting to deleting '{tempFolder}'");
                     File.Delete(tempFolder);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Log.WriteLine("Failed with error: " + e.Message);
                 }
@@ -357,7 +357,7 @@ namespace BenchmarkServer
                     ServerJob job = null;
 
                     // Find the first job that is not in Initializing state
-                    foreach(var j in _jobs.GetAll())
+                    foreach (var j in _jobs.GetAll())
                     {
                         if (j.State == ServerState.Initializing || j.State == ServerState.Stopped)
                         {
@@ -462,7 +462,7 @@ namespace BenchmarkServer
                                             await Task.Delay(1000);
                                         }
                                     }
-                                    catch(Exception e)
+                                    catch (Exception e)
                                     {
                                         workingDirectory = null;
                                         Log.WriteLine($"Job failed with DockerBuildAndRun: " + e.Message);
@@ -816,7 +816,7 @@ namespace BenchmarkServer
                             }
 
                             job.Output = standardOutput.ToString();
-                            
+
                             Log.WriteLine($"Process stopped ({job.State})");
                         }
 
@@ -838,7 +838,7 @@ namespace BenchmarkServer
                     await Task.Delay(1000);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Log.WriteLine($"Unnexpected error: {e.ToString()}");
             }
@@ -963,7 +963,7 @@ namespace BenchmarkServer
             // Max delay for perfcollect to stop
             var delay = Task.Delay(30000);
 
-            while(!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
+            while (!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
             {
                 await Task.Delay(1000);
             }
@@ -1082,9 +1082,6 @@ namespace BenchmarkServer
                 return (null, null, null);
             }
 
-            // Only run on the host network on linux
-            var useHostNetworking = OperatingSystem == OperatingSystem.Linux;
-
             var environmentArguments = "";
 
             foreach (var env in job.EnvironmentVariables)
@@ -1092,8 +1089,9 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
-            var command = useHostNetworking ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}" :
-                                              $"run -d {environmentArguments} {job.Arguments} -p {job.Port}:{job.Port} {imageName}";
+            var command = OperatingSystem == OperatingSystem.Linux
+                ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}"
+                : $"run -d {environmentArguments} {job.Arguments} --network SELF --ip {Environment.GetEnvironmentVariable("SERVER_IP")} {imageName}";
 
             var stopwatch = new Stopwatch();
 
@@ -1130,7 +1128,7 @@ namespace BenchmarkServer
                         Log.WriteLine(e.Data);
                         standardOutput.AppendLine(e.Data);
 
-                        if (job.State == ServerState.Starting && 
+                        if (job.State == ServerState.Starting &&
                             ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
                                 e.Data.ToLowerInvariant().Contains("started") ||
                                 e.Data.ToLowerInvariant().Contains("listening")))
@@ -1348,7 +1346,7 @@ namespace BenchmarkServer
                 targetFramework = CurrentTargetFramework;
                 channel = CurrentChannel;
             }
-            else if(String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
                 // Get the version that is defined by the ASP.NET repository
                 // Note: to use the latest version available, use a value like 3.0.*
@@ -1359,7 +1357,7 @@ namespace BenchmarkServer
             {
                 // Custom version
                 runtimeVersion = job.RuntimeVersion;
-                
+
                 if (runtimeVersion.EndsWith("*", StringComparison.Ordinal))
                 {
                     // Prefixed version
@@ -1455,7 +1453,7 @@ namespace BenchmarkServer
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
                 aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestChannel + ".");
-                
+
                 // This version is faster, but the version might be too current for myget to have the package already
                 // aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
             }
@@ -1493,8 +1491,8 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
 
                         // Install latest SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}", 
-                        log:true,
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1507,7 +1505,7 @@ namespace BenchmarkServer
 
                         // Install runtime required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: true, 
+                        log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -1533,7 +1531,7 @@ namespace BenchmarkServer
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
-                        
+
                         // Install latest SDK version (and associated runtime)
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
                         log: true,
@@ -1733,7 +1731,7 @@ namespace BenchmarkServer
                         }
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Log.WriteLine("ERROR: Failed to download crossgen. " + e.ToString());
                 }
@@ -1781,7 +1779,7 @@ namespace BenchmarkServer
             Log.WriteLine($"Detecting AspNetCore repository runtime version: {latestRuntimeVersion}");
             return latestRuntimeVersion;
         }
-        
+
         /// <summary>
         /// Retrieves the current runtime version for a channel
         /// </summary>
@@ -1821,7 +1819,7 @@ namespace BenchmarkServer
                 latestSdk = sr.ReadLine();
 
             }
-            
+
             return latestSdk;
         }
 
@@ -2108,7 +2106,7 @@ namespace BenchmarkServer
                 process.StartInfo.Environment.Add("COMPlus_PerfMapEnabled", "1");
             }
 
-            foreach(var env in job.EnvironmentVariables)
+            foreach (var env in job.EnvironmentVariables)
             {
                 Log.WriteLine($"Setting ENV: {env.Key} = {env.Value}");
                 process.StartInfo.Environment.Add(env.Key, env.Value);
