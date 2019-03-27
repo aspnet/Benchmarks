@@ -1090,8 +1090,8 @@ namespace BenchmarkServer
             }
 
             var command = OperatingSystem == OperatingSystem.Linux
-                ? $"run -d --rm {environmentArguments} {job.Arguments} --network host {imageName}"
-                : $"run -d --rm {environmentArguments} {job.Arguments} --network SELF --ip {Environment.GetEnvironmentVariable("SERVER_IP")} {imageName}";
+                ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}"
+                : $"run -d {environmentArguments} {job.Arguments} --network SELF --ip {Environment.GetEnvironmentVariable("SERVER_IP")} {imageName}";
 
             var stopwatch = new Stopwatch();
 
