@@ -321,6 +321,8 @@ namespace Benchmarks
 #elif NETCOREAPP3_0
             if (Scenarios.Any("Mvc"))
             {
+                app.UseRouting();
+            
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
