@@ -65,13 +65,9 @@
 
     <!--<PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />-->
 
-    <FrameworkReference Update="Microsoft.AspNetCore.App" 
-                        RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" 
-                        />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
-    <FrameworkReference Update="Microsoft.NETCore.App"
-                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)"
-                        />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />
