@@ -21,6 +21,8 @@ namespace BenchmarksClient.Workers
 
         private ClientJob _job;
         private Process _process;
+        private string _requestBodyTempFile;
+        private int? _requestBodyLength;
 
         public string JobLogText { get; set; }
 
@@ -38,6 +40,11 @@ namespace BenchmarksClient.Workers
             var jobLogText =
                         $"[ID:{_job.Id} Connections:{_job.Connections} Threads:{_job.Threads} Duration:{_job.Duration} Method:{_job.Method} ServerUrl:{_job.ServerBenchmarkUri}";
 
+            if (_requestBodyLength != null)
+            {
+                jobLogText += $" Request body length:{_requestBodyLength}";
+            }
+
             if (_job.Headers != null)
             {
                 jobLogText += $" Headers:{JsonConvert.SerializeObject(_job.Headers)}";
@@ -51,6 +58,18 @@ namespace BenchmarksClient.Workers
         public async Task StartJobAsync(ClientJob job)
         {
             _job = job;
+
+            if (job.ClientProperties.TryGetValue("RequestBody", out var requestBodyText))
+            {
+                var requestBody = Convert.FromBase64String(requestBodyText);
+                _requestBodyLength = requestBody.Length;
+
+                // h2load takes a file as the request body
+                // write the body to a temporary file that is deleted in stop job
+                _requestBodyTempFile = Path.GetTempFileName();
+                await File.WriteAllBytesAsync(_requestBodyTempFile, requestBody);
+            }
+
             InitializeJob();
 
             await MeasureFirstRequestLatencyAsync(_job);
@@ -58,7 +77,7 @@ namespace BenchmarksClient.Workers
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
-            _process = StartProcess(_job);
+            _process = StartProcess(_job, _requestBodyTempFile);
         }
 
         public Task StopJobAsync()
@@ -66,6 +85,11 @@ namespace BenchmarksClient.Workers
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill();
+            }
+
+            if (_requestBodyTempFile != null && File.Exists(_requestBodyTempFile))
+            {
+                File.Delete(_requestBodyTempFile);
             }
 
             return Task.CompletedTask;
@@ -76,6 +100,7 @@ namespace BenchmarksClient.Workers
             _process.Dispose();
             _process = null;
         }
+
         private static HttpRequestMessage CreateHttpMessage(ClientJob job)
         {
             var requestMessage = new HttpRequestMessage(new HttpMethod(job.Method), job.ServerBenchmarkUri);
@@ -131,7 +156,7 @@ namespace BenchmarksClient.Workers
             Log($"{job.LatencyNoLoad.TotalMilliseconds} ms");
         }
 
-        private static Process StartProcess(ClientJob job)
+        private static Process StartProcess(ClientJob job, string requestBodyFile)
         {
             var command = $"h2load {job.ServerBenchmarkUri}{job.Query}";
 
@@ -159,6 +184,11 @@ namespace BenchmarksClient.Workers
                     case "h2": break;
                     case "h2c": command += " --no-tls-proto=h2c"; break;
                 }
+            }
+
+            if (requestBodyFile != null)
+            {
+                command += $" -d \"{requestBodyFile}\"";
             }
 
             if (job.ClientProperties.TryGetValue("n", out var n) && int.TryParse(n, out var number))
