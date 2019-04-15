@@ -578,9 +578,13 @@ namespace BenchmarksDriver
                 if (repositoryOption.HasValue())
                 {
                     var source = repositoryOption.Value();
-                    var split = source.IndexOf('@');
-                    var repository = (split == -1) ? source : source.Substring(0, split);
-                    serverJob.Source.BranchOrCommit = (split == -1) ? null : source.Substring(split + 1);
+                    var sourceParts = source.Split('@', 2);
+                    var repository = sourceParts[0];
+
+                    if (sourceParts.Length > 1)
+                    {
+                        serverJob.Source.BranchOrCommit = sourceParts[1];
+                    }                    
 
                     if (!repository.Contains(":"))
                     {
