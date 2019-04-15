@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace Proxy
 {
@@ -20,59 +18,134 @@ namespace Proxy
         {
             var request = context.Request;
 
-            var requestMessage = new HttpRequestMessage();
-            var requestMethod = request.Method;
-            if (!HttpMethods.IsGet(requestMethod) &&
-                !HttpMethods.IsHead(requestMethod) &&
-                !HttpMethods.IsDelete(requestMethod) &&
-                !HttpMethods.IsTrace(requestMethod))
-            {
-                var streamContent = new StreamContent(request.Body);
-                requestMessage.Content = streamContent;
-            }
+            var proxiedMessage = new HttpRequestMessage();
+            var hasContent = SetupMethodAndContent(request, proxiedMessage);
 
             // Copy the request headers
             foreach (var header in request.Headers)
             {
-                if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) && requestMessage.Content != null)
+                var headerValue = header.Value;
+                if (headerValue.Count == 1)
                 {
-                    requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                    var value = headerValue.ToString();
+                    if (!proxiedMessage.Headers.TryAddWithoutValidation(header.Key, value) && hasContent)
+                    {
+                        proxiedMessage.Content.Headers.TryAddWithoutValidation(header.Key, value);
+                    }
+                }
+                else
+                {
+                    var value = headerValue.ToArray();
+                    if (!proxiedMessage.Headers.TryAddWithoutValidation(header.Key, value) && hasContent)
+                    {
+                        proxiedMessage.Content.Headers.TryAddWithoutValidation(header.Key, value);
+                    }
                 }
             }
 
-            requestMessage.Headers.Host = uri.Authority;
-            requestMessage.RequestUri = uri;
-            requestMessage.Method = new HttpMethod(request.Method);
+            proxiedMessage.Headers.Host = uri.Authority;
+            proxiedMessage.RequestUri = uri;
 
-            return requestMessage;
+            return proxiedMessage;
+
+            static bool SetupMethodAndContent(HttpRequest request, HttpRequestMessage proxiedMessage)
+            {
+                var hasContent = false;
+                var requestMethod = request.Method;
+
+                // Try to use the static HttpMethods rather than creating a new one.
+                if (HttpMethods.IsGet(requestMethod))
+                {
+                    proxiedMessage.Method = HttpMethod.Get;
+                }
+                else if (HttpMethods.IsHead(requestMethod))
+                {
+                    proxiedMessage.Method = HttpMethod.Head;
+                }
+                else if (HttpMethods.IsDelete(requestMethod))
+                {
+                    proxiedMessage.Method = HttpMethod.Delete;
+                }
+                else if (HttpMethods.IsTrace(requestMethod))
+                {
+                    proxiedMessage.Method = HttpMethod.Trace;
+                }
+                else
+                {
+                    hasContent = true;
+
+                    if (HttpMethods.IsPost(requestMethod))
+                    {
+                        proxiedMessage.Method = HttpMethod.Post;
+                    }
+                    else if (HttpMethods.IsOptions(requestMethod))
+                    {
+                        proxiedMessage.Method = HttpMethod.Options;
+                    }
+                    else if (HttpMethods.IsPut(requestMethod))
+                    {
+                        proxiedMessage.Method = HttpMethod.Put;
+                    }
+                    else if (HttpMethods.IsPatch(requestMethod))
+                    {
+                        proxiedMessage.Method = HttpMethod.Patch;
+                    }
+                    else
+                    {
+                        proxiedMessage.Method = new HttpMethod(request.Method);
+                    }
+
+                    proxiedMessage.Content = new StreamContent(request.Body);
+                }
+
+                return hasContent;
+            }
         }
 
-        public static async Task CopyProxyHttpResponse(this HttpContext context, HttpResponseMessage responseMessage)
+        public static async Task CopyProxyHttpResponse(this HttpContext context, HttpResponseMessage replyMessage)
         {
-            if (responseMessage == null)
+            if (replyMessage == null)
             {
-                throw new ArgumentNullException(nameof(responseMessage));
+                throw new ArgumentNullException(nameof(replyMessage));
             }
 
             var response = context.Response;
+            response.StatusCode = (int)replyMessage.StatusCode;
 
-            response.StatusCode = (int)responseMessage.StatusCode;
-            foreach (var header in responseMessage.Headers)
-            {
-                response.Headers[header.Key] = header.Value.ToArray();
-            }
+            var responseHeaders = response.Headers;
 
-            foreach (var header in responseMessage.Content.Headers)
-            {
-                response.Headers[header.Key] = header.Value.ToArray();
-            }
+            CopyHeaders(responseHeaders, replyMessage.Headers);
+            CopyHeaders(responseHeaders, replyMessage.Content.Headers);
 
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
-            response.Headers.Remove("transfer-encoding");
+            responseHeaders.Remove("transfer-encoding");
 
-            using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
+            using (var responseStream = await replyMessage.Content.ReadAsStreamAsync())
             {
                 await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted);
+            }
+
+            static void CopyHeaders(IHeaderDictionary responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
+            {
+                foreach (var replyHeader in replyHeaders)
+                {
+                    var headerValue = default(StringValues);
+                    var isFirst = true;
+                    foreach (var value in replyHeader.Value)
+                    {
+                        if (isFirst)
+                        {
+                            headerValue = value;
+                            isFirst = false;
+                        }
+                        else
+                        {
+                            headerValue = StringValues.Concat(headerValue, value);
+                        }
+                    }
+
+                    responseHeaders[replyHeader.Key] = headerValue;
+                }
             }
         }
     }
