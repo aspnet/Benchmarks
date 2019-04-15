@@ -15,6 +15,7 @@ namespace CommitResolver
     class Program
     {
         static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv/";
+        static readonly string _extensionsUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.Extensions.Configuration.Abstractions/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
 
@@ -25,14 +26,15 @@ namespace CommitResolver
             app.HelpOption();
             var aspNetVersion = app.Option("-a|--aspnet <VERSION>", "The ASP.NET Core versions", CommandOptionType.MultipleValue);
             var runtimeVersion = app.Option("-r|--runtime <VERSION>", "The .NET Core Runtime versions", CommandOptionType.MultipleValue);
+            var extensionsVersion = app.Option("-e|--extensions <VERSION>", "The ASP.NET Extensions versions", CommandOptionType.MultipleValue);
 
             app.OnExecute(() =>
             {
                 Task.Run(async () =>
                 {
-                    if (aspNetVersion.HasValue() && runtimeVersion.HasValue())
+                    if ((aspNetVersion.HasValue() ? 1 : 0) + (runtimeVersion.HasValue() ? 1 : 0) + (extensionsVersion.HasValue() ? 1 : 0) > 1)
                     {
-                        Console.WriteLine("Either -a|--aspnet or -r|--runtime parameters is required");
+                        Console.WriteLine("Either -a|--aspnet or -r|--runtime or -e|--extensions parameters is required");
                         return;
                     }
 
@@ -97,6 +99,31 @@ namespace CommitResolver
                         }
                     }
 
+                    if (extensionsVersion.HasValue())
+                    {
+                        Console.WriteLine("Microsoft.AspNetCore.Extensions");
+
+                        var allValues = new List<string>();
+
+                        foreach (var x in extensionsVersion.Values)
+                        {
+                            allValues.Add(await GetExtensionsCommitHash(x));
+                        }
+
+                        if (allValues.Count == 1)
+                        {
+                            Console.WriteLine($"https://github.com/aspnet/Extensions/commit/{allValues[0]}");
+                        }
+                        else
+                        {
+                            for (var i = 1; i < allValues.Count; i++)
+                            {
+                                Console.WriteLine($"https://github.com/aspnet/Extensions/compare/{allValues[i - 1]}...{allValues[i]}");
+                            }
+                        }
+
+                    }
+
                 }).GetAwaiter().GetResult();
 
             });
@@ -142,6 +169,65 @@ namespace CommitResolver
                         try
                         {
                             File.Delete(aspNetCoreNuSpecPath);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(packagePath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
+                    Console.WriteLine(e);
+                }
+            }
+        }
+
+        private static async Task<string> GetExtensionsCommitHash(string extensionsVersion)
+        {
+            var packagePath = Path.GetTempFileName();
+
+            try
+            {
+                // Download Microsoft.AspNet.App
+
+                var extensionsUrl = _extensionsUrlPrevix + extensionsVersion;
+                if (!await DownloadFileAsync(extensionsUrl, packagePath))
+                {
+                    return null;
+                }
+
+                // Extract the .nuspec file
+
+                using (var archive = ZipFile.OpenRead(packagePath))
+                {
+                    var extensionsNuSpecPath = Path.GetTempFileName();
+
+                    try
+                    {
+                        var entry = archive.GetEntry("Microsoft.Extensions.Configuration.Abstractions.nuspec");
+                        entry.ExtractToFile(extensionsNuSpecPath, true);
+
+                        var root = XDocument.Parse(await File.ReadAllTextAsync(extensionsNuSpecPath)).Root;
+
+                        XNamespace xmlns = root.Attribute("xmlns").Value;
+                        return root
+                            .Element(xmlns + "metadata")
+                            .Element(xmlns + "repository")
+                            .Attribute("commit").Value;
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            File.Delete(extensionsNuSpecPath);
                         }
                         catch
                         {
