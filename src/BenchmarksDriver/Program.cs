@@ -49,7 +49,9 @@ namespace BenchmarksDriver
             _memoryLimitOption,
             _enableEventPipeOption,
             _eventPipeArgumentsOption,
-            _initSubmodulesOption
+            _initSubmodulesOption,
+            _branchOption,
+            _hashOption
             ;
 
         public static int Main(string[] args)
@@ -140,6 +142,10 @@ namespace BenchmarksDriver
             var readyTextOption = app.Option("--ready-text",
                 "The text that is displayed when the application is ready to accept requests. (e.g., \"Application started.\")", CommandOptionType.SingleValue);
             var repositoryOption = app.Option("-r|--repository",
+                "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            _branchOption = app.Option("-b|--branch",
+                "Git repository containing the project to test.", CommandOptionType.SingleValue);
+            _hashOption = app.Option("-h|--hash",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var sourceOption = app.Option("-src|--source",
                 "Local folder containing the project to test.", CommandOptionType.SingleValue);
@@ -527,7 +533,7 @@ namespace BenchmarksDriver
                         serverJob.SelfContained = true;
 
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.WriteLine("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
+                        Log("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
                         Console.ResetColor();
                     }
                 }
@@ -582,6 +588,14 @@ namespace BenchmarksDriver
                     }
 
                     serverJob.Source.Repository = repository;
+                }
+                if(_branchOption.HasValue())
+                {
+                    serverJob.Source.BranchOrCommit = _branchOption.Value();
+                }
+                if (_hashOption.HasValue())
+                {
+                    serverJob.Source.BranchOrCommit = "#" + _hashOption.Value();
                 }
                 if (dockerFileOption.HasValue())
                 {

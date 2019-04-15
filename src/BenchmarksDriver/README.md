@@ -30,6 +30,8 @@ Options:
   --port                 The port used to request the benchmarked application. Default is 5000.
   --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
   -r|--repository        Git repository containing the project to test.
+  -b|--branch            Git branch to checkout.
+  -h|--hash              Git hash to checkout.
   --projectFile          Relative path of the project to test in the repository. (e.g., "src/Benchmarks/Benchmarks.csproj")
   --init-submodules      When set will init submodules on the repository.
   -df|--docker-file      File path of the Docker script. (e.g, "frameworks/CSharp/aspnetcore/aspcore.dockerfile")
