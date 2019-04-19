@@ -34,7 +34,7 @@
     }
   },
   "EndpointPlaintext": {
-    "Path": "/ep/plaintext"
+    "Path": "/ep-plaintext"
   },
   "MvcPlaintext": {
     "Path": "/mvc/plaintext"

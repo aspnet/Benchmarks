@@ -4,6 +4,7 @@
 using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Benchmarks.Configuration;
@@ -331,9 +332,19 @@ namespace Benchmarks
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapGet(
-                        requestDelegate: context => context.Response.WriteAsync("Hello world"),
-                        pattern: "/ep/plaintext");
+                    var _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
+
+                    endpoints.Map(
+                        requestDelegate: context =>
+                        {
+                            var payloadLength = _helloWorldPayload.Length;
+                            var response = context.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            response.ContentLength = payloadLength;
+                            return response.Body.WriteAsync(_helloWorldPayload, 0, payloadLength);
+                        },
+                        pattern: "/ep-plaintext");
                 });
             }
 
