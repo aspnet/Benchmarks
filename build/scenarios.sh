@@ -53,6 +53,7 @@ jobs=(
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
+  "-n EndpointPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3" 
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 

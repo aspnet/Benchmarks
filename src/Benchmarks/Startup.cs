@@ -11,6 +11,7 @@ using Benchmarks.Data;
 using Benchmarks.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -165,6 +166,11 @@ namespace Benchmarks
                 }
             }
 #elif NETCOREAPP3_0
+            if (Scenarios.Any("Endpoint"))
+            {
+                services.AddRouting();
+            }
+
             if (Scenarios.Any("Mvc"))
             {
                 if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
@@ -319,6 +325,18 @@ namespace Benchmarks
                 app.UseMvc();
             }
 #elif NETCOREAPP3_0
+            if (Scenarios.Any("EndpointPlaintext"))
+            {
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapGet(
+                        requestDelegate: context => context.Response.WriteAsync("Hello world"),
+                        pattern: "/ep/plaintext");
+                });
+            }
+
             if (Scenarios.Any("Mvc"))
             {
                 app.UseRouting();
