@@ -20,6 +20,9 @@ namespace BenchmarksClient.Workers
         private static HttpClient _httpClient;
         private static HttpClientHandler _httpClientHandler;
 
+        private static TimeSpan FirstRequestTimeout = TimeSpan.FromSeconds(5);
+        private static TimeSpan LatencyTimeout = TimeSpan.FromSeconds(2);
+
         private ClientJob _job;
         private Process _process;
 
@@ -120,9 +123,25 @@ namespace BenchmarksClient.Workers
 
             using (var message = CreateHttpMessage(job))
             {
-                using (var response = await _httpClient.SendAsync(message))
+                var cts = new CancellationTokenSource();
+                var token = cts.Token;
+                cts.CancelAfter(FirstRequestTimeout);
+                token.ThrowIfCancellationRequested();
+
+                try
                 {
-                    job.LatencyFirstRequest = stopwatch.Elapsed;
+                    using (var response = await _httpClient.SendAsync(message, token))
+                    {
+                        job.LatencyFirstRequest = stopwatch.Elapsed;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Log("A timeout occured while measuring the first request: " + FirstRequestTimeout.ToString());
+                }
+                finally
+                {
+                    cts.Dispose();
                 }
             }
 
@@ -136,10 +155,27 @@ namespace BenchmarksClient.Workers
 
                 using (var message = CreateHttpMessage(job))
                 {
-                    using (var response = await _httpClient.SendAsync(message))
+                    var cts = new CancellationTokenSource();
+                    var token = cts.Token;
+                    cts.CancelAfter(LatencyTimeout);
+                    token.ThrowIfCancellationRequested();
+
+                    try
                     {
-                        // We keep the last measure to simulate a warmup phase.
-                        job.LatencyNoLoad = stopwatch.Elapsed;
+                        using (var response = await _httpClient.SendAsync(message))
+                        {
+                            // We keep the last measure to simulate a warmup phase.
+                            job.LatencyNoLoad = stopwatch.Elapsed;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Log("A timeout occured while measuring the latency, skipping ...");
+                        break;
+                    }
+                    finally
+                    {
+                        cts.Dispose();
                     }
                 }
             }

@@ -16,6 +16,9 @@ namespace BenchmarksClient.Workers
 {
     public class H2LoadWorker : IWorker
     {
+        private static TimeSpan FirstRequestTimeout = TimeSpan.FromSeconds(5);
+        private static TimeSpan LatencyTimeout = TimeSpan.FromSeconds(2);
+
         private static HttpClient _httpClient;
         private static HttpClientHandler _httpClientHandler;
 
@@ -115,14 +118,6 @@ namespace BenchmarksClient.Workers
 
         private static async Task MeasureFirstRequestLatencyAsync(ClientJob job)
         {
-            // Ignoring startup latency when using h2c as HttpClient doesn't support
-
-            if (job.ClientProperties.TryGetValue("protocol", out var protocol) && protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
-            {
-                Log("Ignoring first request latencies on h2c");
-                return;
-            }
-
             if (job.SkipStartupLatencies)
             {
                 return;
@@ -133,9 +128,28 @@ namespace BenchmarksClient.Workers
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
+            using (var message = CreateHttpMessage(job))
             {
-                job.LatencyFirstRequest = stopwatch.Elapsed;
+                var cts = new CancellationTokenSource();
+                var token = cts.Token;
+                cts.CancelAfter(FirstRequestTimeout);
+                token.ThrowIfCancellationRequested();
+
+                try
+                {
+                    using (var response = await _httpClient.SendAsync(message, token))
+                    {
+                        job.LatencyFirstRequest = stopwatch.Elapsed;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Log("A timeout occured while measuring the first request: " + FirstRequestTimeout.ToString());
+                }
+                finally
+                {
+                    cts.Dispose();
+                }
             }
 
             Log($"{job.LatencyFirstRequest.TotalMilliseconds} ms");
@@ -146,10 +160,30 @@ namespace BenchmarksClient.Workers
             {
                 stopwatch.Restart();
 
-                using (var response = await _httpClient.SendAsync(CreateHttpMessage(job)))
+                using (var message = CreateHttpMessage(job))
                 {
-                    // We keep the last measure to simulate a warmup phase.
-                    job.LatencyNoLoad = stopwatch.Elapsed;
+                    var cts = new CancellationTokenSource();
+                    var token = cts.Token;
+                    cts.CancelAfter(LatencyTimeout);
+                    token.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        using (var response = await _httpClient.SendAsync(message))
+                        {
+                            // We keep the last measure to simulate a warmup phase.
+                            job.LatencyNoLoad = stopwatch.Elapsed;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Log("A timeout occured while measuring the latency, skipping ...");
+                        break;
+                    }
+                    finally
+                    {
+                        cts.Dispose();
+                    }
                 }
             }
 
