@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Proxy
 {
@@ -118,7 +119,7 @@ namespace Proxy
             CopyHeaders(responseHeaders, replyMessage.Content.Headers);
 
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
-            responseHeaders.Remove("transfer-encoding");
+            responseHeaders.Remove(HeaderNames.TransferEncoding);
 
             using (var responseStream = await replyMessage.Content.ReadAsStreamAsync())
             {
