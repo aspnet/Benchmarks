@@ -88,7 +88,7 @@ jobs=(
   # Database SingleQuery
   "-n DbSingleQueryRaw --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
   "-n DbSingleQueryDapper --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
-  "-n DbSingleQueryMongoDb --webHost KestrelSockets $trend $jsonJobs --database MongoDb"
+  #"-n DbSingleQueryMongoDb --webHost KestrelSockets $trend $jsonJobs --database MongoDb"
   "-n DbSingleQueryEf --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
   "-n MvcDbSingleQueryRaw --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
   "-n MvcDbSingleQueryDapper --webHost KestrelSockets $trend $jsonJobs --database PostgreSql"
@@ -97,7 +97,7 @@ jobs=(
   # Database MultiQuery
   "-n DbMultiQueryRaw --webHost KestrelSockets $trend $multiQueryJobs --database PostgreSql"
   "-n DbMultiQueryDapper --webHost KestrelSockets $trend $multiQueryJobs --database PostgreSql"
-  "-n DbMultiQueryMongoDb --webHost KestrelSockets $trend $multiQueryJobs --database MongoDb"
+  #"-n DbMultiQueryMongoDb --webHost KestrelSockets $trend $multiQueryJobs --database MongoDb"
   "-n DbMultiQueryEf --webHost KestrelSockets $trend $multiQueryJobs --database PostgreSql"
   "-n MvcDbMultiQueryRaw --webHost KestrelSockets $trend $multiQueryJobs --database PostgreSql"
   "-n MvcDbMultiQueryDapper --webHost KestrelSockets $trend $multiQueryJobs --database PostgreSql"
@@ -114,7 +114,7 @@ jobs=(
   # Database Fortunes
   "-n DbFortunesRaw --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n DbFortunesDapper --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
-  "-n DbFortunesMongoDb --webHost KestrelSockets $trend $htmlJobs --database MongoDb"
+  #"-n DbFortunesMongoDb --webHost KestrelSockets $trend $htmlJobs --database MongoDb"
   "-n DbFortunesEf --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesRaw --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
   "-n MvcDbFortunesDapper --webHost KestrelSockets $trend $htmlJobs --database PostgreSql"
