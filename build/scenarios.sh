@@ -16,12 +16,6 @@ then
     exit 1
 fi
 
-if [ -z "$PLAINTEXT_LIBUV_THREAD_COUNT" ]
-then
-    echo "\$PLAINTEXT_LIBUV_THREAD_COUNT is not set"
-    exit 1
-fi
-
 if [ -z "$CPU_COUNT" ]
 then
     echo "\$CPU_COUNT is not set"
@@ -55,33 +49,25 @@ routingBenchmarks="-r AspNetCore@master --projectFile src/Http/Routing/perf/Micr
 
 jobs=(
   # Plaintext
-  "-n PlaintextPlatform --webHost KestrelLibuv $trend $plaintextPlatformJobs"
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
-  "-n Plaintext --webHost KestrelLibuv $trend $plaintextLibuvThreadCount $plaintextJobs"
   "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs" 
   "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
-  "-n MvcPlaintext --webHost KestrelLibuv $trend $plaintextJobs" 
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
   "-n Plaintext --webHost KestrelSockets -cf Benchmarks.PassthroughConnectionFilter $trend $plaintextJobs" 
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3" 
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 
-  "-n JsonPlatform --webHost KestrelLibuv $trend $jsonPlatformJobs" 
   "-n Json --webHost KestrelSockets $trend $jsonJobs" 
-  "-n Json --webHost KestrelLibuv $trend $jsonJobs"
   "-n Jil --webHost KestrelSockets $trend $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $trend $jsonJobs" 
-  "-n MvcJson --webHost KestrelLibuv $trend $jsonJobs" 
   "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
   "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs" 
   "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs" 
 
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
-  "-n Plaintext -m https --webHost KestrelLibuv $trend $plaintextJobs"
   "-n Plaintext -m https --webHost HttpSys $trend $plaintextJobs --windows-only"
   "-n Json -m https --webHost KestrelSockets $trend $jsonJobs"
-  "-n Json -m https --webHost KestrelLibuv $trend $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
   "-n PlaintextNonPipelined -m https --webHost KestrelSockets $trend $plaintextJobs"
   
@@ -182,8 +168,6 @@ jobs=(
   # Connections
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5" 
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5 -m https"
-  "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5" 
-  "-n ConnectionClose --webHost KestrelLibuv $trend $plaintextJobs --warmup 2 --duration 5 -m https"
 
   # GRPC
   "-n GrpcUnaryAspNetCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"

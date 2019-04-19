@@ -16,12 +16,6 @@ then
     exit 1
 fi
 
-if [ -z "$PLAINTEXT_LIBUV_THREAD_COUNT" ]
-then
-    echo "\$PLAINTEXT_LIBUV_THREAD_COUNT is not set"
-    exit 1
-fi
-
 # compute current directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
