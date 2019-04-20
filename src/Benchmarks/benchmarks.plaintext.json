@@ -33,6 +33,9 @@
       "PipelineDepth": 0
     }
   },
+  "EndpointPlaintext": {
+    "Path": "/ep-plaintext"
+  },
   "MvcPlaintext": {
     "Path": "/mvc/plaintext"
   },

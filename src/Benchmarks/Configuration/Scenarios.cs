@@ -44,6 +44,9 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/jil")]
         public bool Jil { get; set; }
 
+        [ScenarioPath("/ep-plaintext")]
+        public bool EndpointPlaintext { get; set; }
+
         [ScenarioPath("/mvc/plaintext")]
         public bool MvcPlaintext { get; set; }
 
