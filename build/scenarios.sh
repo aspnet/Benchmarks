@@ -56,13 +56,18 @@ jobs=(
   "-n EndpointPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3" 
-  "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs" 
-  "-n Json --webHost KestrelSockets $trend $jsonJobs" 
-  "-n Jil --webHost KestrelSockets $trend $jsonJobs"
-  "-n MvcJson --webHost KestrelSockets $trend $jsonJobs" 
-  "-n MvcJil --webHost KestrelSockets $trend $jsonJobs" 
   "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs" 
   "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs" 
+
+  # Json
+  "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs"
+  "-n Json --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJson --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonNet --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJson2k --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonNet2k --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonInput2k --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonNetInput2k --webHost KestrelSockets $trend $jsonJobs"
 
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
