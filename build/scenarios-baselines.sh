@@ -47,9 +47,6 @@ baselines=(
   # Current dev, running close to other baselines, with same repeat parameters
   "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest"
 
-  # Stable 2.2, Tiered Compilation on
-  "--description Baseline22TC --aspnetCoreVersion 2.2 --runtimeVersion 2.2 --tiered-compilation"
-
 )
 
 jobs=(
