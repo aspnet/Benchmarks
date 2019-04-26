@@ -68,6 +68,10 @@ else
     hardware=Physical
 fi
 
+if [[ $(dpkg --print-architecture) = *arm64* ]]; then
+  hardware=ARM64
+fi
+
 # Clean temp folder from previous runs
 sudo rm -rf /mnt/BenchmarksServer
 
