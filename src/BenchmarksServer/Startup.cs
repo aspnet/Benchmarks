@@ -61,8 +61,8 @@ namespace BenchmarkServer
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
-        private static readonly string _latestAspnetApiUrl = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/microsoft.aspnetcore.app.runtime.win-x64/index.json";
-        private static readonly string _aspnetFlatContainerUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainer/microsoft.aspnetcore.identity.ui/index.json";
+        private static readonly string _aspnetFlatContainerServicingUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainer/microsoft.aspnetcore.app/index.json";
+        private static readonly string _aspnetFlatContainerUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainermicrosoft.aspnetcore.app.runtime.win-x64/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnet.myget.org/F/dotnet-core/api/v3/registration1/Microsoft.NETCore.App/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
@@ -1452,7 +1452,7 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetFlatContainerVersion(_latestAspnetApiUrl, LatestChannel + ".");
+                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
             }
             else
             {
@@ -1469,7 +1469,14 @@ namespace BenchmarkServer
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
                     // Channel version with a prefix, e.g. 2.1
-                    aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
+                    if (aspNetCoreVersion.StartsWith("3"))
+                    {
+                        aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
+                    }
+                    else
+                    {
+                        aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerServicingUrl, LatestChannel + ".");
+                    }
                 }
             }
 
@@ -2372,14 +2379,24 @@ namespace BenchmarkServer
         private static async Task<string> GetFlatContainerVersion(string packageIndexUrl, string versionPrefix)
         {
             Log.WriteLine($"Downloading flatcontainer ...");
-            var root = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
-            // Extract the highest version
-            var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
+            var content = await DownloadContentAsync(packageIndexUrl);
 
-            if (lastEntry != null)
+            try
             {
-                return lastEntry.ToString();
+                var root = JObject.Parse(content);
+
+                // Extract the highest version
+                var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
+
+                if (lastEntry != null)
+                {
+                    return lastEntry.ToString();
+                }
+            }
+            catch
+            {
+                Log.WriteLine(content);
             }
 
             return null;
