@@ -1452,10 +1452,7 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestChannel + ".");
-
-                // This version is faster, but the version might be too current for myget to have the package already
-                // aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
+                aspNetCoreVersion = await GetFlatContainerVersion(_latestAspnetApiUrl, LatestChannel + ".");
             }
             else
             {
