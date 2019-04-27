@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repository;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
@@ -2394,9 +2395,14 @@ namespace BenchmarkServer
                     return lastEntry.ToString();
                 }
             }
-            catch
+            catch(JsonException e)
             {
+                Log.WriteLine(e.ToString());
                 Log.WriteLine(content);
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine(e.ToString());
             }
 
             return null;
