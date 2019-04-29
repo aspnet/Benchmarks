@@ -808,6 +808,12 @@ namespace BenchmarkServer
                             {
                                 DockerCleanUp(dockerContainerId, dockerImage, job, standardOutput);
                             }
+                            else
+                            {
+                                // Job already stopped
+
+                                job.State = ServerState.Stopped;
+                            }
 
                             // Running AfterScript
                             if (!String.IsNullOrEmpty(job.AfterScript))
