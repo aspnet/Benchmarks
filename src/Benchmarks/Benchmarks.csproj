@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="$(DapperVersion)" />
-    <PackageReference Include="Jil" Version="$(JilVersion)" />
     <PackageReference Include="MongoDB.Driver" Version="$(MongoDbVersion)" />
     
     <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->

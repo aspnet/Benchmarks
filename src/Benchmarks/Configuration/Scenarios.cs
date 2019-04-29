@@ -41,20 +41,29 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/json")]
         public bool Json { get; set; }
 
-        [ScenarioPath("/jil")]
-        public bool Jil { get; set; }
-
         [ScenarioPath("/ep-plaintext")]
         public bool EndpointPlaintext { get; set; }
 
         [ScenarioPath("/mvc/plaintext")]
         public bool MvcPlaintext { get; set; }
 
-        [ScenarioPath("/mvc/json")]
+        [ScenarioPath("/mvc/json")] // Hello World using System.Text.Json
         public bool MvcJson { get; set; }
 
-        [ScenarioPath("/mvc/jil")]
-        public bool MvcJil { get; set; }
+        [ScenarioPath("/mvc/json")] // Hello World using Newtonsoft.Json
+        public bool MvcJsonNet { get; set; }
+
+        [ScenarioPath("/mvc/json2k")] // Uses System.Text.Json
+        public bool MvcJson2k { get; set; }
+
+        [ScenarioPath("/mvc/json2k")] // Uses Newtonsoft.Json
+        public bool MvcJsonNet2k { get; set; }
+
+        [ScenarioPath("/mvc/jsoninput")]
+        public bool MvcJsonInput2k { get; set; }
+
+        [ScenarioPath("/mvc/jsoninput")]
+        public bool MvcJsonNetInput2k { get; set; }
 
         [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         public bool StaticFiles { get; set; }
@@ -174,16 +183,16 @@ namespace Benchmarks.Configuration
         public static string GetPath(Expression<Func<Scenarios, bool>> scenarioExpression) =>
             GetPaths(scenarioExpression)[0];
 
-        public int Enable(string partialName)
+        public int Enable(string name)
         {
-            if (string.Equals(partialName, "[default]", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(name, "[default]", StringComparison.OrdinalIgnoreCase))
             {
                 EnableDefault();
                 return 2;
             }
 
-            var props = typeof(Scenarios).GetTypeInfo().DeclaredProperties
-                .Where(p => string.Equals(partialName, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.StartsWith(partialName, StringComparison.OrdinalIgnoreCase))
+             var props = typeof(Scenarios).GetTypeInfo().DeclaredProperties
+                .Where(p => string.Equals(name, "[all]", StringComparison.OrdinalIgnoreCase) || p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var p in props)

@@ -19,6 +19,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Npgsql;
+using System.IO;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Benchmarks
 {
@@ -174,19 +176,20 @@ namespace Benchmarks
 
             if (Scenarios.Any("Mvc"))
             {
+                IMvcBuilder builder;
+
                 if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
                 {
-                    services
-                        .AddControllersWithViews()
-                        .AddNewtonsoftJson()
-                        ;
+                    builder = services.AddControllersWithViews();
                 }
                 else
                 {
-                    services
-                        .AddControllers()
-                        .AddNewtonsoftJson()
-                        ;
+                    builder = services.AddControllers();
+                }
+
+                if (Scenarios.Any("MvcJsonNet"))
+                {
+                    builder.AddNewtonsoftJson();
                 }
             }
 #else
@@ -224,11 +227,6 @@ namespace Benchmarks
             if (Scenarios.Json)
             {
                 app.UseJson();
-            }
-
-            if (Scenarios.Jil)
-            {
-                app.UseJil();
             }
 
             if (Scenarios.CopyToAsync)

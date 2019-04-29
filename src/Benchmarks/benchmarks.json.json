@@ -14,14 +14,29 @@
   "Json": {
     "Path": "/json"
   },
-  "Jil": {
-    "Path": "/jil"
-  },
   "MvcJson": {
     "Path": "/mvc/json"
   },
-  "MvcJil": {
-    "Path": "/mvc/jil"
+  "MvcJsonNet": {
+    "Path": "/mvc/json"
+  },
+  "MvcJson2k": {
+    "Path": "/mvc/json2k"
+  },
+  "MvcJsonNet2k": {
+    "Path": "/mvc/json2k"
+  },
+  "MvcJsonInput2k": {
+    "Path": "/mvc/jsoninput",
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
+    }
+  },
+  "MvcJsonNetInput2k": {
+    "Path": "/mvc/jsoninput",
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
+    }
   },
   "DbSingleQueryRaw": {
     "Path": "/db/raw"
