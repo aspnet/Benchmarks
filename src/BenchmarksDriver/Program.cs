@@ -536,6 +536,15 @@ namespace BenchmarksDriver
                         Log("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
                         Console.ResetColor();
                     }
+                    else if (aspnetCoreVersionOption.HasValue() || runtimeVersionOption.HasValue())
+                    {
+                        serverJob.SelfContained = true;
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Log("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
+                        Console.ResetColor();
+                    }
+
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {
