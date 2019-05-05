@@ -21,7 +21,7 @@ namespace Benchmarks.Data
             _worldCollection = worldCollection;
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
+        public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = await _fortuneCollection.Find(FilterDefinition<Fortune>.Empty).ToListAsync();
 

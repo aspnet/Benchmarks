@@ -135,7 +135,7 @@ namespace Benchmarks.Data
             }
         }
 
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
+        public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>();
 
@@ -166,7 +166,7 @@ namespace Benchmarks.Data
             return result;
         }
 
-        public IEnumerable<Fortune> LoadFortunesRowsSync()
+        public List<Fortune> LoadFortunesRowsSync()
         {
             var result = new List<Fortune>();
 
