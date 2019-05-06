@@ -25,7 +25,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repository;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
@@ -62,8 +61,8 @@ namespace BenchmarkServer
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
-        private static readonly string _aspnetFlatContainerServicingUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainer/microsoft.aspnetcore.app/index.json";
-        private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/microsoft.aspnetcore.app.runtime.win-x64/index.json";
+        private static readonly string _latestAspnetApiUrl = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/registration1/Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv/index.json";
+        private static readonly string _aspnetFlatContainerUrl = "https://dotnetmyget.blob.core.windows.net/artifacts/aspnetcore-dev/nuget/v3/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnet.myget.org/F/dotnet-core/api/v3/registration1/Microsoft.NETCore.App/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
@@ -132,7 +131,6 @@ namespace BenchmarkServer
 
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
-            _httpClientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip;
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClient = new HttpClient(_httpClientHandler);
 
@@ -229,6 +227,8 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hostnameOption = app.Option("-n|--hostname", $"Hostname for benchmark server.  Default is '{_defaultHostname}'.",
                 CommandOptionType.SingleValue);
+            var dockerHostnameOption = app.Option("-nd|--docker-hostname", $"Hostname for benchmark server when running Docker on a different hostname.",
+                CommandOptionType.SingleValue);
             var hardwareOption = app.Option("--hardware", "Hardware (Cloud or Physical).  Required.",
                 CommandOptionType.SingleValue);
             var hardwareVersionOption = app.Option("--hardware-version", "Hardware version (e.g, D3V2, Z420, ...).  Required.",
@@ -294,15 +294,15 @@ namespace BenchmarkServer
 
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
                 var hostname = hostnameOption.HasValue() ? hostnameOption.Value() : _defaultHostname;
+                var dockerHostname = dockerHostnameOption.HasValue() ? dockerHostnameOption.Value() : hostname;
 
-
-                return Run(url, hostname).Result;
+                return Run(url, hostname, dockerHostname).Result;
             });
 
             return app.Execute(args);
         }
 
-        private static async Task<int> Run(string url, string hostname)
+        private static async Task<int> Run(string url, string hostname, string dockerHostname)
         {
             var host = new WebHostBuilder()
                     .UseKestrel()
@@ -318,7 +318,7 @@ namespace BenchmarkServer
             var hostTask = host.RunAsync();
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, dockerHostname, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
@@ -332,7 +332,7 @@ namespace BenchmarkServer
             return 0;
         }
 
-        private static async Task ProcessJobs(string hostname, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, string dockerHostname, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
 
@@ -428,7 +428,7 @@ namespace BenchmarkServer
                                     {
                                         var buildStart = DateTime.UtcNow;
                                         var cts = new CancellationTokenSource();
-                                        var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, hostname, standardOutput, cancellationToken: cts.Token));
+                                        var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, dockerHostname, standardOutput, cancellationToken: cts.Token));
 
                                         while (true)
                                         {
@@ -602,7 +602,15 @@ namespace BenchmarkServer
                                                 // Format is {used}M/GiB/{total}M/GiB
                                                 var workingSetRaw = data[1];
                                                 var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
-                                                var cpu = Math.Round(double.Parse(cpuPercentRaw.Trim('%')) / Environment.ProcessorCount);
+                                                var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+
+                                                // On Windows the CPU already takes the number or HT into account
+                                                if (OperatingSystem == OperatingSystem.Linux)
+                                                {
+                                                    cpu = cpu / Environment.ProcessorCount;
+                                                }
+
+                                                cpu = Math.Round(cpu);
 
                                                 // MiB, GiB, B ?
                                                 var factor = 1;
@@ -807,12 +815,6 @@ namespace BenchmarkServer
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
                                 DockerCleanUp(dockerContainerId, dockerImage, job, standardOutput);
-                            }
-                            else
-                            {
-                                // Job already stopped
-
-                                job.State = ServerState.Stopped;
                             }
 
                             // Running AfterScript
@@ -1099,7 +1101,7 @@ namespace BenchmarkServer
 
             var command = OperatingSystem == OperatingSystem.Linux
                 ? $"run -d {environmentArguments} {job.Arguments} --network host {imageName}"
-                : $"run -d {environmentArguments} {job.Arguments} --network SELF --ip {Environment.GetEnvironmentVariable("SERVER_IP")} {imageName}";
+                : $"run -d {environmentArguments} {job.Arguments} --network SELF --ip {hostname} {imageName}";
 
             var stopwatch = new Stopwatch();
 
@@ -1460,7 +1462,10 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
+                aspNetCoreVersion = await GetLatestPackageVersion(_latestAspnetApiUrl, LatestChannel + ".");
+
+                // This version is faster, but the version might be too current for myget to have the package already
+                // aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
             }
             else
             {
@@ -1477,14 +1482,7 @@ namespace BenchmarkServer
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
                     // Channel version with a prefix, e.g. 2.1
-                    if (aspNetCoreVersion.StartsWith("3"))
-                    {
-                        aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
-                    }
-                    else
-                    {
-                        aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerServicingUrl, LatestChannel + ".");
-                    }
+                    aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
                 }
             }
 
@@ -2387,29 +2385,14 @@ namespace BenchmarkServer
         private static async Task<string> GetFlatContainerVersion(string packageIndexUrl, string versionPrefix)
         {
             Log.WriteLine($"Downloading flatcontainer ...");
+            var root = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
-            var content = await DownloadContentAsync(packageIndexUrl);
+            // Extract the highest version
+            var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
 
-            try
+            if (lastEntry != null)
             {
-                var root = JObject.Parse(content);
-
-                // Extract the highest version
-                var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
-
-                if (lastEntry != null)
-                {
-                    return lastEntry.ToString();
-                }
-            }
-            catch(JsonException e)
-            {
-                Log.WriteLine(e.ToString());
-                Log.WriteLine(content);
-            }
-            catch (Exception e)
-            {
-                Log.WriteLine(e.ToString());
+                return lastEntry.ToString();
             }
 
             return null;
