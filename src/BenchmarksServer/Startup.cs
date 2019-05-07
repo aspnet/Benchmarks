@@ -1759,6 +1759,8 @@ namespace BenchmarkServer
                     File.Delete(filename);
                 }
 
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+
                 File.Copy(attachment.TempFilename, filename);
                 File.Delete(attachment.TempFilename);
             }

@@ -1193,11 +1193,20 @@ namespace BenchmarksDriver
                             // Uploading attachments
                             if (outputFileOption.HasValue())
                             {
-                                foreach (var outputFile in outputFileOption.Values)
+                                foreach (var outputFileValue in outputFileOption.Values)
                                 {
-                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFile), Path.GetFileName(outputFile), SearchOption.TopDirectoryOnly))
+                                    var outputFileSegments = outputFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
+
+                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), SearchOption.AllDirectories))
                                     {
-                                        var result = await UploadFileAsync(resolvedFile, serverJob, serverJobUri + "/attachment");
+                                        var resolvedFileWithDestination = resolvedFile;
+
+                                        if (outputFileSegments.Length > 1)
+                                        {
+                                            resolvedFileWithDestination += ";" + outputFileSegments[1] + "/" + Path.GetFileName(resolvedFileWithDestination);
+                                        }
+
+                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri + "/attachment");
 
                                         if (result != 0)
                                         {
