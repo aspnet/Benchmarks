@@ -1203,7 +1203,7 @@ namespace BenchmarksDriver
 
                                         if (outputFileSegments.Length > 1)
                                         {
-                                            resolvedFileWithDestination += ";" + outputFileSegments[1] + "/" + Path.GetFileName(resolvedFileWithDestination);
+                                            resolvedFileWithDestination += ";" + outputFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(outputFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
                                         }
 
                                         var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri + "/attachment");
