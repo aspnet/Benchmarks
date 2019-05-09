@@ -2141,9 +2141,9 @@ namespace BenchmarkServer
                     standardOutput.AppendLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
-                        ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
                         e.Data.ToLowerInvariant().Contains("started") ||
-                        e.Data.ToLowerInvariant().Contains("listening")))
+                        e.Data.ToLowerInvariant().Contains("listening")) || job.IsConsoleApp))
                     {
                         MarkAsRunning(hostname, job, stopwatch);
 
