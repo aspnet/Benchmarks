@@ -1450,9 +1450,16 @@ namespace BenchmarkServer
                 }
             }
 
-            var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
-            Log.WriteLine($"Writing global.json with content: {globalJson}");
-            File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
+            if (job.NoGlobalJson)
+            {
+                Log.WriteLine($"Skipping global.json");
+            }
+            else
+            {
+                var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
+                Log.WriteLine($"Writing global.json with content: {globalJson}");
+                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
+            }
 
             // Define which ASP.NET Core packages version to use
 

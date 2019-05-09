@@ -51,7 +51,8 @@ namespace BenchmarksDriver
             _eventPipeArgumentsOption,
             _initSubmodulesOption,
             _branchOption,
-            _hashOption
+            _hashOption,
+            _noGlobalJsonOption
             ;
 
         public static int Main(string[] args)
@@ -211,6 +212,8 @@ namespace BenchmarksDriver
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
             var sdkOption = app.Option("--sdk",
                 "SDK version to use", CommandOptionType.SingleValue);
+            _noGlobalJsonOption = app.Option("--no-global-json",
+                "Doesn't generate global.json", CommandOptionType.NoValue);
             _initializeOption = app.Option("--initialize",
                 "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
             _cleanOption = app.Option("--clean",
@@ -651,6 +654,10 @@ namespace BenchmarksDriver
                 if (sdkOption.HasValue())
                 {
                     serverJob.SdkVersion = sdkOption.Value();
+                }
+                if (_noGlobalJsonOption.HasValue())
+                {
+                    serverJob.NoGlobalJson = true;
                 }
                 if (collectTraceOption.HasValue())
                 {

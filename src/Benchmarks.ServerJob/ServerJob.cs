@@ -37,6 +37,7 @@ namespace Benchmarks.ServerJob
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
         public string SdkVersion { get; set; }
+        public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
         
         // Delay from the process started to the console receiving "Application started"
