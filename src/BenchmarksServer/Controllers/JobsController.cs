@@ -360,7 +360,7 @@ namespace BenchmarkServer.Controllers
                 {
                     return Json(
                         Directory.GetFiles(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))
-                        .Select(x => x.Substring(job.BasePath.Length))
+                        .Select(x => x.Substring(job.BasePath.Length).TrimStart('/', '\\'))
                         .ToArray()
                         );
                 }
@@ -368,7 +368,7 @@ namespace BenchmarkServer.Controllers
                 {
                     return Json(
                         Directory.GetFiles(Path.GetDirectoryName(fullPath))
-                        .Select(x => x.Substring(job.BasePath.Length))
+                        .Select(x => x.Substring(job.BasePath.Length).TrimStart('/', '\\'))
                         .ToArray()
                         );
                 }
