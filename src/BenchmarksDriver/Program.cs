@@ -29,7 +29,6 @@ namespace BenchmarksDriver
         private static bool _verbose;
         private static bool _quiet;
         private static bool _displayOutput;
-        private static string _benchmarkdotnet;
         private static TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
         private static readonly HttpClient _httpClient = new HttpClient();
@@ -110,7 +109,7 @@ namespace BenchmarksDriver
             var displayOutputOption = app.Option("--display-output",
                 "Displays the standard output from the server job.", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
-                "Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Md5VsSha256.Sha256.", CommandOptionType.SingleValue);
+                "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
             var consoleOption = app.Option("--console",
                 "Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.", CommandOptionType.NoValue);
 
@@ -309,7 +308,7 @@ namespace BenchmarksDriver
                     (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
-                    string.IsNullOrWhiteSpace(client) ||
+                    (string.IsNullOrWhiteSpace(client) && !(benchmarkdotnetOption.HasValue() || consoleOption.HasValue())) ||
                     (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out span)) ||
                     (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
                     (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
@@ -371,10 +370,9 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (scenarioOption.HasValue())
+                    if (!scenarioOption.HasValue())
                     {
-                        Console.WriteLine($"Job named '{scenarioName}' was specified but no job definition argument.");
-                        return 8;
+                        scenarioName = "Default";
                     }
 
                     if ((!(repositoryOption.HasValue() || sourceOption.HasValue()) ||
@@ -386,7 +384,7 @@ namespace BenchmarksDriver
                     }
 
                     jobDefinitions = new JobDefinition();
-                    jobDefinitions.Add("Default", new JObject());
+                    jobDefinitions.Add(scenarioName, new JObject());
                 }
 
                 var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
@@ -817,10 +815,21 @@ namespace BenchmarksDriver
                 }
 
                 if (benchmarkdotnetOption.HasValue())
-                {
-                    serverJob.Scenario = benchmarkdotnetOption.Value();
+                {   if (String.IsNullOrEmpty(serverJob.Scenario))
+                    {
+                        serverJob.Scenario = "Benchmark.NET";
+                    }
+                    
+                    serverJob.NoArguments = true;
                     _clientJob.Client = Worker.BenchmarkDotNet;
-                    _benchmarkdotnet = benchmarkdotnetOption.Value();
+
+                    var bdnScenario = benchmarkdotnetOption.Value();
+                    if (String.IsNullOrEmpty(bdnScenario))
+                    {
+                        bdnScenario = "*";
+                    }
+
+                    serverJob.Arguments += $" --filter {bdnScenario}";
                 }
 
                 if (consoleOption.HasValue())
@@ -954,7 +963,7 @@ namespace BenchmarksDriver
 
                 return Run(
                     new Uri(server),
-                    new Uri(client),
+                    String.IsNullOrEmpty(client) ? null : new Uri(client),
                     sqlConnectionString,
                     serverJob,
                     session,
@@ -1396,51 +1405,74 @@ namespace BenchmarksDriver
                                 // Try to extract BenchmarkDotNet statistics
                                 if (_clientJob.Client == Worker.BenchmarkDotNet)
                                 {
-                                    var benchmarkFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report.csv";
+                                    // Download all results
+                                    var uri = serverJobUri + "/list?path=" + HttpUtility.UrlEncode("BenchmarkDotNet.Artifacts/results/*-report.csv");
+                                    var csvFilenames = JArray.Parse(await _httpClient.GetStringAsync(uri)).ToObject<string[]>();
 
-                                    Log($"Downloading file {benchmarkFile}");
-                                    var uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(benchmarkFile);
-                                    LogVerbose("GET " + uri);
-
-                                    var filename = benchmarkFile;
-
-                                    try
+                                    foreach (var csvFilename in csvFilenames)
                                     {
-                                        var csvContent = await DownloadFileContent(uri, serverJobUri);
+                                        Log($"Downloading file {csvFilename}");
+                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(csvFilename);
+                                        LogVerbose("GET " + uri);
 
-                                        using (var sr = new StringReader(csvContent))
+                                        string csvContent = null;
+
+                                        try
                                         {
-                                            using (var csv = new CsvReader(sr))
-                                            {
-                                                csv.Configuration.RegisterClassMap<CsvResultMap>();
-                                                csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
+                                            csvContent = await DownloadFileContent(uri, serverJobUri);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Log($"Error while downloading file {csvFilename}, skipping ...");
+                                            Log(e.Message);
+                                        }
 
-                                                var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                                benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>().ToList();
+                                        var className = Path.GetFileNameWithoutExtension(csvFilename).Split('.').LastOrDefault().Split('-', 2).FirstOrDefault();
+                                        
+                                        try
+                                        {
+                                            using (var sr = new StringReader(csvContent))
+                                            {
+                                                using (var csv = new CsvReader(sr))
+                                                {
+                                                    csv.Configuration.RegisterClassMap<CsvResultMap>();
+                                                    csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
+
+                                                    var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
+                                                    benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>().ToList();
+
+                                                    foreach(var result in benchmarkDotNetSerializer.CsvResults)
+                                                    {
+                                                        result.Class = className;
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Log($"Error while downloading file {benchmarkFile}, skipping ...");
-                                        LogVerbose(e.Message);
+                                        catch (Exception e)
+                                        {
+                                            Log($"Error while reading CSV file ... skipping");
+                                            Log(e.Message);
+                                            continue;
+                                        }
                                     }
 
-                                    var markdownFile = $"BenchmarkDotNet.Artifacts/results/{_benchmarkdotnet}-report-github.md";
-
-                                    try
+                                    // Download all markdown results
+                                    uri = serverJobUri + "/list?path=" + HttpUtility.UrlEncode("BenchmarkDotNet.Artifacts/results/*-report-github.md");
+                                    var markdownFilenames = JArray.Parse(await _httpClient.GetStringAsync(uri)).ToObject<string[]>();
+                                    foreach (var markdownFilename in markdownFilenames)
                                     {
-                                        // Download markdown file for output
-                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFile);
-                                        QuietLog(await DownloadFileContent(uri, serverJobUri));
+                                        try
+                                        {
+                                            // Download markdown file for output
+                                            uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFilename);
+                                            QuietLog(await DownloadFileContent(uri, serverJobUri));
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Log($"Error while downloading file {markdownFilename}, skipping ...");
+                                            LogVerbose(e.Message);
+                                        }
                                     }
-                                    catch (Exception e)
-                                    {
-                                        Log($"Error while downloading file {markdownFile}, skipping ...");
-                                        LogVerbose(e.Message);
-                                    }                                 
-
-                                   
                                 }
                             }
                             else

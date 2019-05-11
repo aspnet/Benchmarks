@@ -41,7 +41,7 @@ namespace BenchmarksDriver.Serializers
 
             foreach (var result in CsvResults)
             {
-                serverJob.Scenario = $"{scenario}.{result.Method}";
+                serverJob.Scenario = $"{scenario}.{result.Class}.{result.Method}{result.Params ?? ""}";
 
                 await WriteJobsToSql(
                     serverJob: serverJob,

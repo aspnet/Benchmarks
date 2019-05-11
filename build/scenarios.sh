@@ -42,6 +42,7 @@ http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_C
 grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/NativeServer/grpc-native.json"
 grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/BenchmarkServer/grpc-aspnetcore.json"
 
+
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
 
