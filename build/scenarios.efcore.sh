@@ -22,7 +22,7 @@ ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
 #efcoreJobs="-r EntityFrameworkCore@master --description Benchmarks --arg --perflab --server-timeout 00:45:00 -t EFCoreBenchmarks"
-efcoreJobs="-r https://github.com/roji/EntityFrameworkCore --branch BenchmarkPerfLab2 --description Benchmarks --arg --perflab --server-timeout 00:45:00 -t EFCoreBenchmarks"
+efcoreJobs="-r https://github.com/roji/EntityFrameworkCore --branch BenchmarkPerfLab --description Benchmarks --arg --perflab --no-global-json --server-timeout 00:45:00 -t EFCoreBenchmarks --sdk 3.0.100-preview5-011568"
 
 jobs=(
 
@@ -39,7 +39,7 @@ do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job --session $SESSION -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS --sdk latest
+        dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job --session $SESSION -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS 
         # error code in $?
     done
 done
