@@ -16,7 +16,7 @@ namespace BenchmarksDriver.Serializers
     {
         public string JobLogText { get; set; }
 
-        public IEnumerable<CsvResult> CsvResults { get; set; }
+        public List<CsvResult> CsvResults { get; set; } = new List<CsvResult>();
 
         private static void Log(string message)
         {

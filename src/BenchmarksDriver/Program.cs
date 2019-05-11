@@ -1439,7 +1439,7 @@ namespace BenchmarksDriver
                                                     csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
 
                                                     var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                                    benchmarkDotNetSerializer.CsvResults = csv.GetRecords<CsvResult>().ToList();
+                                                    benchmarkDotNetSerializer.CsvResults.AddRange(csv.GetRecords<CsvResult>().ToList());
 
                                                     foreach(var result in benchmarkDotNetSerializer.CsvResults)
                                                     {
