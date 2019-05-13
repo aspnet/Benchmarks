@@ -233,8 +233,6 @@ namespace BenchmarkServer
                 CommandOptionType.SingleValue);
             var hardwareVersionOption = app.Option("--hardware-version", "Hardware version (e.g, D3V2, Z420, ...).  Required.",
                 CommandOptionType.SingleValue);
-            var databaseOption = app.Option("-d|--database", "Database (PostgreSQL, SqlServer, MySql or MongoDb).",
-                CommandOptionType.SingleValue);
             var noCleanupOption = app.Option("--no-cleanup",
                 "Don't kill processes or delete temp directories.", CommandOptionType.NoValue);
             var postgresqlConnectionStringOption = app.Option("--postgresql",
