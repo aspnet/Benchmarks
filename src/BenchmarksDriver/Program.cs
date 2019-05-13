@@ -1438,13 +1438,16 @@ namespace BenchmarksDriver
                                                     csv.Configuration.RegisterClassMap<CsvResultMap>();
                                                     csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
 
-                                                    var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                                    benchmarkDotNetSerializer.CsvResults.AddRange(csv.GetRecords<CsvResult>().ToList());
+                                                    var localResults = csv.GetRecords<CsvResult>().ToList();
 
-                                                    foreach(var result in benchmarkDotNetSerializer.CsvResults)
+                                                    foreach (var result in localResults)
                                                     {
                                                         result.Class = className;
                                                     }
+
+                                                    var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
+                                                    benchmarkDotNetSerializer.CsvResults.AddRange(localResults);
+
                                                 }
                                             }
                                         }
