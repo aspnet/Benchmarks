@@ -1481,7 +1481,9 @@ namespace BenchmarkServer
                     var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
                     ((JProperty)globalObject["sdk"]["version"]).Value = new JValue(sdkVersion);
-                    File.WriteAllText(globalJsonFilename, globalObject.ToString());
+                    var globalJson = globalObject.ToString();
+                    Log.WriteLine($"Updating '{globalJsonFilename}' with content: {globalJson}");
+                    File.WriteAllText(globalJsonFilename, globalJson);
                 }
             }
 
