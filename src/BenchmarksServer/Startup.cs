@@ -1454,9 +1454,35 @@ namespace BenchmarkServer
             }
             else
             {
-                var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
-                Log.WriteLine($"Writing global.json with content: {globalJson}");
-                File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
+                // Looking for the first existing global.json file to update it as we can't have two in the same hierarchy
+
+                var globalJsonPath = new DirectoryInfo(benchmarkedApp);
+
+                bool globalJsonFound;
+                bool reachedRoot;
+
+                do
+                {
+                    reachedRoot = globalJsonPath.FullName != new DirectoryInfo(benchmarkedApp).FullName;
+                    globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
+                }
+                while (!globalJsonFound && !reachedRoot);
+
+                // No global.json found
+                if (!globalJsonFound)
+                {
+                    var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
+                    Log.WriteLine($"Writing global.json with content: {globalJson}");
+                    File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
+                }
+                else
+                {
+                    // File found, we need to update it
+                    var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
+                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+                    ((JProperty)globalObject["sdk"]["version"]).Value = new JValue(sdkVersion);
+                    File.WriteAllText(globalJsonFilename, globalObject.ToString());
+                }
             }
 
             // Define which ASP.NET Core packages version to use
