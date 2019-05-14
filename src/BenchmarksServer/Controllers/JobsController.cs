@@ -353,7 +353,7 @@ namespace BenchmarkServer.Controllers
 
                 if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
                 {
-                    return NotFound();
+                    return Json(Array.Empty<string>());
                 }
 
                 if (fullPath.Contains("*"))
