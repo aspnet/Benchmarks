@@ -829,7 +829,7 @@ namespace BenchmarksDriver
                         bdnScenario = "*";
                     }
 
-                    serverJob.Arguments += $" --cliPath {{benchmarks-cli}} --filter {bdnScenario}";
+                    serverJob.Arguments += $" --cliPath {{{{benchmarks-cli}}}} --filter {bdnScenario}";
                 }
 
                 if (consoleOption.HasValue())
