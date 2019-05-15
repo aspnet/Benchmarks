@@ -2078,9 +2078,10 @@ namespace BenchmarkServer
             if (!job.NoArguments)
             {
                 commandLine += $" {arguments}";
-
-                commandLine.Replace("{{benchmarks-cli}}", executable);
             }
+
+            // Benchmarkdotnet needs the actual cli path to generate its benchmarked app
+            commandLine.Replace("{{benchmarks-cli}}", executable);
 
             if (iis)
             {
