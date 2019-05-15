@@ -530,48 +530,7 @@ namespace BenchmarkServer
                                             job.State = ServerState.Deleting;
                                         }
 
-                                        if (process != null)
-                                        {
-                                            if (process.HasExited)
-                                            {
-                                                if (process.ExitCode != 0)
-                                                {
-                                                    Log.WriteLine($"Job failed");
-
-                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
-                                                    job.State = ServerState.Failed;
-                                                }
-                                                else
-                                                {
-                                                    job.State = ServerState.Stopped;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                                // We need to dig into this
-                                                var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
-                                                var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                                var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
-                                                lastMonitorTime = now;
-
-                                                process.Refresh();
-
-                                                // Ignore first measure
-                                                if (oldCPUTime != TimeSpan.Zero)
-                                                {
-                                                    job.AddServerCounter(new ServerCounter
-                                                    {
-                                                        Elapsed = now - startMonitorTime,
-                                                        WorkingSet = process.WorkingSet64,
-                                                        CpuPercentage = cpu
-                                                    });
-                                                }
-
-                                                oldCPUTime = newCPUTime;
-                                            }
-                                        }
-                                        else if (!String.IsNullOrEmpty(dockerImage))
+                                        if (!String.IsNullOrEmpty(dockerImage))
                                         {
                                             var output = new StringBuilder();
 
@@ -637,6 +596,49 @@ namespace BenchmarkServer
                                                     WorkingSet = workingSet,
                                                     CpuPercentage = cpu > 100 ? 0 : cpu
                                                 });
+                                            }
+                                        }
+                                        else if (process != null)
+                                        {
+                                            if (process.HasExited)
+                                            {
+                                                if (process.ExitCode != 0)
+                                                {
+                                                    Log.WriteLine($"Job failed");
+
+                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                    job.State = ServerState.Failed;
+                                                }
+                                                else
+                                                {
+                                                    Log.WriteLine($"Process has exited ({process.ExitCode})");
+
+                                                    job.State = ServerState.Stopped;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                                // We need to dig into this
+                                                var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+                                                var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                                var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
+                                                lastMonitorTime = now;
+
+                                                process.Refresh();
+
+                                                // Ignore first measure
+                                                if (oldCPUTime != TimeSpan.Zero)
+                                                {
+                                                    job.AddServerCounter(new ServerCounter
+                                                    {
+                                                        Elapsed = now - startMonitorTime,
+                                                        WorkingSet = process.WorkingSet64,
+                                                        CpuPercentage = cpu
+                                                    });
+                                                }
+
+                                                oldCPUTime = newCPUTime;
                                             }
                                         }
 
@@ -1137,7 +1139,7 @@ namespace BenchmarkServer
                         standardOutput.AppendLine(e.Data);
 
                         if (job.State == ServerState.Starting &&
-                            ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                            ((e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
                                 e.Data.ToLowerInvariant().Contains("started") ||
                                 e.Data.ToLowerInvariant().Contains("listening")))
                         {
