@@ -1465,6 +1465,7 @@ namespace BenchmarkServer
                 {
                     reachedRoot = globalJsonPath.FullName != new DirectoryInfo(benchmarkedApp).FullName;
                     globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
+                    globalJsonPath = globalJsonPath.Parent;
                 }
                 while (!globalJsonFound && !reachedRoot);
 
