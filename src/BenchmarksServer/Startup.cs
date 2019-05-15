@@ -2081,7 +2081,7 @@ namespace BenchmarkServer
             }
 
             // Benchmarkdotnet needs the actual cli path to generate its benchmarked app
-            commandLine = commandLine.Replace("{{benchmarks-cli}}", executable);
+            commandLine = commandLine.Replace("{{benchmarks-cli}}", Path.GetDirectoryName(executable));
 
             if (iis)
             {
