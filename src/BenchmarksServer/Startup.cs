@@ -1336,7 +1336,7 @@ namespace BenchmarkServer
             Log.WriteLine($"Installing dotnet runtimes and sdk");
 
             // Computes the location of the benchmarked app
-            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(job.Source.Project));
+            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
 
             // Define which Runtime and SDK will be installed.
 
@@ -1996,7 +1996,7 @@ namespace BenchmarkServer
 
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput)
         {
-            var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(job.Source.Project));
+            var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
             var serverUrl = $"{scheme}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
@@ -2078,8 +2078,9 @@ namespace BenchmarkServer
             if (!job.NoArguments)
             {
                 commandLine += $" {arguments}";
-            }
 
+                commandLine.Replace("{{benchmarks-cli}}", executable);
+            }
 
             if (iis)
             {
@@ -2447,6 +2448,18 @@ namespace BenchmarkServer
             public int GetHashCode(Source obj)
             {
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(GetRepoName(obj));
+            }
+        }
+
+        private static string FormatPathSeparators(string path)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return path.Replace("\\", "/");
+            }
+            else
+            {
+                return path.Replace("/", "\\");
             }
         }
 
