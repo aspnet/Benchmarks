@@ -10,48 +10,33 @@ namespace Benchmarks.Data
     internal class BatchUpdateString
     {
         private const int MaxBatch = 500;
+
         private static string[] _queries = new string[MaxBatch];
 
-        public static IList<BatchUpdateString> Strings { get; } =
-            Enumerable.Range(0, MaxBatch)
-                      .Select(i => new BatchUpdateString
-                      {
-                          Id = $"Id_{i}",
-                          Random = $"Random_{i}",
-                          BatchSize = i
-                      }).ToArray();
-
-        private int BatchSize { get; set; }
-        public string Id { get; set; }
-        public string Random { get; set; }
-        public string UpdateQuery => _queries[BatchSize] ?? CreateQuery(BatchSize);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private string CreateQuery(int batchSize)
+        public static string Query(int batchSize)
         {
-            var sb = StringBuilderCache.Acquire();
-            foreach (var q in Enumerable.Range(0, batchSize + 1)
-                .Select(i => $"UPDATE world SET randomnumber = @Random_{i} WHERE id = @Id_{i};"))
+            if (_queries[batchSize] != null)
             {
-                sb.Append(q);
+                return _queries[batchSize];
             }
-            var query = sb.ToString();
-            _queries[batchSize] = query;
-            return query;
-        }
 
-        public static void Initalize()
-        {
-            Observe(Strings[0].UpdateQuery);
-            Observe(Strings[4].UpdateQuery);
-            Observe(Strings[9].UpdateQuery);
-            Observe(Strings[14].UpdateQuery);
-            Observe(Strings[19].UpdateQuery);
-        }
+            var sb = StringBuilderCache.Acquire();
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void Observe(string query)
-        {
+            sb.Append("UPDATE world SET randomNumber = temp.randomNumber FROM (VALUES ");
+
+            for (var i = 0; i < batchSize; i++)
+            {
+                sb.Append($"(@Id_{i}, @Random_{i})");
+
+                if (i != batchSize - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+
+            sb.Append(" ORDER BY 1) AS temp(id, randomNumber) WHERE temp.id = world.id");
+
+            return _queries[batchSize] = StringBuilderCache.GetStringAndRelease(sb);
         }
     }
 }
