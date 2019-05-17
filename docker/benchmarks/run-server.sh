@@ -40,7 +40,7 @@ done
 if [ -z "$server_ip" ]
 then
     # tries to get the ip from the available NICs, but it's recommended to set it manually to use the fastest one
-    server_ip=$(ip route get 1 | awk '{print $NF;exit}')
+    server_ip=$(ip route get 1 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 
     echo "Using server_ip=$server_ip"
 fi
