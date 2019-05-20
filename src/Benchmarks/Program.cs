@@ -38,6 +38,8 @@ namespace Benchmarks
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
             Console.WriteLine($"WebHostBuilder loading from: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
 
+            Console.WriteLine($"NetCore.App location: {typeof(Console).GetTypeInfo().Assembly.Location}");
+
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
