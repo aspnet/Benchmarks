@@ -1714,6 +1714,35 @@ namespace BenchmarksDriver
                                     File.AppendAllText(writeToFilename, values + "|" + Environment.NewLine);
                                 }
 
+
+                                // Render all results if --quiet not set
+                                if (iterations > 1 && !_quiet)
+                                {
+                                    QuietLog("All results:");
+
+                                    QuietLog(header + "|");
+                                    QuietLog(separator + "|");
+
+                                    foreach (var result in results)
+                                    {
+                                        var tmpDescription = result.Description;
+                                        result.Description = samples.Contains(result) ? "✓" : "✗";
+                                        var localFields = BuildFields(result);
+                                        
+                                        var localValues = new StringBuilder();
+                                        foreach (var field in localFields)
+                                        {
+                                            var size = Math.Max(field.Key.Length, field.Value.Length);
+                                            localValues.Append("| ").Append(field.Value.PadLeft(size)).Append(" ");
+                                        }
+
+                                        result.Description = tmpDescription;
+                                        QuietLog(localValues + "|");
+                                    }
+
+                                    QuietLog("");
+                                }
+
                                 if (diffOption.HasValue())
                                 {
                                     var diffFilename = diffOption.Value();
@@ -2039,7 +2068,8 @@ namespace BenchmarksDriver
                 new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"),
                 new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"),
                 new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"),
-                new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}")
+                new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"),
+                new KeyValuePair<string, string>("Errors", $"{average.SocketErrors + average.BadResponses}"),
             };
 
         private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
