@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -13,12 +14,10 @@ using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
-using System.Collections;
+using Microsoft.Extensions.Logging;
 
 namespace Benchmarks
 {
@@ -37,11 +36,12 @@ namespace Benchmarks
             Console.WriteLine("-----------------------");
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
-            Console.WriteLine($"AspNetCore loading from: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"AspNetCore location: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
             Console.WriteLine($"AspNetCore version: {typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
-            Console.WriteLine($"NetCore.App location: {typeof(BitArray).GetTypeInfo().Assembly.Location}");
-            Console.WriteLine($"CoreFx version: {typeof(BitArray).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            Console.WriteLine($"NetCoreApp location: {typeof(object).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"CoreCLR version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            Console.WriteLine($"CoreFx version: {typeof(Regex).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
