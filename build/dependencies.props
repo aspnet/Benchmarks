@@ -33,12 +33,12 @@
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.0</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-preview3</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-preview5</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
     <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
     <PomeloEntityFrameworkCoreMySqlVersion30>2.2.0</PomeloEntityFrameworkCoreMySqlVersion30>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview4.19168.3</MicrosoftEntityFrameworkCoreSqlServerVersion30>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview5.19227.1</MicrosoftEntityFrameworkCoreSqlServerVersion30>
     
     <!-- Using 2.2 EF version for netcoreapp3.0 benchmarks as it doesn't work with current providers -->
   </PropertyGroup>
