@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using System.Collections;
 
 namespace Benchmarks
 {
@@ -36,9 +37,11 @@ namespace Benchmarks
             Console.WriteLine("-----------------------");
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
-            Console.WriteLine($"WebHostBuilder loading from: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"AspNetCore loading from: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"AspNetCore version: {typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
-            Console.WriteLine($"NetCore.App location: {typeof(Console).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"NetCore.App location: {typeof(BitArray).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"CoreFx version: {typeof(BitArray).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
