@@ -1818,8 +1818,10 @@ namespace BenchmarkServer
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
             await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, TfmToBranches[targetFramework]), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
             var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
-                .Element("PropertyGroup")
-                .Element("MicrosoftNETCoreAppPackageVersion")
+                .Elements("PropertyGroup")
+                .Select(x => x.Element("MicrosoftNETCoreAppPackageVersion"))
+                .Where(x => x != null)
+                .FirstOrDefault()
                 .Value;
 
             Log.WriteLine($"Detecting AspNetCore repository runtime version: {latestRuntimeVersion}");
