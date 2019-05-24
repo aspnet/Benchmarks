@@ -1119,6 +1119,8 @@ namespace BenchmarkServer
             var containerId = result.StandardOutput.Trim();
             job.Url = ComputeServerUrl(hostname, job);
 
+            Log.WriteLine($"Intercepting Docker logs for '{containerId}' ...");
+
             var process = new Process()
             {
                 StartInfo = {
@@ -1130,6 +1132,9 @@ namespace BenchmarkServer
                 },
                 EnableRaisingEvents = true
             };
+
+            process.Start();
+            process.BeginOutputReadLine();
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
@@ -1147,7 +1152,7 @@ namespace BenchmarkServer
                                 e.Data.ToLowerInvariant().Contains("started") ||
                                 e.Data.ToLowerInvariant().Contains("listening")))
                         {
-                            Log.WriteLine($"Application is now running...");
+                            Log.WriteLine($"Ready state detected, application is now running...");
                             MarkAsRunning(hostname, job, stopwatch);
 
                             if (job.Collect && !job.CollectStartup)
@@ -1160,7 +1165,7 @@ namespace BenchmarkServer
             }
             else
             {
-                Log.WriteLine($"Waiting for application to startup...");
+                Log.WriteLine($"Trying to contact the application ...");
 
                 process.OutputDataReceived += (_, e) =>
                 {
@@ -1176,7 +1181,7 @@ namespace BenchmarkServer
                 // will fail to connect and the job will be cleaned up properly
                 if (await WaitToListen(job, hostname, 30))
                 {
-                    Log.WriteLine($"Application is now running...");
+                    Log.WriteLine($"Application is responding...");
                 }
                 else
                 {
@@ -1190,9 +1195,6 @@ namespace BenchmarkServer
                     StartCollection(workingDirectory, job);
                 }
             }
-
-            process.Start();
-            process.BeginOutputReadLine();
 
             return (containerId, imageName, workingDirectory);
         }
