@@ -1100,6 +1100,9 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
+            // Delete container if the same name already exists
+            ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
+
             var command = OperatingSystem == OperatingSystem.Linux
                 ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --network host {imageName}"
                 : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName}";
@@ -1253,7 +1256,6 @@ namespace BenchmarkServer
 
             if (job.NoClean)
             {
-                ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
                 ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
             }
             else
