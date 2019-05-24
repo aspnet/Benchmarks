@@ -74,5 +74,12 @@
     "Headers": {
       "Connection": "close"
     }
+  },
+  "PlaintextNonPipelinedLogging": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    }
   }
 }

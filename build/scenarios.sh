@@ -178,6 +178,10 @@ jobs=(
   # GRPC
   "-n GrpcUnaryAspNetCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
   "-n GrpcUnaryNative --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
+
+  # Logging
+  "-n PlaintextNonPipelinedLogging --webHost Kestrelsockets $trend $plaintextJobs -i 3" 
+
 )
 
 # build driver
