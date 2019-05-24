@@ -1228,15 +1228,15 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName, ServerJob job, StringBuilder standardOutput)
         {
-            var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId).StandardOutput;
+            var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false)?.StandardOutput;
 
             // container is already stopped
             if (state.Contains("false"))
             {
-                if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId).StandardOutput.Trim() != "0")
+                if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false)?.StandardOutput.Trim() != "0")
                 {
                     Log.WriteLine("Job failed");
-                    job.Error = ProcessUtil.Run("docker", "logs " + containerId).StandardError;
+                    job.Error = ProcessUtil.Run("docker", "logs " + containerId, throwOnError: false)?.StandardError;
                     job.State = ServerState.Failed;
                 }
                 else
@@ -1246,18 +1246,18 @@ namespace BenchmarkServer
             }
             else
             {
-                ProcessUtil.Run("docker", $"stop {containerId}");
+                ProcessUtil.Run("docker", $"stop {containerId}", throwOnError: false);
 
                 job.State = ServerState.Stopped;
             }
 
             if (job.NoClean)
             {
-                ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}");
+                ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
             }
             else
             {
-                ProcessUtil.Run("docker", $"rmi --force {imageName}");
+                ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
             }
         }
 
