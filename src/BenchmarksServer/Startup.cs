@@ -533,70 +533,74 @@ namespace BenchmarkServer
 
                                         if (!String.IsNullOrEmpty(dockerImage))
                                         {
-                                            var output = new StringBuilder();
+                                            string inspect = "";
 
                                             // Check the container is still running
                                             ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
-                                                outputDataReceived: d => output.AppendLine(d),
-                                                log: false);
+                                                outputDataReceived: d => inspect += d,
+                                                log: false, throwOnError: false);
 
-                                            if (output.ToString().Contains("false"))
+                                            if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
                                             {
                                                 job.State = ServerState.Stopping;
                                             }
                                             else
                                             {
                                                 // Get docker stats
-                                                output.Clear();
+                                                var stats = "";
+
                                                 var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
-                                                    outputDataReceived: d => output.AppendLine(d),
-                                                    log: false);
+                                                    outputDataReceived: d => stats += d,
+                                                    log: false, throwOnError: false);
 
-                                                var data = output.ToString().Trim().Split('-');
-
-                                                // Format is {value}%
-                                                var cpuPercentRaw = data[0];
-
-                                                // Format is {used}M/GiB/{total}M/GiB
-                                                var workingSetRaw = data[1];
-                                                var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
-                                                var cpu = double.Parse(cpuPercentRaw.Trim('%'));
-
-                                                // On Windows the CPU already takes the number or HT into account
-                                                if (OperatingSystem == OperatingSystem.Linux)
+                                                if (String.IsNullOrEmpty(stats))
                                                 {
-                                                    cpu = cpu / Environment.ProcessorCount;
+                                                    var data = stats.Trim().Split('-');
+
+                                                    // Format is {value}%
+                                                    var cpuPercentRaw = data[0];
+
+                                                    // Format is {used}M/GiB/{total}M/GiB
+                                                    var workingSetRaw = data[1];
+                                                    var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
+                                                    var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+
+                                                    // On Windows the CPU already takes the number or HT into account
+                                                    if (OperatingSystem == OperatingSystem.Linux)
+                                                    {
+                                                        cpu = cpu / Environment.ProcessorCount;
+                                                    }
+
+                                                    cpu = Math.Round(cpu);
+
+                                                    // MiB, GiB, B ?
+                                                    var factor = 1;
+                                                    double memory;
+
+                                                    if (usedMemoryRaw.EndsWith("GiB"))
+                                                    {
+                                                        factor = 1024 * 1024 * 1024;
+                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                    }
+                                                    else if (usedMemoryRaw.EndsWith("MiB"))
+                                                    {
+                                                        factor = 1024 * 1024;
+                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                    }
+                                                    else
+                                                    {
+                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
+                                                    }
+
+                                                    var workingSet = (long)(memory * factor);
+
+                                                    job.AddServerCounter(new ServerCounter
+                                                    {
+                                                        Elapsed = now - startMonitorTime,
+                                                        WorkingSet = workingSet,
+                                                        CpuPercentage = cpu > 100 ? 0 : cpu
+                                                    });
                                                 }
-
-                                                cpu = Math.Round(cpu);
-
-                                                // MiB, GiB, B ?
-                                                var factor = 1;
-                                                double memory;
-
-                                                if (usedMemoryRaw.EndsWith("GiB"))
-                                                {
-                                                    factor = 1024 * 1024 * 1024;
-                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
-                                                }
-                                                else if (usedMemoryRaw.EndsWith("MiB"))
-                                                {
-                                                    factor = 1024 * 1024;
-                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
-                                                }
-                                                else
-                                                {
-                                                    memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
-                                                }
-
-                                                var workingSet = (long)(memory * factor);
-
-                                                job.AddServerCounter(new ServerCounter
-                                                {
-                                                    Elapsed = now - startMonitorTime,
-                                                    WorkingSet = workingSet,
-                                                    CpuPercentage = cpu > 100 ? 0 : cpu
-                                                });
                                             }
                                         }
                                         else if (process != null)
