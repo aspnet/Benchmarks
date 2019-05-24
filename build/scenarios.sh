@@ -180,7 +180,7 @@ jobs=(
   "-n GrpcUnaryNative --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
 
   # Logging
-  "-n PlaintextNonPipelinedLogging --webHost Kestrelsockets $trend $plaintextJobs -i 3" 
+  "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs -i 3" 
 
 )
 
