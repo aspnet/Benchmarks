@@ -829,7 +829,6 @@ namespace BenchmarkServer
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
                                 // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
-                                Log.WriteLine("####OUTPUT: " + standardOutput.ToString());
                                 job.Output = standardOutput.ToString();
 
                                 DockerCleanUp(dockerContainerId, dockerImage, job);
