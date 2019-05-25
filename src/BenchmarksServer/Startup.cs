@@ -813,13 +813,19 @@ namespace BenchmarkServer
 
                                 Log.WriteLine($"Process has stopped");
 
+                                // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
+                                job.Output = standardOutput.ToString();
+
                                 job.State = ServerState.Stopped;
 
                                 process = null;
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
-                                DockerCleanUp(dockerContainerId, dockerImage, job, standardOutput);
+                                DockerCleanUp(dockerContainerId, dockerImage, job);
+
+                                // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
+                                job.Output = standardOutput.ToString();
                             }
 
                             // Running AfterScript
@@ -827,10 +833,10 @@ namespace BenchmarkServer
                             {
                                 var segments = job.AfterScript.Split(' ', 2);
                                 var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", log: true, workingDirectory: workingDirectory);
-                                standardOutput.AppendLine(processResult.StandardOutput);
-                            }
 
-                            job.Output = standardOutput.ToString();
+                                // TODO: Update the output with the result of AfterScript, and change the driver so that it polls the job a last time even when the job is stopped
+                                // if there is an AfterScript
+                            }
 
                             Log.WriteLine($"Process stopped ({job.State})");
                         }
@@ -1235,7 +1241,7 @@ namespace BenchmarkServer
             return false;
         }
 
-        private static void DockerCleanUp(string containerId, string imageName, ServerJob job, StringBuilder standardOutput)
+        private static void DockerCleanUp(string containerId, string imageName, ServerJob job)
         {
             var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false)?.StandardOutput;
 
