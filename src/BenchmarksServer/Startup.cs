@@ -712,6 +712,12 @@ namespace BenchmarkServer
 
                         async Task StopJobAsync()
                         {
+                            // Check if we already passed here
+                            if (timer == null)
+                            {
+                                return;
+                            }
+
                             lock (executionLock)
                             {
                                 disposed = true;
