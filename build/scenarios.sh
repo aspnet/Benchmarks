@@ -79,9 +79,9 @@ jobs=(
   
   # Http2
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2"
-  "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2c"
+  "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2c --no-startup-latency" # no startup time as h2c is not supported by HttpClient
   "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2"
-  "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2c"
+  "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2c --no-startup-latency" # no startup time as h2c is not supported by HttpClient
 
   # Caching
   "-n MemoryCachePlaintext --webHost KestrelSockets $trend $plaintextJobs"
