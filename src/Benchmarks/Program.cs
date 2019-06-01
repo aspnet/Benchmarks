@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+#if !NETCOREAPP3_0
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -91,6 +93,7 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
+#if !NETCOREAPP3_0
 
                     var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
                     if (kestrelThreadPoolDispatchingValue != null)
@@ -104,6 +107,7 @@ namespace Benchmarks
                             options.ApplicationSchedulingMode = SchedulingMode.Inline;
                         }
                     }
+#endif
                 });
 
                 var threadCount = GetThreadCount(config);
