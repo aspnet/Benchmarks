@@ -18,7 +18,8 @@ namespace BenchmarksBot
     class Program
     {
         const string AspNetCorePackage = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv";
-        static readonly string _aspNetCoreUrlPrefix = $"https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/{AspNetCorePackage}/";
+        // package-id-lower, version
+        static readonly string _aspNetCorePackageFormat = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/{0}/{1}/{0}.{1}.nupkg";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
 
@@ -567,7 +568,7 @@ namespace BenchmarksBot
             {
                 // Download Microsoft.AspNet.App
 
-                var aspNetAppUrl = _aspNetCoreUrlPrefix + aspNetCoreVersion;
+                var aspNetAppUrl = String.Format(_aspNetCorePackageFormat, AspNetCorePackage, aspNetCoreVersion);
                 if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
                 {
                     return null;

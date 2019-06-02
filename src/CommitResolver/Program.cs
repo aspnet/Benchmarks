@@ -14,7 +14,8 @@ namespace CommitResolver
 {
     class Program
     {
-        static readonly string _aspNetCoreUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv/";
+        // package-id-lower, version
+        static readonly string _aspNetCorePackageFormat = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/{0}/{1}/{0}.{1}.nupkg";
         static readonly string _extensionsUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.Extensions.Configuration.Abstractions/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
@@ -44,7 +45,7 @@ namespace CommitResolver
 
                         var allValues = new List<string>();
 
-                        foreach(var x in aspNetVersion.Values)
+                        foreach (var x in aspNetVersion.Values)
                         {
                             allValues.Add(await GetAspNetCoreCommitHash(x));
                         }
@@ -57,7 +58,7 @@ namespace CommitResolver
                         {
                             for (var i = 1; i < allValues.Count; i++)
                             {
-                                Console.WriteLine($"https://github.com/aspnet/AspNetCore/compare/{allValues[i-1]}...{allValues[i]}");
+                                Console.WriteLine($"https://github.com/aspnet/AspNetCore/compare/{allValues[i - 1]}...{allValues[i]}");
                             }
                         }
 
@@ -84,17 +85,17 @@ namespace CommitResolver
                             Console.WriteLine("Microsoft.NetCore.App / Core CLR");
                             Console.WriteLine($"https://github.com/dotnet/coreclr/commit/{coreClrValues[0]}");
                         }
-                        else 
+                        else
                         {
                             for (var i = 1; i < coreClrValues.Count; i++)
                             {
-                                Console.WriteLine($"{runtimeVersion.Values[i-1]} -> {runtimeVersion.Values[i]}");
+                                Console.WriteLine($"{runtimeVersion.Values[i - 1]} -> {runtimeVersion.Values[i]}");
 
                                 Console.WriteLine("Microsoft.NetCore.App / Core FX");
-                                Console.WriteLine($"https://github.com/dotnet/corefx/compare/{coreFxValues[i-1]}...{coreFxValues[i]}");
+                                Console.WriteLine($"https://github.com/dotnet/corefx/compare/{coreFxValues[i - 1]}...{coreFxValues[i]}");
                                 Console.WriteLine();
                                 Console.WriteLine("Microsoft.NetCore.App / Core CLR");
-                                Console.WriteLine($"https://github.com/dotnet/coreclr/compare/{coreClrValues[i-1]}...{coreClrValues[i]}");
+                                Console.WriteLine($"https://github.com/dotnet/coreclr/compare/{coreClrValues[i - 1]}...{coreClrValues[i]}");
                             }
                         }
                     }
@@ -139,7 +140,7 @@ namespace CommitResolver
             {
                 // Download Microsoft.AspNet.App
 
-                var aspNetAppUrl = _aspNetCoreUrlPrevix + aspNetCoreVersion;
+                var aspNetAppUrl = String.Format(_aspNetCorePackageFormat, "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv".ToLower(), aspNetCoreVersion);
                 if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
                 {
                     return null;
