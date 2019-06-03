@@ -2450,7 +2450,11 @@ namespace BenchmarkServer
             var root = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
             // Extract the highest version
-            var lastEntry = root["versions"].Reverse().Where(t => t.ToString().StartsWith(versionPrefix)).FirstOrDefault();
+            var lastEntry = root["versions"]
+                .Select(x => x.ToString())
+                .Where(t => t.StartsWith(versionPrefix))
+                .OrderBy(x => x.Replace(".", "-")) // nornalizing to fix '.' and '-' comparisons
+                .LastOrDefault();
 
             if (lastEntry != null)
             {
