@@ -127,9 +127,18 @@ namespace BenchmarkServer.Controllers
             lock (_jobs)
             {
                 Log($"Driver stopping job '{id}'");
+
                 try
                 {
                     var job = _jobs.Find(id);
+
+                    if (job == null || job.State == ServerState.Stopped)
+                    {
+                        // The job might have already been stopped, or deleted.
+                        // Can happen if the server stops the job, then the driver does it.
+                        return new StatusCodeResult((int)HttpStatusCode.Accepted);
+                    }
+
                     job.State = ServerState.Stopping;
                     _jobs.Update(job);
 
