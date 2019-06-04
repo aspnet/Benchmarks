@@ -130,7 +130,7 @@ namespace BenchmarkServer
 
             // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
 
-            var rootNugetConfig = Path.Combine(_rootTempDir, "Nuget.config");
+            var rootNugetConfig = Path.Combine(_rootTempDir, "NuGet.Config");
 
             if (!File.Exists(rootNugetConfig))
             {
