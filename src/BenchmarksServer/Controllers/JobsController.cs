@@ -132,10 +132,17 @@ namespace BenchmarkServer.Controllers
                 {
                     var job = _jobs.Find(id);
 
-                    if (job == null || job.State == ServerState.Stopped)
+                    if (job == null)
+                    {
+                        // The job doesn't exist anymore
+                        return NotFound();
+                    }
+
+                    if (job.State == ServerState.Stopped || job.State == ServerState.Failed)
                     {
                         // The job might have already been stopped, or deleted.
                         // Can happen if the server stops the job, then the driver does it.
+                        // If the benchmark failed, it will be marked as Stopping automatically.
                         return new StatusCodeResult((int)HttpStatusCode.Accepted);
                     }
 
