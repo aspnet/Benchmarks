@@ -55,8 +55,38 @@ namespace BenchmarksDriver
             _noGlobalJsonOption
             ;
 
+        private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "--projectfile", "--project-file" },
+            { "--outputfile", "--output-file" },
+        };
+
+        private static Dictionary<string, string> _synonymArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "--aspnet", "--aspnetcoreversion" },
+            { "--runtime", "--runtimeversion" },
+        };
+
+
         public static int Main(string[] args)
         {
+            // Replace deprecated arguments with new ones
+            for (var i = 0; i < args.Length; i++)
+            {
+                var arg = args[i];
+
+                if (_deprecatedArguments.TryGetValue(arg, out var mappedArg))
+                {
+                    Log($"WARNING: '{arg}' has been deprecated, in the future please use '{mappedArg}'.");
+                    args[i] = mappedArg;
+                }
+                else if (_synonymArguments.TryGetValue(arg, out var synonymArg))
+                {
+                    // We don't need to display a warning
+                    args[i] = synonymArg;
+                }
+            }
+
             var app = new CommandLineApplication()
             {
                 Name = "BenchmarksDriver",
@@ -156,7 +186,7 @@ namespace BenchmarksDriver
                 "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
             var dockerImageOption = app.Option("-di|--docker-image",
                 "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
-            var projectOption = app.Option("--projectFile",
+            var projectOption = app.Option("--project-file",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             _initSubmodulesOption = app.Option("--init-submodules",
                 "When set will init submodules on the repository.", CommandOptionType.NoValue);
@@ -164,10 +194,10 @@ namespace BenchmarksDriver
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
             var selfContainedOption = app.Option("--self-contained",
                 "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
-            var outputFileOption = app.Option("--outputFile",
+            var outputFileOption = app.Option("--output-file",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
-                "\"--outputFile c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
-                "\"--outputFile c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
+                "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
+                "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             _packageOption = app.Option("-nupkg|--nuget-package",
                 "URL or local path of a nuget package file. e.g., \"--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg\"", CommandOptionType.MultipleValue);
