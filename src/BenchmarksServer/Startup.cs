@@ -134,8 +134,7 @@ namespace BenchmarkServer
 
             if (!File.Exists(rootNugetConfig))
             {
-                File.WriteAllText(rootNugetConfig, @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                File.WriteAllText(rootNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <clear />
