@@ -36,7 +36,7 @@ namespace Benchmarks.ServerJob
         public bool IsConsoleApp { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
-        public string SdkVersion { get; set; }
+        public string SdkVersion { get; set; } = "Latest";
         public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
         
