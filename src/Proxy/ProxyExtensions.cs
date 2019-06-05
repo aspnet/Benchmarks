@@ -48,59 +48,58 @@ namespace Proxy
             proxiedMessage.RequestUri = uri;
 
             return proxiedMessage;
+        }
+        static bool SetupMethodAndContent(HttpRequest request, HttpRequestMessage proxiedMessage)
+        {
+            var hasContent = false;
+            var requestMethod = request.Method;
 
-            static bool SetupMethodAndContent(HttpRequest request, HttpRequestMessage proxiedMessage)
+            // Try to use the static HttpMethods rather than creating a new one.
+            if (HttpMethods.IsGet(requestMethod))
             {
-                var hasContent = false;
-                var requestMethod = request.Method;
+                proxiedMessage.Method = HttpMethod.Get;
+            }
+            else if (HttpMethods.IsHead(requestMethod))
+            {
+                proxiedMessage.Method = HttpMethod.Head;
+            }
+            else if (HttpMethods.IsDelete(requestMethod))
+            {
+                proxiedMessage.Method = HttpMethod.Delete;
+            }
+            else if (HttpMethods.IsTrace(requestMethod))
+            {
+                proxiedMessage.Method = HttpMethod.Trace;
+            }
+            else
+            {
+                hasContent = true;
 
-                // Try to use the static HttpMethods rather than creating a new one.
-                if (HttpMethods.IsGet(requestMethod))
+                if (HttpMethods.IsPost(requestMethod))
                 {
-                    proxiedMessage.Method = HttpMethod.Get;
+                    proxiedMessage.Method = HttpMethod.Post;
                 }
-                else if (HttpMethods.IsHead(requestMethod))
+                else if (HttpMethods.IsOptions(requestMethod))
                 {
-                    proxiedMessage.Method = HttpMethod.Head;
+                    proxiedMessage.Method = HttpMethod.Options;
                 }
-                else if (HttpMethods.IsDelete(requestMethod))
+                else if (HttpMethods.IsPut(requestMethod))
                 {
-                    proxiedMessage.Method = HttpMethod.Delete;
+                    proxiedMessage.Method = HttpMethod.Put;
                 }
-                else if (HttpMethods.IsTrace(requestMethod))
+                else if (HttpMethods.IsPatch(requestMethod))
                 {
-                    proxiedMessage.Method = HttpMethod.Trace;
+                    proxiedMessage.Method = HttpMethod.Patch;
                 }
                 else
                 {
-                    hasContent = true;
-
-                    if (HttpMethods.IsPost(requestMethod))
-                    {
-                        proxiedMessage.Method = HttpMethod.Post;
-                    }
-                    else if (HttpMethods.IsOptions(requestMethod))
-                    {
-                        proxiedMessage.Method = HttpMethod.Options;
-                    }
-                    else if (HttpMethods.IsPut(requestMethod))
-                    {
-                        proxiedMessage.Method = HttpMethod.Put;
-                    }
-                    else if (HttpMethods.IsPatch(requestMethod))
-                    {
-                        proxiedMessage.Method = HttpMethod.Patch;
-                    }
-                    else
-                    {
-                        proxiedMessage.Method = new HttpMethod(request.Method);
-                    }
-
-                    proxiedMessage.Content = new StreamContent(request.Body);
+                    proxiedMessage.Method = new HttpMethod(request.Method);
                 }
 
-                return hasContent;
+                proxiedMessage.Content = new StreamContent(request.Body);
             }
+
+            return hasContent;
         }
 
         public static async Task CopyProxyHttpResponse(this HttpContext context, HttpResponseMessage replyMessage)
@@ -125,28 +124,28 @@ namespace Proxy
             {
                 await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted);
             }
+        }
 
-            static void CopyHeaders(IHeaderDictionary responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
+        static void CopyHeaders(IHeaderDictionary responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
+        {
+            foreach (var replyHeader in replyHeaders)
             {
-                foreach (var replyHeader in replyHeaders)
+                var headerValue = default(StringValues);
+                var isFirst = true;
+                foreach (var value in replyHeader.Value)
                 {
-                    var headerValue = default(StringValues);
-                    var isFirst = true;
-                    foreach (var value in replyHeader.Value)
+                    if (isFirst)
                     {
-                        if (isFirst)
-                        {
-                            headerValue = value;
-                            isFirst = false;
-                        }
-                        else
-                        {
-                            headerValue = StringValues.Concat(headerValue, value);
-                        }
+                        headerValue = value;
+                        isFirst = false;
                     }
-
-                    responseHeaders[replyHeader.Key] = headerValue;
+                    else
+                    {
+                        headerValue = StringValues.Concat(headerValue, value);
+                    }
                 }
+
+                responseHeaders[replyHeader.Key] = headerValue;
             }
         }
     }

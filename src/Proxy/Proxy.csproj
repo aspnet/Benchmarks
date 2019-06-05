@@ -7,7 +7,7 @@
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported tfm. Can be removed when a new SDK supporting netcoreapp2.2 is available. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="($(BenchmarksAspNetCoreVersion) != '') And ($(TargetFramework) != 'netcoreapp3.0')">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)"/>
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(BenchmarksAspNetCoreVersion) == ''">
