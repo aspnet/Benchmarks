@@ -52,7 +52,7 @@ namespace BenchmarkServer
         private static string CurrentTargetFramework = "netcoreapp2.2";
         private static string CurrentChannel = "2.2";
 
-        private const string PerfViewVersion = "P2.0.26";
+        private const string PerfViewVersion = "P2.0.42";
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
