@@ -76,7 +76,7 @@ namespace BenchmarksDriver
             new CounterProfile{ Name="gen-0-gc-count", Description="Number of Gen 0 GCs / sec", DisplayName="Gen 0 GC (#/s)", Format="n0" },
             new CounterProfile{ Name="gen-1-gc-count", Description="Number of Gen 1 GCs / sec", DisplayName="Gen 1 GC (#/s)", Format="n0" },
             new CounterProfile{ Name="gen-2-gc-count", Description="Number of Gen 2 GCs / sec", DisplayName="Gen 2 GC (#/s)", Format="n0" },
-            new CounterProfile{ Name="time-in-gc", Description="% time in GC since the last GC", DisplayName="% Time in GC (since last GC)", Format="n0" },
+            new CounterProfile{ Name="time-in-gc", Description="% time in GC since the last GC", DisplayName="Time in GC (%)", Format="n0" },
             new CounterProfile{ Name="gen-0-size", Description="Gen 0 Heap Size", DisplayName="Gen 0 Size (B)", Format="n0" },
             new CounterProfile{ Name="gen-1-size", Description="Gen 1 Heap Size", DisplayName="Gen 1 Size (B)", Format="n0" },
             new CounterProfile{ Name="gen-2-size", Description="Gen 2 Heap Size", DisplayName="Gen 2 Size (B)", Format="n0" },
