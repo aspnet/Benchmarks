@@ -42,7 +42,7 @@ namespace BenchmarksDriver
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
 
-        private static CommandOption 
+        private static CommandOption
             _packageOption,
             _initializeOption,
             _cleanOption,
@@ -68,7 +68,27 @@ namespace BenchmarksDriver
             { "--runtime", "--runtimeversion" },
         };
 
-        private static string[] otherCounters = new[] { "cpu-usage", "working-set", "gc-heap-size", "gen-0-gc-count", "gen-1-gc-count", "gen-2-gc-count", "time-in-gc", "gen-0-size", "gen-1-size", "gen-2-size", "loh-size", "alloc-rate", "assembly-count", "exception-count", "threadpool-thread-count", "monitor-lock-contention-count", "threadpool-queue-length", "threadpool-completed-items-count" };
+        public static CounterProfile[] Counters = new CounterProfile[]
+        {
+            new CounterProfile{ Name="cpu-usage", Description="Amount of time the process has utilized the CPU (ms)", DisplayName="CPU Usage (%)", Format="" },
+            new CounterProfile{ Name="working-set", Description="Amount of working set used by the process (MB)", DisplayName="Working Set (MB)", Format="" },
+            new CounterProfile{ Name="gc-heap-size", Description="Total heap size reported by the GC (MB)", DisplayName="GC Heap Size (MB)", Format="n0" },
+            new CounterProfile{ Name="gen-0-gc-count", Description="Number of Gen 0 GCs / sec", DisplayName="Gen 0 GC (#/s)", Format="n0" },
+            new CounterProfile{ Name="gen-1-gc-count", Description="Number of Gen 1 GCs / sec", DisplayName="Gen 1 GC (#/s)", Format="n0" },
+            new CounterProfile{ Name="gen-2-gc-count", Description="Number of Gen 2 GCs / sec", DisplayName="Gen 2 GC (#/s)", Format="n0" },
+            new CounterProfile{ Name="time-in-gc", Description="% time in GC since the last GC", DisplayName="% Time in GC (since last GC)", Format="n0" },
+            new CounterProfile{ Name="gen-0-size", Description="Gen 0 Heap Size", DisplayName="Gen 0 Size (B)", Format="n0" },
+            new CounterProfile{ Name="gen-1-size", Description="Gen 1 Heap Size", DisplayName="Gen 1 Size (B)", Format="n0" },
+            new CounterProfile{ Name="gen-2-size", Description="Gen 2 Heap Size", DisplayName="Gen 2 Size (B)", Format="n0" },
+            new CounterProfile{ Name="loh-size", Description="LOH Heap Size", DisplayName="LOH Size (B)", Format="n0" },
+            new CounterProfile{ Name="alloc-rate", Description="Allocation Rate", DisplayName="Allocation Rate (B/sec)", Format="n0" },
+            new CounterProfile{ Name="assembly-count", Description="Number of Assemblies Loaded", DisplayName="# of Assemblies Loaded", Format="n0" },
+            new CounterProfile{ Name="exception-count", Description="Number of Exceptions / sec", DisplayName="Exceptions (#/s)", Format="n0" },
+            new CounterProfile{ Name="threadpool-thread-count", Description="Number of ThreadPool Threads", DisplayName="ThreadPool Threads Count", Format="n0" },
+            new CounterProfile{ Name="monitor-lock-contention-count", Description="Monitor Lock Contention Count", DisplayName="Lock Contention (#/s)", Format="n0" },
+            new CounterProfile{ Name="threadpool-queue-length", Description="ThreadPool Work Items Queue Length", DisplayName="ThreadPool Queue Length", Format="n0" },
+            new CounterProfile{ Name="threadpool-completed-items-count", Description="ThreadPool Completed Work Items Count", DisplayName="ThreadPool Items (#/s)", Format="n0" },
+        };
 
         public static int Main(string[] args)
         {
@@ -312,7 +332,7 @@ namespace BenchmarksDriver
                 _verbose = verboseOption.HasValue();
                 _quiet = quietOption.HasValue();
                 _displayOutput = displayOutputOption.HasValue();
-                
+
                 if (serverTimeoutOption.HasValue())
                 {
                     TimeSpan.TryParse(serverTimeoutOption.Value(), out _timeout);
@@ -483,7 +503,7 @@ namespace BenchmarksDriver
                 serverJob.Scenario = scenarioName;
                 serverJob.WebHost = webHost;
 
-                if(_memoryLimitOption.HasValue())
+                if (_memoryLimitOption.HasValue())
                 {
                     var memoryLimitValue = _memoryLimitOption.Value();
 
@@ -623,7 +643,7 @@ namespace BenchmarksDriver
                         else
                         {
                             serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
-                        }                        
+                        }
                     }
                 }
                 if (portOption.HasValue())
@@ -647,7 +667,7 @@ namespace BenchmarksDriver
                     if (sourceParts.Length > 1)
                     {
                         serverJob.Source.BranchOrCommit = sourceParts[1];
-                    }                    
+                    }
 
                     if (!repository.Contains(":"))
                     {
@@ -656,7 +676,7 @@ namespace BenchmarksDriver
 
                     serverJob.Source.Repository = repository;
                 }
-                if(_branchOption.HasValue())
+                if (_branchOption.HasValue())
                 {
                     serverJob.Source.BranchOrCommit = _branchOption.Value();
                 }
@@ -872,11 +892,12 @@ namespace BenchmarksDriver
                 }
 
                 if (benchmarkdotnetOption.HasValue())
-                {   if (String.IsNullOrEmpty(serverJob.Scenario))
+                {
+                    if (String.IsNullOrEmpty(serverJob.Scenario))
                     {
                         serverJob.Scenario = "Benchmark.NET";
                     }
-                    
+
                     serverJob.NoArguments = true;
                     _clientJob.Client = Worker.BenchmarkDotNet;
 
@@ -1071,7 +1092,7 @@ namespace BenchmarksDriver
             {
                 return app.Execute(args);
             }
-            catch(CommandParsingException e)
+            catch (CommandParsingException e)
             {
                 Console.WriteLine();
                 Console.WriteLine(e.Message);
@@ -1440,8 +1461,8 @@ namespace BenchmarksDriver
 
                             // Wait until the server has stopped
                             var now = DateTime.UtcNow;
-                            
-                            while(serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < _timeout))
+
+                            while (serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < _timeout))
                             {
                                 // Load latest state of server job
                                 LogVerbose($"GET {serverJobUri}...");
@@ -1485,7 +1506,7 @@ namespace BenchmarksDriver
                                         }
 
                                         var className = Path.GetFileNameWithoutExtension(csvFilename).Split('.').LastOrDefault().Split('-', 2).FirstOrDefault();
-                                        
+
                                         try
                                         {
                                             using (var sr = new StringReader(csvContent))
@@ -1604,7 +1625,7 @@ namespace BenchmarksDriver
                                 Duration = clientJob.ActualDuration.TotalMilliseconds
                             };
 
-                            foreach(var entry in serverJob.Counters)
+                            foreach (var entry in serverJob.Counters)
                             {
                                 statistics.Other[entry.Key] = entry.Value.Select(x => double.Parse(x)).Max();
                             }
@@ -1795,7 +1816,7 @@ namespace BenchmarksDriver
                                         var tmpDescription = result.Description;
                                         result.Description = samples.Contains(result) ? "✓" : "✗";
                                         var localFields = BuildFields(result);
-                                        
+
                                         var localValues = new StringBuilder();
                                         foreach (var field in localFields)
                                         {
@@ -1886,34 +1907,14 @@ namespace BenchmarksDriver
                                         QuietLog("");
                                         QuietLog("Counters:");
 
-                                        foreach (var counter in otherCounters)
+                                        foreach (var counter in Counters)
                                         {
-                                            if (!average.Other.ContainsKey(counter))
+                                            if (!average.Other.ContainsKey(counter.Name))
                                             {
                                                 continue;
                                             }
 
-                                            switch (counter)
-                                            {
-                                                case "cpu-usage": QuietLog($"CPU Usage (%):               {average.Other[counter]}"); break; // Amount of time the process has utilized the CPU (ms)
-                                                case "working-set": QuietLog($"Working Set (MB):            {average.Other[counter]}"); break; // Amount of working set used by the process (MB)
-                                                case "gc-heap-size": QuietLog($"GC Heap Size (MB):           {average.Other[counter]:n0}"); break; // Total heap size reported by the GC (MB)
-                                                case "gen-0-gc-count": QuietLog($"Gen 0 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 0 GCs / sec
-                                                case "gen-1-gc-count": QuietLog($"Gen 1 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 1 GCs / sec
-                                                case "gen-2-gc-count": QuietLog($"Gen 2 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 2 GCs / sec
-                                                case "time-in-gc": QuietLog($"Time in GC (%):              {average.Other[counter]:n0}"); break; // % time in GC since the last GC
-                                                case "gen-0-size": QuietLog($"Gen 0 Size (B):              {average.Other[counter]:n0}"); break; // Gen 0 Heap Size
-                                                case "gen-1-size": QuietLog($"Gen 1 Size (B):              {average.Other[counter]:n0}"); break; // Gen 1 Heap Size
-                                                case "gen-2-size": QuietLog($"Gen 2 Size (B):              {average.Other[counter]:n0}"); break; // Gen 2 Heap Size
-                                                case "loh-size": QuietLog($"LOH Size (B):                {average.Other[counter]:n0}"); break; // LOH Heap Size
-                                                case "alloc-rate": QuietLog($"Allocation (B/s):            {average.Other[counter]:n0}"); break; // Allocation Rate
-                                                case "assembly-count": QuietLog($"# of Assemblies Loaded:      {average.Other[counter]:n0}"); break; // Number of Assemblies Loaded
-                                                case "exception-count": QuietLog($"Exceptions / sec:            {average.Other[counter]:n0}"); break; // Number of Exceptions / sec
-                                                case "threadpool-thread-count": QuietLog($"ThreadPool Threads Count:    {average.Other[counter]:n0}"); break; // Number of ThreadPool Threads
-                                                case "monitor-lock-contention-count": QuietLog($"Lock Contention / sec:       {average.Other[counter]:n0}"); break; // Monitor Lock Contention Count
-                                                case "threadpool-queue-length": QuietLog($"TP Queue Length:             {average.Other[counter]:n0}"); break; // ThreadPool Work Items Queue Length
-                                                case "threadpool-completed-items-count": QuietLog($"TP Work Items / sec:         {average.Other[counter]:n0}"); break; // ThreadPool Completed Work Items Count
-                                            }
+                                            QuietLog($"{(counter.DisplayName + ":").PadRight(29, ' ')}{average.Other[counter.Name].ToString(counter.Format)}");
                                         }
                                     }
                                 }
@@ -2168,7 +2169,7 @@ namespace BenchmarksDriver
             }
         }
 
-        private static List<KeyValuePair<string, string>> BuildFields(Statistics average) 
+        private static List<KeyValuePair<string, string>> BuildFields(Statistics average)
             => new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("Description", average.Description),
@@ -2285,7 +2286,7 @@ namespace BenchmarksDriver
                     allWrkScripts.AddRange(scriptFileOption.Values);
                 }
 
-                if ( (clientJob.Client == Worker.Wrk || clientJob.Client == Worker.Wrk2) && clientJob.ClientProperties.ContainsKey("Scripts"))
+                if ((clientJob.Client == Worker.Wrk || clientJob.Client == Worker.Wrk2) && clientJob.ClientProperties.ContainsKey("Scripts"))
                 {
                     allWrkScripts.AddRange(clientJob.ClientProperties["Scripts"].Split(';'));
                 }
@@ -2481,7 +2482,7 @@ namespace BenchmarksDriver
 
         private static void QuietLog(string message)
         {
-              Console.WriteLine(message);
+            Console.WriteLine(message);
         }
 
         private static void Log(string message, bool notime = false, bool error = false)
@@ -2578,7 +2579,7 @@ namespace BenchmarksDriver
 
             var result = new Dictionary<string, string>(segments.Length);
 
-            foreach(var segment in segments)
+            foreach (var segment in segments)
             {
                 var values = segment.Split('=', 2);
 
@@ -2601,7 +2602,7 @@ namespace BenchmarksDriver
                     {
                         result[key] = value;
                     }
-                }                
+                }
             }
 
             return result;

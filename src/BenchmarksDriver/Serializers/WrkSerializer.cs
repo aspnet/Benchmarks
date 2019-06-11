@@ -257,6 +257,32 @@ namespace BenchmarksDriver.Serializers
                 dimension: "Duration (ms)",
                 value: statistics.Duration);
             }
+
+            if (statistics.Other.Any())
+            {
+                foreach (var counter in Program.Counters)
+                {
+                    if (!statistics.Other.ContainsKey(counter.Name))
+                    {
+                        continue;
+                    }
+
+                    if (statistics.Other[counter.Name] != -1)
+                    {
+                        await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        utcNow: utcNow,
+                        connectionString: sqlConnectionString,
+                        tableName: tableName,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: counter.DisplayName,
+                        value: statistics.Other[counter.Name]);
+                    }
+                }
+            }
         }
 
         private Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, string dimension, double value)
