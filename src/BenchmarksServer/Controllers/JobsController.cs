@@ -169,6 +169,7 @@ namespace BenchmarkServer.Controllers
                 {
                     var job = _jobs.Find(id);
                     job.ClearServerCounters();
+                    job.Counters.Clear();
                     _jobs.Update(job);
                     return Ok();
                 }

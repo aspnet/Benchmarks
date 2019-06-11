@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -23,6 +25,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Diagnostics.Tools.RuntimeClient;
+using Microsoft.Diagnostics.Tracing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -91,6 +95,9 @@ namespace BenchmarkServer
         public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
         private static string _startPerfviewArguments;
+        private static ulong eventPipeSessionId = 0;
+        private static Task eventPipeTask = null;
+        private static bool eventPipeTerminated = false;
 
         static Startup()
         {
@@ -374,6 +381,10 @@ namespace BenchmarkServer
                 string dockerImage = null;
                 string dockerContainerId = null;
 
+                eventPipeSessionId = 0;
+                eventPipeTask = null;
+                eventPipeTerminated = false;
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     ServerJob job = null;
@@ -507,7 +518,12 @@ namespace BenchmarkServer
 
                                             job.ProcessId = process.Id;
 
+                                            Log.WriteLine($"Process started: {process.Id}");
+
                                             workingDirectory = process.StartInfo.WorkingDirectory;
+
+
+
                                         }
                                         else
                                         {
@@ -737,6 +753,22 @@ namespace BenchmarkServer
                             if (timer == null)
                             {
                                 return;
+                            }
+
+                            // Releasing EventPipe
+                            if (eventPipeTask != null)
+                            {
+                                try
+                                {
+                                    if (process != null && !eventPipeTerminated)
+                                    {
+                                        EventPipeClient.StopTracing(process.Id, eventPipeSessionId);
+                                    }
+                                }
+                                catch (EndOfStreamException)
+                                {
+                                    // If the app we're monitoring exits abruptly, this may throw in which case we just swallow the exception and exit gracefully.
+                                }
                             }
 
                             lock (executionLock)
@@ -2221,24 +2253,41 @@ namespace BenchmarkServer
                     {
                         MarkAsRunning(hostname, job, stopwatch);
 
-                        // Start perfview?
-                        if (job.Collect && !job.CollectStartup)
+                        if (!job.CollectStartup)
                         {
-                            StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                            if (job.Collect)
+                            {
+                                StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                            }
+
+                            if (job.CollectCounters)
+                            {
+                                StartCounters(job);
+                            }
                         }
                     }
                 }
             };
 
-            // Start perfview?
-            if (job.Collect && job.CollectStartup)
+            if (job.CollectStartup)
             {
-                StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                if (job.Collect)
+                {
+                    StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                }
             }
 
             stopwatch.Start();
             process.Start();
             process.BeginOutputReadLine();
+
+            if (job.CollectStartup)
+            {
+                if (job.CollectCounters)
+                {
+                    StartCounters(job);
+                }
+            }
 
             if (job.MemoryLimitInBytes > 0)
             {
@@ -2262,14 +2311,91 @@ namespace BenchmarkServer
                 await WaitToListen(job, hostname);
                 MarkAsRunning(hostname, job, stopwatch);
 
-                // Start perfview?
-                if (job.Collect && !job.CollectStartup)
+                if (!job.CollectStartup)
                 {
-                    StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                    if (job.Collect)
+                    {
+                        StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                    }
+
+                    if (job.CollectCounters)
+                    {
+                        StartCounters(job);
+                    }
                 }
             }
 
             return process;
+        }
+
+        private static void StartCounters(ServerJob job)
+        {
+            eventPipeTerminated = false;
+            eventPipeTask = new Task(() =>
+            {
+                Log.WriteLine("Listening to event pipes");
+
+                try
+                {
+                    var providerList = new List<Provider>()
+                        {
+                        new Provider(
+                            name: "System.Runtime",
+                            eventLevel: EventLevel.Informational,
+                            filterData: "EventCounterIntervalSec=1"),
+                        };
+
+                    var configuration = new SessionConfiguration(
+                            circularBufferSizeMB: 1000,
+                            outputPath: "",
+                            providers: providerList);
+
+                    var binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out eventPipeSessionId);
+                    var source = new EventPipeEventSource(binaryReader);
+                    source.Dynamic.All += (eventData) =>
+                    {
+                        // We only track event counters
+                        if (!eventData.EventName.Equals("EventCounters"))
+                        {
+                            return;
+                        }
+
+                        var payloadVal = (IDictionary<string, object>)(eventData.PayloadValue(0));
+                        var payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
+
+                        var counterName = payloadFields["Name"].ToString();
+                        if (!job.Counters.TryGetValue(counterName, out var values))
+                        {
+                            lock (job.Counters)
+                            {
+                                if (!job.Counters.TryGetValue(counterName, out values))
+                                {
+                                    job.Counters[counterName] = values = new ConcurrentQueue<string>();
+                                }
+                            }
+                        }
+
+                        switch (payloadFields["CounterType"])
+                        {
+                            case "Sum": values.Enqueue(payloadFields["Increment"].ToString()); break;
+                            case "Mean": values.Enqueue(payloadFields["Mean"].ToString()); break;
+                            default: Log.WriteLine($"Unknown CounterType: {payloadFields["CounterType"]}"); break;
+                        }
+                    };
+
+                    source.Process();
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"[ERROR] {ex.ToString()}");
+                }
+                finally
+                {
+                    eventPipeTerminated = true; // This indicates that the runtime is done. We shouldn't try to talk to it anymore.
+                }
+            });
+
+            eventPipeTask.Start();
         }
 
         private static void StartCollection(string workingDirectory, ServerJob job)

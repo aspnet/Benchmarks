@@ -52,7 +52,8 @@ namespace BenchmarksDriver
             _initSubmodulesOption,
             _branchOption,
             _hashOption,
-            _noGlobalJsonOption
+            _noGlobalJsonOption,
+            _collectCountersOption
             ;
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -67,6 +68,7 @@ namespace BenchmarksDriver
             { "--runtime", "--runtimeversion" },
         };
 
+        private static string[] otherCounters = new[] { "cpu-usage", "working-set", "gc-heap-size", "gen-0-gc-count", "gen-1-gc-count", "gen-2-gc-count", "time-in-gc", "gen-0-size", "gen-1-size", "gen-2-size", "loh-size", "alloc-rate", "assembly-count", "exception-count", "threadpool-thread-count", "monitor-lock-contention-count", "threadpool-queue-length", "threadpool-completed-items-count" };
 
         public static int Main(string[] args)
         {
@@ -209,6 +211,8 @@ namespace BenchmarksDriver
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
             var collectStartup = app.Option("--collect-startup",
                 "Includes the startup phase in the trace.", CommandOptionType.NoValue);
+            _collectCountersOption = app.Option("--collect-counters",
+                "Collect event counters.", CommandOptionType.NoValue);
             _enableEventPipeOption = app.Option("--enable-eventpipe",
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
@@ -740,6 +744,10 @@ namespace BenchmarksDriver
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.CollectStartup = true;
+                }
+                if (_collectCountersOption.HasValue())
+                {
+                    serverJob.CollectCounters = true;
                 }
                 if (_enableEventPipeOption.HasValue())
                 {
@@ -1596,6 +1604,11 @@ namespace BenchmarksDriver
                                 Duration = clientJob.ActualDuration.TotalMilliseconds
                             };
 
+                            foreach(var entry in serverJob.Counters)
+                            {
+                                statistics.Other[entry.Key] = entry.Value.Select(x => double.Parse(x)).Max();
+                            }
+
                             results.Add(statistics);
 
                             if (iterations > 1 && !IsConsoleApp)
@@ -1724,6 +1737,11 @@ namespace BenchmarksDriver
                                     TotalRequests = Math.Round(samples.Average(x => x.TotalRequests)),
                                     Duration = Math.Round(samples.Average(x => x.Duration))
                                 };
+
+                                foreach (var counter in statistics.Other.Keys)
+                                {
+                                    average.Other[counter] = samples.Average(x => x.Other[counter]);
+                                }
 
                                 if (serializer != null)
                                 {
@@ -1862,6 +1880,42 @@ namespace BenchmarksDriver
                                     QuietLog($"SDK:                         {serverJob.SdkVersion}");
                                     QuietLog($"Runtime:                     {serverJob.RuntimeVersion}");
                                     QuietLog($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
+
+                                    if (average.Other.Any())
+                                    {
+                                        QuietLog("");
+                                        QuietLog("Counters:");
+
+                                        foreach (var counter in otherCounters)
+                                        {
+                                            if (!average.Other.ContainsKey(counter))
+                                            {
+                                                continue;
+                                            }
+
+                                            switch (counter)
+                                            {
+                                                case "cpu-usage": QuietLog($"CPU Usage (%):               {average.Other[counter]}"); break; // Amount of time the process has utilized the CPU (ms)
+                                                case "working-set": QuietLog($"Working Set (MB):            {average.Other[counter]}"); break; // Amount of working set used by the process (MB)
+                                                case "gc-heap-size": QuietLog($"GC Heap Size (MB):           {average.Other[counter]:n0}"); break; // Total heap size reported by the GC (MB)
+                                                case "gen-0-gc-count": QuietLog($"Gen 0 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 0 GCs / sec
+                                                case "gen-1-gc-count": QuietLog($"Gen 1 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 1 GCs / sec
+                                                case "gen-2-gc-count": QuietLog($"Gen 2 GC / sec:              {average.Other[counter]:n0}"); break; // Number of Gen 2 GCs / sec
+                                                case "time-in-gc": QuietLog($"Time in GC (%):              {average.Other[counter]:n0}"); break; // % time in GC since the last GC
+                                                case "gen-0-size": QuietLog($"Gen 0 Size (B):              {average.Other[counter]:n0}"); break; // Gen 0 Heap Size
+                                                case "gen-1-size": QuietLog($"Gen 1 Size (B):              {average.Other[counter]:n0}"); break; // Gen 1 Heap Size
+                                                case "gen-2-size": QuietLog($"Gen 2 Size (B):              {average.Other[counter]:n0}"); break; // Gen 2 Heap Size
+                                                case "loh-size": QuietLog($"LOH Size (B):                {average.Other[counter]:n0}"); break; // LOH Heap Size
+                                                case "alloc-rate": QuietLog($"Allocation (B/s):            {average.Other[counter]:n0}"); break; // Allocation Rate
+                                                case "assembly-count": QuietLog($"# of Assemblies Loaded:      {average.Other[counter]:n0}"); break; // Number of Assemblies Loaded
+                                                case "exception-count": QuietLog($"Exceptions / sec:            {average.Other[counter]:n0}"); break; // Number of Exceptions / sec
+                                                case "threadpool-thread-count": QuietLog($"ThreadPool Threads Count:    {average.Other[counter]:n0}"); break; // Number of ThreadPool Threads
+                                                case "monitor-lock-contention-count": QuietLog($"Lock Contention / sec:       {average.Other[counter]:n0}"); break; // Monitor Lock Contention Count
+                                                case "threadpool-queue-length": QuietLog($"TP Queue Length:             {average.Other[counter]:n0}"); break; // ThreadPool Work Items Queue Length
+                                                case "threadpool-completed-items-count": QuietLog($"TP Work Items / sec:         {average.Other[counter]:n0}"); break; // ThreadPool Completed Work Items Count
+                                            }
+                                        }
+                                    }
                                 }
 
                                 if (saveOption.HasValue())

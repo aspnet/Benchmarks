@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -106,6 +107,7 @@ namespace Benchmarks.ServerJob
 
         public bool Collect { get; set; }
         public bool CollectStartup { get; set; }
+        public bool CollectCounters { get; set; }
         public string CollectArguments { get; set; }
         public string PerfViewTraceFile { get; set; }
         public string BasePath { get; set; }
@@ -120,5 +122,6 @@ namespace Benchmarks.ServerJob
         public string BeforeScript { get; set; }
         public string AfterScript { get; set; }
         public ulong MemoryLimitInBytes { get; set; }
+        public ConcurrentDictionary<string, ConcurrentQueue<string>> Counters { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
     }
 }
