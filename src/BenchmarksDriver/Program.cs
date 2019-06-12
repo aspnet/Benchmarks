@@ -70,24 +70,24 @@ namespace BenchmarksDriver
 
         public static CounterProfile[] Counters = new CounterProfile[]
         {
-            new CounterProfile{ Name="cpu-usage", Description="Amount of time the process has utilized the CPU (ms)", DisplayName="CPU Usage (%)", Format="" },
-            new CounterProfile{ Name="working-set", Description="Amount of working set used by the process (MB)", DisplayName="Working Set (MB)", Format="" },
-            new CounterProfile{ Name="gc-heap-size", Description="Total heap size reported by the GC (MB)", DisplayName="GC Heap Size (MB)", Format="n0" },
-            new CounterProfile{ Name="gen-0-gc-count", Description="Number of Gen 0 GCs / sec", DisplayName="Gen 0 GC (#/s)", Format="n0" },
-            new CounterProfile{ Name="gen-1-gc-count", Description="Number of Gen 1 GCs / sec", DisplayName="Gen 1 GC (#/s)", Format="n0" },
-            new CounterProfile{ Name="gen-2-gc-count", Description="Number of Gen 2 GCs / sec", DisplayName="Gen 2 GC (#/s)", Format="n0" },
-            new CounterProfile{ Name="time-in-gc", Description="% time in GC since the last GC", DisplayName="Time in GC (%)", Format="n0" },
-            new CounterProfile{ Name="gen-0-size", Description="Gen 0 Heap Size", DisplayName="Gen 0 Size (B)", Format="n0" },
-            new CounterProfile{ Name="gen-1-size", Description="Gen 1 Heap Size", DisplayName="Gen 1 Size (B)", Format="n0" },
-            new CounterProfile{ Name="gen-2-size", Description="Gen 2 Heap Size", DisplayName="Gen 2 Size (B)", Format="n0" },
-            new CounterProfile{ Name="loh-size", Description="LOH Heap Size", DisplayName="LOH Size (B)", Format="n0" },
-            new CounterProfile{ Name="alloc-rate", Description="Allocation Rate", DisplayName="Allocation Rate (B/sec)", Format="n0" },
-            new CounterProfile{ Name="assembly-count", Description="Number of Assemblies Loaded", DisplayName="# of Assemblies Loaded", Format="n0" },
-            new CounterProfile{ Name="exception-count", Description="Number of Exceptions / sec", DisplayName="Exceptions (#/s)", Format="n0" },
-            new CounterProfile{ Name="threadpool-thread-count", Description="Number of ThreadPool Threads", DisplayName="ThreadPool Threads Count", Format="n0" },
-            new CounterProfile{ Name="monitor-lock-contention-count", Description="Monitor Lock Contention Count", DisplayName="Lock Contention (#/s)", Format="n0" },
-            new CounterProfile{ Name="threadpool-queue-length", Description="ThreadPool Work Items Queue Length", DisplayName="ThreadPool Queue Length", Format="n0" },
-            new CounterProfile{ Name="threadpool-completed-items-count", Description="ThreadPool Completed Work Items Count", DisplayName="ThreadPool Items (#/s)", Format="n0" },
+            new CounterProfile{ Name="cpu-usage", Description="Amount of time the process has utilized the CPU (ms)", DisplayName="CPU Usage (%)", Format="", Compute = x => x.Max() },
+            new CounterProfile{ Name="working-set", Description="Amount of working set used by the process (MB)", DisplayName="Working Set (MB)", Format="", Compute = x => x.Max()  },
+            new CounterProfile{ Name="gc-heap-size", Description="Total heap size reported by the GC (MB)", DisplayName="GC Heap Size (MB)", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="gen-0-gc-count", Description="Number of Gen 0 GCs / sec", DisplayName="Gen 0 GC (#/s)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="gen-1-gc-count", Description="Number of Gen 1 GCs / sec", DisplayName="Gen 1 GC (#/s)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="gen-2-gc-count", Description="Number of Gen 2 GCs / sec", DisplayName="Gen 2 GC (#/s)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="time-in-gc", Description="% time in GC since the last GC", DisplayName="Time in GC (%)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="gen-0-size", Description="Gen 0 Heap Size", DisplayName="Gen 0 Size (B)", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="gen-1-size", Description="Gen 1 Heap Size", DisplayName="Gen 1 Size (B)", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="gen-2-size", Description="Gen 2 Heap Size", DisplayName="Gen 2 Size (B)", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="loh-size", Description="LOH Heap Size", DisplayName="LOH Size (B)", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="alloc-rate", Description="Allocation Rate", DisplayName="Allocation Rate (B/sec)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="assembly-count", Description="Number of Assemblies Loaded", DisplayName="# of Assemblies Loaded", Format="n0", Compute = x => x.Max()  },
+            new CounterProfile{ Name="exception-count", Description="Number of Exceptions / sec", DisplayName="Exceptions (#/s)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="threadpool-thread-count", Description="Number of ThreadPool Threads", DisplayName="ThreadPool Threads Count", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="monitor-lock-contention-count", Description="Monitor Lock Contention Count", DisplayName="Lock Contention (#/s)", Format="n0", Compute = x => x.Average()  },
+            new CounterProfile{ Name="threadpool-queue-length", Description="ThreadPool Work Items Queue Length", DisplayName="ThreadPool Queue Length", Format="n0", Compute = Percentile(50)  },
+            new CounterProfile{ Name="threadpool-completed-items-count", Description="ThreadPool Completed Work Items Count", DisplayName="ThreadPool Items (#/s)", Format="n0", Compute = x => x.Average()  },
         };
 
         public static int Main(string[] args)
@@ -1628,6 +1628,13 @@ namespace BenchmarksDriver
                             foreach (var entry in serverJob.Counters)
                             {
                                 statistics.Other[entry.Key] = entry.Value.Select(x => double.Parse(x)).Max();
+                                statistics.Samples[entry.Key] = entry.Value.Select(x => double.Parse(x)).ToArray();
+
+                                var knownCounter = Counters.FirstOrDefault(x => x.Name == entry.Key);
+                                if (knownCounter != null)
+                                {
+                                    statistics.Other[entry.Key] = knownCounter.Compute(entry.Value.Select(x => double.Parse(x)));
+                                }
                             }
 
                             results.Add(statistics);
@@ -1762,6 +1769,7 @@ namespace BenchmarksDriver
                                 foreach (var counter in statistics.Other.Keys)
                                 {
                                     average.Other[counter] = samples.Average(x => x.Other[counter]);
+                                    average.Samples[counter] = samples.Last().Samples[counter];
                                 }
 
                                 if (serializer != null)
@@ -2626,5 +2634,17 @@ namespace BenchmarksDriver
 
         [DllImport("kernel32.dll")]
         public static extern uint GetLastError();
+
+        private static Func<IEnumerable<double>, double> Percentile(int percentile)
+        {
+            return list =>
+            {
+                var orderedList = list.OrderBy(x => x).ToArray();
+
+                var nth = (int)Math.Ceiling((double)orderedList.Length * percentile / 100);
+
+                return orderedList[nth];
+            };
+        }
     }
 }

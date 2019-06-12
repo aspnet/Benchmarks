@@ -25,6 +25,7 @@ namespace Benchmarks.ClientJob
         public double MaxLatency { get; set; }
         public double TotalRequests { get; set; }
         public double Duration { get; set; }
-        public Dictionary<string, double> Other = new Dictionary<string, double>();
+        public Dictionary<string, double> Other { get; } = new Dictionary<string, double>();
+        public Dictionary<string, double[]> Samples { get; } = new Dictionary<string, double[]>();
     }
 }

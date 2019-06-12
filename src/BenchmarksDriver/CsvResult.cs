@@ -20,11 +20,11 @@ namespace BenchmarksDriver
         {
             Map(m => m.Method).Name("Method");
             Map(m => m.Params).Name("Params").Optional();
-            Map(m => m.Mean).Name("Mean [us]");
-            Map(m => m.Error).Name("Error [us]");
-            Map(m => m.StdDev).Name("StdDev [us]");
-            Map(m => m.OperationsPerSecond).Name("Op/s");
-            Map(m => m.Allocated).Name("Allocated Memory/Op [KB]");
+            Map(m => m.Mean).Name("Mean [us]").Default(0);
+            Map(m => m.Error).Name("Error [us]").Default(0);
+            Map(m => m.StdDev).Name("StdDev [us]").Default(0);
+            Map(m => m.OperationsPerSecond).Name("Op/s").Default(0);
+            Map(m => m.Allocated).Name("Allocated Memory/Op [KB]").Default(0);
         }
     }
 }

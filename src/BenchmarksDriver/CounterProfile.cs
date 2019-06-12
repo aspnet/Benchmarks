@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace BenchmarksDriver
 {
@@ -10,5 +10,6 @@ namespace BenchmarksDriver
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public string Format { get; set; }
+        public Func<IEnumerable<double>, double> Compute { get; set; }
     }
 }
