@@ -1882,22 +1882,48 @@ namespace BenchmarkServer
         /// </summary>
         private static async Task<string> GetAspNetRuntimeVersion(string buildToolsPath, string targetFramework)
         {
-            // Maps a TFM to the github branch of several repositories
-            var TfmToBranches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                {"netcoreapp2.1", "release/2.1/build/dependencies.props"},
-                {"netcoreapp2.2", "release/2.2/build/dependencies.props"},
-                {"netcoreapp3.0", "master/eng/Versions.props"}
-            };
-
             var aspNetCoreDependenciesPath = Path.Combine(buildToolsPath, Path.GetFileName(_aspNetCoreDependenciesUrl));
-            await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, TfmToBranches[targetFramework]), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
-            var latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
-                .Elements("PropertyGroup")
-                .Select(x => x.Element("MicrosoftNETCoreAppPackageVersion"))
-                .Where(x => x != null)
-                .FirstOrDefault()
-                .Value;
+
+            string latestRuntimeVersion = "";
+
+            switch (targetFramework)
+            {
+                case "netcoreapp2.1":
+
+                    await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/2.1/build/dependencies.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+                    latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
+                        .Elements("PropertyGroup")
+                        .Select(x => x.Element("MicrosoftNETCoreAppPackageVersion"))
+                        .Where(x => x != null)
+                        .FirstOrDefault()
+                        .Value;
+
+                    break;
+
+                case "netcoreapp2.2":
+
+                    await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/2.2/build/dependencies.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+                    latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
+                        .Elements("PropertyGroup")
+                        .Select(x => x.Element("MicrosoftNETCoreAppPackageVersion"))
+                        .Where(x => x != null)
+                        .FirstOrDefault()
+                        .Value;
+
+                    break;
+
+                case "netcoreapp3.0":
+
+                    await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "master/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+                    latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
+                        .Elements("PropertyGroup")
+                        .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
+                        .Where(x => x != null)
+                        .FirstOrDefault()
+                        .Value;
+
+                    break;
+            }
 
             Log.WriteLine($"Detecting AspNetCore repository runtime version: {latestRuntimeVersion}");
             return latestRuntimeVersion;
