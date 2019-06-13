@@ -65,71 +65,75 @@ namespace BenchmarksDriver.Serializers
         {
             var utcNow = DateTime.UtcNow;
 
-            await RetryOnExceptionAsync(5, async (retry) =>
-            {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "RequestsPerSecond", statistics.RequestsPerSecond, retry);
-            });
+            await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "RequestsPerSecond", statistics.RequestsPerSecond);
 
-            await RetryOnExceptionAsync(5, async (retry) =>
-            {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "CPU", statistics.Cpu, retry);
-            });
+            await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "CPU", statistics.Cpu);
 
-            await RetryOnExceptionAsync(5, async (retry) =>
-            {
-                await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "WorkingSet (MB)", statistics.WorkingSet, retry);
-            });
+            await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "WorkingSet (MB)", statistics.WorkingSet);
 
             if (statistics.LatencyAverage != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
-                {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency Average (ms)", statistics.LatencyAverage, retry);
-                });
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "Latency Average (ms)", statistics.LatencyAverage);
             }
 
             if (statistics.Latency50Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
-                {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency50Percentile (ms)", statistics.Latency50Percentile, retry);
-                });
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "Latency50Percentile (ms)", statistics.Latency50Percentile);
             }
 
             if (statistics.Latency75Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
-                {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency75Percentile (ms)", statistics.Latency75Percentile, retry);
-                });
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "Latency75Percentile (ms)", statistics.Latency75Percentile);
             }
 
             if (statistics.Latency90Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
-                {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency90Percentile (ms)", statistics.Latency90Percentile, retry);
-                });
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "Latency90Percentile (ms)", statistics.Latency90Percentile);
             }
 
             if (statistics.Latency99Percentile != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
-                {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "Latency99Percentile (ms)", statistics.Latency99Percentile, retry);
-                });
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "Latency99Percentile (ms)", statistics.Latency99Percentile);
             }
 
             if (statistics.MaxLatency != -1)
             {
-                await RetryOnExceptionAsync(5, async (retry) =>
+                await WriteJobsToSql(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, "MaxLatency (ms)", statistics.MaxLatency);
+            }
+
+            if (statistics.Other.Any())
+            {
+                foreach (var counter in Program.Counters)
                 {
-                    await WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, statistics, longRunning, "MaxLatency (ms)", statistics.MaxLatency, retry);
-                });
+                    if (!statistics.Other.ContainsKey(counter.Name))
+                    {
+                        continue;
+                    }
+
+                    if (statistics.Other[counter.Name] != -1)
+                    {
+                        await WriteJobsToSql(
+                        serverJob: serverJob,
+                        clientJob: clientJob,
+                        utcNow: utcNow,
+                        connectionString: connectionString,
+                        tableName: tableName,
+                        path: serverJob.Path,
+                        session: session,
+                        description: description,
+                        dimension: counter.DisplayName,
+                        value: statistics.Other[counter.Name]);
+                    }
+                }
             }
         }
 
-        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, Statistics statistics, bool longRunning, string dimension, double value, bool checkExisting)
+        private Task WriteJobsToSql(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, string dimension, double value)
+        {
+            return RetryOnExceptionAsync(5, (retry) => WriteJobResultToSqlAsync(serverJob, clientJob, utcNow, connectionString, tableName, path, session, description, dimension, value, retry));
+        }
+
+        private async Task WriteJobResultToSqlAsync(ServerJob serverJob, ClientJob clientJob, DateTime utcNow, string connectionString, string tableName, string path, string session, string description, string dimension, double value, bool checkExisting)
         {
             if (checkExisting)
             {
