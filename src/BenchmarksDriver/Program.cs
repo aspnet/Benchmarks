@@ -1513,10 +1513,27 @@ namespace BenchmarksDriver
                                             {
                                                 using (var csv = new CsvReader(sr))
                                                 {
+                                                    var isRecordBad = false;
+
+                                                    csv.Configuration.BadDataFound = context =>
+                                                    {
+                                                        isRecordBad = true;
+                                                    };
+
                                                     csv.Configuration.RegisterClassMap<CsvResultMap>();
                                                     csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
 
-                                                    var localResults = csv.GetRecords<CsvResult>().ToList();
+                                                    var localResults = new List<CsvResult>();
+
+                                                    while (csv.Read())
+                                                    {
+                                                        if (!isRecordBad)
+                                                        {
+                                                            localResults.Add(csv.GetRecord<CsvResult>());
+                                                        }
+
+                                                        isRecordBad = false;
+                                                    }
 
                                                     foreach (var result in localResults)
                                                     {
