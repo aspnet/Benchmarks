@@ -399,7 +399,7 @@ namespace BenchmarkServer
                             if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
-                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({j.State})");
                                 j.State = ServerState.Deleting;
                             }
                             else
@@ -422,7 +422,7 @@ namespace BenchmarkServer
                             // Clean the job in case the driver is not running
                             if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                             {
-                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
                                 job.State = ServerState.Deleting;
                             }
                         }
@@ -564,7 +564,7 @@ namespace BenchmarkServer
                                         // Clean the job in case the driver is not running
                                         if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                         {
-                                            Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                            Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
                                             job.State = ServerState.Deleting;
                                         }
 
