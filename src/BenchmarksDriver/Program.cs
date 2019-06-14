@@ -41,9 +41,10 @@ namespace BenchmarksDriver
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
+        private static List<string> _temporaryFolders = new List<string>();
 
         private static CommandOption
-            _packageOption,
+            _outputArchiveOption,
             _initializeOption,
             _cleanOption,
             _memoryLimitOption,
@@ -221,8 +222,11 @@ namespace BenchmarksDriver
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
-            _packageOption = app.Option("-nupkg|--nuget-package",
-                "URL or local path of a nuget package file. e.g., \"--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg\"", CommandOptionType.MultipleValue);
+            _outputArchiveOption = app.Option("--output-archive",
+                "Output archive attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "\"--output-archive c:\\build\\Microsoft.AspNetCore.Mvc.zip\", " +
+                "\"--output-archive http://raw/github.com/pictures.zip;wwwroot\\pictures\"", 
+                CommandOptionType.MultipleValue);
             var scriptFileOption = app.Option("--script",
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
@@ -602,7 +606,7 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (outputFileOption.HasValue() || _packageOption.HasValue())
+                    if (outputFileOption.HasValue() || _outputArchiveOption.HasValue())
                     {
                         serverJob.SelfContained = true;
 
@@ -853,7 +857,7 @@ namespace BenchmarksDriver
                         var fileSegments = outputFile.Split(';');
                         var filename = fileSegments[0];
 
-                        if (!filename.Contains("*") && !File.Exists(filename))
+                        if (!filename.Contains("*") && !filename.Contains("http") && !File.Exists(filename))
                         {
                             Console.WriteLine($"Output File '{filename}' could not be loaded.");
                             return 8;
@@ -1252,36 +1256,45 @@ namespace BenchmarksDriver
                                 {
                                     return result;
                                 }
-
                             }
 
                             // Upload custom package contents
-                            if (_packageOption.HasValue())
+                            if (_outputArchiveOption.HasValue())
                             {
-                                var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-                                if (Directory.Exists(tempFolder))
+                                foreach (var outputArchiveValue in _outputArchiveOption.Values)
                                 {
-                                    Directory.Delete(tempFolder, true);
-                                }
+                                    var outputFileSegments = outputArchiveValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                                Directory.CreateDirectory(tempFolder);
+                                    string localArchiveFilename = outputFileSegments[0];
 
-                                foreach (var value in _packageOption.Values)
-                                {
-                                    var packageFilename = value;
+                                    var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-                                    // Download the CI build, while pinging the server to keep the job alive
-                                    if (packageFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                                    if (Directory.Exists(tempFolder))
                                     {
-                                        packageFilename = await DownloadTemporaryFileAsync(packageFilename, serverJobUri);
+                                        Directory.Delete(tempFolder, true);
                                     }
 
-                                    await UploadPackageAsync(serverJob, serverJobUri, tempFolder, packageFilename);
-                                }
+                                    Directory.CreateDirectory(tempFolder);
 
-                                // Delete artifacts folder
-                                Directory.Delete(tempFolder, true);
+                                    _temporaryFolders.Add(tempFolder);
+
+                                    // Download the archive, while pinging the server to keep the job alive
+                                    if (outputArchiveValue.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        localArchiveFilename = await DownloadTemporaryFileAsync(outputArchiveValue, serverJobUri);
+                                    }
+
+                                    ZipFile.ExtractToDirectory(localArchiveFilename, tempFolder);
+
+                                    if (outputFileSegments.Length > 1)
+                                    {
+                                        outputFileOption.Values.Add(Path.Combine(tempFolder,"*.*") + ";" + outputFileSegments[1]);
+                                    }
+                                    else
+                                    {
+                                        outputFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
+                                    }                                    
+                                }
                             }
 
                             // Uploading attachments
@@ -2168,32 +2181,6 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static async Task UploadPackageAsync(ServerJob serverJob, Uri serverJobUri, string tempFolder, string packageFilename)
-        {
-            using (var packageStream = File.OpenRead(packageFilename))
-            {
-                using (var packageArchive = new ZipArchive(packageStream, ZipArchiveMode.Read))
-                {
-                    foreach (var packageEntry in packageArchive.Entries)
-                    {
-                        if (packageEntry.FullName.Contains("lib/netcoreapp3.0", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var assemblyFilename = Path.Combine(tempFolder, packageEntry.Name);
-
-                            LogVerbose($"Extracting '{packageEntry.Name}'");
-
-                            if (!File.Exists(assemblyFilename))
-                            {
-                                packageEntry.ExtractToFile(assemblyFilename);
-                            }
-
-                            await UploadFileAsync(assemblyFilename, serverJob, serverJobUri + "/attachment");
-                        }
-                    }
-                }
-            }
-        }
-
         private static List<KeyValuePair<string, string>> BuildFields(Statistics average)
             => new List<KeyValuePair<string, string>>
             {
@@ -2434,19 +2421,20 @@ namespace BenchmarksDriver
             return clientJob;
         }
 
-        private static string _temporaryFolder;
+        private static string _filecache = null;
 
         private static async Task<string> DownloadTemporaryFileAsync(string uri, Uri serverJobUri)
         {
-            if (_temporaryFolder == null)
+            if (_filecache == null)
             {
-                _temporaryFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                _filecache = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             }
 
+            Directory.CreateDirectory(_filecache);
 
-            Directory.CreateDirectory(_temporaryFolder);
+            _temporaryFolders.Add(_filecache);
 
-            var filehashname = Path.Combine(_temporaryFolder, uri.GetHashCode().ToString());
+            var filehashname = Path.Combine(_filecache, uri.GetHashCode().ToString());
 
             if (!File.Exists(filehashname))
             {
@@ -2458,9 +2446,12 @@ namespace BenchmarksDriver
 
         private static void CleanTemporaryFiles()
         {
-            if (_temporaryFolder != null && Directory.Exists(_temporaryFolder))
+            foreach (var temporaryFolder in _temporaryFolders)
             {
-                Directory.Delete(_temporaryFolder, true);
+                if (temporaryFolder != null && Directory.Exists(temporaryFolder))
+                {
+                    Directory.Delete(temporaryFolder, true);
+                }
             }
         }
 

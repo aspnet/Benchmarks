@@ -25,7 +25,7 @@ Options:
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
   --aspnet               ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
   --dotnet               .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
-  -a|--arg                Argument to pass to the application. (e.g., --arg --raw=true --arg "single_value")
+  -a|--arg               Argument to pass to the application. (e.g., --arg --raw=true --arg "single_value")
   --no-arguments         Removes any predefined arguments from the server application command line.
   --port                 The port used to request the benchmarked application. Default is 5000.
   --ready-text           The text that is displayed when the application is ready to accept requests. (e.g., "Application started.")
@@ -39,8 +39,9 @@ Options:
   -di|--docker-image     The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., "aspnetcore21")
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
   --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
+  --output-archive       Output archive attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--output-archive c:\build\Microsoft.AspNetCore.Mvc.zip\", "--output-archive http://raw/github.com/pictures.zip;wwwroot\pictures"
   -src|--source          Local folder containing the project to test.
-  --client-threads        Number of threads used by client. Default is 32.
+  --client-threads       Number of threads used by client. Default is 32.
   --timeout              Timeout for client connections. e.g., 2s
   --connections          Number of connections used by client. Default is 256.
   --duration             Duration of test in seconds. Default is 15.
@@ -84,7 +85,6 @@ Options:
   --server-timeout       Timeout for server jobs. e.g., 00:05:00
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
   --sdk                  SDK version to use
-  -nupkg|--nuget-package URL or local path of a runtime file. e.g., "--runtime-file runtime.win-x64.Microsoft.AspNetCore.App.3.0.0-preview-19057-23.nupkg"
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   --clean                A script to run after the application has stopped, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   -mem|--memory          The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).

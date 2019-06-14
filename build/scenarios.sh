@@ -41,7 +41,7 @@ basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet
 http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
 grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/NativeServer/grpc-native.json"
 grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/BenchmarkServer/grpc-aspnetcore.json"
-
+orchardJobs="-j $ROOT/src/Benchmarks/benchmarks.orchard.json"
 
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
@@ -182,6 +182,8 @@ jobs=(
   # Logging
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs -i 3" 
 
+  # Orchard
+  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip" 
 )
 
 # build driver
