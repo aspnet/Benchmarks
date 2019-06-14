@@ -183,7 +183,7 @@ jobs=(
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs -i 3" 
 
   # Orchard
-  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip" 
+  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip;;App_Data" 
 )
 
 # build driver
