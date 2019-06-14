@@ -2103,7 +2103,8 @@ namespace BenchmarkServer
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
             var serverUrl = $"{scheme}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
-            var projectFilename = Path.GetFileNameWithoutExtension(job.Source.Project);
+            var projectFilename = Path.GetFileNameWithoutExtension(FormatPathSeparators(job.Source.Project));
+
             var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
