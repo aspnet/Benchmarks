@@ -760,7 +760,7 @@ namespace BenchmarkServer
                             {
                                 try
                                 {
-                                    if (process != null && !eventPipeTerminated)
+                                    if (process != null && !eventPipeTerminated && !!process.HasExited)
                                     {
                                         EventPipeClient.StopTracing(process.Id, eventPipeSessionId);
                                     }
