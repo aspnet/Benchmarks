@@ -32,7 +32,8 @@ namespace BenchmarksDriver
         private static bool _displayOutput;
         private static TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient;
+        private static readonly HttpClientHandler _httpClientHandler;
 
         private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
@@ -90,6 +91,15 @@ namespace BenchmarksDriver
             new CounterProfile{ Name="threadpool-queue-length", Description="ThreadPool Work Items Queue Length", DisplayName="ThreadPool Queue Length", Format="n0", Compute = Percentile(50)  },
             new CounterProfile{ Name="threadpool-completed-items-count", Description="ThreadPool Completed Work Items Count", DisplayName="ThreadPool Items (#/s)", Format="n0", Compute = x => x.Average()  },
         };
+        static Program()
+        {
+            // Configuring the http client to trust the self-signed certificate
+            _httpClientHandler = new HttpClientHandler();
+            _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            _httpClientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
+
+            _httpClient = new HttpClient(_httpClientHandler);
+        }
 
         public static int Main(string[] args)
         {
@@ -1281,7 +1291,7 @@ namespace BenchmarksDriver
                                     // Download the archive, while pinging the server to keep the job alive
                                     if (outputArchiveValue.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        localArchiveFilename = await DownloadTemporaryFileAsync(outputArchiveValue, serverJobUri);
+                                        localArchiveFilename = await DownloadTemporaryFileAsync(localArchiveFilename, serverJobUri);
                                     }
 
                                     ZipFile.ExtractToDirectory(localArchiveFilename, tempFolder);
