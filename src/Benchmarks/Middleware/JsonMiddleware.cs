@@ -56,6 +56,8 @@ namespace Benchmarks.Middleware
 #else
                 await JsonSerializer.WriteAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });    
 #endif
+
+                return;
             }
 
             await _next(httpContext);
@@ -70,7 +72,7 @@ namespace Benchmarks.Middleware
         }
     }
 
-    public class JsonMessage
+    public struct JsonMessage
     {
         public string message { get; set; }
     }
