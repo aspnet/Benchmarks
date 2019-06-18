@@ -53,7 +53,7 @@ namespace Benchmarks.Middleware
 #if !NETCOREAPP3_0
                     _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
 #else
-                    await JsonSerializer.WriteAsync<JsonMessage>(new JsonMessage { message = "Hello, World!" }, sw);    
+                    await JsonSerializer.WriteAsync<JsonMessage>(sw, new JsonMessage { message = "Hello, World!" });    
 #endif
                 }
 
