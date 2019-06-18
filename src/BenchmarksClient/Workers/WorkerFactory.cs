@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Benchmarks.ClientJob;
 
 namespace BenchmarksClient.Workers
@@ -9,7 +10,7 @@ namespace BenchmarksClient.Workers
     {
         static public IWorker CreateWorker(ClientJob clientJob)
         {
-            IWorker worker = null;
+            IWorker worker;
             switch (clientJob.Client)
             {
                 case Worker.Wrk:
@@ -33,6 +34,11 @@ namespace BenchmarksClient.Workers
                 case Worker.Bombardier:
                     worker = new BombardierWorker();
                     break;
+                case Worker.BlazorIgnitor:
+                    worker = new BlazorIgnitor();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown worker {clientJob.Client}.");
             }
             return worker;
         }

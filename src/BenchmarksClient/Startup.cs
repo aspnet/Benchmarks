@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Repository;
 
 namespace BenchmarkClient
@@ -28,19 +29,23 @@ namespace BenchmarkClient
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc()
+                .AddNewtonsoftJson();
 
             services.AddSingleton(_jobs);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseDeveloperExceptionPage();
+            app.UseRouting();
 
-            // Register a default startup page to ensure the application is up
-            app.Run((context) =>
+            app.UseEndpoints(routing =>
             {
-                return context.Response.WriteAsync("OK!");
+                routing.MapDefaultControllerRoute();
+
+                // Register a default startup page to ensure the application is up
+                routing.MapFallback(context => context.Response.WriteAsync("OK!"));
             });
         }
 
@@ -78,6 +83,7 @@ namespace BenchmarkClient
                     .UseKestrel()
                     .UseStartup<Startup>()
                     .UseUrls(url)
+                    // .ConfigureLogging(l => l.AddConsole())
                     .Build();
 
             var hostTask = host.RunAsync();
@@ -110,7 +116,7 @@ namespace BenchmarkClient
                 // the same SpanId to the current worker.
                 job = allJobs.FirstOrDefault(newJob =>
                 {
-                    // If the job is null then we don't have a span id to match against. 
+                    // If the job is null then we don't have a span id to match against.
                     // Otherwise we want to pick jobs with the same span id.
                     return job == null || string.Equals(newJob.SpanId, job.SpanId, StringComparison.OrdinalIgnoreCase);
                 });
@@ -176,7 +182,7 @@ namespace BenchmarkClient
                             {
                                 await worker.StopJobAsync();
 
-                                // Reset the last job completed indicator. 
+                                // Reset the last job completed indicator.
                                 whenLastJobCompleted = DateTime.UtcNow;
                             }
                         }
@@ -201,7 +207,7 @@ namespace BenchmarkClient
 
                         // Disposing the worker conditions
                         // 1. A span isn't defined so there won't be any more jobs for this worker
-                        // 2. We check that whenLastJob completed is something other that it's default value 
+                        // 2. We check that whenLastJob completed is something other that it's default value
                         //    and 10 seconds have passed since the last job was completed.
                         if (!waitForMoreJobs || (whenLastJobCompleted != DateTime.MinValue &&  now - whenLastJobCompleted > TimeSpan.FromSeconds(10)))
                         {

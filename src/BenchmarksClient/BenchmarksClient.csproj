@@ -2,12 +2,8 @@
 
   <PropertyGroup>
     <Description>REST APIs to run ASP.NET benchmark client.</Description>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,15 +24,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ignitor\Ignitor.csproj" />
     <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\Benchmarks.ClientJob\Benchmarks.ClientJob.csproj" />
     <PackageReference Include="Google.Protobuf" Version="3.6.1" />
     <PackageReference Include="Grpc.Core" Version="1.19.0" />
     <PackageReference Include="Grpc.Tools" Version="1.19.0" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="$(SignalRVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(SignalRVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0-preview6.19304.6" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview7.19315.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="3.0.0-preview7.19315.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview7.19315.2" />
   </ItemGroup>
 
   <ItemGroup>

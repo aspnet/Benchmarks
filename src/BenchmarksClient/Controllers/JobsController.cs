@@ -13,6 +13,7 @@ using Repository;
 namespace BenchmarkClient.Controllers
 {
     [Route("[controller]")]
+    [ApiController]
     public class JobsController : Controller
     {
         private readonly IRepository<ClientJob> _jobs;
@@ -49,27 +50,24 @@ namespace BenchmarkClient.Controllers
             if (job == null)
             {
                 Log("Invalid job");
-                return BadRequest();
+                return BadRequest("Invalid job");
             }
 
             if (job.Id != 0)
             {
                 Log("Can't create an existing job");
-                return BadRequest();
+                return BadRequest("Job.Id must not specified.");
             }
 
             if (job.State != ClientState.Initializing)
             {
                 Log("Job should have ne in Initializing state");
-                return BadRequest();
+                return BadRequest("Job should have ne in Initializing state");
             }
 
             job = _jobs.Add(job);
-
-            Response.Headers["Location"] = $"/jobs/{job.Id}";
-            return new StatusCodeResult((int)HttpStatusCode.Accepted);
+            return AcceptedAtAction(nameof(GetById), new { id = job.Id }, job);
         }
-
 
         [HttpPost("{id}/start")]
         public IActionResult Start(int id)
@@ -94,8 +92,9 @@ namespace BenchmarkClient.Controllers
                 Response.Headers["Location"] = $"/jobs/{job.Id}";
                 return new StatusCodeResult((int)HttpStatusCode.Accepted);
             }
-            catch
+            catch (Exception ex)
             {
+                Log(ex.ToString());
                 return NotFound();
             }
         }

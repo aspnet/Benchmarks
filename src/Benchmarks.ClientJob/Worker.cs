@@ -13,6 +13,7 @@ namespace Benchmarks.ClientJob
         Grpc,
         None,
         BenchmarkDotNet,
-        Bombardier
+        Bombardier,
+        BlazorIgnitor
     }
 }

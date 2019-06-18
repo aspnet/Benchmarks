@@ -2347,8 +2347,10 @@ namespace BenchmarksDriver
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
                     }, 1000);
 
-                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    if (!response.IsSuccessStatusCode)
                     {
+                        responseContent = await response.Content.ReadAsStringAsync();
+                        Log(responseContent);
                         Log($"Job halted by the client");
                         break;
                     }

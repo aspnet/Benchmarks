@@ -25,8 +25,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tracing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -217,14 +220,18 @@ namespace BenchmarkServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-
+            services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddSingleton(_jobs);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
 
             // Register a default startup page to ensure the application is up
             app.Run((context) =>
@@ -1762,7 +1769,14 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    buildParameters += "-r linux-x64 ";
+                    if (job.Hardware == Hardware.ARM64)
+                    {
+                        buildParameters += "-r linux-arm64 ";
+                    }
+                    else
+                    {
+                        buildParameters += "-r linux-x64 ";
+                    }                    
                 }
             }
 
@@ -2105,7 +2119,7 @@ namespace BenchmarkServer
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(FormatPathSeparators(job.Source.Project));
 
-            var benchmarksDll = Path.Combine("published", $"{projectFilename}.dll");
+            var benchmarksDll = Path.Combine(workingDirectory, "published", $"{projectFilename}.dll");
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
             // Running BeforeScript
