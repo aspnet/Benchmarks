@@ -48,15 +48,14 @@ namespace Benchmarks.Middleware
                     syncIOFeature.AllowSynchronousIO = true;
                 }
 
+#if !NETCOREAPP3_0
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
-#if !NETCOREAPP3_0
                     _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
-#else
-                    await JsonSerializer.WriteAsync<JsonMessage>(sw, new JsonMessage { message = "Hello, World!" });    
-#endif
                 }
-
+#else
+                await JsonSerializer.WriteAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });    
+#endif
             }
 
             await _next(httpContext);
