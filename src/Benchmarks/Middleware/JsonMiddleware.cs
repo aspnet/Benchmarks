@@ -4,16 +4,18 @@
 using System;
 using System.IO;
 using System.Text;
-#if NETCOREAPP3_0
-using System.Text.Json;
-using System.Text.Json.Serialization;
-#endif
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+
+#if NETCOREAPP3_0
+using System.Text.Json;
+using System.Text.Json.Serialization;
+#else
 using Newtonsoft.Json;
+#endif
 
 namespace Benchmarks.Middleware
 {
@@ -49,9 +51,9 @@ namespace Benchmarks.Middleware
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
 #if !NETCOREAPP3_0
-                    _json.Serialize(sw, new { message = "Hello, World!" });
+                    _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
 #else
-                    await JsonSerializer.WriteAsync<WeatherForecast>(new { message = "Hello, World!" }, sw);    
+                    await JsonSerializer.WriteAsync<JsonMessage>(new JsonMessage { message = "Hello, World!" }, sw);    
 #endif
                 }
 
@@ -67,5 +69,10 @@ namespace Benchmarks.Middleware
         {
             return builder.UseMiddleware<JsonMiddleware>();
         }
+    }
+
+    public struct JsonMessage
+    {
+        public string message { get; set; }
     }
 }
