@@ -4,6 +4,10 @@
 using System;
 using System.IO;
 using System.Text;
+#if NETCOREAPP3_0
+using System.Text.Json;
+using System.Text.Json.Serialization;
+#endif
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -16,10 +20,11 @@ namespace Benchmarks.Middleware
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
-        private static readonly JsonSerializer _json = new JsonSerializer();
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
         private const int _bufferSize = 27;
-
+#if !NETCOREAPP3_0
+        private static readonly JsonSerializer _json = new JsonSerializer();
+#endif
         private readonly RequestDelegate _next;
 
         public JsonMiddleware(RequestDelegate next)
@@ -27,7 +32,7 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
@@ -43,13 +48,16 @@ namespace Benchmarks.Middleware
 
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
+#if !NETCOREAPP3_0
                     _json.Serialize(sw, new { message = "Hello, World!" });
+#else
+                    await JsonSerializer.WriteAsync<WeatherForecast>(new { message = "Hello, World!" }, sw);    
+#endif
                 }
 
-                return Task.CompletedTask;
             }
 
-            return _next(httpContext);
+            await _next(httpContext);
         }
     }
 
