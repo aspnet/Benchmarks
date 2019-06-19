@@ -197,8 +197,8 @@ namespace BenchmarksClient.Workers
                         }
                     });
 
-                   while (true)
-                   {
+                    while (true)
+                    {
                         if (connection.State == HubConnectionState.Disconnected)
                         {
                             await connection.StartAsync(cancellationToken);
@@ -226,13 +226,23 @@ namespace BenchmarksClient.Workers
 
         private async Task ConnectCircuit(HubConnection connection, string circuitId, CancellationToken cancellationToken)
         {
-            var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId, cancellationToken);
-
-            if (!success)
+            for (var i = 0; i < 3; i++)
             {
-                _job.BadResponses++;
-                throw new InvalidOperationException("ConnectCircuit failed");
+                var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId, cancellationToken);
+                if (success)
+                {
+                    return;
+                }
+
+                if (!success)
+                {
+                    _job.BadResponses++;
+                    // Retry after a short delay
+                    await Task.Delay(1000);
+                }
             }
+
+            throw new InvalidOperationException("ConnectCircuit failed");
         }
 
         async Task NavigateTo(HubConnection connection, string href, CancellationToken cancellationToken)

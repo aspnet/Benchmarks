@@ -37,6 +37,7 @@ namespace BenchmarksClient.Workers
         private (double sum, int count)[] _latencyAverage;
         private int _totalRequests;
         private HttpClient _httpClient;
+        private CancellationTokenSource _cancelationTokenSource;
 
         private int OperationDelay;
 
@@ -107,8 +108,8 @@ namespace BenchmarksClient.Workers
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
+            _cancelationTokenSource = new CancellationTokenSource();
+            _cancelationTokenSource.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
             _workTimer.Restart();
 
             try
@@ -116,15 +117,15 @@ namespace BenchmarksClient.Workers
                 switch (_scenario)
                 {
                     case "Navigator":
-                        await Navigator(cts.Token);
+                        await Navigator(_cancelationTokenSource.Token);
                         break;
 
                     case "Clicker":
-                        await Clicker(cts.Token);
+                        await Clicker(_cancelationTokenSource.Token);
                         break;
 
                     case "Reconnects":
-                        await Reconnects(cts.Token);
+                        await Reconnects(_cancelationTokenSource.Token);
                         break;
 
                     default:
@@ -138,12 +139,14 @@ namespace BenchmarksClient.Workers
                 _job.Error += Environment.NewLine + text;
             }
 
-            cts.Token.WaitHandle.WaitOne();
+            _cancelationTokenSource.Token.WaitHandle.WaitOne();
             await StopJobAsync();
         }
 
         public async Task StopJobAsync()
         {
+            _cancelationTokenSource.Cancel();
+
             Log($"Stopping Job: {_job.SpanId}");
             if (_stopped || !await _lock.WaitAsync(0))
             {
