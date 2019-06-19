@@ -11,23 +11,29 @@ namespace BenchmarksClient.Workers
     {
         private async Task Navigator(CancellationToken cancellationToken)
         {
-            for (var i = 0; i < _connections.Count; i++)
+            var random = new Random();
+            var links = new[] { "home", "fetchdata", "counter", "ticker" };
+
+            for (var j = 0; j < _connections.Count; j++)
             {
+                var i = j;
                 var hive = new ElementHive();
                 var item = _connections[i];
 
                 var connection = item.HubConnection;
                 var circuitId = item.CircuitId;
                 var uri = item.BaseUri;
-                var links = new[] { "home", "fetchdata", "counter" };
 
                 await Task.Run(async () =>
                 {
                     var tcs = new TaskCompletionSource<int>();
-                    var index = 0;
+                    var dateTime = DateTime.UtcNow;
 
                     connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
                     {
+                        _requestsPerConnection[i] += 1;
+                        AddLatency(i, dateTime);
+
                         if (cancellationToken.IsCancellationRequested)
                         {
                             tcs.TrySetCanceled(cancellationToken);
@@ -36,24 +42,23 @@ namespace BenchmarksClient.Workers
 
                         try
                         {
-                            index = index++ % links.Length;
-
                             var batch = RenderBatchReader.Read(batchData);
                             hive.Update(batch);
 
                             await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
-
-                            await Task.Delay(OperationDelay, cancellationToken);
-                            await NavigateTo(connection, uri, cancellationToken);
+                            dateTime = DateTime.UtcNow;
+                            await NavigateTo(connection, links[random.Next(0, links.Length)], cancellationToken);
                         }
                         catch (Exception ex)
                         {
+                            _job.BadResponses++;
                             await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
 
                             tcs.TrySetException(ex);
                             throw;
                         }
                     });
+
 
                     await ConnectCircuit(connection, circuitId, cancellationToken);
 
@@ -64,11 +69,10 @@ namespace BenchmarksClient.Workers
 
         private async Task Clicker(CancellationToken cancellationToken)
         {
-
             var tasks = new Task[_connections.Count];
-
-            for (var i = 0; i < _connections.Count; i++)
+            for (var j = 0; j < _connections.Count; j++)
             {
+                var i = j;
                 var hive = new ElementHive();
                 var item = _connections[i];
 
@@ -79,9 +83,13 @@ namespace BenchmarksClient.Workers
                 {
                     ElementNode counter = null;
                     var tcs = new TaskCompletionSource<int>();
+                    var dateTime = DateTime.UtcNow;
 
                     connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
                     {
+                        _requestsPerConnection[i] += 1;
+                        AddLatency(i, dateTime);
+
                         try
                         {
                             if (cancellationToken.IsCancellationRequested)
@@ -102,11 +110,12 @@ namespace BenchmarksClient.Workers
                                 return;
                             }
 
-                            await Task.Delay(OperationDelay);
+                            dateTime = DateTime.UtcNow;
                             await counter.ClickAsync(connection);
                         }
                         catch (Exception ex)
                         {
+                            _job.BadResponses++;
                             await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
 
                             tcs.TrySetException(ex);
@@ -124,19 +133,35 @@ namespace BenchmarksClient.Workers
             await Task.WhenAll(tasks);
         }
 
+        void AddLatency(int connectionId, DateTime startTime)
+        {
+            var latency = DateTime.UtcNow - startTime;
+            if (_detailedLatency)
+            {
+                _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
+            }
+            else
+            {
+                var (sum, count) = _latencyAverage[connectionId];
+                sum += latency.TotalMilliseconds;
+                count++;
+                _latencyAverage[connectionId] = (sum, count);
+            }
+        }
+
         private async Task Reconnects(CancellationToken cancellationToken)
         {
-
-            var navigateToTicker = false;
-            if (_job.ClientProperties.TryGetValue("NavigateToTicker", out var value))
+            int reconnectDelay = 500;
+            if (_job.ClientProperties.TryGetValue("ReconnectDelay", out var value))
             {
-                navigateToTicker = bool.Parse(value);
+                reconnectDelay = int.Parse(value);
             }
 
             var tasks = new Task[_connections.Count];
 
             for (var i = 0; i < _connections.Count; i++)
             {
+                var index = i;
                 var hive = new ElementHive();
                 var item = _connections[i];
 
@@ -164,6 +189,7 @@ namespace BenchmarksClient.Workers
                         }
                         catch (Exception ex)
                         {
+                            _job.BadResponses++;
                             await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
 
                             tcs.TrySetException(ex);
@@ -179,6 +205,9 @@ namespace BenchmarksClient.Workers
                         }
 
                         await ConnectCircuit(connection, circuitId, cancellationToken);
+
+                        _requestsPerConnection[index] += 1;
+
                         await NavigateTo(connection, "ticker", cancellationToken);
                         if (tcs.Task.IsCompleted)
                         {
@@ -187,7 +216,7 @@ namespace BenchmarksClient.Workers
 
                         await Task.Delay(OperationDelay, cancellationToken);
                         await connection.StopAsync(cancellationToken);
-                        await Task.Delay(OperationDelay, cancellationToken);
+                        await Task.Delay(reconnectDelay, cancellationToken);
                     }
                 });
             }
@@ -195,12 +224,13 @@ namespace BenchmarksClient.Workers
             await Task.WhenAll(tasks);
         }
 
-        private static async Task ConnectCircuit(HubConnection connection, string circuitId, CancellationToken cancellationToken)
+        private async Task ConnectCircuit(HubConnection connection, string circuitId, CancellationToken cancellationToken)
         {
             var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId, cancellationToken);
 
             if (!success)
             {
+                _job.BadResponses++;
                 throw new InvalidOperationException("ConnectCircuit failed");
             }
         }

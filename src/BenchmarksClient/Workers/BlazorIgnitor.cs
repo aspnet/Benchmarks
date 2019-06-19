@@ -27,16 +27,15 @@ namespace BenchmarksClient.Workers
         private HttpClientHandler _httpClientHandler;
         private List<BlazorServerItem> _connections;
         private List<IDisposable> _recvCallbacks;
-        private List<int> _requestsPerConnection;
-        private List<List<double>> _latencyPerConnection;
+        private int[] _requestsPerConnection;
+        private List<double>[] _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
-        private List<(double sum, int count)> _latencyAverage;
+        private (double sum, int count)[] _latencyAverage;
         private int _totalRequests;
-        private Timer _sendDelayTimer;
         private HttpClient _httpClient;
 
         private int OperationDelay;
@@ -73,7 +72,7 @@ namespace BenchmarksClient.Workers
                 throw new Exception("Scenario wasn't specified");
             }
 
-            var operationDelay = 200; // Time in ms
+            var operationDelay = 0; // Time in ms
             if (_job.ClientProperties.TryGetValue("OperationDelay", out var operationDelayString))
             {
                 operationDelay = int.Parse(operationDelayString);
@@ -188,7 +187,6 @@ namespace BenchmarksClient.Workers
             Log("Connections have been disposed");
 
             _httpClientHandler.Dispose();
-            _sendDelayTimer?.Dispose();
             // TODO: Remove when clients no longer take a long time to "cool down"
             await Task.Delay(5000);
 
@@ -211,9 +209,9 @@ namespace BenchmarksClient.Workers
         private async Task CreateConnections()
         {
             _connections = new List<BlazorServerItem>(_job.Connections);
-            _requestsPerConnection = new List<int>(_job.Connections);
-            _latencyPerConnection = new List<List<double>>(_job.Connections);
-            _latencyAverage = new List<(double sum, int count)>(_job.Connections);
+            _requestsPerConnection = new int[_job.Connections];
+            _latencyPerConnection = new List<double>[_job.Connections];
+            _latencyAverage = new (double sum, int count)[_job.Connections];
 
             var baseUri = new Uri(_job.ServerBenchmarkUri);
 
@@ -259,11 +257,10 @@ namespace BenchmarksClient.Workers
         private void CalculateStatistics()
         {
             // RPS
-            var requestDelta = 0;
             var newTotalRequests = 0;
             var min = int.MaxValue;
             var max = 0;
-            for (var i = 0; i < _requestsPerConnection.Count; i++)
+            for (var i = 0; i < _requestsPerConnection.Length; i++)
             {
                 newTotalRequests += _requestsPerConnection[i];
 
@@ -277,7 +274,7 @@ namespace BenchmarksClient.Workers
                 }
             }
 
-            requestDelta = newTotalRequests - _totalRequests;
+            var requestDelta = newTotalRequests - _totalRequests;
             _totalRequests = newTotalRequests;
 
             // Review: This could be interesting information, see the gap between most active and least active connection
@@ -306,7 +303,7 @@ namespace BenchmarksClient.Workers
             {
                 var totalCount = 0;
                 var totalSum = 0.0;
-                for (var i = 0; i < _latencyPerConnection.Count; i++)
+                for (var i = 0; i < _latencyPerConnection.Length; i++)
                 {
                     for (var j = 0; j < _latencyPerConnection[i].Count; j++)
                     {
