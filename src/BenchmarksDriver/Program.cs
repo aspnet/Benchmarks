@@ -55,7 +55,8 @@ namespace BenchmarksDriver
             _branchOption,
             _hashOption,
             _noGlobalJsonOption,
-            _collectCountersOption
+            _collectCountersOption,
+            _noStartupLatencyOption
             ;
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -318,7 +319,7 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var jobsOptions = app.Option("-j|--jobs",
                 "The path or url to the jobs definition.", CommandOptionType.SingleValue);
-            var noStartupLatencyOption = app.Option("-nsl|--no-startup-latency",
+            _noStartupLatencyOption = app.Option("-nsl|--no-startup-latency",
                 "Skip startup latency measurement.", CommandOptionType.NoValue);
 
             #region Switching console mode on Windows
@@ -993,10 +994,6 @@ namespace BenchmarksDriver
                 {
                     _clientJob.SpanId = Guid.NewGuid().ToString("n");
                 }
-                if (noStartupLatencyOption.HasValue())
-                {
-                    _clientJob.SkipStartupLatencies = true;
-                }
 
                 switch (headers)
                 {
@@ -1425,6 +1422,9 @@ namespace BenchmarksDriver
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
+                    // Reset this before each iteration
+                    _clientJob.SkipStartupLatencies = _noStartupLatencyOption.HasValue();
+
                     if (!IsConsoleApp && _clientJob.Warmup != 0)
                     {
                         Log("Warmup");
@@ -1436,12 +1436,13 @@ namespace BenchmarksDriver
                         // Store the latency as measured on the warmup job
                         latencyNoLoad = clientJob.LatencyNoLoad;
                         latencyFirstRequest = clientJob.LatencyFirstRequest;
-                        _clientJob.SkipStartupLatencies = true;
 
                         _clientJob.Duration = duration;
                         System.Threading.Thread.Sleep(200);  // Make it clear on traces when warmup stops and measuring begins.
                     }
 
+                    // Prevent the actual run from updating the startup statistics
+                    _clientJob.SkipStartupLatencies = true;
 
                     var startTime = DateTime.UtcNow;
                     var spanLoop = 0;
