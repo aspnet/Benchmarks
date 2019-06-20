@@ -2153,11 +2153,6 @@ namespace BenchmarkServer
             var arguments = $" --nonInteractive true" +
                     $" --scenarios {job.Scenario}";
 
-            if (!string.IsNullOrEmpty(job.ConnectionFilter))
-            {
-                arguments += $" --connectionFilter {job.ConnectionFilter}";
-            }
-
             switch (job.WebHost)
             {
                 case WebHost.HttpSys:

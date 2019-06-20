@@ -180,8 +180,6 @@ namespace BenchmarksDriver
             // ServerJob Options
             var databaseOption = app.Option("--database",
                 "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.", CommandOptionType.SingleValue);
-            var connectionFilterOption = app.Option("-cf|--connectionFilter",
-                "Assembly-qualified name of the ConnectionFilter", CommandOptionType.SingleValue);
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
                 "Maps to KestrelServerOptions.ThreadCount.",
                 CommandOptionType.SingleValue);
@@ -597,10 +595,6 @@ namespace BenchmarksDriver
                 if (pathOption.HasValue())
                 {
                     serverJob.Path = pathOption.Value();
-                }
-                if (connectionFilterOption.HasValue())
-                {
-                    serverJob.ConnectionFilter = connectionFilterOption.Value();
                 }
                 if (schemeOption.HasValue())
                 {

@@ -12,7 +12,6 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 #if !NETCOREAPP3_0
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 #endif
@@ -249,20 +248,6 @@ namespace Benchmarks
             return threadCountValue == null ? -1 : int.Parse(threadCountValue);
         }
 
-        private static IConnectionAdapter GetConnectionFilter(IConfigurationRoot config)
-        {
-            var connectionFilterValue = config["connectionFilter"];
-            if (string.IsNullOrEmpty(connectionFilterValue))
-            {
-                return null;
-            }
-            else
-            {
-                var connectionFilterType = Type.GetType(connectionFilterValue, throwOnError: true);
-                return (IConnectionAdapter)Activator.CreateInstance(connectionFilterType);
-            }
-        }
-
         private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
         {
             var urlPrefix = UrlPrefix.Create(url);
@@ -270,12 +255,6 @@ namespace Benchmarks
 
             options.Listen(endpoint, listenOptions =>
             {
-                var connectionFilter = GetConnectionFilter(config);
-                if (connectionFilter != null)
-                {
-                    listenOptions.ConnectionAdapters.Add(connectionFilter);
-                }
-
 #if !NETCOREAPP2_0 && !NETCOREAPP2_1
                 if (Protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
                 {

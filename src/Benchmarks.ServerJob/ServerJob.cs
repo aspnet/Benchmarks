@@ -15,8 +15,6 @@ namespace Benchmarks.ServerJob
     {
         public int Id { get; set; }
 
-        public string ConnectionFilter { get; set; }
-
         [JsonConverter(typeof(StringEnumConverter))]
         public Hardware? Hardware { get; set; }
 

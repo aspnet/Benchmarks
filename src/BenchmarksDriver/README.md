@@ -18,7 +18,6 @@ Options:
   -i|--iterations        The number of iterations.
   -x|--exclude           The number of best and worst jobs to skip.  
   --database             The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.
-  -cf|--connectionFilter Assembly-qualified name of the ConnectionFilter
   --kestrelThreadCount   Maps to KestrelServerOptions.ThreadCount.
   -n|--scenario          Benchmark scenario to run
   -m|--scheme            Scheme (http, https, h2, h2c). Default is http.

@@ -302,7 +302,6 @@ namespace BenchmarksDriver.Serializers
                     operatingSystem: serverJob.OperatingSystem.Value,
                     scheme: serverJob.Scheme,
                     source: serverJob.Source,
-                    connectionFilter: serverJob.ConnectionFilter,
                     webHost: serverJob.WebHost,
                     kestrelThreadCount: serverJob.KestrelThreadCount,
                     clientThreads: clientJob.Threads,
@@ -339,7 +338,6 @@ namespace BenchmarksDriver.Serializers
                         [Framework] [nvarchar](50) NOT NULL,
                         [RuntimeStore] [bit] NOT NULL,
                         [Scheme] [nvarchar](50) NOT NULL,
-                        [ConnectionFilter] [nvarchar](50) NULL,
                         [WebHost] [nvarchar](50) NOT NULL,
                         [KestrelThreadCount] [int] NULL,
                         [ClientThreads] [int] NOT NULL,
@@ -380,7 +378,6 @@ namespace BenchmarksDriver.Serializers
             Benchmarks.ServerJob.OperatingSystem operatingSystem,
             Scheme scheme,
             Source source,
-            string connectionFilter,
             WebHost webHost,
             int? kestrelThreadCount,
             int clientThreads,
@@ -410,7 +407,6 @@ namespace BenchmarksDriver.Serializers
                            ,[Framework]
                            ,[RuntimeStore]
                            ,[Scheme]
-                           ,[ConnectionFilter]
                            ,[WebHost]
                            ,[KestrelThreadCount]
                            ,[ClientThreads]
@@ -435,7 +431,6 @@ namespace BenchmarksDriver.Serializers
                            ,@Framework
                            ,@RuntimeStore
                            ,@Scheme
-                           ,@ConnectionFilter
                            ,@WebHost
                            ,@KestrelThreadCount
                            ,@ClientThreads
@@ -470,8 +465,6 @@ namespace BenchmarksDriver.Serializers
                     p.AddWithValue("@Framework", "Core");
                     p.AddWithValue("@RuntimeStore", runtimeStore);
                     p.AddWithValue("@Scheme", scheme.ToString().ToLowerInvariant());
-                    p.AddWithValue("@ConnectionFilter",
-                        string.IsNullOrEmpty(connectionFilter) ? (object)DBNull.Value : connectionFilter);
                     p.AddWithValue("@WebHost", webHost.ToString());
                     p.AddWithValue("@KestrelThreadCount", (object)kestrelThreadCount ?? DBNull.Value);
                     p.AddWithValue("@ClientThreads", clientThreads);
