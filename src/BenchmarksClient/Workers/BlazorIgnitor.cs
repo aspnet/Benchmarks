@@ -128,6 +128,10 @@ namespace BenchmarksClient.Workers
                         await Reconnects(_cancelationTokenSource.Token);
                         break;
 
+                    case "BlazingPizza":
+                        await BlazingPizza(_cancelationTokenSource.Token);
+                        break;
+
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
                 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Ignitor;
 using Ignitor.Browser;
@@ -75,7 +76,7 @@ namespace Ignitor
             public int EventId { get; }
         }
 
-        public async Task ClickAsync(HubConnection connection)
+        public async Task ClickAsync(HubConnection connection, CancellationToken cancellationToken)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
@@ -100,7 +101,7 @@ namespace Ignitor
             var methodIdentifier = "DispatchEvent";
             var dotNetObjectId = 0;
             var clickArgs = JsonSerializer.ToString(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs);
+            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs, cancellationToken);
         }
     }
 }

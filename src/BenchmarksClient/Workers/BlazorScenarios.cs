@@ -111,7 +111,7 @@ namespace BenchmarksClient.Workers
                             }
 
                             dateTime = DateTime.UtcNow;
-                            await counter.ClickAsync(connection);
+                            await counter.ClickAsync(connection, cancellationToken);
                         }
                         catch (Exception ex)
                         {
@@ -218,6 +218,78 @@ namespace BenchmarksClient.Workers
                         await connection.StopAsync(cancellationToken);
                         await Task.Delay(reconnectDelay, cancellationToken);
                     }
+                });
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+
+        private async Task BlazingPizza(CancellationToken cancellationToken)
+        {
+            var tasks = new Task[_connections.Count];
+            var random = new Random();
+            for (var j = 0; j < _connections.Count; j++)
+            {
+                var i = j;
+                var hive = new ElementHive();
+                var item = _connections[i];
+
+                var connection = item.HubConnection;
+                var circuitId = item.CircuitId;
+
+                tasks[i] = Task.Run(async () =>
+                {
+                    var tcs = new TaskCompletionSource<int>();
+                    var dateTime = DateTime.UtcNow;
+
+                    connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
+                    {
+                        _requestsPerConnection[i] += 1;
+                        AddLatency(i, dateTime);
+
+                        try
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                tcs.TrySetCanceled(cancellationToken);
+                                return;
+                            }
+
+                            await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
+
+                            var batch = RenderBatchReader.Read(batchData);
+                            hive.Update(batch);
+                            dateTime = DateTime.UtcNow;
+
+                            if (hive.TryFindElementById("Confirm", out var cancel))
+                            {
+                                await cancel.ClickAsync(connection, cancellationToken);
+                                return;
+                            }
+
+                            var item = random.Next(2, 10).ToString();
+                            if (hive.TryFindElementById(item, out var pizza))
+                            {
+
+                                // Nothing to do until we've rendered counter.
+                                await pizza.ClickAsync(connection, cancellationToken);
+                                return;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _job.BadResponses++;
+                            await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
+
+                            tcs.TrySetException(ex);
+                            throw;
+                        }
+                    });
+
+                    await ConnectCircuit(connection, circuitId, cancellationToken);
+
+                    await Task.WhenAny(Task.Delay(_job.Duration), tcs.Task);
                 });
             }
 

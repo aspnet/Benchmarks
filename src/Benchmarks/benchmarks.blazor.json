@@ -15,6 +15,14 @@
   "Navigator": {
     "ClientProperties": { "Scenario": "Navigator" }
   },
+  "BlazingPizza": {
+    "Source": {
+      "Repository": "https://github.com/pranavkm/BlazingServer.git",
+      "BranchOrCommit": "master",
+      "Project": "src/BlazingPizza.Server/BlazingPizza.Server.csproj"
+    },
+    "ClientProperties": { "Scenario": "BlazingPizza" }
+  },
   "Reconnects": {
     "ClientProperties": {
       "Scenario": "Reconnects",
