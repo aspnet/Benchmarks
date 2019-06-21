@@ -23,4 +23,8 @@
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Microsoft.Diagnostics.Tools.RuntimeClient\" />
+  </ItemGroup>
+
 </Project>
