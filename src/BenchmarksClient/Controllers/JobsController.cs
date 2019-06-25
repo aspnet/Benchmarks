@@ -100,7 +100,7 @@ namespace BenchmarkClient.Controllers
         }
 
         [HttpPost("{id}/script")]
-        public async Task<IActionResult> UploadScript(ScriptViewModel attachment)
+        public async Task<IActionResult> UploadScript([FromForm] ScriptViewModel attachment)
         {
             try
             {
