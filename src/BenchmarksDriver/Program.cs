@@ -1521,6 +1521,7 @@ namespace BenchmarksDriver
                                         {
                                             Log($"Error while downloading file {csvFilename}, skipping ...");
                                             Log(e.Message);
+                                            continue;
                                         }
 
                                         var className = Path.GetFileNameWithoutExtension(csvFilename).Split('.').LastOrDefault().Split('-', 2).FirstOrDefault();
