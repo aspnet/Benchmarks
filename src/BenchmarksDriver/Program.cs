@@ -1515,7 +1515,7 @@ namespace BenchmarksDriver
 
                                         try
                                         {
-                                            csvContent = await DownloadFileContent(uri, serverJobUri);
+                                            csvContent = await DownloadFileContent(uri);
                                         }
                                         catch (Exception e)
                                         {
@@ -1582,7 +1582,7 @@ namespace BenchmarksDriver
                                         {
                                             // Download markdown file for output
                                             uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFilename);
-                                            QuietLog(await DownloadFileContent(uri, serverJobUri));
+                                            QuietLog(await DownloadFileContent(uri));
                                         }
                                         catch (Exception e)
                                         {
@@ -2487,7 +2487,7 @@ namespace BenchmarksDriver
             return;
         }
 
-        private static async Task<string> DownloadFileContent(string uri, Uri serverJobUri)
+        private static async Task<string> DownloadFileContent(string uri)
         {
             using (var downloadStream = await _httpClient.GetStreamAsync(uri))
             {
