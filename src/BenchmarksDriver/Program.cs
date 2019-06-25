@@ -1501,95 +1501,7 @@ namespace BenchmarksDriver
                                 // Try to extract BenchmarkDotNet statistics
                                 if (_clientJob.Client == Worker.BenchmarkDotNet)
                                 {
-                                    // Download all results
-                                    var uri = serverJobUri + "/list?path=" + HttpUtility.UrlEncode("BenchmarkDotNet.Artifacts/results/*-report.csv");
-                                    var csvFilenames = JArray.Parse(await _httpClient.GetStringAsync(uri)).ToObject<string[]>();
-
-                                    foreach (var csvFilename in csvFilenames)
-                                    {
-                                        Log($"Downloading file {csvFilename}");
-                                        uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(csvFilename);
-                                        LogVerbose("GET " + uri);
-
-                                        string csvContent = null;
-
-                                        try
-                                        {
-                                            csvContent = await DownloadFileContent(uri);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Log($"Error while downloading file {csvFilename}, skipping ...");
-                                            Log(e.Message);
-                                            continue;
-                                        }
-
-                                        var className = Path.GetFileNameWithoutExtension(csvFilename).Split('.').LastOrDefault().Split('-', 2).FirstOrDefault();
-
-                                        try
-                                        {
-                                            using (var sr = new StringReader(csvContent))
-                                            {
-                                                using (var csv = new CsvReader(sr))
-                                                {
-                                                    var isRecordBad = false;
-
-                                                    csv.Configuration.BadDataFound = context =>
-                                                    {
-                                                        isRecordBad = true;
-                                                    };
-
-                                                    csv.Configuration.RegisterClassMap<CsvResultMap>();
-                                                    csv.Configuration.TypeConverterOptionsCache.AddOptions(typeof(double), new TypeConverterOptions { NumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint });
-
-                                                    var localResults = new List<CsvResult>();
-
-                                                    while (csv.Read())
-                                                    {
-                                                        if (!isRecordBad)
-                                                        {
-                                                            localResults.Add(csv.GetRecord<CsvResult>());
-                                                        }
-
-                                                        isRecordBad = false;
-                                                    }
-
-                                                    foreach (var result in localResults)
-                                                    {
-                                                        result.Class = className;
-                                                    }
-
-                                                    var benchmarkDotNetSerializer = serializer as BenchmarkDotNetSerializer;
-                                                    benchmarkDotNetSerializer.CsvResults.AddRange(localResults);
-
-                                                }
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Log($"Error while reading CSV file ... skipping");
-                                            Log(e.Message);
-                                            continue;
-                                        }
-                                    }
-
-                                    // Download all markdown results
-                                    uri = serverJobUri + "/list?path=" + HttpUtility.UrlEncode("BenchmarkDotNet.Artifacts/results/*-report-github.md");
-                                    var markdownFilenames = JArray.Parse(await _httpClient.GetStringAsync(uri)).ToObject<string[]>();
-                                    foreach (var markdownFilename in markdownFilenames)
-                                    {
-                                        try
-                                        {
-                                            // Download markdown file for output
-                                            uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFilename);
-                                            BenchmarkDotNetUtils.WriteMarkdownResultTableToConsole(await DownloadFileContent(uri));
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Log($"Error while downloading file {markdownFilename}, skipping ...");
-                                            LogVerbose(e.Message);
-                                        }
-                                    }
+                                    await BenchmarkDotNetUtils.DownloadResultFiles(serverJobUri, _httpClient, (BenchmarkDotNetSerializer)serializer);
                                 }
                             }
                             else
@@ -1762,7 +1674,7 @@ namespace BenchmarksDriver
                                 try
                                 {
                                     Log($"Downloading trace: {traceOutputFileName}");
-                                    await DownloadFile(uri, serverJobUri, traceOutputFileName);
+                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, traceOutputFileName);
                                 }
                                 catch (HttpRequestException)
                                 {
@@ -2085,7 +1997,7 @@ namespace BenchmarksDriver
                             }
 
                             Log($"Downloading trace: {traceOutputFileName}");
-                            await DownloadFile(uri, serverJobUri, traceOutputFileName);
+                            await _httpClient.DownloadFileAsync(uri, serverJobUri, traceOutputFileName);
                         }
                         catch (Exception e)
                         {
@@ -2152,7 +2064,7 @@ namespace BenchmarksDriver
                                         filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                     }
 
-                                    await DownloadFile(uri, serverJobUri, filename);
+                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, filename);
                                 }
                                 catch (Exception e)
                                 {
@@ -2446,7 +2358,7 @@ namespace BenchmarksDriver
 
             if (!File.Exists(filehashname))
             {
-                await DownloadFile(uri, serverJobUri, filehashname);
+                await _httpClient.DownloadFileAsync(uri, serverJobUri, filehashname);
             }
 
             return filehashname;
@@ -2463,41 +2375,6 @@ namespace BenchmarksDriver
             }
         }
 
-        private static async Task DownloadFile(string uri, Uri serverJobUri, string destinationFileName)
-        {
-            using (var downloadStream = await _httpClient.GetStreamAsync(uri))
-            {
-                using (var fileStream = File.Create(destinationFileName))
-                {
-                    var downloadTask = downloadStream.CopyToAsync(fileStream);
-
-                    while (!downloadTask.IsCompleted)
-                    {
-                        // Ping server job to keep it alive while downloading the file
-                        LogVerbose($"GET {serverJobUri}/touch...");
-                        var response = await _httpClient.GetAsync(serverJobUri + "/touch");
-
-                        await Task.Delay(1000);
-                    }
-
-                    await downloadTask;
-                }
-            }
-
-            return;
-        }
-
-        private static async Task<string> DownloadFileContent(string uri)
-        {
-            using (var downloadStream = await _httpClient.GetStreamAsync(uri))
-            {
-                using (var stringReader = new StreamReader(downloadStream))
-                {
-                    return await stringReader.ReadToEndAsync();
-                }
-            }
-        }
-
         private static async Task InvokeApplicationEndpoint(Uri serverJobUri, string path)
         {
             var uri = serverJobUri + "/invoke?path=" + HttpUtility.UrlEncode(path);
@@ -2509,7 +2386,7 @@ namespace BenchmarksDriver
             Console.WriteLine(message);
         }
 
-        private static void Log(string message, bool notime = false, bool error = false)
+        internal static void Log(string message, bool notime = false, bool error = false)
         {
             if (error)
             {
@@ -2532,7 +2409,7 @@ namespace BenchmarksDriver
             Console.ResetColor();
         }
 
-        private static void LogVerbose(string message)
+        internal static void LogVerbose(string message)
         {
             if (_verbose && !_quiet)
             {
