@@ -1582,7 +1582,7 @@ namespace BenchmarksDriver
                                         {
                                             // Download markdown file for output
                                             uri = serverJobUri + "/download?path=" + HttpUtility.UrlEncode(markdownFilename);
-                                            QuietLog(await DownloadFileContent(uri));
+                                            BenchmarkDotNetUtils.WriteMarkdownResultTableToConsole(await DownloadFileContent(uri));
                                         }
                                         catch (Exception e)
                                         {
