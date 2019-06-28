@@ -101,7 +101,7 @@ namespace Ignitor
             var methodIdentifier = "DispatchEvent";
             var dotNetObjectId = 0;
             var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs, cancellationToken);
+            await connection.SendAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs, cancellationToken);
         }
     }
 }

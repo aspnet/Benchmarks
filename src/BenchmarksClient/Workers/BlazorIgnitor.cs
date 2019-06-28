@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BenchmarksClient.Workers
 {
@@ -25,27 +26,24 @@ namespace BenchmarksClient.Workers
     {
         private ClientJob _job;
         private HttpClientHandler _httpClientHandler;
-        private List<BlazorServerItem> _connections;
+        private List<BlazorClient> _clients;
         private List<IDisposable> _recvCallbacks;
-        private int[] _requestsPerConnection;
-        private List<double>[] _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
-        private (double sum, int count)[] _latencyAverage;
         private int _totalRequests;
         private HttpClient _httpClient;
         private CancellationTokenSource _cancelationTokenSource;
-
-        private int OperationDelay;
 
         public string JobLogText { get; set; }
 
         private Task InitializeJob()
         {
             _stopped = false;
+
+            _detailedLatency = _job.Latency == null;
 
             Debug.Assert(_job.Connections > 0, "There must be more than 0 connections");
 
@@ -73,19 +71,11 @@ namespace BenchmarksClient.Workers
                 throw new Exception("Scenario wasn't specified");
             }
 
-            var operationDelay = 0; // Time in ms
-            if (_job.ClientProperties.TryGetValue("OperationDelay", out var operationDelayString))
-            {
-                operationDelay = int.Parse(operationDelayString);
-            }
-
-            OperationDelay = operationDelay;
-
             jobLogText += "]";
             JobLogText = jobLogText;
-            if (_connections == null)
+            if (_clients == null)
             {
-                return CreateConnections();
+                CreateConnections();
             }
 
             return Task.CompletedTask;
@@ -97,19 +87,19 @@ namespace BenchmarksClient.Workers
             Log($"Starting Job");
             await InitializeJob();
             // start connections
-            var tasks = new List<Task>(_connections.Count);
-            foreach (var item in _connections)
+            var tasks = new List<Task>(_clients.Count);
+            foreach (var item in _clients)
             {
-                tasks.Add(item.HubConnection.StartAsync());
+                tasks.Add(item.InitializeAsync(default));
             }
 
             await Task.WhenAll(tasks);
 
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
-
             _cancelationTokenSource = new CancellationTokenSource();
             _cancelationTokenSource.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
+
             _workTimer.Restart();
 
             try
@@ -124,9 +114,9 @@ namespace BenchmarksClient.Workers
                         await Clicker(_cancelationTokenSource.Token);
                         break;
 
-                    case "Reconnects":
-                        await Reconnects(_cancelationTokenSource.Token);
-                        break;
+                    //case "Reconnects":
+                    //    await Reconnects(_cancelationTokenSource.Token);
+                    //    break;
 
                     case "BlazingPizza":
                         await BlazingPizza(_cancelationTokenSource.Token);
@@ -149,7 +139,7 @@ namespace BenchmarksClient.Workers
 
         public async Task StopJobAsync()
         {
-            _cancelationTokenSource.Cancel();
+            _cancelationTokenSource?.Cancel();
 
             Log($"Stopping Job: {_job.SpanId}");
             if (_stopped || !await _lock.WaitAsync(0))
@@ -184,16 +174,17 @@ namespace BenchmarksClient.Workers
 
             // stop connections
             Log("Stopping connections");
-            var tasks = new List<Task>(_connections.Count);
-            foreach (var item in _connections)
+            var tasks = new List<Task>(_clients.Count);
+            foreach (var item in _clients)
             {
-                tasks.Add(item.HubConnection.DisposeAsync());
+                tasks.Add(item.DisposeAsync());
             }
 
             await Task.WhenAll(tasks);
             Log("Connections have been disposed");
 
             _httpClientHandler.Dispose();
+            _httpClient.Dispose();
             // TODO: Remove when clients no longer take a long time to "cool down"
             await Task.Delay(5000);
 
@@ -202,10 +193,10 @@ namespace BenchmarksClient.Workers
 
         public void Dispose()
         {
-            var tasks = new List<Task>(_connections.Count);
-            foreach (var item in _connections)
+            var tasks = new List<Task>(_clients.Count);
+            foreach (var item in _clients)
             {
-                tasks.Add(item.HubConnection.DisposeAsync());
+                tasks.Add(item.DisposeAsync());
             }
 
             Task.WhenAll(tasks).GetAwaiter().GetResult();
@@ -213,28 +204,17 @@ namespace BenchmarksClient.Workers
             _httpClientHandler.Dispose();
         }
 
-        private async Task CreateConnections()
+        private void CreateConnections()
         {
-            _connections = new List<BlazorServerItem>(_job.Connections);
-            _requestsPerConnection = new int[_job.Connections];
-            _latencyPerConnection = new List<double>[_job.Connections];
-            _latencyAverage = new (double sum, int count)[_job.Connections];
+            _clients = new List<BlazorClient>(_job.Connections);
 
             var baseUri = new Uri(_job.ServerBenchmarkUri);
 
-            _httpClient = new HttpClient { BaseAddress = baseUri, Timeout = TimeSpan.FromSeconds(5), };
+            _httpClient = new HttpClient { BaseAddress = new Uri(_job.ServerBenchmarkUri) };
 
             _recvCallbacks = new List<IDisposable>(_job.Connections);
             for (var i = 0; i < _job.Connections; i++)
             {
-                var response = await _httpClient.GetAsync("");
-                var content = await response.Content.ReadAsStringAsync();
-
-                // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
-                var match = Regex.Match(content, $"{Regex.Escape("<!-- M.A.C.Component:")}(.+?){Regex.Escape(" -->")}");
-                using var json = JsonDocument.Parse(match.Groups[1].Value);
-                var circuitId = json.RootElement.GetProperty("circuitId").GetString();
-
                 var builder = new HubConnectionBuilder();
                 builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
                 builder.WithUrl(new Uri(baseUri, "_blazor/"));
@@ -251,13 +231,7 @@ namespace BenchmarksClient.Workers
                 }
 
                 var connection = builder.Build();
-                _connections.Add(new BlazorServerItem
-                {
-                    HubConnection = connection,
-                    CircuitId = circuitId,
-                    BaseUri = baseUri.ToString()
-
-                });
+                _clients.Add(new BlazorClient(_httpClient, connection));
             }
         }
 
@@ -265,20 +239,13 @@ namespace BenchmarksClient.Workers
         {
             // RPS
             var newTotalRequests = 0;
-            var min = int.MaxValue;
+            var min = 0;
             var max = 0;
-            for (var i = 0; i < _requestsPerConnection.Length; i++)
+            foreach (var client in _clients)
             {
-                newTotalRequests += _requestsPerConnection[i];
-
-                if (_requestsPerConnection[i] > max)
-                {
-                    max = _requestsPerConnection[i];
-                }
-                if (_requestsPerConnection[i] < min)
-                {
-                    min = _requestsPerConnection[i];
-                }
+                newTotalRequests += client.Requests;
+                max = Math.Max(max, client.Requests);
+                min = Math.Max(min, client.Requests);
             }
 
             var requestDelta = newTotalRequests - _totalRequests;
@@ -310,24 +277,16 @@ namespace BenchmarksClient.Workers
             {
                 var totalCount = 0;
                 var totalSum = 0.0;
-                for (var i = 0; i < _latencyPerConnection.Length; i++)
+                var allConnections = new List<double>();
+                foreach (var client in _clients)
                 {
-                    for (var j = 0; j < _latencyPerConnection[i].Count; j++)
-                    {
-                        totalSum += _latencyPerConnection[i][j];
-                        totalCount++;
-                    }
+                    totalCount += client.LatencyPerConnection.Count;
+                    totalSum += client.LatencyPerConnection.Sum();
 
-                    _latencyPerConnection[i].Sort();
+                    allConnections.AddRange(client.LatencyPerConnection);
                 }
 
                 _job.Latency.Average = totalSum / totalCount;
-
-                var allConnections = new List<double>();
-                foreach (var connectionLatency in _latencyPerConnection)
-                {
-                    allConnections.AddRange(connectionLatency);
-                }
 
                 // Review: Each connection can have different latencies, how do we want to deal with that?
                 // We could just combine them all and ignore the fact that they are different connections
@@ -343,10 +302,10 @@ namespace BenchmarksClient.Workers
             {
                 var totalSum = 0.0;
                 var totalCount = 0;
-                foreach (var average in _latencyAverage)
+                foreach (var client in _clients)
                 {
-                    totalSum += average.sum;
-                    totalCount += average.count;
+                    totalSum += client.LatencyAverage.sum;
+                    totalCount += client.LatencyAverage.count;
                 }
 
                 if (totalCount != 0)
@@ -376,13 +335,189 @@ namespace BenchmarksClient.Workers
             Console.WriteLine($"[{time}] {message}");
         }
 
-        private class BlazorServerItem
+        private class BlazorClient
         {
-            public HubConnection HubConnection { get; set; }
+            private readonly object @lock = new object();
+            private readonly HttpClient httpClient;
+            private readonly List<PredicateItem> predicates = new List<PredicateItem>();
+            public int Requests;
+            public List<double> LatencyPerConnection = new List<double>();
+            public (double sum, int count) LatencyAverage;
+            public int BadResponses;
 
-            public string CircuitId { get; set; }
+            public BlazorClient(HttpClient httpClient, HubConnection connection)
+            {
+                this.httpClient = httpClient;
+                HubConnection = connection;
+            }
 
-            public string BaseUri { get; set; }
+            public bool DetailedLatency { get; set; }
+
+            public HubConnection HubConnection { get; }
+
+            public ElementHive ElementHive { get; } = new ElementHive();
+
+            public Task WaitUntil(Func<ElementHive, bool> predicate, TimeSpan? timeout = null)
+            {
+                lock (@lock)
+                {
+                    // Perhaps the predicate is already true
+                    if (predicate(ElementHive))
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    var tcs = new TaskCompletionSource<int>();
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    predicates.Add(new PredicateItem(predicate, tcs, cancellationTokenSource));
+
+                    return Task.WhenAny(tcs.Task, TimeoutTask());
+
+                    async Task TimeoutTask()
+                    {
+                        timeout ??= Debugger.IsAttached ? TimeSpan.FromMilliseconds(-1) : TimeSpan.FromSeconds(5);
+
+                        await Task.Delay(timeout.Value, cancellationTokenSource.Token);
+                        throw new TimeoutException("Waiting for predicate timed out");
+                    }
+                }
+            }
+
+            public Task InitializeAsync(CancellationToken cancellationToken) => HubConnection.StartAsync(cancellationToken);
+
+            public async Task RunAsync(CancellationToken cancellationToken)
+            {
+                var dateTime = DateTime.UtcNow;
+
+                HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+                await ConnectCircuit(cancellationToken);
+
+                async Task OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    Requests++;
+                    AddLatency(ref dateTime);
+
+                    try
+                    {
+                        await HubConnection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
+
+                        var batch = RenderBatchReader.Read(batchData);
+
+                        lock (@lock)
+                        {
+                            ElementHive.Update(batch);
+
+                            for (var i = predicates.Count - 1; i >= 0; i--)
+                            {
+                                var item = predicates[i];
+                                if (item.Predicate(ElementHive))
+                                {
+                                    item.CancellationTokenSource.Cancel();
+                                    item.TaskCompletionSource.TrySetResult(0);
+                                    predicates.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        foreach (var item in predicates)
+                        {
+                            item.TaskCompletionSource.TrySetException(ex);
+                        }
+                    }
+                }
+            }
+
+            void AddLatency(ref DateTime previousTime)
+            {
+                var latency = DateTime.UtcNow - previousTime;
+                if (DetailedLatency)
+                {
+                    LatencyPerConnection.Add(latency.TotalMilliseconds);
+                }
+                else
+                {
+                    var (sum, count) = LatencyAverage;
+                    sum += latency.TotalMilliseconds;
+                    count++;
+                    LatencyAverage = (sum, count);
+                }
+
+                previousTime = DateTime.UtcNow;
+            }
+
+            async Task ConnectCircuit(CancellationToken cancellationToken)
+            {
+                for (var i = 0; i < 5; i++)
+                {
+                    using var response = await httpClient.GetAsync("");
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
+                    var match = Regex.Match(content, $"{Regex.Escape("<!-- M.A.C.Component:")}(.+?){Regex.Escape(" -->")}");
+                    using var json = JsonDocument.Parse(match.Groups[1].Value);
+                    var circuitId = json.RootElement.GetProperty("circuitId").GetString();
+
+                    var success = await HubConnection.InvokeAsync<bool>("ConnectCircuit", circuitId, cancellationToken);
+                    if (success)
+                    {
+                        return;
+                    }
+
+                    if (!success)
+                    {
+                        BadResponses++;
+                        // Retry after a short delay
+                        await Task.Delay(i * 250);
+                    }
+                }
+
+                throw new InvalidOperationException("ConnectCircuit failed");
+            }
+
+            public async Task DisposeAsync()
+            {
+                foreach (var item in predicates)
+                {
+                    item.TaskCompletionSource.TrySetCanceled();
+                    item.CancellationTokenSource.Cancel();
+                }
+
+                await HubConnection.DisposeAsync();
+            }
+
+            public Task NavigateTo(string href, CancellationToken cancellationToken)
+            {
+                var assemblyName = "Microsoft.AspNetCore.Components.Server";
+                var methodIdentifier = "NotifyLocationChanged";
+
+                var argsObject = new object[] { $"{httpClient.BaseAddress}/{href}", true };
+                var locationChangedArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                return HubConnection.SendAsync("BeginInvokeDotNetFromJS", "0", assemblyName, methodIdentifier, 0, locationChangedArgs, cancellationToken);
+            }
+
+            private readonly struct PredicateItem
+            {
+                public PredicateItem(Func<ElementHive, bool> predicate, TaskCompletionSource<int> tcs, CancellationTokenSource cancellationTokenSource)
+                {
+                    Predicate = predicate;
+                    TaskCompletionSource = tcs;
+                    CancellationTokenSource = cancellationTokenSource;
+                }
+
+                public Func<ElementHive, bool> Predicate { get; }
+
+                public TaskCompletionSource<int> TaskCompletionSource { get; }
+
+                public CancellationTokenSource CancellationTokenSource { get; }
+            }
         }
     }
 }

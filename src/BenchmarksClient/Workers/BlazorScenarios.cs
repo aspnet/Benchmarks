@@ -1,330 +1,117 @@
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Ignitor;
-using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BenchmarksClient.Workers
 {
     public partial class BlazorIgnitor
     {
-        private async Task Navigator(CancellationToken cancellationToken)
+        private Task Navigator(CancellationToken cancellationToken)
         {
-            var random = new Random();
             var links = new[] { "home", "fetchdata", "counter", "ticker" };
-
-            for (var j = 0; j < _connections.Count; j++)
+            var tasks = new Task[_clients.Count];
+            for (var i = 0; i < _clients.Count; i++)
             {
-                var i = j;
-                var hive = new ElementHive();
-                var item = _connections[i];
-
-                var connection = item.HubConnection;
-                var circuitId = item.CircuitId;
-                var uri = item.BaseUri;
-
-                await Task.Run(async () =>
-                {
-                    var tcs = new TaskCompletionSource<int>();
-                    var dateTime = DateTime.UtcNow;
-
-                    connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
-                    {
-                        _requestsPerConnection[i] += 1;
-                        AddLatency(i, dateTime);
-
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            tcs.TrySetCanceled(cancellationToken);
-                            return;
-                        }
-
-                        try
-                        {
-                            var batch = RenderBatchReader.Read(batchData);
-                            hive.Update(batch);
-
-                            await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
-                            dateTime = DateTime.UtcNow;
-                            await NavigateTo(connection, links[random.Next(0, links.Length)], cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _job.BadResponses++;
-                            await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
-
-                            tcs.TrySetException(ex);
-                            throw;
-                        }
-                    });
-
-
-                    await ConnectCircuit(connection, circuitId, cancellationToken);
-
-                    await Task.WhenAny(Task.Delay(_job.Duration), tcs.Task);
-                });
-            }
-        }
-
-        private async Task Clicker(CancellationToken cancellationToken)
-        {
-            var tasks = new Task[_connections.Count];
-            for (var j = 0; j < _connections.Count; j++)
-            {
-                var i = j;
-                var hive = new ElementHive();
-                var item = _connections[i];
-
-                var connection = item.HubConnection;
-                var circuitId = item.CircuitId;
+                var client = _clients[i];
 
                 tasks[i] = Task.Run(async () =>
                 {
-                    ElementNode counter = null;
-                    var tcs = new TaskCompletionSource<int>();
-                    var dateTime = DateTime.UtcNow;
+                    var link = 0;
+                    await client.RunAsync(cancellationToken);
 
-                    connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        _requestsPerConnection[i] += 1;
-                        AddLatency(i, dateTime);
-
-                        try
-                        {
-                            if (cancellationToken.IsCancellationRequested)
-                            {
-                                tcs.TrySetCanceled(cancellationToken);
-                                return;
-                            }
-
-                            await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
-
-                            var batch = RenderBatchReader.Read(batchData);
-                            hive.Update(batch);
-
-                            if (counter == null && !hive.TryFindElementById("counter", out counter))
-                            {
-
-                                // Nothing to do until we've rendered counter.
-                                return;
-                            }
-
-                            dateTime = DateTime.UtcNow;
-                            await counter.ClickAsync(connection, cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _job.BadResponses++;
-                            await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
-
-                            tcs.TrySetException(ex);
-                            throw;
-                        }
-                    });
-
-                    await ConnectCircuit(connection, circuitId, cancellationToken);
-                    await NavigateTo(connection, "counter", cancellationToken);
-
-                    await Task.WhenAny(Task.Delay(_job.Duration), tcs.Task);
-                });
-            }
-
-            await Task.WhenAll(tasks);
-        }
-
-        void AddLatency(int connectionId, DateTime startTime)
-        {
-            var latency = DateTime.UtcNow - startTime;
-            if (_detailedLatency)
-            {
-                _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
-            }
-            else
-            {
-                var (sum, count) = _latencyAverage[connectionId];
-                sum += latency.TotalMilliseconds;
-                count++;
-                _latencyAverage[connectionId] = (sum, count);
-            }
-        }
-
-        private async Task Reconnects(CancellationToken cancellationToken)
-        {
-            int reconnectDelay = 500;
-            if (_job.ClientProperties.TryGetValue("ReconnectDelay", out var value))
-            {
-                reconnectDelay = int.Parse(value);
-            }
-
-            var tasks = new Task[_connections.Count];
-
-            for (var i = 0; i < _connections.Count; i++)
-            {
-                var index = i;
-                var hive = new ElementHive();
-                var item = _connections[i];
-
-                var connection = item.HubConnection;
-                var circuitId = item.CircuitId;
-
-                tasks[i] = Task.Run(async () =>
-                {
-                    var tcs = new TaskCompletionSource<int>();
-
-                    connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
-                    {
-                        try
-                        {
-                            if (cancellationToken.IsCancellationRequested)
-                            {
-                                tcs.TrySetCanceled(cancellationToken);
-                                return;
-                            }
-
-                            var batch = RenderBatchReader.Read(batchData);
-                            hive.Update(batch);
-
-                            await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _job.BadResponses++;
-                            await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
-
-                            tcs.TrySetException(ex);
-                            throw;
-                        }
-                    });
-
-                    while (true)
-                    {
-                        if (connection.State == HubConnectionState.Disconnected)
-                        {
-                            await connection.StartAsync(cancellationToken);
-                        }
-
-                        await ConnectCircuit(connection, circuitId, cancellationToken);
-
-                        _requestsPerConnection[index] += 1;
-
-                        await NavigateTo(connection, "ticker", cancellationToken);
-                        if (tcs.Task.IsCompleted)
-                        {
-                            await tcs.Task;
-                        }
-
-                        await Task.Delay(OperationDelay, cancellationToken);
-                        await connection.StopAsync(cancellationToken);
-                        await Task.Delay(reconnectDelay, cancellationToken);
+                        await client.NavigateTo(links[link], cancellationToken);
+                        await client.WaitUntil(hive => hive.TryFindElementById(links[link] + "_displayed", out _));
+                        link = (link + 1) % links.Length;
                     }
                 });
             }
 
-            await Task.WhenAll(tasks);
+            return Task.WhenAll(tasks);
         }
 
-
-        private async Task BlazingPizza(CancellationToken cancellationToken)
+        private Task Clicker(CancellationToken cancellationToken)
         {
-            var tasks = new Task[_connections.Count];
-            var random = new Random();
-            for (var j = 0; j < _connections.Count; j++)
+            var tasks = new Task[_clients.Count];
+            for (var i = 0; i < _clients.Count; i++)
             {
-                var i = j;
-                var hive = new ElementHive();
-                var item = _connections[i];
-
-                var connection = item.HubConnection;
-                var circuitId = item.CircuitId;
+                var client = _clients[i];
 
                 tasks[i] = Task.Run(async () =>
                 {
-                    var tcs = new TaskCompletionSource<int>();
-                    var dateTime = DateTime.UtcNow;
+                    await client.RunAsync(cancellationToken);
+                    await client.NavigateTo("counter", cancellationToken);
+                    ElementNode currentCount = null;
+                    await client.WaitUntil(hive => hive.TryFindElementById("currentCount", out currentCount));
 
-                    connection.On("JS.RenderBatch", async (int browserRendererId, int batchId, byte[] batchData) =>
+                    int currentValue;
+                    var value = ReadIntAttribute(currentCount, "counter");
+                    currentValue = value;
+
+                    if (!client.ElementHive.TryFindElementById("counter", out var counter))
                     {
-                        _requestsPerConnection[i] += 1;
-                        AddLatency(i, dateTime);
+                        throw new Exception("counter button not found");
+                    }
 
-                        try
-                        {
-                            if (cancellationToken.IsCancellationRequested)
-                            {
-                                tcs.TrySetCanceled(cancellationToken);
-                                return;
-                            }
-
-                            await connection.SendAsync("OnRenderCompleted", batchId, null, cancellationToken);
-
-                            var batch = RenderBatchReader.Read(batchData);
-                            hive.Update(batch);
-                            dateTime = DateTime.UtcNow;
-
-                            if (hive.TryFindElementById("Confirm", out var cancel))
-                            {
-                                await cancel.ClickAsync(connection, cancellationToken);
-                                return;
-                            }
-
-                            var item = random.Next(2, 10).ToString();
-                            if (hive.TryFindElementById(item, out var pizza))
-                            {
-
-                                // Nothing to do until we've rendered counter.
-                                await pizza.ClickAsync(connection, cancellationToken);
-                                return;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _job.BadResponses++;
-                            await connection.SendAsync("OnRenderCompleted", batchId, ex.Message, cancellationToken);
-
-                            tcs.TrySetException(ex);
-                            throw;
-                        }
-                    });
-
-                    await ConnectCircuit(connection, circuitId, cancellationToken);
-
-                    await Task.WhenAny(Task.Delay(_job.Duration), tcs.Task);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        await counter.ClickAsync(client.HubConnection, cancellationToken);
+                        await client.WaitUntil(hive => ReadIntAttribute(currentCount, "counter") > currentValue);
+                        currentValue = ReadIntAttribute(currentCount, "counter");
+                    }
                 });
             }
 
-            await Task.WhenAll(tasks);
+            return Task.WhenAll(tasks);
         }
 
-        private async Task ConnectCircuit(HubConnection connection, string circuitId, CancellationToken cancellationToken)
+        private Task BlazingPizza(CancellationToken cancellationToken)
         {
-            for (var i = 0; i < 3; i++)
+            var tasks = new Task[_clients.Count];
+            for (var i = 0; i < _clients.Count; i++)
             {
-                var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId, cancellationToken);
-                if (success)
-                {
-                    return;
-                }
+                var client = _clients[i];
 
-                if (!success)
+                tasks[i] = Task.Run(async () =>
                 {
-                    _job.BadResponses++;
-                    // Retry after a short delay
-                    await Task.Delay(1000);
-                }
+                    await client.RunAsync(cancellationToken);
+                    ElementNode pizza = null;
+                    await client.WaitUntil(hive => hive.TryFindElementById("5", out pizza));
+
+                    if (!client.ElementHive.TryFindElementById("pizzaOrders", out var pizzaOrders))
+                    {
+                        throw new InvalidOperationException("Can't find pizzaOrders");
+                    }
+
+                    var pizzaCount = 0;
+
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        await pizza.ClickAsync(client.HubConnection, cancellationToken);
+
+                        ElementNode confirmButton = null;
+                        await client.WaitUntil(hive => hive.TryFindElementById("Confirm", out confirmButton));
+                        await confirmButton.ClickAsync(client.HubConnection, cancellationToken);
+
+                        await client.WaitUntil(hive => ReadIntAttribute(pizzaOrders, "pizzaCount") > pizzaCount);
+                        pizzaCount = ReadIntAttribute(pizzaOrders, "pizzaCount");
+                    }
+                });
             }
 
-            throw new InvalidOperationException("ConnectCircuit failed");
+            return Task.WhenAll(tasks);
         }
 
-        async Task NavigateTo(HubConnection connection, string href, CancellationToken cancellationToken)
+        static int ReadIntAttribute(ElementNode currentCount, string attributeName)
         {
-            var assemblyName = "Microsoft.AspNetCore.Components.Server";
-            var methodIdentifier = "NotifyLocationChanged";
+            if (!currentCount.Attributes.TryGetValue(attributeName, out var value))
+            {
+                throw new Exception($"{attributeName} attribute is missing");
+            }
 
-            var argsObject = new object[] { $"{_job.ServerBenchmarkUri}/{href}", true };
-            var locationChangedArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await connection.InvokeAsync("BeginInvokeDotNetFromJS", "0", assemblyName, methodIdentifier, 0, locationChangedArgs, cancellationToken);
+            return int.Parse(value.ToString());
         }
     }
 }

@@ -72,7 +72,7 @@ namespace Ignitor
             _children.RemoveAt(childIndex);
 
             // If it's a logical container, also remove its descendants
-            if (childToRemove is LogicalContainerNode container)
+            if (childToRemove is ContainerNode container)
             {
                 while (container.Children.Count > 0)
                 {

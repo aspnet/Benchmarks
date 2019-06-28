@@ -14,7 +14,7 @@ namespace Ignitor
 
         public Dictionary<int, ComponentNode> Components { get; } = new Dictionary<int, ComponentNode>();
 
-        public string SerializedValue => NodeSerializer.Serialize(this);
+        public string GetSerializedValue() => NodeSerializer.Serialize(this);
 
         public void Update(RenderBatch batch)
         {
