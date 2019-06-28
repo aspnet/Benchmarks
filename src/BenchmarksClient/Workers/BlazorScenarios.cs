@@ -323,7 +323,7 @@ namespace BenchmarksClient.Workers
             var methodIdentifier = "NotifyLocationChanged";
 
             var argsObject = new object[] { $"{_job.ServerBenchmarkUri}/{href}", true };
-            var locationChangedArgs = JsonSerializer.ToString(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var locationChangedArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             await connection.InvokeAsync("BeginInvokeDotNetFromJS", "0", assemblyName, methodIdentifier, 0, locationChangedArgs, cancellationToken);
         }
     }
