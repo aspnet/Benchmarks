@@ -1781,10 +1781,11 @@ namespace BenchmarkServer
             }
 
             var outputFolder = Path.Combine(benchmarkedApp, "published");
+            var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
 
             var startPublish = DateTime.UtcNow;
 
-            var arguments = $"publish -c Release -o {outputFolder} {buildParameters}";
+            var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
 
             Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
 
