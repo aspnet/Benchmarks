@@ -42,21 +42,20 @@ namespace Benchmarks.Middleware
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = _bufferSize;
 
+#if !NETCOREAPP3_0
                 var syncIOFeature = httpContext.Features.Get<IHttpBodyControlFeature>();
                 if (syncIOFeature != null)
                 {
                     syncIOFeature.AllowSynchronousIO = true;
                 }
 
-#if !NETCOREAPP3_0
                 using (var sw = new StreamWriter(httpContext.Response.Body, _encoding, bufferSize: _bufferSize))
                 {
                     _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
                 }
 #else
-                await JsonSerializer.WriteAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });    
+                await JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
 #endif
-
                 return;
             }
 
