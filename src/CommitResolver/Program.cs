@@ -71,7 +71,7 @@ namespace CommitResolver
 
                         foreach (var x in runtimeVersion.Values)
                         {
-                            coreClrValues.Add(await GetRuntimeAssemblyCommitHash(x, "SOS.NETCore.dll"));
+                            coreClrValues.Add(await GetRuntimeAssemblyCommitHash(x, "System.Private.CoreLib.dll"));
                             coreFxValues.Add(await GetRuntimeAssemblyCommitHash(x, "System.Collections.dll"));
                         }
 
