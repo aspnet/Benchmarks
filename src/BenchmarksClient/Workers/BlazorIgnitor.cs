@@ -114,6 +114,11 @@ namespace BenchmarksClient.Workers
                         await Clicker(_cancelationTokenSource.Token);
                         break;
 
+                    case "Rogue":
+                        await Rogue(_cancelationTokenSource.Token);
+                        break;
+
+
                     //case "Reconnects":
                     //    await Reconnects(_cancelationTokenSource.Token);
                     //    break;
@@ -208,31 +213,37 @@ namespace BenchmarksClient.Workers
         {
             _clients = new List<BlazorClient>(_job.Connections);
 
-            var baseUri = new Uri(_job.ServerBenchmarkUri);
 
             _httpClient = new HttpClient { BaseAddress = new Uri(_job.ServerBenchmarkUri) };
 
             _recvCallbacks = new List<IDisposable>(_job.Connections);
             for (var i = 0; i < _job.Connections; i++)
             {
-                var builder = new HubConnectionBuilder();
-                builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
-                builder.WithUrl(new Uri(baseUri, "_blazor/"));
-
-                if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
-                {
-                    if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
-                    {
-                        builder.ConfigureLogging(builder =>
-                        {
-                            builder.SetMinimumLevel(level);
-                        });
-                    }
-                }
-
-                var connection = builder.Build();
-                _clients.Add(new BlazorClient(_httpClient, connection));
+                var connection = CreateHubConnection();
+                _clients.Add(new BlazorClient(connection) { HttpClient = _httpClient });
             }
+        }
+
+        private HubConnection CreateHubConnection()
+        {
+            var baseUri = new Uri(_job.ServerBenchmarkUri);
+            var builder = new HubConnectionBuilder();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
+            builder.WithUrl(new Uri(baseUri, "_blazor/"));
+
+            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
+            {
+                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
+                {
+                    builder.ConfigureLogging(builder =>
+                    {
+                        builder.SetMinimumLevel(level);
+                    });
+                }
+            }
+
+            var connection = builder.Build();
+            return connection;
         }
 
         private void CalculateStatistics()
@@ -338,16 +349,14 @@ namespace BenchmarksClient.Workers
         private class BlazorClient
         {
             private readonly object @lock = new object();
-            private readonly HttpClient httpClient;
             private readonly List<PredicateItem> predicates = new List<PredicateItem>();
             public int Requests;
             public List<double> LatencyPerConnection = new List<double>();
             public (double sum, int count) LatencyAverage;
             public int BadResponses;
 
-            public BlazorClient(HttpClient httpClient, HubConnection connection)
+            public BlazorClient(HubConnection connection)
             {
-                this.httpClient = httpClient;
                 HubConnection = connection;
             }
 
@@ -356,6 +365,8 @@ namespace BenchmarksClient.Workers
             public HubConnection HubConnection { get; }
 
             public ElementHive ElementHive { get; } = new ElementHive();
+
+            public HttpClient HttpClient { get; set; }
 
             public Task WaitUntil(Func<ElementHive, bool> predicate, TimeSpan? timeout = null)
             {
@@ -390,7 +401,7 @@ namespace BenchmarksClient.Workers
                 var dateTime = DateTime.UtcNow;
 
                 HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
-                await ConnectCircuit(cancellationToken);
+                await ConnectAsync(cancellationToken);
 
                 async Task OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
                 {
@@ -453,11 +464,16 @@ namespace BenchmarksClient.Workers
                 previousTime = DateTime.UtcNow;
             }
 
-            async Task ConnectCircuit(CancellationToken cancellationToken)
+            public async Task ConnectAsync(CancellationToken cancellationToken)
+            {
+                await HubConnection.InvokeAsync<string>("StartCircuit", "http://example.com/app", "http://example.com");
+            }
+
+            async Task ConnectToPrerenderCircuitAsync(CancellationToken cancellationToken)
             {
                 for (var i = 0; i < 5; i++)
                 {
-                    using var response = await httpClient.GetAsync("");
+                    using var response = await HttpClient.GetAsync("");
                     var content = await response.Content.ReadAsStringAsync();
 
                     // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
@@ -498,7 +514,7 @@ namespace BenchmarksClient.Workers
                 var assemblyName = "Microsoft.AspNetCore.Components.Server";
                 var methodIdentifier = "NotifyLocationChanged";
 
-                var argsObject = new object[] { $"{httpClient.BaseAddress}/{href}", true };
+                var argsObject = new object[] { $"{HttpClient.BaseAddress}/{href}", true };
                 var locationChangedArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                 return HubConnection.SendAsync("BeginInvokeDotNetFromJS", "0", assemblyName, methodIdentifier, 0, locationChangedArgs, cancellationToken);
             }

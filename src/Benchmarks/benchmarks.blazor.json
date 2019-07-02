@@ -12,6 +12,9 @@
   "Clicker": {
     "ClientProperties": { "Scenario": "Clicker" }
   },
+  "Rogue": {
+    "ClientProperties": { "Scenario": "Rogue" }
+  },
   "Navigator": {
     "ClientProperties": { "Scenario": "Navigator" }
   },

@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Ignitor;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace BenchmarksClient.Workers
 {
@@ -32,6 +36,50 @@ namespace BenchmarksClient.Workers
             return Task.WhenAll(tasks);
         }
 
+        private Task Rogue(CancellationToken cancellationToken)
+        {
+            var concurrentQueue = new ConcurrentQueue<HubConnection>();
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Parallel.For(0, _job.Connections, async _ =>
+                {
+                    try
+                    {
+                        Console.WriteLine("Connecting...");
+
+                        var hubConnection = CreateHubConnection();
+
+                        await hubConnection.StartAsync(cancellationToken);
+
+                        concurrentQueue.Enqueue(hubConnection);
+                        var blazorClient = new BlazorClient(hubConnection);
+
+                        await blazorClient.ConnectAsync(cancellationToken);
+                        Console.WriteLine("Connected...");
+                    }
+                    catch (SocketException)
+                    {
+                        if (concurrentQueue.TryDequeue(out var old))
+                        {
+                            await old.StopAsync();
+                            await old.DisposeAsync();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                });
+            }
+
+            return Task.WhenAll(concurrentQueue.Select(c => c.DisposeAsync()));
+        }
+
         private Task Clicker(CancellationToken cancellationToken)
         {
             var tasks = new Task[_clients.Count];
@@ -47,7 +95,7 @@ namespace BenchmarksClient.Workers
                     await client.WaitUntil(hive => hive.TryFindElementById("currentCount", out currentCount));
 
                     int currentValue;
-                    var value = ReadIntAttribute(currentCount, "counter");
+                    var value = ReadIntAttribute(currentCount, "count");
                     currentValue = value;
 
                     if (!client.ElementHive.TryFindElementById("counter", out var counter))
@@ -58,8 +106,8 @@ namespace BenchmarksClient.Workers
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         await counter.ClickAsync(client.HubConnection, cancellationToken);
-                        await client.WaitUntil(hive => ReadIntAttribute(currentCount, "counter") > currentValue);
-                        currentValue = ReadIntAttribute(currentCount, "counter");
+                        await client.WaitUntil(hive => ReadIntAttribute(currentCount, "count") > currentValue);
+                        currentValue = ReadIntAttribute(currentCount, "count");
                     }
                 });
             }
