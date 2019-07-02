@@ -22,8 +22,8 @@ Options:
   -n|--scenario          Benchmark scenario to run
   -m|--scheme            Scheme (http, https, h2, h2c). Default is http.
   -w|--webHost           WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.
-  --aspnet               ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
-  --dotnet               .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
+  -aspnet                ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developped one. Default is Latest (2.1-*).
+  -dotnet                .NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.1.0-*).
   -a|--arg               Argument to pass to the application. (e.g., --arg --raw=true --arg "single_value")
   --no-arguments         Removes any predefined arguments from the server application command line.
   --port                 The port used to request the benchmarked application. Default is 5000.
