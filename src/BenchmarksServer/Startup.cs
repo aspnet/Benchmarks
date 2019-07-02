@@ -2383,7 +2383,7 @@ namespace BenchmarkServer
 
                     var configuration = new SessionConfiguration(
                             circularBufferSizeMB: 1000,
-                            outputPath: "",
+                            format: EventPipeSerializationFormat.NetTrace,
                             providers: providerList);
 
                     var binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out eventPipeSessionId);

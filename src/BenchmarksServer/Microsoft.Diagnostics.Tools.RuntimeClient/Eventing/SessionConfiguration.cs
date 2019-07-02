@@ -9,32 +9,37 @@ using System.Linq;
 
 namespace Microsoft.Diagnostics.Tools.RuntimeClient
 {
+    public enum EventPipeSerializationFormat
+    {
+        NetPerf,
+        NetTrace
+    }
+
     public struct SessionConfiguration
     {
-        public SessionConfiguration(uint circularBufferSizeMB, string outputPath, IReadOnlyCollection<Provider> providers)
+        public SessionConfiguration(uint circularBufferSizeMB, EventPipeSerializationFormat format, IReadOnlyCollection<Provider> providers)
         {
             if (circularBufferSizeMB == 0)
                 throw new ArgumentException($"Buffer size cannot be zero.");
+            if (format != EventPipeSerializationFormat.NetPerf && format != EventPipeSerializationFormat.NetTrace)
+                throw new ArgumentException("Unrecognized format");
             if (providers == null)
                 throw new ArgumentNullException(nameof(providers));
             if (providers.Count() <= 0)
                 throw new ArgumentException($"Specified providers collection is empty.");
-            if (outputPath != null && Directory.Exists(outputPath)) // Make sure the input is not a directory.
-                throw new ArgumentException($"Specified output file name: {outputPath}, refers to a directory.");
 
             CircularBufferSizeInMB = circularBufferSizeMB;
-            _outputPath = outputPath != null ?
-                new FileInfo(fileName: !outputPath.EndsWith(".netperf") ? $"{outputPath}.netperf" : outputPath) : null;
+            Format = format;
+            string extension = format == EventPipeSerializationFormat.NetPerf ? ".netperf" : ".nettrace";
             _providers = new List<Provider>(providers);
         }
 
         public uint CircularBufferSizeInMB { get; }
+        public EventPipeSerializationFormat Format { get; }
 
-        public string OutputPath => _outputPath?.FullName;
 
         public IReadOnlyCollection<Provider> Providers => _providers.AsReadOnly();
 
-        private readonly FileInfo _outputPath;
         private readonly List<Provider> _providers;
 
         public byte[] Serialize()
@@ -44,8 +49,7 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient
             using (var writer = new BinaryWriter(stream))
             {
                 writer.Write(CircularBufferSizeInMB);
-
-                writer.WriteString(OutputPath);
+                writer.Write((uint)Format);
 
                 writer.Write(Providers.Count());
                 foreach (var provider in Providers)
