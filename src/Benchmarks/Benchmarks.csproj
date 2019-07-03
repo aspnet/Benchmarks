@@ -1,6 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
+  <!-- For local dev specify all supported TFMs they can be easily tested -->
+  <PropertyGroup Condition="'$(BenchmarksTargetFramework)' == ''">
+    <TargetFrameworks>netcoreapp2.1;netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <OutputType>Exe</OutputType>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
@@ -33,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion21)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion21)" />
 
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
@@ -58,7 +64,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
-
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 

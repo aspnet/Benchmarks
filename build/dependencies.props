@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <AspNetCoreVersion>2.1.2</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <JsonNetVersion>11.0.2</JsonNetVersion>
     <JilVersion>2.15.4</JilVersion>
@@ -15,14 +14,12 @@
     <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
-    <DefaultTargetFramework>netcoreapp2.1</DefaultTargetFramework>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0</MicrosoftNETCoreApp22PackageVersion>
 
     <!--
       Following properties are specific to src/Benchmarks/Benchmarks.csproj.
       Separate to ease testing of earlier releases.
     -->
-    <BenchmarksTargetFramework>$(DefaultTargetFramework)</BenchmarksTargetFramework>
     <BenchmarksAspNetCoreVersion>$(AspNetCoreVersion)</BenchmarksAspNetCoreVersion>
     <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
     <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
@@ -41,5 +38,15 @@
     <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview5.19227.1</MicrosoftEntityFrameworkCoreSqlServerVersion30>
     
     <!-- Using 2.2 EF version for netcoreapp3.0 benchmarks as it doesn't work with current providers -->
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+    <MicrosoftAspNetCoreAppPackageVersion>2.1.3</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.2'">
+    <MicrosoftAspNetCoreAppPackageVersion>2.2.0</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-preview7.19351.4</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 </Project>
