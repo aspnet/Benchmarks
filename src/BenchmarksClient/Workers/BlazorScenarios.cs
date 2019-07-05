@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -38,46 +39,41 @@ namespace BenchmarksClient.Workers
 
         private Task Rogue(CancellationToken cancellationToken)
         {
-            var concurrentQueue = new ConcurrentQueue<HubConnection>();
+            var links = new[] { "home", "fetchdata", "counter", "ticker" };
 
-            while (!cancellationToken.IsCancellationRequested)
+            var slim = new SemaphoreSlim(4);
+            var tasks = new List<Task>();
+            for (var i = 0; i < 100; i++)
             {
-                Parallel.For(0, _job.Connections, async _ =>
+                Console.WriteLine("Connecting...");
+                tasks.Add(Task.Run(async () =>
                 {
-                    try
+                    var link = 0;
+
+                    await slim.WaitAsync();
+                    var hubConnection = CreateHubConnection();
+
+                    await hubConnection.StartAsync(cancellationToken);
+
+                    var blazorClient = new BlazorClient(hubConnection, _job.ServerBenchmarkUri);
+
+                    await blazorClient.ConnectAsync(cancellationToken);
+                    slim.Release();
+
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        Console.WriteLine("Connecting...");
-
-                        var hubConnection = CreateHubConnection();
-
-                        await hubConnection.StartAsync(cancellationToken);
-
-                        concurrentQueue.Enqueue(hubConnection);
-                        var blazorClient = new BlazorClient(hubConnection);
-
-                        await blazorClient.ConnectAsync(cancellationToken);
-                        Console.WriteLine("Connected...");
+                        await blazorClient.NavigateTo(links[link], cancellationToken);
+                        Console.WriteLine("Navigating");
+                        link = (link + 1) % links.Length;
                     }
-                    catch (SocketException)
-                    {
-                        if (concurrentQueue.TryDequeue(out var old))
-                        {
-                            await old.StopAsync();
-                            await old.DisposeAsync();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                });
+                    Console.WriteLine("Connected...");
+
+
+                    await blazorClient.DisposeAsync();
+                }));
             }
 
-            return Task.WhenAll(concurrentQueue.Select(c => c.DisposeAsync()));
+            return Task.WhenAll(tasks);
         }
 
         private Task Clicker(CancellationToken cancellationToken)
