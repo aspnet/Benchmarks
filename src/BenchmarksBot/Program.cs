@@ -568,7 +568,7 @@ namespace BenchmarksBot
             {
                 // Download Microsoft.AspNet.App
 
-                var aspNetAppUrl = String.Format(_aspNetCorePackageFormat, AspNetCorePackage, aspNetCoreVersion);
+                var aspNetAppUrl = String.Format(_aspNetCorePackageFormat, AspNetCorePackage.ToLower(), aspNetCoreVersion);
                 if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
                 {
                     return null;
