@@ -517,8 +517,8 @@ namespace BenchmarksBot
                 {
                     r.CoreClrHashes = new[]
                     {
-                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "SOS.NETCore.dll"),
-                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "SOS.NETCore.dll")
+                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "System.Private.CoreLib.dll"),
+                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "System.Private.CoreLib.dll")
                     };
 
                     r.CoreFxHashes = new[]
