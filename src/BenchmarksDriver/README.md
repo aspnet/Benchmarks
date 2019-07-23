@@ -94,6 +94,12 @@ Properties of the Wrk client
   PipelineDepth          Depth of pipeline used by clients.
   Scripts                List of paths or urls to lua scripts to use, sperater by semi-colons (;).
 
+Properties of the Wrk2 client
+
+  Same as the Wrk client, but requires the "rate" parameter
+
+  rate                   Rate limit in requests per second
+
 Properties of the SignalR client
   HubProtocol            Name of the hub protocol to be used between client and server.
   TransportType          Name of the transport to communicate over.
