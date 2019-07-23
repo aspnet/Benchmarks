@@ -72,7 +72,6 @@ namespace BenchmarkServer
         private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
-        private static readonly string _latestRuntimeUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/latest.version";
         private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version";
 
         // Cached lists of SDKs and runtimes already installed
@@ -1458,14 +1457,7 @@ namespace BenchmarkServer
 
                     channel = String.Join(".", runtimeVersion.Split('.').Take(2));
 
-                    if (channel == "3.0")
-                    {
-                        runtimeVersion = await ParseLatestVersionFile(_latestRuntimeUrl);
-                    }
-                    else
-                    {
-                        runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
-                    }
+                    runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
                 }
                 else if (runtimeVersion.Split('.').Length == 2)
                 {
@@ -1971,6 +1963,9 @@ namespace BenchmarkServer
             return channelSdk;
         }
 
+        /// <summary>
+        /// Parses files that contain two lines: a sha and a version
+        /// </summary>
         private static async Task<string> ParseLatestVersionFile(string url)
         {
             var content = await DownloadContentAsync(url);
@@ -1984,20 +1979,6 @@ namespace BenchmarkServer
             }
 
             return latestSdk;
-        }
-
-        /// <summary>
-        /// Retrieves the current sdk version for a channel
-        /// </summary>
-        private static async Task<string> GetLatestSdkChannelVersion(string channel)
-        {
-            var content = await DownloadContentAsync(_releaseMetadata);
-
-            var index = JObject.Parse(content);
-            var channelSdk = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
-
-            Log.WriteLine($"Detecting current SDK version for channel {channel}: {channelSdk}");
-            return channelSdk;
         }
 
         private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5)
