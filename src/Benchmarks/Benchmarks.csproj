@@ -9,6 +9,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <LangVersion>8.0</LangVersion>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
