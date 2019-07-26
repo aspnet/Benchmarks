@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -70,9 +71,13 @@ namespace Benchmarks.Data
             return results;
         }
 
+#if NETCOREAPP2_1 || NETCOREAPP2_2
         private static readonly Func<ApplicationDbContext, AsyncEnumerable<Fortune>> _fortunesQuery
             = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
-
+#else
+        private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
+            = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
+#endif
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             var result = await _fortunesQuery(_dbContext).ToListAsync();
@@ -83,4 +88,21 @@ namespace Benchmarks.Data
             return result;
         }
     }
+
+#if !NETCOREAPP2_1 && !NETCOREAPP2_2
+    static class EntityFrameworkQueryableExtensions
+    {
+        public static async Task<List<TSource>> ToListAsync<TSource>(
+            this IAsyncEnumerable<TSource> source, CancellationToken cancellationToken = default)
+        {
+            var list = new List<TSource>();
+            await foreach (var element in source.WithCancellation(cancellationToken))
+            {
+                list.Add(element);
+            }
+
+            return list;
+        }
+    }
+#endif
 }
