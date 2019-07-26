@@ -57,7 +57,6 @@ namespace Benchmarks.Middleware
                 await WriteLineAsync($"Configuration: {_configurationName}");
                 await WriteLineAsync($"Server: {Program.Server}");
                 await WriteLineAsync($"Server URLs: {string.Join(", ", _serverAddresses.Addresses)}");
-                await WriteLineAsync($"Supports Send File: {httpContext.Features.Get<IHttpSendFileFeature>() != null}");
                 await WriteLineAsync("");
 
                 await WriteLineAsync($"Environment variables:");
