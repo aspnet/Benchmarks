@@ -57,6 +57,7 @@ namespace Benchmarks
             services.AddSingleton<IRandom, DefaultRandom>();
 
             var appSettings = Configuration.Get<AppSettings>();
+            BatchUpdateString.DatabaseServer = appSettings.Database;
 
             Console.WriteLine($"Database: {appSettings.Database}");
             Console.WriteLine($"ConnectionString: {appSettings.ConnectionString}");
