@@ -53,7 +53,7 @@ namespace BenchmarkServer
 
         // Substituion values when "Latest" is passed as the version
         private static string LatestTargetFramework = "netcoreapp3.0";
-        private static string LatestChannel = "3.0";
+        private static string LatestChannel = "5.0";
 
         // Substituion values when "Current" is passed as the version
         private static string CurrentTargetFramework = "netcoreapp2.2";
@@ -1483,6 +1483,10 @@ namespace BenchmarkServer
                 {
                     targetFramework = "netcoreapp3.0";
                 }
+                else if (runtimeVersion.StartsWith("5.0"))
+                {
+                    targetFramework = "netcoreapp3.0";
+                }
             }
 
             // If a specific framework is set, use it instead of the detected one
@@ -1514,6 +1518,11 @@ namespace BenchmarkServer
             else
             {
                 if (runtimeVersion.StartsWith("3.0"))
+                {
+                    sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
+                    Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
+                }
+                else if (runtimeVersion.StartsWith("5.0"))
                 {
                     sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
                     Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
@@ -1596,7 +1605,7 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Detected ASP.NET version: {aspNetCoreVersion}");
 
-            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0");
+            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0") || aspNetCoreVersion.StartsWith("5.0");
 
             var dotnetInstallStep = "";
 
