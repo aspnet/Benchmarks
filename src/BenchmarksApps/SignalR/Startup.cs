@@ -3,7 +3,6 @@
 
 using BenchmarkServer.Hubs;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,9 +32,10 @@ namespace BenchmarkServer
             }
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            app.UseSignalR(routes =>
+            app.UseRouting();
+            app.UseEndpoints(routes =>
             {
                 routes.MapHub<EchoHub>("/echo", o =>
                 {
