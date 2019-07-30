@@ -27,7 +27,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
-signalRJobs="-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/SignalR/perf/benchmarkapps/BenchmarkServer/signalr.json"
+signalRJobs="-j $ROOT/src/BenchmarksApps/SignalR/signalr.json"
 trend="--description Trend/Latest"
 
 jobs=(
