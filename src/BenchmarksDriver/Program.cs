@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -17,8 +16,6 @@ using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Ignore;
 using BenchmarksDriver.Serializers;
-using CsvHelper;
-using CsvHelper.TypeConversion;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -134,7 +131,7 @@ namespace BenchmarksDriver
 
             // Driver Options
             var clientOption = app.Option("-c|--client",
-                "URL of benchmark client", CommandOptionType.SingleValue);
+                "URL of benchmark client", CommandOptionType.MultipleValue);
             var clientNameOption = app.Option("--clientName",
                 "Name of client to use for testing, e.g. Wrk", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server",
@@ -380,7 +377,7 @@ namespace BenchmarksDriver
                 }
 
                 var server = serverOption.Value();
-                var client = clientOption.Value();
+                var clients = clientOption.Values;
                 var headers = Headers.Html;
                 var jobDefinitionPathOrUrl = jobsOptions.Value();
                 var iterations = 1;
@@ -394,7 +391,7 @@ namespace BenchmarksDriver
                     (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
                     (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
                     string.IsNullOrWhiteSpace(server) ||
-                    (string.IsNullOrWhiteSpace(client) && !(benchmarkdotnetOption.HasValue() || consoleOption.HasValue())) ||
+                    (clients.Any(client => string.IsNullOrWhiteSpace(client)) && !(benchmarkdotnetOption.HasValue() || consoleOption.HasValue())) ||
                     (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out span)) ||
                     (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
                     (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
@@ -1046,7 +1043,7 @@ namespace BenchmarksDriver
 
                 return Run(
                     new Uri(server),
-                    String.IsNullOrEmpty(client) ? null : new Uri(client),
+                    clients.Select(client => new Uri(client)).ToArray(),
                     sqlConnectionString,
                     serverJob,
                     session,
@@ -1111,7 +1108,7 @@ namespace BenchmarksDriver
 
         private static async Task<int> Run(
             Uri serverUri,
-            Uri clientUri,
+            Uri[] clientUris,
             string sqlConnectionString,
             ServerJob serverJob,
             string session,
@@ -1142,7 +1139,7 @@ namespace BenchmarksDriver
             string responseContent = null;
 
             var results = new List<Statistics>();
-            ClientJob clientJob = null;
+            ClientJob[] clientJobs = null;
 
             var serializer = WorkerFactory.CreateResultSerializer(_clientJob);
 
@@ -1431,11 +1428,14 @@ namespace BenchmarksDriver
                         var duration = _clientJob.Duration;
 
                         _clientJob.Duration = _clientJob.Warmup;
-                        clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+
+                        // Warmup using the first client
+                        clientJobs = new [] { await RunClientJob(scenario, clientUris[0], serverJobUri, serverBenchmarkUri, scriptFileOption) };
 
                         // Store the latency as measured on the warmup job
-                        latencyNoLoad = clientJob.LatencyNoLoad;
-                        latencyFirstRequest = clientJob.LatencyFirstRequest;
+                        // The first client is used to measure the latencies
+                        latencyNoLoad = clientJobs[0].LatencyNoLoad;
+                        latencyFirstRequest = clientJobs[0].LatencyFirstRequest;
 
                         _clientJob.Duration = duration;
                         System.Threading.Thread.Sleep(200);  // Make it clear on traces when warmup stops and measuring begins.
@@ -1467,15 +1467,14 @@ namespace BenchmarksDriver
                         // Don't run the client job for None and BenchmarkDotNet
                         if (!IsConsoleApp)
                         {
-                            clientJob = await RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption);
+                            var tasks = clientUris.Select(clientUri => RunClientJob(scenario, clientUri, serverJobUri, serverBenchmarkUri, scriptFileOption)).ToArray();
+                            await Task.WhenAll(tasks);
+                            clientJobs = tasks.Select(x => x.Result).ToArray();
                         }
                         else
                         {
                             // Don't wait for the client job as we are not starting it
-                            clientJob = new ClientJob
-                            {
-                                State = ClientState.Completed
-                            };
+                            clientJobs = new[] { new ClientJob { State = ClientState.Completed } };
 
                             // Wait until the server has stopped
                             var now = DateTime.UtcNow;
@@ -1514,9 +1513,9 @@ namespace BenchmarksDriver
 
                         }
 
-                        if (clientJob.State == ClientState.Completed && serverJob.State != ServerState.Failed)
+                        if (clientJobs.All(client => client.State == ClientState.Completed) && serverJob.State != ServerState.Failed)
                         {
-                            LogVerbose($"Client Job completed");
+                            LogVerbose($"Client Jobs completed");
 
                             if (span == TimeSpan.Zero && i == iterations && !String.IsNullOrEmpty(shutdownEndpoint))
                             {
@@ -1541,10 +1540,10 @@ namespace BenchmarksDriver
                                 downloadFiles.Add("r2r." + serverJob.ProcessId);
                             }
 
-                            if (clientJob.Warmup == 0)
+                            if (clientJobs[0].Warmup == 0)
                             {
-                                latencyNoLoad = clientJob.LatencyNoLoad;
-                                latencyFirstRequest = clientJob.LatencyFirstRequest;
+                                latencyNoLoad = clientJobs[0].LatencyNoLoad;
+                                latencyFirstRequest = clientJobs[0].LatencyFirstRequest;
                             }
 
                             var serverCounters = serverJob.ServerCounters;
@@ -1553,24 +1552,24 @@ namespace BenchmarksDriver
 
                             var statistics = new Statistics
                             {
-                                RequestsPerSecond = clientJob.RequestsPerSecond,
-                                LatencyOnLoad = clientJob.Latency.Average,
+                                RequestsPerSecond = clientJobs.Sum(clientJob => clientJob.RequestsPerSecond),
+                                LatencyOnLoad = clientJobs.Average(clientJob => clientJob.Latency.Average),
                                 Cpu = cpu,
                                 WorkingSet = workingSet,
                                 StartupMain = serverJob.StartupMainMethod.TotalMilliseconds,
                                 FirstRequest = latencyFirstRequest.TotalMilliseconds,
                                 Latency = latencyNoLoad.TotalMilliseconds,
-                                SocketErrors = clientJob.SocketErrors,
-                                BadResponses = clientJob.BadResponses,
+                                SocketErrors = clientJobs.Sum(clientJob => clientJob.SocketErrors),
+                                BadResponses = clientJobs.Sum(clientJob => clientJob.BadResponses),
 
-                                LatencyAverage = clientJob.Latency.Average,
-                                Latency50Percentile = clientJob.Latency.Within50thPercentile,
-                                Latency75Percentile = clientJob.Latency.Within75thPercentile,
-                                Latency90Percentile = clientJob.Latency.Within90thPercentile,
-                                Latency99Percentile = clientJob.Latency.Within99thPercentile,
-                                MaxLatency = clientJob.Latency.MaxLatency,
-                                TotalRequests = clientJob.Requests,
-                                Duration = clientJob.ActualDuration.TotalMilliseconds
+                                LatencyAverage = clientJobs.Average(clientJob => clientJob.Latency.Average),
+                                Latency50Percentile = clientJobs.Average(clientJob => clientJob.Latency.Within50thPercentile),
+                                Latency75Percentile = clientJobs.Average(clientJob => clientJob.Latency.Within75thPercentile),
+                                Latency90Percentile = clientJobs.Average(clientJob => clientJob.Latency.Within90thPercentile),
+                                Latency99Percentile = clientJobs.Average(clientJob => clientJob.Latency.Within99thPercentile),
+                                MaxLatency = clientJobs.Average(clientJob => clientJob.Latency.MaxLatency),
+                                TotalRequests = clientJobs.Sum(clientJob => clientJob.Requests),
+                                Duration = clientJobs[0].ActualDuration.TotalMilliseconds
                             };
 
                             foreach (var entry in serverJob.Counters)
@@ -1906,7 +1905,7 @@ namespace BenchmarksDriver
                                     {
                                         await serializer.WriteJobResultsToSqlAsync(
                                             serverJob: serverJob,
-                                            clientJob: clientJob,
+                                            clientJob: clientJobs[0],
                                             connectionString: sqlConnectionString,
                                             tableName: _tableName,
                                             path: serverJob.Path,
