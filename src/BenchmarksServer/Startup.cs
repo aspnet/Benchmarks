@@ -71,7 +71,7 @@ namespace BenchmarkServer
         private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
-        private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/latest.version";
+        private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{branch}/latest.version";
         private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version";
 
         // Cached lists of SDKs and runtimes already installed
@@ -1502,8 +1502,13 @@ namespace BenchmarkServer
                 }
                 else if (String.Equals(job.SdkVersion, "latest", StringComparison.OrdinalIgnoreCase))
                 {
-                    sdkVersion = await ParseLatestVersionFile(_sdkVersionUrl);
-                    Log.WriteLine($"Detecting latest SDK version: {sdkVersion}");
+                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
+                    Log.WriteLine($"Detecting latest SDK version (release/3.0.1xx): {sdkVersion}");
+                }
+                else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))
+                {
+                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
+                    Log.WriteLine($"Detecting edge SDK version (master branch): {sdkVersion}");
                 }
                 else
                 {

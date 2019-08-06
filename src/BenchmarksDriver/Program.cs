@@ -263,7 +263,7 @@ namespace BenchmarksDriver
                 "Download the Ready To Run log.", CommandOptionType.NoValue);
             var environmentVariablesOption = app.Option("-e|--env",
                 "Defines custom environment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
-            var buildArguments = app.Option("-b|--build-arg",
+            var buildArguments = app.Option("-ba|--build-arg",
                 "Defines custom build arguments to use with the benchmarked application e.g., -b \"/p:foo=bar\" --build-arg \"quiet\"", CommandOptionType.MultipleValue);
             var downloadFilesOption = app.Option("-d|--download",
                 "Downloads specific server files. This argument can be used multiple times. e.g., -d \"published/wwwroot/picture.png\"", CommandOptionType.MultipleValue);
