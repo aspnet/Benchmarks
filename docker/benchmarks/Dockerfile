@@ -29,6 +29,8 @@ RUN apt-get update \
         zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev libjansson-dev \
         libc-ares-dev libjemalloc-dev cython python3-dev python-setuptools libjemalloc-dev \
         libspdylay-dev \
+# dotnet performance repo microbenchmark dependencies
+        libgdiplus \
     && rm -rf /var/lib/apt/lists/*
 
 # Make perf visible for perfcollect
