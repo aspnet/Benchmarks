@@ -286,7 +286,7 @@ namespace BenchmarksDriver
                 "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
 
             // ClientJob Options
-            var clientThreadsOption = app.Option("--clientThreads",
+            var clientThreadsOption = app.Option("--client-threads",
                 "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
             var clientTimeoutOption = app.Option("--client-timeout",
                 "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
