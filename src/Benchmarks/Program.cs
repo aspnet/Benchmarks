@@ -70,6 +70,15 @@ namespace Benchmarks
                     .AddSingleton(new ConsoleArgs(args))
                     .AddSingleton<IScenariosConfiguration, ConsoleHostScenariosConfiguration>()
                     .AddSingleton<Scenarios>()
+                    .Configure<LoggerFilterOptions>(options =>
+                    {
+#if NETCOREAPP3_0
+                        if (Enum.TryParse(config["DisableScopes"], out bool disableScopes) && disableScopes)
+                        {
+                            options.CaptureScopes = false;
+                        }
+#endif
+                    })
                 )
                 .UseDefaultServiceProvider(
                     (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());

@@ -81,5 +81,12 @@
       "ScriptName": "",
       "PipelineDepth": 0
     }
+  },
+  "PlaintextNonPipelinedLoggingNoScopes": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    }
   }
 }
