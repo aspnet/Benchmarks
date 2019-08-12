@@ -66,6 +66,7 @@ namespace BenchmarksDriver
         {
             { "--aspnet", "--aspnetcoreversion" },
             { "--runtime", "--runtimeversion" },
+            { "--clientThreads", "--client-threads" },
         };
 
         public static CounterProfile[] Counters = new CounterProfile[]
