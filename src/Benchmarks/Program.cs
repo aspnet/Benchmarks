@@ -73,7 +73,7 @@ namespace Benchmarks
                     .Configure<LoggerFilterOptions>(options =>
                     {
 #if NETCOREAPP3_0
-                        if (Enum.TryParse(config["DisableScopes"], out bool disableScopes) && disableScopes)
+                        if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
                             options.CaptureScopes = false;
                         }
