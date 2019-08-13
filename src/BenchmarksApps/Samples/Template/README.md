@@ -105,15 +105,15 @@ dotnet run -- `
 Sample output:
 
 ```log
-RequestsPerSecond:           48,981
+RequestsPerSecond:           48,948
 Max CPU (%):                 93
-WorkingSet (MB):             163
-Avg. Latency (ms):           5.24
-Startup (ms):                194
-First Request (ms):          57.39
-Latency (ms):                0.91
-Total Requests:              738,605
-Duration: (ms)               15,080
+WorkingSet (MB):             161
+Avg. Latency (ms):           5.23
+Startup (ms):                202
+First Request (ms):          59.91
+Latency (ms):                0.4
+Total Requests:              738,567
+Duration: (ms)               15,090
 Socket Errors:               0
 Bad Responses:               0
 ```
@@ -131,7 +131,7 @@ Sample output:
 ```log
 Post-processing profiler trace, this can take 10s of seconds...
 Trace arguments: BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile
-Downloading trace: trace.08-12-13-17-53.RPS-49K.etl.zip
+Downloading trace: trace.08-13-07-10-08.RPS-227K.etl.zip
 ```
 
 ### Identifying the problem
@@ -152,14 +152,14 @@ To validate the fix, we need to send a new version of given library using the `-
 ```
 
 ```log
-RequestsPerSecond:           200,049
-Max CPU (%):                 88
-WorkingSet (MB):             164
-Avg. Latency (ms):           4.32
-Startup (ms):                292
-First Request (ms):          65.48
-Latency (ms):                0.7
-Total Requests:              3,020,685
+RequestsPerSecond:           226,818
+Max CPU (%):                 79
+WorkingSet (MB):             159
+Avg. Latency (ms):           2.23
+Startup (ms):                322
+First Request (ms):          62.91
+Latency (ms):                0.41
+Total Requests:              3,424,868
 Duration: (ms)               15,100
 Socket Errors:               0
 Bad Responses:               0
