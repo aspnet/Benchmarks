@@ -134,12 +134,12 @@ jobs=(
   "-n Json --webHost IISOutOfProcess $trend $jsonJobs --windows-only"
 
   # BasicApi
-  "--scenario BasicApi.GetUsingRouteValue $trend $basicApiJobs"
-  "--scenario BasicApi.Post $trend $basicApiJobs"
+  # "--scenario BasicApi.GetUsingRouteValue $trend $basicApiJobs"
+  # "--scenario BasicApi.Post $trend $basicApiJobs"
 
   # BasicViews
-  "--scenario BasicViews.GetTagHelpers $trend $basicViewsJobs"
-  "--scenario BasicViews.Post $trend $basicViewsJobs"
+  # "--scenario BasicViews.GetTagHelpers $trend $basicViewsJobs"
+  # "--scenario BasicViews.Post $trend $basicViewsJobs"
 
   # HttpClient
   "--scenario HttpClient $trend $httpClientJobs"
