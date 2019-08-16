@@ -75,6 +75,7 @@ namespace Benchmarks
 #if NETCOREAPP3_0
                         if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
+                            Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
                             options.CaptureScopes = false;
                         }
 #endif

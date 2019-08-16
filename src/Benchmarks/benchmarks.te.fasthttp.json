@@ -3,15 +3,13 @@
     "Source": {
       "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
       "BranchOrCommit": "master",
-      "DockerFile": "frameworks/Rust/actix/actix-raw.dockerfile",
-      "DockerImageName": "actix_raw",
-      "DockerContextDirectory": "frameworks/Rust/actix/"
+      "DockerFile": "frameworks/Go/fasthttp/fasthttp-prefork.dockerfile",
+      "DockerImageName": "fasthttp",
+      "DockerContextDirectory": "frameworks/Go/fasthttp/"
     },
-    "Client": "Wrk",
-    "Port": 8080,
-    "ReadyStateText": "Started http server"
+    "Port": 8080
   },
-  "Plaintext-Actix": {
+  "Plaintext-FastHttp": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
@@ -19,20 +17,21 @@
       "PipelineDepth": 16
     }
   },
-  "PlaintextNonPipelined-Actix": {
+  "PlaintextNonPipelined-FastHttp": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext"
   },
-  "Json-Actix": {
+  "Json-FastHttp": {
     "Path": "/json",
     "PresetHeaders": "Json"
   },
-  "FortunesPostgreSql-Actix": {
+  "FortunesPostgreSql-FastHttp": {
     "Path": "/fortune",
     "PresetHeaders": "Html",
     "Source": {
-      "DockerFile": "frameworks/Rust/actix/actix-pg.dockerfile",
-      "DockerImageName": "actix_pg"
+      "DockerFile": "frameworks/Go/fasthttp/fasthttp-postgresql-prefork.dockerfile",
+      "DockerImageName": "fasthttp_postgresql"
     }
   }
 }
+
