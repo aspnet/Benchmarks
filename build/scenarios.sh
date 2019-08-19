@@ -170,21 +170,21 @@ jobs=(
 
   # NodeJS (JavaScript)
 
-  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n Plaintext-NodeJs --connections 4096 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n Json-NodeJs --connections 256 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n FortunesPostgreSql-NodeJs --connections 64 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json $trend -n Plaintext-NodeJs --connections 4096 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json $trend -n Json-NodeJs --connections 256 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json $trend -n FortunesPostgreSql-NodeJs --connections 64 --no-clean --linux-only"
 
   # Actix (Rust)
 
-  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n Plaintext-Actix --connections 256 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n Json-Actix --connections 512 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n FortunesPostgreSql-Actix --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json $trend -n Plaintext-Actix --connections 256 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json $trend -n Json-Actix --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.actix.json $trend -n FortunesPostgreSql-Actix --connections 512 --no-clean --linux-only"
 
   # FastHttp (Go)
 
-  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n Plaintext-FastHttp --connections 512 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n Json-FastHttp --connections 512 --no-clean --linux-only"
-  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n FortunesPostgreSql-FastHttp --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json $trend -n Plaintext-FastHttp --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json $trend -n Json-FastHttp --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json $trend -n FortunesPostgreSql-FastHttp --connections 512 --no-clean --linux-only"
 
 )
 
