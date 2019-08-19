@@ -25,7 +25,7 @@ efcoreJobs="-r EntityFrameworkCore@release/3.0 --description Benchmarks --arg --
 
 jobs=(
 
-  "$efcoreJobs --benchmarkdotnet -n Sqlite --projectFile benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj"
+  "$efcoreJobs --benchmarkdotnet -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj"
 
 )
 
