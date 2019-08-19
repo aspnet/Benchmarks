@@ -30,7 +30,7 @@
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.0</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-ci.20190726.4</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-preview8</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
     <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
