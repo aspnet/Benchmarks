@@ -29,6 +29,7 @@ namespace BenchmarksClient.Workers
         private List<List<double>> _latencyPerConnection;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
+        private bool _initialized;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
@@ -42,6 +43,7 @@ namespace BenchmarksClient.Workers
         private void InitializeJob()
         {
             _stopped = false;
+            _initialized = false;
 
             Debug.Assert(_job.Connections > 0, "There must be more than 0 connections");
 
@@ -62,7 +64,7 @@ namespace BenchmarksClient.Workers
             HttpTransportType transportType = default;
             if (_job.ClientProperties.TryGetValue("TransportType", out var transport))
             {
-                transportType = Enum.Parse<HttpTransportType>(transport);
+                transportType = Enum.Parse<HttpTransportType>(transport, ignoreCase: true);
                 jobLogText += $" TransportType:{transportType}";
             }
 
@@ -100,6 +102,7 @@ namespace BenchmarksClient.Workers
             {
                 CreateConnections(transportType);
             }
+            _initialized = true;
         }
 
         public async Task StartJobAsync(ClientJob job)
@@ -205,7 +208,10 @@ namespace BenchmarksClient.Workers
             {
                 _stopped = true;
                 _workTimer.Stop();
-                CalculateStatistics();
+                if (_initialized)
+                {
+                    CalculateStatistics();
+                }
             }
             finally
             {
