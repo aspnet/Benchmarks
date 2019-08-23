@@ -14,7 +14,7 @@
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-    <NoWarn>0618</NoWarn>
+    <NoWarn>0618;NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,6 +74,9 @@
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
+    <!-- The following is required because of https://github.com/npgsql/npgsql/issues/2583.
+         To be removed when EFCore.PG 3.0.0-preview9 is released, depending on Npgsql 4.1.0-preview2 -->
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />
 
     <!-- The EF provider doesn't handle 3.0
