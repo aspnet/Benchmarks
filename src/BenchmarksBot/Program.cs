@@ -250,12 +250,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.Regressions, connection))
+                using (var command = new SqlCommand(Queries.Regressions.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var param = new SqlParameter("@table", _tableName);
-                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -296,12 +294,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.NotRunning, connection))
+                using (var command = new SqlCommand(Queries.NotRunning.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var param = new SqlParameter("@table", _tableName);
-                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -370,12 +366,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.Error, connection))
+                using (var command = new SqlCommand(Queries.Error.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var param = new SqlParameter("@table", _tableName);
-                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
