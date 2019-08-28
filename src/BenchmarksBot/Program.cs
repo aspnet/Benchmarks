@@ -29,6 +29,7 @@ namespace BenchmarksBot
         static string _username;
         static string _connectionString;
         static HashSet<string> _ignoredScenarios;
+        static string _tableName;
 
         static IReadOnlyList<Issue> _recentIssues;
 
@@ -117,6 +118,7 @@ namespace BenchmarksBot
             _username = config["Username"];
             _connectionString = config["ConnectionString"];
             _ignoredScenarios = new HashSet<string>();
+            _tableName = config["Table"];
 
             if (_repositoryId == 0)
             {
@@ -248,11 +250,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.Regressions, connection))
+                using (var command = new SqlCommand(Queries.Regressions.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -293,11 +294,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.NotRunning, connection))
+                using (var command = new SqlCommand(Queries.NotRunning.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -366,11 +366,10 @@ namespace BenchmarksBot
 
             using (var connection = new SqlConnection(_connectionString))
             {
-                using (var command = new SqlCommand(Queries.Error, connection))
+                using (var command = new SqlCommand(Queries.Error.Replace("@table", _tableName), connection))
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
