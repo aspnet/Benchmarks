@@ -29,6 +29,7 @@ namespace BenchmarksBot
         static string _username;
         static string _connectionString;
         static HashSet<string> _ignoredScenarios;
+        static string _tableName;
 
         static IReadOnlyList<Issue> _recentIssues;
 
@@ -117,6 +118,7 @@ namespace BenchmarksBot
             _username = config["Username"];
             _connectionString = config["ConnectionString"];
             _ignoredScenarios = new HashSet<string>();
+            _tableName = config["Table"];
 
             if (_repositoryId == 0)
             {
@@ -252,7 +254,8 @@ namespace BenchmarksBot
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
+                    var param = new SqlParameter("@table", _tableName);
+                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -297,7 +300,8 @@ namespace BenchmarksBot
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
+                    var param = new SqlParameter("@table", _tableName);
+                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
@@ -370,7 +374,8 @@ namespace BenchmarksBot
                 {
                     await connection.OpenAsync();
 
-                    var start = DateTime.UtcNow;
+                    var param = new SqlParameter("@table", _tableName);
+                    command.Parameters.Add(param);
                     var reader = await command.ExecuteReaderAsync();
 
                     while (await reader.ReadAsync())
