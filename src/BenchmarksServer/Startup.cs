@@ -398,7 +398,7 @@ namespace BenchmarkServer
                     // Find the first job that is not in Initializing state
                     foreach (var j in _jobs.GetAll())
                     {
-                        if (j.State == ServerState.Initializing || j.State == ServerState.Stopped)
+                        if (j.State == ServerState.Initializing)
                         {
                             var now = DateTime.UtcNow;
 
@@ -718,9 +718,18 @@ namespace BenchmarkServer
 
                             await StopJobAsync();
                         }
-                        else if (job.State == ServerState.Stopped || job.State == ServerState.Failed)
+                        else if (job.State == ServerState.Stopped)
                         {
-                            Log.WriteLine($"Job '{job.Id}' is stopped, waiting for the driver to delete it");
+                            Log.WriteLine($"Job '{job.Id}' has stopped, waiting for the driver to delete it");
+
+                            var now = DateTime.UtcNow;
+
+                            // Clean the job in case the driver is not running
+                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                            {
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
+                                job.State = ServerState.Deleting;
+                            }
                         }
                         else if (job.State == ServerState.Deleting)
                         {
