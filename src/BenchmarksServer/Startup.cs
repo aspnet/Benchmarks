@@ -25,12 +25,10 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tracing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Repository;
@@ -563,8 +561,6 @@ namespace BenchmarkServer
                                         {
                                             return;
                                         }
-
-                                        Log.WriteLine($"Tick: {job.Id} ({job.State})");
 
                                         // Pause the timer while we're running
                                         timer.Change(Timeout.Infinite, Timeout.Infinite);
