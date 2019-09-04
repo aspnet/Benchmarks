@@ -415,6 +415,8 @@ namespace BenchmarkServer
                             }
                         }
 
+                        Log.WriteLine($"Processing job {j.Id} in state {j.State}");
+
                         job = j;
                         break;
                     }
@@ -562,139 +564,147 @@ namespace BenchmarkServer
                                             return;
                                         }
 
+                                        Log.WriteLine($"Tick: {job.Id} ({job.State})");
+
                                         // Pause the timer while we're running
                                         timer.Change(Timeout.Infinite, Timeout.Infinite);
 
-                                        var now = DateTime.UtcNow;
-
-                                        // Clean the job in case the driver is not running
-                                        if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                                        try
                                         {
-                                            Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
-                                            job.State = ServerState.Deleting;
-                                        }
+                                            var now = DateTime.UtcNow;
 
-                                        if (!String.IsNullOrEmpty(dockerImage))
-                                        {
-                                            string inspect = "";
-
-                                            // Check the container is still running
-                                            ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
-                                                outputDataReceived: d => inspect += d,
-                                                log: false, throwOnError: false);
-
-                                            if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
+                                            // Clean the job in case the driver is not running
+                                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                             {
-                                                job.State = ServerState.Stopping;
+                                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
+                                                job.State = ServerState.Deleting;
                                             }
-                                            else
-                                            {
-                                                // Get docker stats
-                                                var stats = "";
 
-                                                var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
-                                                    outputDataReceived: d => stats += d,
+                                            if (!String.IsNullOrEmpty(dockerImage))
+                                            {
+                                                string inspect = "";
+
+                                                // Check the container is still running
+                                                ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
+                                                    outputDataReceived: d => inspect += d,
                                                     log: false, throwOnError: false);
 
-                                                if (!String.IsNullOrEmpty(stats))
+                                                if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
                                                 {
-                                                    var data = stats.Trim().Split('-');
+                                                    job.State = ServerState.Stopping;
+                                                }
+                                                else
+                                                {
+                                                    // Get docker stats
+                                                    var stats = "";
 
-                                                    // Format is {value}%
-                                                    var cpuPercentRaw = data[0];
+                                                    var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
+                                                        outputDataReceived: d => stats += d,
+                                                        log: false, throwOnError: false);
 
-                                                    // Format is {used}M/GiB/{total}M/GiB
-                                                    var workingSetRaw = data[1];
-                                                    var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
-                                                    var cpu = double.Parse(cpuPercentRaw.Trim('%'));
-
-                                                    // On Windows the CPU already takes the number or HT into account
-                                                    if (OperatingSystem == OperatingSystem.Linux)
+                                                    if (!String.IsNullOrEmpty(stats))
                                                     {
-                                                        cpu = cpu / Environment.ProcessorCount;
+                                                        var data = stats.Trim().Split('-');
+
+                                                        // Format is {value}%
+                                                        var cpuPercentRaw = data[0];
+
+                                                        // Format is {used}M/GiB/{total}M/GiB
+                                                        var workingSetRaw = data[1];
+                                                        var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
+                                                        var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+
+                                                        // On Windows the CPU already takes the number or HT into account
+                                                        if (OperatingSystem == OperatingSystem.Linux)
+                                                        {
+                                                            cpu = cpu / Environment.ProcessorCount;
+                                                        }
+
+                                                        cpu = Math.Round(cpu);
+
+                                                        // MiB, GiB, B ?
+                                                        var factor = 1;
+                                                        double memory;
+
+                                                        if (usedMemoryRaw.EndsWith("GiB"))
+                                                        {
+                                                            factor = 1024 * 1024 * 1024;
+                                                            memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                        }
+                                                        else if (usedMemoryRaw.EndsWith("MiB"))
+                                                        {
+                                                            factor = 1024 * 1024;
+                                                            memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                        }
+                                                        else
+                                                        {
+                                                            memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
+                                                        }
+
+                                                        var workingSet = (long)(memory * factor);
+
+                                                        job.AddServerCounter(new ServerCounter
+                                                        {
+                                                            Elapsed = now - startMonitorTime,
+                                                            WorkingSet = workingSet,
+                                                            CpuPercentage = cpu > 100 ? 0 : cpu
+                                                        });
                                                     }
-
-                                                    cpu = Math.Round(cpu);
-
-                                                    // MiB, GiB, B ?
-                                                    var factor = 1;
-                                                    double memory;
-
-                                                    if (usedMemoryRaw.EndsWith("GiB"))
+                                                }
+                                            }
+                                            else if (process != null)
+                                            {
+                                                if (process.HasExited)
+                                                {
+                                                    if (process.ExitCode != 0)
                                                     {
-                                                        factor = 1024 * 1024 * 1024;
-                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
-                                                    }
-                                                    else if (usedMemoryRaw.EndsWith("MiB"))
-                                                    {
-                                                        factor = 1024 * 1024;
-                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 3));
+                                                        Log.WriteLine($"Job failed");
+
+                                                        job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                        if (job.State != ServerState.Deleting)
+                                                        {
+                                                            job.State = ServerState.Failed;
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        memory = double.Parse(usedMemoryRaw.Substring(0, usedMemoryRaw.Length - 1));
-                                                    }
+                                                        Log.WriteLine($"Process has exited ({process.ExitCode})");
 
-                                                    var workingSet = (long)(memory * factor);
-
-                                                    job.AddServerCounter(new ServerCounter
-                                                    {
-                                                        Elapsed = now - startMonitorTime,
-                                                        WorkingSet = workingSet,
-                                                        CpuPercentage = cpu > 100 ? 0 : cpu
-                                                    });
-                                                }
-                                            }
-                                        }
-                                        else if (process != null)
-                                        {
-                                            if (process.HasExited)
-                                            {
-                                                if (process.ExitCode != 0)
-                                                {
-                                                    Log.WriteLine($"Job failed");
-
-                                                    job.Error = "Job failed at runtime\n" + standardOutput.ToString();
-                                                    if (job.State != ServerState.Deleting)
-                                                    {
-                                                        job.State = ServerState.Failed;
+                                                        job.State = ServerState.Stopped;
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    Log.WriteLine($"Process has exited ({process.ExitCode})");
+                                                    // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                                    // We need to dig into this
+                                                    var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+                                                    var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
+                                                    var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
+                                                    lastMonitorTime = now;
 
-                                                    job.State = ServerState.Stopped;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                                // We need to dig into this
-                                                var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
-                                                var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                                var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
-                                                lastMonitorTime = now;
+                                                    process.Refresh();
 
-                                                process.Refresh();
-
-                                                // Ignore first measure
-                                                if (oldCPUTime != TimeSpan.Zero)
-                                                {
-                                                    job.AddServerCounter(new ServerCounter
+                                                    // Ignore first measure
+                                                    if (oldCPUTime != TimeSpan.Zero)
                                                     {
-                                                        Elapsed = now - startMonitorTime,
-                                                        WorkingSet = process.WorkingSet64,
-                                                        CpuPercentage = cpu
-                                                    });
+                                                        job.AddServerCounter(new ServerCounter
+                                                        {
+                                                            Elapsed = now - startMonitorTime,
+                                                            WorkingSet = process.WorkingSet64,
+                                                            CpuPercentage = cpu
+                                                        });
+                                                    }
+
+                                                    oldCPUTime = newCPUTime;
                                                 }
-
-                                                oldCPUTime = newCPUTime;
                                             }
-                                        }
 
-                                        // Resume once we finished processing all connections
-                                        timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                                        }
+                                        finally
+                                        {
+                                            // Resume once we finished processing all connections
+                                            timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                                        }
                                     }
                                     finally
                                     {
@@ -722,11 +732,9 @@ namespace BenchmarkServer
                         {
                             Log.WriteLine($"Job '{job.Id}' has stopped, waiting for the driver to delete it");
 
-                            var now = DateTime.UtcNow;
-
-                            // Clean the job in case the driver is not running
-                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                            if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                             {
+                                // The job needs to be deleted
                                 Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
                                 job.State = ServerState.Deleting;
                             }
