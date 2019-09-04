@@ -33,7 +33,7 @@ namespace BenchmarksDriver
                 {
                     uri = $"{serverJobUri}/download?path={HttpUtility.UrlEncode(fileName)}";
 
-                    Program.LogVerbose($"Downloading file {fileName} from {uri}");
+                    Program.Log($"Downloading file {fileName} from {uri}");
 
                     var fileContent = await httpClient.DownloadFileContentAsync(uri);
 
@@ -42,7 +42,7 @@ namespace BenchmarksDriver
                 catch (Exception e)
                 {
                     Program.Log($"Error while downloading file {fileName} from {uri}, skipping ...");
-                    Program.LogVerbose(e.Message);
+                    Program.Log(e.Message);
 
                     continue;
                 }
