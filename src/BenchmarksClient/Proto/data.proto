@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package Data;
+
+import "google/protobuf/timestamp.proto";
+
+service DataService {
+  rpc DuplexStream (stream DataMessage) returns (stream DataMessage);
+}
+
+message DataMessage {
+  bytes data = 1;
+  google.protobuf.Timestamp timestamp = 2;
+}
