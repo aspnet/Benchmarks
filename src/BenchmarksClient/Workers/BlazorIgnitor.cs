@@ -5,17 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Ignitor;
-using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace BenchmarksClient.Workers
@@ -23,16 +16,14 @@ namespace BenchmarksClient.Workers
     public partial class BlazorIgnitor : IWorker
     {
         private ClientJob _job;
-        private HttpClientHandler _httpClientHandler;
         private List<BlazorClient> _clients;
-        private List<IDisposable> _recvCallbacks;
+        private List<ClientStatistics> _clientStatistics;
         private Stopwatch _workTimer = new Stopwatch();
         private bool _stopped;
         private SemaphoreSlim _lock = new SemaphoreSlim(1);
         private bool _detailedLatency;
         private string _scenario;
         private int _totalRequests;
-        private HttpClient _httpClient;
         private CancellationTokenSource _cancelationTokenSource;
 
         public string JobLogText { get; set; }
@@ -44,12 +35,6 @@ namespace BenchmarksClient.Workers
             _detailedLatency = _job.Latency == null;
 
             Debug.Assert(_job.Connections > 0, "There must be more than 0 connections");
-
-            // Configuring the http client to trust the self-signed certificate
-            _httpClientHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
 
             var jobLogText =
                 $"[ID:{_job.Id} Connections:{_job.Connections} Duration:{_job.Duration} Method:{_job.Method} ServerUrl:{_job.ServerBenchmarkUri}";
@@ -71,10 +56,9 @@ namespace BenchmarksClient.Workers
 
             jobLogText += "]";
             JobLogText = jobLogText;
-            if (_clients == null)
-            {
-                CreateConnections();
-            }
+
+            _clients = Enumerable.Range(0, _job.Connections).Select(_ => new BlazorClient()).ToList();
+            _clientStatistics = Enumerable.Range(0, _job.Connections).Select(_ => new ClientStatistics()).ToList();
 
             return Task.CompletedTask;
         }
@@ -85,10 +69,11 @@ namespace BenchmarksClient.Workers
             Log($"Starting Job");
             await InitializeJob();
             // start connections
+
             var tasks = new List<Task>(_clients.Count);
-            foreach (var item in _clients)
+            foreach (var client in _clients)
             {
-                tasks.Add(item.InitializeAsync(default));
+                tasks.Add(client.ConnectAsync(new Uri(_job.ServerBenchmarkUri)));
             }
 
             await Task.WhenAll(tasks);
@@ -104,25 +89,12 @@ namespace BenchmarksClient.Workers
             {
                 switch (_scenario)
                 {
-                    case "Navigator":
-                        await Navigator(_cancelationTokenSource.Token);
+                    case "Basic":
+                        await Basic(_cancelationTokenSource.Token);
                         break;
 
-                    case "Clicker":
-                        await Clicker(_cancelationTokenSource.Token);
-                        break;
-
-                    case "Rogue":
-                        await Rogue(_cancelationTokenSource.Token);
-                        break;
-
-
-                    //case "Reconnects":
-                    //    await Reconnects(_cancelationTokenSource.Token);
-                    //    break;
-
-                    case "BlazingPizza":
-                        await BlazingPizza(_cancelationTokenSource.Token);
+                    case "FormInput":
+                        await FormInput(_cancelationTokenSource.Token);
                         break;
 
                     default:
@@ -168,26 +140,17 @@ namespace BenchmarksClient.Workers
         // us from reusing the connnections.
         public async Task DisposeAsync()
         {
-            foreach (var callback in _recvCallbacks)
-            {
-                // stops stat collection from happening quicker than StopAsync
-                // and we can do all the calculations while close is occurring
-                callback.Dispose();
-            }
-
             // stop connections
             Log("Stopping connections");
             var tasks = new List<Task>(_clients.Count);
             foreach (var item in _clients)
             {
-                tasks.Add(item.DisposeAsync());
+                tasks.Add(item.DisposeAsync().AsTask());
             }
 
             await Task.WhenAll(tasks);
             Log("Connections have been disposed");
 
-            _httpClientHandler.Dispose();
-            _httpClient.Dispose();
             // TODO: Remove when clients no longer take a long time to "cool down"
             await Task.Delay(5000);
 
@@ -196,52 +159,7 @@ namespace BenchmarksClient.Workers
 
         public void Dispose()
         {
-            var tasks = new List<Task>(_clients.Count);
-            foreach (var item in _clients)
-            {
-                tasks.Add(item.DisposeAsync());
-            }
-
-            Task.WhenAll(tasks).GetAwaiter().GetResult();
-
-            _httpClientHandler.Dispose();
-        }
-
-        private void CreateConnections()
-        {
-            _clients = new List<BlazorClient>(_job.Connections);
-
-
-            _httpClient = new HttpClient { BaseAddress = new Uri(_job.ServerBenchmarkUri) };
-
-            _recvCallbacks = new List<IDisposable>(_job.Connections);
-            for (var i = 0; i < _job.Connections; i++)
-            {
-                var connection = CreateHubConnection();
-                _clients.Add(new BlazorClient(connection, _job.ServerBenchmarkUri) { HttpClient = _httpClient });
-            }
-        }
-
-        private HubConnection CreateHubConnection()
-        {
-            var baseUri = new Uri(_job.ServerBenchmarkUri);
-            var builder = new HubConnectionBuilder();
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
-            builder.WithUrl(new Uri(baseUri, "_blazor/"), HttpTransportType.LongPolling);
-
-            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
-            {
-                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, result: out var level))
-                {
-                    builder.ConfigureLogging(builder =>
-                    {
-                        builder.SetMinimumLevel(level);
-                    });
-                }
-            }
-
-            var connection = builder.Build();
-            return connection;
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         private void CalculateStatistics()
@@ -250,11 +168,11 @@ namespace BenchmarksClient.Workers
             var newTotalRequests = 0;
             var min = 0;
             var max = 0;
-            foreach (var client in _clients)
+            foreach (var client in _clientStatistics)
             {
-                newTotalRequests += client.Requests;
-                max = Math.Max(max, client.Requests);
-                min = Math.Max(min, client.Requests);
+                newTotalRequests += client.Renders;
+                max = Math.Max(max, client.Renders);
+                min = Math.Max(min, client.Renders);
             }
 
             var requestDelta = newTotalRequests - _totalRequests;
@@ -287,12 +205,12 @@ namespace BenchmarksClient.Workers
                 var totalCount = 0;
                 var totalSum = 0.0;
                 var allConnections = new List<double>();
-                foreach (var client in _clients)
+                foreach (var client in _clientStatistics)
                 {
-                    totalCount += client.LatencyPerConnection.Count;
-                    totalSum += client.LatencyPerConnection.Sum();
+                    totalCount += client.LatencyPerRender.Count;
+                    totalSum += client.LatencyPerRender.Sum();
 
-                    allConnections.AddRange(client.LatencyPerConnection);
+                    allConnections.AddRange(client.LatencyPerRender);
                 }
 
                 _job.Latency.Average = totalSum / totalCount;
@@ -311,7 +229,7 @@ namespace BenchmarksClient.Workers
             {
                 var totalSum = 0.0;
                 var totalCount = 0;
-                foreach (var client in _clients)
+                foreach (var client in _clientStatistics)
                 {
                     totalSum += client.LatencyAverage.sum;
                     totalCount += client.LatencyAverage.count;
@@ -342,6 +260,15 @@ namespace BenchmarksClient.Workers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        private class ClientStatistics
+        {
+            public int Renders { get; set; }
+
+            public (double sum, int count) LatencyAverage { get; set; }
+
+            public List<double> LatencyPerRender { get; set; }
         }
     }
 }
