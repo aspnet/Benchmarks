@@ -12,15 +12,22 @@ using Benchmarks.ClientJob;
 using Greet;
 using Grpc.Core;
 using Grpc.Core.Logging;
+using Grpc.Net.Client;
 
 namespace BenchmarksClient.Workers
 {
+    public enum GrpcClientType
+    {
+        GrpcCore,
+        GprcNetClient
+    }
+
     public class GrpcWorker : IWorker
     {
         public string JobLogText { get; set; }
 
         private ClientJob _job;
-        private List<Channel> _channels;
+        private List<ChannelBase> _channels;
         private List<IDisposable> _recvCallbacks;
         private List<int> _requestsPerConnection;
         private List<int> _errorsPerConnection;
@@ -34,6 +41,7 @@ namespace BenchmarksClient.Workers
         private double _clientToServerOffset;
         private int _totalRequests;
         private bool _useTls;
+        private GrpcClientType _grpcClientType;
 
         private void InitializeJob()
         {
@@ -62,6 +70,12 @@ namespace BenchmarksClient.Workers
             if (_job.ClientProperties.TryGetValue("UseTls", out var useTls) && Convert.ToBoolean(useTls))
             {
                 _useTls = true;
+            }
+
+            if (_job.ClientProperties.TryGetValue("GrpcClientType", out var grpcClientType))
+            {
+                _grpcClientType = Enum.Parse<GrpcClientType>(grpcClientType, ignoreCase: true);
+                jobLogText += $" GrpcClientType:{_grpcClientType}";
             }
 
             if (_job.ClientProperties.TryGetValue("Scenario", out var scenario))
@@ -103,53 +117,35 @@ namespace BenchmarksClient.Workers
 
             try
             {
+                Log($"Starting {_scenario}");
+
                 switch (_scenario)
                 {
                     case "Unary":
-                        Log($"Starting {_scenario}");
-
                         for (var i = 0; i < _channels.Count; i++)
                         {
                             var id = i;
                             // kick off a task per channel so they don't wait for other channels when sending "SayHello"
-                            var task = Task.Run(async () =>
-                            {
-                                Log($"{id}: Starting {_scenario}");
-
-                                var client = new Greeter.GreeterClient(_channels[id]);
-
-                                while (!cts.IsCancellationRequested)
-                                {
-                                    try
-                                    {
-                                        var start = DateTime.UtcNow;
-                                        var response = await client.SayHelloAsync(new HelloRequest
-                                        {
-                                            Name = "World"
-                                        });
-                                        var end = DateTime.UtcNow;
-
-                                        ReceivedDateTime(start, end, id);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
-
-                                        Log($"{id}: Error message: {ex.Message}");
-                                    }
-                                }
-
-                                Log($"{id}: Finished {_scenario}");
-                            });
+                            var task = Task.Run(() => UnaryCall(cts, id));
 
                             callTasks.Add(task);
                         }
+                        break;
+                    case "ServerStreaming":
+                        for (var i = 0; i < _channels.Count; i++)
+                        {
+                            var id = i;
+                            // kick off a task per channel so they don't wait for other channels when sending "SayHello"
+                            var task = Task.Run(() => ServerStreamingCall(cts, id));
 
-                        Log($"Finished {_scenario}");
+                            callTasks.Add(task);
+                        }
                         break;
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
                 }
+
+                Log($"Finished {_scenario}");
             }
             catch (Exception ex)
             {
@@ -166,6 +162,71 @@ namespace BenchmarksClient.Workers
 
             Log($"Stopping job");
             await StopJobAsync();
+        }
+
+        private async Task ServerStreamingCall(CancellationTokenSource cts, int id)
+        {
+            Log($"{id}: Starting {_scenario}");
+
+            var client = new GreetService.GreetServiceClient(_channels[id]);
+            using var call = client.SayHellos(new HelloRequest { Name = "World" }, cancellationToken: cts.Token);
+
+            try
+            {
+                while (true)
+                {
+                    var start = DateTime.UtcNow;
+                    if (!await call.ResponseStream.MoveNext())
+                    {
+                        throw new Exception("Unexpected end of stream.");
+                    }
+                    var end = DateTime.UtcNow;
+
+                    ReceivedDateTime(start, end, id);
+                }
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && cts.IsCancellationRequested)
+            {
+                // Handle expected error from canceling call
+            }
+            catch (Exception ex)
+            {
+                _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
+
+                Log($"{id}: Error message: {ex.Message}");
+            }
+
+            Log($"{id}: Finished {_scenario}");
+        }
+
+        private async Task UnaryCall(CancellationTokenSource cts, int id)
+        {
+            Log($"{id}: Starting {_scenario}");
+
+            var client = new GreetService.GreetServiceClient(_channels[id]);
+
+            while (!cts.IsCancellationRequested)
+            {
+                try
+                {
+                    var start = DateTime.UtcNow;
+                    var response = await client.SayHelloAsync(new HelloRequest
+                    {
+                        Name = "World"
+                    });
+                    var end = DateTime.UtcNow;
+
+                    ReceivedDateTime(start, end, id);
+                }
+                catch (Exception ex)
+                {
+                    _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
+
+                    Log($"{id}: Error message: {ex.Message}");
+                }
+            }
+
+            Log($"{id}: Finished {_scenario}");
         }
 
         public async Task StopJobAsync()
@@ -206,7 +267,10 @@ namespace BenchmarksClient.Workers
             var tasks = new List<Task>(_channels.Count);
             foreach (var channel in _channels)
             {
-                tasks.Add(channel.ShutdownAsync());
+                if (channel is Channel coreChannel)
+                {
+                    tasks.Add(coreChannel.ShutdownAsync());
+                }
             }
 
             await Task.WhenAll(tasks);
@@ -225,7 +289,7 @@ namespace BenchmarksClient.Workers
 
         private void CreateChannels()
         {
-            _channels = new List<Channel>(_job.Connections);
+            _channels = new List<ChannelBase>(_job.Connections);
             _requestsPerConnection = new List<int>(_job.Connections);
             _errorsPerConnection = new List<int>(_job.Connections);
             _latencyPerConnection = new List<List<double>>(_job.Connections);
@@ -237,6 +301,7 @@ namespace BenchmarksClient.Workers
             var initialUri = new Uri(_job.ServerBenchmarkUri);
             var resolvedUri = initialUri.Authority;
 
+            Log($"gRPC client type: {_grpcClientType}");
             Log($"Creating channels to '{resolvedUri}'");
             Log($"Channels authenticated with TLS: {_useTls}");
 
@@ -247,20 +312,36 @@ namespace BenchmarksClient.Workers
                 _latencyPerConnection.Add(new List<double>());
                 _latencyAverage.Add((0, 0));
 
-                var channelCredentials = _useTls ? GetSslCredentials() : ChannelCredentials.Insecure;
-
-                var channel = new Channel(resolvedUri, channelCredentials);
+                var channel = CreateChannel(resolvedUri);
                 _channels.Add(channel);
+            }
+        }
 
-                channel.ShutdownToken.Register(() =>
-                {
-                    if (!_stopped)
+        private ChannelBase CreateChannel(string target)
+        {
+            switch (_grpcClientType)
+            {
+                default:
+                case GrpcClientType.GrpcCore:
+                    var channelCredentials = _useTls ? GetSslCredentials() : ChannelCredentials.Insecure;
+
+                    var channel = new Channel(target, channelCredentials);
+                    channel.ShutdownToken.Register(() =>
                     {
-                        var error = $"Channel closed early";
-                        _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}] " + error;
-                        Log(error);
-                    }
-                });
+                        if (!_stopped)
+                        {
+                            var error = $"Channel closed early";
+                            _job.Error += Environment.NewLine + $"[{DateTime.Now.ToString("hh:mm:ss.fff")}] " + error;
+                            Log(error);
+                        }
+                    });
+
+                    return channel;
+                case GrpcClientType.GprcNetClient:
+                    var address = _useTls ? "https://" : "http://";
+                    address += target;
+
+                    return GrpcChannel.ForAddress(address);
             }
         }
 
