@@ -666,6 +666,9 @@ namespace BenchmarkServer
                                                     {
                                                         Log.WriteLine($"Process has exited ({process.ExitCode})");
 
+                                                        // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
+                                                        job.Output = standardOutput.ToString();
+
                                                         job.State = ServerState.Stopped;
                                                     }
                                                 }
