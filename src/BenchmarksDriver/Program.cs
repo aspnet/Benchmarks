@@ -401,6 +401,29 @@ namespace BenchmarksDriver
                     return 2;
                 }
 
+                foreach(var client in clients)
+                {
+                    try
+                    {
+                        var response = _httpClient.GetAsync(client).GetAwaiter().GetResult();
+                        response.EnsureSuccessStatusCode();
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"The specified client url '{client}' is invalid or not responsive.");
+                    }
+                }
+
+                try
+                {
+                    var response = _httpClient.GetAsync(server).GetAwaiter().GetResult();
+                    response.EnsureSuccessStatusCode();
+                }
+                catch
+                {
+                    Console.WriteLine($"The specified server url '{server}' is invalid or not responsive.");
+                }
+
                 if (sqlTableOption.HasValue())
                 {
                     _tableName = sqlTableOption.Value();
@@ -1976,7 +1999,7 @@ namespace BenchmarksDriver
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             // Convert LF
-                            serverJob.Output = serverJob.Output.Replace("\n", Environment.NewLine);
+                            serverJob.Output = serverJob.Output?.Replace("\n", Environment.NewLine) ?? "";
                         }
 
                         Log(serverJob.Output, notime: true);
