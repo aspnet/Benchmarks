@@ -1453,8 +1453,11 @@ namespace BenchmarksDriver
 
                         _clientJob.Duration = _clientJob.Warmup;
 
-                        // Warmup using the first client
-                        clientJobs = new [] { await RunClientJob(scenario, clientUris[0], serverJobUri, serverBenchmarkUri, scriptFileOption) };
+                        if (clientUris.Any())
+                        {
+                            // Warmup using the first client
+                            clientJobs = new[] { await RunClientJob(scenario, clientUris[0], serverJobUri, serverBenchmarkUri, scriptFileOption) };
+                        }
 
                         // Store the latency as measured on the warmup job
                         // The first client is used to measure the latencies
