@@ -768,7 +768,8 @@ namespace BenchmarkServer
                             if (DateTime.UtcNow - startMonitorTime > DriverTimeout)
                             {
                                 Log.WriteLine($"Job didn't start during the expected delay");
-                                job.State = ServerState.Stopping;
+                                job.State = ServerState.Failed;
+                                job.Error = "Job didn't start during the expected delay. Check that it outputs a startup message on the log.";
                             }
                         }
 
