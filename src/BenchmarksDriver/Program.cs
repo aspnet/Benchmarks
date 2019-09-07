@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Benchmarks.ClientJob;
@@ -405,19 +406,26 @@ namespace BenchmarksDriver
                 {
                     try
                     {
-                        var response = _httpClient.GetAsync(client).GetAwaiter().GetResult();
-                        response.EnsureSuccessStatusCode();
+                        using (var cts = new CancellationTokenSource(2000))
+                        {
+                            var response = _httpClient.GetAsync(client, cts.Token).Result;
+                            response.EnsureSuccessStatusCode();
+                        }
                     }
                     catch
                     {
                         Console.WriteLine($"The specified client url '{client}' is invalid or not responsive.");
+                        return 2;
                     }
                 }
 
                 try
                 {
-                    var response = _httpClient.GetAsync(server).GetAwaiter().GetResult();
-                    response.EnsureSuccessStatusCode();
+                    using (var cts = new CancellationTokenSource(2000))
+                    {
+                        var response = _httpClient.GetAsync(server, cts.Token).Result;
+                        response.EnsureSuccessStatusCode();
+                    }
                 }
                 catch
                 {
