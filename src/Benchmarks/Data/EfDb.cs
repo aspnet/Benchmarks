@@ -74,10 +74,7 @@ namespace Benchmarks.Data
 #if NETCOREAPP2_1 || NETCOREAPP2_2
         private static readonly Func<ApplicationDbContext, AsyncEnumerable<Fortune>> _fortunesQuery
             = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
-#else
-        private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
-            = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
-#endif
+
         public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
             var result = await _fortunesQuery(_dbContext).ToListAsync();
@@ -87,22 +84,27 @@ namespace Benchmarks.Data
 
             return result;
         }
-    }
 
-#if !NETCOREAPP2_1 && !NETCOREAPP2_2
-    static class EntityFrameworkQueryableExtensions
-    {
-        public static async Task<List<TSource>> ToListAsync<TSource>(
-            this IAsyncEnumerable<TSource> source, CancellationToken cancellationToken = default)
+#else
+        private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
+            = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
+
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
-            var list = new List<TSource>();
-            await foreach (var element in source.WithCancellation(cancellationToken))
+            var result = new List<Fortune>();
+
+            await foreach (var fortune in _fortunesQuery(_dbContext))
             {
-                list.Add(element);
+                result.Add(fortune);
             }
 
-            return list;
+            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            
+            result.Sort();
+
+            return result;
         }
-    }
+
 #endif
+    }
 }
