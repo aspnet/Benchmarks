@@ -3,7 +3,11 @@
 
 using System;
 using System.Data.Common;
+#if NETCOREAPP3_0
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;

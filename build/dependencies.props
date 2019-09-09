@@ -26,17 +26,17 @@
     <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
 
     <MongoDbVersion>2.8.0</MongoDbVersion>
-    <DapperVersion>1.60.1</DapperVersion>
-    <NpgsqlVersion30>4.1.0-ci.2164</NpgsqlVersion30>
+    <DapperVersion>2.0.4</DapperVersion>
+    <NpgsqlVersion30>4.1.0-preview2</NpgsqlVersion30>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.0</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.0</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-preview8</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.4</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0-preview9</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
     <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
     <PomeloEntityFrameworkCoreMySqlVersion30>2.2.0</PomeloEntityFrameworkCoreMySqlVersion30>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview5.19227.1</MicrosoftEntityFrameworkCoreSqlServerVersion30>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0-preview9.19423.6</MicrosoftEntityFrameworkCoreSqlServerVersion30>
     
     <!-- Using 2.2 EF version for netcoreapp3.0 benchmarks as it doesn't work with current providers -->
   </PropertyGroup>
