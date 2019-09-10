@@ -38,6 +38,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 		Directory.Build.targets = Directory.Build.targets
 		build\scenarios-baselines.sh = build\scenarios-baselines.sh
 		build\scenarios-efcore.sh = build\scenarios-efcore.sh
+		build\scenarios-frameworks.sh = build\scenarios-frameworks.sh
 		build\scenarios-signalr.sh = build\scenarios-signalr.sh
 		build\scenarios-te.sh = build\scenarios-te.sh
 		build\scenarios-tieredcomp.sh = build\scenarios-tieredcomp.sh
@@ -172,7 +173,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "src\Benc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{283D8E37-3F74-4728-A3D0-09D5D0D31220}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template", "src\BenchmarksApps\Samples\Template\Template.csproj", "{F2E32105-4792-460C-A198-DE3E01529F16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Template", "src\BenchmarksApps\Samples\Template\Template.csproj", "{F2E32105-4792-460C-A198-DE3E01529F16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
