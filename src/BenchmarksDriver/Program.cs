@@ -61,6 +61,7 @@ namespace BenchmarksDriver
         {
             { "--projectfile", "--project-file" },
             { "--outputfile", "--output-file" },
+            { "--clientName", "--client-name" }
         };
 
         private static Dictionary<string, string> _synonymArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -134,7 +135,7 @@ namespace BenchmarksDriver
             // Driver Options
             var clientOption = app.Option("-c|--client",
                 "URL of benchmark client", CommandOptionType.MultipleValue);
-            var clientNameOption = app.Option("--clientName",
+            var clientNameOption = app.Option("--client-name",
                 "Name of client to use for testing, e.g. Wrk", CommandOptionType.SingleValue);
             var serverOption = app.Option("-s|--server",
                 "URL of benchmark server", CommandOptionType.SingleValue);
@@ -321,24 +322,6 @@ namespace BenchmarksDriver
             _noStartupLatencyOption = app.Option("-nsl|--no-startup-latency",
                 "Skip startup latency measurement.", CommandOptionType.NoValue);
 
-            #region Switching console mode on Windows
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
-                {
-                    Console.WriteLine("failed to get output console mode");
-                }
-
-                outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
-                if (!SetConsoleMode(iStdOut, outConsoleMode))
-                {
-                    Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
-                }
-            }
-
-            #endregion
             app.OnExecute(() =>
             {
                 _verbose = verboseOption.HasValue();
@@ -2006,6 +1989,25 @@ namespace BenchmarksDriver
 
                     if (_displayOutput)
                     {
+
+                        #region Switching console mode on Windows to preserve colors for stdout
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                            if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
+                            {
+                                Console.WriteLine("failed to get output console mode");
+                            }
+
+                            outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+                            if (!SetConsoleMode(iStdOut, outConsoleMode))
+                            {
+                                Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
+                            }
+                        }
+
+                        #endregion
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
