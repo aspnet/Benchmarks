@@ -1,0 +1,30 @@
+{
+  "Default": {
+
+    "Client": "Wrk",
+    "PresetHeaders": "Json",
+
+    "Source": {
+      "Repository": "https://github.com/rynowak/link-a-thon.git",
+      "BranchOrCommit": "master",
+      "Project": "src/ApiTemplate/ApiTemplate.csproj"
+    },
+    "ReadyStateText": "Application started.",
+    "Path": "/weatherforecast"
+  },
+  "LinkAThonBaseline": {
+    "BuildArguments": [ ]
+  },
+  "LinkAThonMinimalSize": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:LinkAwayReadyToRun=true" ],
+    "SelfContained": true
+  },
+  "LinkAThonTrimmedAndR2R": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ],
+    "SelfContained": true
+  },
+  "LinkAThonTrimmedAndR2RSingleFile": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:PublishSingleFile=true"],
+    "SelfContained": true
+  }
+}
