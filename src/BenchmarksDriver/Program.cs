@@ -1400,6 +1400,11 @@ namespace BenchmarksDriver
                         {
                             Log($"Job failed on benchmark server, stopping...");
 
+                            if (_displayOutput)
+                            {
+                                DisplayOutput(serverJob);
+                            }
+
                             Log(serverJob.Error, notime: true, error: true);
 
                             // Returning will also send a Delete message to the server
@@ -1989,33 +1994,7 @@ namespace BenchmarksDriver
 
                     if (_displayOutput)
                     {
-
-                        #region Switching console mode on Windows to preserve colors for stdout
-
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-                            if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
-                            {
-                                Console.WriteLine("failed to get output console mode");
-                            }
-
-                            outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
-                            if (!SetConsoleMode(iStdOut, outConsoleMode))
-                            {
-                                Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
-                            }
-                        }
-
-                        #endregion
-
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            // Convert LF
-                            serverJob.Output = serverJob.Output?.Replace("\n", Environment.NewLine) ?? "";
-                        }
-
-                        Log(serverJob.Output, notime: true);
+                        DisplayOutput(serverJob);
                     }
 
                     // Download netperf file
@@ -2133,6 +2112,43 @@ namespace BenchmarksDriver
             }
 
             return 0;
+        }
+
+        private static void DisplayOutput(ServerJob serverJob)
+        {
+            #region Switching console mode on Windows to preserve colors for stdout
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
+                {
+                    Console.WriteLine("failed to get output console mode");
+                }
+
+                var tempConsoleMode = outConsoleMode;
+
+                outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+                if (!SetConsoleMode(iStdOut, outConsoleMode))
+                {
+                    Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
+                }
+
+                if (!SetConsoleMode(iStdOut, tempConsoleMode))
+                {
+                    Console.WriteLine($"failed to restore console mode, error code: {GetLastError()}");
+                }
+            }
+
+            #endregion
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Convert LF
+                serverJob.Output = serverJob.Output?.Replace("\n", Environment.NewLine) ?? "";
+            }
+
+            Log(serverJob.Output, notime: true);
         }
 
         private static List<KeyValuePair<string, string>> BuildFields(Statistics average)

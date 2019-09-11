@@ -378,6 +378,7 @@ namespace BenchmarkServer
                 var executionLock = new object();
                 var disposed = false;
                 var standardOutput = new StringBuilder();
+                var standardError = new StringBuilder();
                 string benchmarksDir = null;
                 var startMonitorTime = DateTime.UtcNow;
 
@@ -452,6 +453,7 @@ namespace BenchmarkServer
                                 job.State = ServerState.Starting;
 
                                 standardOutput.Clear();
+                                standardError.Clear();
                                 startMonitorTime = DateTime.UtcNow;
 
                                 Debug.Assert(tempDir == null);
@@ -520,7 +522,7 @@ namespace BenchmarkServer
                                         if (benchmarksDir != null)
                                         {
                                             Debug.Assert(process == null);
-                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome, standardOutput);
+                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome, standardOutput, standardError);
 
                                             job.ProcessId = process.Id;
 
@@ -656,7 +658,9 @@ namespace BenchmarkServer
                                                     {
                                                         Log.WriteLine($"Job failed");
 
-                                                        job.Error = "Job failed at runtime\n" + standardOutput.ToString();
+                                                        job.Error = $"Job failed at runtime:\n{standardError}";
+                                                        job.Output = standardOutput.ToString();
+
                                                         if (job.State != ServerState.Deleting)
                                                         {
                                                             job.State = ServerState.Failed;
@@ -2118,7 +2122,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput)
+        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput, StringBuilder standardError)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
@@ -2242,6 +2246,8 @@ namespace BenchmarkServer
                     Arguments = commandLine,
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
@@ -2312,6 +2318,15 @@ namespace BenchmarkServer
                 }
             };
 
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Log.WriteLine("[ERROR] " + e.Data);
+                    standardError.AppendLine(e.Data);
+                }
+            };
+
             if (job.CollectStartup)
             {
                 if (job.Collect)
@@ -2323,6 +2338,7 @@ namespace BenchmarkServer
             stopwatch.Start();
             process.Start();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
             if (job.CollectStartup)
             {
