@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 		build\scenarios-baselines.sh = build\scenarios-baselines.sh
 		build\scenarios-efcore.sh = build\scenarios-efcore.sh
 		build\scenarios-frameworks.sh = build\scenarios-frameworks.sh
+		build\scenarios-link-a-thon.sh = build\scenarios-link-a-thon.sh
 		build\scenarios-signalr.sh = build\scenarios-signalr.sh
 		build\scenarios-te.sh = build\scenarios-te.sh
 		build\scenarios-tieredcomp.sh = build\scenarios-tieredcomp.sh
