@@ -32,9 +32,10 @@ linkAThonJobs="-j $ROOT/src/Benchmarks/link-a-thon.api-template.json"
 jobs=(
   # link-a-thon
   "-n LinkAThonBaseline $trend $linkAThonJobs --linux-only" 
-  "-n LinkAThonMinimalSize $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2R $trend $linkAThonJobs --linux-only" 
-  "-n LinkAThonTrimmedAndR2RSingleFile $trend $linkAThonJobs --linux-only" 
+  "-n LinkAThonTrimmedAndR2RSingleFile $trend $linkAThonJobs --linux-only"
+  "-n LinkAThonTrimmedAndR2RSingleFileNoMvc $trend $linkAThonJobs --linux-only" 
+  "-n LinkAThonTrimmedAndR2RSingleFileCustomHost $trend $linkAThonJobs --linux-only" 
 )
 
 # build driver
