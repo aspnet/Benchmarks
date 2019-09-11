@@ -1,35 +1,16 @@
 {
   "Default": {
     "Client": "BlazorIgnitor",
-
     "Source": {
-      "Repository": "https://github.com/pranavkm/BlazorPerf.git",
-      "BranchOrCommit": "master",
-      "Project": "BlazorServerSIde.csproj"
-    },
-    "ReadyStateText": "Application started."
-  },
-  "Clicker": {
-    "ClientProperties": { "Scenario": "Clicker" }
-  },
-  "Rogue": {
-    "ClientProperties": { "Scenario": "Rogue" }
-  },
-  "Navigator": {
-    "ClientProperties": { "Scenario": "Navigator" }
-  },
-  "BlazingPizza": {
-    "Source": {
-      "Repository": "https://github.com/pranavkm/BlazingServer.git",
-      "BranchOrCommit": "master",
-      "Project": "src/BlazingPizza.Server/BlazingPizza.Server.csproj"
-    },
-    "ClientProperties": { "Scenario": "BlazingPizza" }
-  },
-  "Reconnects": {
-    "ClientProperties": {
-      "Scenario": "Reconnects",
-      "OperationDelay": 200
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "BranchOrCommit": "release/3.1",
+      "Project": "src/Components/benchmarkapps/BlazingPizza.Server/BlazingPizza.Server.csproj"
     }
+  },
+  "Basic": {
+    "ClientProperties": { "Scenario": "Basic" }
+  },
+  "FormInput": {
+    "ClientProperties": { "Scenario": "FormInput" }
   }
 }

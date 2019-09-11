@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Ignitor;
@@ -12,150 +9,150 @@ namespace BenchmarksClient.Workers
 {
     public partial class BlazorIgnitor
     {
-        private Task Navigator(CancellationToken cancellationToken)
+        private Task Basic(CancellationToken cancellationToken)
         {
-            var links = new[] { "home", "fetchdata", "counter", "ticker" };
             var tasks = new Task[_clients.Count];
+            var serverUri = new Uri(_job.ServerBenchmarkUri);
             for (var i = 0; i < _clients.Count; i++)
             {
                 var client = _clients[i];
+                var clientStats = _clientStatistics[i];
+
+                cancellationToken.Register(() =>
+                {
+                    client.Cancel();
+                });
+
+                client.OnCircuitError += error =>
+                {
+                    client.Cancel();
+                    throw new InvalidOperationException($"Received circuit error {error}");
+                };
 
                 tasks[i] = Task.Run(async () =>
                 {
-                    var link = 0;
-                    await client.RunAsync(cancellationToken);
+                    var pizzaOrders = client.FindElementById("pizzaOrders");
+                    var count = ReadIntAttribute(pizzaOrders, "pizzaCount");
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        await client.NavigateTo(links[link], cancellationToken);
-                        await client.WaitUntil(hive => hive.TryFindElementById(links[link] + "_displayed", out _));
-                        link = (link + 1) % links.Length;
+                        await ComputeStats(clientStats, () => client.ClickAsync("pizza5"));
+
+                        await ComputeStats(clientStats, () => client.ClickAsync("confirm"));
+
+                        var newCount = ReadIntAttribute(pizzaOrders, "pizzaCount");
+                        if (newCount != count + 1)
+                        {
+                            throw new InvalidOperationException($"Expected count to be {(count + 1)} but was {newCount}.");
+                        }
+                        count = newCount;
                     }
-                });
+                }, cancellationToken);
             }
 
             return Task.WhenAll(tasks);
-        }
 
-        private Task Rogue(CancellationToken cancellationToken)
-        {
-            var links = new[] { "home", "fetchdata", "counter", "ticker" };
-
-            var slim = new SemaphoreSlim(4);
-            var tasks = new List<Task>();
-            for (var i = 0; i < 100; i++)
+            static int ReadIntAttribute(ElementNode currentCount, string attributeName)
             {
-                Console.WriteLine("Connecting...");
-                tasks.Add(Task.Run(async () =>
+                if (!currentCount.Attributes.TryGetValue(attributeName, out var value))
                 {
-                    var link = 0;
+                    throw new Exception($"{attributeName} attribute is missing");
+                }
 
-                    await slim.WaitAsync();
-                    var hubConnection = CreateHubConnection();
-
-                    await hubConnection.StartAsync(cancellationToken);
-
-                    var blazorClient = new BlazorClient(hubConnection, _job.ServerBenchmarkUri);
-
-                    await blazorClient.ConnectAsync(cancellationToken);
-                    slim.Release();
-
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        await blazorClient.NavigateTo(links[link], cancellationToken);
-                        Console.WriteLine("Navigating");
-                        link = (link + 1) % links.Length;
-                    }
-                    Console.WriteLine("Connected...");
-
-
-                    await blazorClient.DisposeAsync();
-                }));
+                return int.Parse(value.ToString());
             }
-
-            return Task.WhenAll(tasks);
         }
 
-        private Task Clicker(CancellationToken cancellationToken)
+        private Task FormInput(CancellationToken cancellationToken)
         {
             var tasks = new Task[_clients.Count];
+            var serverUri = new Uri(_job.ServerBenchmarkUri);
             for (var i = 0; i < _clients.Count; i++)
             {
                 var client = _clients[i];
+                var clientStats = _clientStatistics[i];
+
+                cancellationToken.Register(() =>
+                {
+                    client.Cancel();
+                });
+
+                client.OnCircuitError += error =>
+                {
+                    client.Cancel();
+                    throw new InvalidOperationException($"Received circuit error {error}");
+                };
 
                 tasks[i] = Task.Run(async () =>
                 {
-                    await client.RunAsync(cancellationToken);
-                    await client.NavigateTo("counter", cancellationToken);
-                    ElementNode currentCount = null;
-                    await client.WaitUntil(hive => hive.TryFindElementById("currentCount", out currentCount));
+                    await client.ExpectRenderBatch(() => NavigateAsync(client, "checkout", cancellationToken));
+                    var element = client.FindElementById("Line1");
 
-                    int currentValue;
-                    var value = ReadIntAttribute(currentCount, "count");
-                    currentValue = value;
-
-                    if (!client.ElementHive.TryFindElementById("counter", out var counter))
-                    {
-                        throw new Exception("counter button not found");
-                    }
+                    var inputIndex = 0;
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        await counter.ClickAsync(client.HubConnection, cancellationToken);
-                        await client.WaitUntil(hive => ReadIntAttribute(currentCount, "count") > currentValue);
-                        currentValue = ReadIntAttribute(currentCount, "count");
+                        var changeEventHandler = element.Events["change"];
+                        var value = $"Some text {inputIndex++}";
+                        var changeEvent = new
+                        {
+                            browserRendererId = 0,
+                            eventHandlerId = changeEventHandler.EventId,
+                            eventArgsType = "change",
+                            eventFieldInfo = new
+                            {
+                                componentId = 0,
+                                fieldValue = value,
+                            },
+                        };
+
+                        var eventArgs = new { type = "change", value = value };
+
+                        await client.ExpectRenderBatch(() => client.HubConnection.InvokeAsync(
+                            "DispatchBrowserEvent",
+                            JsonSerializer.Serialize(changeEvent),
+                            JsonSerializer.Serialize(eventArgs),
+                            cancellationToken));
+
+                        var elementValue = element.Attributes["value"].ToString();
+
+                        if (elementValue != value)
+                        {
+                            throw new InvalidOperationException($"Expected value to be '{value}' but was '{elementValue}'.");
+                        }
+
                     }
-                });
+                }, cancellationToken);
             }
 
             return Task.WhenAll(tasks);
         }
 
-        private Task BlazingPizza(CancellationToken cancellationToken)
+        async Task ComputeStats(ClientStatistics clientStatistics, Func<Task> action)
         {
-            var tasks = new Task[_clients.Count];
-            for (var i = 0; i < _clients.Count; i++)
+            var startTime = DateTime.UtcNow;
+            await action();
+
+            var latency = DateTime.UtcNow - startTime;
+
+            if (_detailedLatency)
             {
-                var client = _clients[i];
-
-                tasks[i] = Task.Run(async () =>
-                {
-                    await client.RunAsync(cancellationToken);
-                    ElementNode pizza = null;
-                    await client.WaitUntil(hive => hive.TryFindElementById("5", out pizza));
-
-                    if (!client.ElementHive.TryFindElementById("pizzaOrders", out var pizzaOrders))
-                    {
-                        throw new InvalidOperationException("Can't find pizzaOrders");
-                    }
-
-                    var pizzaCount = 0;
-
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        await pizza.ClickAsync(client.HubConnection, cancellationToken);
-
-                        ElementNode confirmButton = null;
-                        await client.WaitUntil(hive => hive.TryFindElementById("Confirm", out confirmButton));
-                        await confirmButton.ClickAsync(client.HubConnection, cancellationToken);
-
-                        await client.WaitUntil(hive => ReadIntAttribute(pizzaOrders, "pizzaCount") > pizzaCount);
-                        pizzaCount = ReadIntAttribute(pizzaOrders, "pizzaCount");
-                    }
-                });
+                clientStatistics.LatencyPerRender.Add(latency.TotalMilliseconds);
+            }
+            else
+            {
+                var (sum, count) = clientStatistics.LatencyAverage;
+                sum += latency.TotalMilliseconds;
+                count++;
+                clientStatistics.LatencyAverage = (sum, count);
             }
 
-            return Task.WhenAll(tasks);
+            clientStatistics.Renders++;
         }
 
-        static int ReadIntAttribute(ElementNode currentCount, string attributeName)
+        Task NavigateAsync(BlazorClient client, string url, CancellationToken cancellationToken)
         {
-            if (!currentCount.Attributes.TryGetValue(attributeName, out var value))
-            {
-                throw new Exception($"{attributeName} attribute is missing");
-            }
-
-            return int.Parse(value.ToString());
+            return client.HubConnection.InvokeAsync("OnLocationChanged", $"{_job.ServerBenchmarkUri}/{url}", false, cancellationToken);
         }
     }
 }
