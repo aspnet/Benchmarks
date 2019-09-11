@@ -3,7 +3,7 @@
     "Client": "BlazorIgnitor",
     "Source": {
       "Repository": "https://github.com/aspnet/AspNetCore.git",
-      "BranchOrCommit": "prkrishn/add-benchmark-app",
+      "BranchOrCommit": "release/3.1",
       "Project": "src/Components/benchmarkapps/BlazingPizza.Server/BlazingPizza.Server.csproj"
     }
   },
