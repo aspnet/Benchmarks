@@ -88,7 +88,7 @@ namespace BenchmarksDriver.Serializers
                 path: serverJob.Path,
                 session: session,
                 description: description,
-                dimension: "Published Size (MB)",
+                dimension: "Published Size (KB)",
                 value: statistics.PublishedSize);
             }
 

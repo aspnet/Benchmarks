@@ -1627,7 +1627,7 @@ namespace BenchmarksDriver
                                     LogVerbose($"Startup Main (ms):           {statistics.StartupMain}");
                                     LogVerbose($"First Request (ms):          {statistics.FirstRequest}");
                                     LogVerbose($"Build Time (ms):             {statistics.BuildTime}");
-                                    LogVerbose($"Published Size (MB):         {statistics.PublishedSize}");
+                                    LogVerbose($"Published Size (KB):         {statistics.PublishedSize}");
                                 }
                             }
 
@@ -1883,7 +1883,7 @@ namespace BenchmarksDriver
                                     QuietLog($"Socket Errors:               {average.SocketErrors:n0}");
                                     QuietLog($"Bad Responses:               {average.BadResponses:n0}");
                                     QuietLog($"Build Time (ms):             {average.BuildTime:n0}");
-                                    QuietLog($"Published Size (MB):         {average.PublishedSize:n0}");
+                                    QuietLog($"Published Size (KB):         {average.PublishedSize:n0}");
                                     QuietLog($"SDK:                         {serverJob.SdkVersion}");
                                     QuietLog($"Runtime:                     {serverJob.RuntimeVersion}");
                                     QuietLog($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
@@ -2169,7 +2169,7 @@ namespace BenchmarksDriver
                 new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"),
                 new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"),
                 new KeyValuePair<string, string>("Build Time (ms)", $"{average.BuildTime}"),
-                new KeyValuePair<string, string>("Published Size (MB)", $"{average.PublishedSize}"),
+                new KeyValuePair<string, string>("Published Size (KB)", $"{average.PublishedSize}"),
                 new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"),
                 new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"),
                 new KeyValuePair<string, string>("Errors", $"{average.SocketErrors + average.BadResponses}"),

@@ -1835,12 +1835,11 @@ namespace BenchmarkServer
                 return null;
             }
 
+            stopwatch.Stop();
+
             job.BuildTime = stopwatch.Elapsed;
 
-            stopwatch.Stop();
-            stopwatch.Reset();
-
-            Log.WriteLine($"Application published successfully in {stopwatch.Elapsed}");
+            Log.WriteLine($"Application published successfully in {job.BuildTime.TotalMilliseconds} ms");
 
             job.PublishedSize = DirSize(new DirectoryInfo(outputFolder));
 
