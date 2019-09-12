@@ -19,7 +19,7 @@ namespace BenchmarksClient.Workers
     public enum GrpcClientType
     {
         GrpcCore,
-        GprcNetClient
+        GrpcNetClient
     }
 
     public class GrpcWorker : IWorker
@@ -78,7 +78,7 @@ namespace BenchmarksClient.Workers
                 jobLogText += $" GrpcClientType:{_grpcClientType}";
             }
 
-            if (_grpcClientType == GrpcClientType.GprcNetClient && !_useTls)
+            if (_grpcClientType == GrpcClientType.GrpcNetClient && !_useTls)
             {
                 Log("Enabling HTTP/2 without TLS on HttpClient");
 
@@ -346,7 +346,7 @@ namespace BenchmarksClient.Workers
                     });
 
                     return channel;
-                case GrpcClientType.GprcNetClient:
+                case GrpcClientType.GrpcNetClient:
                     var address = _useTls ? "https://" : "http://";
                     address += target;
 
