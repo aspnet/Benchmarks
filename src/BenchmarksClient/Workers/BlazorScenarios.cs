@@ -128,6 +128,53 @@ namespace BenchmarksClient.Workers
             return Task.WhenAll(tasks);
         }
 
+        private Task BackgroundUpdates(CancellationToken cancellationToken)
+        {
+            var tasks = new Task[_clients.Count];
+            var serverUri = new Uri(_job.ServerBenchmarkUri);
+            for (var i = 0; i < _clients.Count; i++)
+            {
+                var client = _clients[i];
+                var clientStats = _clientStatistics[i];
+
+                cancellationToken.Register(() =>
+                {
+                    client.Cancel();
+                });
+
+                client.OnCircuitError += error =>
+                {
+                    client.Cancel();
+                    throw new InvalidOperationException($"Received circuit error {error}");
+                };
+
+                tasks[i] = Task.Run(async () =>
+                {
+                    await client.ExpectRenderBatch(() => NavigateAsync(client, "orderstatus", cancellationToken));
+                    var element = client.FindElementById("status");
+                    var location = string.Empty;
+
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        await client.PrepareForNextBatch(timeout: null);
+                        if (!element.Attributes.TryGetValue("data-loc", out var newLocation))
+                        {
+                            throw new InvalidOperationException("Could not find attribute data-loc on element orderstatus");
+                        }
+
+                        if (newLocation.ToString() == location)
+                        {
+                            throw new InvalidOperationException("New location hasn't updated.");
+                        }
+
+                        newLocation = location;
+                    }
+                }, cancellationToken);
+            }
+
+            return Task.WhenAll(tasks);
+        }
+
         async Task ComputeStats(ClientStatistics clientStatistics, Func<Task> action)
         {
             var startTime = DateTime.UtcNow;

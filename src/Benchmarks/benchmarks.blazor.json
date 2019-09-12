@@ -12,5 +12,8 @@
   },
   "FormInput": {
     "ClientProperties": { "Scenario": "FormInput" }
+  },
+  "BackgroundUpdates": {
+    "ClientProperties": { "Scenario": "BackgroundUpdates" }
   }
 }
