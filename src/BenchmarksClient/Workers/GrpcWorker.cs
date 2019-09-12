@@ -78,6 +78,15 @@ namespace BenchmarksClient.Workers
                 jobLogText += $" GrpcClientType:{_grpcClientType}";
             }
 
+            if (_grpcClientType == GrpcClientType.GprcNetClient && !_useTls)
+            {
+                Log("Enabling HTTP/2 without TLS on HttpClient");
+
+                // This switch must be set before creating the GrpcChannel/HttpClient.
+                // It allows HttpClient to make HTTP/2 calls without TLS.
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            }
+
             if (_job.ClientProperties.TryGetValue("Scenario", out var scenario))
             {
                 _scenario = scenario;
