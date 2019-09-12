@@ -1845,7 +1845,7 @@ namespace BenchmarkServer
 
             if (job.PublishedSize != 0)
             {
-                job.PublishedSize = job.PublishedSize / 1024 / 1024;
+                job.PublishedSize = job.PublishedSize / 1024;
             }
 
             Log.WriteLine($"Published size: {job.PublishedSize}");
