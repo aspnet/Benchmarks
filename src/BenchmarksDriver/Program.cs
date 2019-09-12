@@ -1580,6 +1580,8 @@ namespace BenchmarksDriver
                                 Cpu = cpu,
                                 WorkingSet = workingSet,
                                 StartupMain = serverJob.StartupMainMethod.TotalMilliseconds,
+                                BuildTime = serverJob.BuildTime.TotalMilliseconds,
+                                PublishedSize = serverJob.PublishedSize,
                                 FirstRequest = latencyFirstRequest.TotalMilliseconds,
                                 Latency = latencyNoLoad.TotalMilliseconds,
                                 SocketErrors = clientJobs.Sum(clientJob => clientJob.SocketErrors),
@@ -1624,6 +1626,8 @@ namespace BenchmarksDriver
                                     LogVerbose($"Latency on load (ms):        {statistics.LatencyOnLoad}");
                                     LogVerbose($"Startup Main (ms):           {statistics.StartupMain}");
                                     LogVerbose($"First Request (ms):          {statistics.FirstRequest}");
+                                    LogVerbose($"Build Time (ms):             {statistics.BuildTime}");
+                                    LogVerbose($"Published Size (MB):         {statistics.PublishedSize}");
                                 }
                             }
 
@@ -1721,6 +1725,8 @@ namespace BenchmarksDriver
                                     Cpu = Math.Round(samples.Average(x => x.Cpu)),
                                     WorkingSet = Math.Round(samples.Average(x => x.WorkingSet)),
                                     StartupMain = Math.Round(samples.Average(x => x.StartupMain)),
+                                    BuildTime = Math.Round(samples.Average(x => x.BuildTime)),
+                                    PublishedSize = Math.Round(samples.Average(x => x.PublishedSize)),
                                     FirstRequest = Math.Round(samples.Average(x => x.FirstRequest), 2),
                                     SocketErrors = Math.Round(samples.Average(x => x.SocketErrors)),
                                     BadResponses = Math.Round(samples.Average(x => x.BadResponses)),
@@ -1876,6 +1882,8 @@ namespace BenchmarksDriver
                                     QuietLog($"Duration: (ms)               {average.Duration:n0}");
                                     QuietLog($"Socket Errors:               {average.SocketErrors:n0}");
                                     QuietLog($"Bad Responses:               {average.BadResponses:n0}");
+                                    QuietLog($"Build Time (ms):             {average.BuildTime:n0}");
+                                    QuietLog($"Published Size (MB):         {average.PublishedSize:n0}");
                                     QuietLog($"SDK:                         {serverJob.SdkVersion}");
                                     QuietLog($"Runtime:                     {serverJob.RuntimeVersion}");
                                     QuietLog($"ASP.NET Core:                {serverJob.AspNetCoreVersion}");
@@ -2160,6 +2168,8 @@ namespace BenchmarksDriver
                 new KeyValuePair<string, string>("Memory (MB)", $"{average.WorkingSet:n0}"),
                 new KeyValuePair<string, string>("Avg. Latency (ms)", $"{average.LatencyOnLoad}"),
                 new KeyValuePair<string, string>("Startup (ms)", $"{average.StartupMain}"),
+                new KeyValuePair<string, string>("Build Time (ms)", $"{average.BuildTime}"),
+                new KeyValuePair<string, string>("Published Size (MB)", $"{average.PublishedSize}"),
                 new KeyValuePair<string, string>("First Request (ms)", $"{average.FirstRequest}"),
                 new KeyValuePair<string, string>("Latency (ms)", $"{average.Latency}"),
                 new KeyValuePair<string, string>("Errors", $"{average.SocketErrors + average.BadResponses}"),

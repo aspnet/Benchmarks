@@ -1185,7 +1185,16 @@ namespace BenchmarkServer
                 standardOutput.AppendLine(processResult.StandardOutput);
             }
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+            
+            stopwatch.Stop();
+
+            job.BuildTime = stopwatch.Elapsed;
+
+            stopwatch.Reset();
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -1206,7 +1215,7 @@ namespace BenchmarkServer
                 ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName}"
                 : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName}";
 
-            var stopwatch = new Stopwatch();
+            
 
             if (job.Collect && job.CollectStartup)
             {
@@ -1804,11 +1813,13 @@ namespace BenchmarkServer
             var outputFolder = Path.Combine(benchmarkedApp, "published");
             var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
 
-            var startPublish = DateTime.UtcNow;
-
+            
             var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
 
             Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
@@ -1824,7 +1835,21 @@ namespace BenchmarkServer
                 return null;
             }
 
-            Log.WriteLine($"Application published successfully in {DateTime.UtcNow - startPublish}");
+            job.BuildTime = stopwatch.Elapsed;
+
+            stopwatch.Stop();
+            stopwatch.Reset();
+
+            Log.WriteLine($"Application published successfully in {stopwatch.Elapsed}");
+
+            job.PublishedSize = DirSize(new DirectoryInfo(outputFolder));
+
+            if (job.PublishedSize != 0)
+            {
+                job.PublishedSize = job.PublishedSize / 1024 / 1024;
+            }
+
+            Log.WriteLine($"Published size: {job.PublishedSize}");
 
             // Copy crossgen in the app folder
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
@@ -1911,6 +1936,24 @@ namespace BenchmarkServer
             }
 
             return benchmarkedDir;
+
+            long DirSize(DirectoryInfo d)
+            {
+                long size = 0;
+                // Add file sizes.
+                var fis = d.GetFiles();
+                foreach (var fi in fis)
+                {
+                    size += fi.Length;
+                }
+                // Add subdirectory sizes.
+                var dis = d.GetDirectories();
+                foreach (var di in dis)
+                {
+                    size += DirSize(di);
+                }
+                return size;
+            }
         }
 
         /// <summary>

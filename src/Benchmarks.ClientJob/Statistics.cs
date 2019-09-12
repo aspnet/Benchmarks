@@ -13,6 +13,8 @@ namespace Benchmarks.ClientJob
         public double Cpu { get; set; }
         public double WorkingSet { get; set; }
         public double StartupMain { get; set; }
+        public double BuildTime { get; set; }
+        public double PublishedSize { get; set; }
         public double FirstRequest { get; set; }
         public double Latency { get; set; }
         public double SocketErrors { get; set; }

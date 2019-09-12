@@ -54,6 +54,36 @@ namespace BenchmarksDriver.Serializers
                 value: statistics.StartupMain);
             }
 
+            if (statistics.BuildTime != -1 && !longRunning)
+            {
+                await WriteJobsToSql(
+                serverJob: serverJob,
+                clientJob: clientJob,
+                utcNow: utcNow,
+                connectionString: sqlConnectionString,
+                tableName: tableName,
+                path: serverJob.Path,
+                session: session,
+                description: description,
+                dimension: "Build Time (ms)",
+                value: statistics.BuildTime);
+            }
+
+            if (statistics.PublishedSize != -1 && !longRunning)
+            {
+                await WriteJobsToSql(
+                serverJob: serverJob,
+                clientJob: clientJob,
+                utcNow: utcNow,
+                connectionString: sqlConnectionString,
+                tableName: tableName,
+                path: serverJob.Path,
+                session: session,
+                description: description,
+                dimension: "Published Size (MB)",
+                value: statistics.PublishedSize);
+            }
+
             if (statistics.FirstRequest != -1 && !longRunning)
             {
                 await WriteJobsToSql(

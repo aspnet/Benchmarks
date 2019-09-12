@@ -38,9 +38,11 @@ namespace Benchmarks.ServerJob
         public string SdkVersion { get; set; } = "Latest";
         public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
-        
+
         // Delay from the process started to the console receiving "Application started"
         public TimeSpan StartupMainMethod { get; set; }
+        public TimeSpan BuildTime { get; set; }
+        public long PublishedSize { get; set; }
 
         private IList<ServerCounter> _serverCounter = new List<ServerCounter>();
 
