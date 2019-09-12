@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core-nightly/sdk:3.0.100-preview7
+FROM mcr.microsoft.com/dotnet/core-nightly/sdk:3.0.100-preview9
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
