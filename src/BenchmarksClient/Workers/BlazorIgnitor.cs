@@ -97,6 +97,10 @@ namespace BenchmarksClient.Workers
                         await FormInput(_cancelationTokenSource.Token);
                         break;
 
+                    case "BackgroundUpdates":
+                        await BackgroundUpdates(_cancelationTokenSource.Token);
+                        break;
+
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
                 }
