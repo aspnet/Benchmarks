@@ -107,7 +107,7 @@ namespace BenchmarksClient.Workers
             }
             catch (Exception ex)
             {
-                var text = "Exception from test: " + ex.Message;
+                var text = "Exception from test: " + ex;
                 Log(text);
                 _job.Error += Environment.NewLine + text;
             }

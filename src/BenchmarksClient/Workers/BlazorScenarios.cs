@@ -108,11 +108,12 @@ namespace BenchmarksClient.Workers
 
                         var eventArgs = new { type = "change", value = value };
 
-                        await client.ExpectRenderBatch(() => client.HubConnection.InvokeAsync(
-                            "DispatchBrowserEvent",
-                            JsonSerializer.Serialize(changeEvent),
-                            JsonSerializer.Serialize(eventArgs),
-                            cancellationToken));
+                        await ComputeStats(clientStats,
+                            () => client.ExpectRenderBatch(
+                                () => client.HubConnection.InvokeAsync(
+                                    "DispatchBrowserEvent",
+                                    JsonSerializer.Serialize(changeEvent),
+                                    JsonSerializer.Serialize(eventArgs))));
 
                         var elementValue = element.Attributes["value"].ToString();
 
@@ -120,7 +121,6 @@ namespace BenchmarksClient.Workers
                         {
                             throw new InvalidOperationException($"Expected value to be '{value}' but was '{elementValue}'.");
                         }
-
                     }
                 }, cancellationToken);
             }
