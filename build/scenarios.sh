@@ -158,18 +158,21 @@ jobs=(
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5 -m https"
 
   # GRPC ASP.NET Core
-  "-n GrpcUnaryAspNetCore-h2load --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
-  "-n GrpcUnaryAspNetCore-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
-  "-n GrpcUnaryAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
-  "-n GrpcServerStreamingAspNetCore-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
-  "-n GrpcServerStreamingAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5"
+  "-n GrpcUnaryAspNetCore-h2load --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcUnaryAspNetCore-h2load --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2"
+  "-n GrpcUnaryAspNetCore-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcUnaryAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcUnaryAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2"
+  "-n GrpcServerStreamingAspNetCore-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcServerStreamingAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcServerStreamingAspNetCore-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2"
 
   # GRPC C-core
-  "-n GrpcUnaryNative-h2load --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
-  "-n GrpcUnaryNative-GrpcCore --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
-  "-n GrpcUnaryNative-GrpcNetClient --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
-  "-n GrpcServerStreamingNative-GrpcCore --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
-  "-n GrpcServerStreamingNative-GrpcNetClient --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
+  "-n GrpcUnaryNative-h2load --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcUnaryNative-GrpcCore --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcUnaryNative-GrpcNetClient --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcServerStreamingNative-GrpcCore --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcServerStreamingNative-GrpcNetClient --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
 
   # Logging
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs" 

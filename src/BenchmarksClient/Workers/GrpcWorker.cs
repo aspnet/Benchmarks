@@ -67,9 +67,18 @@ namespace BenchmarksClient.Workers
                 }
             }
 
-            if (_job.ClientProperties.TryGetValue("UseTls", out var useTls) && Convert.ToBoolean(useTls))
+            if (_job.ClientProperties.TryGetValue("protocol", out var protocol))
             {
-                _useTls = true;
+                switch (protocol)
+                {
+                    case "h2":
+                        _useTls = true;
+                        break;
+                    case "h2c":
+                    default:
+                        _useTls = false;
+                        break;
+                }
             }
 
             if (_job.ClientProperties.TryGetValue("GrpcClientType", out var grpcClientType))
