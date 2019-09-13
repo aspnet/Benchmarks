@@ -68,7 +68,7 @@ Options:
   --no-crossgen          Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.
   --tiered-compilation   Enables tiered-compilation.
   --self-contained       Publishes the .NET Core runtime with the application.
-  -e|--env               Defines custom envrionment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
+  -e|--env               Defines custom environment variables to use with the benchmarked application e.g., -e KEY=VALUE -e A=B
   -ba|--build-arg        Defines custom build arguments to use with the benchmarked application e.g., -b "/p:foo=bar" --build-arg "quiet"
   --windows-only         Don't execute the job if the server is not running on Windows
   --linux-only           Don't execute the job if the server is not running on Linux
@@ -92,7 +92,7 @@ Properties of the Wrk client
 
   ScriptName             Name of the script used by wrk.
   PipelineDepth          Depth of pipeline used by clients.
-  Scripts                List of paths or urls to lua scripts to use, sperater by semi-colons (;).
+  Scripts                List of paths or urls to lua scripts to use, separated by semi-colons (;).
 
 Properties of the Wrk2 client
 
@@ -126,7 +126,7 @@ Properties of the Bombardier client
 
 #### Using a local job definition file
 
-Running the "Plaintext" job defined in the `benchmaks.json` file, targeting the latest stable release of ASP.NET Core.
+Running the "Plaintext" job defined in the `benchmarks.json` file, targeting the latest stable release of ASP.NET Core.
 
 ```powershell
 dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion Current
