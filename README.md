@@ -64,8 +64,8 @@ On your computer,
 dotnet run -c Debug \
  --server "http://10.0.0.102:5001" \
  --client "http://10.0.0.101:5002" \
- --jobs "../Benchmarks/benchmarks.Json.json" \
- -n Json
+ --jobs "../Benchmarks/benchmarks.json.json" \
+ --scenario Json
 ```
 
 This will start the `Json` scenario using the `Benchmarks` application that is provided in https://github.com/aspnet/benchmarks/tree/master/src/Benchmarks.
