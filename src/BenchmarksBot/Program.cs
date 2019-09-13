@@ -225,6 +225,12 @@ namespace BenchmarksBot
                 }
             }
 
+
+            body
+                .AppendLine()
+                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                ;
+
             var title = "Performance regression: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
 
             if (regressions.Count() > 5)
@@ -341,6 +347,11 @@ namespace BenchmarksBot
                 body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} |");
             }
 
+            body
+                .AppendLine()
+                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                ;
+
             var title = "Scenarios are not running: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
 
             if (regressions.Count() > 5)
@@ -413,6 +424,11 @@ namespace BenchmarksBot
             {
                 body.AppendLine($"| {r.Scenario} | {r.OperatingSystem}, {r.Hardware}, {r.Scheme}, {r.WebHost} | {r.DateTimeUtc} | {r.Errors} |");
             }
+
+            body
+                .AppendLine()
+                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                ;
 
             var title = "Bad responses: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
 
