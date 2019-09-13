@@ -261,6 +261,31 @@ namespace BenchmarkServer.Controllers
             return Ok();
         }
 
+        [HttpPost("{id}/build")]
+        [RequestSizeLimit(100_000_000)]
+        public async Task<IActionResult> UploadBuildFile(AttachmentViewModel attachment)
+        {
+            Log($"Uploading build files");
+
+            var job = _jobs.Find(attachment.Id);
+            var tempFilename = Path.GetTempFileName();
+
+            using (var fs = System.IO.File.Create(tempFilename))
+            {
+                await attachment.Content.CopyToAsync(fs);
+            }
+
+            job.BuildFiles.Add(new Attachment
+            {
+                TempFilename = tempFilename,
+                Filename = attachment.DestinationFilename,
+            });
+
+            job.LastDriverCommunicationUtc = DateTime.UtcNow;
+
+            return Ok();
+        }
+
         [HttpGet("{id}/trace")]
         public IActionResult Trace(int id)
         {

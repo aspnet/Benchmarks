@@ -1810,10 +1810,27 @@ namespace BenchmarkServer
                 }
             }
 
+            // Copye build files before building/publishing
+            foreach (var attachment in job.BuildFiles)
+            {
+                var filename = Path.Combine(benchmarkedApp, attachment.Filename.Replace("\\", "/"));
+
+                Log.WriteLine($"Creating build file: {filename}");
+
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+
+                File.Copy(attachment.TempFilename, filename);
+                File.Delete(attachment.TempFilename);
+            }
+
             var outputFolder = Path.Combine(benchmarkedApp, "published");
             var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
-
-            
+                        
             var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
 
             Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");

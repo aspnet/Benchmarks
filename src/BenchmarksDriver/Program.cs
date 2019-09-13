@@ -44,6 +44,7 @@ namespace BenchmarksDriver
 
         private static CommandOption
             _outputArchiveOption,
+            _buildFileOption,
             _initializeOption,
             _cleanOption,
             _memoryLimitOption,
@@ -228,6 +229,11 @@ namespace BenchmarksDriver
                 "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
             var outputFileOption = app.Option("--output-file",
                 "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
+                "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
+                CommandOptionType.MultipleValue);
+            _buildFileOption = app.Option("--build-file",
+                "Build file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
@@ -1307,6 +1313,32 @@ namespace BenchmarksDriver
                                     {
                                         outputFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
                                     }                                    
+                                }
+                            }
+
+                            // Uploading build files
+                            if (_buildFileOption.HasValue())
+                            {
+                                foreach (var buildFileValue in _buildFileOption.Values)
+                                {
+                                    var buildFileSegments = buildFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
+
+                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(buildFileSegments[0]), Path.GetFileName(buildFileSegments[0]), SearchOption.AllDirectories))
+                                    {
+                                        var resolvedFileWithDestination = resolvedFile;
+
+                                        if (buildFileSegments.Length > 1)
+                                        {
+                                            resolvedFileWithDestination += ";" + buildFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(buildFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
+                                        }
+
+                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri + "/build");
+
+                                        if (result != 0)
+                                        {
+                                            return result;
+                                        }
+                                    }
                                 }
                             }
 

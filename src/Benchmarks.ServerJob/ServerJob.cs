@@ -102,6 +102,7 @@ namespace Benchmarks.ServerJob
         public bool UseRuntimeStore { get; set; }
 
         public List<Attachment> Attachments { get; set; } = new List<Attachment>();
+        public List<Attachment> BuildFiles { get; set; } = new List<Attachment>();
 
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
 
