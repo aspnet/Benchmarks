@@ -41,6 +41,7 @@ http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_C
 grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/NativeServer/grpc-native.json"
 grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/BenchmarkServer/grpc-aspnetcore.json"
 orchardJobs="-j $ROOT/src/Benchmarks/benchmarks.orchard.json"
+blazorJobs="-j $ROOT/src/Benchmarks/benchmarks.blazor.json"
 
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
@@ -50,14 +51,14 @@ routingBenchmarks="-r AspNetCore@master --projectFile src/Http/Routing/perf/Micr
 jobs=(
   # Plaintext
   "-n PlaintextPlatform --webHost KestrelSockets $trend $plaintextPlatformJobs"
-  "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
-  "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs" 
-  "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
-  "-n EndpointPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3" 
-  "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only" 
-  "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3" 
-  "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs" 
-  "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs" 
+  "-n Plaintext --webHost KestrelSockets $trend $plaintextJobs -i 3"
+  "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs"
+  "-n MvcPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3"
+  "-n EndpointPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3"
+  "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only"
+  "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3"
+  "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs"
+  "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs"
 
   # Json
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs"
@@ -75,7 +76,7 @@ jobs=(
   "-n Json -m https --webHost KestrelSockets $trend $jsonJobs"
   "-n Json -m https --webHost HttpSys $trend $jsonJobs --windows-only"
   "-n PlaintextNonPipelined -m https --webHost KestrelSockets $trend $plaintextJobs"
-  
+
   # Http2
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2"
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2c --no-startup-latency" # no startup time as h2c is not supported by HttpClient
@@ -154,7 +155,7 @@ jobs=(
   # "$routingBenchmarks --benchmarkdotnet MatcherSingleEntryBenchmark --arg MatcherSingleEntryBenchmark"
 
   # Connections
-  "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5" 
+  "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5"
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5 -m https"
 
   # GRPC ASP.NET Core
@@ -172,12 +173,15 @@ jobs=(
   "-n GrpcServerStreamingNative-GrpcNetClient --webHost KestrelSockets $trend $grpcNativeJobs --connections 128 --warmup 5"
 
   # Logging
-  "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs" 
-  "-n PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $trend $plaintextJobs" 
+  "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs"
+  "-n PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $trend $plaintextJobs"
 
   # Orchard
-  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip;App_Data" 
+  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip;App_Data"
 
+  # Blazor
+  "-n Basic $blazorJobs"
+  "-n FormInput $blazorJobs"
 )
 
 # build driver
