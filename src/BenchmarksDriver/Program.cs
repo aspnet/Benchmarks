@@ -234,8 +234,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             _buildFileOption = app.Option("--build-file",
                 "Build file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
-                "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
-                "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
+                "\"--build-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
+                "\"--build-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             _outputArchiveOption = app.Option("--output-archive",
                 "Output archive attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
