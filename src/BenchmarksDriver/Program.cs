@@ -44,6 +44,7 @@ namespace BenchmarksDriver
 
         private static CommandOption
             _outputArchiveOption,
+            _buildArchiveOption,
             _buildFileOption,
             _initializeOption,
             _cleanOption,
@@ -228,19 +229,24 @@ namespace BenchmarksDriver
             var selfContainedOption = app.Option("--self-contained",
                 "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
             var outputFileOption = app.Option("--output-file",
-                "Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "Output file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             _buildFileOption = app.Option("--build-file",
-                "Build file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "Build file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--build-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
                 "\"--build-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
                 CommandOptionType.MultipleValue);
             _outputArchiveOption = app.Option("--output-archive",
-                "Output archive attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., " +
+                "Output archive attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-archive c:\\build\\Microsoft.AspNetCore.Mvc.zip\", " +
-                "\"--output-archive http://raw/github.com/pictures.zip;wwwroot\\pictures\"", 
+                "\"--output-archive http://raw/github.com/pictures.zip;wwwroot\\pictures\"",
+                CommandOptionType.MultipleValue);
+            _buildArchiveOption = app.Option("--build-archive",
+                "Build archive attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
+                "\"--build-archive c:\\build\\Microsoft.AspNetCore.Mvc.zip\", " +
+                "\"--build-archive http://raw/github.com/pictures.zip;wwwroot\\pictures\"",
                 CommandOptionType.MultipleValue);
             var scriptFileOption = app.Option("--script",
                 "WRK script path. File path can be a URL. e.g., " +
@@ -1313,6 +1319,45 @@ namespace BenchmarksDriver
                                     {
                                         outputFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
                                     }                                    
+                                }
+                            }
+
+                            // Upload custom build package contents
+                            if (_buildArchiveOption.HasValue())
+                            {
+                                foreach (var buildArchiveValue in _buildArchiveOption.Values)
+                                {
+                                    var buildFileSegments = buildArchiveValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
+
+                                    string localArchiveFilename = buildFileSegments[0];
+
+                                    var tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+                                    if (Directory.Exists(tempFolder))
+                                    {
+                                        Directory.Delete(tempFolder, true);
+                                    }
+
+                                    Directory.CreateDirectory(tempFolder);
+
+                                    _temporaryFolders.Add(tempFolder);
+
+                                    // Download the archive, while pinging the server to keep the job alive
+                                    if (buildArchiveValue.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        localArchiveFilename = await DownloadTemporaryFileAsync(localArchiveFilename, serverJobUri);
+                                    }
+
+                                    ZipFile.ExtractToDirectory(localArchiveFilename, tempFolder);
+
+                                    if (buildFileSegments.Length > 1)
+                                    {
+                                        _buildFileOption.Values.Add(Path.Combine(tempFolder, "*.*") + ";" + buildFileSegments[1]);
+                                    }
+                                    else
+                                    {
+                                        _buildFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
+                                    }
                                 }
                             }
 
