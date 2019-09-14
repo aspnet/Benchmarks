@@ -540,6 +540,26 @@ namespace BenchmarksDriver
                 serverJob.Scenario = scenarioName;
                 serverJob.WebHost = webHost;
 
+                foreach (var argument in serverJob.OutputFilesArgument)
+                {
+                    outputFileOption.Values.Add(argument);
+                }
+
+                foreach (var argument in serverJob.OutputArchivesArgument)
+                {
+                    _outputArchiveOption.Values.Add(argument);
+                }
+
+                foreach (var argument in serverJob.BuildFilesArgument)
+                {
+                    _buildFileOption.Values.Add(argument);
+                }
+
+                foreach (var argument in serverJob.BuildArchivesArgument)
+                {
+                    _buildArchiveOption.Values.Add(argument);
+                }
+
                 if (_memoryLimitOption.HasValue())
                 {
                     var memoryLimitValue = _memoryLimitOption.Value();

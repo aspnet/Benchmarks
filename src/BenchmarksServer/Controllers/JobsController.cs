@@ -275,7 +275,7 @@ namespace BenchmarkServer.Controllers
                 await attachment.Content.CopyToAsync(fs);
             }
 
-            job.BuildFiles.Add(new Attachment
+            job.BuildAttachments.Add(new Attachment
             {
                 TempFilename = tempFilename,
                 Filename = attachment.DestinationFilename,

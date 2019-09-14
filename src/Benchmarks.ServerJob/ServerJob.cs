@@ -102,7 +102,7 @@ namespace Benchmarks.ServerJob
         public bool UseRuntimeStore { get; set; }
 
         public List<Attachment> Attachments { get; set; } = new List<Attachment>();
-        public List<Attachment> BuildFiles { get; set; } = new List<Attachment>();
+        public List<Attachment> BuildAttachments { get; set; } = new List<Attachment>();
 
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
 
@@ -124,5 +124,31 @@ namespace Benchmarks.ServerJob
         public string AfterScript { get; set; }
         public ulong MemoryLimitInBytes { get; set; }
         public ConcurrentDictionary<string, ConcurrentQueue<string>> Counters { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
+
+        // These properties are used to map custom arguments to the scenario files
+
+        [JsonIgnore]
+        public string[] OutputFilesArgument { get; set; } = Array.Empty<string>();
+
+        [JsonProperty("OutputFiles")]
+        private string[] OutputFilesArgumentSetter { set { OutputFilesArgument = value; } }
+
+        [JsonIgnore]
+        public string[] OutputArchivesArgument { get; set; } = Array.Empty<string>();
+
+        [JsonProperty("OutputArchives")]
+        private string[] OutputArchivesArgumentSetter { set { OutputArchivesArgument = value; } }
+
+        [JsonIgnore]
+        public string[] BuildFilesArgument { get; set; } = Array.Empty<string>();
+
+        [JsonProperty("BuildFiles")]
+        private string[] BuildFilesArgumentSetter { set { BuildFilesArgument = value; } }
+
+        [JsonIgnore]
+        public string[] BuildArchivesArgument { get; set; } = Array.Empty<string>();
+
+        [JsonProperty("BuildArchives")]
+        private string[] BuildArchivesArgumentSetter { set { BuildArchivesArgument = value; } }
     }
 }

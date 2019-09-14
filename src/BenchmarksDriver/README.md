@@ -37,8 +37,10 @@ Options:
   -dc|--docker-context   Docker context directory. Defaults to the Docker file directory. (e.g., "frameworks/CSharp/aspnetcore/")
   -di|--docker-image     The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., "aspnetcore21")
   --runtime-store        Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).
-  --outputFile           Output file attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
-  --output-archive       Output archive attachment. Format is 'path[;destination]'. FilePath can be a URL. e.g., "--output-archive c:\build\Microsoft.AspNetCore.Mvc.zip\", "--output-archive http://raw/github.com/pictures.zip;wwwroot\pictures"
+  --output-file          Output file attachment. Format is 'path[;destination]'. Destination is relative to the publication folder. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
+  --output-archive       Output archive attachment. Format is 'path[;destination]'. Path can be a URL. Destination is relative to the publication folder. e.g., "--output-archive c:\build\Microsoft.AspNetCore.Mvc.zip\", "--output-archive http://raw/github.com/pictures.zip;wwwroot\pictures"
+  --build-file           Build file attachment. Format is 'path[;destination]'. Destination is relative to the source folder. e.g., "--outputFile c:\build\Microsoft.AspNetCore.Mvc.dll", "--outputFile c:\files\samples\picture.png;wwwroot\picture.png"
+  --build-archive        Build archive attachment. Format is 'path[;destination]'. Path can be a URL. Destination is relative to the source folder. e.g., "--output-archive c:\build\Microsoft.AspNetCore.Mvc.zip\", "--output-archive http://raw/github.com/pictures.zip;wwwroot\pictures"
   -src|--source          Local folder containing the project to test.
   --client-threads       Number of threads used by client. Default is 32.
   --timeout              Timeout for client connections. e.g., 2s

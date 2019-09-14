@@ -1811,7 +1811,7 @@ namespace BenchmarkServer
             }
 
             // Copye build files before building/publishing
-            foreach (var attachment in job.BuildFiles)
+            foreach (var attachment in job.BuildAttachments)
             {
                 var filename = Path.Combine(benchmarkedApp, attachment.Filename.Replace("\\", "/"));
 
