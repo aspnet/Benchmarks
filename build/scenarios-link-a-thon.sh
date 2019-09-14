@@ -34,6 +34,7 @@ jobs=(
   "-n LinkAThonBaseline $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2R $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2RSingleFile $trend $linkAThonJobs --linux-only"
+  "-n LinkAThonTrimmedAndR2RSingleFileWithTrimList $trend $linkAThonJobs --linux-only"
   "-n LinkAThonTrimmedAndR2RSingleFileNoMvc $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2RSingleFileCustomHost $trend $linkAThonJobs --linux-only" 
 )
