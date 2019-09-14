@@ -29,6 +29,8 @@ SESSION=`date '+%Y%m%d%H%M%S'`
 
 linkAThonJobs="-j $ROOT/src/Benchmarks/link-a-thon.api-template.json"
 
+trend="--description Trend/Latest"
+
 jobs=(
   # link-a-thon
   "-n LinkAThonBaseline $trend $linkAThonJobs --linux-only" 
