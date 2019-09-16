@@ -90,7 +90,7 @@ namespace BenchmarksClient.Workers
             }
             else
             {
-                _requestSize = 100;
+                _requestSize = 0;
             }
             jobLogText += $" RequestSize:{_requestSize}";
 
@@ -100,7 +100,7 @@ namespace BenchmarksClient.Workers
             }
             else
             {
-                _responseSize = 100;
+                _responseSize = 0;
             }
             jobLogText += $" ResponseSize:{_responseSize}";
 
