@@ -167,6 +167,9 @@ jobs=(
   "-n GrpcServerStreaming-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
   "-n GrpcServerStreaming-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
   "-n GrpcServerStreaming-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2"
+  "-n GrpcPingPongStreaming-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcPingPongStreaming-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcPingPongStreaming-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 128 --warmup 5 -m h2"
 
   # GRPC C-core
   "-n GrpcUnary-h2load --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
@@ -174,6 +177,8 @@ jobs=(
   "-n GrpcUnary-GrpcNetClient --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
   "-n GrpcServerStreaming-GrpcCore --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
   "-n GrpcServerStreaming-GrpcNetClient --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcPingPongStreaming-GrpcCore --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
+  "-n GrpcPingPongStreaming-GrpcNetClient --webHost CCore $trend $grpcNativeJobs --connections 128 --warmup 5 -m h2c"
 
   # Logging
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs"

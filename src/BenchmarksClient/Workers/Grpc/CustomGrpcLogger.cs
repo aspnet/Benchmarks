@@ -4,7 +4,7 @@
 using System;
 using Grpc.Core.Logging;
 
-namespace BenchmarksClient.Workers.Grpc
+namespace BenchmarksClient.Workers
 {
     public class CustomGrpcLogger : ILogger
     {

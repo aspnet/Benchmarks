@@ -9,10 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
-using Greet;
+using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Core.Logging;
 using Grpc.Net.Client;
+using Grpc.Testing;
 
 namespace BenchmarksClient.Workers
 {
@@ -41,6 +42,8 @@ namespace BenchmarksClient.Workers
         private double _clientToServerOffset;
         private int _totalRequests;
         private bool _useTls;
+        private int _requestSize;
+        private int _responseSize;
         private GrpcClientType _grpcClientType;
 
         private void InitializeJob()
@@ -80,6 +83,26 @@ namespace BenchmarksClient.Workers
                         break;
                 }
             }
+
+            if (_job.ClientProperties.TryGetValue("RequestSize", out var requestSize))
+            {
+                _requestSize = Convert.ToInt32(requestSize);
+            }
+            else
+            {
+                _requestSize = 100;
+            }
+            jobLogText += $" RequestSize:{_requestSize}";
+
+            if (_job.ClientProperties.TryGetValue("ResponseSize", out var responseSize))
+            {
+                _responseSize = Convert.ToInt32(responseSize);
+            }
+            else
+            {
+                _responseSize = 100;
+            }
+            jobLogText += $" ResponseSize:{_responseSize}";
 
             if (_job.ClientProperties.TryGetValue("GrpcClientType", out var grpcClientType))
             {
@@ -136,31 +159,29 @@ namespace BenchmarksClient.Workers
             try
             {
                 Log($"Starting {_scenario}");
+                Func<int, Task> callFactory;
 
                 switch (_scenario)
                 {
                     case "Unary":
-                        for (var i = 0; i < _channels.Count; i++)
-                        {
-                            var id = i;
-                            // kick off a task per channel so they don't wait for other channels when sending "SayHello"
-                            var task = Task.Run(() => UnaryCall(cts, id));
-
-                            callTasks.Add(task);
-                        }
+                        callFactory = id => UnaryCall(cts, id);
                         break;
                     case "ServerStreaming":
-                        for (var i = 0; i < _channels.Count; i++)
-                        {
-                            var id = i;
-                            // kick off a task per channel so they don't wait for other channels when sending "SayHello"
-                            var task = Task.Run(() => ServerStreamingCall(cts, id));
-
-                            callTasks.Add(task);
-                        }
+                        callFactory = id => ServerStreamingCall(cts, id);
+                        break;
+                    case "PingPongStreaming":
+                        callFactory = id => PingPongStreaming(cts, id);
                         break;
                     default:
                         throw new Exception($"Scenario '{_scenario}' is not a known scenario.");
+                }
+
+                for (var i = 0; i < _channels.Count; i++)
+                {
+                    var id = i;
+                    var task = Task.Run(() => callFactory(id));
+
+                    callTasks.Add(task);
                 }
 
                 Log($"Finished {_scenario}");
@@ -182,12 +203,51 @@ namespace BenchmarksClient.Workers
             await StopJobAsync();
         }
 
+        private async Task PingPongStreaming(CancellationTokenSource cts, int id)
+        {
+            Log($"{id}: Starting {_scenario}");
+
+            var client = new BenchmarkService.BenchmarkServiceClient(_channels[id]);
+            var request = CreateSimpleRequest();
+            using var call = client.StreamingCall();
+
+            try
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    var start = DateTime.UtcNow;
+                    await call.RequestStream.WriteAsync(request);
+                    if (!await call.ResponseStream.MoveNext())
+                    {
+                        throw new Exception("Unexpected end of stream.");
+                    }
+                    var end = DateTime.UtcNow;
+
+                    ReceivedDateTime(start, end, id);
+                }
+
+                await call.RequestStream.CompleteAsync();
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && cts.IsCancellationRequested)
+            {
+                // Handle expected error from canceling call
+            }
+            catch (Exception ex)
+            {
+                _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
+
+                Log($"{id}: Error message: {ex.Message}");
+            }
+
+            Log($"{id}: Finished {_scenario}");
+        }
+
         private async Task ServerStreamingCall(CancellationTokenSource cts, int id)
         {
             Log($"{id}: Starting {_scenario}");
 
-            var client = new GreetService.GreetServiceClient(_channels[id]);
-            using var call = client.SayHellos(new HelloRequest { Name = "World" }, cancellationToken: cts.Token);
+            var client = new BenchmarkService.BenchmarkServiceClient(_channels[id]);
+            using var call = client.StreamingFromServer(CreateSimpleRequest(), cancellationToken: cts.Token);
 
             try
             {
@@ -221,17 +281,14 @@ namespace BenchmarksClient.Workers
         {
             Log($"{id}: Starting {_scenario}");
 
-            var client = new GreetService.GreetServiceClient(_channels[id]);
+            var client = new BenchmarkService.BenchmarkServiceClient(_channels[id]);
 
             while (!cts.IsCancellationRequested)
             {
                 try
                 {
                     var start = DateTime.UtcNow;
-                    var response = await client.SayHelloAsync(new HelloRequest
-                    {
-                        Name = "World"
-                    });
+                    var response = await client.UnaryCallAsync(CreateSimpleRequest());
                     var end = DateTime.UtcNow;
 
                     ReceivedDateTime(start, end, id);
@@ -520,6 +577,15 @@ namespace BenchmarksClient.Workers
             }
 
             return _credentials;
+        }
+
+        private SimpleRequest CreateSimpleRequest()
+        {
+            return new SimpleRequest
+            {
+                Payload = new Payload { Body = ByteString.CopyFrom(new byte[_requestSize]) },
+                ResponseSize = _responseSize
+            };
         }
     }
 }
