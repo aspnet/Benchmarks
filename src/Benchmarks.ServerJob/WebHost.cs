@@ -10,6 +10,7 @@ namespace Benchmarks.ServerJob
         HttpSys,
         IISInProcess,
         IISOutOfProcess,
-        Docker
+        Docker,
+        CCore
     }
 }
