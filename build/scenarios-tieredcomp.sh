@@ -76,7 +76,7 @@ do
         for baseline in "${baselines[@]}"
         do
             echo "New job  on '$s': $job"
-            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 20 --warmup 20 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetTieredComp $BENCHMARKS_ARGS --sdk latest
+            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 20 --warmup 20 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetTieredComp $BENCHMARKS_ARGS --sdk 3.0.100-rc2-014256
             # error code in $?
         done
     done

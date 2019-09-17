@@ -58,7 +58,7 @@ do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job --session $SESSION -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS --sdk latest --self-contained --collect-counters -t "SignalR"
+        dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job --session $SESSION -q "$BENCHMARKS_SQL" $BENCHMARKS_ARGS --sdk 3.0.100-rc2-014256 --self-contained --collect-counters -t "SignalR"
         # error code in $?
     done
 done
