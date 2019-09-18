@@ -67,7 +67,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" /> -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="3.0.0-preview3-*" />
 
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
