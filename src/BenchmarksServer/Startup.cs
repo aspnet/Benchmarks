@@ -2270,7 +2270,7 @@ namespace BenchmarkServer
             {
                 Log.WriteLine($"Generating application host config for '{executable} {commandLine}'");
 
-                var apphost = GenerateApplicationHostConfig(job, "published", executable, commandLine, hostname);
+                var apphost = GenerateApplicationHostConfig(job, job.BasePath, executable, commandLine, hostname);
                 commandLine = $"-h \"{apphost}\"";
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
@@ -2589,7 +2589,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static string GenerateApplicationHostConfig(ServerJob job, string benchmarksBin, string executable, string arguments,
+        private static string GenerateApplicationHostConfig(ServerJob job, string publishedFolder, string executable, string arguments,
             string hostname)
         {
             void SetAttribute(XDocument doc, string path, string name, string value)
@@ -2609,7 +2609,7 @@ namespace BenchmarkServer
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "processPath", executable);
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/aspNetCore", "arguments", arguments);
 
-                var ancmPath = Path.Combine(job.BasePath, benchmarksBin, "x64\\aspnetcorev2.dll");
+                var ancmPath = Path.Combine(publishedFolder, "x64\\aspnetcorev2.dll");
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[@name='AspNetCoreModuleV2']", "image", ancmPath);
 
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{job.Port}:");
