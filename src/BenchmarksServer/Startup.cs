@@ -2624,6 +2624,15 @@ namespace BenchmarkServer
                 var fileName = executable + ".apphost.config";
                 applicationHostConfig.Save(fileName);
 
+                // The SDK generates a web.config file on publish, which will conflict with apphost.config
+                try
+                {
+                    File.Delete(Path.Combine(publishedFolder, "web.config"));
+                }
+                catch (Exception)
+                {
+                }
+
                 return fileName;
             }
         }
