@@ -2611,6 +2611,8 @@ namespace BenchmarkServer
 
                 var ancmPath = Path.Combine(job.BasePath, benchmarksBin, "x64\\aspnetcorev2.dll");
                 Log.WriteLine("ASDF123 " + ancmPath);
+                Log.WriteLine("ASDF123 " + job.BasePath);
+                Log.WriteLine("ASDF123 " + benchmarksBin);
                 SetAttribute(applicationHostConfig, "/configuration/system.webServer/globalModules/add[@name='AspNetCoreModuleV2']", "image", ancmPath);
 
                 SetAttribute(applicationHostConfig, "/configuration/system.applicationHost/sites/site/bindings/binding", "bindingInformation", $"*:{job.Port}:");
