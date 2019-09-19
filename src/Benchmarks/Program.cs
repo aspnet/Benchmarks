@@ -172,16 +172,16 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
-//#if NETCOREAPP2_2 || NETCOREAPP3_0
-//            else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
-//            {
-//                webHostBuilder = webHostBuilder.UseIIS();
-//            }
-//#endif
-//            else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
-//            {
-//                webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
-//            }
+#if NETCOREAPP2_2 || NETCOREAPP3_0
+           else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
+           {
+               webHostBuilder = webHostBuilder.UseIIS();
+           }
+#endif
+           else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
+           {
+               webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
+           }
             else
             {
                 throw new InvalidOperationException($"Unknown server value: {Server}");
