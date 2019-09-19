@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -31,6 +33,10 @@ namespace BenchmarksClient.Workers
 
         static H2LoadWorker()
         {
+            // This switch must be set before creating the HttpClient.
+            // It allows HttpClient to make HTTP/2 calls without TLS.
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -62,9 +68,10 @@ namespace BenchmarksClient.Workers
         {
             _job = job;
 
+            byte[] requestBody = null;
             if (job.ClientProperties.TryGetValue("RequestBody", out var requestBodyText))
             {
-                var requestBody = Convert.FromBase64String(requestBodyText);
+                requestBody = Convert.FromBase64String(requestBodyText);
                 _requestBodyLength = requestBody.Length;
 
                 // h2load takes a file as the request body
@@ -75,7 +82,7 @@ namespace BenchmarksClient.Workers
 
             InitializeJob();
 
-            await MeasureFirstRequestLatencyAsync(_job);
+            await MeasureFirstRequestLatencyAsync(_job, requestBody);
 
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
@@ -104,11 +111,32 @@ namespace BenchmarksClient.Workers
             _process = null;
         }
 
-        private static HttpRequestMessage CreateHttpMessage(ClientJob job)
+        private static readonly HashSet<string> ContentHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "content-type"
+        };
+
+        private static HttpRequestMessage CreateHttpMessage(ClientJob job, byte[] requestBody)
         {
             var requestMessage = new HttpRequestMessage(new HttpMethod(job.Method), job.ServerBenchmarkUri);
+            requestMessage.Version = new Version(2, 0);
 
-            foreach (var header in job.Headers)
+            var headers = job.Headers.ToList();
+
+            if (requestBody != null)
+            {
+                requestMessage.Content = new ByteArrayContent(requestBody);
+
+                foreach (var header in headers.Where(h => ContentHeaders.Contains(h.Key)))
+                {
+                    requestMessage.Content.Headers.Add(header.Key, header.Value);
+                }
+
+                // Prune content headers. An error will be thrown if they are added to request headers.
+                headers.RemoveAll(h => ContentHeaders.Contains(h.Key));
+            }
+
+            foreach (var header in headers)
             {
                 requestMessage.Headers.Add(header.Key, header.Value);
             }
@@ -116,7 +144,7 @@ namespace BenchmarksClient.Workers
             return requestMessage;
         }
 
-        private static async Task MeasureFirstRequestLatencyAsync(ClientJob job)
+        private static async Task MeasureFirstRequestLatencyAsync(ClientJob job, byte[] requestBody)
         {
             if (job.SkipStartupLatencies)
             {
@@ -128,7 +156,7 @@ namespace BenchmarksClient.Workers
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using (var message = CreateHttpMessage(job))
+            using (var message = CreateHttpMessage(job, requestBody))
             {
                 var cts = new CancellationTokenSource();
                 var token = cts.Token;
@@ -160,7 +188,7 @@ namespace BenchmarksClient.Workers
             {
                 stopwatch.Restart();
 
-                using (var message = CreateHttpMessage(job))
+                using (var message = CreateHttpMessage(job, requestBody))
                 {
                     var cts = new CancellationTokenSource();
                     var token = cts.Token;
