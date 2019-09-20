@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
@@ -234,6 +235,7 @@ namespace BenchmarksClient.Workers
                     ReceivedDateTime(start, end, id);
                 }
 
+                Log($"{id}: Completing request stream");
                 await call.RequestStream.CompleteAsync();
             }
             catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && cts.IsCancellationRequested)
@@ -244,7 +246,7 @@ namespace BenchmarksClient.Workers
             {
                 _errorsPerConnection[id] = _errorsPerConnection[id] + 1;
 
-                Log($"{id}: Error message: {ex.Message}");
+                Log($"{id}: Error message: {ex.ToString()}");
             }
 
             Log($"{id}: Finished {_scenario}");
@@ -425,7 +427,15 @@ namespace BenchmarksClient.Workers
                     var address = _useTls ? "https://" : "http://";
                     address += target;
 
-                    return GrpcChannel.ForAddress(address);
+                    var httpClientHandler = new HttpClientHandler();
+                    // Return `true` to allow certificates that are untrusted/invalid
+                    httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    var httpClient = new HttpClient(httpClientHandler);
+
+                    return GrpcChannel.ForAddress(address, new GrpcChannelOptions
+                    {
+                        HttpClient = httpClient
+                    });
             }
         }
 
