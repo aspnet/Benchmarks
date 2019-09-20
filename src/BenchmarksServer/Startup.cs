@@ -92,6 +92,7 @@ namespace BenchmarkServer
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
+        public static TimeSpan StartTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
         private static string _startPerfviewArguments;
@@ -769,7 +770,7 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Starting)
                         {
-                            if (DateTime.UtcNow - startMonitorTime > DriverTimeout)
+                            if (DateTime.UtcNow - startMonitorTime > StartTimeout)
                             {
                                 Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Failed;
