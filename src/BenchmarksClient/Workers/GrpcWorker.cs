@@ -146,8 +146,10 @@ namespace BenchmarksClient.Workers
             _job.State = ClientState.Running;
             _job.LastDriverCommunicationUtc = DateTime.UtcNow;
 
+            var duration = TimeSpan.FromSeconds(_job.Duration);
+
             var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(_job.Duration));
+            cts.CancelAfter(duration);
             cts.Token.Register(() =>
             {
                 Log("Benchmark duration complete");
@@ -197,7 +199,13 @@ namespace BenchmarksClient.Workers
             cts.Token.WaitHandle.WaitOne();
 
             Log($"Waiting for call tasks to complete");
-            await Task.WhenAll(callTasks);
+
+            // Ensure calls never cause worker to hang with a timeout
+            var timeoutTask = Task.Delay(duration * 5);
+            if (timeoutTask == await Task.WhenAny(timeoutTask, Task.WhenAll(callTasks)))
+            {
+                _job.Error += Environment.NewLine + "Calls did not complete in a timely manner.";
+            }
 
             Log($"Stopping job");
             await StopJobAsync();
@@ -346,13 +354,14 @@ namespace BenchmarksClient.Workers
                 {
                     tasks.Add(coreChannel.ShutdownAsync());
                 }
+                else if (channel is GrpcChannel grpcChannel)
+                {
+                    tasks.Add(Task.Run(() => grpcChannel.Dispose()));
+                }
             }
 
             await Task.WhenAll(tasks);
             Log("Channels have been disposed");
-
-            // TODO: Remove when clients no longer take a long time to "cool down"
-            await Task.Delay(5000);
 
             Log("Stopped worker");
         }
