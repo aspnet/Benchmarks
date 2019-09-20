@@ -6,7 +6,7 @@
 
     "Source": {
       "Repository": "https://github.com/OrchardCMS/OrchardCore",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "dev",
       "Project": "src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj"
     },
     "ReadyStateText": "Application started."
