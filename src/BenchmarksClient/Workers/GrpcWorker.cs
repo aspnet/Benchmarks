@@ -232,7 +232,6 @@ namespace BenchmarksClient.Workers
             var request = CreateSimpleRequest();
             using var call = client.StreamingCall();
 
-
             try
             {
                 while (!cts.IsCancellationRequested)
