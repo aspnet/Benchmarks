@@ -88,14 +88,13 @@ namespace BenchmarksClient.Workers
 
             if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
             {
-                if (Enum.TryParse<LogLevel>(logLevel, ignoreCase: true, out var level))
+                var level = Enum.Parse<LogLevel>(logLevel, ignoreCase: true);
+
+                _loggerFactory = LoggerFactory.Create(c =>
                 {
-                    _loggerFactory = LoggerFactory.Create(c =>
-                    {
-                        c.AddConsole();
-                        c.SetMinimumLevel(level);
-                    });
-                }
+                    c.AddConsole();
+                    c.SetMinimumLevel(level);
+                });
             }
 
             if (_job.ClientProperties.TryGetValue("RequestSize", out var requestSize))
