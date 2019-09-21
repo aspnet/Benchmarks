@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Google.Protobuf;
 using Grpc.Core;
-using Grpc.Core.Logging;
 using Grpc.Net.Client;
 using Grpc.Testing;
+using Microsoft.Extensions.Logging;
 
 namespace BenchmarksClient.Workers
 {
@@ -46,6 +46,7 @@ namespace BenchmarksClient.Workers
         private int _requestSize;
         private int _responseSize;
         private GrpcClientType _grpcClientType;
+        private ILoggerFactory _loggerFactory;
 
         private void InitializeJob()
         {
@@ -83,6 +84,17 @@ namespace BenchmarksClient.Workers
                         _useTls = false;
                         break;
                 }
+            }
+
+            if (_job.ClientProperties.TryGetValue("LogLevel", out var logLevel))
+            {
+                var level = Enum.Parse<LogLevel>(logLevel, ignoreCase: true);
+
+                _loggerFactory = LoggerFactory.Create(c =>
+                {
+                    c.AddConsole();
+                    c.SetMinimumLevel(level);
+                });
             }
 
             if (_job.ClientProperties.TryGetValue("RequestSize", out var requestSize))
@@ -428,13 +440,13 @@ namespace BenchmarksClient.Workers
                     address += target;
 
                     var httpClientHandler = new HttpClientHandler();
-                    // Return `true` to allow certificates that are untrusted/invalid
-                    httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                     var httpClient = new HttpClient(httpClientHandler);
 
                     return GrpcChannel.ForAddress(address, new GrpcChannelOptions
                     {
-                        HttpClient = httpClient
+                        HttpClient = httpClient,
+                        LoggerFactory = _loggerFactory
                     });
             }
         }
