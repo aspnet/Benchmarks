@@ -13,29 +13,32 @@
     "Path": "/weatherforecast",
     "BuildArchives": [
       "https://aspnetbenchmarksbuilds.file.core.windows.net/singleexe/latest/files.zip?sv=2018-03-28&ss=f&srt=sco&sp=rl&se=2029-09-14T06:49:35Z&st=2019-09-13T22:49:35Z&spr=https&sig=rqCCHYVqkDJB2Z6mEPz5qeHxJJYEWmfJdI1XMtgv6zc%3D;../coreclrbin" 
-    ]
+    ],
+    "SelfContained": true
   },
   "LinkAThonBaseline": {
     "BuildArguments": [ ]
   },
   "LinkAThonTrimmedAndR2R": {
-    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ],
-    "SelfContained": true
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ]
   },
   "LinkAThonTrimmedAndR2RSingleFile": {
-    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true"],
-    "SelfContained": true
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true"]
   },
   "LinkAThonTrimmedAndR2RSingleFileWithTrimList": {
-    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true"],
-    "SelfContained": true
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true"]
   },
   "LinkAThonTrimmedAndR2RSingleFileNoMvc": {
-    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true", "/p:DefineConstants=NO_MVC"],
-    "SelfContained": true
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true", "/p:DefineConstants=NO_MVC"]
   },
   "LinkAThonTrimmedAndR2RSingleFileCustomHost": {
-    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true", "/p:DefineConstants=CUSTOM_BUILDER"],
-    "SelfContained": true
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true", "/p:DefineConstants=CUSTOM_BUILDER"]
+  },
+
+  "LinkAThonPlatformBaseline": {
+    "Source": {
+      "Project": "src/PlatformJson/PlatformJson.csproj"
+    },
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true"]
   }
 }
