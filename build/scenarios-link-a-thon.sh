@@ -39,6 +39,7 @@ jobs=(
   "-n LinkAThonTrimmedAndR2RSingleFileWithTrimList $trend $linkAThonJobs --linux-only"
   "-n LinkAThonTrimmedAndR2RSingleFileNoMvc $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2RSingleFileCustomHost $trend $linkAThonJobs --linux-only" 
+  "-n LinkAThonPlatformBaseline $trend $linkAThonJobs --linux-only" 
 )
 
 # build driver
