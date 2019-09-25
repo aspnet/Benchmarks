@@ -2227,22 +2227,27 @@ namespace BenchmarkServer
             switch (job.WebHost)
             {
                 case WebHost.HttpSys:
-                    arguments += $" --server HttpSys";
+                    arguments += " --server HttpSys";
                     break;
                 case WebHost.KestrelSockets:
-                    arguments += $" --server Kestrel --kestrelTransport Sockets";
+                    arguments += " --server Kestrel --kestrelTransport Sockets";
                     break;
                 case WebHost.KestrelLibuv:
-                    arguments += $" --server Kestrel --kestrelTransport Libuv";
+                    arguments += " --server Kestrel --kestrelTransport Libuv";
                     break;
                 case WebHost.IISInProcess:
-                    arguments += $" --server IISInProcess";
+                    arguments += " --server IISInProcess";
                     break;
                 case WebHost.IISOutOfProcess:
-                    arguments += $" --server IISOutOfProcess";
+                    arguments += " --server IISOutOfProcess";
+                    break;
+                case WebHost.CCore:
+                    arguments += " --server CCore";
                     break;
                 default:
-                    throw new NotSupportedException("Invalid WebHost value for benchmarks");
+                    arguments += $" --server {job.WebHost}";
+                    break;
+
             }
 
             if (job.KestrelThreadCount.HasValue)
