@@ -41,9 +41,25 @@
     },
     "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true"]
   },
-  
+
   "LinkAThonGrpcBaseline": {
     "BuildArguments": [ ],
+    "Client": "Grpc",
+    "ClientProperties": {
+      "Scenario": "Unary",
+      "GrpcClientType": "GrpcNetClient"
+    }
+  },
+  "LinkAThonGrpcTrimmedAndR2R": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ],
+    "Client": "Grpc",
+    "ClientProperties": {
+      "Scenario": "Unary",
+      "GrpcClientType": "GrpcNetClient"
+    }
+  },
+  "LinkAThonGrpcTrimmedAndR2RSingleFile": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true"],
     "Client": "Grpc",
     "ClientProperties": {
       "Scenario": "Unary",
