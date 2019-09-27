@@ -164,8 +164,8 @@ jobs=(
   "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip;App_Data"
 
   # Blazor
-  "-n Basic $blazorJobs"
-  "-n FormInput $blazorJobs"
+  "-n Basic $trend $blazorJobs"
+  "-n FormInput $trend $blazorJobs"
 )
 
 # build driver
