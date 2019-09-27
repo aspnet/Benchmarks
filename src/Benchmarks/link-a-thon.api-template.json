@@ -48,7 +48,10 @@
     "ClientProperties": {
       "Scenario": "Unary",
       "GrpcClientType": "GrpcNetClient"
-    }
+    },
+    "Source": {
+      "Project": "src/GrpcService/GrpcService.csproj"
+    },
   },
   "LinkAThonGrpcTrimmedAndR2R": {
     "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ],
