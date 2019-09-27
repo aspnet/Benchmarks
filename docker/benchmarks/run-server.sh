@@ -83,7 +83,7 @@ docker run \
     --init \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
-    --mount type=bind,source=/mnt,target=/tmp \
+    --mount type=bind,source=/mnt/benchmarks,target=/tmp \
     --name $dockername \
     --network host \
     --restart always \
