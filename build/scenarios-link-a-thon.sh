@@ -34,7 +34,7 @@ trend="--description Trend/Latest"
 jobs=(
   # link-a-thon
   "-n LinkAThonBaseline $trend $linkAThonJobs --linux-only" 
-  "-n LinkAThonTrimmedAndR2R $trend $linkAThonJobs --linux-only --no-startup-latency" 
+  "-n LinkAThonTrimmedAndR2R $trend $linkAThonJobs --linux-only" 
   "-n LinkAThonTrimmedAndR2RSingleFile $trend $linkAThonJobs --linux-only"
   "-n LinkAThonTrimmedAndR2RSingleFileWithTrimList $trend $linkAThonJobs --linux-only"
   "-n LinkAThonTrimmedAndR2RSingleFileNoMvc $trend $linkAThonJobs --linux-only" 
