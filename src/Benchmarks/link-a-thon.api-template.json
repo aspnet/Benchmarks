@@ -40,5 +40,39 @@
       "Project": "src/PlatformJson/PlatformJson.csproj"
     },
     "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true"]
+  },
+
+  "LinkAThonGrpcBaseline": {
+    "BuildArguments": [ ],
+    "Client": "Grpc",
+    "ClientProperties": {
+      "Scenario": "Unary",
+      "GrpcClientType": "GrpcNetClient"
+    },
+    "Source": {
+      "Project": "src/GrpcService/GrpcService.csproj"
+    }
+  },
+  "LinkAThonGrpcTrimmedAndR2R": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true" ],
+    "Client": "Grpc",
+    "ClientProperties": {
+      "Scenario": "Unary",
+      "GrpcClientType": "GrpcNetClient"
+    },
+    "Source": {
+      "Project": "src/GrpcService/GrpcService.csproj"
+    }
+  },
+  "LinkAThonGrpcTrimmedAndR2RSingleFile": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true"],
+    "Client": "Grpc",
+    "ClientProperties": {
+      "Scenario": "Unary",
+      "GrpcClientType": "GrpcNetClient"
+    },
+    "Source": {
+      "Project": "src/GrpcService/GrpcService.csproj"
+    }
   }
 }
