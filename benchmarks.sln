@@ -176,6 +176,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Template", "src\BenchmarksA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobConsumer", "src\JobConsumer\JobConsumer.csproj", "{1EBB1EFC-7550-4D81-8A7A-53C74545576B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jobconsumer", "jobconsumer", "{2F523E47-8703-4F53-BEFF-833872482C2A}"
+	ProjectSection(SolutionItems) = preProject
+		docker\jobconsumer\build.sh = docker\jobconsumer\build.sh
+		docker\jobconsumer\Dockerfile = docker\jobconsumer\Dockerfile
+		docker\jobconsumer\run.sh = docker\jobconsumer\run.sh
+		docker\jobconsumer\stop.sh = docker\jobconsumer\stop.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
