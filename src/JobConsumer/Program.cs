@@ -193,12 +193,12 @@ namespace JobConsumer
 
                                 if (outputBuilder.Length > 0)
                                 {
-                                    File.WriteAllText(Path.Combine(processedPath, processingFile.Name + ".output.txt"), outputBuilder.ToString());
+                                    File.WriteAllText(Path.Combine(errorPath, processingFile.Name + ".output.txt"), outputBuilder.ToString());
                                 }
 
                                 if (errorBuilder.Length > 0)
                                 {
-                                    File.WriteAllText(Path.Combine(processedPath, processingFile.Name + ".error.txt"), errorBuilder.ToString());
+                                    File.WriteAllText(Path.Combine(errorPath, processingFile.Name + ".error.txt"), errorBuilder.ToString());
                                 }
                             }
                             catch (Exception e)
