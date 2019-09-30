@@ -92,6 +92,7 @@ namespace BenchmarkServer
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
+        public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
 
@@ -395,10 +396,11 @@ namespace BenchmarkServer
                 {
                     ServerJob job = null;
 
-                    // Find the first job that is not in Initializing state
+                    // Find the first job that is not in New state
                     foreach (var j in _jobs.GetAll())
                     {
-                        if (j.State == ServerState.Initializing)
+                        // Searching for a job to acquire
+                        if (j.State == ServerState.New)
                         {
                             var now = DateTime.UtcNow;
 
@@ -410,8 +412,8 @@ namespace BenchmarkServer
                             }
                             else
                             {
-                                // Initializing jobs are skipped
-                                continue;
+                                startMonitorTime = DateTime.UtcNow;
+                                j.State = ServerState.Initializing;
                             }
                         }
 
@@ -775,6 +777,16 @@ namespace BenchmarkServer
                                 Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Failed;
                                 job.Error = "Job didn't start during the expected delay. Check that it outputs a startup message on the log.";
+                            }
+                        }
+                        else if (job.State == ServerState.Initializing)
+                        {
+                            // The driver is supposed to send attachment in the initialize phase
+                            if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
+                            {
+                                Log.WriteLine($"Job didn't initialize during the expected delay");
+                                job.State = ServerState.Failed;
+                                job.Error = "Job didn't initalize during the expected delay.";
                             }
                         }
 

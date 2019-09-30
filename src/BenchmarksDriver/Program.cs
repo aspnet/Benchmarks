@@ -1195,6 +1195,8 @@ namespace BenchmarksDriver
                 await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
             }
 
+            serverJob.DriverVersion = 1;
+
             var content = JsonConvert.SerializeObject(serverJob);
 
             Log($"Running session '{session}' with description '{description}'");
@@ -1245,6 +1247,12 @@ namespace BenchmarksDriver
                             throw new InvalidOperationException("Invalid response from the server");
                         }
 
+                        if (serverJob.ServerVersion < 1)
+                        {
+                            Log($"Invalid server version ({serverJob.ServerVersion}), please update your server to match this driver version.");
+                            return 20;
+                        }
+
                         if (!serverJob.Hardware.HasValue)
                         {
                             throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
@@ -1272,6 +1280,8 @@ namespace BenchmarksDriver
 
                         if (serverJob?.State == ServerState.Initializing)
                         {
+                            Log($"Job has been selected by the server ...");
+
                             // Uploading source code
                             if (sourceOption.HasValue())
                             {
@@ -1440,7 +1450,7 @@ namespace BenchmarksDriver
 
                             serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
-                            Log($"Job submitted, waiting...");
+                            Log($"Job is now building ...");
 
                             break;
                         }
@@ -1485,9 +1495,9 @@ namespace BenchmarksDriver
 
                         if (serverJob.State == ServerState.Running)
                         {
-                            if (previousJob.State == ServerState.Waiting)
+                            if (previousJob.State != ServerState.Running)
                             {
-                                Log($"Job acquired");
+                                Log($"Job is running");
                             }
 
                             serverBenchmarkUri = serverJob.Url;

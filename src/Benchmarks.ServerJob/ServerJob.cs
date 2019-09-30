@@ -13,6 +13,10 @@ namespace Benchmarks.ServerJob
 {
     public class ServerJob : IIdentifiable
     {
+        public int DriverVersion { get; set; } = 0;
+
+        public int ServerVersion { get; set; } = 1;
+
         public int Id { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

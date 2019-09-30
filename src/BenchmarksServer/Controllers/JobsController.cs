@@ -75,9 +75,17 @@ namespace BenchmarkServer.Controllers
         {
             lock (_jobs)
             {
-                if (job == null || job.Id != 0 || job.State != ServerState.Initializing)
+                if (job == null || job.Id != 0)
                 {
                     return BadRequest();
+                }
+                else if (job.DriverVersion < 1)
+                {
+                    return BadRequest("The driver is not compatible with this server, please update it.");
+                }
+                else if (job.State != ServerState.New)
+                {
+                    return BadRequest("The job state should be ServerState.New. You are probably using a wrong version of the driver.");
                 }
 
                 job.Hardware = Startup.Hardware;

@@ -5,16 +5,17 @@ namespace Benchmarks.ServerJob
 {
     public enum ServerState
     {
-        Initializing,
-        Waiting,
-        Starting,
-        Running,
+        New, // The job was submitted
+        Initializing, // The job is processed, the driver update it or submit attachments
+        Waiting, // The job is ready to start
+        Starting, // The application has been started, the server is waiting for it to be responsive
+        Running, // The application is running
         Failed,
         Deleting,
         Stopping,
         Stopped,
         TraceCollecting,
         TraceCollected,
-        NotSupported,
+        NotSupported, // The job is not supported by the server
     }
 }
