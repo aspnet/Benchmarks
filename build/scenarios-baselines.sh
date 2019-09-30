@@ -45,7 +45,7 @@ baselines=(
   "--description Baseline22Servicing --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.*"
 
     # Stable 3.0
-  "--description Baseline22 --aspnetCoreVersion 3.0 --runtimeVersion 3.0"
+  "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0"
   
   # Current dev, running close to other baselines, with same repeat parameters
   "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest"
