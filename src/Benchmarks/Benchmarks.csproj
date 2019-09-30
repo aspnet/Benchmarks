@@ -6,7 +6,11 @@
   <PropertyGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
   </PropertyGroup>
-
+  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="NETStandard.Library" />
+    </ItemGroup>
+  </Target>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <LangVersion>8.0</LangVersion>
@@ -63,7 +67,7 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion22)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netcoreapp5.0'">
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 

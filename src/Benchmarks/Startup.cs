@@ -3,7 +3,7 @@
 
 using System;
 using System.Data.Common;
-#if NETCOREAPP3_0
+#if NETCOREAPP3_0 || NETCOREAPP5_0
 using Microsoft.Data.SqlClient;
 #else
 using System.Data.SqlClient;
@@ -96,7 +96,7 @@ namespace Benchmarks
 
                 case DatabaseServer.MySql:
 
-#if NETCOREAPP3_0
+#if NETCOREAPP3_0 || NETCOREAPP5_0
                     throw new NotSupportedException("EF/MySQL is unsupported on netcoreapp3.0 until a provider is available");
 #else
                     services.AddEntityFrameworkMySql();
@@ -168,7 +168,7 @@ namespace Benchmarks
                         .AddRazorViewEngine();
                 }
             }
-#elif NETCOREAPP3_0
+#elif NETCOREAPP3_0 || NETCOREAPP5_0
             if (Scenarios.Any("Endpoint"))
             {
                 services.AddRouting();
@@ -323,7 +323,7 @@ namespace Benchmarks
             {
                 app.UseMvc();
             }
-#elif NETCOREAPP3_0
+#elif NETCOREAPP3_0 || NETCOREAPP5_0
             if (Scenarios.Any("EndpointPlaintext"))
             {
                 app.UseRouting();

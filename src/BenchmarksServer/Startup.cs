@@ -50,12 +50,12 @@ namespace BenchmarkServer
          */
 
         // Substituion values when "Latest" is passed as the version
-        private static string LatestTargetFramework = "netcoreapp3.0";
-        private static string LatestChannel = "3.0";
+        private static string LatestTargetFramework = "netcoreapp5.0";
+        private static string LatestChannel = "5.0";
 
         // Substituion values when "Current" is passed as the version
-        private static string CurrentTargetFramework = "netcoreapp2.2";
-        private static string CurrentChannel = "2.2";
+        private static string CurrentTargetFramework = "netcoreapp3.0";
+        private static string CurrentChannel = "3.0";
 
         private const string PerfViewVersion = "P2.0.42";
 
@@ -1202,7 +1202,7 @@ namespace BenchmarkServer
             stopwatch.Start();
 
             ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
-            
+
             stopwatch.Stop();
 
             job.BuildTime = stopwatch.Elapsed;
@@ -1228,7 +1228,7 @@ namespace BenchmarkServer
                 ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName}"
                 : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName}";
 
-            
+
 
             if (job.Collect && job.CollectStartup)
             {
@@ -1487,7 +1487,7 @@ namespace BenchmarkServer
             else if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
                 // Get the version that is defined by the ASP.NET repository
-                // Note: to use the latest version available, use a value like 3.0.*
+                // Note: to use the latest build available, use a wildcard match like 3.0.*
                 runtimeVersion = await GetAspNetRuntimeVersion(buildToolsPath, LatestTargetFramework);
                 channel = LatestChannel;
             }
@@ -1529,6 +1529,10 @@ namespace BenchmarkServer
                 {
                     targetFramework = "netcoreapp3.0";
                 }
+                else if (runtimeVersion.StartsWith("5.0"))
+                {
+                    targetFramework = "netcoreapp5.0";
+                }
             }
 
             // If a specific framework is set, use it instead of the detected one
@@ -1548,8 +1552,16 @@ namespace BenchmarkServer
                 }
                 else if (String.Equals(job.SdkVersion, "latest", StringComparison.OrdinalIgnoreCase))
                 {
-                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
-                    Log.WriteLine($"Detecting latest SDK version (release/3.0.1xx): {sdkVersion}");
+                    if (targetFramework == "netcoreapp3.0")
+                    {
+                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
+                        Log.WriteLine($"Detecting latest SDK version (release/3.0.1xx): {sdkVersion}");
+                    }
+                    else
+                    {
+                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
+                        Log.WriteLine($"Detecting latest SDK version (master branch): {sdkVersion}");
+                    }
                 }
                 else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1565,6 +1577,11 @@ namespace BenchmarkServer
             else
             {
                 if (runtimeVersion.StartsWith("3.0"))
+                {
+                    sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
+                    Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
+                }
+                else if (runtimeVersion.StartsWith("5.0"))
                 {
                     sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
                     Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
@@ -1647,7 +1664,7 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Detected ASP.NET version: {aspNetCoreVersion}");
 
-            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0");
+            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0") || aspNetCoreVersion.StartsWith("5.0");
 
             var dotnetInstallStep = "";
 
@@ -1788,6 +1805,15 @@ namespace BenchmarkServer
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
                 }
             }
+            else if (targetFramework == "netcoreapp5.0")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp50PackageVersion={runtimeVersion} ";
+                buildParameters += $"/p:GenerateErrorForMissingTargetingPacks=false ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
+                }
+            }
             else
             {
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
@@ -1819,7 +1845,7 @@ namespace BenchmarkServer
                     else
                     {
                         buildParameters += "-r linux-x64 ";
-                    }                    
+                    }
                 }
             }
 
@@ -1843,7 +1869,7 @@ namespace BenchmarkServer
 
             var outputFolder = Path.Combine(benchmarkedApp, "published");
             var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
-                        
+
             var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
 
             Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
@@ -2021,6 +2047,18 @@ namespace BenchmarkServer
                     break;
 
                 case "netcoreapp3.0":
+
+                    await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/3.0/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+                    latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
+                        .Elements("PropertyGroup")
+                        .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
+                        .Where(x => x != null)
+                        .FirstOrDefault()
+                        .Value;
+
+                    break;
+
+                case "netcoreapp5.0":
 
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "master/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
@@ -2324,7 +2362,7 @@ namespace BenchmarkServer
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    
+
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
