@@ -44,6 +44,9 @@ baselines=(
   # Servicing 2.2
   "--description Baseline22Servicing --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.*"
 
+    # Stable 3.0
+  "--description Baseline22 --aspnetCoreVersion 3.0 --runtimeVersion 3.0"
+  
   # Current dev, running close to other baselines, with same repeat parameters
   "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest"
 
@@ -78,7 +81,7 @@ do
         for baseline in "${baselines[@]}"
         do
             echo "New job  on '$s': $job $baseline"
-            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 30 --warmup 5 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS  --sdk 3.0.100 --self-contained
+            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 30 --warmup 5 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS --self-contained
             # error code in $?
         done
     done
