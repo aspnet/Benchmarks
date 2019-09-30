@@ -1660,7 +1660,7 @@ namespace BenchmarkServer
                 {
                     // Channel version with a prefix, e.g. 2.1, 2.2, 3.0
                     // The channel versions of ASP.NET match the ones for the runtime
-                    aspNetCoreVersion = await GetRuntimeChannelVersion(runtimeVersion);
+                    aspNetCoreVersion = await GetRuntimeChannelVersion(aspNetCoreVersion);
                 }
             }
 
