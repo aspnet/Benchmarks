@@ -1637,7 +1637,9 @@ namespace BenchmarkServer
 
             if (String.Equals(job.AspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, CurrentChannel + ".");
+                // The Current versions of ASP.NET match the Runtime ones
+                // It's also less tricky as each release version of ASP.NET has a different way to get the "Current" version (.App, .All, no release-metadata like dotnet)
+                aspNetCoreVersion = await GetRuntimeChannelVersion(CurrentChannel);
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
