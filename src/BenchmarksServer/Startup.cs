@@ -65,7 +65,6 @@ namespace BenchmarkServer
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
-        private static readonly string _currentAspNetApiUrl = "https://api.nuget.org/v3/registration3/microsoft.aspnetcore.app/index.json";
         private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
@@ -1659,8 +1658,9 @@ namespace BenchmarkServer
                 }
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
-                    // Channel version with a prefix, e.g. 2.1
-                    aspNetCoreVersion = await GetLatestPackageVersion(_currentAspNetApiUrl, aspNetCoreVersion + ".");
+                    // Channel version with a prefix, e.g. 2.1, 2.2, 3.0
+                    // The channel versions of ASP.NET match the ones for the runtime
+                    aspNetCoreVersion = await GetRuntimeChannelVersion(runtimeVersion);
                 }
             }
 
