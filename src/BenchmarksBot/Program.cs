@@ -89,7 +89,7 @@ namespace BenchmarksBot
 
             // Bad responses
 
-            Console.WriteLine("Looking for scnearios that are not running...");
+            Console.WriteLine("Looking for scenarios that have errors...");
 
             var badResponses = await FindErrors();
 
@@ -243,7 +243,10 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
+            createIssue.Labels.Add("perf");
             createIssue.Labels.Add("perf-regression");
+
+            AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
             Console.Write(createIssue.Body);
             
@@ -364,7 +367,10 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
-            createIssue.Labels.Add("not-running");
+            createIssue.Labels.Add("perf");
+            createIssue.Labels.Add("perf-not-running");
+
+            AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
             Console.Write(createIssue.Body);
 
@@ -442,7 +448,10 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
-            createIssue.Labels.Add("bad-response");
+            createIssue.Labels.Add("perf");
+            createIssue.Labels.Add("perf-bad-response");
+
+            AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
             Console.Write(createIssue.Body);
 
@@ -708,6 +717,41 @@ namespace BenchmarksBot
                     Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
                     Console.WriteLine(e);
                 }
+            }
+        }
+
+        private static void AssignTags(NewIssue issue, IEnumerable<string> scenarios)
+        {
+            // Use hashsets to handle duplicates
+            var labels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var scenario in scenarios)
+            {
+                if (!Tags.Scenarios.TryGetValue(scenario, out var tag))
+                {
+                    continue;
+                }
+
+                foreach(var label in tag.Labels)
+                {
+                    labels.Add(label);
+                }
+
+                foreach (var owner in tag.Owners)
+                {
+                    owners.Add(owner);
+                }
+            }
+
+            foreach (var label in labels)
+            {
+                issue.Labels.Add(label);
+            }
+
+            foreach (var owner in owners)
+            {
+                issue.Body += $"@{owner}\n";
             }
         }
     }
