@@ -749,6 +749,11 @@ namespace BenchmarksBot
                 issue.Labels.Add(label);
             }
 
+            if (owners.Any())
+            {
+                issue.Body += $"\n\n";
+            }
+
             foreach (var owner in owners)
             {
                 issue.Body += $"@{owner}\n";
