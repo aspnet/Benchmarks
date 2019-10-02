@@ -38,7 +38,6 @@ routingJobs="-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/R
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60"
 http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
-orchardJobs="-j $ROOT/src/Benchmarks/benchmarks.orchard.json"
 blazorJobs="-j $ROOT/src/Benchmarks/benchmarks.blazor.json"
 
 trend="--description Trend/Latest"
@@ -159,10 +158,7 @@ jobs=(
   # Logging
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs"
   "-n PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $trend $plaintextJobs"
-
-  # Orchard
-  "-n OrchardBlog $trend $orchardJobs --output-archive https://raw.githubusercontent.com/aspnet/Benchmarks/master/resources/Orchard/App_Data_Blog.zip;App_Data"
-
+  
   # Blazor
   "-n Basic $trend $blazorJobs"
   "-n FormInput $trend $blazorJobs"

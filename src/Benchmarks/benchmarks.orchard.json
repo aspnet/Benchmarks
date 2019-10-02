@@ -13,5 +13,11 @@
   },
   "OrchardBlog": {
     "Path": "/"
+  },
+  "OrchardBlogPost": {
+    "Path": "/blog/post-1"
+  },
+  "OrchardBlogAbout": {
+    "Path": "/about"
   }
 }
