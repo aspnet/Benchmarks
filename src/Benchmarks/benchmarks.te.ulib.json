@@ -1,0 +1,46 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerContextDirectory": "frameworks/C++/ulib/"
+    },
+    "Port": 8080
+  },
+  "Plaintext-Ulib": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    },
+    "Source": {
+      "DockerFile": "frameworks/C++/ulib/ulib.dockerfile",
+      "DockerImageName": "ulib_plaintext"
+    }
+  },
+  "PlaintextNonPipelined-Ulib": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "Source": {
+      "DockerFile": "frameworks/C++/ulib/ulib.dockerfile",
+      "DockerImageName": "ulib_plaintext"
+    }
+  },
+  "Json-Ulib": {
+    "Path": "/json",
+    "PresetHeaders": "Json",
+    "Source": {
+      "DockerFile": "frameworks/C++/ulib/ulib-json.dockerfile",
+      "DockerImageName": "ulib_json"
+    }
+  },
+  "FortunesPostgreSql-Ulib": {
+    "Path": "/fortune",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/C++/ulib/ulib-postgres.dockerfile",
+      "DockerImageName": "ulib_postgres"
+    }
+  }
+}
