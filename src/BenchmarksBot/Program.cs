@@ -144,7 +144,7 @@ namespace BenchmarksBot
 
             if (!String.IsNullOrEmpty(ignore))
             {
-                _ignoredScenarios = new HashSet<string>(ignore.Split(new [] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
+                _ignoredScenarios = new HashSet<string>(ignore.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries), StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -243,13 +243,13 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
-            createIssue.Labels.Add("perf");
+            createIssue.Labels.Add("Perf");
             createIssue.Labels.Add("perf-regression");
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
             Console.Write(createIssue.Body);
-            
+
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
 
@@ -290,7 +290,7 @@ namespace BenchmarksBot
                             PreviousRuntimeVersion = Convert.ToString(reader["PreviousRuntimeVersion"]),
                             CurrentRuntimeVersion = Convert.ToString(reader["CurrentRuntimeVersion"])
                         });
-                    }                    
+                    }
                 }
             }
 
@@ -367,7 +367,7 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
-            createIssue.Labels.Add("perf");
+            createIssue.Labels.Add("Perf");
             createIssue.Labels.Add("perf-not-running");
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
@@ -448,7 +448,7 @@ namespace BenchmarksBot
                 Body = body.ToString()
             };
 
-            createIssue.Labels.Add("perf");
+            createIssue.Labels.Add("Perf");
             createIssue.Labels.Add("perf-bad-response");
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
@@ -492,10 +492,10 @@ namespace BenchmarksBot
             var filtered = new List<Regression>();
 
             // Look for the same timestamp in all reported issues
-            foreach(var r in regressions)
+            foreach (var r in regressions)
             {
                 var filter = false;
-                foreach(var issue in issues)
+                foreach (var issue in issues)
                 {
                     if (ignoreClosedIssues && issue.State == ItemState.Closed)
                     {
@@ -530,7 +530,7 @@ namespace BenchmarksBot
             {
                 if (r.PreviousAspNetCoreVersion != r.CurrentAspNetCoreVersion)
                 {
-                    r.AspNetCoreHashes = new [] 
+                    r.AspNetCoreHashes = new[]
                     {
                         await GetAspNetCoreCommitHash(r.PreviousAspNetCoreVersion),
                         await GetAspNetCoreCommitHash(r.CurrentAspNetCoreVersion)
@@ -733,7 +733,7 @@ namespace BenchmarksBot
                     continue;
                 }
 
-                foreach(var label in tag.Labels)
+                foreach (var label in tag.Labels)
                 {
                     labels.Add(label);
                 }
