@@ -80,7 +80,17 @@ namespace BenchmarksBot
             {
                 Console.WriteLine("Reporting new scenarios...");
 
-                await CreateNotRunningIssue(notRunning);
+                try
+                {
+                    await CreateNotRunningIssue(notRunning);
+                }
+                catch (ApiException e)
+                {
+                    Console.WriteLine(e.ToString());
+
+                    Console.WriteLine(e.ApiError);
+                    Console.WriteLine(e.Data);
+                }
             }
             else
             {
