@@ -80,17 +80,7 @@ namespace BenchmarksBot
             {
                 Console.WriteLine("Reporting new scenarios...");
 
-                try
-                {
-                    await CreateNotRunningIssue(notRunning);
-                }
-                catch (ApiException e)
-                {
-                    Console.WriteLine(e.ToString());
-
-                    Console.WriteLine(e.ApiError);
-                    Console.WriteLine(e.Data);
-                }
+                await CreateNotRunningIssue(notRunning);
             }
             else
             {
@@ -383,11 +373,6 @@ namespace BenchmarksBot
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
             Console.Write(createIssue.Body);
-
-            foreach(var label in createIssue.Labels)
-            {
-                Console.WriteLine($"Label: ${label}");
-            }
 
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
@@ -750,7 +735,10 @@ namespace BenchmarksBot
 
                 foreach (var label in tag.Labels)
                 {
-                    labels.Add(label);
+                    if (!String.IsNullOrWhiteSpace(label))
+                    {
+                        labels.Add(label);
+                    }
                 }
 
                 foreach (var owner in tag.Owners)
