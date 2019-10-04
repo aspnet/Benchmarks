@@ -74,5 +74,8 @@
     "Source": {
       "Project": "src/GrpcService/GrpcService.csproj"
     }
+  },
+  "LinkAThonTrimmedAndR2RSingleFileWithTrimListCrossgen2": {
+    "BuildArguments": [ "/p:PublishTrimmed=true", "/p:LinkAggressively=true", "/p:PublishReadyToRun=true", "/p:UseStaticHost=true", "/p:UsePublishFilterList=true", "/p:UseCrossgen2=true", "/p:UseTibcData=true"]
   }
 }
