@@ -384,6 +384,11 @@ namespace BenchmarksBot
 
             Console.Write(createIssue.Body);
 
+            foreach(var label in createIssue.Labels)
+            {
+                Console.WriteLine($"Label: ${label}");
+            }
+
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
 
