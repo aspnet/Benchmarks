@@ -17,6 +17,8 @@ namespace BenchmarksBot
 {
     class Program
     {
+        static TimeSpan RecentIssuesTimeSpan = TimeSpan.FromDays(8);
+
         const string AspNetCorePackage = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv";
         // package-id-lower, version
         static readonly string _aspNetCorePackageFormat = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/{0}/{1}/{0}.{1}.nupkg";
@@ -458,6 +460,9 @@ namespace BenchmarksBot
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
 
+        /// <summary>
+        /// Returns the issues from the past <see cref="RecentIssuesTimeSpan"/>
+        /// </summary>
         private static async Task<IReadOnlyList<Issue>> GetRecentIssues()
         {
             if (_recentIssues != null)
@@ -472,7 +477,7 @@ namespace BenchmarksBot
             {
                 Filter = IssueFilter.Created,
                 State = ItemStateFilter.All,
-                Since = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(8))
+                Since = DateTimeOffset.Now.Subtract(RecentIssuesTimeSpan)
             };
 
             var issues = await client.Issue.GetAllForRepository(_repositoryId, recently);
@@ -480,6 +485,13 @@ namespace BenchmarksBot
             return _recentIssues = issues;
         }
 
+        /// <summary>
+        /// Filters out scenarios that have already been reported.
+        /// </summary>
+        /// <param name="regressions">The regressions to find in existing issues.</param>
+        /// <param name="ignoreClosedIssues">True to report a scenario even if it's in an existing issue that is closed.</param>
+        /// <param name="textToFind">The formatted text to find in an issue.</param>
+        /// <returns></returns>
         private static async Task<IEnumerable<Regression>> RemoveReportedRegressions(IEnumerable<Regression> regressions, bool ignoreClosedIssues, Func<Regression, string> textToFind)
         {
             if (!regressions.Any())
@@ -489,14 +501,21 @@ namespace BenchmarksBot
 
             var issues = await GetRecentIssues();
 
+            // The list of regressions that will actually be reported
             var filtered = new List<Regression>();
 
             // Look for the same timestamp in all reported issues
             foreach (var r in regressions)
             {
+                // When filter is false the regression is kept
                 var filter = false;
+
                 foreach (var issue in issues)
                 {
+                    // If ignoreClosedIssues is true, we don't remove scenarios from closed issues.
+                    // It means that if an issue is already reported in a closed issue, it won't be filtered, hence it will be reported,
+                    // and closing an issue allows the bot to repeat itself and reopen the scenario
+
                     if (ignoreClosedIssues && issue.State == ItemState.Closed)
                     {
                         continue;
