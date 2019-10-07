@@ -81,6 +81,7 @@ Options:
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
   -wf|--write-file       Writes the results to a file named "results.md". NB: Use the --description argument to differentiate multiple results.
   --display-output       Displays the standard output from the server job.
+  --display-build        Displays the standard output from the build step.
   --benchmarkdotnet      Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Benchmarks.LabPerf.Md5VsSha256
   --console              Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.
   --server-timeout       Timeout for server jobs. e.g., 00:05:00
