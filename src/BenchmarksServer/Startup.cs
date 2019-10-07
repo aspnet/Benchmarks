@@ -1882,7 +1882,9 @@ namespace BenchmarkServer
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
                 environmentVariables: env,
-                throwOnError: false);
+                throwOnError: false,
+                log: true
+                );
 
             if (buildResults.ExitCode != 0)
             {

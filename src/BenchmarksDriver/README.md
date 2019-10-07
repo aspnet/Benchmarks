@@ -76,7 +76,7 @@ Options:
   --linux-only           Don't execute the job if the server is not running on Linux
   --save                 Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.
   --diff                 Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.
-  -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png"
+  -d|--download          Downloads specific server files. This argument can be used multiple times. e.g., -d "published/wwwroot/picture.png", --build-arg /bl -d msbuild.binlog
   --fetch                Downloads the published application locally.
   --fetch-output         Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp
   -wf|--write-file       Writes the results to a file named "results.md". NB: Use the --description argument to differentiate multiple results.
