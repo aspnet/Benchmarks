@@ -1882,16 +1882,20 @@ namespace BenchmarkServer
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
                 environmentVariables: env,
-                throwOnError: false,
-                log: true
+                throwOnError: false
                 );
+
+            job.BuildLog = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
+                    "[STDOUT]:\n" + 
+                    buildResults.StandardOutput + 
+                    "\n" +
+                    "[STDERR]:\n" +
+                    buildResults.StandardError + 
+                    "\n";
 
             if (buildResults.ExitCode != 0)
             {
-                job.Error = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
-                    buildResults.StandardOutput + "\n" +
-                    buildResults.StandardError;
-
+                job.Error = job.BuildLog;
                 return null;
             }
 

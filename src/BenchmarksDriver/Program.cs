@@ -56,7 +56,8 @@ namespace BenchmarksDriver
             _hashOption,
             _noGlobalJsonOption,
             _collectCountersOption,
-            _noStartupLatencyOption
+            _noStartupLatencyOption,
+            _displayBuildOption
             ;
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -175,6 +176,8 @@ namespace BenchmarksDriver
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var displayOutputOption = app.Option("--display-output",
                 "Displays the standard output from the server job.", CommandOptionType.NoValue);
+            _displayBuildOption = app.Option("--display-build",
+                "Displays the standard output from the build step.", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
             var consoleOption = app.Option("--console",
@@ -1509,7 +1512,7 @@ namespace BenchmarksDriver
 
                             if (_displayOutput)
                             {
-                                DisplayOutput(serverJob);
+                                DisplayOutput(serverJob.Output);
                             }
 
                             Log(serverJob.Error, notime: true, error: true);
@@ -2109,7 +2112,7 @@ namespace BenchmarksDriver
 
                     if (_displayOutput)
                     {
-                        DisplayOutput(serverJob);
+                        DisplayOutput(serverJob.Output);
                     }
 
                     // Download netperf file
@@ -2205,6 +2208,24 @@ namespace BenchmarksDriver
                             }
                         }
 
+                        // Display build log
+                        if (_displayBuildOption.HasValue())
+                        {
+                            try
+                            {
+                                Log($"Downloading build log...");
+                                
+                                var uri = serverJobUri + "/buildlog";
+
+                                DisplayOutput(await _httpClient.GetStringAsync(uri));
+                            }
+                            catch (Exception e)
+                            {
+                                Log($"Error while downloading build logs");
+                                LogVerbose(e.Message);
+                            }
+                        }
+
                         Log($"Deleting scenario '{scenario}' on benchmark server...");
 
                         LogVerbose($"DELETE {serverJobUri}...");
@@ -2229,7 +2250,7 @@ namespace BenchmarksDriver
             return 0;
         }
 
-        private static void DisplayOutput(ServerJob serverJob)
+        private static void DisplayOutput(string content)
         {
             #region Switching console mode on Windows to preserve colors for stdout
 
@@ -2260,10 +2281,10 @@ namespace BenchmarksDriver
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Convert LF
-                serverJob.Output = serverJob.Output?.Replace("\n", Environment.NewLine) ?? "";
+                content = content?.Replace("\n", Environment.NewLine) ?? "";
             }
 
-            Log(serverJob.Output, notime: true);
+            Log(content, notime: true);
         }
 
         private static List<KeyValuePair<string, string>> BuildFields(Statistics average)

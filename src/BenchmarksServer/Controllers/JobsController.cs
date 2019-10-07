@@ -311,6 +311,23 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("{id}/buildlog")]
+        public IActionResult BuildLog(int id)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+                    return Content(job.BuildLog);
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
         [HttpGet("{id}/eventpipe")]
         public IActionResult EventPipe(int id)
         {

@@ -129,6 +129,12 @@ namespace Benchmarks.ServerJob
         public ulong MemoryLimitInBytes { get; set; }
         public ConcurrentDictionary<string, ConcurrentQueue<string>> Counters { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
 
+        /// <summary>
+        /// The build log. This property is kept on the server side.
+        /// </summary>
+        [JsonIgnore]        
+        public string BuildLog { get; set; }
+        
         // These properties are used to map custom arguments to the scenario files
 
         [JsonIgnore]
