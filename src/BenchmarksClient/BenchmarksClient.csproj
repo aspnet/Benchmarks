@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0-preview9.19424.4" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="3.0.0-preview9.19424.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview9.19424.4" />
-    <PackageReference Include="Ignitor" Version="3.0.0-dev" />
+    <PackageReference Include="Ignitor" Version="3.1.0-preview1.19508.20" />
   </ItemGroup>
 
   <ItemGroup>
