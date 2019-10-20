@@ -407,7 +407,7 @@ namespace BenchmarksDriver
                         using (var cts = new CancellationTokenSource(2000))
                         {
                             var response = _httpClient.GetAsync(client, cts.Token).Result;
-                            response.EnsureSuccessStatusCode();
+                            response.EnsureSuccessful();
                         }
                     }
                     catch
@@ -422,7 +422,7 @@ namespace BenchmarksDriver
                     using (var cts = new CancellationTokenSource(2000))
                     {
                         var response = _httpClient.GetAsync(server, cts.Token).Result;
-                        response.EnsureSuccessStatusCode();
+                        response.EnsureSuccessful();
                     }
                 }
                 catch
@@ -1221,7 +1221,7 @@ namespace BenchmarksDriver
                     responseContent = await response.Content.ReadAsStringAsync();
                     LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
 
-                    response.EnsureSuccessStatusCode();
+                    response.EnsureSuccessful();
 
                     var retryCount = 0;
 
@@ -1449,7 +1449,7 @@ namespace BenchmarksDriver
                             response = await _httpClient.PostAsync(serverJobUri + "/start", new StringContent(""));
                             responseContent = await response.Content.ReadAsStringAsync();
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                            response.EnsureSuccessStatusCode();
+                            response.EnsureSuccessful();
 
                             serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
@@ -1593,7 +1593,7 @@ namespace BenchmarksDriver
                             {
                                 results.Clear();
                                 response = await _httpClient.PostAsync(serverJobUri + "/resetstats", new StringContent(""));
-                                response.EnsureSuccessStatusCode();
+                                response.EnsureSuccessful();
                             }
                         }
 
@@ -1618,7 +1618,7 @@ namespace BenchmarksDriver
                                 LogVerbose($"GET {serverJobUri}...");
 
                                 response = await _httpClient.GetAsync(serverJobUri);
-                                response.EnsureSuccessStatusCode();
+                                response.EnsureSuccessful();
                                 responseContent = await response.Content.ReadAsStringAsync();
 
                                 LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
@@ -1660,7 +1660,7 @@ namespace BenchmarksDriver
                             LogVerbose($"GET {serverJobUri}...");
 
                             response = await _httpClient.GetAsync(serverJobUri);
-                            response.EnsureSuccessStatusCode();
+                            response.EnsureSuccessful();
                             responseContent = await response.Content.ReadAsStringAsync();
 
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
@@ -1763,7 +1763,7 @@ namespace BenchmarksDriver
 
                                 var uri = serverJobUri + "/trace";
                                 response = await _httpClient.PostAsync(uri, new StringContent(""));
-                                response.EnsureSuccessStatusCode();
+                                response.EnsureSuccessful();
 
                                 while (true)
                                 {
@@ -2242,7 +2242,7 @@ namespace BenchmarksDriver
                             );
                         }
 
-                        response.EnsureSuccessStatusCode();
+                        response.EnsureSuccessful();
                     }
                 }
             }
@@ -2363,7 +2363,7 @@ namespace BenchmarksDriver
                 Log($"Sending {Path.GetFileName(filename)}");
 
                 var result = await _httpClient.PostAsync(clientJobUri + "/script", requestContent);
-                result.EnsureSuccessStatusCode();
+                result.EnsureSuccessful();
             }
             catch (Exception e)
             {
@@ -2390,7 +2390,7 @@ namespace BenchmarksDriver
                 var response = await _httpClient.PostAsync(clientJobsUri, new StringContent(clientContent, Encoding.UTF8, "application/json"));
                 var responseContent = await response.Content.ReadAsStringAsync();
                 LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessful();
 
                 clientJobUri = new Uri(clientUri, response.Headers.Location);
 
@@ -2425,7 +2425,7 @@ namespace BenchmarksDriver
                 response = await _httpClient.PostAsync(clientJobUri + "/start", new StringContent(""));
                 responseContent = await response.Content.ReadAsStringAsync();
                 LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessful();
 
                 Log($"Client Job ready: {clientJobUri}");
 
@@ -2523,7 +2523,7 @@ namespace BenchmarksDriver
 
                     if (response.StatusCode != HttpStatusCode.NotFound)
                     {
-                        response.EnsureSuccessStatusCode();
+                        response.EnsureSuccessful();
                     }
                 }
             }
