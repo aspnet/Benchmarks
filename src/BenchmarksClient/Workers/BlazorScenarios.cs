@@ -36,9 +36,9 @@ namespace BenchmarksClient.Workers
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
-                        await ComputeStats(clientStats, () => client.ClickAsync("pizza5"));
+                        await ComputeStats(clientStats, () => client.ClickAsync("pizza5"), cancellationToken);
 
-                        await ComputeStats(clientStats, () => client.ClickAsync("confirm"));
+                        await ComputeStats(clientStats, () => client.ClickAsync("confirm"), cancellationToken);
 
                         var newCount = ReadIntAttribute(pizzaOrders, "pizzaCount");
                         if (newCount != count + 1)
@@ -50,7 +50,7 @@ namespace BenchmarksClient.Workers
                 }, cancellationToken);
             }
 
-            return Task.WhenAll(tasks);
+            return AwaitCancellableTasks(tasks);
 
             static int ReadIntAttribute(ElementNode currentCount, string attributeName)
             {
@@ -113,7 +113,8 @@ namespace BenchmarksClient.Workers
                                 () => client.HubConnection.InvokeAsync(
                                     "DispatchBrowserEvent",
                                     JsonSerializer.Serialize(changeEvent),
-                                    JsonSerializer.Serialize(eventArgs))));
+                                    JsonSerializer.Serialize(eventArgs))),
+                            cancellationToken);
 
                         var elementValue = element.Attributes["value"].ToString();
 
@@ -125,7 +126,7 @@ namespace BenchmarksClient.Workers
                 }, cancellationToken);
             }
 
-            return Task.WhenAll(tasks);
+            return AwaitCancellableTasks(tasks);
         }
 
         private Task BackgroundUpdates(CancellationToken cancellationToken)
@@ -150,7 +151,10 @@ namespace BenchmarksClient.Workers
 
                 tasks[i] = Task.Run(async () =>
                 {
-                    await client.ExpectRenderBatch(() => NavigateAsync(client, "orderstatus", cancellationToken));
+                    await ComputeStats(
+                        clientStats,
+                        () => client.ExpectRenderBatch(() => NavigateAsync(client, "orderstatus", cancellationToken)),
+                        cancellationToken);
                     var element = client.FindElementById("status");
                     var location = string.Empty;
 
@@ -172,11 +176,13 @@ namespace BenchmarksClient.Workers
                 }, cancellationToken);
             }
 
-            return Task.WhenAll(tasks);
+            return AwaitCancellableTasks(tasks);
         }
 
-        async Task ComputeStats(ClientStatistics clientStatistics, Func<Task> action)
+        async Task ComputeStats(ClientStatistics clientStatistics, Func<Task> action, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var startTime = DateTime.UtcNow;
             await action();
 
@@ -195,6 +201,18 @@ namespace BenchmarksClient.Workers
             }
 
             clientStatistics.Renders++;
+        }
+
+        private static async Task AwaitCancellableTasks(Task[] tasks)
+        {
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException)
+            {
+                // No-op
+            }
         }
 
         Task NavigateAsync(BlazorClient client, string url, CancellationToken cancellationToken)
