@@ -57,10 +57,18 @@ namespace BenchmarksClient.Workers
             jobLogText += "]";
             JobLogText = jobLogText;
 
-            _clients = Enumerable.Range(0, _job.Connections).Select(_ => new BlazorClient()).ToList();
+            _clients = Enumerable.Range(0, _job.Connections).Select(_ => CreateBlazorClient()).ToList();
             _clientStatistics = Enumerable.Range(0, _job.Connections).Select(_ => new ClientStatistics()).ToList();
 
             return Task.CompletedTask;
+        }
+
+        private static BlazorClient CreateBlazorClient()
+        {
+            return new BlazorClient
+            {
+                DefaultOperationTimeout = TimeSpan.FromSeconds(2),
+            };
         }
 
         public async Task StartJobAsync(ClientJob job)
@@ -118,7 +126,10 @@ namespace BenchmarksClient.Workers
 
         public async Task StopJobAsync()
         {
-            _cancelationTokenSource?.Cancel();
+            if (_cancelationTokenSource != null && !_cancelationTokenSource.IsCancellationRequested)
+            {
+                _cancelationTokenSource.Cancel();
+            }
 
             Log($"Stopping Job: {_job.SpanId}");
             if (_stopped || !await _lock.WaitAsync(0))
