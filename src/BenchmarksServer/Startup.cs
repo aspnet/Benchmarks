@@ -403,6 +403,8 @@ namespace BenchmarkServer
                         {
                             var now = DateTime.UtcNow;
 
+                            Log.WriteLine($"Acquiring Job '{job.Id}' in stat {j.State}");
+
                             if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
@@ -573,12 +575,15 @@ namespace BenchmarkServer
                                         {
                                             var now = DateTime.UtcNow;
 
-                                            // Clean the job in case the driver is not running
-                                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
-                                            {
-                                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
-                                                job.State = ServerState.Deleting;
-                                            }
+                                            //// Clean the job in case the driver is not running
+                                            //if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                                            //{
+                                            //    if (job.State != ServerState.Stopped && job.State != ServerState.Stopping)
+                                            //    {
+                                            //        Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
+                                            //        job.State = ServerState.Deleting;
+                                            //    }
+                                            //}
 
                                             if (!String.IsNullOrEmpty(dockerImage))
                                             {
