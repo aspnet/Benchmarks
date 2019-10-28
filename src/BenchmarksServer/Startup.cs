@@ -584,15 +584,16 @@ namespace BenchmarkServer
                                         {
                                             var now = DateTime.UtcNow;
 
-                                            //// Clean the job in case the driver is not running
-                                            //if (now - job.LastDriverCommunicationUtc > DriverTimeout)
-                                            //{
-                                            //    if (job.State != ServerState.Stopped && job.State != ServerState.Stopping)
-                                            //    {
-                                            //        Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
-                                            //        job.State = ServerState.Deleting;
-                                            //    }
-                                            //}
+                                            // Stops the job in case the driver is not running
+                                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                                            {
+                                                Log.WriteLine($"[Heartbeat] Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                                if (job.State == ServerState.Running)
+                                                {
+                                                    Log.WriteLine($"{job.State} -> Stopping");
+                                                    job.State = ServerState.Stopping;
+                                                }
+                                            }
 
                                             if (!String.IsNullOrEmpty(dockerImage))
                                             {
