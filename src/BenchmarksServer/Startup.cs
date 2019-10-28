@@ -691,8 +691,12 @@ namespace BenchmarkServer
                                                         // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
                                                         job.Output = standardOutput.ToString();
 
-                                                        Log.WriteLine($"{job.State} -> Stopped");
-                                                        job.State = ServerState.Stopped;
+                                                        // Don't revert a Deleting state by mistake
+                                                        if (job.State != ServerState.Deleting)
+                                                        {
+                                                            Log.WriteLine($"{job.State} -> Stopped");
+                                                            job.State = ServerState.Stopped;
+                                                        }
                                                     }
                                                 }
                                                 else
