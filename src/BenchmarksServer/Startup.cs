@@ -403,17 +403,19 @@ namespace BenchmarkServer
                         {
                             var now = DateTime.UtcNow;
 
-                            Log.WriteLine($"Acquiring Job '{j.Id}' in state {j.State}");
+                            Log.WriteLine($"Acquiring Job '{j.Id}'");
 
                             if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
-                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({j.State})");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                Log.WriteLine($"{job.State} -> Deleting");
                                 j.State = ServerState.Deleting;
                             }
                             else
                             {
                                 startMonitorTime = DateTime.UtcNow;
+                                Log.WriteLine($"{j.State} -> Initializing");
                                 j.State = ServerState.Initializing;
                             }
                         }
@@ -433,7 +435,8 @@ namespace BenchmarkServer
                             // Clean the job in case the driver is not running
                             if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                             {
-                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                Log.WriteLine($"{job.State} -> Deleting");
                                 job.State = ServerState.Deleting;
                             }
                         }
@@ -449,11 +452,13 @@ namespace BenchmarkServer
                                 {
                                     Log.WriteLine($"Skipping job '{job.Id}' with scenario '{job.Scenario}'.");
                                     Log.WriteLine($"'{job.WebHost}' is not supported on this platform.");
+                                    Log.WriteLine($"{job.State} -> NotSupported");
                                     job.State = ServerState.NotSupported;
                                     continue;
                                 }
 
                                 Log.WriteLine($"Starting job '{job.Id}' with scenario '{job.Scenario}'");
+                                Log.WriteLine($"{job.State} -> Starting");
                                 job.State = ServerState.Starting;
 
                                 standardOutput.Clear();
@@ -488,6 +493,7 @@ namespace BenchmarkServer
                                                 cts.Cancel();
                                                 await buildAndRunTask;
 
+                                                Log.WriteLine($"{job.State} -> Failed");
                                                 job.State = ServerState.Failed;
                                                 break;
                                             }
@@ -500,6 +506,7 @@ namespace BenchmarkServer
                                                 await buildAndRunTask;
 
                                                 job.Error = "Build is taking too long. Halting build.";
+                                                Log.WriteLine($"{job.State} -> Failed");
                                                 job.State = ServerState.Failed;
                                                 break;
                                             }
@@ -511,6 +518,7 @@ namespace BenchmarkServer
                                     {
                                         workingDirectory = null;
                                         Log.WriteLine($"Job failed with DockerBuildAndRun: " + e.Message);
+                                        Log.WriteLine($"{job.State} -> Failed");
                                         job.State = ServerState.Failed;
                                     }
                                 }
@@ -541,6 +549,7 @@ namespace BenchmarkServer
                                         {
                                             workingDirectory = null;
                                             Log.WriteLine($"Job failed with CloneRestoreAndBuild");
+                                            Log.WriteLine($"{job.State} -> Failed");
                                             job.State = ServerState.Failed;
                                         }
                                     }
@@ -596,6 +605,7 @@ namespace BenchmarkServer
 
                                                 if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
                                                 {
+                                                    Log.WriteLine($"{job.State} -> Stopping");
                                                     job.State = ServerState.Stopping;
                                                 }
                                                 else
@@ -670,6 +680,7 @@ namespace BenchmarkServer
 
                                                         if (job.State != ServerState.Deleting)
                                                         {
+                                                            Log.WriteLine($"{job.State} -> Failed");
                                                             job.State = ServerState.Failed;
                                                         }
                                                     }
@@ -680,6 +691,7 @@ namespace BenchmarkServer
                                                         // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
                                                         job.Output = standardOutput.ToString();
 
+                                                        Log.WriteLine($"{job.State} -> Stopped");
                                                         job.State = ServerState.Stopped;
                                                     }
                                                 }
@@ -728,6 +740,7 @@ namespace BenchmarkServer
                             catch (Exception e)
                             {
                                 Log.WriteLine($"Error starting job '{job.Id}': {e}");
+                                Log.WriteLine($"{job.State} -> Failed");
                                 job.State = ServerState.Failed;
                                 continue;
                             }
@@ -745,7 +758,8 @@ namespace BenchmarkServer
                             if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
-                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job. ({job.State})");
+                                Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                Log.WriteLine($"{job.State} -> Deleting");
                                 job.State = ServerState.Deleting;
                             }
                         }
@@ -770,6 +784,7 @@ namespace BenchmarkServer
                                 }
 
                                 Log.WriteLine("Trace collected");
+                                Log.WriteLine($"{job.State} ->  TraceCollected");
                                 job.State = ServerState.TraceCollected;
                             }
 
