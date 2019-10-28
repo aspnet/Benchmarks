@@ -403,7 +403,7 @@ namespace BenchmarkServer
                         {
                             var now = DateTime.UtcNow;
 
-                            Log.WriteLine($"Acquiring Job '{job.Id}' in stat {j.State}");
+                            Log.WriteLine($"Acquiring Job '{j.Id}' in state {j.State}");
 
                             if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
