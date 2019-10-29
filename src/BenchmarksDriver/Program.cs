@@ -1192,8 +1192,13 @@ namespace BenchmarksDriver
             ClientJob[] clientJobs = null;
 
             var serializer = WorkerFactory.CreateResultSerializer(_clientJob);
+            if (serializer is null)
+            {
+                Log($"No serializer found for {_clientJob.Client}. Using {nameof(WrkSerializer)} by default.");
+                serializer = new WrkSerializer();
+            }
 
-            if (serializer != null && !string.IsNullOrWhiteSpace(sqlConnectionString))
+            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
             {
                 await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
             }

@@ -160,8 +160,8 @@ jobs=(
   "-n PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $trend $plaintextJobs"
   
   # Blazor
-  "-n Basic $trend $blazorJobs"
-  "-n FormInput $trend $blazorJobs"
+  "-n BlazorBasic $trend $blazorJobs"
+  "-n BlazorFormInput $trend $blazorJobs"
 )
 
 # build driver

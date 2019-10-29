@@ -97,16 +97,16 @@ namespace BenchmarksClient.Workers
             {
                 switch (_scenario)
                 {
-                    case "Basic":
-                        await Basic(_cancelationTokenSource.Token);
+                    case nameof(BlazorBasic):
+                        await BlazorBasic(_cancelationTokenSource.Token);
                         break;
 
-                    case "FormInput":
-                        await FormInput(_cancelationTokenSource.Token);
+                    case nameof(BlazorFormInput):
+                        await BlazorFormInput(_cancelationTokenSource.Token);
                         break;
 
-                    case "BackgroundUpdates":
-                        await BackgroundUpdates(_cancelationTokenSource.Token);
+                    case nameof(BlazorBackgroundUpdates):
+                        await BlazorBackgroundUpdates(_cancelationTokenSource.Token);
                         break;
 
                     default:

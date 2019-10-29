@@ -9,7 +9,7 @@ namespace BenchmarksClient.Workers
 {
     public partial class BlazorIgnitor
     {
-        private Task Basic(CancellationToken cancellationToken)
+        private Task BlazorBasic(CancellationToken cancellationToken)
         {
             var tasks = new Task[_clients.Count];
             var serverUri = new Uri(_job.ServerBenchmarkUri);
@@ -63,7 +63,7 @@ namespace BenchmarksClient.Workers
             }
         }
 
-        private Task FormInput(CancellationToken cancellationToken)
+        private Task BlazorFormInput(CancellationToken cancellationToken)
         {
             var tasks = new Task[_clients.Count];
             var serverUri = new Uri(_job.ServerBenchmarkUri);
@@ -129,7 +129,7 @@ namespace BenchmarksClient.Workers
             return AwaitCancellableTasks(tasks);
         }
 
-        private Task BackgroundUpdates(CancellationToken cancellationToken)
+        private Task BlazorBackgroundUpdates(CancellationToken cancellationToken)
         {
             var tasks = new Task[_clients.Count];
             var serverUri = new Uri(_job.ServerBenchmarkUri);
