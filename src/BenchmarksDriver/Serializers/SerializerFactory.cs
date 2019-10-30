@@ -37,6 +37,9 @@ namespace BenchmarksDriver.Serializers
 
             // Bombardier
             ResultSerializers[Worker.Bombardier] = () => new WrkSerializer();
+
+            // Blazor
+            ResultSerializers[Worker.BlazorIgnitor] = () => new BlazorSerializer();
         }
 
         static public IResultsSerializer CreateResultSerializer(ClientJob clientJob)

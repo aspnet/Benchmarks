@@ -7,13 +7,13 @@
       "Project": "src/Components/benchmarkapps/BlazingPizza.Server/BlazingPizza.Server.csproj"
     }
   },
-  "Basic": {
-    "ClientProperties": { "Scenario": "Basic" }
+  "BlazorBasic": {
+    "ClientProperties": { "Scenario": "BlazorBasic" }
   },
-  "FormInput": {
-    "ClientProperties": { "Scenario": "FormInput" }
+  "BlazorFormInput": {
+    "ClientProperties": { "Scenario": "BlazorFormInput" }
   },
-  "BackgroundUpdates": {
-    "ClientProperties": { "Scenario": "BackgroundUpdates" }
+  "BlazorBackgroundUpdates": {
+    "ClientProperties": { "Scenario": "BlazorBackgroundUpdates" }
   }
 }
