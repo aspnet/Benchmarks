@@ -42,7 +42,7 @@ namespace PRJobProducer
             app.HelpOption("-h|--help");
 
             var jobsPath = app.Option("-j|--jobs-path <PATH>", "The path where jobs are created", CommandOptionType.SingleValue).IsRequired();
-            var baseJobPath = app.Option("-b|--base-job <PATH>", "The job file path", CommandOptionType.SingleValue).IsRequired();
+            var baseJobPath = app.Option("-b|--base-job <PATH>", "The base job file path", CommandOptionType.SingleValue).IsRequired();
 
             var optionBotUser = app.Option("-u|--user <NAME>", "The GitHub user name for the bot", CommandOptionType.SingleValue);
             var optionBotToken = app.Option("-t|--token <TOKEN>", "The GitHub token for the bot", CommandOptionType.SingleValue);
@@ -146,34 +146,38 @@ namespace PRJobProducer
             var prRequest = new PullRequestRequest()
             {
                 State = ItemStateFilter.Open,
+                SortDirection = SortDirection.Descending,
+                SortProperty = PullRequestSort.Updated,
             };
 
             var prs = await client.PullRequest.GetAllForRepository(Owner, Repo, prRequest);
 
             foreach (var pr in prs)
             {
-                if (pr.UpdatedAt > CommentCutoffDate)
+                if (pr.UpdatedAt < CommentCutoffDate)
                 {
-                    var comments = await client.Issue.Comment.GetAllForIssue(Owner, Repo, pr.Number);
+                    break;
+                }
 
-                    for (var i = comments.Count - 1; i >= 0; i--)
+                var comments = await client.Issue.Comment.GetAllForIssue(Owner, Repo, pr.Number);
+
+                for (var i = comments.Count - 1; i >= 0; i--)
+                {
+                    var comment = comments[i];
+
+                    if (comment.CreatedAt < CommentCutoffDate)
                     {
-                        var comment = comments[i];
+                        break;
+                    }
 
-                        if (comment.CreatedAt < CommentCutoffDate)
-                        {
-                            break;
-                        }
-
-                        if (comment.Body.StartsWith(BenchmarkRequest) && await client.Organization.Member.CheckMember(Owner, comment.User.Login))
-                        {
-                            yield return pr;
-                        }
-                        else if (comment.User.Login.Equals(botLoginName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // The bot has already commented with results for the most recent benchmark request.
-                            break;
-                        }
+                    if (comment.Body.StartsWith(BenchmarkRequest) && await client.Organization.Member.CheckMember(Owner, comment.User.Login))
+                    {
+                        yield return pr;
+                    }
+                    else if (comment.User.Login.Equals(botLoginName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // The bot has already commented with results for the most recent benchmark request.
+                        break;
                     }
                 }
             }
@@ -223,6 +227,7 @@ namespace PRJobProducer
                         PullRequestSHA = pr.Head.Sha,
                     };
 
+                    // Clear file and reset position to 0
                     newJobStream.SetLength(0);
                     await JsonSerializer.SerializeAsync(newJobStream, jsonDictionary, new JsonSerializerOptions
                     {
@@ -257,7 +262,7 @@ namespace PRJobProducer
                 {
                     if (Environment.TickCount64 - startTicks > BenchmarkTimeout.TotalMilliseconds)
                     {
-                        throw new TimeoutException($"Benchmark results were not published to {ProcessedPath} within {BenchmarkTimeout}.");
+                        throw new TimeoutException($"Benchmark results for session {session} were not published to {ProcessedPath} within {BenchmarkTimeout}.");
                     }
 
                     await Task.Delay(1000);
@@ -323,8 +328,8 @@ namespace PRJobProducer
 
             var keyText = File.ReadAllText(pemPath);
 
-            if (!keyText.StartsWith(pemStart, StringComparison.OrdinalIgnoreCase) ||
-                !keyText.EndsWith(pemEnd, StringComparison.OrdinalIgnoreCase))
+            if (!keyText.StartsWith(pemStart, StringComparison.Ordinal) ||
+                !keyText.EndsWith(pemEnd, StringComparison.Ordinal))
             {
                 throw new InvalidDataException("The --key-file is not in the expected pem format.");
             }
@@ -338,7 +343,7 @@ namespace PRJobProducer
             return new RsaSecurityKey(rsa.ExportParameters(true));
         }
 
-        // REVIEW: What's the base way to share these DTOs in the repo?
+        // REVIEW: What's the best way to share these DTOs in this repo?
         private class BuildInstructions
         {
             public string[] BuildCommands { get; set; }

@@ -277,6 +277,7 @@ namespace JobConsumer
 
                 jsonDictionary["BenchmarkResult"] = jobResult;
 
+                // Clear file and reset position to 0
                 processingJsonStream.SetLength(0);
                 await JsonSerializer.SerializeAsync(processingJsonStream, jsonDictionary, new JsonSerializerOptions
                 {
@@ -295,7 +296,7 @@ namespace JobConsumer
                 ;
         }
 
-        // REVIEW: What's the base way to share these DTOs in the repo?
+        // REVIEW: What's the best way to share these DTOs in this repo?
         private class BuildInstructions
         {
             public string[] BuildCommands { get; set; }
