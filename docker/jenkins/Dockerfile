@@ -29,4 +29,4 @@ RUN curl https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotn
 
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
 
-sudo echo $'jenkins    ALL = NOPASSWD: /path/to/script\n' >> /etc/sudoers
+CMD sudo echo $'jenkins    ALL = NOPASSWD: /path/to/script\n' >> /etc/sudoers
