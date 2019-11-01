@@ -3,13 +3,10 @@
 #echo on
 set -x
 
-# "--network host" - Better performance than the default "bridge" driver
-# TODO: the local mount (/mnt/prcheck) should be a name or positional parameter
 docker run \
-    -d \
-    -it \
-    --init \
-    --name benchmarks-jenkins \
-    --network host \
-    --restart always \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
+    -d --name jenkins \
+    --restart always -p 80:8080 -p 50000:50000 \
+    -v jenkins_home:/var/jenkins_home -e JAVA_OPTS="-Dmail.smtp.starttls.enable=true" \
     benchmarks-jenkins
