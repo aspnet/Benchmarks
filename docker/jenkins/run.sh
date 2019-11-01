@@ -9,8 +9,7 @@ docker run \
     -d \
     -it \
     --init \
-    --mount type=bind,source=/mnt/prcheck,target=/jobs \
-    --name jenkins \
+    --name benchmarks-jenkins \
     --network host \
     --restart always \
-    jenkins
+    benchmarks-jenkins

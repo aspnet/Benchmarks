@@ -3,5 +3,5 @@
 #echo on
 set -x
 
-docker stop jenkins
-docker rm jenkins
+docker stop benchmarks-jenkins
+docker rm benchmarks-jenkins
