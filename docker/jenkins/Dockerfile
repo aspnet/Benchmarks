@@ -28,5 +28,3 @@ RUN curl https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotn
     && ./dotnet-install.sh --channel Current
 
 COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy
-
-CMD sudo echo $'jenkins    ALL = NOPASSWD: /path/to/script\n' >> /etc/sudoers
