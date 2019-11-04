@@ -188,7 +188,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PRJobProducer", "src\PRJobP
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "jenkins", "jenkins", "{165508DE-D568-4403-8B58-3AB9F9770DF0}"
 	ProjectSection(SolutionItems) = preProject
+		docker\jenkins\build.sh = docker\jenkins\build.sh
 		docker\jenkins\Dockerfile = docker\jenkins\Dockerfile
+		executors.groovy = executors.groovy
+		docker\jenkins\run.sh = docker\jenkins\run.sh
+		docker\jenkins\stop.sh = docker\jenkins\stop.sh
 	EndProjectSection
 EndProject
 Global
