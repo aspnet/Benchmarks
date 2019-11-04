@@ -72,8 +72,7 @@ if [[ $(dpkg --print-architecture) = *arm64* ]]; then
   hardware=ARM64
 fi
 
-# Clean temp folder from previous runs
-sudo rm -rf /mnt/BenchmarksServer
+mkdir -p /mnt/benchmarks
 
 # "--network host" - Better performance than the default "bridge" driver
 # "-v /var/run/docker.sock" - Give container access to the host docker daemon 
