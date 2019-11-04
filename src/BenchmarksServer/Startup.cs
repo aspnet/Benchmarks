@@ -1225,7 +1225,15 @@ namespace BenchmarkServer
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            ProcessUtil.Run("docker", $"build --pull -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+            string buildParameters = "";
+
+            // Apply custom build arguments sent from the driver
+            foreach (var argument in job.BuildArguments)
+            {
+                buildParameters += $"--build-arg {argument} ";
+            }
+
+            ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
 
             stopwatch.Stop();
 
