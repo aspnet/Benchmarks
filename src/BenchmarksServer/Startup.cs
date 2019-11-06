@@ -1639,24 +1639,29 @@ namespace BenchmarkServer
             // Looking for the first existing global.json file to update
 
             var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-            bool globalJsonFound;
 
-            do
+            while (!File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null) ;
             {
-                globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
                 globalJsonPath = globalJsonPath.Parent;
             }
-            while (!globalJsonFound && globalJsonPath != null);
+
+            var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
 
             if (job.NoGlobalJson)
             {
-                Log.WriteLine($"Searching SDK version in global.json");
+                if (!File.Exists(globalJsonFilename))
+                {
+                    Log.WriteLine($"Could not find global.json file");
+                }
+                else
+                {
+                    Log.WriteLine($"Searching SDK version in global.json");
 
-                var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
-                var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
-                sdkVersion = ((JProperty)globalObject["sdk"]["version"]).Value.ToString();
+                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+                    sdkVersion = ((JProperty)globalObject["sdk"]["version"]).Value.ToString();
 
-                Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
+                    Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
+                }
             }
             else
             {
@@ -1666,7 +1671,7 @@ namespace BenchmarkServer
                 }
 
                 // No global.json found
-                if (!globalJsonFound)
+                if (!File.Exists(globalJsonFilename))
                 {
                     var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
                     Log.WriteLine($"Writing global.json with content: {globalJson}");
@@ -1675,7 +1680,6 @@ namespace BenchmarkServer
                 else
                 {
                     // File found, we need to update it
-                    var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
                     ((JProperty)globalObject["sdk"]["version"]).Value = new JValue(sdkVersion);
                     var globalJson = globalObject.ToString();
