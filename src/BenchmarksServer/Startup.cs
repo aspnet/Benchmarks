@@ -1639,17 +1639,14 @@ namespace BenchmarkServer
             // Looking for the first existing global.json file to update
 
             var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-
             bool globalJsonFound;
-            bool reachedRoot;
 
             do
             {
-                reachedRoot = globalJsonPath.FullName != new DirectoryInfo(path).FullName;
                 globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
                 globalJsonPath = globalJsonPath.Parent;
             }
-            while (!globalJsonFound && !reachedRoot);
+            while (!globalJsonFound && globalJsonPath != null);
 
             if (job.NoGlobalJson)
             {
