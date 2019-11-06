@@ -396,6 +396,9 @@ namespace BenchmarkServer
                 eventPipeTask = null;
                 eventPipeTerminated = false;
 
+                dotnetTraceTask = null;
+                dotnetTraceCancellationTokenSource = null;
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     ServerJob job = null;
@@ -801,7 +804,7 @@ namespace BenchmarkServer
                             // Stop dotnet-trace
                             if (job.DotNetTrace)
                             {
-                                if (!dotnetTraceTask.IsCompleted)
+                                if (dotnetTraceTask != null && !dotnetTraceTask.IsCompleted)
                                 {
                                     Log.WriteLine("Stopping dotnet-trace");
 
@@ -810,6 +813,8 @@ namespace BenchmarkServer
                                     await dotnetTraceTask;
 
                                     dotnetTraceCancellationTokenSource.Dispose();
+
+                                    dotnetTraceTask = null;
                                 }
 
                                 Log.WriteLine("Trace collected");
@@ -890,7 +895,7 @@ namespace BenchmarkServer
                                 if (job.DotNetTrace)
                                 {
                                     // Stop dotnet-trace if still active
-                                    if (!dotnetTraceTask.IsCompleted)
+                                    if (dotnetTraceTask != null && !dotnetTraceTask.IsCompleted)
                                     {
                                         Log.WriteLine("Stopping dotnet-trace");
 
@@ -899,7 +904,9 @@ namespace BenchmarkServer
                                         await dotnetTraceTask;
 
                                         dotnetTraceCancellationTokenSource.Dispose();
-                                    }                                    
+
+                                        dotnetTraceTask = null;
+                                    }
                                 }
 
                                 if (OperatingSystem == OperatingSystem.Linux)
