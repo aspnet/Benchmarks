@@ -1658,7 +1658,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Searching SDK version in global.json");
 
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
-                    sdkVersion = ((JProperty)globalObject["sdk"]["version"]).Value.ToString();
+                    sdkVersion = globalObject["sdk"]["version"].ToString();
 
                     Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
                 }
