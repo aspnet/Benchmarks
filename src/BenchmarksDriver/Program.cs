@@ -1885,7 +1885,7 @@ namespace BenchmarksDriver
 
                                 try
                                 {
-                                    Log($"Downloading trace: {traceOutputFileName}");
+                                    Log($"Downloading trace: {traceOutputFileName} from {uri}");
                                     await _httpClient.DownloadFileAsync(uri, serverJobUri, traceOutputFileName);
                                 }
                                 catch (HttpRequestException)
