@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
+using Microsoft.Diagnostics.Tools.Trace;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -85,7 +86,9 @@ namespace BenchmarkServer
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
-        private static Process dotnetTraceProcess;
+        
+        private static Task dotnetTraceTask;
+        private static CancellationTokenSource dotnetTraceCancellationTokenSource;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -798,15 +801,12 @@ namespace BenchmarkServer
                             // Stop dotnet-trace
                             if (job.DotNetTrace)
                             {
-                                if (!dotnetTraceProcess.HasExited)
+                                if (!dotnetTraceTask.IsCompleted)
                                 {
-                                    dotnetTraceProcess.CloseMainWindow();
+                                    dotnetTraceCancellationTokenSource.Cancel();
                                 }
 
-                                if (dotnetTraceProcess.HasExited)
-                                {
-                                    dotnetTraceProcess = null;
-                                }
+                                await dotnetTraceTask;
 
                                 Log.WriteLine("Trace collected");
                                 Log.WriteLine($"{job.State} ->  TraceCollected");
@@ -886,45 +886,12 @@ namespace BenchmarkServer
                                 if (job.DotNetTrace)
                                 {
                                     // Stop dotnet-trace if still active
-                                    if (dotnetTraceProcess != null)
+                                    if (!dotnetTraceTask.IsCompleted)
                                     {
-                                        if (!dotnetTraceProcess.HasExited)
-                                        {
-                                            if (OperatingSystem == OperatingSystem.Linux)
-                                            {
-                                                Mono.Unix.Native.Syscall.kill(dotnetTraceProcess.Id, Mono.Unix.Native.Signum.SIGINT);
-                                            }
-
-                                            Log.WriteLine($"Forcing dotnet-trace to stop ...");
-                                            dotnetTraceProcess.CloseMainWindow();
-
-                                            if (!dotnetTraceProcess.HasExited)
-                                            {
-                                                dotnetTraceProcess.Kill();
-                                            }
-
-                                            dotnetTraceProcess.Dispose();
-
-                                            do
-                                            {
-                                                Log.WriteLine($"Waiting for process {dotnetTraceProcess.Id} to stop ...");
-
-                                                await Task.Delay(1000);
-
-                                                try
-                                                {
-                                                    dotnetTraceProcess.Refresh();
-                                                }
-                                                catch
-                                                {
-                                                    dotnetTraceProcess = null;
-                                                }
-
-                                            } while (dotnetTraceProcess != null && !dotnetTraceProcess.HasExited);
-                                        }
-
-                                        dotnetTraceProcess = null;
+                                        dotnetTraceCancellationTokenSource.Cancel();
                                     }
+
+                                    await dotnetTraceTask;
                                 }
 
                                 if (OperatingSystem == OperatingSystem.Linux)
@@ -2752,20 +2719,7 @@ namespace BenchmarkServer
         {
             job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
 
-            dotnetTraceProcess = new Process()
-            {
-                StartInfo = {
-                    FileName = "dotnet-trace",
-                    Arguments = $"collect -p {processId} -o {job.PerfViewTraceFile}",
-                    WorkingDirectory = workingDirectory,
-                    RedirectStandardOutput = false,
-                    UseShellExecute = false,
-                }
-            };
-
-            dotnetTraceProcess.Start();
-
-            Log.WriteLine($"dotnet-trace started [{dotnetTraceProcess.Id}]");
+            dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, "", default(TimeSpan));
         }
 
         private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
@@ -2973,5 +2927,97 @@ namespace BenchmarkServer
 
         [DllImport("kernel32.dll")]
         static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
+        private static async Task<int> Collect(CancellationToken ct, int processId, FileInfo output, uint buffersize, string providers, TimeSpan duration)
+        {
+            Dictionary<string, string> enabledBy = new Dictionary<string, string>();
+
+            var providerCollection = TraceExtensions.ToProviders(providers);
+            foreach (Provider providerCollectionProvider in providerCollection)
+            {
+                enabledBy[providerCollectionProvider.Name] = "--providers ";
+            }
+
+            if (providerCollection.Count <= 0)
+            {
+                return -1;
+            }
+
+            var process = Process.GetProcessById(processId);
+            var configuration = new SessionConfiguration(
+                circularBufferSizeMB: buffersize,
+                format: EventPipeSerializationFormat.NetTrace,
+                providers: providerCollection);
+
+            var shouldExit = new ManualResetEvent(false);
+            var shouldStopAfterDuration = duration != default(TimeSpan);
+            var failed = false;
+            var terminated = false;
+            System.Timers.Timer durationTimer = null;
+
+            ct.Register(() => shouldExit.Set());
+
+            ulong sessionId = 0;
+            using (Stream stream = EventPipeClient.CollectTracing(processId, configuration, out sessionId))
+            {
+                if (sessionId == 0)
+                {
+                    return -1;
+                }
+
+                if (shouldStopAfterDuration)
+                {
+                    durationTimer = new System.Timers.Timer(duration.TotalMilliseconds);
+                    durationTimer.Elapsed += (s, e) => shouldExit.Set();
+                    durationTimer.AutoReset = false;
+                }
+
+                var collectingTask = new Task(() =>
+                {
+                    try
+                    {
+                        var stopwatch = new Stopwatch();
+                        durationTimer?.Start();
+                        stopwatch.Start();
+
+                        using (var fs = new FileStream(output.FullName, FileMode.Create, FileAccess.Write))
+                        {
+                            var buffer = new byte[16 * 1024];
+
+                            while (true)
+                            {
+                                int nBytesRead = stream.Read(buffer, 0, buffer.Length);
+                                if (nBytesRead <= 0)
+                                    break;
+                                fs.Write(buffer, 0, nBytesRead);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        failed = true;
+                    }
+                    finally
+                    {
+                        terminated = true;
+                        shouldExit.Set();
+                    }
+                });
+                collectingTask.Start();
+
+                do
+                {
+                } while (!shouldExit.WaitOne(0));
+
+                if (!terminated)
+                {
+                    durationTimer?.Stop();
+                    EventPipeClient.StopTracing(processId, sessionId);
+                }
+                await collectingTask;
+            }
+
+            return failed ? -1 : 0;
+        }
     }
 }
