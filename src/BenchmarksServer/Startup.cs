@@ -1863,6 +1863,14 @@ namespace BenchmarkServer
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
                 }
             }
+            else if (targetFramework == "netcoreapp3.1")
+            {
+                buildParameters += $"/p:MicrosoftNETCoreApp31PackageVersion={runtimeVersion} ";
+                if (!job.UseRuntimeStore)
+                {
+                    buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
+                }
+            }
             else if (targetFramework == "netcoreapp5.0")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp50PackageVersion={runtimeVersion} ";
