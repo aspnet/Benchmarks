@@ -3050,7 +3050,7 @@ namespace BenchmarkServer
                 await collectingTask;
             }
 
-            durationTimer.Dispose();
+            durationTimer?.Dispose();
 
             return failed ? -1 : 0;
         }
