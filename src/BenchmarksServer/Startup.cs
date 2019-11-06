@@ -396,9 +396,6 @@ namespace BenchmarkServer
                 eventPipeTask = null;
                 eventPipeTerminated = false;
 
-                dotnetTraceTask = null;
-                dotnetTraceCancellationTokenSource = null;
-
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     ServerJob job = null;
@@ -815,6 +812,10 @@ namespace BenchmarkServer
                                     dotnetTraceCancellationTokenSource.Dispose();
 
                                     dotnetTraceTask = null;
+                                }
+                                else
+                                {
+                                    throw new Exception("Couldn't stop!!!");
                                 }
 
                                 Log.WriteLine("Trace collected");
@@ -1394,7 +1395,7 @@ namespace BenchmarkServer
 
                 if (job.DotNetTrace && !job.CollectStartup)
                 {
-                    StartDotNetTrace(process.Id, workingDirectory, job);
+                    StartDotNetTrace(process.Id, job);
                 }
             }
 
@@ -2516,7 +2517,7 @@ namespace BenchmarkServer
 
                             if (job.DotNetTrace)
                             {
-                                StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
+                                StartDotNetTrace(process.Id, job);
                             }
 
                             if (job.CollectCounters)
@@ -2546,7 +2547,7 @@ namespace BenchmarkServer
 
                 if (job.DotNetTrace)
                 {
-                    StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
+                    StartDotNetTrace(process.Id, job);
                 }
             }
 
@@ -2594,7 +2595,7 @@ namespace BenchmarkServer
 
                     if (job.DotNetTrace)
                     {
-                        StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
+                        StartDotNetTrace(process.Id, job);
                     }
 
                     if (job.CollectCounters)
@@ -2730,12 +2731,17 @@ namespace BenchmarkServer
             }
         }
 
-        private static void StartDotNetTrace(int processId, string workingDirectory, ServerJob job)
+        private static void StartDotNetTrace(int processId, ServerJob job)
         {
             job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
 
             dotnetTraceCancellationTokenSource = new CancellationTokenSource();
             dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, job.DotNetTraceProviders, default(TimeSpan));
+
+            if (dotnetTraceTask == null)
+            {
+                throw new Exception("NULL!!!");
+            }
         }
 
         private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
