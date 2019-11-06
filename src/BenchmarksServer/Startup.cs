@@ -2764,7 +2764,6 @@ namespace BenchmarkServer
             };
 
             dotnetTraceProcess.Start();
-            dotnetTraceProcess.BeginOutputReadLine();
 
             Log.WriteLine($"dotnet-trace started [{dotnetTraceProcess.Id}]");
         }
