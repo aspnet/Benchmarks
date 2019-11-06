@@ -1715,6 +1715,15 @@ namespace BenchmarkServer
                     // Detect the latest available version with this prefix
 
                     aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, aspNetCoreVersion.TrimEnd('*'));
+
+                    if (String.IsNullOrEmpty(aspNetCoreVersion))
+                    {
+                        var message = $"[ERROR] The prefixed aspnet version could not be found for {job.AspNetCoreVersion} in {_aspnetFlatContainerUrl}. This version is probably not published on this feed.";
+
+                        job.Error += message;
+                        Log.WriteLine(message);
+                    }
+
                 }
                 else if (aspNetCoreVersion.Split('.').Length == 2)
                 {
