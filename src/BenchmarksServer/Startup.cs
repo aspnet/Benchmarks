@@ -803,12 +803,14 @@ namespace BenchmarkServer
                             {
                                 if (!dotnetTraceTask.IsCompleted)
                                 {
+                                    Log.WriteLine("Stopping dotnet-trace");
+
                                     dotnetTraceCancellationTokenSource.Cancel();
+
+                                    await dotnetTraceTask;
+
+                                    dotnetTraceCancellationTokenSource.Dispose();
                                 }
-
-                                await dotnetTraceTask;
-
-                                dotnetTraceCancellationTokenSource.Dispose();
 
                                 Log.WriteLine("Trace collected");
                                 Log.WriteLine($"{job.State} ->  TraceCollected");
@@ -890,12 +892,14 @@ namespace BenchmarkServer
                                     // Stop dotnet-trace if still active
                                     if (!dotnetTraceTask.IsCompleted)
                                     {
+                                        Log.WriteLine("Stopping dotnet-trace");
+
                                         dotnetTraceCancellationTokenSource.Cancel();
-                                    }
 
-                                    await dotnetTraceTask;
+                                        await dotnetTraceTask;
 
-                                    dotnetTraceCancellationTokenSource.Dispose();
+                                        dotnetTraceCancellationTokenSource.Dispose();
+                                    }                                    
                                 }
 
                                 if (OperatingSystem == OperatingSystem.Linux)
@@ -2962,6 +2966,8 @@ namespace BenchmarkServer
 
             ct.Register(() => shouldExit.Set());
 
+            Log.WriteLine($"Tracing process {processId} on file {output.FullName}");
+
             ulong sessionId = 0;
             using (Stream stream = EventPipeClient.CollectTracing(processId, configuration, out sessionId))
             {
@@ -3000,6 +3006,8 @@ namespace BenchmarkServer
                     }
                     catch (Exception ex)
                     {
+                        Log.WriteLine($"Tracing failed with exception {ex}");
+
                         failed = true;
                     }
                     finally
@@ -3013,6 +3021,8 @@ namespace BenchmarkServer
                 do
                 {
                 } while (!shouldExit.WaitOne(0));
+
+                Log.WriteLine($"Tracing stopped");
 
                 if (!terminated)
                 {
