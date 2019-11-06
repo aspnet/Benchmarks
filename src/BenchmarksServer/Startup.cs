@@ -2758,16 +2758,8 @@ namespace BenchmarkServer
                     FileName = "dotnet-trace",
                     Arguments = $"collect -p {processId} -o {job.PerfViewTraceFile}",
                     WorkingDirectory = workingDirectory,
-                    RedirectStandardOutput = true,
+                    RedirectStandardOutput = false,
                     UseShellExecute = false,
-                }
-            };
-
-            dotnetTraceProcess.OutputDataReceived += (_, e) =>
-            {
-                if (e != null && e.Data != null)
-                {
-                    Log.WriteLine(e.Data);
                 }
             };
 
