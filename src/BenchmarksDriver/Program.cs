@@ -1875,9 +1875,7 @@ namespace BenchmarksDriver
                                     await Task.Delay(1000);
                                 }
 
-                                var traceExtension = serverJob.OperatingSystem == Benchmarks.ServerJob.OperatingSystem.Windows
-                                    ? ".etl.zip"
-                                    : ".trace.zip";
+                                var traceExtension = ".nettrace";
 
                                 var traceOutputFileName = traceDestination;
                                 if (traceOutputFileName == null || !traceOutputFileName.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))

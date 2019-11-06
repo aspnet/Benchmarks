@@ -2756,7 +2756,7 @@ namespace BenchmarkServer
             {
                 StartInfo = {
                     FileName = "dotnet-trace",
-                    Arguments = $"-p {processId} -o {job.PerfViewTraceFile}",
+                    Arguments = $"collect -p {processId} -o {job.PerfViewTraceFile}",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
