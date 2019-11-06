@@ -1640,7 +1640,7 @@ namespace BenchmarkServer
 
             var globalJsonPath = new DirectoryInfo(benchmarkedApp);
 
-            while (!File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null) ;
+            while (!File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
             {
                 globalJsonPath = globalJsonPath.Parent;
             }
