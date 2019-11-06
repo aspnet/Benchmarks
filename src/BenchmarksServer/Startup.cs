@@ -1561,6 +1561,10 @@ namespace BenchmarkServer
                 {
                     targetFramework = "netcoreapp3.0";
                 }
+                else if (runtimeVersion.StartsWith("3.1"))
+                {
+                    targetFramework = "netcoreapp3.1";
+                }
                 else if (runtimeVersion.StartsWith("5.0"))
                 {
                     targetFramework = "netcoreapp5.0";
@@ -1573,7 +1577,7 @@ namespace BenchmarkServer
                 targetFramework = job.Framework;
             }
 
-            string sdkVersion;
+            string sdkVersion = null;
 
             if (!String.IsNullOrEmpty(job.SdkVersion))
             {
@@ -1588,6 +1592,11 @@ namespace BenchmarkServer
                     {
                         sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
                         Log.WriteLine($"Detecting latest SDK version (release/3.0.1xx): {sdkVersion}");
+                    }
+                    else if (targetFramework == "netcoreapp3.1")
+                    {
+                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.1.1xx"));
+                        Log.WriteLine($"Detecting latest SDK version (release/3.1.1xx): {sdkVersion}");
                     }
                     else
                     {
@@ -1606,45 +1615,58 @@ namespace BenchmarkServer
                     Log.WriteLine($"Using specified SDK version: {sdkVersion}");
                 }
             }
-            else
+            else if (!job.NoGlobalJson)
             {
-                if (runtimeVersion.StartsWith("3.0"))
+                // We don't try to find an sdk if the global.json can't be overwritten, in which case we'll parse it to find which version to use
+
+                if (targetFramework == "netcoreapp3.0")
                 {
-                    sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
-                    Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
+                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
+                    Log.WriteLine($"Detecting runtime compatible SDK version (release/3.0.1xx): {sdkVersion}");
                 }
-                else if (runtimeVersion.StartsWith("5.0"))
+                else if (targetFramework == "netcoreapp3.1")
                 {
-                    sdkVersion = (await DownloadContentAsync(_buildToolsSdk)).Trim();
-                    Log.WriteLine($"Detecting compatible SDK version: {sdkVersion}");
+                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.1.1xx"));
+                    Log.WriteLine($"Detecting runtime compatible SDK version (release/3.1.1xx): {sdkVersion}");
                 }
                 else
                 {
-                    sdkVersion = await GetReleasedSdkChannelVersion(channel);
-                    Log.WriteLine($"Using stable channel SDK version: {sdkVersion}");
+                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
+                    Log.WriteLine($"Detecting runtime compatible SDK version (master branch): {sdkVersion}");
                 }
             }
+
+            // Looking for the first existing global.json file to update
+
+            var globalJsonPath = new DirectoryInfo(benchmarkedApp);
+
+            bool globalJsonFound;
+            bool reachedRoot;
+
+            do
+            {
+                reachedRoot = globalJsonPath.FullName != new DirectoryInfo(path).FullName;
+                globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
+                globalJsonPath = globalJsonPath.Parent;
+            }
+            while (!globalJsonFound && !reachedRoot);
 
             if (job.NoGlobalJson)
             {
-                Log.WriteLine($"Skipping global.json");
+                Log.WriteLine($"Searching SDK version in global.json");
+
+                var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
+                var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+                sdkVersion = ((JProperty)globalObject["sdk"]["version"]).Value.ToString();
+
+                Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
             }
             else
             {
-                // Looking for the first existing global.json file to update it as we can't have two in the same hierarchy
-
-                var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-
-                bool globalJsonFound;
-                bool reachedRoot;
-
-                do
+                if (String.IsNullOrEmpty(sdkVersion))
                 {
-                    reachedRoot = globalJsonPath.FullName != new DirectoryInfo(path).FullName;
-                    globalJsonFound = File.Exists(Path.Combine(globalJsonPath.FullName, "global.json"));
-                    globalJsonPath = globalJsonPath.Parent;
+                    Log.WriteLine($"[ERROR] An SDK version should have been set.");
                 }
-                while (!globalJsonFound && !reachedRoot);
 
                 // No global.json found
                 if (!globalJsonFound)
