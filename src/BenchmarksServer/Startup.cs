@@ -3034,7 +3034,10 @@ namespace BenchmarkServer
                 });
                 collectingTask.Start();
 
-                shouldExit.WaitOne(Timeout.Infinite);
+                do
+                {
+                    await Task.Delay(100);
+                } while (!shouldExit.WaitOne(0));
 
                 Log.WriteLine($"Tracing stopped");
 
