@@ -2954,18 +2954,26 @@ namespace BenchmarkServer
         [DllImport("kernel32.dll")]
         static extern ErrorModes SetErrorMode(ErrorModes uMode);
 
+        /// <param name="providers">
+        /// A profile name, or a list of comma separated EventPipe providers to be enabled.
+        /// c.f. https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md
+        /// </param>
         private static async Task<int> Collect(ManualResetEvent shouldExit, int processId, FileInfo output, uint buffersize, string providers, TimeSpan duration)
         {
-            Dictionary<string, string> enabledBy = new Dictionary<string, string>();
-
-            var providerCollection = TraceExtensions.ToProviders(providers);
-            foreach (Provider providerCollectionProvider in providerCollection)
+            if (String.IsNullOrWhiteSpace(providers))
             {
-                enabledBy[providerCollectionProvider.Name] = "--providers ";
+                providers = "cpu-sampling";
             }
 
-            if (providerCollection.Count <= 0)
+            if (!TraceExtensions.DotNETRuntimeProfiles.TryGetValue(providers, out var providerCollection))
             {
+                providerCollection = TraceExtensions.ToProviders(providers).ToArray();
+            }
+
+            if (providerCollection.Length <= 0)
+            {
+                Log.WriteLine($"Tracing arguments not valid: {providers}");
+
                 return -1;
             }
 

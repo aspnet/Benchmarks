@@ -259,7 +259,7 @@ namespace BenchmarksDriver
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
             _dotnetTraceOption = app.Option("--dotnet-trace",
-                "Collects a diagnostics trace using dotnet-trace. An optional argument containing the standard dotnet-trace provider can be passed.", CommandOptionType.SingleOrNoValue);
+                "Collects a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g. --dotnet-trace:\"Microsoft-DotNETCore-SampleProfiler,Microsoft-Windows-DotNETRuntime\", --dotnet-trace:\"gc-verbose\"", CommandOptionType.SingleOrNoValue);
             var collectStartup = app.Option("--collect-startup",
                 "Includes the startup phase in the trace.", CommandOptionType.NoValue);
             _collectCountersOption = app.Option("--collect-counters",

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Diagnostics.Tools.RuntimeClient;
+using Microsoft.Diagnostics.Tracing.Parsers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -85,5 +86,37 @@ namespace Microsoft.Diagnostics.Tools.Trace
 
             return new Provider(providerName, keywords, eventLevel, filterData);
         }
+
+        internal static Dictionary<string, Provider[]> DotNETRuntimeProfiles { get; } = new Dictionary<string, Provider[]>(StringComparer.OrdinalIgnoreCase) {
+            {
+                "cpu-sampling",
+                new Provider[] {
+                    new Provider("Microsoft-DotNETCore-SampleProfiler"),
+                    new Provider("Microsoft-Windows-DotNETRuntime", (ulong)ClrTraceEventParser.Keywords.Default, EventLevel.Informational),
+                }
+            },
+            {
+                "gc-verbose",
+                new Provider[] {
+                    new Provider(
+                        name: "Microsoft-Windows-DotNETRuntime",
+                        keywords: (ulong)ClrTraceEventParser.Keywords.GC |
+                                  (ulong)ClrTraceEventParser.Keywords.GCHandle |
+                                  (ulong)ClrTraceEventParser.Keywords.Exception,
+                        eventLevel: EventLevel.Verbose
+                    ),
+                }
+            },
+            {
+                "gc-collect",
+                new Provider[] {
+                    new Provider(
+                        name: "Microsoft-Windows-DotNETRuntime",
+                        keywords:   (ulong)ClrTraceEventParser.Keywords.GC |
+                                    (ulong)ClrTraceEventParser.Keywords.Exception,
+                        eventLevel: EventLevel.Informational),
+                }
+            }
+        };
     }
 }

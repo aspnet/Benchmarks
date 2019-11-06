@@ -103,6 +103,4 @@ WORKDIR /benchmarks
 
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
 
-CMD dotnet tool install --global dotnet-trace
-
 COPY . .
