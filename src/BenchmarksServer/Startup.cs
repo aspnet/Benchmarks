@@ -85,6 +85,7 @@ namespace BenchmarkServer
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
+        private static Process dotnetTraceProcess;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -374,6 +375,7 @@ namespace BenchmarkServer
                 dotnetHome = GetTempDir();
 
                 Process process = null;
+
                 string workingDirectory = null;
                 Timer timer = null;
                 var executionLock = new object();
@@ -793,6 +795,24 @@ namespace BenchmarkServer
                                 job.State = ServerState.TraceCollected;
                             }
 
+                            // Stop dotnet-trace
+                            if (job.DotNetTrace)
+                            {
+                                if (!dotnetTraceProcess.HasExited)
+                                {
+                                    dotnetTraceProcess.CloseMainWindow();
+                                }
+
+                                if (dotnetTraceProcess.HasExited)
+                                {
+                                    dotnetTraceProcess = null;
+                                }
+
+                                Log.WriteLine("Trace collected");
+                                Log.WriteLine($"{job.State} ->  TraceCollected");
+                                job.State = ServerState.TraceCollected;
+                            }
+
                         }
                         else if (job.State == ServerState.Starting)
                         {
@@ -860,6 +880,50 @@ namespace BenchmarkServer
                                     else if (OperatingSystem == OperatingSystem.Linux)
                                     {
                                         // TODO: Stop perfcollect
+                                    }
+                                }
+
+                                if (job.DotNetTrace)
+                                {
+                                    // Stop dotnet-trace if still active
+                                    if (dotnetTraceProcess != null)
+                                    {
+                                        if (!dotnetTraceProcess.HasExited)
+                                        {
+                                            if (OperatingSystem == OperatingSystem.Linux)
+                                            {
+                                                Mono.Unix.Native.Syscall.kill(dotnetTraceProcess.Id, Mono.Unix.Native.Signum.SIGINT);
+                                            }
+
+                                            Log.WriteLine($"Forcing dotnet-trace to stop ...");
+                                            dotnetTraceProcess.CloseMainWindow();
+
+                                            if (!dotnetTraceProcess.HasExited)
+                                            {
+                                                dotnetTraceProcess.Kill();
+                                            }
+
+                                            dotnetTraceProcess.Dispose();
+
+                                            do
+                                            {
+                                                Log.WriteLine($"Waiting for process {dotnetTraceProcess.Id} to stop ...");
+
+                                                await Task.Delay(1000);
+
+                                                try
+                                                {
+                                                    dotnetTraceProcess.Refresh();
+                                                }
+                                                catch
+                                                {
+                                                    dotnetTraceProcess = null;
+                                                }
+
+                                            } while (dotnetTraceProcess != null && !dotnetTraceProcess.HasExited);
+                                        }
+
+                                        dotnetTraceProcess = null;
                                     }
                                 }
 
@@ -1260,8 +1324,6 @@ namespace BenchmarkServer
                 ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName}"
                 : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName}";
 
-
-
             if (job.Collect && job.CollectStartup)
             {
                 StartCollection(workingDirectory, job);
@@ -1346,6 +1408,11 @@ namespace BenchmarkServer
                 if (job.Collect && !job.CollectStartup)
                 {
                     StartCollection(workingDirectory, job);
+                }
+
+                if (job.DotNetTrace && !job.CollectStartup)
+                {
+                    StartDotNetTrace(process.Id, workingDirectory, job);
                 }
             }
 
@@ -2465,6 +2532,11 @@ namespace BenchmarkServer
                                 StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
                             }
 
+                            if (job.DotNetTrace)
+                            {
+                                StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
+                            }
+
                             if (job.CollectCounters)
                             {
                                 StartCounters(job);
@@ -2488,6 +2560,11 @@ namespace BenchmarkServer
                 if (job.Collect)
                 {
                     StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                }
+
+                if (job.DotNetTrace)
+                {
+                    StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
                 }
             }
 
@@ -2531,6 +2608,11 @@ namespace BenchmarkServer
                     if (job.Collect)
                     {
                         StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                    }
+
+                    if (job.DotNetTrace)
+                    {
+                        StartDotNetTrace(process.Id, Path.Combine(benchmarksRepo, job.BasePath), job);
                     }
 
                     if (job.CollectCounters)
@@ -2664,6 +2746,35 @@ namespace BenchmarkServer
                 job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
                 perfCollectProcess = RunPerfcollect(perfviewArguments, workingDirectory);
             }
+        }
+
+        private static void StartDotNetTrace(int processId, string workingDirectory, ServerJob job)
+        {
+            job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
+
+            dotnetTraceProcess = new Process()
+            {
+                StartInfo = {
+                    FileName = "dotnet-trace",
+                    Arguments = $"-p {processId} -o {job.PerfViewTraceFile}",
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                }
+            };
+
+            dotnetTraceProcess.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Log.WriteLine(e.Data);
+                }
+            };
+
+            dotnetTraceProcess.Start();
+            dotnetTraceProcess.BeginOutputReadLine();
+
+            Log.WriteLine($"dotnet-trace started [{dotnetTraceProcess.Id}]");
         }
 
         private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
