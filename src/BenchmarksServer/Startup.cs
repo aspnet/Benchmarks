@@ -808,6 +808,8 @@ namespace BenchmarkServer
 
                                 await dotnetTraceTask;
 
+                                dotnetTraceCancellationTokenSource.Dispose();
+
                                 Log.WriteLine("Trace collected");
                                 Log.WriteLine($"{job.State} ->  TraceCollected");
                                 job.State = ServerState.TraceCollected;
@@ -892,6 +894,8 @@ namespace BenchmarkServer
                                     }
 
                                     await dotnetTraceTask;
+
+                                    dotnetTraceCancellationTokenSource.Dispose();
                                 }
 
                                 if (OperatingSystem == OperatingSystem.Linux)
@@ -2719,6 +2723,7 @@ namespace BenchmarkServer
         {
             job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
 
+            dotnetTraceCancellationTokenSource = new CancellationTokenSource();
             dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, "", default(TimeSpan));
         }
 
