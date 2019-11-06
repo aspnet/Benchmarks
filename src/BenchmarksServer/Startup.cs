@@ -1495,10 +1495,12 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(buildToolsPath);
             }
 
-            Log.WriteLine($"Installing dotnet runtimes and sdk");
-
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
+
+            Log.WriteLine($"Benchmarked Application in {benchmarkedApp}");
+
+            Log.WriteLine($"Installing dotnet runtimes and sdk");
 
             // Define which Runtime and SDK will be installed.
 
@@ -1639,11 +1641,13 @@ namespace BenchmarkServer
             // Looking for the first existing global.json file to update
 
             var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-
-            while (!File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
+            
+            while (globalJsonPath != null && !File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
             {
                 globalJsonPath = globalJsonPath.Parent;
             }
+
+            globalJsonPath = globalJsonPath ?? new DirectoryInfo(benchmarkedApp);
 
             var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
 
@@ -1722,7 +1726,7 @@ namespace BenchmarkServer
 
             Log.WriteLine($"Detected ASP.NET version: {aspNetCoreVersion}");
 
-            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0") || aspNetCoreVersion.StartsWith("5.0");
+            var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0") || aspNetCoreVersion.StartsWith("3.1") || aspNetCoreVersion.StartsWith("5.0");
 
             var dotnetInstallStep = "";
 
