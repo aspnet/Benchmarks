@@ -3034,7 +3034,7 @@ namespace BenchmarkServer
                 });
                 collectingTask.Start();
 
-                shouldExit.WaitOne(0);
+                shouldExit.WaitOne(Timeout.Infinite);
 
                 Log.WriteLine($"Tracing stopped");
 
