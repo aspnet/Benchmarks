@@ -88,7 +88,7 @@ namespace BenchmarkServer
         private static Process perfCollectProcess;
         
         private static Task dotnetTraceTask;
-        private static CancellationTokenSource dotnetTraceCancellationTokenSource;
+        private static ManualResetEvent dotnetTraceManualReset;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -801,17 +801,19 @@ namespace BenchmarkServer
                             // Stop dotnet-trace
                             if (job.DotNetTrace)
                             {
-                                if (dotnetTraceTask != null && !dotnetTraceTask.IsCompleted)
+                                if (dotnetTraceTask != null)
                                 {
-                                    Log.WriteLine("Stopping dotnet-trace");
+                                    if (!dotnetTraceTask.IsCompleted)
+                                    {
+                                        Log.WriteLine("Stopping dotnet-trace");
 
-                                    dotnetTraceCancellationTokenSource.Cancel();
+                                        dotnetTraceManualReset.Set();
 
-                                    await dotnetTraceTask;
+                                        await dotnetTraceTask;
 
-                                    dotnetTraceCancellationTokenSource.Dispose();
-
-                                    dotnetTraceTask = null;
+                                        dotnetTraceManualReset = null;
+                                        dotnetTraceTask = null;
+                                    }
                                 }
                                 else
                                 {
@@ -896,17 +898,19 @@ namespace BenchmarkServer
                                 if (job.DotNetTrace)
                                 {
                                     // Stop dotnet-trace if still active
-                                    if (dotnetTraceTask != null && !dotnetTraceTask.IsCompleted)
+                                    if (dotnetTraceTask != null)
                                     {
-                                        Log.WriteLine("Stopping dotnet-trace");
+                                        if (!dotnetTraceTask.IsCompleted)
+                                        {
+                                            Log.WriteLine("Stopping dotnet-trace");
 
-                                        dotnetTraceCancellationTokenSource.Cancel();
+                                            dotnetTraceManualReset.Set();
 
-                                        await dotnetTraceTask;
+                                            await dotnetTraceTask;
 
-                                        dotnetTraceCancellationTokenSource.Dispose();
-
-                                        dotnetTraceTask = null;
+                                            dotnetTraceManualReset = null;
+                                            dotnetTraceTask = null;
+                                        }
                                     }
                                 }
 
@@ -2735,8 +2739,8 @@ namespace BenchmarkServer
         {
             job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
 
-            dotnetTraceCancellationTokenSource = new CancellationTokenSource();
-            dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, job.DotNetTraceProviders, default(TimeSpan));
+            dotnetTraceManualReset = new ManualResetEvent(false);
+            dotnetTraceTask = Collect(dotnetTraceManualReset, processId, new FileInfo(job.PerfViewTraceFile), 256, job.DotNetTraceProviders, default(TimeSpan));
 
             if (dotnetTraceTask == null)
             {
@@ -2950,7 +2954,7 @@ namespace BenchmarkServer
         [DllImport("kernel32.dll")]
         static extern ErrorModes SetErrorMode(ErrorModes uMode);
 
-        private static async Task<int> Collect(CancellationToken ct, int processId, FileInfo output, uint buffersize, string providers, TimeSpan duration)
+        private static async Task<int> Collect(ManualResetEvent shouldExit, int processId, FileInfo output, uint buffersize, string providers, TimeSpan duration)
         {
             Dictionary<string, string> enabledBy = new Dictionary<string, string>();
 
@@ -2971,13 +2975,10 @@ namespace BenchmarkServer
                 format: EventPipeSerializationFormat.NetTrace,
                 providers: providerCollection);
 
-            var shouldExit = new ManualResetEvent(false);
             var shouldStopAfterDuration = duration != default(TimeSpan);
             var failed = false;
             var terminated = false;
             System.Timers.Timer durationTimer = null;
-
-            ct.Register(() => shouldExit.Set());
 
             Log.WriteLine($"Tracing process {processId} on file {output.FullName}");
 
@@ -3027,13 +3028,13 @@ namespace BenchmarkServer
                     {
                         terminated = true;
                         shouldExit.Set();
+
+                        Log.WriteLine($"Tracing terminated.");
                     }
                 });
                 collectingTask.Start();
 
-                do
-                {
-                } while (!shouldExit.WaitOne(0));
+                shouldExit.WaitOne(0);
 
                 Log.WriteLine($"Tracing stopped");
 
@@ -3042,8 +3043,11 @@ namespace BenchmarkServer
                     durationTimer?.Stop();
                     EventPipeClient.StopTracing(processId, sessionId);
                 }
+
                 await collectingTask;
             }
+
+            durationTimer.Dispose();
 
             return failed ? -1 : 0;
         }
