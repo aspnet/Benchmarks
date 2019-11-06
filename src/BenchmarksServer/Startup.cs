@@ -2728,7 +2728,7 @@ namespace BenchmarkServer
             job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
 
             dotnetTraceCancellationTokenSource = new CancellationTokenSource();
-            dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, "", default(TimeSpan));
+            dotnetTraceTask = Collect(dotnetTraceCancellationTokenSource.Token, processId, new FileInfo(job.PerfViewTraceFile), 256, job.DotNetTraceProviders, default(TimeSpan));
         }
 
         private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
