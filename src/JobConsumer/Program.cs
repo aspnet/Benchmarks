@@ -251,13 +251,13 @@ namespace JobConsumer
 
             foreach (var element in jsonDocument.RootElement.EnumerateObject())
             {
-                if (element.NameEquals("BuildInstructions"))
+                if (element.NameEquals(nameof(BuildInstructions)))
                 {
                     return JsonSerializer.Deserialize<BuildInstructions>(element.Value.GetRawText());
                 }
             }
 
-            throw new InvalidDataException("Job file doesn't include a valid 'BuildInstructions' property");
+            throw new InvalidDataException($"Job file {processingFile.Name} doesn't include a top-level '{nameof(BuildInstructions)}' property.");
         }
 
         private static void RunBuildCommands(BuildInstructions buildRules)
@@ -275,7 +275,7 @@ namespace JobConsumer
             {
                 var jsonDictionary = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(processingJsonStream);
 
-                jsonDictionary["BenchmarkResult"] = jobResult;
+                jsonDictionary[nameof(BenchmarkResult)] = jobResult;
 
                 // Clear file and reset position to 0
                 processingJsonStream.SetLength(0);

@@ -3,13 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Azure.Storage;
+using Microsoft.Azure.Storage.File;
 using Microsoft.IdentityModel.Tokens;
 using Octokit;
 
@@ -21,6 +23,8 @@ namespace PRJobProducer
         private const string Owner = "aspnet";
         private const string Repo = "AspNetCore";
 
+        private const string ProcessedDirectoryName = "processed";
+
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
         private const string CommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
@@ -29,11 +33,9 @@ namespace PRJobProducer
         // GitHub will not allow a JWT timeout greater than 10 minutes. Trying to add exactly 10 minutes to the current system time is flaky.
         private static readonly TimeSpan GitHubJwtTimeout = TimeSpan.FromMinutes(5);
 
-        private static string JobsPath { get; set; }
+        private static IFileSystem JobFileSystem { get; set; }
         private static string BaseJobPath { get; set; }
         private static string[] BuildCommands { get; set; }
-
-        private static string ProcessedPath => Path.Combine(JobsPath, "processed");
 
         public static int Main(string[] args)
         {
@@ -41,82 +43,100 @@ namespace PRJobProducer
 
             app.HelpOption("-h|--help");
 
-            var jobsPath = app.Option("-j|--jobs-path <PATH>", "The path where jobs are created", CommandOptionType.SingleValue).IsRequired();
             var baseJobPath = app.Option("-b|--base-job <PATH>", "The base job file path", CommandOptionType.SingleValue).IsRequired();
 
-            var optionBotUser = app.Option("-u|--user <NAME>", "The GitHub user name for the bot", CommandOptionType.SingleValue);
-            var optionBotToken = app.Option("-t|--token <TOKEN>", "The GitHub token for the bot", CommandOptionType.SingleValue);
+            var jobsPath = app.Option("-j|--jobs-path <PATH>", "The path where jobs are created", CommandOptionType.SingleValue);
 
-            var optionAppId = app.Option("-a|--app-id <ID>", "The GitHub App ID for the bot", CommandOptionType.SingleValue);
-            var optionAppKeyPath = app.Option("-k|--key-file <PATH>", "The GitHub App pem file path", CommandOptionType.SingleValue);
-            var optionAppInstallationId = app.Option("-i|--install-id <ID>", "The GitHub App installation ID for the repo. E.g. 'https://github.com/settings/installations/{Id}'", CommandOptionType.SingleValue);
+            var azureStorageConnectionString = app.Option("-c|--azure-storage-connection-string <CONNECTIONSTRING>", "The Azure Storage connection string", CommandOptionType.SingleValue);
+            var azureStorageFileShareName = app.Option("-f|--azure-storage-file-share-name <NAME>", "The Azure Storage file share name", CommandOptionType.SingleValue);
+
+            var githubUser = app.Option("-u|--github-user <NAME>", "The GitHub user name for the bot", CommandOptionType.SingleValue);
+            var githubUserToken = app.Option("-t|--github-user-token <TOKEN>", "The GitHub token for the bot", CommandOptionType.SingleValue);
+
+            var githubAppId = app.Option("-a|--github-app-id <ID>", "The GitHub App ID for the bot", CommandOptionType.SingleValue);
+            var githubAppKeyPath = app.Option("-k|--github-app-key-file <PATH>", "The GitHub App pem file path", CommandOptionType.SingleValue);
+            var githubAppInstallationId = app.Option("-i|--github-app-install-id <ID>", "The GitHub App installation ID for the repo. E.g. 'https://github.com/settings/installations/{Id}'", CommandOptionType.SingleValue);
 
             app.OnExecuteAsync(async cancellationToken =>
             {
-                JobsPath = jobsPath.Value();
                 BaseJobPath = baseJobPath.Value();
 
                 GitHubClient client;
                 string botLoginName;
 
-                if (!Directory.Exists(JobsPath))
+                if (githubUser.HasValue())
                 {
-                    Console.WriteLine($"The path doesn't exist: '{JobsPath}'");
-                    return -1;
+                    if (!githubUserToken.HasValue())
+                    {
+                        Console.WriteLine("--github-user was provided with no --github-token.");
+                        return -1;
+                    }
+
+                    botLoginName = githubUser.Value();
+                    client = GetClientForUser(botLoginName, githubUserToken.Value());
                 }
-
-                BuildCommands = await GetBuildCommands();
-
-                if (optionBotUser.HasValue())
+                else if (githubAppId.HasValue())
                 {
-                    if (!optionBotToken.HasValue())
+                    if (!githubAppKeyPath.HasValue())
                     {
-                        Console.WriteLine("--user was provided with no --token.");
+                        Console.WriteLine("--github-app-id was provided with no --github-app-key-file.");
                         return -1;
                     }
 
-                    botLoginName = optionBotUser.Value();
-                    client = GetClientForUser(botLoginName, optionBotToken.Value());
-                }
-                else if (optionAppId.HasValue())
-                {
-                    if (!optionAppKeyPath.HasValue())
+                    if (!githubAppInstallationId.HasValue())
                     {
-                        Console.WriteLine("--app-id was provided with no --key-file.");
+                        Console.WriteLine("--github-app-id was provided with no --github-app-install-id.");
                         return -1;
                     }
 
-                    if (!optionAppInstallationId.HasValue())
+                    if (!long.TryParse(githubAppInstallationId.Value(), out long installId))
                     {
-                        Console.WriteLine("--app-id was provided with no --install-id.");
-                        return -1;
-                    }
-
-                    if (!long.TryParse(optionAppInstallationId.Value(), out long installId))
-                    {
-                        Console.WriteLine("--install-id is not a valid long.");
+                        Console.WriteLine("--github-app-install-id is not a valid long.");
                     }
 
                     botLoginName = AppName + "[bot]";
-                    client = await GetClientForApp(optionAppId.Value(), optionAppKeyPath.Value(), installId);
+                    client = await GetClientForApp(githubAppId.Value(), githubAppKeyPath.Value(), installId);
                 }
                 else
                 {
-                    Console.WriteLine("Cannot authenticate with GitHub. Neither a --user nor an --app-id has been provided.");
+                    Console.WriteLine("Cannot authenticate with GitHub. Neither a --github-user nor an --github-app-id has been provided.");
                     return -1;
                 }
+
+
+                if (jobsPath.HasValue())
+                {
+                    JobFileSystem = new LocalFileSystem(jobsPath.Value());
+                }
+                else if (azureStorageConnectionString.HasValue())
+                {
+                    if (!azureStorageFileShareName.HasValue())
+                    {
+                        Console.WriteLine("--azure-storage-connection-string was provided with no --azure-storage-file-share.");
+                        return -1;
+                    }
+
+                    var cloudDir = await GetCloudFileDirectory(azureStorageConnectionString.Value(), azureStorageFileShareName.Value());
+                    JobFileSystem = new AzureStorageFileSystem(cloudDir);
+                }
+
+                await JobFileSystem.CreateDirectoryIfNotExists(ProcessedDirectoryName);
+                BuildCommands = await GetBuildCommands();
+
+                Console.WriteLine($"Scanning for benchmark requests in {Owner}/{Repo}.");
 
                 await foreach (var pr in GetPRsToBenchmark(client, botLoginName))
                 {
                     try
                     {
                         var session = Guid.NewGuid().ToString("n");
+                        var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
 
                         Console.WriteLine($"Requesting benchmark for PR #{pr.Number} with session id:'{session}'");
-                        await RequestBenchmark(pr, session);
+                        await RequestBenchmark(pr, newJobFileName);
 
                         Console.WriteLine($"Benchmark requested for PR #{pr.Number}. Waiting up to {BenchmarkTimeout} for results.");
-                        var results = await WaitForBenchmarkResults(session);
+                        var results = await WaitForBenchmarkResults(newJobFileName);
 
                         Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
 
@@ -134,6 +154,8 @@ namespace PRJobProducer
                         Console.WriteLine($"Failed to benchmark PR #{pr.Number}. Skipping... Details: {ex}");
                     }
                 }
+
+                Console.WriteLine($"Done scanning for benchmark requests.");
 
                 return 0;
             });
@@ -191,7 +213,7 @@ namespace PRJobProducer
 
             foreach (var element in jsonDocument.RootElement.EnumerateObject())
             {
-                if (element.NameEquals("BuildInstructions"))
+                if (element.NameEquals(nameof(BuildInstructions)))
                 {
                     buildInstructions = JsonSerializer.Deserialize<BuildInstructions>(element.Value.GetRawText());
                     break;
@@ -200,88 +222,65 @@ namespace PRJobProducer
 
             if (buildInstructions is null)
             {
-                throw new InvalidDataException("Job file doesn't include a valid 'BuildInstructions' property");
+                throw new InvalidDataException($"Job file {Path.GetFileName(BaseJobPath)} doesn't include a top-level '{nameof(BuildInstructions)}' property.");
             }
 
             return buildInstructions.BuildCommands;
         }
 
-        private static async Task RequestBenchmark(PullRequest pr, string session)
+        private static async Task RequestBenchmark(PullRequest pr, string newJobFileName)
         {
-            var baseFile = new FileInfo(BaseJobPath);
-            var newJobPath = Path.Combine(Path.GetTempPath(), $"{session}.{baseFile.Name}");
-            var newJobFile = new FileInfo(newJobPath);
+            await using var baseJobStream = File.OpenRead(BaseJobPath);
 
-            baseFile.CopyTo(newJobPath);
+            var jsonDictionary = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(baseJobStream);
 
-            try
+            jsonDictionary["BuildInstructions"] = new BuildInstructions
             {
-                using (var newJobStream = File.Open(newJobPath, System.IO.FileMode.Open))
-                {
-                    var jsonDictionary = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(newJobStream);
+                BuildCommands = BuildCommands,
+                BaselineSHA = pr.Base.Sha,
+                PullRequestSHA = pr.Head.Sha,
+            };
 
-                    jsonDictionary["BuildInstructions"] = new BuildInstructions
-                    {
-                        BuildCommands = BuildCommands,
-                        BaselineSHA = pr.Base.Sha,
-                        PullRequestSHA = pr.Head.Sha,
-                    };
-
-                    // Clear file and reset position to 0
-                    newJobStream.SetLength(0);
-                    await JsonSerializer.SerializeAsync(newJobStream, jsonDictionary, new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                    });
-                }
-
-                newJobFile.MoveTo(Path.Combine(JobsPath, newJobFile.Name));
-            }
-            catch
+            using var newJobStream = new MemoryStream();
+            await JsonSerializer.SerializeAsync(newJobStream, jsonDictionary, new JsonSerializerOptions
             {
-                newJobFile.Delete();
-                throw;
-            }
+                WriteIndented = true,
+            });
+
+            newJobStream.Position = 0;
+
+            await JobFileSystem.WriteFile(newJobStream, newJobFileName);
         }
 
-        private static async Task<BenchmarkResult> WaitForBenchmarkResults(string session)
+        private static async Task<BenchmarkResult> WaitForBenchmarkResults(string newJobFileName)
         {
-            var directory = new DirectoryInfo(ProcessedPath);
             var startTicks = Environment.TickCount64;
+            var expectedProcessedJobPath = Path.Combine(ProcessedDirectoryName, newJobFileName);
 
-            while (true)
+            while (!await JobFileSystem.FileExists(expectedProcessedJobPath))
             {
-                var processedFile = directory
-                    .GetFiles()
-                    .Where(f => f.Name.StartsWith(session, StringComparison.Ordinal))
-                    .OrderByDescending(f => f.LastWriteTime)
-                    .SingleOrDefault();
-
-                // If no file was found, wait some time
-                if (processedFile is null)
+                if (Environment.TickCount64 - startTicks > BenchmarkTimeout.TotalMilliseconds)
                 {
-                    if (Environment.TickCount64 - startTicks > BenchmarkTimeout.TotalMilliseconds)
-                    {
-                        throw new TimeoutException($"Benchmark results for session {session} were not published to {ProcessedPath} within {BenchmarkTimeout}.");
-                    }
-
-                    await Task.Delay(1000);
-                    continue;
+                    throw new TimeoutException($"Benchmark results for job {newJobFileName} were not published to {ProcessedDirectoryName} within {BenchmarkTimeout}.");
                 }
 
-                Console.WriteLine($"Found '{processedFile.Name}'");
+                await Task.Delay(1000);
+            }
 
-                using var processedJsonStream = File.OpenRead(processedFile.FullName);
-                using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+            Console.WriteLine($"Found '{newJobFileName}'");
 
-                foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            using var processedJsonStream = await JobFileSystem.ReadFile(expectedProcessedJobPath);
+            using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+
+            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            {
+                if (element.NameEquals(nameof(BenchmarkResult)))
                 {
-                    if (element.NameEquals("BenchmarkResult"))
-                    {
-                        return JsonSerializer.Deserialize<BenchmarkResult>(element.Value.GetRawText());
-                    }
+                    return JsonSerializer.Deserialize<BenchmarkResult>(element.Value.GetRawText());
                 }
             }
+
+            throw new InvalidDataException($"Processed benchmark job '{newJobFileName}' did not include a top-level '{nameof(BenchmarkResult)}' property.");
         }
 
         private static GitHubClient GetClientForUser(string userName, string token)
@@ -341,6 +340,16 @@ namespace PRJobProducer
             rsa.ImportRSAPrivateKey(keyBytes, out _);
 
             return new RsaSecurityKey(rsa.ExportParameters(true));
+        }
+
+        private static async Task<CloudFileDirectory> GetCloudFileDirectory(string connectionString, string shareName)
+        {
+            var fileClient = CloudStorageAccount.Parse(connectionString).CreateCloudFileClient();
+            var jobsShare = fileClient.GetShareReference(shareName);
+
+            await jobsShare.CreateIfNotExistsAsync();
+
+            return jobsShare.GetRootDirectoryReference();
         }
 
         // REVIEW: What's the best way to share these DTOs in this repo?
