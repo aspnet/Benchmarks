@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
+using Microsoft.Diagnostics.Tools.Trace;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -85,6 +86,9 @@ namespace BenchmarkServer
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
+        
+        private static Task dotnetTraceTask;
+        private static ManualResetEvent dotnetTraceManualReset;
 
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
@@ -374,6 +378,7 @@ namespace BenchmarkServer
                 dotnetHome = GetTempDir();
 
                 Process process = null;
+
                 string workingDirectory = null;
                 Timer timer = null;
                 var executionLock = new object();
@@ -793,6 +798,33 @@ namespace BenchmarkServer
                                 job.State = ServerState.TraceCollected;
                             }
 
+                            // Stop dotnet-trace
+                            if (job.DotNetTrace)
+                            {
+                                if (dotnetTraceTask != null)
+                                {
+                                    if (!dotnetTraceTask.IsCompleted)
+                                    {
+                                        Log.WriteLine("Stopping dotnet-trace");
+
+                                        dotnetTraceManualReset.Set();
+
+                                        await dotnetTraceTask;
+
+                                        dotnetTraceManualReset = null;
+                                        dotnetTraceTask = null;
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Couldn't stop!!!");
+                                }
+
+                                Log.WriteLine("Trace collected");
+                                Log.WriteLine($"{job.State} ->  TraceCollected");
+                                job.State = ServerState.TraceCollected;
+                            }
+
                         }
                         else if (job.State == ServerState.Starting)
                         {
@@ -860,6 +892,25 @@ namespace BenchmarkServer
                                     else if (OperatingSystem == OperatingSystem.Linux)
                                     {
                                         // TODO: Stop perfcollect
+                                    }
+                                }
+
+                                if (job.DotNetTrace)
+                                {
+                                    // Stop dotnet-trace if still active
+                                    if (dotnetTraceTask != null)
+                                    {
+                                        if (!dotnetTraceTask.IsCompleted)
+                                        {
+                                            Log.WriteLine("Stopping dotnet-trace");
+
+                                            dotnetTraceManualReset.Set();
+
+                                            await dotnetTraceTask;
+
+                                            dotnetTraceManualReset = null;
+                                            dotnetTraceTask = null;
+                                        }
                                     }
                                 }
 
@@ -1260,8 +1311,6 @@ namespace BenchmarkServer
                 ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName}"
                 : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName}";
 
-
-
             if (job.Collect && job.CollectStartup)
             {
                 StartCollection(workingDirectory, job);
@@ -1346,6 +1395,11 @@ namespace BenchmarkServer
                 if (job.Collect && !job.CollectStartup)
                 {
                     StartCollection(workingDirectory, job);
+                }
+
+                if (job.DotNetTrace && !job.CollectStartup)
+                {
+                    StartDotNetTrace(process.Id, job);
                 }
             }
 
@@ -2509,6 +2563,11 @@ namespace BenchmarkServer
                                 StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
                             }
 
+                            if (job.DotNetTrace)
+                            {
+                                StartDotNetTrace(process.Id, job);
+                            }
+
                             if (job.CollectCounters)
                             {
                                 StartCounters(job);
@@ -2532,6 +2591,11 @@ namespace BenchmarkServer
                 if (job.Collect)
                 {
                     StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                }
+
+                if (job.DotNetTrace)
+                {
+                    StartDotNetTrace(process.Id, job);
                 }
             }
 
@@ -2575,6 +2639,11 @@ namespace BenchmarkServer
                     if (job.Collect)
                     {
                         StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                    }
+
+                    if (job.DotNetTrace)
+                    {
+                        StartDotNetTrace(process.Id, job);
                     }
 
                     if (job.CollectCounters)
@@ -2707,6 +2776,19 @@ namespace BenchmarkServer
 
                 job.PerfViewTraceFile = Path.Combine(job.BasePath, "benchmarks.trace.zip");
                 perfCollectProcess = RunPerfcollect(perfviewArguments, workingDirectory);
+            }
+        }
+
+        private static void StartDotNetTrace(int processId, ServerJob job)
+        {
+            job.PerfViewTraceFile = Path.Combine(job.BasePath, "trace.nettrace");
+
+            dotnetTraceManualReset = new ManualResetEvent(false);
+            dotnetTraceTask = Collect(dotnetTraceManualReset, processId, new FileInfo(job.PerfViewTraceFile), 256, job.DotNetTraceProviders, default(TimeSpan));
+
+            if (dotnetTraceTask == null)
+            {
+                throw new Exception("NULL!!!");
             }
         }
 
@@ -2915,5 +2997,114 @@ namespace BenchmarkServer
 
         [DllImport("kernel32.dll")]
         static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
+        /// <param name="providers">
+        /// A profile name, or a list of comma separated EventPipe providers to be enabled.
+        /// c.f. https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md
+        /// </param>
+        private static async Task<int> Collect(ManualResetEvent shouldExit, int processId, FileInfo output, uint buffersize, string providers, TimeSpan duration)
+        {
+            if (String.IsNullOrWhiteSpace(providers))
+            {
+                providers = "cpu-sampling";
+            }
+
+            if (!TraceExtensions.DotNETRuntimeProfiles.TryGetValue(providers, out var providerCollection))
+            {
+                providerCollection = TraceExtensions.ToProviders(providers).ToArray();
+            }
+
+            if (providerCollection.Length <= 0)
+            {
+                Log.WriteLine($"Tracing arguments not valid: {providers}");
+
+                return -1;
+            }
+
+            var process = Process.GetProcessById(processId);
+            var configuration = new SessionConfiguration(
+                circularBufferSizeMB: buffersize,
+                format: EventPipeSerializationFormat.NetTrace,
+                providers: providerCollection);
+
+            var shouldStopAfterDuration = duration != default(TimeSpan);
+            var failed = false;
+            var terminated = false;
+            System.Timers.Timer durationTimer = null;
+
+            Log.WriteLine($"Tracing process {processId} on file {output.FullName}");
+
+            ulong sessionId = 0;
+            using (Stream stream = EventPipeClient.CollectTracing(processId, configuration, out sessionId))
+            {
+                if (sessionId == 0)
+                {
+                    return -1;
+                }
+
+                if (shouldStopAfterDuration)
+                {
+                    durationTimer = new System.Timers.Timer(duration.TotalMilliseconds);
+                    durationTimer.Elapsed += (s, e) => shouldExit.Set();
+                    durationTimer.AutoReset = false;
+                }
+
+                var collectingTask = new Task(() =>
+                {
+                    try
+                    {
+                        var stopwatch = new Stopwatch();
+                        durationTimer?.Start();
+                        stopwatch.Start();
+
+                        using (var fs = new FileStream(output.FullName, FileMode.Create, FileAccess.Write))
+                        {
+                            var buffer = new byte[16 * 1024];
+
+                            while (true)
+                            {
+                                int nBytesRead = stream.Read(buffer, 0, buffer.Length);
+                                if (nBytesRead <= 0)
+                                    break;
+                                fs.Write(buffer, 0, nBytesRead);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLine($"Tracing failed with exception {ex}");
+
+                        failed = true;
+                    }
+                    finally
+                    {
+                        terminated = true;
+                        shouldExit.Set();
+
+                        Log.WriteLine($"Tracing terminated.");
+                    }
+                });
+                collectingTask.Start();
+
+                do
+                {
+                    await Task.Delay(100);
+                } while (!shouldExit.WaitOne(0));
+
+                Log.WriteLine($"Tracing stopped");
+
+                if (!terminated)
+                {
+                    durationTimer?.Stop();
+                    EventPipeClient.StopTracing(processId, sessionId);
+                }
+
+                await collectingTask;
+            }
+
+            durationTimer?.Dispose();
+
+            return failed ? -1 : 0;
+        }
     }
 }

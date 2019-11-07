@@ -56,7 +56,8 @@ Options:
   --path                 Relative URL where the client should send requests.
   --querystring          Querystring to add to the requests. (e.g., "?page=1")
   -j|--jobs              The path or url to the jobs definition.
-  --collect-trace        Collect a PerfView trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
+  --dotnet-trace         Collects a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g. --dotnet-trace:"Microsoft-DotNETCore-SampleProfiler,Microsoft-Windows-DotNETRuntime", --dotnet-trace:"gc-verbose"
+  --collect-trace        Collect a PerfView/PerfCollect trace. Optionally set custom arguments. e.g., BufferSize=256;InMemoryCircularBuffer
   --collect-startup      Includes the startup phase in the trace.
   --collect-counters     Collect event counters.
   --trace-output         Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace

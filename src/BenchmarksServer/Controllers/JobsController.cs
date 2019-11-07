@@ -297,15 +297,19 @@ namespace BenchmarkServer.Controllers
         [HttpGet("{id}/trace")]
         public IActionResult Trace(int id)
         {
+            Log($"Downloading trace for job {id}");
+
             lock (_jobs)
             {
                 try
                 {
                     var job = _jobs.Find(id);
+                    Log($"Sending {job.PerfViewTraceFile}");
                     return File(System.IO.File.OpenRead(job.PerfViewTraceFile), "application/object");
                 }
-                catch
+                catch(Exception e)
                 {
+                    Log("Error: " + e);
                     return NotFound();
                 }
             }

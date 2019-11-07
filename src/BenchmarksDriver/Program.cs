@@ -57,7 +57,8 @@ namespace BenchmarksDriver
             _noGlobalJsonOption,
             _collectCountersOption,
             _noStartupLatencyOption,
-            _displayBuildOption
+            _displayBuildOption,
+            _dotnetTraceOption
             ;
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -257,6 +258,8 @@ namespace BenchmarksDriver
                 CommandOptionType.MultipleValue);
             var collectTraceOption = app.Option("--collect-trace",
                 "Collect a PerfView trace.", CommandOptionType.NoValue);
+            _dotnetTraceOption = app.Option("--dotnet-trace",
+                "Collects a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g. --dotnet-trace:\"Microsoft-DotNETCore-SampleProfiler,Microsoft-Windows-DotNETRuntime\", --dotnet-trace:\"gc-verbose\"", CommandOptionType.SingleOrNoValue);
             var collectStartup = app.Option("--collect-startup",
                 "Includes the startup phase in the trace.", CommandOptionType.NoValue);
             _collectCountersOption = app.Option("--collect-counters",
@@ -786,6 +789,11 @@ namespace BenchmarksDriver
                 {
                     serverJob.NoGlobalJson = true;
                 }
+                if (_dotnetTraceOption.HasValue() && collectTraceOption.HasValue())
+                {
+                    Console.WriteLine("Only one type of trace can be collected.");
+                    return -1;
+                }
                 if (collectTraceOption.HasValue())
                 {
                     serverJob.Collect = true;
@@ -816,6 +824,11 @@ namespace BenchmarksDriver
                     {
                         serverJob.CollectArguments = _defaultTraceArguments;
                     }
+                }
+                if (_dotnetTraceOption.HasValue())
+                {
+                    serverJob.DotNetTrace = true;
+                    serverJob.DotNetTraceProviders = _dotnetTraceOption.Value();
                 }
                 if (collectTraceOption.HasValue())
                 {
@@ -1759,7 +1772,7 @@ namespace BenchmarksDriver
                                 Log($"EventPipe config: {EventPipeConfig}");
                             }
 
-                            // Collect Trace
+                            // Collect PErfview/Perfcollect Trace
                             if (serverJob.Collect)
                             {
                                 Log($"Post-processing profiler trace, this can take 10s of seconds...");
@@ -1815,6 +1828,64 @@ namespace BenchmarksDriver
                                 try
                                 {
                                     Log($"Downloading trace: {traceOutputFileName}");
+                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, traceOutputFileName);
+                                }
+                                catch (HttpRequestException)
+                                {
+                                    Log($"FAILED: The trace was not successful");
+                                }
+                            }
+
+                            // dotnet-trace
+                            if (serverJob.DotNetTrace)
+                            {
+                                var uri = serverJobUri + "/trace";
+                                response = await _httpClient.PostAsync(uri, new StringContent(""));
+                                response.EnsureSuccessful();
+
+                                while (true)
+                                {
+                                    LogVerbose($"GET {serverJobUri}...");
+                                    response = await _httpClient.GetAsync(serverJobUri);
+                                    responseContent = await response.Content.ReadAsStringAsync();
+
+                                    LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+                                    if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
+                                    {
+                                        Log($"The job was forcibly stopped by the server.");
+                                        return 1;
+                                    }
+
+                                    serverJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+
+                                    if (serverJob.State == ServerState.TraceCollected)
+                                    {
+                                        break;
+                                    }
+                                    else if (serverJob.State == ServerState.TraceCollecting)
+                                    {
+                                        // Server is collecting the trace
+                                    }
+                                    else
+                                    {
+                                        Log($"Unexpected state: {serverJob.State}");
+                                    }
+
+                                    await Task.Delay(1000);
+                                }
+
+                                var traceExtension = ".nettrace";
+
+                                var traceOutputFileName = traceDestination;
+                                if (traceOutputFileName == null || !traceOutputFileName.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    traceOutputFileName = traceOutputFileName + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + "." + rpsStr + traceExtension;
+                                }
+
+                                try
+                                {
+                                    Log($"Downloading trace: {traceOutputFileName} from {uri}");
                                     await _httpClient.DownloadFileAsync(uri, serverJobUri, traceOutputFileName);
                                 }
                                 catch (HttpRequestException)

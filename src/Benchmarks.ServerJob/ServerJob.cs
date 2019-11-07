@@ -110,11 +110,18 @@ namespace Benchmarks.ServerJob
 
         public DateTime LastDriverCommunicationUtc { get; set; } = DateTime.UtcNow;
 
+        // dotnet-trace options
+        public bool DotNetTrace { get; set; }
+        public string DotNetTraceProviders { get; set; }
+
+        // Perfview/Perfcollect
         public bool Collect { get; set; }
-        public bool CollectStartup { get; set; }
-        public bool CollectCounters { get; set; }
         public string CollectArguments { get; set; }
         public string PerfViewTraceFile { get; set; }
+
+        // Other collection options
+        public bool CollectStartup { get; set; }
+        public bool CollectCounters { get; set; }
         public string BasePath { get; set; }
         public int ProcessId { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
