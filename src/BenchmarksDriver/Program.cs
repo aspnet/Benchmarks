@@ -2279,7 +2279,7 @@ namespace BenchmarksDriver
                                         filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                     }
 
-                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, filename);
+                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, (Environment.CurrentDirectory + "/" + filename).Replace("//", "/"));
                                 }
                                 catch (Exception e)
                                 {
