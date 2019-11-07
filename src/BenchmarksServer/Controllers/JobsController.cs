@@ -365,10 +365,43 @@ namespace BenchmarkServer.Controllers
                     var job = _jobs.Find(id);
 
                     Log($"Driver fetching published application '{id}'");
-                    var zipPath = Path.Combine(Directory.GetParent(job.BasePath).FullName, "published.zip");
-                    ZipFile.CreateFromDirectory(job.BasePath, zipPath);
 
-                    return File(System.IO.File.OpenRead(zipPath), "application/object");
+                    if (String.IsNullOrEmpty(job.Source.DockerFile))
+                    {
+                        var zipPath = Path.Combine(Directory.GetParent(job.BasePath).FullName, "published.zip");
+                        ZipFile.CreateFromDirectory(job.BasePath, zipPath);
+
+                        return File(System.IO.File.OpenRead(zipPath), "application/object");
+                    }
+                    else
+                    {
+                        var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("n"));
+                        Directory.CreateDirectory(tempDirectory);
+
+                        try
+                        {
+                            // docker cp mycontainer:/src/. target
+
+                            if (String.IsNullOrEmpty(job.Source.DockerFetchPath))
+                            {
+                                return BadRequest("The Docker fetch path was not provided in the job");
+                            }
+
+                            var sourceFolder = Path.Combine(job.Source.DockerFetchPath, ".");
+
+                            // Delete container if the same name already exists
+                            ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{sourceFolder} {tempDirectory}", throwOnError: false);
+
+                            var zipPath = Path.Combine(Directory.GetParent(job.BasePath).FullName, "fetch.zip");
+                            ZipFile.CreateFromDirectory(tempDirectory, zipPath);
+
+                            return File(System.IO.File.OpenRead(zipPath), "application/object");
+                        }
+                        finally
+                        {
+                            Response.RegisterForDispose(new TempFolder(tempDirectory));
+                        }
+                    }
                 }
                 catch
                 {
@@ -393,14 +426,39 @@ namespace BenchmarkServer.Controllers
 
                 Log($"Download requested: '{fullPath}'");
 
-                if (!System.IO.File.Exists(fullPath))
+                if (String.IsNullOrEmpty(job.Source.DockerFile))
                 {
-                    return NotFound();
+                    if (!System.IO.File.Exists(fullPath))
+                    {
+                        return NotFound();
+                    }
+
+                    Log($"Uploading {path} ({new FileInfo(fullPath).Length / 1024 + 1} KB)");
+
+                    return File(System.IO.File.OpenRead(fullPath), "application/object");
                 }
+                else
+                {
+                    var tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("n"));
+                    Directory.CreateDirectory(tempDirectory);
 
-                Log($"Uploading {path} ({new FileInfo(fullPath).Length / 1024 + 1} KB)");
+                    try
+                    {
+                        // docker cp mycontainer:/foo.txt foo.txt 
 
-                return File(System.IO.File.OpenRead(fullPath), "application/object");
+                        var sourceFolder = Path.Combine(job.Source.DockerFetchPath, ".");
+                        var destinationFilename = Path.Combine(tempDirectory, Path.GetFileName(path));
+
+                        // Delete container if the same name already exists
+                        ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{path} {destinationFilename}", throwOnError: false);
+
+                        return File(System.IO.File.OpenRead(destinationFilename), "application/object");
+                    }
+                    finally
+                    {
+                        Response.RegisterForDispose(new TempFolder(tempDirectory));
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -469,6 +527,27 @@ namespace BenchmarkServer.Controllers
         {
             var time = DateTime.Now.ToString("hh:mm:ss.fff");
             Console.WriteLine($"[{time}] {message}");
+        }
+
+        private class TempFolder : IDisposable
+        {
+            private readonly string _folder;
+
+            public TempFolder(string folder)
+            {
+                _folder = folder;
+            }
+            public void Dispose()
+            {
+                try
+                {
+                    Directory.Delete(_folder, true);
+                }
+                catch
+                {
+                    Log("Could not delete temporary folder: " + _folder);
+                }
+            }
         }
 
     }

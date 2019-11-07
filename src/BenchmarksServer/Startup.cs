@@ -1220,7 +1220,7 @@ namespace BenchmarkServer
             string srcDir;
 
             // Docker image names must be lowercase
-            var imageName = $"benchmarks_{source.DockerImageName}".ToLowerInvariant();
+            var imageName = source.GetNormalizedImageName();
 
             if (source.SourceCode != null)
             {

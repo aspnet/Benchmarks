@@ -15,6 +15,12 @@ namespace Benchmarks.ServerJob
         public string DockerFile { get; set; }
         public string DockerImageName { get; set; }
         public string DockerContextDirectory { get; set; }
+        public string DockerFetchPath { get; set; }
+
+        public string GetNormalizedImageName()
+        {
+            return $"benchmarks_{DockerImageName}".ToLowerInvariant();
+        }
 
         // When set, contains the location of the uploaded source code
         public Attachment SourceCode { get; set; }
