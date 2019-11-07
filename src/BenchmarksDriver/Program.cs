@@ -224,6 +224,8 @@ namespace BenchmarksDriver
                 "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
             var dockerImageOption = app.Option("-di|--docker-image",
                 "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
+            var dockerFetchPath = app.Option("--docker-fetch",
+                "The path in the Docker container that contains the base path for the --fetch argument.", CommandOptionType.SingleValue);
             var projectOption = app.Option("--project-file",
                 "Relative path of the project to test in the repository. (e.g., \"src/Benchmarks/Benchmarks.csproj)\"", CommandOptionType.SingleValue);
             _initSubmodulesOption = app.Option("--init-submodules",
@@ -764,6 +766,10 @@ namespace BenchmarksDriver
                     {
                         serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
                     }
+                }
+                if (dockerFetchPath.HasValue())
+                {
+                    serverJob.Source.DockerFetchPath = dockerFetchPath.Value().Replace("\\", "/");
                 }
                 if (_initSubmodulesOption.HasValue())
                 {
@@ -2273,7 +2279,7 @@ namespace BenchmarksDriver
                                         filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
                                     }
 
-                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, filename);
+                                    await _httpClient.DownloadFileAsync(uri, serverJobUri, (Environment.CurrentDirectory + "/" + filename).Replace("//", "/"));
                                 }
                                 catch (Exception e)
                                 {
