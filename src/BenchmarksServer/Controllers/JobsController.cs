@@ -447,10 +447,14 @@ namespace BenchmarkServer.Controllers
                         // docker cp mycontainer:/foo.txt foo.txt 
 
                         var sourceFolder = Path.Combine(job.Source.DockerFetchPath, ".");
-                        var destinationFilename = Path.Combine(tempDirectory, Path.GetFileName(path));
+
+                        // Use a dot at the end of the file such that /app/Benchmark would be take as a file and not a folder 
+                        var destinationFilename = Path.Combine(tempDirectory, Path.GetFileName(path + ".")).TrimEnd('.');
 
                         // Delete container if the same name already exists
-                        ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{path} {destinationFilename}", throwOnError: false);
+                        var result = ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{path} {destinationFilename}", throwOnError: false);
+
+                        Log(result.StandardOutput);
 
                         return File(System.IO.File.OpenRead(destinationFilename), "application/object");
                     }

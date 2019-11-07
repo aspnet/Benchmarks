@@ -766,10 +766,10 @@ namespace BenchmarksDriver
                     {
                         serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
                     }
-                    if (dockerFetchPath.HasValue())
-                    {
-                        serverJob.Source.DockerFetchPath = dockerFetchPath.Value().Replace("\\", "/");
-                    }
+                }
+                if (dockerFetchPath.HasValue())
+                {
+                    serverJob.Source.DockerFetchPath = dockerFetchPath.Value().Replace("\\", "/");
                 }
                 if (_initSubmodulesOption.HasValue())
                 {
