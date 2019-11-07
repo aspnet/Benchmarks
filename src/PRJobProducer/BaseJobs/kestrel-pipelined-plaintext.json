@@ -1,0 +1,28 @@
+{
+  "Default": {
+
+    "Client": "Wrk",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    },
+
+    "PresetHeaders": "Plaintext",
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "Project": "src/Benchmarks/Benchmarks.csproj"
+    },
+    "ReadyStateText": "Application started.",
+    "Path": "/plantext",
+    "OutputFiles": [
+      "artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/netcoreapp5.0/*.dll"
+    ],
+    "SelfContained": true
+  },
+  "BuildInstructions": {
+    "BuildCommands": [
+      "dotnet build -c Release src/Servers/Kestrel/Kestrel/src/"
+    ]
+  }
+}
