@@ -99,7 +99,7 @@ namespace PRJobProducer
                 }
                 else
                 {
-                    Console.WriteLine("Cannot authenticate with GitHub. Neither a --github-user nor an --github-app-id has been provided.");
+                    Console.WriteLine("Cannot authenticate with GitHub. Neither a --github-user nor a --github-app-id has been provided.");
                     return -1;
                 }
 
@@ -118,6 +118,11 @@ namespace PRJobProducer
 
                     var cloudDir = await GetCloudFileDirectory(azureStorageConnectionString.Value(), azureStorageFileShareName.Value());
                     JobFileSystem = new AzureStorageFileSystem(cloudDir);
+                }
+                else
+                {
+                    Console.WriteLine("Neither a --jobs-path nor an --azure-storage-connection-string has been provided.");
+                    return -1;
                 }
 
                 await JobFileSystem.CreateDirectoryIfNotExists(ProcessedDirectoryName);
