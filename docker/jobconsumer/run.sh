@@ -14,4 +14,4 @@ docker run \
     --network host \
     --restart always \
     jobconsumer \
-    --path /jobs "$@"
+    --jobs-path /jobs "$@"
