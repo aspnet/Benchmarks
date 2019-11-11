@@ -20,6 +20,10 @@ RUN dotnet publish -c Release -o /app/out
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100 AS runtime
 WORKDIR /app
+
+# clone ASP.NET
+RUN git clone https://github.com/aspnet/aspnetcore
+
 COPY --from=build-job /app/out ./
 COPY --from=build-driver /app/out ./driver
-ENTRYPOINT ["dotnet", "JobConsumer.dll", "--driver", "./driver/BenchmarksDriver.dll"]
+ENTRYPOINT ["dotnet", "JobConsumer.dll", "--driver", "./driver/BenchmarksDriver.dll", "--repo-path", "/app/aspnetcore" ]
