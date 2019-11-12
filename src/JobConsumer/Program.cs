@@ -119,7 +119,6 @@ namespace JobConsumer
         private static async Task<BenchmarkResult> BenchmarkPR(FileInfo processingFile, string session)
         {
             var currentWorkDir = Directory.GetCurrentDirectory();
-            Directory.SetCurrentDirectory(RepoPath);
 
             try
             {
@@ -128,11 +127,15 @@ namespace JobConsumer
 
                 var buildRules = await GetBuildInstructions(processingFile);
 
+                Directory.SetCurrentDirectory(RepoPath);
+
                 Process.Start("git", "clean -xdf").WaitForExit();
                 Process.Start("git", "fetch").WaitForExit();
                 Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
 
                 RunBuildCommands(buildRules);
+
+                Directory.SetCurrentDirectory(currentWorkDir);
 
                 var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
 
@@ -155,9 +158,13 @@ namespace JobConsumer
                 outputBuilder.Clear();
                 errorBuilder.Clear();
 
+                Directory.SetCurrentDirectory(RepoPath);
+
                 Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
 
                 RunBuildCommands(buildRules);
+
+                Directory.SetCurrentDirectory(currentWorkDir);
 
                 var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
 
