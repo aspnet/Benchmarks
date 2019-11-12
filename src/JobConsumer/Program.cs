@@ -186,6 +186,9 @@ namespace JobConsumer
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)
         {
+            outputBuilder.AppendLine("Current dir: " + Directory.GetCurrentDirectory());
+            outputBuilder.AppendLine("Args: " + arguments);
+
             using var process = new Process()
             {
                 StartInfo =
