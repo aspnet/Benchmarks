@@ -46,11 +46,11 @@ namespace JobConsumer
                 ServerUrl = serverUrl.Value();
                 ClientUrl = clientUrl.Value();
 
-                var directory = new DirectoryInfo(JobsPath);
+                var jobsDirectory = new DirectoryInfo(JobsPath);
 
-                if (!directory.Exists)
+                if (!jobsDirectory.Exists)
                 {
-                    Console.WriteLine($"The path doesn't exist: '{directory.FullName}'");
+                    Console.WriteLine($"The path doesn't exist: '{jobsDirectory.FullName}'");
                     return -1;
                 }
 
@@ -64,12 +64,14 @@ namespace JobConsumer
                 Directory.CreateDirectory(ProcessingPath);
                 Directory.CreateDirectory(ProcessedPath);
 
+                Directory.SetCurrentDirectory(RepoPath);
+
                 Console.WriteLine("Press enter to exit.");
 
                 while (true)
                 {
                     // Get oldest file
-                    var nextFile = directory
+                    var nextFile = jobsDirectory
                         .GetFiles()
                         .OrderByDescending(f => f.LastWriteTime)
                         .FirstOrDefault();
@@ -118,77 +120,58 @@ namespace JobConsumer
 
         private static async Task<BenchmarkResult> BenchmarkPR(FileInfo processingFile, string session)
         {
-            var currentWorkDir = Directory.GetCurrentDirectory();
+            var outputBuilder = new StringBuilder();
+            var errorBuilder = new StringBuilder();
 
-            try
+            var buildRules = await GetBuildInstructions(processingFile);
+
+            Process.Start("git", "clean -xdf").WaitForExit();
+            Process.Start("git", "fetch").WaitForExit();
+            Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
+            RunBuildCommands(buildRules);
+
+            var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
+
+            outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
+            var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
+
+            if (!baselineSuccess)
             {
-                var outputBuilder = new StringBuilder();
-                var errorBuilder = new StringBuilder();
-
-                var buildRules = await GetBuildInstructions(processingFile);
-
-                Directory.SetCurrentDirectory(RepoPath);
-
-                Process.Start("git", "clean -xdf").WaitForExit();
-                Process.Start("git", "fetch").WaitForExit();
-                Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
-
-                RunBuildCommands(buildRules);
-
-                Directory.SetCurrentDirectory(currentWorkDir);
-
-                var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
-
-                outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
-                var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
-
-                if (!baselineSuccess)
-                {
-                    errorBuilder.AppendLine($"Baseline benchmark run on '{buildRules.BaselineSHA}' failed.");
-                    return new BenchmarkResult
-                    {
-                        Success = false,
-                        BaselineStdout = outputBuilder.ToString(),
-                        BaselineStderr = errorBuilder.ToString(),
-                    };
-                }
-
-                var baselineStdout = outputBuilder.ToString();
-                var baselinseStderr = errorBuilder.ToString();
-                outputBuilder.Clear();
-                errorBuilder.Clear();
-
-                Directory.SetCurrentDirectory(RepoPath);
-
-                Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
-
-                RunBuildCommands(buildRules);
-
-                Directory.SetCurrentDirectory(currentWorkDir);
-
-                var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
-
-                outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
-                var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
-
-                if (!prSuccess)
-                {
-                    errorBuilder.AppendLine($"PR benchmark run on '{buildRules.PullRequestSHA}' failed.");
-                }
-
+                errorBuilder.AppendLine($"Baseline benchmark run on '{buildRules.BaselineSHA}' failed.");
                 return new BenchmarkResult
                 {
-                    Success = prSuccess,
-                    BaselineStdout = baselineStdout,
-                    BaselineStderr = baselinseStderr,
-                    PullRequestStdout = outputBuilder.ToString(),
-                    PullRequestStderr = errorBuilder.ToString(),
+                    Success = false,
+                    BaselineStdout = outputBuilder.ToString(),
+                    BaselineStderr = errorBuilder.ToString(),
                 };
             }
-            finally
+
+            var baselineStdout = outputBuilder.ToString();
+            var baselinseStderr = errorBuilder.ToString();
+            outputBuilder.Clear();
+            errorBuilder.Clear();
+
+            Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
+            RunBuildCommands(buildRules);
+
+            var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
+
+            outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
+            var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
+
+            if (!prSuccess)
             {
-                Directory.SetCurrentDirectory(currentWorkDir);
+                errorBuilder.AppendLine($"PR benchmark run on '{buildRules.PullRequestSHA}' failed.");
             }
+
+            return new BenchmarkResult
+            {
+                Success = prSuccess,
+                BaselineStdout = baselineStdout,
+                BaselineStderr = baselinseStderr,
+                PullRequestStdout = outputBuilder.ToString(),
+                PullRequestStderr = errorBuilder.ToString(),
+            };
         }
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)
@@ -308,10 +291,7 @@ namespace JobConsumer
 
         private static string GetDotNetExecutable()
         {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? "dotnet.exe"
-                : "dotnet"
-                ;
+            return Path.Combine(RepoPath, ".dotnet/dotnet");
         }
 
         // REVIEW: What's the best way to share these DTOs in this repo?
