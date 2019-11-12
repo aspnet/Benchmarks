@@ -118,62 +118,70 @@ namespace JobConsumer
 
         private static async Task<BenchmarkResult> BenchmarkPR(FileInfo processingFile, string session)
         {
+            var currentWorkDir = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory(RepoPath);
 
-            var outputBuilder = new StringBuilder();
-            var errorBuilder = new StringBuilder();
-
-            var buildRules = await GetBuildInstructions(processingFile);
-
-            Process.Start("git", "clean -xdf").WaitForExit();
-            Process.Start("git", "fetch").WaitForExit();
-            Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
-
-            RunBuildCommands(buildRules);
-
-            var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
-
-            outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
-            var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
-
-            if (!baselineSuccess)
+            try
             {
-                errorBuilder.AppendLine($"Baseline benchmark run on '{buildRules.BaselineSHA}' failed.");
+                var outputBuilder = new StringBuilder();
+                var errorBuilder = new StringBuilder();
+
+                var buildRules = await GetBuildInstructions(processingFile);
+
+                Process.Start("git", "clean -xdf").WaitForExit();
+                Process.Start("git", "fetch").WaitForExit();
+                Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
+
+                RunBuildCommands(buildRules);
+
+                var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
+
+                outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
+                var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
+
+                if (!baselineSuccess)
+                {
+                    errorBuilder.AppendLine($"Baseline benchmark run on '{buildRules.BaselineSHA}' failed.");
+                    return new BenchmarkResult
+                    {
+                        Success = false,
+                        BaselineStdout = outputBuilder.ToString(),
+                        BaselineStderr = errorBuilder.ToString(),
+                    };
+                }
+
+                var baselineStdout = outputBuilder.ToString();
+                var baselinseStderr = errorBuilder.ToString();
+                outputBuilder.Clear();
+                errorBuilder.Clear();
+
+                Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
+
+                RunBuildCommands(buildRules);
+
+                var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
+
+                outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
+                var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
+
+                if (!prSuccess)
+                {
+                    errorBuilder.AppendLine($"PR benchmark run on '{buildRules.PullRequestSHA}' failed.");
+                }
+
                 return new BenchmarkResult
                 {
-                    Success = false,
-                    BaselineStdout = outputBuilder.ToString(),
-                    BaselineStderr = errorBuilder.ToString(),
+                    Success = prSuccess,
+                    BaselineStdout = baselineStdout,
+                    BaselineStderr = baselinseStderr,
+                    PullRequestStdout = outputBuilder.ToString(),
+                    PullRequestStderr = errorBuilder.ToString(),
                 };
             }
-
-            var baselineStdout = outputBuilder.ToString();
-            var baselinseStderr = errorBuilder.ToString();
-            outputBuilder.Clear();
-            errorBuilder.Clear();
-
-            Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
-
-            RunBuildCommands(buildRules);
-
-            var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
-
-            outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
-            var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
-
-            if (!prSuccess)
+            finally
             {
-                errorBuilder.AppendLine($"PR benchmark run on '{buildRules.PullRequestSHA}' failed.");
+                Directory.SetCurrentDirectory(currentWorkDir);
             }
-
-            return new BenchmarkResult
-            {
-                Success = prSuccess,
-                BaselineStdout = baselineStdout,
-                BaselineStderr = baselinseStderr,
-                PullRequestStdout = outputBuilder.ToString(),
-                PullRequestStderr = errorBuilder.ToString(),
-            };
         }
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)

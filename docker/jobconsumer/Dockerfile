@@ -27,4 +27,4 @@ RUN git submodule update --init
 
 COPY --from=build-job /app/out ./
 COPY --from=build-driver /app/out ./driver
-ENTRYPOINT ["dotnet", "JobConsumer.dll", "--driver", "./driver/BenchmarksDriver.dll", "--repo-path", "/app/aspnetcore" ]
+ENTRYPOINT ["dotnet", "JobConsumer.dll", "--driver", "./driver/BenchmarksDriver.dll", "--repo-path", "/app/aspnetcore"]
