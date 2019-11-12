@@ -23,7 +23,7 @@
   "BuildInstructions": {
     "BuildCommands": [
       "./build.sh /t:Restore",
-      "dotnet build -c Release src/Servers/Kestrel/Kestrel/src/"
+      ".dotnet/dotnet build -c Release src/Servers/Kestrel/Kestrel/src/"
     ]
   }
 }
