@@ -23,6 +23,7 @@ WORKDIR /app
 
 # clone ASP.NET
 RUN git clone https://github.com/aspnet/aspnetcore
+RUN git submodule update --init
 
 COPY --from=build-job /app/out ./
 COPY --from=build-driver /app/out ./driver
