@@ -15,7 +15,9 @@ namespace Benchmarks.ServerJob
     {
         public int DriverVersion { get; set; } = 0;
 
-        public int ServerVersion { get; set; } = 1;
+        // 1: Introduced Initializing state
+        // 2: Introduced Measurements/Metadata
+        public int ServerVersion { get; set; } = 2;
 
         public int Id { get; set; }
 
@@ -135,6 +137,8 @@ namespace Benchmarks.ServerJob
         public string AfterScript { get; set; }
         public ulong MemoryLimitInBytes { get; set; }
         public ConcurrentDictionary<string, ConcurrentQueue<string>> Counters { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
+        public ConcurrentBag<Measurement> Measurements { get; set; } = new ConcurrentBag<Measurement>();
+        public ConcurrentBag<MeasurementMetadata> Metadata { get; set; } = new ConcurrentBag<MeasurementMetadata>();
 
         /// <summary>
         /// The build log. This property is kept on the server side.

@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using BenchmarkServer;
 
 namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
 {
@@ -40,9 +42,32 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
             }
             else
             {
-                string ipcPort = Directory.GetFiles(IpcRootPath) // Try best match.
-                    .Select(namedPipe => (new FileInfo(namedPipe)).Name)
+                string ipcPort = null;
+                var attempts = 0;
+
+                while (true)
+                {
+                    ipcPort = Directory.GetFiles(IpcRootPath, $"dotnet-diagnostic-{processId}-*") // Try best match.
+                    .Select(namedPipe =>
+                    {
+                        Log.WriteLine("TESTING:" + (new FileInfo(namedPipe)).Name);
+                        return (new FileInfo(namedPipe)).Name;
+                    })
                     .SingleOrDefault(input => Regex.IsMatch(input, $"^dotnet-diagnostic-{processId}-(\\d+)-socket$"));
+
+                    // Stop when a match was found or too many attempts
+                    if (ipcPort != null || attempts > 2)
+                    {
+                        break;
+                    }
+
+                    Log.WriteLine("Retrying...");
+
+                    // Wait some time for the file to be created
+                    attempts++;
+                    Thread.Sleep(100);
+                }
+
                 if (ipcPort == null)
                 {
                     throw new PlatformNotSupportedException($"Process {processId} not running compatible .NET Core runtime");

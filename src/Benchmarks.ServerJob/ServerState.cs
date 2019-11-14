@@ -7,7 +7,7 @@ namespace Benchmarks.ServerJob
     {
         New, // The job was submitted
         Initializing, // The job is processed, the driver update it or submit attachments
-        Waiting, // The job is ready to start
+        Waiting, // The job is ready to start, following a POST from the client to /start
         Starting, // The application has been started, the server is waiting for it to be responsive
         Running, // The application is running
         Failed,
