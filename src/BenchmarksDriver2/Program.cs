@@ -1177,8 +1177,8 @@ namespace BenchmarksDriver
             //    await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
             //}
 
-            serverJob.DriverVersion = 1;
-            clientJob.DriverVersion = 1;
+            serverJob.DriverVersion = 2;
+            clientJob.DriverVersion = 2;
 
             Log.Write($"Running session '{session}' with description '{description}'");
 
