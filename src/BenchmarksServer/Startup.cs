@@ -128,22 +128,11 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
 
-            // Use the same root temporary folder so we can clean it on restarts
-            _rootTempDir = Path.Combine(Path.GetTempPath(), "BenchmarksServer");
+            // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
+            // that use the temp folder, and create a sub-folder (process-id) for each server running.
+            // The cron job is responsible for cleaning the folders
+            _rootTempDir = Path.Combine(Path.GetTempPath(), $"benchmarks-server-{Process.GetCurrentProcess().Id}");
             Directory.CreateDirectory(_rootTempDir);
-            Log.WriteLine($"Cleaning temporary job files '{_rootTempDir}' ...");
-            foreach (var tempFolder in Directory.GetDirectories(_rootTempDir))
-            {
-                try
-                {
-                    Log.WriteLine($"Attempting to deleting '{tempFolder}'");
-                    File.Delete(tempFolder);
-                }
-                catch (Exception e)
-                {
-                    Log.WriteLine("Failed with error: " + e.Message);
-                }
-            }
 
             // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
 
