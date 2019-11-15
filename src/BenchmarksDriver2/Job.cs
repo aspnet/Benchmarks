@@ -24,7 +24,6 @@ namespace BenchmarksDriver
 
         // The uri of the server
         private readonly Uri _serverUri;
-        private readonly bool _displayOutput;
 
         // The uri of the /jobs endpoint on the server
         private readonly Uri _serverJobsUri;
@@ -40,11 +39,10 @@ namespace BenchmarksDriver
             _httpClient = new HttpClient(_httpClientHandler);
         }
 
-        public Job(ServerJob definition, Uri serverUri, bool displayOutput)
+        public Job(ServerJob definition, Uri serverUri)
         {
             ServerJob = definition;
             _serverUri = serverUri;
-            _displayOutput = displayOutput;
             _serverJobsUri = new Uri(_serverUri, "/jobs");
         }
 
@@ -343,11 +341,6 @@ namespace BenchmarksDriver
                 {
                     Log.Write($"Job failed on benchmark server, stopping...");
 
-                    if (_displayOutput)
-                    {
-                        Log.DisplayOutput(ServerJob.Output);
-                    }
-
                     Log.Write(ServerJob.Error, notime: true, error: true);
 
                     // Returning will also send a Delete message to the server
@@ -405,10 +398,6 @@ namespace BenchmarksDriver
 
             } while (ServerJob.State != ServerState.Stopped);
 
-            if (_displayOutput)
-            {
-                Log.DisplayOutput(ServerJob.Output);
-            }
         }
 
         public async Task DeleteAsync()

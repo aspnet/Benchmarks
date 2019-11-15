@@ -1191,7 +1191,7 @@ namespace BenchmarksDriver
 
                 try
                 {
-                    jobOnServer = new Job(serverJob, serverUri, _displayServerOutputOption.HasValue());
+                    jobOnServer = new Job(serverJob, serverUri);
 
                     // Start server
                     serverJobUri = await jobOnServer.StartAsync(
@@ -1267,9 +1267,9 @@ namespace BenchmarksDriver
                         clientJob.EnvironmentVariables.Add("SERVER_URL", jobOnServer.ServerJob.Url);
 
                         // Look for {{server-url}} placeholder in the client arguments
-                        clientJob.Arguments = clientJob.Arguments.Replace("{{server-url}}", jobOnServer.ServerJob.Url);
+                        clientJob.Arguments = clientJob.Arguments?.Replace("{{server-url}}", jobOnServer.ServerJob.Url);
 
-                        var jobsOnClient = clientUris.Select(clientUri => new Job(clientJob, clientUri, _displayClientOutputOption.HasValue())).ToArray();
+                        var jobsOnClient = clientUris.Select(clientUri => new Job(clientJob, clientUri)).ToArray();
                         
                         // Don't run the client job for None and BenchmarkDotNet
                         if (!IsConsoleApp)
@@ -1392,6 +1392,11 @@ namespace BenchmarksDriver
 
                             WriteMeasures(jobOnServer);
 
+                            if (_displayServerOutputOption.HasValue())
+                            {
+                                Log.DisplayOutput(jobOnServer.ServerJob.Output);
+                            }
+
                             Log.Quiet("");
                             Log.Quiet($"Clients");
                             Log.Quiet($"-------------------");
@@ -1403,6 +1408,11 @@ namespace BenchmarksDriver
                             foreach (var jobOnClient in jobsOnClient)
                             {
                                 WriteMeasures(jobOnClient);
+
+                                if (_displayClientOutputOption.HasValue())
+                                {
+                                    Log.DisplayOutput(jobOnClient.ServerJob.Output);
+                                }
                             }
 
                             var statistics = new Statistics
