@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -13,7 +12,6 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using BenchmarkServer;
 
 namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
 {
@@ -50,7 +48,6 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
                     ipcPort = Directory.GetFiles(IpcRootPath, $"dotnet-diagnostic-{processId}-*") // Try best match.
                     .Select(namedPipe =>
                     {
-                        Log.WriteLine("TESTING:" + (new FileInfo(namedPipe)).Name);
                         return (new FileInfo(namedPipe)).Name;
                     })
                     .SingleOrDefault(input => Regex.IsMatch(input, $"^dotnet-diagnostic-{processId}-(\\d+)-socket$"));
@@ -60,8 +57,6 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
                     {
                         break;
                     }
-
-                    Log.WriteLine("Retrying...");
 
                     // Wait some time for the file to be created
                     attempts++;

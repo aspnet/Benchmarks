@@ -1,0 +1,5 @@
+<DotNetCliTool>
+  <Commands>
+    <Command Name="benchmarks" EntryPoint="BenchmarksDriver.dll" Runner="dotnet" />
+  </Commands>
+</DotNetCliTool>

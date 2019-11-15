@@ -1,0 +1,14 @@
+{
+  "Bombardier": {
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "Project": "src/BombardierClient/BombardierClient.csproj"
+    },
+    "ReadyStateText": "Bombardier Client",
+    "AspNetCoreVersion": "3.0",
+    "RuntimeVersion": "3.0",
+    "SdkVersion": "3.0.100"
+  }
+}
