@@ -176,73 +176,80 @@ namespace JobConsumer
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)
         {
-            outputBuilder.AppendLine("Current dir: " + Directory.GetCurrentDirectory());
-            outputBuilder.AppendLine("Args: " + arguments);
+            // Don't let the repo's global.json interfere with running the driver
+            File.Move("global.json", "global.json~");
 
-            using var process = new Process()
+            try
             {
-                StartInfo =
+                using var process = new Process()
                 {
-                    FileName = GetDotNetExecutable(),
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                },
-            };
+                    StartInfo =
+                    {
+                        FileName = GetDotNetExecutable(),
+                        Arguments = arguments,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                    },
+                };
 
-            var sawErrorOutput = false;
+                var sawErrorOutput = false;
 
-            process.OutputDataReceived += (_, e) =>
-            {
-                outputBuilder.AppendLine(e.Data);
-                Console.WriteLine(e.Data);
-            };
-
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
+                process.OutputDataReceived += (_, e) =>
                 {
-                    sawErrorOutput = true;
+                    outputBuilder.AppendLine(e.Data);
+                    Console.WriteLine(e.Data);
+                };
+
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        sawErrorOutput = true;
+                    }
+
+                    // Don't omit all newlines, but if there has been nothing but
+                    // whitespace so far, ignore the error output.
+                    if (sawErrorOutput)
+                    {
+                        errorBuilder.AppendLine(e.Data);
+                        Console.Error.WriteLine(e.Data);
+                    }
+                };
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                var start = Environment.TickCount64;
+
+                while (true)
+                {
+                    if (process.HasExited)
+                    {
+                        break;
+                    }
+
+                    if (Environment.TickCount64 - start > DriverTimeout.TotalMilliseconds)
+                    {
+                        Console.WriteLine("Driver timed out, skipping job");
+                        errorBuilder.AppendLine("Driver timed out, skipping job");
+                        process.Kill();
+
+                        return false;
+                    }
+
+                    await Task.Delay(1000);
                 }
 
-                // Don't omit all newlines, but if there has been nothing but
-                // whitespace so far, ignore the error output.
-                if (sawErrorOutput)
-                {
-                    errorBuilder.AppendLine(e.Data);
-                    Console.Error.WriteLine(e.Data);
-                }
-            };
-
-            process.Start();
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            var start = Environment.TickCount64;
-
-            while (true)
-            {
-                if (process.HasExited)
-                {
-                    break;
-                }
-
-                if (Environment.TickCount64 - start > DriverTimeout.TotalMilliseconds)
-                {
-                    Console.WriteLine("Driver timed out, skipping job");
-                    errorBuilder.AppendLine("Driver timed out, skipping job");
-                    process.Kill();
-
-                    return false;
-                }
-
-                await Task.Delay(1000);
+                // Job succeeded?
+                return process.ExitCode == 0;
             }
-
-            // Job succeeded?
-            return process.ExitCode == 0;
+            finally
+            {
+                File.Move("global.json~", "global.json");
+            }
         }
 
         private static async Task<BuildInstructions> GetBuildInstructions(FileInfo processingFile)
@@ -291,7 +298,10 @@ namespace JobConsumer
 
         private static string GetDotNetExecutable()
         {
-            return Path.Combine(RepoPath, ".dotnet/dotnet");
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "dotnet.exe"
+                : "dotnet"
+                ;
         }
 
         // REVIEW: What's the best way to share these DTOs in this repo?
