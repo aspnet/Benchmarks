@@ -18,6 +18,7 @@
     "OutputFiles": [
       "artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/netcoreapp5.0/*.dll"
     ],
+    "DotNetTrace": false,
     "SelfContained": true
   },
   "BuildInstructions": {
