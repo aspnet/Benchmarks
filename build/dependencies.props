@@ -27,11 +27,11 @@
 
     <MongoDbVersion>2.8.0</MongoDbVersion>
     <DapperVersion>2.0.30</DapperVersion>
-    <NpgsqlVersion30>4.1.0</NpgsqlVersion30>
+    <NpgsqlVersion30>4.1.2</NpgsqlVersion30>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.4</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.1.0-preview3</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
     <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
     <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
