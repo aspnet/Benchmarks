@@ -1,4 +1,4 @@
-﻿FROM microsoft/dotnet:2.1-sdk-stretch AS build
+﻿FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
@@ -9,7 +9,7 @@ RUN dotnet restore
 COPY . .
 RUN dotnet publish -c release -o out
 
-FROM microsoft/dotnet:2.1-aspnetcore-runtime-stretch-slim AS runtime
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
 ENTRYPOINT ["dotnet", "Downstream.dll"]
