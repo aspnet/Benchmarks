@@ -48,7 +48,7 @@ baselines=(
   "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0"
   
   # Current dev, running close to other baselines, with same repeat parameters
-  "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest"
+  "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest --sdk 5.0.100-alpha1-015721"
 
 )
 
