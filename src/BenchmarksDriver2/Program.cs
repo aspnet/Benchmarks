@@ -63,7 +63,13 @@ namespace BenchmarksDriver
             _serverCollectStartupOption,
             _clientCollectStartupOption,
             _serverSdkOption,
-            _clientSdkOption
+            _clientSdkOption,
+            _serverRuntimeVersionOption,
+            _clientRuntimeVersionOption,
+            _serverSelfContainedOption,
+            _clientSelfContainedOption,
+            _serverAspnetCoreVersionOption,
+            _clientAspnetCoreVersionOption
             ;
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -186,10 +192,14 @@ namespace BenchmarksDriver
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
-            var aspnetCoreVersionOption = app.Option("-aspnet|--aspnetCoreVersion",
-                "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
-            var runtimeVersionOption = app.Option("-dotnet|--runtimeVersion",
-                ".NET Core Runtime version (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
+            _serverAspnetCoreVersionOption = app.Option("--server-aspnet-version",
+                "ASP.NET Core packages version on the server (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
+            _clientAspnetCoreVersionOption = app.Option("--client-aspnet-version",
+                "ASP.NET Core packages version on the server (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
+            _serverRuntimeVersionOption = app.Option("--server-runtime-version",
+                ".NET Core Runtime version on the server (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
+            _clientRuntimeVersionOption = app.Option("--client-runtime-version",
+                ".NET Core Runtime version on the client (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
             var serverArgumentsOption = app.Option("--server-args",
                 "Argument to pass to the server application. (e.g., --server-args \"--raw=true\" --server-args \"single_value\")", CommandOptionType.MultipleValue);
             var clientArgumentsOption = app.Option("--client-args",
@@ -226,8 +236,10 @@ namespace BenchmarksDriver
                 "When set will init submodules on the repository.", CommandOptionType.NoValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
-            var selfContainedOption = app.Option("--self-contained",
-                "Publishes the .NET Core runtime with the application.", CommandOptionType.NoValue);
+            _serverSelfContainedOption = app.Option("--server-self-contained",
+                "Publishes the server application as standalone.", CommandOptionType.NoValue);
+            _clientSelfContainedOption = app.Option("--client-self-contained",
+                "Publishes the client application as standalone.", CommandOptionType.NoValue);
             _outputFileOption = app.Option("--output-file",
                 "Output file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -592,7 +604,7 @@ namespace BenchmarksDriver
                 {
                     serverJob.UseRuntimeStore = true;
                 }
-                if (selfContainedOption.HasValue())
+                if (_serverSelfContainedOption.HasValue())
                 {
                     serverJob.SelfContained = true;
                 }
@@ -606,7 +618,7 @@ namespace BenchmarksDriver
                         Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
                         Console.ResetColor();
                     }
-                    else if (aspnetCoreVersionOption.HasValue() || runtimeVersionOption.HasValue())
+                    else if (_serverAspnetCoreVersionOption.HasValue() || _serverRuntimeVersionOption.HasValue())
                     {
                         serverJob.SelfContained = true;
 
@@ -646,13 +658,13 @@ namespace BenchmarksDriver
                 {
                     serverJob.Port = int.Parse(portOption.Value());
                 }
-                if (aspnetCoreVersionOption.HasValue())
+                if (_serverAspnetCoreVersionOption.HasValue())
                 {
-                    serverJob.AspNetCoreVersion = aspnetCoreVersionOption.Value();
+                    serverJob.AspNetCoreVersion = _serverAspnetCoreVersionOption.Value();
                 }
-                if (runtimeVersionOption.HasValue())
+                if (_serverRuntimeVersionOption.HasValue())
                 {
-                    serverJob.RuntimeVersion = runtimeVersionOption.Value();
+                    serverJob.RuntimeVersion = _serverRuntimeVersionOption.Value();
                 }
                 if (repositoryOption.HasValue())
                 {
@@ -909,6 +921,41 @@ namespace BenchmarksDriver
                 if (_clientSdkOption.HasValue())
                 {
                     clientJob.SdkVersion = _clientSdkOption.Value();
+                }
+
+                if (_clientSelfContainedOption.HasValue())
+                {
+                    clientJob.SelfContained = true;
+                }
+                else
+                {
+                    if (_outputFileOption.HasValue() || _outputArchiveOption.HasValue())
+                    {
+                        clientJob.SelfContained = true;
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
+                        Console.ResetColor();
+                    }
+                    else if (_clientAspnetCoreVersionOption.HasValue() || _clientRuntimeVersionOption.HasValue())
+                    {
+                        clientJob.SelfContained = true;
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
+                        Console.ResetColor();
+                    }
+
+                }
+
+                if (_clientAspnetCoreVersionOption.HasValue())
+                {
+                    clientJob.AspNetCoreVersion = _clientAspnetCoreVersionOption.Value();
+                }
+
+                if (_clientRuntimeVersionOption.HasValue())
+                {
+                    clientJob.RuntimeVersion = _clientRuntimeVersionOption.Value();
                 }
 
                 //var mergedClientJob = new JObject(defaultJob);
