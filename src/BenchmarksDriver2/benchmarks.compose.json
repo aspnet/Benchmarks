@@ -1,0 +1,106 @@
+﻿{
+  "variables": {
+    "header-sets": {
+      "none": "",
+      "plaintext": "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive",
+      "connection-close": "--header Connection:close"
+    },
+    "preset-headers": "plaintext"
+  },
+  "dependencies": [ "application", "load" ],
+  "services": {
+    "application": {
+      "presetHeaders": "Plaintext",
+      "source": {
+        "repository": "https://github.com/aspnet/benchmarks.git",
+        "branchOrCommit": "master",
+        "project": "src/Benchmarks/Benchmarks.csproj"
+      },
+      "readyStateText": "Application started.",
+      "variables": {
+        "connection-header": "--header Connection:keep-alive"
+      }
+    },
+    "load": {
+      "source": {
+        "repository": "https://github.com/aspnet/benchmarks.git",
+        "branchOrCommit": "master",
+        "project": "src/PipeliningClient/PipeliningClient.csproj"
+      },
+      "variables": {
+        "server-ip": "",
+        "path": "",
+        "connections": 256,
+        "warmup": 15,
+        "duration": 5,
+        "pipeline": 16
+      },
+      "arguments": "--url={{server-ip}} --connections={{connections}} --warmup={{warmup}} --duration={{duration}} --pipeline={{pipeline}} {{header-sets[preset-headers]}}"
+    },
+    "database": {
+      "source": {
+        "repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+        "branchOrCommit": "master",
+        "dockerfile": "toolset/databases/postgres/postgres.dockerfile",
+        "dockerImageName": "postgres",
+        "dockerContextDirectory": "toolset/databases/postgres/"
+      }
+    }
+  },
+  "profile": {
+    "plaintext": {
+      "variables": {
+        "path": "/plaintext"
+      }
+    },
+    "plaintextNonPipelined": {
+      "variables": {
+        "path": "/plaintext",
+        "pipeline": 1
+      }
+    },
+    "mvcPlaintext": {
+      "variables": {
+        "path": "/mvc/plaintext",
+        "pipeline": 1
+      }
+    },
+    "connectionClose": {
+      "variables": {
+        "path": "/plaintext",
+        "preset-headers": "connection-close"
+      }
+    }
+  }
+}
+/*
+
+dotnet run -- 
+  --services.application.endpoints http://asp-perf-lin:5001 
+  --services.load.endpoints http://asp-perf-load:5001 
+  --services.load.endpoints http://asp-perf-db:5001 
+
+  // if a property is an array, calling it will push
+  // to clear it, assign [], then call it again to add a single item
+
+  --services.load.source.branch sebros/foo
+
+  --jobs benchmarks.compose.json
+  --jobs benchmarks.databases.json
+
+  --profile plaintext
+
+  --variables.warmup 0
+  --variables.server-ip 10.10.10.5
+  --dependencies.insert(0) postgres // inserts a new dependency
+
+  --scenario PlaintextWithNoWarmup
+
+  // Some features can be applied on any service
+
+  --services.application.features dotnet-trace
+  --services.load.features dotnet-trace:gc-verbose
+
+  --services.application.sdk-version 3.0.100
+
+*/
