@@ -15,6 +15,8 @@ using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Serializers;
+using Fluid;
+using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -69,8 +71,17 @@ namespace BenchmarksDriver
             _serverSelfContainedOption,
             _clientSelfContainedOption,
             _serverAspnetCoreVersionOption,
-            _clientAspnetCoreVersionOption
+            _clientAspnetCoreVersionOption,
+
+            _configOption,
+            _profileOption
+
             ;
+
+        private static HashSet<string> DynamicArguments = new HashSet<string>() { "services", "variables", "dependencies" };
+
+        // The dynamic arguments that will alter the configurations
+        private static List<KeyValuePair<string, string>> Arguments = new List<KeyValuePair<string, string>>();
 
         private static Dictionary<string, string> _deprecatedArguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -91,9 +102,14 @@ namespace BenchmarksDriver
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            _httpClientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
+            _httpClientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
             _httpClient = new HttpClient(_httpClientHandler);
+
+            TemplateContext.GlobalMemberAccessStrategy.Register<JObject, object>((obj, name) => obj[name]);
+            FluidValue.SetTypeMapping<JObject>(o => new ObjectValue(o));
+            FluidValue.SetTypeMapping<JValue>(o => FluidValue.Create(((JValue)o).Value));
+            FluidValue.SetTypeMapping<DateTime>(o => new ObjectValue(o));
         }
 
         public static int Main(string[] args)
@@ -125,6 +141,36 @@ namespace BenchmarksDriver
             };
 
             app.HelpOption("-?|-h|--help");
+
+            // New options
+
+            _configOption = app.Option("--config", "Configuration file or url", CommandOptionType.MultipleValue);
+            _profileOption = app.Option("--profile", "Profile to execute", CommandOptionType.SingleValue);
+
+            
+            // Extract dynamic arguments
+            for (var i = 0; i < args.Length; i++)
+            {
+                var arg = args[i];
+
+                foreach (var dynamicArgument in DynamicArguments)
+                {
+                    if (arg.StartsWith("--" + dynamicArgument))
+                    {
+                        // Remove this argument from the command line
+                        args[i] = "";
+
+                        // Dynamic arguments always come in pairs 
+                        if (i + 1 < args.Length)
+                        {
+                            Arguments.Add(KeyValuePair.Create(arg.Substring(2), args[i + 1]));
+                            args[i+1] = "";
+
+                            i++;
+                        }
+                    }
+                }
+            }
 
             // Driver Options
             var clientOption = app.Option("-c|--client",
@@ -406,19 +452,19 @@ namespace BenchmarksDriver
                 var sqlConnectionString = sqlConnectionStringOption.Value();
                 var span = TimeSpan.Zero;
 
-                if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
-                    !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
-                    (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
-                    (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
-                    string.IsNullOrWhiteSpace(server) ||
-                    (clients.Any(client => string.IsNullOrWhiteSpace(client)) && !(benchmarkdotnetOption.HasValue() || consoleOption.HasValue())) ||
-                    (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out span)) ||
-                    (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
-                    (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
-                {
-                    app.ShowHelp();
-                    return 2;
-                }
+                //if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
+                //    !Enum.TryParse(webHostValue, ignoreCase: true, result: out WebHost webHost) ||
+                //    (headersOption.HasValue() && !Enum.TryParse(headersOption.Value(), ignoreCase: true, result: out headers)) ||
+                //    (databaseOption.HasValue() && !Enum.TryParse(databaseOption.Value(), ignoreCase: true, result: out Database database)) ||
+                //    string.IsNullOrWhiteSpace(server) ||
+                //    (clients.Any(client => string.IsNullOrWhiteSpace(client)) && !(benchmarkdotnetOption.HasValue() || consoleOption.HasValue())) ||
+                //    (spanOption.HasValue() && !TimeSpan.TryParse(spanOption.Value(), result: out span)) ||
+                //    (iterationsOption.HasValue() && !int.TryParse(iterationsOption.Value(), result: out iterations)) ||
+                //    (excludeOption.HasValue() && !int.TryParse(excludeOption.Value(), result: out exclude)))
+                //{
+                //    app.ShowHelp();
+                //    return 2;
+                //}
 
                 foreach (var client in clients)
                 {
@@ -439,10 +485,13 @@ namespace BenchmarksDriver
 
                 try
                 {
-                    using (var cts = new CancellationTokenSource(2000))
+                    if (server != null)
                     {
-                        var response = _httpClient.GetAsync(server, cts.Token).Result;
-                        response.EnsureSuccessStatusCode();
+                        using (var cts = new CancellationTokenSource(2000))
+                        {
+                            var response = _httpClient.GetAsync(server, cts.Token).Result;
+                            response.EnsureSuccessStatusCode();
+                        }
                     }
                 }
                 catch
@@ -455,17 +504,19 @@ namespace BenchmarksDriver
                     _tableName = sqlTableOption.Value();
                 }
 
-                // Load the server job from the definition path and the scenario name
-                var serverJob = BuildServerJob(serverJobDefinitionPathOrUrl, serverScenarioOption.Value() ?? "Default", _serverProjectOption);
+                var configuration = LoadConfiguration(_configOption.Values, Arguments);
 
-                // Load the server job from the definition path and the scenario name
-                ServerJob clientJob = null;
+                //// Load the server job from the definition path and the scenario name
+                //var serverJob = BuildServerJob(serverJobDefinitionPathOrUrl, serverScenarioOption.Value() ?? "Default", _serverProjectOption);
 
-                // If a client job definition is defined, build it
-                if (!String.IsNullOrWhiteSpace(cientJobDefinitionPathOrUrl))
-                {
-                    clientJob = BuildServerJob(cientJobDefinitionPathOrUrl, clientScenarioOption.Value() ?? "Default", _clientProjectOption);
-                }
+                //// Load the server job from the definition path and the scenario name
+                //ServerJob clientJob = null;
+
+                //// If a client job definition is defined, build it
+                //if (!String.IsNullOrWhiteSpace(cientJobDefinitionPathOrUrl))
+                //{
+                //    clientJob = BuildServerJob(cientJobDefinitionPathOrUrl, clientScenarioOption.Value() ?? "Default", _clientProjectOption);
+                //}
 
                 //var jobOptions = mergedServerJob.ToObject<JobOptions>();
 
@@ -493,470 +544,470 @@ namespace BenchmarksDriver
                 //}
 
                 // Scenario can't be set in job definitions
-                serverJob.WebHost = webHost;
+                //serverJob.WebHost = webHost;
 
-                foreach (var argument in serverJob.OutputFilesArgument)
-                {
-                    _outputFileOption.Values.Add(argument);
-                }
+                //foreach (var argument in serverJob.OutputFilesArgument)
+                //{
+                //    _outputFileOption.Values.Add(argument);
+                //}
 
-                foreach (var argument in serverJob.OutputArchivesArgument)
-                {
-                    _outputArchiveOption.Values.Add(argument);
-                }
+                //foreach (var argument in serverJob.OutputArchivesArgument)
+                //{
+                //    _outputArchiveOption.Values.Add(argument);
+                //}
 
-                foreach (var argument in serverJob.BuildFilesArgument)
-                {
-                    _buildFileOption.Values.Add(argument);
-                }
+                //foreach (var argument in serverJob.BuildFilesArgument)
+                //{
+                //    _buildFileOption.Values.Add(argument);
+                //}
 
-                foreach (var argument in serverJob.BuildArchivesArgument)
-                {
-                    _buildArchiveOption.Values.Add(argument);
-                }
+                //foreach (var argument in serverJob.BuildArchivesArgument)
+                //{
+                //    _buildArchiveOption.Values.Add(argument);
+                //}
 
-                if (_memoryLimitOption.HasValue())
-                {
-                    var memoryLimitValue = _memoryLimitOption.Value();
+                //if (_memoryLimitOption.HasValue())
+                //{
+                //    var memoryLimitValue = _memoryLimitOption.Value();
 
-                    if (memoryLimitValue.EndsWith("mb", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var megaBytes))
-                        {
-                            serverJob.MemoryLimitInBytes = megaBytes * 1024 * 1024;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid memory limit value");
-                            return -1;
-                        }
-                    }
-                    else if (memoryLimitValue.EndsWith("gb", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var gigaBytes))
-                        {
-                            serverJob.MemoryLimitInBytes = gigaBytes * 1024 * 1024 * 1024;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid memory limit value");
-                            return -1;
-                        }
-                    }
-                    else if (memoryLimitValue.EndsWith("kb", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var kiloBytes))
-                        {
-                            serverJob.MemoryLimitInBytes = kiloBytes * 1024;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid memory limit value");
-                            return -1;
-                        }
-                    }
-                    else if (memoryLimitValue.EndsWith("b", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 1), out var bytes))
-                        {
-                            serverJob.MemoryLimitInBytes = bytes;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid memory limit value");
-                            return -1;
-                        }
-                    }
-                    else
-                    {
-                        if (ulong.TryParse(memoryLimitValue, out var bytes))
-                        {
-                            serverJob.MemoryLimitInBytes = bytes;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid memory limit value");
-                            return -1;
-                        }
-                    }
-                }
-                if (_initializeOption.HasValue())
-                {
-                    serverJob.BeforeScript = _initializeOption.Value();
-                }
-                if (_cleanOption.HasValue())
-                {
-                    serverJob.AfterScript = _cleanOption.Value();
-                }
-                if (databaseOption.HasValue())
-                {
-                    serverJob.Database = Enum.Parse<Database>(databaseOption.Value(), ignoreCase: true);
-                }
-                if (pathOption.HasValue())
-                {
-                    serverJob.Path = pathOption.Value();
-                }
-                if (schemeOption.HasValue())
-                {
-                    serverJob.Scheme = scheme;
-                }
-                if (useRuntimeStoreOption.HasValue())
-                {
-                    serverJob.UseRuntimeStore = true;
-                }
-                if (_serverSelfContainedOption.HasValue())
-                {
-                    serverJob.SelfContained = true;
-                }
-                else
-                {
-                    if (_outputFileOption.HasValue() || _outputArchiveOption.HasValue())
-                    {
-                        serverJob.SelfContained = true;
+                //    if (memoryLimitValue.EndsWith("mb", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var megaBytes))
+                //        {
+                //            serverJob.MemoryLimitInBytes = megaBytes * 1024 * 1024;
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid memory limit value");
+                //            return -1;
+                //        }
+                //    }
+                //    else if (memoryLimitValue.EndsWith("gb", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var gigaBytes))
+                //        {
+                //            serverJob.MemoryLimitInBytes = gigaBytes * 1024 * 1024 * 1024;
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid memory limit value");
+                //            return -1;
+                //        }
+                //    }
+                //    else if (memoryLimitValue.EndsWith("kb", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 2), out var kiloBytes))
+                //        {
+                //            serverJob.MemoryLimitInBytes = kiloBytes * 1024;
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid memory limit value");
+                //            return -1;
+                //        }
+                //    }
+                //    else if (memoryLimitValue.EndsWith("b", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        if (ulong.TryParse(memoryLimitValue.Substring(0, memoryLimitValue.Length - 1), out var bytes))
+                //        {
+                //            serverJob.MemoryLimitInBytes = bytes;
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid memory limit value");
+                //            return -1;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if (ulong.TryParse(memoryLimitValue, out var bytes))
+                //        {
+                //            serverJob.MemoryLimitInBytes = bytes;
+                //        }
+                //        else
+                //        {
+                //            Console.WriteLine("Invalid memory limit value");
+                //            return -1;
+                //        }
+                //    }
+                //}
+                //if (_initializeOption.HasValue())
+                //{
+                //    serverJob.BeforeScript = _initializeOption.Value();
+                //}
+                //if (_cleanOption.HasValue())
+                //{
+                //    serverJob.AfterScript = _cleanOption.Value();
+                //}
+                //if (databaseOption.HasValue())
+                //{
+                //    serverJob.Database = Enum.Parse<Database>(databaseOption.Value(), ignoreCase: true);
+                //}
+                //if (pathOption.HasValue())
+                //{
+                //    serverJob.Path = pathOption.Value();
+                //}
+                //if (schemeOption.HasValue())
+                //{
+                //    serverJob.Scheme = scheme;
+                //}
+                //if (useRuntimeStoreOption.HasValue())
+                //{
+                //    serverJob.UseRuntimeStore = true;
+                //}
+                //if (_serverSelfContainedOption.HasValue())
+                //{
+                //    serverJob.SelfContained = true;
+                //}
+                //else
+                //{
+                //    if (_outputFileOption.HasValue() || _outputArchiveOption.HasValue())
+                //    {
+                //        serverJob.SelfContained = true;
 
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
-                        Console.ResetColor();
-                    }
-                    else if (_serverAspnetCoreVersionOption.HasValue() || _serverRuntimeVersionOption.HasValue())
-                    {
-                        serverJob.SelfContained = true;
+                //        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                //        Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
+                //        Console.ResetColor();
+                //    }
+                //    else if (_serverAspnetCoreVersionOption.HasValue() || _serverRuntimeVersionOption.HasValue())
+                //    {
+                //        serverJob.SelfContained = true;
 
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
-                        Console.ResetColor();
-                    }
+                //        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                //        Log.Write("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
+                //        Console.ResetColor();
+                //    }
 
-                }
-                if (kestrelThreadCountOption.HasValue())
-                {
-                    serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
-                }
-                if (serverNoArgumentsOptions.HasValue())
-                {
-                    serverJob.NoArguments = true;
-                }
-                if (serverArgumentsOption.HasValue())
-                {
-                    serverJob.Arguments = serverJob.Arguments ?? "";
+                //}
+                //if (kestrelThreadCountOption.HasValue())
+                //{
+                //    serverJob.KestrelThreadCount = int.Parse(kestrelThreadCountOption.Value());
+                //}
+                //if (serverNoArgumentsOptions.HasValue())
+                //{
+                //    serverJob.NoArguments = true;
+                //}
+                //if (serverArgumentsOption.HasValue())
+                //{
+                //    serverJob.Arguments = serverJob.Arguments ?? "";
 
-                    foreach (var arg in serverArgumentsOption.Values)
-                    {
-                        var equalSignIndex = arg.IndexOf('=');
+                //    foreach (var arg in serverArgumentsOption.Values)
+                //    {
+                //        var equalSignIndex = arg.IndexOf('=');
 
-                        if (equalSignIndex == -1)
-                        {
-                            serverJob.Arguments += " " + arg;
-                        }
-                        else
-                        {
-                            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
-                        }
-                    }
-                }
-                if (portOption.HasValue())
-                {
-                    serverJob.Port = int.Parse(portOption.Value());
-                }
-                if (_serverAspnetCoreVersionOption.HasValue())
-                {
-                    serverJob.AspNetCoreVersion = _serverAspnetCoreVersionOption.Value();
-                }
-                if (_serverRuntimeVersionOption.HasValue())
-                {
-                    serverJob.RuntimeVersion = _serverRuntimeVersionOption.Value();
-                }
-                if (repositoryOption.HasValue())
-                {
-                    var source = repositoryOption.Value();
-                    var sourceParts = source.Split('@', 2);
-                    var repository = sourceParts[0];
+                //        if (equalSignIndex == -1)
+                //        {
+                //            serverJob.Arguments += " " + arg;
+                //        }
+                //        else
+                //        {
+                //            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
+                //        }
+                //    }
+                //}
+                //if (portOption.HasValue())
+                //{
+                //    serverJob.Port = int.Parse(portOption.Value());
+                //}
+                //if (_serverAspnetCoreVersionOption.HasValue())
+                //{
+                //    serverJob.AspNetCoreVersion = _serverAspnetCoreVersionOption.Value();
+                //}
+                //if (_serverRuntimeVersionOption.HasValue())
+                //{
+                //    serverJob.RuntimeVersion = _serverRuntimeVersionOption.Value();
+                //}
+                //if (repositoryOption.HasValue())
+                //{
+                //    var source = repositoryOption.Value();
+                //    var sourceParts = source.Split('@', 2);
+                //    var repository = sourceParts[0];
 
-                    if (sourceParts.Length > 1)
-                    {
-                        serverJob.Source.BranchOrCommit = sourceParts[1];
-                    }
+                //    if (sourceParts.Length > 1)
+                //    {
+                //        serverJob.Source.BranchOrCommit = sourceParts[1];
+                //    }
 
-                    if (!repository.Contains(":"))
-                    {
-                        repository = $"https://github.com/aspnet/{repository}.git";
-                    }
+                //    if (!repository.Contains(":"))
+                //    {
+                //        repository = $"https://github.com/aspnet/{repository}.git";
+                //    }
 
-                    serverJob.Source.Repository = repository;
-                }
-                if (_branchOption.HasValue())
-                {
-                    serverJob.Source.BranchOrCommit = _branchOption.Value();
-                }
-                if (_hashOption.HasValue())
-                {
-                    serverJob.Source.BranchOrCommit = "#" + _hashOption.Value();
-                }
-                if (dockerFileOption.HasValue())
-                {
-                    serverJob.Source.DockerFile = dockerFileOption.Value();
+                //    serverJob.Source.Repository = repository;
+                //}
+                //if (_branchOption.HasValue())
+                //{
+                //    serverJob.Source.BranchOrCommit = _branchOption.Value();
+                //}
+                //if (_hashOption.HasValue())
+                //{
+                //    serverJob.Source.BranchOrCommit = "#" + _hashOption.Value();
+                //}
+                //if (dockerFileOption.HasValue())
+                //{
+                //    serverJob.Source.DockerFile = dockerFileOption.Value();
 
-                    if (dockerContextOption.HasValue())
-                    {
-                        serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
-                    }
-                    else
-                    {
-                        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
-                    }
+                //    if (dockerContextOption.HasValue())
+                //    {
+                //        serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
+                //    }
+                //    else
+                //    {
+                //        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                //    }
 
-                    if (dockerImageOption.HasValue())
-                    {
-                        serverJob.Source.DockerImageName = dockerImageOption.Value();
-                    }
-                    else
-                    {
-                        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
-                    }
-                }
-                if (_initSubmodulesOption.HasValue())
-                {
-                    serverJob.Source.InitSubmodules = true;
-                }
-                if (_serverProjectOption.HasValue())
-                {
-                    serverJob.Source.Project = _serverProjectOption.Value();
-                }
-                if (noCleanOption.HasValue())
-                {
-                    serverJob.NoClean = true;
-                }
-                if (frameworkOption.HasValue())
-                {
-                    serverJob.Framework = frameworkOption.Value();
-                }
-                if (_serverSdkOption.HasValue())
-                {
-                    serverJob.SdkVersion = _serverSdkOption.Value();
-                }
-                if (_noGlobalJsonOption.HasValue())
-                {
-                    serverJob.NoGlobalJson = true;
-                }
-                if (collectTraceOption.HasValue())
-                {
-                    serverJob.Collect = true;
-                    serverJob.CollectArguments = _defaultTraceArguments;
+                //    if (dockerImageOption.HasValue())
+                //    {
+                //        serverJob.Source.DockerImageName = dockerImageOption.Value();
+                //    }
+                //    else
+                //    {
+                //        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
+                //    }
+                //}
+                //if (_initSubmodulesOption.HasValue())
+                //{
+                //    serverJob.Source.InitSubmodules = true;
+                //}
+                //if (_serverProjectOption.HasValue())
+                //{
+                //    serverJob.Source.Project = _serverProjectOption.Value();
+                //}
+                //if (noCleanOption.HasValue())
+                //{
+                //    serverJob.NoClean = true;
+                //}
+                //if (frameworkOption.HasValue())
+                //{
+                //    serverJob.Framework = frameworkOption.Value();
+                //}
+                //if (_serverSdkOption.HasValue())
+                //{
+                //    serverJob.SdkVersion = _serverSdkOption.Value();
+                //}
+                //if (_noGlobalJsonOption.HasValue())
+                //{
+                //    serverJob.NoGlobalJson = true;
+                //}
+                //if (collectTraceOption.HasValue())
+                //{
+                //    serverJob.Collect = true;
+                //    serverJob.CollectArguments = _defaultTraceArguments;
 
-                    if (traceArgumentsOption.HasValue())
-                    {
-                        var allDefaultArguments = ExpandTraceArguments(_defaultTraceArguments);
-                        var allTraceArguments = ExpandTraceArguments(traceArgumentsOption.Value());
+                //    if (traceArgumentsOption.HasValue())
+                //    {
+                //        var allDefaultArguments = ExpandTraceArguments(_defaultTraceArguments);
+                //        var allTraceArguments = ExpandTraceArguments(traceArgumentsOption.Value());
 
-                        foreach (var item in allTraceArguments)
-                        {
-                            // null value to remove the argument
-                            // empty value to keep the argument with no value, e.g. /GCCollectOnly
-                            if (item.Value == null)
-                            {
-                                allDefaultArguments.Remove(item.Key);
-                            }
-                            else
-                            {
-                                allDefaultArguments[item.Key] = item.Value;
-                            }
-                        }
+                //        foreach (var item in allTraceArguments)
+                //        {
+                //            // null value to remove the argument
+                //            // empty value to keep the argument with no value, e.g. /GCCollectOnly
+                //            if (item.Value == null)
+                //            {
+                //                allDefaultArguments.Remove(item.Key);
+                //            }
+                //            else
+                //            {
+                //                allDefaultArguments[item.Key] = item.Value;
+                //            }
+                //        }
 
-                        serverJob.CollectArguments = String.Join(";", allDefaultArguments.Select(x => $"{x.Key}={x.Value}"));
-                    }
-                    else
-                    {
-                        serverJob.CollectArguments = _defaultTraceArguments;
-                    }
-                }
-                if (_serverCollectStartupOption.HasValue())
-                {
-                    serverJob.CollectStartup = true;
-                }
-                if (_serverCollectCountersOption.HasValue())
-                {
-                    serverJob.CollectCounters = true;
-                }
-                if (_enableEventPipeOption.HasValue())
-                {
-                    // Enable Event Pipes
-                    serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
+                //        serverJob.CollectArguments = String.Join(";", allDefaultArguments.Select(x => $"{x.Key}={x.Value}"));
+                //    }
+                //    else
+                //    {
+                //        serverJob.CollectArguments = _defaultTraceArguments;
+                //    }
+                //}
+                //if (_serverCollectStartupOption.HasValue())
+                //{
+                //    serverJob.CollectStartup = true;
+                //}
+                //if (_serverCollectCountersOption.HasValue())
+                //{
+                //    serverJob.CollectCounters = true;
+                //}
+                //if (_enableEventPipeOption.HasValue())
+                //{
+                //    // Enable Event Pipes
+                //    serverJob.EnvironmentVariables.Add("COMPlus_EnableEventPipe", "1");
 
-                    // Set a specific name to find it more easily
-                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
+                //    // Set a specific name to find it more easily
+                //    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeOutputFile", EventPipeOutputFile);
 
-                    if (_eventPipeArgumentsOption.HasValue())
-                    {
-                        EventPipeConfig = _eventPipeArgumentsOption.Value();
-                    }
+                //    if (_eventPipeArgumentsOption.HasValue())
+                //    {
+                //        EventPipeConfig = _eventPipeArgumentsOption.Value();
+                //    }
 
-                    // Default EventPipeConfig value
-                    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", EventPipeConfig);
-                }
-                if (disableR2ROption.HasValue())
-                {
-                    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRun", "0");
-                }
-                if (collectR2RLogOption.HasValue())
-                {
-                    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRunLogFile", "r2r");
-                }
-                if (tieredCompilationOption.HasValue())
-                {
-                    serverJob.EnvironmentVariables.Add("COMPlus_TieredCompilation", "1");
-                }
-                if (environmentVariablesOption.HasValue())
-                {
-                    foreach (var env in environmentVariablesOption.Values)
-                    {
-                        var index = env.IndexOf('=');
+                //    // Default EventPipeConfig value
+                //    serverJob.EnvironmentVariables.Add("COMPlus_EventPipeConfig", EventPipeConfig);
+                //}
+                //if (disableR2ROption.HasValue())
+                //{
+                //    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRun", "0");
+                //}
+                //if (collectR2RLogOption.HasValue())
+                //{
+                //    serverJob.EnvironmentVariables.Add("COMPlus_ReadyToRunLogFile", "r2r");
+                //}
+                //if (tieredCompilationOption.HasValue())
+                //{
+                //    serverJob.EnvironmentVariables.Add("COMPlus_TieredCompilation", "1");
+                //}
+                //if (environmentVariablesOption.HasValue())
+                //{
+                //    foreach (var env in environmentVariablesOption.Values)
+                //    {
+                //        var index = env.IndexOf('=');
 
-                        if (index == -1)
-                        {
-                            if (index == -1)
-                            {
-                                Console.WriteLine($"Invalid environment variable, '=' not found: '{env}'");
-                                return 9;
-                            }
-                        }
-                        else if (index == env.Length - 1)
-                        {
-                            serverJob.EnvironmentVariables[env.Substring(0, index)] = "";
-                        }
-                        else
-                        {
-                            serverJob.EnvironmentVariables[env.Substring(0, index)] = env.Substring(index + 1);
-                        }
-                    }
-                }
-                if (buildArguments.HasValue())
-                {
-                    foreach (var argument in buildArguments.Values)
-                    {
-                        serverJob.BuildArguments.Add(argument);
-                    }
-                }
+                //        if (index == -1)
+                //        {
+                //            if (index == -1)
+                //            {
+                //                Console.WriteLine($"Invalid environment variable, '=' not found: '{env}'");
+                //                return 9;
+                //            }
+                //        }
+                //        else if (index == env.Length - 1)
+                //        {
+                //            serverJob.EnvironmentVariables[env.Substring(0, index)] = "";
+                //        }
+                //        else
+                //        {
+                //            serverJob.EnvironmentVariables[env.Substring(0, index)] = env.Substring(index + 1);
+                //        }
+                //    }
+                //}
+                //if (buildArguments.HasValue())
+                //{
+                //    foreach (var argument in buildArguments.Values)
+                //    {
+                //        serverJob.BuildArguments.Add(argument);
+                //    }
+                //}
 
-                if (saveOption.HasValue())
-                {
-                    if (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value()))
-                    {
-                        // Copy the --save value as the description
-                        // It also means that if --diff and --save are used, --diff won't require a --description
-                        descriptionOption = saveOption;
-                    }
-                }
+                //if (saveOption.HasValue())
+                //{
+                //    if (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value()))
+                //    {
+                //        // Copy the --save value as the description
+                //        // It also means that if --diff and --save are used, --diff won't require a --description
+                //        descriptionOption = saveOption;
+                //    }
+                //}
 
-                if (diffOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
-                {
-                    Console.WriteLine($"The --description argument is mandatory when using --diff.");
-                    return -1;
-                }
+                //if (diffOption.HasValue() && (!descriptionOption.HasValue() || String.IsNullOrWhiteSpace(descriptionOption.Value())))
+                //{
+                //    Console.WriteLine($"The --description argument is mandatory when using --diff.");
+                //    return -1;
+                //}
 
-                // Check all attachments exist
-                if (_outputFileOption.HasValue())
-                {
-                    foreach (var outputFile in _outputFileOption.Values)
-                    {
-                        var fileSegments = outputFile.Split(';');
-                        var filename = fileSegments[0];
+                //// Check all attachments exist
+                //if (_outputFileOption.HasValue())
+                //{
+                //    foreach (var outputFile in _outputFileOption.Values)
+                //    {
+                //        var fileSegments = outputFile.Split(';');
+                //        var filename = fileSegments[0];
 
-                        if (!filename.Contains("*") && !filename.Contains("http") && !File.Exists(filename))
-                        {
-                            Console.WriteLine($"Output File '{filename}' could not be loaded.");
-                            return 8;
-                        }
-                    }
-                }
+                //        if (!filename.Contains("*") && !filename.Contains("http") && !File.Exists(filename))
+                //        {
+                //            Console.WriteLine($"Output File '{filename}' could not be loaded.");
+                //            return 8;
+                //        }
+                //    }
+                //}
 
-                // Check all scripts exist
-                if (scriptFileOption.HasValue())
-                {
-                    foreach (var scriptFile in scriptFileOption.Values)
-                    {
-                        if (!File.Exists(scriptFile))
-                        {
-                            Console.WriteLine($"Script file '{scriptFile}' could not be loaded.");
-                            return 8;
-                        }
-                    }
-                }
+                //// Check all scripts exist
+                //if (scriptFileOption.HasValue())
+                //{
+                //    foreach (var scriptFile in scriptFileOption.Values)
+                //    {
+                //        if (!File.Exists(scriptFile))
+                //        {
+                //            Console.WriteLine($"Script file '{scriptFile}' could not be loaded.");
+                //            return 8;
+                //        }
+                //    }
+                //}
 
-                // Building ClientJob
+                //// Building ClientJob
 
-                if (clientArgumentsOption.HasValue())
-                {
-                    clientJob.Arguments = clientJob.Arguments ?? "";
+                //if (clientArgumentsOption.HasValue())
+                //{
+                //    clientJob.Arguments = clientJob.Arguments ?? "";
 
-                    foreach (var arg in clientArgumentsOption.Values)
-                    {
-                        var equalSignIndex = arg.IndexOf('=');
+                //    foreach (var arg in clientArgumentsOption.Values)
+                //    {
+                //        var equalSignIndex = arg.IndexOf('=');
 
-                        if (equalSignIndex == -1)
-                        {
-                            clientJob.Arguments += " " + arg;
-                        }
-                        else
-                        {
-                            clientJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
-                        }
-                    }
-                }
+                //        if (equalSignIndex == -1)
+                //        {
+                //            clientJob.Arguments += " " + arg;
+                //        }
+                //        else
+                //        {
+                //            clientJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
+                //        }
+                //    }
+                //}
 
-                if (clientNoArgumentsOptions.HasValue())
-                {
-                    clientJob.NoArguments = true;
-                }
+                //if (clientNoArgumentsOptions.HasValue())
+                //{
+                //    clientJob.NoArguments = true;
+                //}
 
-                if (_clientCollectCountersOption.HasValue())
-                {
-                    clientJob.CollectCounters = true;
-                }
+                //if (_clientCollectCountersOption.HasValue())
+                //{
+                //    clientJob.CollectCounters = true;
+                //}
 
-                if (_clientCollectStartupOption.HasValue())
-                {
-                    clientJob.CollectStartup = true;
-                }
+                //if (_clientCollectStartupOption.HasValue())
+                //{
+                //    clientJob.CollectStartup = true;
+                //}
 
-                if (_clientSdkOption.HasValue())
-                {
-                    clientJob.SdkVersion = _clientSdkOption.Value();
-                }
+                //if (_clientSdkOption.HasValue())
+                //{
+                //    clientJob.SdkVersion = _clientSdkOption.Value();
+                //}
 
-                if (_clientSelfContainedOption.HasValue())
-                {
-                    clientJob.SelfContained = true;
-                }
-                else
-                {
-                    if (_outputFileOption.HasValue() || _outputArchiveOption.HasValue())
-                    {
-                        clientJob.SelfContained = true;
+                //if (_clientSelfContainedOption.HasValue())
+                //{
+                //    clientJob.SelfContained = true;
+                //}
+                //else
+                //{
+                //    if (_outputFileOption.HasValue() || _outputArchiveOption.HasValue())
+                //    {
+                //        clientJob.SelfContained = true;
 
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
-                        Console.ResetColor();
-                    }
-                    else if (_clientAspnetCoreVersionOption.HasValue() || _clientRuntimeVersionOption.HasValue())
-                    {
-                        clientJob.SelfContained = true;
+                //        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                //        Log.Write("WARNING: '--self-contained' has been set implicitly as custom local files are used.");
+                //        Console.ResetColor();
+                //    }
+                //    else if (_clientAspnetCoreVersionOption.HasValue() || _clientRuntimeVersionOption.HasValue())
+                //    {
+                //        clientJob.SelfContained = true;
 
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Log.Write("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
-                        Console.ResetColor();
-                    }
+                //        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                //        Log.Write("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
+                //        Console.ResetColor();
+                //    }
 
-                }
+                //}
 
-                if (_clientAspnetCoreVersionOption.HasValue())
-                {
-                    clientJob.AspNetCoreVersion = _clientAspnetCoreVersionOption.Value();
-                }
+                //if (_clientAspnetCoreVersionOption.HasValue())
+                //{
+                //    clientJob.AspNetCoreVersion = _clientAspnetCoreVersionOption.Value();
+                //}
 
-                if (_clientRuntimeVersionOption.HasValue())
-                {
-                    clientJob.RuntimeVersion = _clientRuntimeVersionOption.Value();
-                }
+                //if (_clientRuntimeVersionOption.HasValue())
+                //{
+                //    clientJob.RuntimeVersion = _clientRuntimeVersionOption.Value();
+                //}
 
                 //var mergedClientJob = new JObject(defaultJob);
                 //mergedClientJob.Merge(job);
@@ -1118,11 +1169,13 @@ namespace BenchmarksDriver
                 }
 
                 return Run(
-                    new Uri(server),
-                    clients.Select(client => new Uri(client)).ToArray(),
+                    configuration,
+                    null, //new Uri(server),
+                    null, // clients.Select(client => new Uri(client)).ToArray(),
                     sqlConnectionString,
-                    serverJob,
-                    clientJob,
+                    null, // serverJob,
+                    null, //clientJob,
+
                     session,
                     description,
                     iterations,
@@ -1167,7 +1220,7 @@ namespace BenchmarksDriver
 
             try
             {
-                return app.Execute(args);
+                return app.Execute(args.Where(x => !String.IsNullOrEmpty(x)).ToArray());
             }
             catch (CommandParsingException e)
             {
@@ -1183,6 +1236,7 @@ namespace BenchmarksDriver
         }
 
         private static async Task<int> Run(
+            Configuration configuration,
             Uri serverUri,
             Uri[] clientUris,
             string sqlConnectionString,
@@ -1207,7 +1261,7 @@ namespace BenchmarksDriver
             CommandOption diffOption
             )
         {
-            var scenario = serverJob.Scenario;
+            //var scenario = serverJob.Scenario;
             
             string serverJobUri = null;
             HttpResponseMessage response = null;
@@ -1224,10 +1278,13 @@ namespace BenchmarksDriver
             //    await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
             //}
 
-            serverJob.DriverVersion = 2;
-            clientJob.DriverVersion = 2;
+            //serverJob.DriverVersion = 2;
+            //clientJob.DriverVersion = 2;
 
             Log.Write($"Running session '{session}' with description '{description}'");
+
+            var profileName = _profileOption.Value();
+            var profileVariables = configuration.Profiles[profileName]?.Variables ?? new JObject();
 
             for (var i = 1; i <= iterations; i++)
             {
@@ -1236,6 +1293,109 @@ namespace BenchmarksDriver
                     Log.Write($"Job {i} of {iterations}");
                 }
 
+                var jobsByDependency = new Dictionary<string, List<Job>>();
+
+                foreach (var dependency in configuration.Dependencies)
+                {
+                    var service = configuration.Services[dependency];
+                    service.DriverVersion = 2;
+
+                    var jobs = service.Endpoints.Select(endpoint => new Job(service, new Uri(endpoint))).ToList();
+
+                    jobsByDependency.Add(dependency, jobs);
+
+                    var variables = MergeVariables(configuration.Variables, service.Variables, profileVariables);
+
+                    // Format arguments
+
+                    if (FluidTemplate.TryParse(service.Arguments, out var template))
+                    {
+                        var context = new TemplateContext();
+
+                        foreach(var property in variables)
+                        {
+                            context.SetValue(property.Key, property.Value);
+                        }
+
+                        service.Arguments = template.Render(context);
+                    }
+
+                    // Start this group of jobs
+                    await Task.WhenAll(
+                        jobs.Select(job =>
+                        {
+                            // Start server
+                            return job.StartAsync(
+                                requiredOperatingSystem?.ToString(),
+                                _outputArchiveOption,
+                                _buildArchiveOption,
+                                _outputFileOption,
+                                _buildFileOption
+                            );
+                        })
+                    );
+
+                    foreach (var job in jobs)
+                    {
+                        job.StartKeepAlive();
+                    }
+
+                    if (service.WaitForExit)
+                    {
+                        // Wait for all clients to stop
+                        while (!jobs.All(client => client.ServerJob.State != ServerState.Running))
+                        {
+                            // Refresh the local state
+                            foreach (var job in jobs)
+                            {
+                                await job.TryUpdateStateAsync();
+                            }
+
+                            await Task.Delay(1000);
+                        }
+                    }
+                }
+
+                // Stop all job
+                foreach (var dependency in configuration.Dependencies)
+                {
+                    var service = configuration.Services[dependency];
+
+                    var jobs = jobsByDependency[dependency];
+
+                    await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+                    await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                }
+
+                // Display events
+                foreach (var dependency in configuration.Dependencies)
+                {
+                    var service = configuration.Services[dependency];
+
+                    var jobs = jobsByDependency[dependency];
+
+                    Log.Quiet("");
+                    Log.Quiet($"{dependency}");
+                    Log.Quiet($"-------");
+
+                    foreach (var job in jobs)
+                    {
+                        Log.Quiet("");
+                        Log.Quiet($"SDK:                         {job.ServerJob.SdkVersion}");
+                        Log.Quiet($"Runtime:                     {job.ServerJob.RuntimeVersion}");
+                        Log.Quiet($"ASP.NET Core:                {job.ServerJob.AspNetCoreVersion}");
+
+                        WriteMeasures(job);
+
+                        if (job.ServerJob.Features.DisplayOutput)
+                        {
+                            Log.DisplayOutput(job.ServerJob.Output);
+                        }
+                    }
+                }
+
+                return 0;
+
                 try
                 {
                     jobOnServer = new Job(serverJob, serverUri);
@@ -1243,8 +1403,6 @@ namespace BenchmarksDriver
                     // Start server
                     serverJobUri = await jobOnServer.StartAsync(
                         requiredOperatingSystem?.ToString(),
-                        IsConsoleApp,
-                        _serverSourceOption,
                         _outputArchiveOption,
                         _buildArchiveOption,
                         _outputFileOption,
@@ -1333,8 +1491,6 @@ namespace BenchmarksDriver
                                     // Start server
                                     return jobOnClient.StartAsync(
                                         requiredOperatingSystem?.ToString(),
-                                        true, // assume console app for now as we don't have a way to set it for the client
-                                        _clientSourceOption,
                                         _outputArchiveOption,
                                         _buildArchiveOption,
                                         _outputFileOption,
@@ -2194,6 +2350,101 @@ namespace BenchmarksDriver
             return result;
         }
 
+        public static JObject MergeVariables(params JObject[] variableObjects)
+        {
+            var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+            var result = new JObject();
+
+            foreach(var variableObject in variableObjects)
+            {
+                result.Merge(variableObject, mergeOptions);
+            }
+
+            return result;
+        }
+
+        public static Configuration LoadConfiguration(IEnumerable<string> configurationFileOrUrls, IEnumerable<KeyValuePair<string, string>> arguments)
+        {
+            JObject configuration = null;
+
+            foreach (var configurationFileOrUrl in configurationFileOrUrls)
+            {
+                JObject localconfiguration;
+
+                if (!string.IsNullOrWhiteSpace(configurationFileOrUrl))
+                {
+                    string configurationContent;
+
+                    // Load the job definition from a url or locally
+                    try
+                    {
+                        if (configurationFileOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                        {
+                            configurationContent = _httpClient.GetStringAsync(configurationFileOrUrl).GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            configurationContent = File.ReadAllText(configurationFileOrUrl);
+                        }
+                    }
+                    catch
+                    {
+                        throw new Exception($"Configuration '{configurationFileOrUrl}' could not be loaded.");
+                    }
+
+                    localconfiguration = JObject.Parse(configurationContent);
+                }
+                else
+                {
+                    throw new Exception($"Invalid file path or url: '{configurationFileOrUrl}'");
+                }
+
+                if (configuration != null)
+                {
+                    var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+                    configuration.Merge(localconfiguration);
+                }
+                else
+                {
+                    configuration = localconfiguration;
+                }
+            }
+
+            // Roundtrip the JObject such that it contains all the exta properties of the Configuration class that are not in the configuration file
+            configuration = JObject.FromObject(configuration.ToObject<Configuration>());
+
+            // Apply custom arguments
+            foreach (var argument in Arguments)
+            {
+                JToken node = configuration;
+
+                var segments = argument.Key.Split('.');
+
+                foreach (var segment in segments)
+                {
+                    node = ((JObject)node).GetValue(segment, StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (node is JArray jArray)
+                {
+                    jArray.Add(argument.Value);
+                }
+                else if (node is JValue jValue)
+                {
+                    jValue.Value = argument.Value;
+                }
+            }
+
+            var result = configuration.ToObject<Configuration>();
+
+            // TODO: Post process the services to re-order them based on weight
+            // result.Dependencies = result.Dependencies.OrderBy(x => x, x.Contains(":") ? int.Parse(x.Split(':', 2)[1]) : 100);
+
+            return result;
+        }
+
         /// <summary>
         /// Builds a ServerJob object from a jobs definition file and a scenario name
         /// </summary>
@@ -2363,7 +2614,6 @@ namespace BenchmarksDriver
                 }
 
                 Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {result.ToString(metadata.Format)}");
-
             }
         }
     }

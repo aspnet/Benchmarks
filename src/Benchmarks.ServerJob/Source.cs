@@ -16,6 +16,7 @@ namespace Benchmarks.ServerJob
         public string DockerImageName { get; set; }
         public string DockerContextDirectory { get; set; }
         public string DockerFetchPath { get; set; }
+        public string LocalFolder { get; set; }
 
         public string GetNormalizedImageName()
         {

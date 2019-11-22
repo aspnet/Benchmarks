@@ -52,8 +52,6 @@ namespace BenchmarksDriver
 
         public async Task<string> StartAsync(
             string requiredOperatingSystem,
-            bool IsConsoleApp,
-            CommandOption _sourceOption,
             CommandOption _outputArchiveOption,
             CommandOption _buildArchiveOption,
             CommandOption _outputFileOption,
@@ -80,7 +78,6 @@ namespace BenchmarksDriver
 
             while (true)
             {
-
                 Log.Verbose($"GET {_serverJobUri}...");
                 response = await _httpClient.GetAsync(_serverJobUri);
                 responseContent = await response.Content.ReadAsStringAsync();
@@ -128,7 +125,7 @@ namespace BenchmarksDriver
                     Log.Write($"Job has been selected by the server ...");
 
                     // Uploading source code
-                    if (_sourceOption.HasValue())
+                    if (!String.IsNullOrEmpty(ServerJob.Source.LocalFolder))
                     {
                         // Zipping the folder
                         var tempFilename = Path.GetTempFileName();
@@ -136,11 +133,11 @@ namespace BenchmarksDriver
 
                         Log.Write("Zipping the source folder in " + tempFilename);
 
-                        var sourceDir = _sourceOption.Value();
+                        var sourceDir = ServerJob.Source.LocalFolder;
 
                         if (!File.Exists(Path.Combine(sourceDir, ".gitignore")))
                         {
-                            ZipFile.CreateFromDirectory(_sourceOption.Value(), tempFilename);
+                            ZipFile.CreateFromDirectory(sourceDir, tempFilename);
                         }
                         else
                         {
@@ -357,12 +354,12 @@ namespace BenchmarksDriver
 
                     // If there is no ReadyStateText defined, the server will never be in Running state
                     // and we'll reach the Stopped state eventually, but that's a normal behavior.
-                    if (IsConsoleApp)
+                    if (ServerJob.IsConsoleApp)
                     {
                         return ServerJob.Url;
                     }
 
-                    throw new Exception("Job finished unnexpectidly");
+                    throw new Exception("Job finished unnexpectedly");
                 }
                 else
                 {

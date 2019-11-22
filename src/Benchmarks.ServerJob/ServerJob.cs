@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Repository;
 
 namespace Benchmarks.ServerJob
@@ -171,5 +172,23 @@ namespace Benchmarks.ServerJob
 
         [JsonProperty("BuildArchives")]
         private string[] BuildArchivesArgumentSetter { set { BuildArchivesArgument = value; } }
+
+        // V2
+
+        public List<string> Endpoints { get; set; } = new List<string>();
+
+        public JObject Variables { get; set; }
+
+        public bool WaitForExit { get; set; }
+
+        public int Timeout { get; set; } = 0;
+
+        public Features Features { get; set; } = new Features();
+
+    }
+
+    public class Features
+    {
+        public bool DisplayOutput { get; set; }
     }
 }

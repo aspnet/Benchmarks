@@ -10,13 +10,12 @@
   "dependencies": [ "application", "load" ],
   "services": {
     "application": {
-      "presetHeaders": "Plaintext",
       "source": {
         "repository": "https://github.com/aspnet/benchmarks.git",
         "branchOrCommit": "master",
         "project": "src/Benchmarks/Benchmarks.csproj"
       },
-      "readyStateText": "Application started.",
+      "readyStateText": "Application started.", // The text in the console that informs the server it has started
       "variables": {
         "connection-header": "--header Connection:keep-alive"
       }
@@ -27,15 +26,24 @@
         "branchOrCommit": "master",
         "project": "src/PipeliningClient/PipeliningClient.csproj"
       },
+      "isConsoleApp": true,
+      "readyStateText": "Starting",
+      "sdkVersion": "3.0.100",
+      "aspnetcoreversion": "3.0",
+      "runtimeversion": "3.0",
+      "noArguments": true,
+      "waitForExit": true, // Blocking
+      "timeout": 60,
+      // "span": "1:00:00", // Keeps repeating the jobs for this duration
       "variables": {
-        "server-ip": "",
-        "path": "",
+        "serverUri": null,
+        "path": null,
         "connections": 256,
-        "warmup": 15,
+        "warmup": 5,
         "duration": 5,
         "pipeline": 16
       },
-      "arguments": "--url={{server-ip}} --connections={{connections}} --warmup={{warmup}} --duration={{duration}} --pipeline={{pipeline}} {{header-sets[preset-headers]}}"
+      "arguments": "--url={{serverUri}}{{path}} --connections={{connections}} --warmup={{warmup}} --duration={{duration}} --pipeline={{pipeline}} {{header-sets[preset-headers]}}"
     },
     "database": {
       "source": {
@@ -47,7 +55,7 @@
       }
     }
   },
-  "profile": {
+  "profiles": {
     "plaintext": {
       "variables": {
         "path": "/plaintext"
@@ -73,6 +81,7 @@
     }
   }
 }
+
 /*
 
 dotnet run -- 
@@ -80,27 +89,25 @@ dotnet run --
   --services.load.endpoints http://asp-perf-load:5001 
   --services.load.endpoints http://asp-perf-db:5001 
 
-  // if a property is an array, calling it will push
-  // to clear it, assign [], then call it again to add a single item
-
   --services.load.source.branch sebros/foo
 
-  --jobs benchmarks.compose.json
-  --jobs benchmarks.databases.json
+  --config benchmarks.compose.json
+  --config benchmarks.databases.json
 
   --profile plaintext
 
-  --variables.warmup 0
-  --variables.server-ip 10.10.10.5
-  --dependencies.insert(0) postgres // inserts a new dependency
+  --services.load.variables.warmup 0
+  --services.load.variables.serverIp 10.10.10.5
 
-  --scenario PlaintextWithNoWarmup
+  --dependencies postgres:0 // insert postgres at position 0 of dependencies
 
   // Some features can be applied on any service
 
   --services.application.features dotnet-trace
   --services.load.features dotnet-trace:gc-verbose
 
-  --services.application.sdk-version 3.0.100
+  --services.application.sdk 5.0.100-alpha1-015721
+  --services.load.span 1:00:00
+
 
 */
