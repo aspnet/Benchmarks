@@ -32,7 +32,6 @@ namespace BombardierClient
         {
             Console.WriteLine("Bombardier Client");
             Console.WriteLine("args: " + String.Join(' ', args));
-            Console.WriteLine("SERVER_URL:" + Environment.GetEnvironmentVariable("SERVER_URL"));
 
             var bombardierUrl = _bombardierUrls[Environment.OSVersion.Platform];
             var bombardierFileName = Path.GetFileName(bombardierUrl);
@@ -47,7 +46,7 @@ namespace BombardierClient
                 }
             }
 
-            var process = Process.Start(bombardierFileName, "-c 256 -d 5s " + Environment.GetEnvironmentVariable("SERVER_URL"));
+            var process = Process.Start(bombardierFileName, String.Join(' ', args));
             
             process.WaitForExit();
         }

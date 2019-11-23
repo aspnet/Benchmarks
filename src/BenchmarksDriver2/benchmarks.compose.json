@@ -17,8 +17,13 @@
       },
       "readyStateText": "Application started.", // The text in the console that informs the server it has started
       "variables": {
-        "connection-header": "--header Connection:keep-alive"
-      }
+        "connection-header": "--header Connection:keep-alive",
+        "protocol": "http",
+        "server": "Kestrel",
+        "transport": "Sockets",
+        "scenario": "plaintext"
+      },
+      "arguments": "--nonInteractive true --server-urls {{protocol}}://[*]{{path}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     },
     "load": {
       "source": {
@@ -33,7 +38,6 @@
       "runtimeversion": "3.0",
       "noArguments": true,
       "waitForExit": true, // Blocking
-      "timeout": 60,
       // "span": "1:00:00", // Keeps repeating the jobs for this duration
       "variables": {
         "serverUri": null,
@@ -41,9 +45,36 @@
         "connections": 256,
         "warmup": 5,
         "duration": 5,
-        "pipeline": 16
+        "pipeline": 16,
+        "preset-headers": "none"
       },
-      "arguments": "--url={{serverUri}}{{path}} --connections={{connections}} --warmup={{warmup}} --duration={{duration}} --pipeline={{pipeline}} {{header-sets[preset-headers]}}"
+      "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}"
+    },
+    "bombardier": {
+      "source": {
+        "repository": "https://github.com/aspnet/benchmarks.git",
+        "branchOrCommit": "master",
+        "project": "src/BombardierClient/BombardierClient.csproj"
+      },
+      "options": {
+        "displayOutput": true
+      },
+      "readyStateText": "Bombardier Client",
+      "sdkVersion": "3.0.100",
+      "aspnetcoreversion": "3.0",
+      "runtimeversion": "3.0",
+      "noArguments": true,
+      "waitForExit": true, // Blocking
+      // "span": "1:00:00", // Keeps repeating the jobs for this duration
+      "variables": {
+        "serverUri": null,
+        "path": null,
+        "connections": 256,
+        "warmup": 5,
+        "duration": 5,
+        "pipeline": 16,
+      },
+      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
     },
     "database": {
       "source": {
@@ -64,18 +95,21 @@
     "plaintextNonPipelined": {
       "variables": {
         "path": "/plaintext",
+        "scenario": "plaintext",
         "pipeline": 1
       }
     },
     "mvcPlaintext": {
       "variables": {
         "path": "/mvc/plaintext",
+        "scenario": "mvcPlaintext",
         "pipeline": 1
       }
     },
     "connectionClose": {
       "variables": {
         "path": "/plaintext",
+        "scenario": "plaintext",
         "preset-headers": "connection-close"
       }
     }

@@ -183,11 +183,12 @@ namespace Benchmarks.ServerJob
 
         public int Timeout { get; set; } = 0;
 
-        public Features Features { get; set; } = new Features();
+        public Options Options { get; set; } = new Options();
+        public List<string> Features { get; set; } = new List<string>();
 
     }
 
-    public class Features
+    public class Options
     {
         public bool DisplayOutput { get; set; }
     }

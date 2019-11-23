@@ -104,6 +104,8 @@ namespace PipeliningClient
                    {
                        await Task.Delay(TimeSpan.FromSeconds(WarmupTimeSeconds + ExecutionTimeSeconds));
 
+                       Console.WriteLine($"Stopping...");
+
                        Interlocked.Exchange(ref _running, 0);
 
                        stopTime = DateTime.UtcNow;
@@ -119,6 +121,8 @@ namespace PipeliningClient
             Interlocked.Exchange(ref _running, 1);
 
             await Task.WhenAll(CreateTasks());
+
+            Console.WriteLine($"Stopped...");
 
             var totalTps = (int)(_counter / (stopTime - startTime).TotalSeconds);
 

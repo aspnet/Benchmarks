@@ -1387,8 +1387,11 @@ namespace BenchmarksDriver
 
                         WriteMeasures(job);
 
-                        if (job.ServerJob.Features.DisplayOutput)
+                        if (job.ServerJob.Options.DisplayOutput)
                         {
+                            Log.Quiet("");
+                            Log.Quiet("Output:");
+                            Log.Quiet("");
                             Log.DisplayOutput(job.ServerJob.Output);
                         }
                     }
@@ -2441,6 +2444,13 @@ namespace BenchmarksDriver
 
             // TODO: Post process the services to re-order them based on weight
             // result.Dependencies = result.Dependencies.OrderBy(x => x, x.Contains(":") ? int.Parse(x.Split(':', 2)[1]) : 100);
+
+            // Override default values in ServerJob
+            foreach (var dependency in result.Dependencies)
+            {
+                var service = result.Services[dependency];
+                service.NoArguments = true;
+            }
 
             return result;
         }
