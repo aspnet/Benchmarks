@@ -70,12 +70,20 @@ namespace JobConsumer
 
                 while (true)
                 {
-                    // Get oldest file
-                    var nextFile = jobsDirectory
-                        .GetFiles()
-                        .OrderByDescending(f => f.LastWriteTime)
-                        .FirstOrDefault();
+                    FileInfo nextFile = null;
 
+                    // Get oldest file
+                    try
+                    {
+                        nextFile = jobsDirectory
+                            .GetFiles()
+                            .OrderByDescending(f => f.LastWriteTime)
+                            .FirstOrDefault();
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Could not enumerate files from jobs directory. Will try again in 1 second. {ex}");
+                    }
 
                     // If no file was found, wait some time
                     if (nextFile is null)
@@ -99,16 +107,7 @@ namespace JobConsumer
                     var processingFilePath = Path.Combine(ProcessingPath, nextFile.Name);
                     var processingFile = new FileInfo(processingFilePath);
 
-                    // If we can't move the file to the processing folder, we continue, which might retry the same file
-                    try
-                    {
-                        nextFile.MoveTo(processingFilePath);
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"The file named '{nextFile.FullName}' couldn't be moved to '{processingFilePath}'. Skipping...");
-                        continue;
-                    }
+                    nextFile.MoveTo(processingFilePath);
 
                     var benchmarkResult = await BenchmarkPR(processingFile, session);
                     await PublishResult(processingFile, benchmarkResult);
