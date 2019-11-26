@@ -504,7 +504,9 @@ namespace BenchmarksDriver
                     _tableName = sqlTableOption.Value();
                 }
 
-                var configuration = LoadConfiguration(_configOption.Values, Arguments);
+                var profileName = _profileOption.Value();
+
+                var configuration = LoadConfiguration(_configOption.Values, profileName, Arguments);
 
                 //// Load the server job from the definition path and the scenario name
                 //var serverJob = BuildServerJob(serverJobDefinitionPathOrUrl, serverScenarioOption.Value() ?? "Default", _serverProjectOption);
@@ -1283,9 +1285,6 @@ namespace BenchmarksDriver
 
             Log.Write($"Running session '{session}' with description '{description}'");
 
-            var profileName = _profileOption.Value();
-            var profileVariables = configuration.Profiles[profileName]?.Variables ?? new JObject();
-
             for (var i = 1; i <= iterations; i++)
             {
                 if (iterations > 1)
@@ -1304,7 +1303,7 @@ namespace BenchmarksDriver
 
                     jobsByDependency.Add(dependency, jobs);
 
-                    var variables = MergeVariables(configuration.Variables, service.Variables, profileVariables);
+                    var variables = MergeVariables(configuration.Variables, service.Variables);
 
                     // Format arguments
 
@@ -2367,7 +2366,7 @@ namespace BenchmarksDriver
             return result;
         }
 
-        public static Configuration LoadConfiguration(IEnumerable<string> configurationFileOrUrls, IEnumerable<KeyValuePair<string, string>> arguments)
+        public static Configuration LoadConfiguration(IEnumerable<string> configurationFileOrUrls, string profile, IEnumerable<KeyValuePair<string, string>> arguments)
         {
             JObject configuration = null;
 
@@ -2415,8 +2414,21 @@ namespace BenchmarksDriver
                 }
             }
 
+            var configurationInstance = configuration.ToObject<Configuration>();
+
             // Roundtrip the JObject such that it contains all the exta properties of the Configuration class that are not in the configuration file
-            configuration = JObject.FromObject(configuration.ToObject<Configuration>());
+            configuration = JObject.FromObject(configurationInstance);
+
+            // Apply profile properties if a profile name is provided
+            if (!String.IsNullOrWhiteSpace(profile))
+            {
+                if (!configurationInstance.Profiles.ContainsKey(profile))
+                {
+                    throw new Exception($"The profile `{profile}` was not found");
+                }
+
+                PatchObject(configuration, JObject.FromObject(configurationInstance.Profiles[profile]));
+            }
 
             // Apply custom arguments
             foreach (var argument in Arguments)
@@ -2453,6 +2465,36 @@ namespace BenchmarksDriver
             }
 
             return result;
+        }
+
+        public static void PatchObject(JObject source, JObject patch)
+        {
+            foreach(var patchProperty in patch)
+            {
+                var sourceProperty = source.Properties().Where(x => x.Name.Equals(patchProperty.Key, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+                // The property to patch exists
+                if (sourceProperty != null)
+                {
+                    // if it's an object, patch it recursively
+                    if (sourceProperty.Value.Type == JTokenType.Object)
+                    {
+                        PatchObject((JObject)sourceProperty.Value, (JObject)patchProperty.Value);
+                    }
+                    else if (sourceProperty.Value.Type == JTokenType.Array)
+                    {
+                        ((JArray)sourceProperty.Value).Add(patchProperty.Value.DeepClone());
+                    }
+                    else
+                    {
+                        sourceProperty.Value = patchProperty.Value;
+                    }
+                }
+                else
+                {
+                    source.Add(patchProperty.Key, patchProperty.Value.DeepClone());
+                }
+            }
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Benchmarks.ServerJob;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace BenchmarksDriver
@@ -13,6 +12,6 @@ namespace BenchmarksDriver
 
         public Dictionary<string, ServerJob> Services { get; set; } = new Dictionary<string, ServerJob>();
 
-        public Dictionary<string, ServerJob> Profiles { get; set; } = new Dictionary<string, ServerJob>();
+        public Dictionary<string, JObject> Profiles { get; set; } = new Dictionary<string, JObject>();
     }
 }

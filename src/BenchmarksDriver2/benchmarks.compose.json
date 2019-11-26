@@ -5,7 +5,9 @@
       "plaintext": "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive",
       "connection-close": "--header Connection:close"
     },
-    "preset-headers": "plaintext"
+    "preset-headers": "plaintext",
+    "serverUri": null,
+    "path": null
   },
   "dependencies": [ "application", "load" ],
   "services": {
@@ -23,7 +25,8 @@
         "transport": "Sockets",
         "scenario": "plaintext"
       },
-      "arguments": "--nonInteractive true --server-urls {{protocol}}://[*]{{path}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
+      "scenario": "Benchmarks",
+      "arguments": "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:5000 --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     },
     "load": {
       "source": {
@@ -38,10 +41,9 @@
       "runtimeversion": "3.0",
       "noArguments": true,
       "waitForExit": true, // Blocking
+      "scenario": "PipelineClient",
       // "span": "1:00:00", // Keeps repeating the jobs for this duration
       "variables": {
-        "serverUri": null,
-        "path": null,
         "connections": 256,
         "warmup": 5,
         "duration": 5,
@@ -65,14 +67,13 @@
       "runtimeversion": "3.0",
       "noArguments": true,
       "waitForExit": true, // Blocking
+      "scenario": "Bombardier",
       // "span": "1:00:00", // Keeps repeating the jobs for this duration
       "variables": {
-        "serverUri": null,
-        "path": null,
         "connections": 256,
         "warmup": 5,
         "duration": 5,
-        "pipeline": 16,
+        "pipeline": 16
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
     },
@@ -83,34 +84,48 @@
         "dockerfile": "toolset/databases/postgres/postgres.dockerfile",
         "dockerImageName": "postgres",
         "dockerContextDirectory": "toolset/databases/postgres/"
-      }
+      },
+      "scenario": "PostgresQL"
     }
   },
   "profiles": {
     "plaintext": {
       "variables": {
-        "path": "/plaintext"
+        "path": "/plaintext",
+        "scenario": "Plaintext"
       }
     },
     "plaintextNonPipelined": {
       "variables": {
         "path": "/plaintext",
         "scenario": "plaintext",
-        "pipeline": 1
+      },
+      "services": {
+        "load": {
+          "variables": {
+            "pipeline": 1
+          }
+        }
       }
     },
     "mvcPlaintext": {
       "variables": {
         "path": "/mvc/plaintext",
-        "scenario": "mvcPlaintext",
-        "pipeline": 1
+        "scenario": "mvcplaintext"
       }
     },
     "connectionClose": {
       "variables": {
         "path": "/plaintext",
         "scenario": "plaintext",
-        "preset-headers": "connection-close"
+        "preset-headers": "connection-close",
+      },
+      "services": {
+        "load": {
+          "variables": {
+            "pipeline": 1
+          }
+        }
       }
     }
   }

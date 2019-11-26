@@ -2900,6 +2900,18 @@ namespace BenchmarkServer
                         // We only track event counters for System.Runtime
                         if (eventData.ProviderName == "Benchmarks")
                         {
+                            // TODO: Catch all event counters automatically
+                            // And configure the filterData in the provider
+                            //if (!eventData.EventName.Equals("EventCounters"))
+                            //{
+                            //job.Measurements.Add(new Measurement
+                            //{
+                            //    Timestamp = eventData.TimeStamp,
+                            //    Name = eventData.PayloadByName("name").ToString(),
+                            //    Value = eventData.PayloadByName("value")
+                            //});
+                            //}
+
                             if (eventData.EventName == "Measure")
                             {
                                 job.Measurements.Add(new Measurement
