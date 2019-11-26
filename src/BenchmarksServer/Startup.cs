@@ -97,7 +97,7 @@ namespace BenchmarkServer
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
         public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(1);
-        public static TimeSpan BuildTimeout = TimeSpan.FromMinutes(30);
+        public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
 
         private static string _startPerfviewArguments;
 

@@ -28,7 +28,8 @@ namespace BenchmarksDriver
         private static bool _verbose;
         private static bool _quiet;
         private static bool _displayOutput;
-        private static TimeSpan _timeout = TimeSpan.FromMinutes(5);
+        private static TimeSpan _jobTimeout = TimeSpan.FromMinutes(5);
+        private static TimeSpan _buildTimeout = TimeSpan.FromMinutes(30);
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
@@ -295,6 +296,8 @@ namespace BenchmarksDriver
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
+            var buildTimeoutOption = app.Option("--build-timeout",
+                "Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.", CommandOptionType.SingleValue);
             var frameworkOption = app.Option("--framework",
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
             var sdkOption = app.Option("--sdk",
@@ -350,7 +353,12 @@ namespace BenchmarksDriver
 
                 if (serverTimeoutOption.HasValue())
                 {
-                    TimeSpan.TryParse(serverTimeoutOption.Value(), out _timeout);
+                    TimeSpan.TryParse(serverTimeoutOption.Value(), out _jobTimeout);
+                }
+
+                if (buildTimeoutOption.HasValue())
+                {
+                    TimeSpan.TryParse(buildTimeoutOption.Value(), out _buildTimeout);
                 }
 
                 var schemeValue = schemeOption.Value();
@@ -1487,6 +1495,8 @@ namespace BenchmarksDriver
                         }
                     }
 
+                    var buildStarted = DateTime.UtcNow;
+
                     var serverBenchmarkUri = (string)null;
                     while (true)
                     {
@@ -1567,9 +1577,14 @@ namespace BenchmarksDriver
                         {
                             await Task.Delay(1000);
                         }
+
+                        if (DateTime.UtcNow - buildStarted > _buildTimeout)
+                        {
+                            throw new InvalidOperationException("Build is taking too long. Halting.");
+                        }
                     }
 
-                    System.Threading.Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.
+                    Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.
 
                     TimeSpan latencyNoLoad = TimeSpan.Zero, latencyFirstRequest = TimeSpan.Zero;
 
@@ -1636,7 +1651,7 @@ namespace BenchmarksDriver
                             // Wait until the server has stopped
                             var now = DateTime.UtcNow;
 
-                            while (serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < _timeout))
+                            while (serverJob.State != ServerState.Stopped && (DateTime.UtcNow - now < _jobTimeout))
                             {
                                 // Load latest state of server job
                                 LogVerbose($"GET {serverJobUri}...");
@@ -1663,7 +1678,7 @@ namespace BenchmarksDriver
                             else
                             {
                                 Console.ForegroundColor = ConsoleColor.White;
-                                Log($"Server job running for more than {_timeout}, stopping...");
+                                Log($"Server job running for more than {_jobTimeout}, stopping...");
                                 Console.ResetColor();
                                 serverJob.State = ServerState.Failed;
                             }

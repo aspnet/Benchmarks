@@ -85,7 +85,8 @@ Options:
   --display-build        Displays the standard output from the build step.
   --benchmarkdotnet      Runs a BenchmarkDotNet application. e.g., --benchmarkdotnet Benchmarks.LabPerf.Md5VsSha256
   --console              Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.
-  --server-timeout       Timeout for server jobs. e.g., 00:05:00
+  --server-timeout       Timeout for server job. e.g., 00:05:00. Defaults to 00:05:00.
+  --build-timeout        Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
   --sdk                  SDK version to use
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
