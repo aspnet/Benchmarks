@@ -98,7 +98,7 @@
     "plaintextNonPipelined": {
       "variables": {
         "path": "/plaintext",
-        "scenario": "plaintext",
+        "scenario": "plaintext"
       },
       "services": {
         "load": {
@@ -118,7 +118,7 @@
       "variables": {
         "path": "/plaintext",
         "scenario": "plaintext",
-        "preset-headers": "connection-close",
+        "preset-headers": "connection-close"
       },
       "services": {
         "load": {
@@ -138,7 +138,17 @@ dotnet run --
   --services.load.endpoints http://asp-perf-load:5001 
   --services.load.endpoints http://asp-perf-db:5001 
 
-  --services.load.source.branch sebros/foo
+  --services.application.source.branchOrCommit issue/1234
+  --services.application.source.branchOrCommit #e9b0d8
+  --services.application.source.repository https://github.com/aspnet/aspnetcore
+  --services.application.source.project src/Benchmarks/Benchmarks.csproj
+  --services.application.source.initSubmodules true|(false)
+
+  --services.application.source.dockerFile frameworks/Rust/actix/actix-raw.dockerfile
+  --services.application.source.dockerImageName actix_raw
+  --services.application.source.dockerContextDirectory frameworks/Rust/actix/
+  --services.application.source.dockerFetchPath ./output    The path in the Docker container that contains the base path for the --fetch argument.
+    
 
   --config benchmarks.compose.json
   --config benchmarks.databases.json

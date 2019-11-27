@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Ignore;
 using McMaster.Extensions.CommandLineUtils;
@@ -13,7 +14,7 @@ using Newtonsoft.Json;
 
 namespace BenchmarksDriver
 {
-    public class Job
+    public class JobConnection
     {
         static readonly HttpClient _httpClient;
         static readonly HttpClientHandler _httpClientHandler;
@@ -30,7 +31,7 @@ namespace BenchmarksDriver
         private string _serverJobUri;
         private bool _keepAlive;
 
-        static Job()
+        static JobConnection()
         {
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -39,16 +40,16 @@ namespace BenchmarksDriver
             _httpClient = new HttpClient(_httpClientHandler);
         }
 
-        public Job(ServerJob definition, Uri serverUri)
+        public JobConnection(ServerJob definition, Uri serverUri)
         {
-            ServerJob = definition;
+            Job = definition;
             _serverUri = serverUri;
             _serverJobsUri = new Uri(_serverUri, "/jobs");
         }
 
-        public ServerJob ServerJob { get; private set; }
+        public ServerJob Job { get; private set; }
 
-        public ServerState State => ServerJob.State;
+        public ServerState State => Job.State;
 
         public async Task<string> StartAsync(
             string requiredOperatingSystem,
@@ -58,9 +59,9 @@ namespace BenchmarksDriver
             CommandOption _buildFileOption
             )
         {
-            var content = JsonConvert.SerializeObject(ServerJob);
+            var content = JsonConvert.SerializeObject(Job);
 
-            Log.Write($"Starting scenario {ServerJob.Scenario} on benchmark server...");
+            Log.Write($"Starting scenario {Job.Scenario} on benchmark server...");
 
             Log.Verbose($"POST {_serverJobsUri} {content}...");
 
@@ -84,31 +85,31 @@ namespace BenchmarksDriver
 
                 response.EnsureSuccessStatusCode();
 
-                ServerJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+                Job = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                 #region Ensure the job is valid
 
-                if (ServerJob.ServerVersion < 2)
+                if (Job.ServerVersion < 2)
                 {
-                    throw new Exception($"Invalid server version ({ServerJob.ServerVersion}), please update your server to match this driver version.");
+                    throw new Exception($"Invalid server version ({Job.ServerVersion}), please update your server to match this driver version.");
                 }
 
-                if (!ServerJob.Hardware.HasValue)
+                if (!Job.Hardware.HasValue)
                 {
                     throw new InvalidOperationException("Server is required to set ServerJob.Hardware.");
                 }
 
-                if (String.IsNullOrWhiteSpace(ServerJob.HardwareVersion))
+                if (String.IsNullOrWhiteSpace(Job.HardwareVersion))
                 {
                     throw new InvalidOperationException("Server is required to set ServerJob.HardwareVersion.");
                 }
 
-                if (!ServerJob.OperatingSystem.HasValue)
+                if (!Job.OperatingSystem.HasValue)
                 {
                     throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
                 }
 
-                if (requiredOperatingSystem != null && requiredOperatingSystem != ServerJob.OperatingSystem.ToString())
+                if (requiredOperatingSystem != null && requiredOperatingSystem != Job.OperatingSystem.ToString())
                 {
                     Log.Write($"Job ignored on this OS, stopping job ...");
 
@@ -120,12 +121,12 @@ namespace BenchmarksDriver
 
                 #endregion
 
-                if (ServerJob?.State == ServerState.Initializing)
+                if (Job?.State == ServerState.Initializing)
                 {
                     Log.Write($"Job has been selected by the server ...");
 
                     // Uploading source code
-                    if (!String.IsNullOrEmpty(ServerJob.Source.LocalFolder))
+                    if (!String.IsNullOrEmpty(Job.Source.LocalFolder))
                     {
                         // Zipping the folder
                         var tempFilename = Path.GetTempFileName();
@@ -133,7 +134,7 @@ namespace BenchmarksDriver
 
                         Log.Write("Zipping the source folder in " + tempFilename);
 
-                        var sourceDir = ServerJob.Source.LocalFolder;
+                        var sourceDir = Job.Source.LocalFolder;
 
                         if (!File.Exists(Path.Combine(sourceDir, ".gitignore")))
                         {
@@ -145,7 +146,7 @@ namespace BenchmarksDriver
                             DoCreateFromDirectory(sourceDir, tempFilename);
                         }
 
-                        var result = await UploadFileAsync(tempFilename, ServerJob, _serverJobUri + "/source");
+                        var result = await UploadFileAsync(tempFilename, Job, _serverJobUri + "/source");
 
                         File.Delete(tempFilename);
 
@@ -249,7 +250,7 @@ namespace BenchmarksDriver
                                     resolvedFileWithDestination += ";" + buildFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(buildFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
                                 }
 
-                                var result = await UploadFileAsync(resolvedFileWithDestination, ServerJob, _serverJobUri + "/build");
+                                var result = await UploadFileAsync(resolvedFileWithDestination, Job, _serverJobUri + "/build");
 
                                 if (result != 0)
                                 {
@@ -275,7 +276,7 @@ namespace BenchmarksDriver
                                     resolvedFileWithDestination += ";" + outputFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(outputFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
                                 }
 
-                                var result = await UploadFileAsync(resolvedFileWithDestination, ServerJob, _serverJobUri + "/attachment");
+                                var result = await UploadFileAsync(resolvedFileWithDestination, Job, _serverJobUri + "/attachment");
 
                                 if (result != 0)
                                 {
@@ -290,7 +291,7 @@ namespace BenchmarksDriver
                     Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
                     response.EnsureSuccessStatusCode();
 
-                    ServerJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+                    Job = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
                     Log.Write($"Job is now building ...");
 
@@ -310,7 +311,7 @@ namespace BenchmarksDriver
 
             while (true)
             {
-                var previousJob = ServerJob;
+                var previousJob = Job;
 
                 Log.Verbose($"GET {_serverJobUri}...");
                 response = await _httpClient.GetAsync(_serverJobUri);
@@ -323,40 +324,40 @@ namespace BenchmarksDriver
                     throw new Exception("Job not found");
                 }
 
-                ServerJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+                Job = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
-                if (ServerJob.State == ServerState.Running)
+                if (Job.State == ServerState.Running)
                 {
                     if (previousJob.State != ServerState.Running)
                     {
                         Log.Write($"Job is running");
                     }
 
-                    return ServerJob.Url;
+                    return Job.Url;
                 }
-                else if (ServerJob.State == ServerState.Failed)
+                else if (Job.State == ServerState.Failed)
                 {
                     Log.Write($"Job failed on benchmark server, stopping...");
 
-                    Log.Write(ServerJob.Error, notime: true, error: true);
+                    Log.Write(Job.Error, notime: true, error: true);
 
                     // Returning will also send a Delete message to the server
                     return null;
                 }
-                else if (ServerJob.State == ServerState.NotSupported)
+                else if (Job.State == ServerState.NotSupported)
                 {
                     Log.Write("Server does not support this job configuration.");
                     return null;
                 }
-                else if (ServerJob.State == ServerState.Stopped)
+                else if (Job.State == ServerState.Stopped)
                 {
                     Log.Write($"Job finished");
 
                     // If there is no ReadyStateText defined, the server will never be in Running state
                     // and we'll reach the Stopped state eventually, but that's a normal behavior.
-                    if (ServerJob.IsConsoleApp)
+                    if (Job.IsConsoleApp)
                     {
-                        return ServerJob.Url;
+                        return Job.Url;
                     }
 
                     throw new Exception("Job finished unnexpectedly");
@@ -368,11 +369,15 @@ namespace BenchmarksDriver
             }
         }
 
+        /// <summary>
+        /// Stops the job on the server and the keep alive.
+        /// </summary>
+        /// <returns></returns>
         public async Task StopAsync()
         {
             StopKeepAlive();
 
-            Log.Write($"Stopping scenario '{ServerJob.Scenario}' on benchmark server...");
+            Log.Write($"Stopping scenario '{Job.Scenario}' on benchmark server...");
 
             var response = await _httpClient.PostAsync(_serverJobUri + "/stop", new StringContent(""));
             Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -393,13 +398,13 @@ namespace BenchmarksDriver
                     break;
                 }
 
-            } while (ServerJob.State != ServerState.Stopped);
+            } while (Job.State != ServerState.Stopped);
 
         }
 
         public async Task DeleteAsync()
         {
-            Log.Write($"Deleting scenario '{ServerJob.Scenario}' on benchmark server...");
+            Log.Write($"Deleting scenario '{Job.Scenario}' on benchmark server...");
 
             Log.Verbose($"DELETE {_serverJobUri}...");
             var response = await _httpClient.DeleteAsync(_serverJobUri);
@@ -434,7 +439,7 @@ namespace BenchmarksDriver
             {
                 try
                 {
-                    ServerJob = JsonConvert.DeserializeObject<ServerJob>(responseContent);
+                    Job = JsonConvert.DeserializeObject<ServerJob>(responseContent);
                 }
                 catch
                 {
@@ -446,6 +451,9 @@ namespace BenchmarksDriver
             }
         }
 
+        /// <summary>
+        /// Starts a thread that keeps the job alive on the server.
+        /// </summary>
         public void StartKeepAlive()
         {
             if (_keepAlive)
@@ -586,6 +594,26 @@ namespace BenchmarksDriver
             }
         }
 
+        public async Task FetchAsync(string fetchDestination)
+        {
+            var uri = _serverJobsUri + "/fetch";
+            Log.Write($"Creating published archive: {fetchDestination}");
+            await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
+        }
 
+        public async Task DownloadFileAsync(string file)
+        {
+            var uri = _serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);
+            Log.Verbose("GET " + uri);
+
+            var filename = file;
+            var counter = 1;
+            while (File.Exists(filename))
+            {
+                filename = Path.GetFileNameWithoutExtension(file) + counter++ + Path.GetExtension(file);
+            }
+
+            await _httpClient.DownloadFileAsync(uri, _serverJobUri, filename);
+        }
     }
 }

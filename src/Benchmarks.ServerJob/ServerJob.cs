@@ -191,5 +191,8 @@ namespace Benchmarks.ServerJob
     public class Options
     {
         public bool DisplayOutput { get; set; }
+        public bool Fetch { get; set; }
+        public string FetchOutput { get; set; }
+        public string[] DownloadFiles { get; set; }
     }
 }

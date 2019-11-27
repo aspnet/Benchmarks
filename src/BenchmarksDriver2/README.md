@@ -6,7 +6,34 @@
 Usage: BenchmarksDriver [options]
 
 Options:
-  -?|-h|--help           Show help information
+  -?|-h|--help                                          Show help information
+
+  These options are not specific to a Job definition
+
+  --config                                              Configuration file or url
+  --profile                                             Profile to execute
+
+  These options are specific to a Job definition named [SERVICE]
+
+  --services.[SERVICE].endpoints                                                        An endpoint on which to deploy the job definition, e.g., http://asp-perf-lin:5001. Can be used multiple times.
+
+  --services.[SERVICE].source.repository                                                The git repository containing the source code to build, e.g., https://github.com/aspnet/aspnetcore
+  --services.[SERVICE].source.branchOrCommit                                            A branch name of commit hash, e.g., my/branch, issue/1234
+  --services.[SERVICE].source.initSubmodules                                            Weither to init submodules when a git repository is used, e.g., true
+  --services.[SERVICE].source.localFolder                                               The local path containing the source code to upload to the server. e.g., /code/mybenchmarks
+  --services.[SERVICE].source.project                                                   The project file to build, relative to the source code base path, e.g., src/Benchmarks/Benchmarks.csproj
+
+  --services.[SERVICE].source.dockerFile                                                The local path to the Docker file, e.g., frameworks/Rust/actix/actix-raw.dockerfile
+  --services.[SERVICE].source.dockerImageName                                           The name of the docker image to create, e.g., actix_raw
+  --services.[SERVICE].source.dockerContextDirectory                                    The folder in which the Docker file is built relative to, e.g., frameworks/Rust/actix/
+  --services.[SERVICE].source.dockerFetchPath                                           The path in the Docker container that contains the base path for the --fetch option, e.g., ./output
+
+  --services.[SERVICE].options.fetch                                                    Weither the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
+  --services.[SERVICE].options.fetchOutput                                              The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
+  --services.[SERVICE].options.displayOutput                                            Weither to download and display the standard output of the benchmark.
+
+
+
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server
   -q|--sql               Connection string of SQL Database to store results
