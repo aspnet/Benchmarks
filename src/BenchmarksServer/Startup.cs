@@ -1836,9 +1836,9 @@ namespace BenchmarkServer
                     Log.WriteLine($"[ERROR] An SDK version should have been set.");
                 }
 
-                // No global.json found
                 if (!File.Exists(globalJsonFilename))
                 {
+                    // No global.json found
                     Log.WriteLine($"Creating custom global.json with content");
 
                     var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
@@ -1846,13 +1846,12 @@ namespace BenchmarkServer
                 }
                 else
                 {
+                    // File found, we need to update it
                     Log.WriteLine($"Patching existing global.json file");
 
-                    // File found, we need to update it
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
-                    ((JProperty)globalObject["sdk"]["version"]).Value = new JValue(sdkVersion);
-                    var globalJson = globalObject.ToString();
-                    File.WriteAllText(globalJsonFilename, globalJson);
+                    globalObject["sdk"]["version"] = new JValue(sdkVersion);
+                    File.WriteAllText(globalJsonFilename, globalObject.ToString());
                 }
             }
 
