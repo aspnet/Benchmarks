@@ -1839,17 +1839,19 @@ namespace BenchmarkServer
                 // No global.json found
                 if (!File.Exists(globalJsonFilename))
                 {
+                    Log.WriteLine($"Creating custom global.json with content");
+
                     var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
-                    Log.WriteLine($"Writing global.json with content: {globalJson}");
                     File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
                 }
                 else
                 {
+                    Log.WriteLine($"Patching existing global.json file");
+
                     // File found, we need to update it
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
                     ((JProperty)globalObject["sdk"]["version"]).Value = new JValue(sdkVersion);
                     var globalJson = globalObject.ToString();
-                    Log.WriteLine($"Updating '{globalJsonFilename}' with content: {globalJson}");
                     File.WriteAllText(globalJsonFilename, globalJson);
                 }
             }
