@@ -32,9 +32,12 @@ Options:
   --services.[SERVICE].options.fetchOutput                                              The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
   --services.[SERVICE].options.displayOutput                                            Whether to download and display the standard output of the benchmark.
 
+  ## Diagnostics
+
   --services.[SERVICE].dotnetTrace <true|false>                                         Whether to collect a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. e.g., true
   --services.[SERVICE].dotnetTraceProviders <profile|flags>                             An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g., Microsoft-DotNETCore-SampleProfiler, Microsoft-Windows-DotNETRuntime, gc-verbose.  Can be used multiple times to set multiple providers.
   --services.[SERVICE].options.traceOutput <filename>                                   The name of the trace file. Can be a file prefix (app will add *.DATE*.zip) , or a specific name and no DATE* will be added e.g., c:\traces\mytrace
+  --services.[SERVICE].collectCounters <true|false>                                     Whether to collect dotnet counters.
   
 
   -c|--client            URL of benchmark client

@@ -48,8 +48,6 @@ namespace BenchmarksDriver
             _branchOption,
             _hashOption,
             _noGlobalJsonOption,
-            _serverCollectCountersOption,
-            _clientCollectCountersOption,
             _noStartupLatencyOption,
             _displayBuildOption,
             _displayClientOutputOption,
@@ -292,10 +290,6 @@ namespace BenchmarksDriver
                 "Includes the startup phase in the server trace.", CommandOptionType.NoValue);
             _clientCollectStartupOption = app.Option("--client-trace-startup",
                 "Includes the startup phase in the client trace.", CommandOptionType.NoValue);
-            _serverCollectCountersOption = app.Option("--server-collect-counters",
-                "Collect event counters on the server.", CommandOptionType.NoValue);
-            _clientCollectCountersOption = app.Option("--client-collect-counters",
-                "Collect event counters on the client.", CommandOptionType.NoValue);
             _enableEventPipeOption = app.Option("--enable-eventpipe",
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
