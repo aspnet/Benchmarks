@@ -38,7 +38,7 @@ Options:
   --services.[SERVICE].dotnetTraceProviders <profile|flags>                             An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g., Microsoft-DotNETCore-SampleProfiler, Microsoft-Windows-DotNETRuntime, gc-verbose.  Can be used multiple times to set multiple providers.
   --services.[SERVICE].options.traceOutput <filename>                                   The name of the trace file. Can be a file prefix (app will add *.DATE*.zip) , or a specific name and no DATE* will be added e.g., c:\traces\mytrace
   --services.[SERVICE].collectCounters <true|false>                                     Whether to collect dotnet counters.
-  
+  --services.[SERVICE].collectStartup <true|false>                                      Whether to includes the startup phase in the traces, i.e after the application is launched and before it is marked as ready. For a web application it means before it is ready to accept requests.
 
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server

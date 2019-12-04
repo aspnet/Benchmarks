@@ -52,8 +52,6 @@ namespace BenchmarksDriver
             _displayBuildOption,
             _displayClientOutputOption,
             _displayServerOutputOption,
-            _serverCollectStartupOption,
-            _clientCollectStartupOption,
             _serverSdkOption,
             _clientSdkOption,
             _serverRuntimeVersionOption,
@@ -286,10 +284,6 @@ namespace BenchmarksDriver
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
                 CommandOptionType.MultipleValue);
-            _serverCollectStartupOption = app.Option("--server-trace-startup",
-                "Includes the startup phase in the server trace.", CommandOptionType.NoValue);
-            _clientCollectStartupOption = app.Option("--client-trace-startup",
-                "Includes the startup phase in the client trace.", CommandOptionType.NoValue);
             _enableEventPipeOption = app.Option("--enable-eventpipe",
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
