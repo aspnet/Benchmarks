@@ -3,22 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
-using BenchmarksDriver.Serializers;
 using Fluid;
 using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace BenchmarksDriver
@@ -292,8 +288,6 @@ namespace BenchmarksDriver
                 "WRK script path. File path can be a URL. e.g., " +
                 "\"--script c:\\scripts\\post.lua\"",
                 CommandOptionType.MultipleValue);
-            var collectTraceOption = app.Option("--collect-trace",
-                "Collect a PerfView trace.", CommandOptionType.NoValue);
             _serverCollectStartupOption = app.Option("--server-trace-startup",
                 "Includes the startup phase in the server trace.", CommandOptionType.NoValue);
             _clientCollectStartupOption = app.Option("--client-trace-startup",
@@ -306,11 +300,6 @@ namespace BenchmarksDriver
                 "Enables EventPipe perf collection.", CommandOptionType.NoValue);
             _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
                 $"EventPipe configuration. Defaults to \"{EventPipeConfig}\"", CommandOptionType.SingleValue);
-            var traceArgumentsOption = app.Option("--trace-arguments",
-                $"Arguments used when collecting a PerfView trace. Defaults to \"{_defaultTraceArguments}\".",
-                CommandOptionType.SingleValue);
-            var traceOutputOption = app.Option("--trace-output",
-                @"Can be a file prefix (app will add *.DATE.RPS*.etl.zip) , or a specific name (end in *.etl.zip) and no DATE.RPS* will be added e.g. --trace-output c:\traces\myTrace", CommandOptionType.SingleValue);
             var disableR2ROption = app.Option("--no-crossgen",
                 "Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.", CommandOptionType.NoValue);
             var tieredCompilationOption = app.Option("--tiered-compilation",
@@ -475,7 +464,6 @@ namespace BenchmarksDriver
                     exclude,
                     shutdownOption.Value(),
                     span,
-                    traceOutputOption.Value(),
                     scriptFileOption,
                     markdownOption,
                     writeToFileOption,
@@ -537,7 +525,7 @@ namespace BenchmarksDriver
             //bool fetch,
             //string fetchDestination,
             //bool collectR2RLog,
-            string traceDestination,
+            // string traceDestination,
             CommandOption scriptFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
@@ -620,8 +608,49 @@ namespace BenchmarksDriver
                     }
                 }
 
-                // Stop all job
+                // Download traces, before the jobs are stopped
                 foreach (var dependency in configuration.Dependencies)
+                {
+                    var service = configuration.Services[dependency];
+
+                    var jobConnections = jobsByDependency[dependency];
+
+                    foreach (var jobConnection in jobConnections)
+                    {
+                        // Download trace
+                        if (jobConnection.Job.DotNetTrace)
+                        {
+                            try
+                            {
+                                var traceDestination = jobConnection.Job.Options.TraceOutput;
+
+                                if (String.IsNullOrWhiteSpace(traceDestination))
+                                {
+                                    traceDestination = dependency;
+                                }
+
+                                var traceExtension = ".nettrace";
+
+                                if (!traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + traceExtension;
+                                }
+
+                                Log.Write($"Collecting trace file '{traceDestination}' ...");
+
+                                await jobConnection.DownloadDotnetTrace(traceDestination);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Write($"Error while fetching published assets for '{dependency}'");
+                                Log.Verbose(e.Message);
+                            }
+                        }
+                    }
+                }
+
+                // Stop all jobs in reverse dependency order (clients first)
+                foreach (var dependency in Enumerable.Reverse(configuration.Dependencies))
                 {
                     var service = configuration.Services[dependency];
 
@@ -630,7 +659,77 @@ namespace BenchmarksDriver
                     await Task.WhenAll(jobs.Select(job => job.StopAsync()));
                 }
 
-                // Display events
+                // Download assets
+                foreach (var dependency in configuration.Dependencies)
+                {
+                    var service = configuration.Services[dependency];
+
+                    var jobConnections = jobsByDependency[dependency];
+
+                    foreach (var jobConnection in jobConnections)
+                    {
+                        // Fetch published folder
+                        if (jobConnection.Job.Options.Fetch)
+                        {
+                            try
+                            {
+                                var fetchDestination = jobConnection.Job.Options.FetchOutput;
+
+                                if (String.IsNullOrEmpty(fetchDestination) || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // If it does not end with a *.zip then we add a DATE.zip to it
+                                    if (String.IsNullOrEmpty(fetchDestination))
+                                    {
+                                        fetchDestination = dependency;
+                                    }
+
+                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
+                                }
+
+                                Log.Write($"Creating published assets '{fetchDestination}' ...");
+
+                                await jobConnection.FetchAsync(fetchDestination);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Write($"Error while fetching published assets for '{dependency}'");
+                                Log.Verbose(e.Message);
+                            }
+                        }
+
+                        // Download individual files
+                        if (jobConnection.Job.Options.DownloadFiles != null && jobConnection.Job.Options.DownloadFiles.Any())
+                        {
+                            foreach (var file in jobConnection.Job.Options.DownloadFiles)
+                            {
+                                Log.Write($"Downloading file '{file}' for '{dependency}'");
+
+                                try
+                                {
+                                    await jobConnection.DownloadFileAsync(file);
+                                }
+                                catch (Exception e)
+                                {
+                                    Log.Write($"Error while downloading file {file}, skipping ...");
+                                    Log.Verbose(e.Message);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Delete jobs
+                foreach (var dependency in Enumerable.Reverse(configuration.Dependencies))
+                {
+                    var service = configuration.Services[dependency];
+
+                    var jobs = jobsByDependency[dependency];
+
+                    await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                }
+
+                // Display results
                 foreach (var dependency in configuration.Dependencies)
                 {
                     var service = configuration.Services[dependency];
@@ -659,117 +758,9 @@ namespace BenchmarksDriver
                         }
                     }
                 }
-
-                // Download assets
-                foreach (var dependency in configuration.Dependencies)
-                {
-                    var service = configuration.Services[dependency];
-
-                    var jobConnections = jobsByDependency[dependency];
-
-                    foreach (var jobConnection in jobConnections)
-                    {
-                        // Fetch published folder
-                        if (jobConnection.Job.Options.Fetch)
-                        {
-                            try
-                            {
-                                Log.Write($"Downloading published application for '{dependency}' ...");
-
-                                var fetchDestination = jobConnection.Job.Options.FetchOutput;
-
-                                if (String.IsNullOrEmpty(fetchDestination) || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // If it does not end with a *.zip then we add a DATE.zip to it
-                                    if (String.IsNullOrEmpty(fetchDestination))
-                                    {
-                                        fetchDestination = dependency;
-                                    }
-
-                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
-                                }
-
-                                await jobConnection.FetchAsync(fetchDestination);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Write($"Error while downloading published application");
-                                Log.Verbose(e.Message);
-                            }
-                        }
-
-                        // Download individual files
-                        if (jobConnection.Job.Options.DownloadFiles != null && jobConnection.Job.Options.DownloadFiles.Any())
-                        {
-                            foreach (var file in jobConnection.Job.Options.DownloadFiles)
-                            {
-                                Log.Write($"Downloading file '{file}' for '{dependency}'");
-
-                                try
-                                {
-                                    await jobConnection.DownloadFileAsync(file);
-                                }
-                                catch (Exception e)
-                                {
-                                    Log.Write($"Error while downloading file {file}, skipping ...");
-                                    Log.Verbose(e.Message);
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Delete jobs
-                foreach (var dependency in configuration.Dependencies)
-                {
-                    var service = configuration.Services[dependency];
-
-                    var jobs = jobsByDependency[dependency];
-
-                    await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
-                }
-
-                return 0;
-
             }
 
             return 0;
-        }
-        
-        private static Dictionary<string, string> ExpandTraceArguments(string arguments)
-        {
-            var segments = arguments.Split(';');
-
-            var result = new Dictionary<string, string>(segments.Length);
-
-            foreach (var segment in segments)
-            {
-                var values = segment.Split('=', 2);
-
-                var key = values[0].Trim();
-
-                // GCCollectOnly
-                if (values.Length == 1)
-                {
-                    result[key] = "";
-                }
-                else
-                {
-                    var value = values[1].Trim();
-
-                    if (String.IsNullOrWhiteSpace(value))
-                    {
-                        result[key] = null;
-                    }
-                    else
-                    {
-                        result[key] = value;
-                    }
-                }
-            }
-
-            return result;
         }
 
         public static JObject MergeVariables(params JObject[] variableObjects)

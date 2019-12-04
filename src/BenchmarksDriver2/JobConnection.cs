@@ -596,8 +596,7 @@ namespace BenchmarksDriver
 
         public async Task FetchAsync(string fetchDestination)
         {
-            var uri = _serverJobsUri + "/fetch";
-            Log.Write($"Creating published archive: {fetchDestination}");
+            var uri = _serverJobUri + "/fetch";
             await File.WriteAllBytesAsync(fetchDestination, await _httpClient.GetByteArrayAsync(uri));
         }
 
@@ -614,6 +613,35 @@ namespace BenchmarksDriver
             }
 
             await _httpClient.DownloadFileAsync(uri, _serverJobUri, filename);
+        }
+
+        public async Task DownloadDotnetTrace(string traceDestination)
+        {
+            var uri = _serverJobUri + "/trace";
+            var response = await _httpClient.PostAsync(uri, new StringContent(""));
+            response.EnsureSuccessStatusCode();
+
+            while (true)
+            {
+                if (!await TryUpdateStateAsync())
+                {
+                    Log.Write($"Can't download the trace. The job was forcibly stopped by the server.");
+                    return;
+                }
+
+                if (State == ServerState.TraceCollecting)
+                {
+                    // Server is collecting the trace
+                }
+                else
+                {
+                    break;
+                }
+
+                await Task.Delay(1000);
+            }
+
+            await _httpClient.DownloadFileAsync(uri, _serverJobUri, traceDestination);
         }
     }
 }

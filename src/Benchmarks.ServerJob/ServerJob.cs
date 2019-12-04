@@ -184,15 +184,21 @@ namespace Benchmarks.ServerJob
         public int Timeout { get; set; } = 0;
 
         public Options Options { get; set; } = new Options();
+
         public List<string> Features { get; set; } = new List<string>();
 
     }
 
+    /// <summary>
+    /// Represents a set of properties that configure some behaviors on the driver.
+    /// These options are not sent to the server.
+    /// </summary>
     public class Options
     {
         public bool DisplayOutput { get; set; }
         public bool Fetch { get; set; }
         public string FetchOutput { get; set; }
         public string[] DownloadFiles { get; set; }
+        public string TraceOutput { get; set; }
     }
 }

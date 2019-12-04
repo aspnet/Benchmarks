@@ -19,7 +19,7 @@ Options:
 
   --services.[SERVICE].source.repository                                                The git repository containing the source code to build, e.g., https://github.com/aspnet/aspnetcore
   --services.[SERVICE].source.branchOrCommit                                            A branch name of commit hash, e.g., my/branch, issue/1234
-  --services.[SERVICE].source.initSubmodules                                            Weither to init submodules when a git repository is used, e.g., true
+  --services.[SERVICE].source.initSubmodules                                            Whether to init submodules when a git repository is used, e.g., true
   --services.[SERVICE].source.localFolder                                               The local path containing the source code to upload to the server. e.g., /code/mybenchmarks
   --services.[SERVICE].source.project                                                   The project file to build, relative to the source code base path, e.g., src/Benchmarks/Benchmarks.csproj
 
@@ -28,11 +28,14 @@ Options:
   --services.[SERVICE].source.dockerContextDirectory                                    The folder in which the Docker file is built relative to, e.g., frameworks/Rust/actix/
   --services.[SERVICE].source.dockerFetchPath                                           The path in the Docker container that contains the base path for the --fetch option, e.g., ./output
 
-  --services.[SERVICE].options.fetch                                                    Weither the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
+  --services.[SERVICE].options.fetch                                                    Whether the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
   --services.[SERVICE].options.fetchOutput                                              The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
-  --services.[SERVICE].options.displayOutput                                            Weither to download and display the standard output of the benchmark.
+  --services.[SERVICE].options.displayOutput                                            Whether to download and display the standard output of the benchmark.
 
-
+  --services.[SERVICE].dotnetTrace <true|false>                                         Whether to collect a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. e.g., true
+  --services.[SERVICE].dotnetTraceProviders <profile|flags>                             An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g., Microsoft-DotNETCore-SampleProfiler, Microsoft-Windows-DotNETRuntime, gc-verbose.  Can be used multiple times to set multiple providers.
+  --services.[SERVICE].options.traceOutput <filename>                                   The name of the trace file. Can be a file prefix (app will add *.DATE*.zip) , or a specific name and no DATE* will be added e.g., c:\traces\mytrace
+  
 
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server

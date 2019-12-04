@@ -156,7 +156,7 @@ dotnet run --
   --profile plaintext
 
   --services.load.variables.warmup 0
-  --services.load.variables.serverIp 10.10.10.5
+  --variables.serverIp 10.10.10.5
 
   --dependencies postgres:0 // insert postgres at position 0 of dependencies
 
