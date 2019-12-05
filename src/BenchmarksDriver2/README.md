@@ -17,11 +17,23 @@ Options:
 
   --services.[SERVICE].endpoints                                                        An endpoint on which to deploy the job definition, e.g., http://asp-perf-lin:5001. Can be used multiple times.
 
+  ## Sources location
+
   --services.[SERVICE].source.repository                                                The git repository containing the source code to build, e.g., https://github.com/aspnet/aspnetcore
   --services.[SERVICE].source.branchOrCommit                                            A branch name of commit hash, e.g., my/branch, issue/1234
   --services.[SERVICE].source.initSubmodules                                            Whether to init submodules when a git repository is used, e.g., true
   --services.[SERVICE].source.localFolder                                               The local path containing the source code to upload to the server. e.g., /code/mybenchmarks
-  --services.[SERVICE].source.project                                                   The project file to build, relative to the source code base path, e.g., src/Benchmarks/Benchmarks.csproj
+
+  ## .NET options
+
+  --services.[SERVICE].source.project <filename.csproj>                                 The project file to build, relative to the source code base path, e.g., src/Benchmarks/Benchmarks.csproj
+  --services.[SERVICE].sdkVersion <version>                                             The version of the .NET SDK to install and use. By default the latest available build is used.
+  --services.[SERVICE].runtimeVersion <version>                                         The version of the .NET runtime to install and use. It is defined as MicrosoftNETCoreAppPackageVersion in the build arguments. By default the latest available build is used.
+  --services.[SERVICE].aspNetCoreVersion <version>                                      The version of the ASP.NET runtime to install and use. It is defined as MicrosoftAspNetCoreAppPackageVersion in the build arguments. By default the latest available build is used.
+  --services.[SERVICE].noGlobalJson <true|false>                                        Whether to not emit any global.json file to force the .NET SDK version to use. Default is false, meaning whatever version of the .NET SDK is chosen, it will be set in a global.json file.
+  --services.[SERVICE].framework <tfm>                                                  The framework version to use in case it can't be assumed from the .NET runtime version. e.g., netcoreapp3.1
+  
+  ## Docker options
 
   --services.[SERVICE].source.dockerFile                                                The local path to the Docker file, e.g., frameworks/Rust/actix/actix-raw.dockerfile
   --services.[SERVICE].source.dockerImageName                                           The name of the docker image to create, e.g., actix_raw
@@ -39,6 +51,11 @@ Options:
   --services.[SERVICE].options.traceOutput <filename>                                   The name of the trace file. Can be a file prefix (app will add *.DATE*.zip) , or a specific name and no DATE* will be added e.g., c:\traces\mytrace
   --services.[SERVICE].collectCounters <true|false>                                     Whether to collect dotnet counters.
   --services.[SERVICE].collectStartup <true|false>                                      Whether to includes the startup phase in the traces, i.e after the application is launched and before it is marked as ready. For a web application it means before it is ready to accept requests.
+
+  ## Environment
+
+  --services.[SERVICE].environmentVariables <key=value>                                 An environment variable key/value pair to assign to the process. Can be used multiple timesto define multiple values.
+
 
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server

@@ -47,13 +47,10 @@ namespace BenchmarksDriver
             _initSubmodulesOption,
             _branchOption,
             _hashOption,
-            _noGlobalJsonOption,
             _noStartupLatencyOption,
             _displayBuildOption,
             _displayClientOutputOption,
             _displayServerOutputOption,
-            _serverSdkOption,
-            _clientSdkOption,
             _serverRuntimeVersionOption,
             _clientRuntimeVersionOption,
             _serverSelfContainedOption,
@@ -292,8 +289,6 @@ namespace BenchmarksDriver
                 "Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.", CommandOptionType.NoValue);
             var tieredCompilationOption = app.Option("--tiered-compilation",
                 "Enables tiered-compilation.", CommandOptionType.NoValue);
-            var environmentVariablesOption = app.Option("-e|--env",
-                "Defines custom environment variables to use with the benchmarked application e.g., -e \"KEY=VALUE\" -e \"A=B\"", CommandOptionType.MultipleValue);
             var buildArguments = app.Option("-ba|--build-arg",
                 "Defines custom build arguments to use with the benchmarked application e.g., -b \"/p:foo=bar\" --build-arg \"quiet\"", CommandOptionType.MultipleValue);
             var noCleanOption = app.Option("--no-clean",
@@ -302,12 +297,6 @@ namespace BenchmarksDriver
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
             var frameworkOption = app.Option("--framework",
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
-            _serverSdkOption = app.Option("--server-sdk-version",
-                "SDK version to use on the server", CommandOptionType.SingleValue);
-            _clientSdkOption = app.Option("--client-sdk-version",
-                "SDK version to use on the client", CommandOptionType.SingleValue);
-            _noGlobalJsonOption = app.Option("--no-global-json",
-                "Doesn't generate global.json", CommandOptionType.NoValue);
             _initializeOption = app.Option("--initialize",
                 "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
             _cleanOption = app.Option("--clean",
