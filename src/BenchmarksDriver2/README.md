@@ -28,10 +28,12 @@ Options:
 
   --services.[SERVICE].source.project <filename.csproj>                                 The project file to build, relative to the source code base path, e.g., src/Benchmarks/Benchmarks.csproj
   --services.[SERVICE].sdkVersion <version>                                             The version of the .NET SDK to install and use. By default the latest available build is used.
-  --services.[SERVICE].runtimeVersion <version>                                         The version of the .NET runtime to install and use. It is defined as MicrosoftNETCoreAppPackageVersion in the build arguments. By default the latest available build is used.
-  --services.[SERVICE].aspNetCoreVersion <version>                                      The version of the ASP.NET runtime to install and use. It is defined as MicrosoftAspNetCoreAppPackageVersion in the build arguments. By default the latest available build is used.
+  --services.[SERVICE].runtimeVersion <version>                                         The version of the .NET runtime to install and use. It is defined as MicrosoftNETCoreAppPackageVersion in the build arguments. By default the latest available build is used. Setting this value forces the app to be deployed as stand-alone.
+  --services.[SERVICE].aspNetCoreVersion <version>                                      The version of the ASP.NET runtime to install and use. It is defined as MicrosoftAspNetCoreAppPackageVersion in the build arguments. By default the latest available build is used.  Setting this value forces the app to be deployed as stand-alone.
   --services.[SERVICE].noGlobalJson <true|false>                                        Whether to not emit any global.json file to force the .NET SDK version to use. Default is false, meaning whatever version of the .NET SDK is chosen, it will be set in a global.json file.
   --services.[SERVICE].framework <tfm>                                                  The framework version to use in case it can't be assumed from the .NET runtime version. e.g., netcoreapp3.1
+  --services.[SERVICE].buildArguments <argument>                                        An argument to pass to msbuild. Can be used multiple times to define multiple values.
+  --services.[SERVICE].selfContained <true|false>                                       Whether to deploy the app as stand-alone. Default is false. Is is forced to 'true' if either runtimeVersion or aspnetVersion is defined as the SDK versions would be used otherwise.
   
   ## Docker options
 
@@ -39,6 +41,7 @@ Options:
   --services.[SERVICE].source.dockerImageName                                           The name of the docker image to create, e.g., actix_raw
   --services.[SERVICE].source.dockerContextDirectory                                    The folder in which the Docker file is built relative to, e.g., frameworks/Rust/actix/
   --services.[SERVICE].source.dockerFetchPath                                           The path in the Docker container that contains the base path for the --fetch option, e.g., ./output
+  --services.[SERVICE].buildArguments <argument>                                        An argument to pass to 'docker build' as a '--build-arg' value. Can be used multiple times to define multiple values.
 
   --services.[SERVICE].options.fetch                                                    Whether the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
   --services.[SERVICE].options.fetchOutput                                              The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
@@ -54,8 +57,13 @@ Options:
 
   ## Environment
 
-  --services.[SERVICE].environmentVariables <key=value>                                 An environment variable key/value pair to assign to the process. Can be used multiple timesto define multiple values.
+  --services.[SERVICE].environmentVariables <key=value>                                 An environment variable key/value pair to assign to the process. Can be used multiple times to define multiple values.
+  --services.[SERVICE].memoryLimitInBytes <bytes>                                       The amount of memory available for the process.
 
+  ## Debugging
+
+  --services.[SERVICE].noClean <true|false>                                             Whether to keep the work folder on the server or not. Default is false, such that each job is cleaned once it's finished.
+  
 
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server

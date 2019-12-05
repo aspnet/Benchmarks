@@ -40,10 +40,6 @@ namespace BenchmarksDriver
             _buildFileOption,
             _outputFileOption,
             _initializeOption,
-            _cleanOption,
-            _memoryLimitOption,
-            _enableEventPipeOption,
-            _eventPipeArgumentsOption,
             _initSubmodulesOption,
             _branchOption,
             _hashOption,
@@ -53,8 +49,6 @@ namespace BenchmarksDriver
             _displayServerOutputOption,
             _serverRuntimeVersionOption,
             _clientRuntimeVersionOption,
-            _serverSelfContainedOption,
-            _clientSelfContainedOption,
             _serverAspnetCoreVersionOption,
             _clientAspnetCoreVersionOption,
 
@@ -253,10 +247,6 @@ namespace BenchmarksDriver
                 "When set will init submodules on the repository.", CommandOptionType.NoValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
-            _serverSelfContainedOption = app.Option("--server-self-contained",
-                "Publishes the server application as standalone.", CommandOptionType.NoValue);
-            _clientSelfContainedOption = app.Option("--client-self-contained",
-                "Publishes the client application as standalone.", CommandOptionType.NoValue);
             _outputFileOption = app.Option("--output-file",
                 "Output file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -277,70 +267,12 @@ namespace BenchmarksDriver
                 "\"--build-archive c:\\build\\Microsoft.AspNetCore.Mvc.zip\", " +
                 "\"--build-archive http://raw/github.com/pictures.zip;wwwroot\\pictures\"",
                 CommandOptionType.MultipleValue);
-            var scriptFileOption = app.Option("--script",
-                "WRK script path. File path can be a URL. e.g., " +
-                "\"--script c:\\scripts\\post.lua\"",
-                CommandOptionType.MultipleValue);
-            _enableEventPipeOption = app.Option("--enable-eventpipe",
-                "Enables EventPipe perf collection.", CommandOptionType.NoValue);
-            _eventPipeArgumentsOption = app.Option("--eventpipe-arguments",
-                $"EventPipe configuration. Defaults to \"{EventPipeConfig}\"", CommandOptionType.SingleValue);
-            var disableR2ROption = app.Option("--no-crossgen",
-                "Disables Ready To Run (aka crossgen), in order to use the JITed version of the assemblies.", CommandOptionType.NoValue);
-            var tieredCompilationOption = app.Option("--tiered-compilation",
-                "Enables tiered-compilation.", CommandOptionType.NoValue);
             var buildArguments = app.Option("-ba|--build-arg",
                 "Defines custom build arguments to use with the benchmarked application e.g., -b \"/p:foo=bar\" --build-arg \"quiet\"", CommandOptionType.MultipleValue);
-            var noCleanOption = app.Option("--no-clean",
-                "Don't delete the application on the server.", CommandOptionType.NoValue);
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
-            var frameworkOption = app.Option("--framework",
-                "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
             _initializeOption = app.Option("--initialize",
                 "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
-            _cleanOption = app.Option("--clean",
-                "A script to run after the application has stopped, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
-            _memoryLimitOption = app.Option("-mem|--memory",
-                "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
-
-            // ClientJob Options
-            var clientThreadsOption = app.Option("--client-threads",
-                "Number of threads used by client. Default is 32.", CommandOptionType.SingleValue);
-            var clientTimeoutOption = app.Option("--client-timeout",
-                "Timeout for client connections. e.g., 2s", CommandOptionType.SingleValue);
-            var connectionsOption = app.Option("--connections",
-                "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
-            var durationOption = app.Option("--duration",
-                "Duration of client job in seconds. Default is 15.", CommandOptionType.SingleValue);
-            var warmupOption = app.Option("--warmup",
-                "Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.", CommandOptionType.SingleValue);
-            var noWarmupOption = app.Option("--no-warmup",
-                "Disables the warmup phase.", CommandOptionType.NoValue);
-            var headerOption = app.Option("--header",
-                "Header added to request.", CommandOptionType.MultipleValue);
-            var headersOption = app.Option("--headers",
-                "Default set of HTTP headers added to request (None, Plaintext, Json, Html). Default is Html.", CommandOptionType.SingleValue);
-            var methodOption = app.Option("--method",
-                "HTTP method of the request. Default is GET.", CommandOptionType.SingleValue);
-            var clientProperties = app.Option("-p|--properties",
-                "Key value pairs of properties specific to the client running. e.g., -p ScriptName=pipeline -p PipelineDepth=16", CommandOptionType.MultipleValue);
-            var pathOption = app.Option(
-                "--path",
-                "Relative URL where the client should send requests.",
-                CommandOptionType.SingleValue);
-            var querystringOption = app.Option(
-                "--querystring",
-                "Querystring to add to the requests. (e.g., \"?page=1\")",
-                CommandOptionType.SingleValue);
-            _noStartupLatencyOption = app.Option("-nsl|--no-startup-latency",
-                "Skip startup latency measurement.", CommandOptionType.NoValue);
-
-            var serverJobOption = app.Option("--server-jobs",
-                "The path or url to the server jobs definition.", CommandOptionType.SingleValue);
-
-            var clientJobOption = app.Option("--client-jobs",
-                "The path or url to the server jobs definition.", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -441,7 +373,7 @@ namespace BenchmarksDriver
                     exclude,
                     shutdownOption.Value(),
                     span,
-                    scriptFileOption,
+                    //scriptFileOption,
                     markdownOption,
                     writeToFileOption,
                     requiredOperatingSystem,
@@ -503,7 +435,7 @@ namespace BenchmarksDriver
             //string fetchDestination,
             //bool collectR2RLog,
             // string traceDestination,
-            CommandOption scriptFileOption,
+            // CommandOption scriptFileOption,
             CommandOption markdownOption,
             CommandOption writeToFileOption,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
