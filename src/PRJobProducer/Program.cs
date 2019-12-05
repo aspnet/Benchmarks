@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Cryptography;
@@ -26,7 +25,8 @@ namespace PRJobProducer
         private const string ProcessedDirectoryName = "processed";
 
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
-        private const string CommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
+        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark...";
+        private const string CompletedBenchmarkCommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
         private static readonly DateTime CommentCutoffDate = DateTime.Now.AddHours(-24);
         private static readonly TimeSpan BenchmarkTimeout = TimeSpan.FromMinutes(30);
@@ -134,6 +134,8 @@ namespace PRJobProducer
                 {
                     try
                     {
+                        var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
+
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
 
@@ -152,7 +154,8 @@ namespace PRJobProducer
 
                         var baselineOutput = FormatOutput(results.BaselineStdout, results.BaselineStderr);
                         var prOutput = FormatOutput(results.PullRequestStdout, results.PullRequestStderr);
-                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, string.Format(CommentTemplate, baselineOutput, prOutput));
+
+                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, string.Format(CompletedBenchmarkCommentTemplate, baselineOutput, prOutput));
                     }
                     catch (Exception ex)
                     {
