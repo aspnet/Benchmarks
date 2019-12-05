@@ -123,13 +123,14 @@ namespace JobConsumer
             var errorBuilder = new StringBuilder();
 
             var buildRules = await GetBuildInstructions(processingFile);
+            var sdkVersion = await GetSdkVersionOrNull();
 
             Process.Start("git", "clean -xdf").WaitForExit();
             Process.Start("git", "fetch").WaitForExit();
             Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
             RunBuildCommands(buildRules);
 
-            var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
+            var baselineArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: true);
 
             outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
             var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
@@ -153,7 +154,7 @@ namespace JobConsumer
             Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
             RunBuildCommands(buildRules);
 
-            var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
+            var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: false);
 
             outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
             var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
@@ -202,7 +203,7 @@ namespace JobConsumer
 
                 process.ErrorDataReceived += (_, e) =>
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         sawErrorOutput = true;
                     }
@@ -301,6 +302,57 @@ namespace JobConsumer
                 ? "dotnet.exe"
                 : "dotnet"
                 ;
+        }
+
+        private static async Task<string> GetSdkVersionOrNull()
+        {
+            if (!File.Exists("global.json"))
+            {
+                return null;
+            }
+
+            using var globalJsonStream = File.OpenRead("global.json");
+            using var jsonDocument = await JsonDocument.ParseAsync(globalJsonStream);
+
+            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            {
+                if (!element.NameEquals("sdk") || element.Value.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                foreach (var subElement in element.Value.EnumerateObject())
+                {
+                    if (subElement.NameEquals("version") && subElement.Value.ValueKind == JsonValueKind.String)
+                    {
+                        return subElement.Value.GetString();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetDriverArguments(string jobsFilePath, string sessionId, string sdkVersion, bool isBaseline)
+        {
+            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId} --self-contained");
+
+            if (isBaseline)
+            {
+                argumentsBuilder.Append(" --save baseline --description Before");
+            }
+            else
+            {
+                argumentsBuilder.Append(" --diff baseline --description After");
+            }
+
+            if (!string.IsNullOrWhiteSpace(sdkVersion))
+            {
+                argumentsBuilder.Append(" --sdk ");
+                argumentsBuilder.Append(sdkVersion);
+            }
+
+            return argumentsBuilder.ToString();
         }
 
         // REVIEW: What's the best way to share these DTOs in this repo?
