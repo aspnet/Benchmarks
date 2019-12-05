@@ -55,8 +55,8 @@ namespace BenchmarkServer
         private static string LatestChannel = "5.0";
 
         // Substituion values when "Current" is passed as the version
-        private static string CurrentTargetFramework = "netcoreapp3.0";
-        private static string CurrentChannel = "3.0";
+        private static string CurrentTargetFramework = "netcoreapp3.1";
+        private static string CurrentChannel = "3.1";
 
         private const string PerfViewVersion = "P2.0.42";
 
@@ -2311,6 +2311,18 @@ namespace BenchmarkServer
                 case "netcoreapp3.0":
 
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/3.0/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
+                    latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
+                        .Elements("PropertyGroup")
+                        .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
+                        .Where(x => x != null)
+                        .FirstOrDefault()
+                        .Value;
+
+                    break;
+
+                case "netcoreapp3.1":
+
+                    await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/3.1/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                         .Elements("PropertyGroup")
                         .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
