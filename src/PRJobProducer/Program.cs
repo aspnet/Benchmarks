@@ -25,7 +25,7 @@ namespace PRJobProducer
         private const string ProcessedDirectoryName = "processed";
 
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
-        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark...";
+        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark. This could take up to 30 minutes...";
         private const string CompletedBenchmarkCommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
         private static readonly DateTime CommentCutoffDate = DateTime.Now.AddHours(-24);
@@ -132,9 +132,10 @@ namespace PRJobProducer
 
                 await foreach (var pr in GetPRsToBenchmark(client, botLoginName))
                 {
+                    var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
+
                     try
                     {
-                        var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
 
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
@@ -145,8 +146,6 @@ namespace PRJobProducer
                         Console.WriteLine($"Benchmark requested for PR #{pr.Number}. Waiting up to {BenchmarkTimeout} for results.");
                         var results = await WaitForBenchmarkResults(newJobFileName);
 
-                        Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
-
                         string FormatOutput(string stdout, string stderr)
                         {
                             return string.IsNullOrEmpty(stderr) ? stdout : $"stdout: {results.BaselineStdout}\nstderr: {results.BaselineStderr}";
@@ -155,11 +154,18 @@ namespace PRJobProducer
                         var baselineOutput = FormatOutput(results.BaselineStdout, results.BaselineStderr);
                         var prOutput = FormatOutput(results.PullRequestStdout, results.PullRequestStderr);
 
-                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, string.Format(CompletedBenchmarkCommentTemplate, baselineOutput, prOutput));
+                        var resultCommentText = string.Format(CompletedBenchmarkCommentTemplate, baselineOutput, prOutput);
+
+                        Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
+                        Console.WriteLine($"Benchmark results comment: {resultCommentText}");
+
+                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, resultCommentText);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to benchmark PR #{pr.Number}. Skipping... Details: {ex}");
+                        var errorDetails = $"Failed to benchmark PR #{pr.Number}. Skipping... Details: {ex}";
+                        Console.WriteLine(errorDetails);
+                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, errorDetails);
                     }
                 }
 
