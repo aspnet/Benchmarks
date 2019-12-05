@@ -132,10 +132,9 @@ namespace PRJobProducer
 
                 await foreach (var pr in GetPRsToBenchmark(client, botLoginName))
                 {
-                    var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
-
                     try
                     {
+                        var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
 
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
@@ -159,13 +158,13 @@ namespace PRJobProducer
                         Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
                         Console.WriteLine($"Benchmark results comment: {resultCommentText}");
 
-                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, resultCommentText);
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, resultCommentText);
                     }
                     catch (Exception ex)
                     {
                         var errorDetails = $"Failed to benchmark PR #{pr.Number}. Skipping... Details: {ex}";
                         Console.WriteLine(errorDetails);
-                        await client.Issue.Comment.Update(Owner, Repo, comment.Id, errorDetails);
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, errorDetails);
                     }
                 }
 
