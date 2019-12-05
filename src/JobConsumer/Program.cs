@@ -176,6 +176,8 @@ namespace JobConsumer
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)
         {
+            Console.WriteLine($"Running driver with arguments: {arguments}");
+
             // Don't let the repo's global.json interfere with running the driver
             File.Move("global.json", "global.json~");
 
