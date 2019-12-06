@@ -2127,13 +2127,17 @@ namespace BenchmarkServer
                 throwOnError: false
                 );
 
-            job.BuildLog = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n" +
-                    "[STDOUT]:\n" + 
-                    buildResults.StandardOutput + 
-                    "\n" +
-                    "[STDERR]:\n" +
-                    buildResults.StandardError + 
-                    "\n";
+            job.BuildLog = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n";
+            
+            if (!String.IsNullOrWhiteSpace(buildResults.StandardOutput))
+            {
+                job.BuildLog += $"[STDOUT]:\n {buildResults.StandardOutput} \n";
+            }
+
+            if (!String.IsNullOrWhiteSpace(buildResults.StandardError))
+            {
+                job.BuildLog += $"[STDERR]:\n {buildResults.StandardError} \n";
+            }
 
             if (buildResults.ExitCode != 0)
             {
