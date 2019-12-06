@@ -3,11 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-#if NETCOREAPP5_0
-using IHttpRequestLineHandler = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler;
-#else
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-#endif
 
 namespace PlatformBenchmarks
 {
