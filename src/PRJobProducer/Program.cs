@@ -8,6 +8,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.File;
@@ -25,7 +26,7 @@ namespace PRJobProducer
         private const string ProcessedDirectoryName = "processed";
 
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
-        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark. This could take up to 30 minutes...";
+        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark with session ID '{0}'. This could take up to 30 minutes...";
         private const string CompletedBenchmarkCommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
         private static readonly DateTime CommentCutoffDate = DateTime.Now.AddHours(-24);
@@ -134,12 +135,15 @@ namespace PRJobProducer
                 {
                     try
                     {
-                        var comment = await client.Issue.Comment.Create(Owner, Repo, pr.Number, StartingBencmarkComment);
-
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
+                        var startingCommentText = string.Format(StartingBencmarkComment, session);
 
-                        Console.WriteLine($"Requesting benchmark for PR #{pr.Number} with session id:'{session}'");
+                        Console.WriteLine($"Requesting benchmark for PR #{pr.Number}.");
+                        Console.WriteLine($"Benchmark starting comment: {startingCommentText}");
+
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, startingCommentText);
+
                         await RequestBenchmark(pr, newJobFileName);
 
                         Console.WriteLine($"Benchmark requested for PR #{pr.Number}. Waiting up to {BenchmarkTimeout} for results.");
