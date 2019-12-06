@@ -601,22 +601,6 @@ namespace BenchmarksDriver
                                 }
                             }
                         }
-
-                        // Display build log
-                        if (jobConnection.Job.Options.DisplayBuild)
-                        {
-                            try
-                            {
-                                Log.Write($"Downloading build log...");
-
-                                Log.DisplayOutput(await jobConnection.DownloadBuildLog());
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Write($"Error while downloading build logs");
-                                Log.Verbose(e.Message);
-                            }
-                        }
                     }
                 }
 
@@ -650,12 +634,32 @@ namespace BenchmarksDriver
 
                         WriteMeasures(jobConnection);
 
+                        // Display output log
                         if (jobConnection.Job.Options.DisplayOutput)
                         {
                             Log.Quiet("");
                             Log.Quiet("Output:");
                             Log.Quiet("");
                             Log.DisplayOutput(jobConnection.Job.Output);
+                        }
+
+
+                        // Display build log
+                        if (jobConnection.Job.Options.DisplayBuild)
+                        {
+                            try
+                            {
+                                Log.Quiet("");
+                                Log.Quiet("Build:");
+                                Log.Quiet("");
+
+                                Log.DisplayOutput(await jobConnection.DownloadBuildLog());
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Write($"Error while downloading build logs");
+                                Log.Verbose(e.Message);
+                            }
                         }
                     }
                 }

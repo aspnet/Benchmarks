@@ -840,13 +840,15 @@ namespace BenchmarkServer
                                         dotnetTraceManualReset = null;
                                         dotnetTraceTask = null;
                                     }
+
+
+                                    Log.WriteLine("Trace collected");
                                 }
                                 else
                                 {
-                                    throw new Exception("Couldn't stop!!!");
+                                    Log.WriteLine("Trace collection aborted, dotnet-trace was not started");
                                 }
 
-                                Log.WriteLine("Trace collected");
                                 Log.WriteLine($"{job.State} ->  TraceCollected");
                                 job.State = ServerState.TraceCollected;
                             }
