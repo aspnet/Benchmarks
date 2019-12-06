@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -26,10 +25,8 @@ namespace BenchmarksDriver
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
 
-        private static ClientJob _clientJob;
         private static string _tableName = "AspNetBenchmarks";
         private const string EventPipeOutputFile = "eventpipe.netperf";
-        private static string EventPipeConfig = "Microsoft-DotNETCore-SampleProfiler:FFFF:5,Microsoft-Windows-DotNETRuntime:4c14fccbd:5";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
@@ -40,13 +37,8 @@ namespace BenchmarksDriver
             _buildFileOption,
             _outputFileOption,
             _initializeOption,
-            _initSubmodulesOption,
-            _branchOption,
-            _hashOption,
             _noStartupLatencyOption,
-            _displayBuildOption,
-            _displayClientOutputOption,
-            _displayServerOutputOption,
+            
             _serverRuntimeVersionOption,
             _clientRuntimeVersionOption,
             _serverAspnetCoreVersionOption,
@@ -184,12 +176,6 @@ namespace BenchmarksDriver
                 "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var diffOption = app.Option("--diff",
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
-            _displayClientOutputOption = app.Option("--client-display-output",
-                "Displays the standard output from the client job.", CommandOptionType.NoValue);
-            _displayServerOutputOption = app.Option("--server-display-output",
-                "Displays the standard output from the server job.", CommandOptionType.NoValue);
-            _displayBuildOption = app.Option("--display-build",
-                "Displays the standard output from the build step.", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
             var consoleOption = app.Option("--console",
@@ -219,10 +205,6 @@ namespace BenchmarksDriver
                 ".NET Core Runtime version on the server (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
             _clientRuntimeVersionOption = app.Option("--client-runtime-version",
                 ".NET Core Runtime version on the client (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
-            var serverArgumentsOption = app.Option("--server-args",
-                "Argument to pass to the server application. (e.g., --server-args \"--raw=true\" --server-args \"single_value\")", CommandOptionType.MultipleValue);
-            var clientArgumentsOption = app.Option("--client-args",
-                "Argument to pass to the client application. The server url can be injected using {{server-url}}. (e.g., --client-args \"--raw=true\" --client-args \"single_value\")", CommandOptionType.MultipleValue);
             var serverNoArgumentsOptions = app.Option("--server-no-arguments",
                 "Removes any predefined arguments from the server application command line.", CommandOptionType.NoValue);
             var clientNoArgumentsOptions = app.Option("--client-no-arguments",
@@ -233,18 +215,12 @@ namespace BenchmarksDriver
                 "The text that is displayed when the application is ready to accept requests. (e.g., \"Application started.\")", CommandOptionType.SingleValue);
             var repositoryOption = app.Option("-r|--repository",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
-            _branchOption = app.Option("-b|--branch",
-                "Git repository containing the project to test.", CommandOptionType.SingleValue);
-            _hashOption = app.Option("-h|--hash",
-                "Git repository containing the project to test.", CommandOptionType.SingleValue);
             var dockerFileOption = app.Option("-df|--docker-file",
                 "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
             var dockerContextOption = app.Option("-dc|--docker-context",
                 "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
             var dockerImageOption = app.Option("-di|--docker-image",
                 "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
-            _initSubmodulesOption = app.Option("--init-submodules",
-                "When set will init submodules on the repository.", CommandOptionType.NoValue);
             var useRuntimeStoreOption = app.Option("--runtime-store",
                 "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
             _outputFileOption = app.Option("--output-file",
@@ -623,6 +599,22 @@ namespace BenchmarksDriver
                                     Log.Verbose(e.Message);
                                     continue;
                                 }
+                            }
+                        }
+
+                        // Display build log
+                        if (jobConnection.Job.Options.DisplayBuild)
+                        {
+                            try
+                            {
+                                Log.Write($"Downloading build log...");
+
+                                Log.DisplayOutput(await jobConnection.DownloadBuildLog());
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Write($"Error while downloading build logs");
+                                Log.Verbose(e.Message);
                             }
                         }
                     }

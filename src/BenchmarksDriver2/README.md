@@ -43,10 +43,6 @@ Options:
   --services.[SERVICE].source.dockerFetchPath                                           The path in the Docker container that contains the base path for the --fetch option, e.g., ./output
   --services.[SERVICE].buildArguments <argument>                                        An argument to pass to 'docker build' as a '--build-arg' value. Can be used multiple times to define multiple values.
 
-  --services.[SERVICE].options.fetch                                                    Whether the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
-  --services.[SERVICE].options.fetchOutput                                              The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
-  --services.[SERVICE].options.displayOutput                                            Whether to download and display the standard output of the benchmark.
-
   ## Diagnostics
 
   --services.[SERVICE].dotnetTrace <true|false>                                         Whether to collect a diagnostics trace using dotnet-trace. An optional profile name or list of dotnet-trace providers can be passed. e.g., true
@@ -63,6 +59,10 @@ Options:
   ## Debugging
 
   --services.[SERVICE].noClean <true|false>                                             Whether to keep the work folder on the server or not. Default is false, such that each job is cleaned once it's finished.
+  --services.[SERVICE].options.fetch <true|false>                                       Whether the benchmark folder is downloaded. e.g., true. For Docker see '--services.[SERVICE].source.dockerFetchPath'
+  --services.[SERVICE].options.fetchOutput <filename>                                   The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
+  --services.[SERVICE].options.displayOutput <true|false>                               Whether to download and display the standard output of the benchmark.
+  --services.[SERVICE].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
   
 
   -c|--client            URL of benchmark client

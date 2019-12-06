@@ -200,5 +200,6 @@ namespace Benchmarks.ServerJob
         public string FetchOutput { get; set; }
         public string[] DownloadFiles { get; set; }
         public string TraceOutput { get; set; }
+        public bool DisplayBuild { get; set; }
     }
 }
