@@ -109,8 +109,16 @@ namespace JobConsumer
 
                     nextFile.MoveTo(processingFilePath);
 
-                    var benchmarkResult = await BenchmarkPR(processingFile, session);
-                    await PublishResult(processingFile, benchmarkResult);
+                    try
+                    {
+                        var benchmarkResult = await BenchmarkPR(processingFile, session);
+                        await PublishResult(processingFile, benchmarkResult);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Could not successfully benchmark PR. Writing error to comment: {ex}");
+                        await PublishError(processingFile, ex);
+                    }
                 }
             });
 
@@ -125,9 +133,9 @@ namespace JobConsumer
             var buildRules = await GetBuildInstructions(processingFile);
             var sdkVersion = await GetSdkVersionOrNull();
 
-            Process.Start("git", "clean -xdf").WaitForExit();
-            Process.Start("git", "fetch").WaitForExit();
-            Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
+            RunCommand("git clean -xdf");
+            RunCommand("git fetch");
+            RunCommand($"git checkout {buildRules.BaselineSHA}");
             RunBuildCommands(buildRules);
 
             var baselineArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: true);
@@ -151,7 +159,7 @@ namespace JobConsumer
             outputBuilder.Clear();
             errorBuilder.Clear();
 
-            Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
+            RunCommand($"git checkout {buildRules.PullRequestSHA}");
             RunBuildCommands(buildRules);
 
             var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: false);
@@ -274,8 +282,7 @@ namespace JobConsumer
         {
             foreach (var buildCommand in buildRules.BuildCommands)
             {
-                var splitCommand = buildCommand.Split(' ', 2);
-                Process.Start(splitCommand[0], splitCommand.Length == 2 ? splitCommand[1] : string.Empty).WaitForExit();
+                RunCommand(buildCommand);
             }
         }
 
@@ -298,12 +305,68 @@ namespace JobConsumer
             processingFile.MoveTo(Path.Combine(ProcessedPath, processingFile.Name));
         }
 
+        private static Task PublishError(FileInfo processingFile, Exception error)
+        {
+            var errorResult = new BenchmarkResult
+            {
+                Success = false,
+                BaselineStderr = error.ToString()
+            };
+
+            return PublishResult(processingFile, errorResult);
+        }
+
         private static string GetDotNetExecutable()
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? "dotnet.exe"
                 : "dotnet"
                 ;
+        }
+
+        private static void RunCommand(string command)
+        {
+            var outputBuilder = new StringBuilder();
+
+            var splitCommand = command.Split(' ', 2);
+            var fileName = splitCommand[0];
+            var arguments = splitCommand.Length == 2 ? splitCommand[1] : string.Empty;
+
+            using var process = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                },
+            };
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                outputBuilder.AppendLine($"stdout: {e.Data}");
+                Console.WriteLine(e.Data);
+            };
+
+            process.ErrorDataReceived += (_, e) =>
+            {
+                outputBuilder.AppendLine($"stderr: {e.Data}");
+                Console.Error.WriteLine(e.Data);
+            };
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Process '{fileName} {arguments}' exited with exit code '{process.ExitCode}' and the following output:\n\n{outputBuilder}");
+            }
         }
 
         private static async Task<string> GetSdkVersionOrNull()
