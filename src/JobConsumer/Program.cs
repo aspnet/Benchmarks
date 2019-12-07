@@ -326,6 +326,8 @@ namespace JobConsumer
 
         private static void RunCommand(string command)
         {
+            Console.WriteLine($"Running command: '{command}'");
+
             var outputBuilder = new StringBuilder();
 
             var splitCommand = command.Split(' ', 2);
@@ -346,14 +348,20 @@ namespace JobConsumer
 
             process.OutputDataReceived += (_, e) =>
             {
-                outputBuilder.AppendLine($"stdout: {e.Data}");
-                Console.WriteLine(e.Data);
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    outputBuilder.AppendLine($"stdout: {e.Data}");
+                    Console.WriteLine(e.Data);
+                }
             };
 
             process.ErrorDataReceived += (_, e) =>
             {
-                outputBuilder.AppendLine($"stderr: {e.Data}");
-                Console.Error.WriteLine(e.Data);
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    outputBuilder.AppendLine($"stderr: {e.Data}");
+                    Console.Error.WriteLine(e.Data);
+                }
             };
 
             process.Start();

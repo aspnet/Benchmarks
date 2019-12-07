@@ -166,9 +166,9 @@ namespace PRJobProducer
                     }
                     catch (Exception ex)
                     {
-                        var errorDetails = $"Failed to benchmark PR #{pr.Number}. Skipping... Details:\n```\n{ex}\n```";
-                        Console.WriteLine(errorDetails);
-                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, errorDetails);
+                        var errorCommentText = $"Failed to benchmark PR #{pr.Number}. Skipping... Details:\n```\n{ex}\n```";
+                        Console.WriteLine($"Benchmark error comment: {errorCommentText}");
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, errorCommentText);
                     }
                 }
 
