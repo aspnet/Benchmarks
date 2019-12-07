@@ -337,7 +337,7 @@ namespace JobConsumer
 
         private static string GetDriverArguments(string jobsFilePath, string sessionId, string sdkVersion, bool isBaseline)
         {
-            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId} --self-contained --aspNetCoreVersion Latest --runtimeVersion Latest");
+            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId} --self-contained --aspNetCoreVersion Latest --runtimeVersion Latest --quiet");
 
             if (isBaseline)
             {
