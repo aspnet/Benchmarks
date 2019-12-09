@@ -159,7 +159,8 @@ namespace JobConsumer
             outputBuilder.Clear();
             errorBuilder.Clear();
 
-            RunCommand($"git checkout {buildRules.PullRequestSHA}");
+            RunCommand($"git fetch origin pull/{buildRules.PullRequestNumber}/head:{session}");
+            RunCommand($"git checkout {session}");
             RunBuildCommands(buildRules);
 
             var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: false);
@@ -433,6 +434,7 @@ namespace JobConsumer
         {
             public string[] BuildCommands { get; set; }
 
+            public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
         }

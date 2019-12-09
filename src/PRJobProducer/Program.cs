@@ -254,6 +254,7 @@ namespace PRJobProducer
             jsonDictionary["BuildInstructions"] = new BuildInstructions
             {
                 BuildCommands = BuildCommands,
+                PullRequestNumber = pr.Number,
                 BaselineSHA = pr.Base.Sha,
                 PullRequestSHA = pr.Head.Sha,
             };
@@ -374,6 +375,7 @@ namespace PRJobProducer
         {
             public string[] BuildCommands { get; set; }
 
+            public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
         }
