@@ -275,14 +275,9 @@ namespace PRJobProducer
             var startTicks = Environment.TickCount64;
             var expectedProcessedJobPath = Path.Combine(ProcessedDirectoryName, newJobFileName);
 
-            while (!await JobFileSystem.FileExists(expectedProcessedJobPath))
+            if (!await WaitForCompleteJsonFile(expectedProcessedJobPath, BenchmarkTimeout))
             {
-                if (Environment.TickCount64 - startTicks > BenchmarkTimeout.TotalMilliseconds)
-                {
-                    throw new TimeoutException($"Benchmark results for job {newJobFileName} were not published to {ProcessedDirectoryName} within {BenchmarkTimeout}.");
-                }
-
-                await Task.Delay(1000);
+                throw new TimeoutException($"Benchmark results for job {newJobFileName} were not published to {ProcessedDirectoryName} within {BenchmarkTimeout}.");
             }
 
             Console.WriteLine($"Found '{newJobFileName}'");
@@ -299,6 +294,44 @@ namespace PRJobProducer
             }
 
             throw new InvalidDataException($"Processed benchmark job '{newJobFileName}' did not include a top-level '{nameof(BenchmarkResult)}' property.");
+        }
+
+        private static async Task<bool> WaitForCompleteJsonFile(string jsonFilePath, TimeSpan timeout)
+        {
+            var startTicks = Environment.TickCount64;
+
+            while (!await JobFileSystem.FileExists(jsonFilePath))
+            {
+                if (Environment.TickCount64 - startTicks > timeout.TotalMilliseconds)
+                {
+                    return false;
+                }
+
+                await Task.Delay(1000);
+            }
+
+            // Wait up to 5 seconds for the Json file to be fully parsable.
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    using var processedJsonStream = await JobFileSystem.ReadFile(jsonFilePath);
+                    using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+
+                    return true;
+                }
+                catch (JsonException)
+                {
+                    if (i == 4)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
+
+            return false;
         }
 
         private static GitHubClient GetClientForUser(string userName, string token)

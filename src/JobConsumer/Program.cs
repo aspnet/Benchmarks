@@ -75,14 +75,23 @@ namespace JobConsumer
                     // Get oldest file
                     try
                     {
-                        nextFile = jobsDirectory
+                        var candidateFile = jobsDirectory
                             .GetFiles()
                             .OrderByDescending(f => f.LastWriteTime)
                             .FirstOrDefault();
+
+                        if (await WaitForCompleteJsonFile(candidateFile))
+                        {
+                            nextFile = candidateFile;
+                        }
                     }
                     catch (IOException ex)
                     {
                         Console.WriteLine($"Could not enumerate files from jobs directory. Will try again in 1 second. {ex}");
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"Could not parse JSON job file within 5 seconds. Will try again in 1 second. {ex}");
                     }
 
                     // If no file was found, wait some time
@@ -378,6 +387,32 @@ namespace JobConsumer
             }
         }
 
+        private static async Task<bool> WaitForCompleteJsonFile(FileInfo nextFile)
+        {
+            // Wait up to 5 seconds for the Json file to be fully parsable.
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    using var processedJsonStream = File.OpenRead(nextFile.FullName);
+                    using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+
+                    return true;
+                }
+                catch (JsonException)
+                {
+                    if (i == 4)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
+
+            return false;
+        }
+
         private static async Task<string> GetSdkVersionOrNull()
         {
             if (!File.Exists("global.json"))
@@ -388,19 +423,11 @@ namespace JobConsumer
             using var globalJsonStream = File.OpenRead("global.json");
             using var jsonDocument = await JsonDocument.ParseAsync(globalJsonStream);
 
-            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            if (jsonDocument.RootElement.TryGetProperty("sdk", out var sdkElement) && sdkElement.ValueKind == JsonValueKind.Object)
             {
-                if (!element.NameEquals("sdk") || element.Value.ValueKind != JsonValueKind.Object)
+                if (sdkElement.TryGetProperty("version", out var sdkVersionElement) && sdkVersionElement.ValueKind == JsonValueKind.String)
                 {
-                    continue;
-                }
-
-                foreach (var subElement in element.Value.EnumerateObject())
-                {
-                    if (subElement.NameEquals("version") && subElement.Value.ValueKind == JsonValueKind.String)
-                    {
-                        return subElement.Value.GetString();
-                    }
+                    return sdkVersionElement.GetString();
                 }
             }
 
