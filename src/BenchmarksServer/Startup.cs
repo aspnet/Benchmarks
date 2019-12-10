@@ -1459,10 +1459,7 @@ namespace BenchmarkServer
                         Log.WriteLine(e.Data);
                         standardOutput.AppendLine(e.Data);
 
-                        if (job.State == ServerState.Starting &&
-                            ((e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                e.Data.ToLowerInvariant().Contains("started") ||
-                                e.Data.ToLowerInvariant().Contains("listening")))
+                        if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             Log.WriteLine($"Ready state detected, application is now running...");
                             MarkAsRunning(hostname, job, stopwatch);
@@ -2691,9 +2688,7 @@ namespace BenchmarkServer
                     standardOutput.AppendLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
-                        (((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        e.Data.ToLowerInvariant().Contains("started") ||
-                        e.Data.ToLowerInvariant().Contains("listening")) || job.IsConsoleApp))
+                        ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
                     {
                         MarkAsRunning(hostname, job, stopwatch);
 
