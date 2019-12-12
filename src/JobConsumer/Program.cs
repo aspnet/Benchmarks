@@ -80,7 +80,7 @@ namespace JobConsumer
                             .OrderByDescending(f => f.LastWriteTime)
                             .FirstOrDefault();
 
-                        if (await WaitForCompleteJsonFile(candidateFile))
+                        if (candidateFile != null && await WaitForCompleteJsonFile(candidateFile))
                         {
                             nextFile = candidateFile;
                         }
