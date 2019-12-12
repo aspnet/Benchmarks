@@ -50,6 +50,7 @@ namespace BenchmarksDriver
             _initializeOption,
             _cleanOption,
             _memoryLimitOption,
+            _cpuLimitOption,
             _enableEventPipeOption,
             _eventPipeArgumentsOption,
             _initSubmodulesOption,
@@ -310,6 +311,8 @@ namespace BenchmarksDriver
                 "A script to run after the application has stopped, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
             _memoryLimitOption = app.Option("-mem|--memory",
                 "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
+            _cpuLimitOption = app.Option("--cpus",
+                "The amount of CPU available for the process, e.g. --cpus 0.5", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--client-threads",
@@ -639,6 +642,18 @@ namespace BenchmarksDriver
                             Console.WriteLine("Invalid memory limit value");
                             return -1;
                         }
+                    }
+                }
+                if (_cpuLimitOption.HasValue())
+                {
+                    if (double.TryParse(_cpuLimitOption.Value(), out var cpuLimit))
+                    {
+                        serverJob.CpuLimitRatio = cpuLimit;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid cpu limit value");
+                        return -1;
                     }
                 }
                 if (_initializeOption.HasValue())

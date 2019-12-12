@@ -1469,6 +1469,21 @@ namespace BenchmarkServer
                                 StartCollection(workingDirectory, job);
                             }
                         }
+
+                        // Detected custom statistics in stdout, parse it
+                        if (job.State == ServerState.Running && e.Data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            // Seek the beginning of statistics
+
+                            var buffer = standardOutput.ToString();
+
+                            var start = buffer.IndexOf("#StartJobStatistics");
+
+                            if (start == -1)
+                            {
+                                Log.WriteLine($"Didn't find start of statistics");
+                            }
+                        }
                     }
                 };
             }
@@ -2618,15 +2633,40 @@ namespace BenchmarkServer
 
                     if (cgcreate.ExitCode > 0)
                     {
-                        job.Error += "Could not create cgroup";
+                        job.Error += "Could not create cgroup 'memory:benchmarks'";
                         return null;
                     }
 
                     ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks");
-
-                    commandLine = $"-g memory:benchmarks {executable} {commandLine}";
-                    executable = "cgexec";
                 }
+            }
+
+            if (job.CpuLimitRatio > 0)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Log.WriteLine($"Creating cgroup with memory limits: {job.CpuLimitRatio}");
+
+                    var cgcreate = ProcessUtil.Run("cgcreate", "-g cpu:benchmarks\"");
+
+                    if (cgcreate.ExitCode > 0)
+                    {
+                        job.Error += "Could not create cgroup 'cpu:benchmarks'";
+                        return null;
+                    }
+
+                    // https://docs.docker.com/config/containers/resource_constraints/
+                    const double defaultDockerCfsPeriod = 100000;
+
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us=100000 benchmarks");
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Round(job.CpuLimitRatio * defaultDockerCfsPeriod, 1)} benchmarks");
+                }
+            }
+
+            if (job.MemoryLimitInBytes + job.CpuLimitRatio > 0)
+            {
+                commandLine = $"-g *:benchmarks {executable} {commandLine}";
+                executable = "cgexec";
             }
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
