@@ -1876,7 +1876,12 @@ namespace BenchmarkServer
                     Log.WriteLine($"Patching existing global.json file");
 
                     var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+
+                    // Create the "sdk" property if it doesn't exist
+                    globalObject.TryAdd("sdk", new JObject());
+
                     globalObject["sdk"]["version"] = new JValue(sdkVersion);
+
                     File.WriteAllText(globalJsonFilename, globalObject.ToString());
                 }
             }
