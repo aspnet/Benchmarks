@@ -2637,8 +2637,6 @@ namespace BenchmarkServer
 
             // The cgroup limits are set on the root group as .NET is reading these only, and not the ones that it would run inside
 
-            var limits = new List<string>();
-
             if (job.MemoryLimitInBytes > 0)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -2646,8 +2644,6 @@ namespace BenchmarkServer
                     Log.WriteLine($"Setting cgroup memory limits: {job.MemoryLimitInBytes}");
 
                     ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} /");
-
-                    limits.Add("memory");
                 }
             }
 
@@ -2658,15 +2654,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Setting cgroup cpu limits: {job.CpuLimitRatio}");
 
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} /", log: true);
-
-                    limits.Add("cpu");
                 }
-            }
-
-            if (limits.Any())
-            {
-                commandLine = $"-g \"{String.Join(',', limits)}:benchmarks\" {executable} {commandLine}";
-                executable = "cgexec";
             }
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
