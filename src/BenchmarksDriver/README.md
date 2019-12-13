@@ -92,6 +92,7 @@ Options:
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   --clean                A script to run after the application has stopped, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   -mem|--memory          The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).
+  --cpus                 The amount of CPU available for the process, e.g. --cpus 0.5. For a 12 cores machines this value would result in 50% of 1200% total available CPU time.
 
 Properties of the Wrk client
 

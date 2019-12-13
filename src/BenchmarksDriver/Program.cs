@@ -312,7 +312,7 @@ namespace BenchmarksDriver
             _memoryLimitOption = app.Option("-mem|--memory",
                 "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
             _cpuLimitOption = app.Option("--cpus",
-                "The amount of CPU available for the process, e.g. --cpus 0.5", CommandOptionType.SingleValue);
+                "The amount of CPU available for the process, e.g. --cpus 0.5. For a 12 cores machines this value would result in 50% of 1200% total available CPU time.", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--client-threads",
