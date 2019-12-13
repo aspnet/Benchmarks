@@ -2629,7 +2629,7 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Creating cgroup with memory limits: {job.MemoryLimitInBytes}");
 
-                    var cgcreate = ProcessUtil.Run("cgcreate", "-g memory:benchmarks\"");
+                    var cgcreate = ProcessUtil.Run("cgcreate", "-g memory:benchmarks");
 
                     if (cgcreate.ExitCode > 0)
                     {
@@ -2647,7 +2647,7 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Creating cgroup with cpu limits: {job.CpuLimitRatio}");
 
-                    var cgcreate = ProcessUtil.Run("cgcreate", "-g cpu:benchmarks\"");
+                    var cgcreate = ProcessUtil.Run("cgcreate", "-g cpu:benchmarks");
 
                     if (cgcreate.ExitCode > 0)
                     {
@@ -2665,7 +2665,7 @@ namespace BenchmarkServer
 
             if (job.MemoryLimitInBytes + job.CpuLimitRatio > 0)
             {
-                commandLine = $"-g *:benchmarks {executable} {commandLine}";
+                commandLine = $"-g \"*:benchmarks\" {executable} {commandLine}";
                 executable = "cgexec";
             }
 
