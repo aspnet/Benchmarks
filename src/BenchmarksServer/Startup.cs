@@ -2645,7 +2645,7 @@ namespace BenchmarkServer
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Log.WriteLine($"Creating cgroup with memory limits: {job.CpuLimitRatio}");
+                    Log.WriteLine($"Creating cgroup with cpu limits: {job.CpuLimitRatio}");
 
                     var cgcreate = ProcessUtil.Run("cgcreate", "-g cpu:benchmarks\"");
 
@@ -2658,8 +2658,8 @@ namespace BenchmarkServer
                     // https://docs.docker.com/config/containers/resource_constraints/
                     const double defaultDockerCfsPeriod = 100000;
 
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us=100000 benchmarks");
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Round(job.CpuLimitRatio * defaultDockerCfsPeriod, 1)} benchmarks");
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us=100000 benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * defaultDockerCfsPeriod)} benchmarks", log: true);
                 }
             }
 
