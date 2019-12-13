@@ -2663,7 +2663,7 @@ namespace BenchmarkServer
                     // https://docs.docker.com/config/containers/resource_constraints/
                     const double defaultDockerCfsPeriod = 100000;
 
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us=100000 benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={defaultDockerCfsPeriod} benchmarks", log: true);
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * defaultDockerCfsPeriod)} benchmarks", log: true);
 
                     limits.Add("cpu");
