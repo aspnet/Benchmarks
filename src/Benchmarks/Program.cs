@@ -43,6 +43,8 @@ namespace Benchmarks
             Console.WriteLine($"NetCoreApp location: {typeof(object).GetTypeInfo().Assembly.Location}");
             Console.WriteLine($"CoreCLR version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             Console.WriteLine($"CoreFx version: {typeof(Regex).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            
+            Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
