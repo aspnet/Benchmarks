@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tools.Trace;
 using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Parsers.ApplicationServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -2623,6 +2624,8 @@ namespace BenchmarkServer
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
 
+            var limits = new List<string>();
+
             if (job.MemoryLimitInBytes > 0)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -2638,6 +2641,8 @@ namespace BenchmarkServer
                     }
 
                     ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks");
+
+                    limits.Add("memory");
                 }
             }
 
@@ -2660,12 +2665,14 @@ namespace BenchmarkServer
 
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us=100000 benchmarks", log: true);
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * defaultDockerCfsPeriod)} benchmarks", log: true);
+
+                    limits.Add("cpu");
                 }
             }
 
-            if (job.MemoryLimitInBytes + job.CpuLimitRatio > 0)
+            if (limits.Any())
             {
-                commandLine = $"-g \"*:benchmarks\" {executable} {commandLine}";
+                commandLine = $"-g \"{String.Join(',', limits)}:benchmarks\" {executable} {commandLine}";
                 executable = "cgexec";
             }
 
