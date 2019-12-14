@@ -2671,7 +2671,7 @@ namespace BenchmarkServer
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={defaultDockerCfsPeriod} benchmarks", log: true);
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * defaultDockerCfsPeriod)} benchmarks", log: true);
 
-                    limits.Add("cpu");
+                    limits.Add("cpu,cpuacct");
                 }
             }
 
