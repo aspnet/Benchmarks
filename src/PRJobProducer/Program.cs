@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.File;
@@ -26,7 +26,8 @@ namespace PRJobProducer
         private const string ProcessedDirectoryName = "processed";
 
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
-        private const string CommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
+        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark with session ID '{0}'. This could take up to 30 minutes...";
+        private const string CompletedBenchmarkCommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
         private static readonly DateTime CommentCutoffDate = DateTime.Now.AddHours(-24);
         private static readonly TimeSpan BenchmarkTimeout = TimeSpan.FromMinutes(30);
@@ -136,14 +137,17 @@ namespace PRJobProducer
                     {
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
+                        var startingCommentText = string.Format(StartingBencmarkComment, session);
 
-                        Console.WriteLine($"Requesting benchmark for PR #{pr.Number} with session id:'{session}'");
+                        Console.WriteLine($"Requesting benchmark for PR #{pr.Number}.");
+                        Console.WriteLine($"Benchmark starting comment: {startingCommentText}");
+
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, startingCommentText);
+
                         await RequestBenchmark(pr, newJobFileName);
 
                         Console.WriteLine($"Benchmark requested for PR #{pr.Number}. Waiting up to {BenchmarkTimeout} for results.");
                         var results = await WaitForBenchmarkResults(newJobFileName);
-
-                        Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
 
                         string FormatOutput(string stdout, string stderr)
                         {
@@ -152,11 +156,19 @@ namespace PRJobProducer
 
                         var baselineOutput = FormatOutput(results.BaselineStdout, results.BaselineStderr);
                         var prOutput = FormatOutput(results.PullRequestStdout, results.PullRequestStderr);
-                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, string.Format(CommentTemplate, baselineOutput, prOutput));
+
+                        var resultCommentText = string.Format(CompletedBenchmarkCommentTemplate, baselineOutput, prOutput);
+
+                        Console.WriteLine($"Benchmark results received for PR #{pr.Number}. Posting results to {pr.Url}.");
+                        Console.WriteLine($"Benchmark results comment: {resultCommentText}");
+
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, resultCommentText);
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to benchmark PR #{pr.Number}. Skipping... Details: {ex}");
+                        var errorCommentText = $"Failed to benchmark PR #{pr.Number}. Skipping... Details:\n```\n{ex}\n```";
+                        Console.WriteLine($"Benchmark error comment: {errorCommentText}");
+                        await client.Issue.Comment.Create(Owner, Repo, pr.Number, errorCommentText);
                     }
                 }
 
@@ -242,6 +254,7 @@ namespace PRJobProducer
             jsonDictionary["BuildInstructions"] = new BuildInstructions
             {
                 BuildCommands = BuildCommands,
+                PullRequestNumber = pr.Number,
                 BaselineSHA = pr.Base.Sha,
                 PullRequestSHA = pr.Head.Sha,
             };
@@ -262,14 +275,9 @@ namespace PRJobProducer
             var startTicks = Environment.TickCount64;
             var expectedProcessedJobPath = Path.Combine(ProcessedDirectoryName, newJobFileName);
 
-            while (!await JobFileSystem.FileExists(expectedProcessedJobPath))
+            if (!await WaitForCompleteJsonFile(expectedProcessedJobPath, BenchmarkTimeout))
             {
-                if (Environment.TickCount64 - startTicks > BenchmarkTimeout.TotalMilliseconds)
-                {
-                    throw new TimeoutException($"Benchmark results for job {newJobFileName} were not published to {ProcessedDirectoryName} within {BenchmarkTimeout}.");
-                }
-
-                await Task.Delay(1000);
+                throw new TimeoutException($"Benchmark results for job {newJobFileName} were not published to {ProcessedDirectoryName} within {BenchmarkTimeout}.");
             }
 
             Console.WriteLine($"Found '{newJobFileName}'");
@@ -286,6 +294,44 @@ namespace PRJobProducer
             }
 
             throw new InvalidDataException($"Processed benchmark job '{newJobFileName}' did not include a top-level '{nameof(BenchmarkResult)}' property.");
+        }
+
+        private static async Task<bool> WaitForCompleteJsonFile(string jsonFilePath, TimeSpan timeout)
+        {
+            var startTicks = Environment.TickCount64;
+
+            while (!await JobFileSystem.FileExists(jsonFilePath))
+            {
+                if (Environment.TickCount64 - startTicks > timeout.TotalMilliseconds)
+                {
+                    return false;
+                }
+
+                await Task.Delay(1000);
+            }
+
+            // Wait up to 5 seconds for the Json file to be fully parsable.
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    using var processedJsonStream = await JobFileSystem.ReadFile(jsonFilePath);
+                    using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+
+                    return true;
+                }
+                catch (JsonException)
+                {
+                    if (i == 4)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
+
+            return false;
         }
 
         private static GitHubClient GetClientForUser(string userName, string token)
@@ -362,6 +408,7 @@ namespace PRJobProducer
         {
             public string[] BuildCommands { get; set; }
 
+            public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
         }

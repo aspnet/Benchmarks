@@ -70,12 +70,29 @@ namespace JobConsumer
 
                 while (true)
                 {
-                    // Get oldest file
-                    var nextFile = jobsDirectory
-                        .GetFiles()
-                        .OrderByDescending(f => f.LastWriteTime)
-                        .FirstOrDefault();
+                    FileInfo nextFile = null;
 
+                    // Get oldest file
+                    try
+                    {
+                        var candidateFile = jobsDirectory
+                            .GetFiles()
+                            .OrderByDescending(f => f.LastWriteTime)
+                            .FirstOrDefault();
+
+                        if (candidateFile != null && await WaitForCompleteJsonFile(candidateFile))
+                        {
+                            nextFile = candidateFile;
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Could not enumerate files from jobs directory. Will try again in 1 second. {ex}");
+                    }
+                    catch (JsonException ex)
+                    {
+                        Console.WriteLine($"Could not parse JSON job file within 5 seconds. Will try again in 1 second. {ex}");
+                    }
 
                     // If no file was found, wait some time
                     if (nextFile is null)
@@ -99,19 +116,18 @@ namespace JobConsumer
                     var processingFilePath = Path.Combine(ProcessingPath, nextFile.Name);
                     var processingFile = new FileInfo(processingFilePath);
 
-                    // If we can't move the file to the processing folder, we continue, which might retry the same file
+                    nextFile.MoveTo(processingFilePath);
+
                     try
                     {
-                        nextFile.MoveTo(processingFilePath);
+                        var benchmarkResult = await BenchmarkPR(processingFile, session);
+                        await PublishResult(processingFile, benchmarkResult);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"The file named '{nextFile.FullName}' couldn't be moved to '{processingFilePath}'. Skipping...");
-                        continue;
+                        Console.WriteLine($"Could not successfully benchmark PR. Writing error to comment: {ex}");
+                        await PublishError(processingFile, ex);
                     }
-
-                    var benchmarkResult = await BenchmarkPR(processingFile, session);
-                    await PublishResult(processingFile, benchmarkResult);
                 }
             });
 
@@ -124,13 +140,14 @@ namespace JobConsumer
             var errorBuilder = new StringBuilder();
 
             var buildRules = await GetBuildInstructions(processingFile);
+            var sdkVersion = await GetSdkVersionOrNull();
 
-            Process.Start("git", "clean -xdf").WaitForExit();
-            Process.Start("git", "fetch").WaitForExit();
-            Process.Start("git", $"checkout {buildRules.BaselineSHA}").WaitForExit();
+            RunCommand("git clean -xdf");
+            RunCommand("git fetch");
+            RunCommand($"git checkout {buildRules.BaselineSHA}");
             RunBuildCommands(buildRules);
 
-            var baselineArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --save baseline --description Before";
+            var baselineArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: true);
 
             outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
             var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
@@ -151,10 +168,11 @@ namespace JobConsumer
             outputBuilder.Clear();
             errorBuilder.Clear();
 
-            Process.Start("git", $"checkout {buildRules.PullRequestSHA}").WaitForExit();
+            RunCommand($"git fetch origin pull/{buildRules.PullRequestNumber}/head:{session}");
+            RunCommand($"git checkout {session}");
             RunBuildCommands(buildRules);
 
-            var prArguments = $"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {processingFile.FullName} --session {session} --self-contained --diff baseline --description After";
+            var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: false);
 
             outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
             var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
@@ -176,6 +194,8 @@ namespace JobConsumer
 
         private static async Task<bool> RunDriver(string arguments, StringBuilder outputBuilder, StringBuilder errorBuilder)
         {
+            Console.WriteLine($"Running driver with arguments: {arguments}");
+
             // Don't let the repo's global.json interfere with running the driver
             File.Move("global.json", "global.json~");
 
@@ -203,7 +223,7 @@ namespace JobConsumer
 
                 process.ErrorDataReceived += (_, e) =>
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    if (!string.IsNullOrWhiteSpace(e.Data))
                     {
                         sawErrorOutput = true;
                     }
@@ -272,8 +292,7 @@ namespace JobConsumer
         {
             foreach (var buildCommand in buildRules.BuildCommands)
             {
-                var splitCommand = buildCommand.Split(' ', 2);
-                Process.Start(splitCommand[0], splitCommand.Length == 2 ? splitCommand[1] : string.Empty).WaitForExit();
+                RunCommand(buildCommand);
             }
         }
 
@@ -296,6 +315,17 @@ namespace JobConsumer
             processingFile.MoveTo(Path.Combine(ProcessedPath, processingFile.Name));
         }
 
+        private static Task PublishError(FileInfo processingFile, Exception error)
+        {
+            var errorResult = new BenchmarkResult
+            {
+                Success = false,
+                BaselineStderr = error.ToString()
+            };
+
+            return PublishResult(processingFile, errorResult);
+        }
+
         private static string GetDotNetExecutable()
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -304,11 +334,134 @@ namespace JobConsumer
                 ;
         }
 
+        private static void RunCommand(string command)
+        {
+            Console.WriteLine($"Running command: '{command}'");
+
+            var outputBuilder = new StringBuilder();
+
+            var splitCommand = command.Split(' ', 2);
+            var fileName = splitCommand[0];
+            var arguments = splitCommand.Length == 2 ? splitCommand[1] : string.Empty;
+
+            using var process = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                },
+            };
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    outputBuilder.AppendLine($"stdout: {e.Data}");
+                    Console.WriteLine(e.Data);
+                }
+            };
+
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    outputBuilder.AppendLine($"stderr: {e.Data}");
+                    Console.Error.WriteLine(e.Data);
+                }
+            };
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Process '{fileName} {arguments}' exited with exit code '{process.ExitCode}' and the following output:\n\n{outputBuilder}");
+            }
+        }
+
+        private static async Task<bool> WaitForCompleteJsonFile(FileInfo nextFile)
+        {
+            // Wait up to 5 seconds for the Json file to be fully parsable.
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    using var processedJsonStream = File.OpenRead(nextFile.FullName);
+                    using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
+
+                    return true;
+                }
+                catch (JsonException)
+                {
+                    if (i == 4)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
+
+            return false;
+        }
+
+        private static async Task<string> GetSdkVersionOrNull()
+        {
+            if (!File.Exists("global.json"))
+            {
+                return null;
+            }
+
+            using var globalJsonStream = File.OpenRead("global.json");
+            using var jsonDocument = await JsonDocument.ParseAsync(globalJsonStream);
+
+            if (jsonDocument.RootElement.TryGetProperty("sdk", out var sdkElement) && sdkElement.ValueKind == JsonValueKind.Object)
+            {
+                if (sdkElement.TryGetProperty("version", out var sdkVersionElement) && sdkVersionElement.ValueKind == JsonValueKind.String)
+                {
+                    return sdkVersionElement.GetString();
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetDriverArguments(string jobsFilePath, string sessionId, string sdkVersion, bool isBaseline)
+        {
+            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId} --self-contained --aspNetCoreVersion Latest --runtimeVersion Latest --quiet");
+
+            if (isBaseline)
+            {
+                argumentsBuilder.Append(" --save baseline --description Before");
+            }
+            else
+            {
+                argumentsBuilder.Append(" --diff baseline --description After");
+            }
+
+            if (!string.IsNullOrWhiteSpace(sdkVersion))
+            {
+                argumentsBuilder.Append(" --sdk ");
+                argumentsBuilder.Append(sdkVersion);
+            }
+
+            return argumentsBuilder.ToString();
+        }
+
         // REVIEW: What's the best way to share these DTOs in this repo?
         private class BuildInstructions
         {
             public string[] BuildCommands { get; set; }
 
+            public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
         }
