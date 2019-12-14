@@ -83,6 +83,9 @@ namespace BenchmarkServer
         private static readonly string _perfviewPath;
         private static readonly string _dotnetInstallPath;
 
+        // https://docs.docker.com/config/containers/resource_constraints/
+        private const double _defaultDockerCfsPeriod = 100000;
+
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
@@ -936,6 +939,14 @@ namespace BenchmarkServer
 
                         async Task StopJobAsync()
                         {
+                            // Restore cgroup defaults
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                            {
+                                Log.WriteLine($"Resetting cgroup limits");
+                                ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 /");
+                                ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 /");
+                            }
+
                             // Check if we already passed here
                             if (timer == null)
                             {
@@ -2629,25 +2640,15 @@ namespace BenchmarkServer
                 executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\inetsrv\w3wp.exe");
             }
 
-            var limits = new List<string>();
+            // The cgroup limits are set on the root group as .NET is reading these only, and not the ones that it would run inside
 
             if (job.MemoryLimitInBytes > 0)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Log.WriteLine($"Creating cgroup with memory limits: {job.MemoryLimitInBytes}");
+                    Log.WriteLine($"Setting cgroup memory limits: {job.MemoryLimitInBytes}");
 
-                    var cgcreate = ProcessUtil.Run("cgcreate", "-g memory:benchmarks");
-
-                    if (cgcreate.ExitCode > 0)
-                    {
-                        job.Error += "Could not create cgroup 'memory:benchmarks'";
-                        return null;
-                    }
-
-                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks");
-
-                    limits.Add("memory");
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} /");
                 }
             }
 
@@ -2655,30 +2656,10 @@ namespace BenchmarkServer
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Log.WriteLine($"Creating cgroup with cpu limits: {job.CpuLimitRatio}");
+                    Log.WriteLine($"Setting cgroup cpu limits: {job.CpuLimitRatio}");
 
-                    var cgcreate = ProcessUtil.Run("cgcreate", "-g cpu,cpuacct:benchmarks");
-
-                    if (cgcreate.ExitCode > 0)
-                    {
-                        job.Error += "Could not create cgroup 'cpu,cpuacct:benchmarks'";
-                        return null;
-                    }
-
-                    // https://docs.docker.com/config/containers/resource_constraints/
-                    const double defaultDockerCfsPeriod = 100000;
-
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={defaultDockerCfsPeriod} benchmarks", log: true);
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * defaultDockerCfsPeriod)} benchmarks", log: true);
-
-                    limits.Add("cpu,cpuacct");
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} /", log: true);
                 }
-            }
-
-            if (limits.Any())
-            {
-                commandLine = $"-g \"{String.Join(',', limits)}:benchmarks\" {executable} {commandLine}";
-                executable = "cgexec";
             }
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
