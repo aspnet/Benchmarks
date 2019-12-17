@@ -71,9 +71,9 @@ namespace BenchmarkServer
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
         private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version"; // used to find which version of the SDK the ASP.NET repository is using
-        private static readonly string _runtimeLinuxPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{0}/microsoft.netcore.app.runtime.linux-x64.{0}.nupkg";
         private static readonly string _runtimeMonoPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.mono/{0}/runtime.linux-x64.microsoft.netcore.runtime.mono.{0}.nupkg";
-        
+        private static readonly string[] _runtimeFeedUrls = new string[] { "dotnetfeed.blob.core.windows.net/dotnet-core", "api.nuget.org/v3" };
+
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2226,9 +2226,27 @@ namespace BenchmarkServer
                     if (!File.Exists(runtimePath))
                     {
                         Log.WriteLine($"Downloading runtime package");
+                        
+                        var found = false;
+                        foreach (var feed in _runtimeFeedUrls)
+                        {
+                            var url = $"https://{feed}/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
+        
+                            try
+                            {
+                                await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60);
+                                found = true;
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                        }
 
-                        var url = String.Format(_runtimeLinuxPackageUrl, runtimeVersion);
-                        await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60);
+                        if (!found)
+                        {
+                            throw new Exception("Linux runtime package not found");
+                        }
                     }
                     else
                     {
