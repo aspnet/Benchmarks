@@ -1426,6 +1426,9 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
+            // Stop container in case it failed to stop earlier
+            ProcessUtil.Run("docker", $"stop {imageName}", throwOnError: false);
+
             // Delete container if the same name already exists
             ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
 
