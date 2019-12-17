@@ -40,7 +40,6 @@ namespace BenchmarkServer
 {
     public class Startup
     {
-
         /*
          * List of accepted values for AspNetCoreVersion and RuntimeVersion
          * 
@@ -71,8 +70,10 @@ namespace BenchmarkServer
         private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
-        private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version";
-
+        private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version"; // used to find which version of the SDK the ASP.NET repository is using
+        private static readonly string _runtimeLinuxPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{0}/microsoft.netcore.app.runtime.linux-x64.{0}.nupkg";
+        private static readonly string _runtimeMonoPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.mono/{0}/runtime.linux-x64.microsoft.netcore.runtime.mono.{0}.nupkg";
+        
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2209,13 +2210,15 @@ namespace BenchmarkServer
             // Copy crossgen in the app folder
             if (job.Collect && OperatingSystem == OperatingSystem.Linux)
             {
+                // https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app.runtime.linux-x64/index.json
+                // This is because the package names were changed.For 3.0 +, look for ~/.nuget/packages/microsoft.netcore.app.runtime.linux-x64/<version>/tools/crossgen.
+
                 Log.WriteLine("Copying crossgen to application folder");
 
                 try
                 {
                     // Downloading corresponding package
-
-                    var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"runtime.linux-x64.Microsoft.NETCore.App.{runtimeVersion}.nupkg");
+                    var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg");
 
                     // Ensure the folder already exists
                     Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
@@ -2224,14 +2227,7 @@ namespace BenchmarkServer
                     {
                         Log.WriteLine($"Downloading runtime package");
 
-                        // For some unknown reason, the version on this feed is not aligned with the netcore.app one
-                        // See https://dotnetfeed.blob.core.windows.net/dotnet-coreclr/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.coreclr/index.json
-                        var segments = runtimeVersion.Split('-');
-                        segments[segments.Length - 1] = "7" + segments[segments.Length - 1];
-                        var hackedRuntimeVersion = String.Join("-", segments);
-
-                        var url = $"https://dotnetfeed.blob.core.windows.net/dotnet-coreclr/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.coreclr/{hackedRuntimeVersion}/runtime.linux-x64.microsoft.netcore.runtime.coreclr.{hackedRuntimeVersion}.nupkg";
-
+                        var url = String.Format(_runtimeLinuxPackageUrl, runtimeVersion);
                         await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60);
                     }
                     else
