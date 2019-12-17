@@ -383,8 +383,8 @@ namespace BenchmarkServer
                 Timer timer = null;
                 var executionLock = new object();
                 var disposed = false;
-                var standardOutput = new StringBuilder();
-                var standardError = new StringBuilder();
+                var standardOutput = new RollingLog(1000);
+                var standardError = new RollingLog(1000);
                 string benchmarksDir = null;
                 var startMonitorTime = DateTime.UtcNow;
 
@@ -1331,7 +1331,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, StringBuilder standardOutput, CancellationToken cancellationToken = default(CancellationToken))
+        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, RollingLog standardOutput, CancellationToken cancellationToken = default(CancellationToken))
         {
             var source = job.Source;
             string srcDir;
@@ -1387,7 +1387,7 @@ namespace BenchmarkServer
             {
                 var segments = job.BeforeScript.Split(' ', 2);
                 var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
-                standardOutput.AppendLine(processResult.StandardOutput);
+                standardOutput.AddLine(processResult.StandardOutput);
             }
 
             var stopwatch = new Stopwatch();
@@ -1457,6 +1457,7 @@ namespace BenchmarkServer
                     Arguments = $"logs -f {containerId}",
                     WorkingDirectory = workingDirectory,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
@@ -1474,7 +1475,7 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
-                        standardOutput.AppendLine(e.Data);
+                        standardOutput.AddLine(e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
@@ -1513,7 +1514,7 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
-                        standardOutput.AppendLine(e.Data);
+                        standardOutput.AddLine(e.Data);
                     }
                 };
 
@@ -2589,7 +2590,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, StringBuilder standardOutput, StringBuilder standardError)
+        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, RollingLog standardOutput, RollingLog standardError)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
@@ -2605,7 +2606,7 @@ namespace BenchmarkServer
             {
                 var segments = job.BeforeScript.Split(' ', 2);
                 var result = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
-                standardOutput.AppendLine(result.StandardOutput);
+                standardOutput.AddLine(result.StandardOutput);
             }
 
             var commandLine = benchmarksDll ?? "";
@@ -2766,7 +2767,7 @@ namespace BenchmarkServer
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
-                    standardOutput.AppendLine(e.Data);
+                    standardOutput.AddLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
                         ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
@@ -2794,7 +2795,26 @@ namespace BenchmarkServer
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine("[ERROR] " + e.Data);
-                    standardError.AppendLine(e.Data);
+                    standardError.AddLine(e.Data);
+
+                    if (job.State == ServerState.Starting &&
+                        ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
+                    {
+                        MarkAsRunning(hostname, job, stopwatch);
+
+                        if (!job.CollectStartup)
+                        {
+                            if (job.Collect)
+                            {
+                                StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                            }
+
+                            if (job.DotNetTrace)
+                            {
+                                StartDotNetTrace(process.Id, job);
+                            }
+                        }
+                    }
                 }
             };
 
