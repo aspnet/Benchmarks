@@ -1579,37 +1579,50 @@ namespace BenchmarkServer
 
         private static void DockerCleanUp(string containerId, string imageName, ServerJob job)
         {
-            var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false)?.StandardOutput;
+            var finalState = ServerState.Stopped;
 
-            // container is already stopped
-            if (state.Contains("false"))
+            try
             {
-                if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false)?.StandardOutput.Trim() != "0")
+                var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false)?.StandardOutput;
+
+                // container is already stopped
+                if (state.Contains("false"))
                 {
-                    Log.WriteLine("Job failed");
-                    job.Error = ProcessUtil.Run("docker", "logs " + containerId, throwOnError: false)?.StandardError;
-                    job.State = ServerState.Failed;
+                    if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false)?.StandardOutput.Trim() != "0")
+                    {
+                        Log.WriteLine("Job failed");
+                        job.Error = ProcessUtil.Run("docker", "logs " + containerId, throwOnError: false)?.StandardError;
+                        finalState = ServerState.Failed;
+                    }
                 }
                 else
                 {
-                    job.State = ServerState.Stopped;
+                    ProcessUtil.Run("docker", $"stop {containerId}", throwOnError: false);
                 }
             }
-            else
+            finally
             {
-                ProcessUtil.Run("docker", $"stop {containerId}", throwOnError: false);
-
-                job.State = ServerState.Stopped;
-            }
-
-            if (job.NoClean)
-            {
-                ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
-            }
-            else
-            {
-                ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
-                ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
+                try
+                {
+                    if (job.NoClean)
+                    {
+                        ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
+                    }
+                    else
+                    {
+                        ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
+                        ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
+                    }
+                }
+                catch(Exception e)
+                {
+                    Log.WriteLine("An error occured while deleting the docker container: " + e.Message);
+                    finalState = ServerState.Failed;
+                }
+                finally
+                {
+                    job.State = finalState;
+                }
             }
         }
 
