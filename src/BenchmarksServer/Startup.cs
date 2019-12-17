@@ -2502,8 +2502,6 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
                 }
-
-                return true;
             }
 
             if (throwOnError)
