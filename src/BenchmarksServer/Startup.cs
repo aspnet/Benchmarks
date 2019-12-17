@@ -2233,7 +2233,7 @@ namespace BenchmarkServer
                         {
                             var url = $"https://{feed}/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
         
-                            if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60))
+                            if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                             {
                                 found = true;
                             }
