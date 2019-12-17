@@ -14,6 +14,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2232,14 +2233,14 @@ namespace BenchmarkServer
                         {
                             var url = $"https://{feed}/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
         
-                            try
+                            if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60))
                             {
-                                await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60);
                                 found = true;
                             }
-                            catch
+                            else
                             {
                                 continue;
+
                             }
                         }
 
@@ -2447,16 +2448,18 @@ namespace BenchmarkServer
             return latestSdk;
         }
 
-        private static async Task DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5)
+        private static async Task<bool> DownloadFileAsync(string url, string outputPath, int maxRetries, int timeout = 5, bool throwOnError = true)
         {
             Log.WriteLine($"Downloading {url}");
+
+            HttpResponseMessage response = null;
 
             for (var i = 0; i < maxRetries; ++i)
             {
                 try
                 {
                     var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-                    var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
+                    response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseContentRead, cts.Token);
                     response.EnsureSuccessStatusCode();
 
                     // This probably won't use async IO on windows since the stream
@@ -2467,19 +2470,34 @@ namespace BenchmarkServer
                         await response.Content.CopyToAsync(stream);
                     }
 
-                    return;
+                    return true;
                 }
                 catch (OperationCanceledException)
                 {
                     Log.WriteLine($"Timeout trying to download {url}, attempt {i + 1}");
                 }
+                catch (HttpRequestException)
+                {
+                    // No need to retry on a 404
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        break;
+                    }
+                }
                 catch (Exception ex)
                 {
                     Log.WriteLine($"Failed to download {url}, attempt {i + 1}, Exception: {ex}");
                 }
+
+                return true;
             }
 
-            throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
+            if (throwOnError)
+            {
+                throw new InvalidOperationException($"Failed to download {url} after {maxRetries} attempts");
+            }
+
+            return false;
         }
 
         private static string GetTempDir()
