@@ -1466,6 +1466,7 @@ namespace BenchmarkServer
 
             process.Start();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
             if (!String.IsNullOrEmpty(job.ReadyStateText))
             {
