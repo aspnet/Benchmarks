@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
+
 namespace Benchmarks.ServerJob
 {
     public class Source
@@ -20,7 +22,14 @@ namespace Benchmarks.ServerJob
 
         public string GetNormalizedImageName()
         {
-            return $"benchmarks_{DockerImageName}".ToLowerInvariant();
+            if (!string.IsNullOrEmpty(DockerImageName))
+            {
+                return $"benchmarks_{DockerImageName}".ToLowerInvariant();
+            }
+            else
+            {
+                return $"benchmarks_{Path.GetFileNameWithoutExtension(DockerFile)}".ToLowerInvariant();
+            }            
         }
 
         // When set, contains the location of the uploaded source code

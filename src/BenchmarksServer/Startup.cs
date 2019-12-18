@@ -1381,7 +1381,7 @@ namespace BenchmarkServer
 
             if (String.IsNullOrEmpty(source.DockerContextDirectory))
             {
-                source.DockerContextDirectory = Path.GetDirectoryName(source.DockerFile);
+                source.DockerContextDirectory = Path.GetDirectoryName(source.DockerFile).Replace("\\", "/");
             }
 
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
