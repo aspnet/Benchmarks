@@ -9,9 +9,9 @@
     "serverUri": null,
     "path": null
   },
-  "dependencies": [ "application", "load" ],
+  "dependencies": [ "aspnetbenchmarks", "pipelineclient" ],
   "services": {
-    "application": {
+    "aspnetbenchmarks": {
       "source": {
         "repository": "https://github.com/aspnet/benchmarks.git",
         "branchOrCommit": "master",
@@ -28,7 +28,7 @@
       "scenario": "Benchmarks",
       "arguments": "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:5000 --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     },
-    "load": {
+    "pipelineclient": {
       "source": {
         "repository": "https://github.com/aspnet/benchmarks.git",
         "branchOrCommit": "master",
@@ -77,7 +77,7 @@
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
     },
-    "database": {
+    "postgresql": {
       "source": {
         "repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
         "branchOrCommit": "master",

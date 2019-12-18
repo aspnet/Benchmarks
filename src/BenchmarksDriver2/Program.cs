@@ -45,7 +45,8 @@ namespace BenchmarksDriver
             _clientAspnetCoreVersionOption,
 
             _configOption,
-            _profileOption
+            _profileOption,
+            _outputOption
 
             ;
 
@@ -117,8 +118,8 @@ namespace BenchmarksDriver
 
             _configOption = app.Option("--config", "Configuration file or url", CommandOptionType.MultipleValue);
             _profileOption = app.Option("--profile", "Profile to execute", CommandOptionType.SingleValue);
+            _outputOption = app.Option("--output", "Output filename", CommandOptionType.SingleValue);
 
-            
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
             {
@@ -774,7 +775,7 @@ namespace BenchmarksDriver
             // TODO: Post process the services to re-order them based on weight
             // result.Dependencies = result.Dependencies.OrderBy(x => x, x.Contains(":") ? int.Parse(x.Split(':', 2)[1]) : 100);
 
-            // Override default values in ServerJob
+            // Override default values in ServerJob for backward compatibility as the server would automatically add custom arguments to the applications.
             foreach (var dependency in result.Dependencies)
             {
                 var service = result.Services[dependency];
@@ -855,10 +856,18 @@ namespace BenchmarksDriver
                     previousSource = metadata.Source;
                 }
 
-                double result = 0;
+                object result = 0;
 
                 switch (metadata.Aggregate)
                 {
+                    case Operation.First:
+                        result = measurements[metadata.Name].First().Value;
+                        break;
+
+                    case Operation.Last:
+                        result = measurements[metadata.Name].Last().Value;
+                        break;
+
                     case Operation.Avg:
                         result = measurements[metadata.Name].Average(x => Convert.ToDouble(x.Value));
                         break;
@@ -884,7 +893,14 @@ namespace BenchmarksDriver
                         break;
                 }
 
-                Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {result.ToString(metadata.Format)}");
+                if (!String.IsNullOrEmpty(metadata.Format))
+                {
+                    Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {Convert.ToDouble(result).ToString(metadata.Format)}");
+                }
+                else
+                {
+                    Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {result.ToString()}");
+                }
             }
         }
     }

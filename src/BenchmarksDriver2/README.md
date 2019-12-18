@@ -64,6 +64,25 @@ Options:
   --services.[SERVICE].options.displayOutput <true|false>                               Whether to download and display the standard output of the benchmark.
   --services.[SERVICE].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
   
+  # Example
+
+  dotnet run --
+    --config ..\..\..\benchmarks.compose.json 
+    --profile plaintext 
+
+    --services.aspnetbenchmarks.endpoints http://asp-perf-lin:5001
+    --services.aspnetbenchmarks.sdkversion 5.0.100-alpha1-015721 
+    --services.aspnetbenchmarks.dotnetTrace true 
+    --services.aspnetbenchmarks.collectCounters true 
+
+    --services.pipelineclient.endpoints http://asp-perf-win:5001 
+    --services.pipelineclient.source.localFolder ..\..\..\..\PipeliningClient\ 
+    --services.pipelineclient.source.project PipeliningClient.csproj 
+    --services.pipelineclient.variables.warmup 0 
+    --services.pipelineclient.variables.duration 5  
+    --variables.preset-headers none 
+    --variables.serverUri http://10.0.0.110:5000 
+
   # Custom clients
   
   ## Sending measurements
