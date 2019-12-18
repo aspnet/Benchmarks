@@ -1581,7 +1581,12 @@ namespace BenchmarkServer
                     Log.WriteLine($"Parsing custom measures...");
                 }
 
+                Console.WriteLine($"i: {i}");
                 var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i).Take(lines.Length - 1 - i));
+
+                Console.WriteLine($"###");
+                Console.WriteLine(jsonStatistics);
+                Console.WriteLine($"###");
 
                 var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
