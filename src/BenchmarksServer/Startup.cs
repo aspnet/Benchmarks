@@ -1490,48 +1490,7 @@ namespace BenchmarkServer
                             }
                         }
 
-                        // Detected custom statistics in stdout, parse it
-                        if (job.State == ServerState.Running && e.Data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
-                        {
-                            // Seek the beginning of statistics
-
-                            var lines = standardOutput.ToArray();
-
-                            var i = 0;
-
-                            for (i = 0; i < lines.Length; i++)
-                            {
-                                if (lines[i].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    break;
-                                }
-                            }
-
-                            if (i == lines.Length - 1)
-                            {
-                                Log.WriteLine($"Didn't find start of statistics");
-                            }
-                            else
-                            {
-                                Log.WriteLine($"Parsing custom measures...");
-                            }
-
-                            var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i).Take(lines.Length - 1 - i));
-
-                            var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
-
-                            Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
-
-                            foreach (var metadata in jobStatistics.Metadata)
-                            {
-                                job.Metadata.Add(metadata);
-                            }
-
-                            foreach (var measurement in jobStatistics.Measurements)
-                            {
-                                job.Measurements.Add(measurement);
-                            }
-                        }
+                        ParseMeasurementOutput(job, e.Data, standardOutput);
                     }
                 };
 
@@ -1565,6 +1524,8 @@ namespace BenchmarkServer
                     {
                         Log.WriteLine(e.Data);
                         standardOutput.AddLine(e.Data);
+
+                        ParseMeasurementOutput(job, e.Data, standardOutput);
                     }
                 };
 
@@ -1591,6 +1552,52 @@ namespace BenchmarkServer
             return (containerId, imageName, workingDirectory);
         }
 
+        private static void ParseMeasurementOutput(ServerJob job, string data, RollingLog standardOutput)
+        {
+
+            // Detected custom statistics in stdout, parse it
+            if (job.State == ServerState.Running && data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                // Seek the beginning of statistics
+
+                var lines = standardOutput.ToArray();
+
+                var i = 0;
+
+                for (i = 0; i < lines.Length; i++)
+                {
+                    if (lines[i].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+                }
+
+                if (i == lines.Length - 1)
+                {
+                    Log.WriteLine($"Didn't find start of statistics");
+                }
+                else
+                {
+                    Log.WriteLine($"Parsing custom measures...");
+                }
+
+                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i).Take(lines.Length - 1 - i));
+
+                var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
+
+                Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
+
+                foreach (var metadata in jobStatistics.Metadata)
+                {
+                    job.Metadata.Add(metadata);
+                }
+
+                foreach (var measurement in jobStatistics.Measurements)
+                {
+                    job.Measurements.Add(measurement);
+                }
+            }
+        }
         private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
             if (job.IsConsoleApp)
@@ -2830,6 +2837,8 @@ namespace BenchmarkServer
                             }
                         }
                     }
+
+                    ParseMeasurementOutput(job, e.Data, standardOutput);
                 }
             };
 
