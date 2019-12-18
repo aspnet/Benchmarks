@@ -1379,6 +1379,11 @@ namespace BenchmarkServer
                 }
             }
 
+            if (String.IsNullOrEmpty(source.DockerContextDirectory))
+            {
+                source.DockerContextDirectory = Path.GetDirectoryName(source.DockerFile);
+            }
+
             var workingDirectory = Path.Combine(srcDir, source.DockerContextDirectory);
 
             job.BasePath = workingDirectory;
