@@ -1582,7 +1582,7 @@ namespace BenchmarkServer
                 }
 
                 Console.WriteLine($"i: {i}");
-                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i + 1).Take(lines.Length - 1 - i));
+                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i + 1).Take(lines.Length - i - 2));
 
                 Console.WriteLine($"###");
                 Console.WriteLine(jsonStatistics);
