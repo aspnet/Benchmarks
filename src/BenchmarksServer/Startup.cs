@@ -1581,13 +1581,6 @@ namespace BenchmarkServer
                     Log.WriteLine($"Parsing custom measures...");
                 }
 
-                Console.WriteLine($"i: {i}");
-                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i + 1).Take(lines.Length - i - 2));
-
-                Console.WriteLine($"###");
-                Console.WriteLine(jsonStatistics);
-                Console.WriteLine($"###");
-
                 var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
                 Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
