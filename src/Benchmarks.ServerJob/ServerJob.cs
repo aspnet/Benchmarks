@@ -38,6 +38,13 @@ namespace Benchmarks.ServerJob
         public Scheme Scheme { get; set; }
         public int Port { get; set; } = 5000;
         public string Path { get; set; } = "/";
+
+        // The client connections. Allows a json document to define this value for the client.
+        public int Connections { get; set; }
+
+        // The client threads. Allows a json document to define this value for the client.
+        public int Threads { get; set; }
+        
         public string ReadyStateText { get; set; }
         public bool IsConsoleApp { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";

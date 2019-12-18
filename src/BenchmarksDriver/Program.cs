@@ -1038,9 +1038,23 @@ namespace BenchmarksDriver
                 {
                     _clientJob.Connections = int.Parse(connectionsOption.Value());
                 }
+                else
+                {
+                    if (serverJob.Connections > 0)
+                    {
+                        _clientJob.Connections = serverJob.Connections;
+                    }
+                }
                 if (clientThreadsOption.HasValue())
                 {
                     _clientJob.Threads = int.Parse(clientThreadsOption.Value());
+                }
+                else
+                {
+                    if (serverJob.Threads > 0)
+                    {
+                        _clientJob.Threads = serverJob.Threads;
+                    }
                 }
                 if (durationOption.HasValue())
                 {
