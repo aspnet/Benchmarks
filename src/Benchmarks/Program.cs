@@ -46,6 +46,28 @@ namespace Benchmarks
             
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
 
+            Console.WriteLine("#StartJobStatistics");
+
+            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(new
+            {
+                Metadata = new object[] 
+                {
+                    new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
+                    new { Source= "Benchmarks", Name= "CoreClrVersion", ShortDescription = "CoreCLR Version", LongDescription = "Core CLR Version" },
+                    new { Source= "Benchmarks", Name= "CoreFxVersion", ShortDescription = "CoreFX Version", LongDescription = "Core FX Version" },
+                    new { Source= "Benchmarks", Name= "ProcessorCount", ShortDescription = "Processor Count", LongDescription = "Processor Count", Format = "n0" },
+                },
+                Measurements = new object[] 
+                {
+                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    new { Timestamp = DateTime.UtcNow, Name = "CoreClrVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    new { Timestamp = DateTime.UtcNow, Name = "CoreFxVersion", Value = typeof(Regex).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    new { Timestamp = DateTime.UtcNow, Name = "ProcessorCount", Value = Environment.ProcessorCount }
+                }
+            }));
+
+            Console.WriteLine("#EndJobStatistics");
+
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
