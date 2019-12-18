@@ -1556,7 +1556,7 @@ namespace BenchmarkServer
         {
 
             // Detected custom statistics in stdout, parse it
-            if (job.State == ServerState.Running && data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 // Seek the beginning of statistics
 
