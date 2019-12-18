@@ -1562,24 +1562,28 @@ namespace BenchmarkServer
 
                 var lines = standardOutput.ToArray();
 
-                var i = 0;
+                var startIndex = lines.Length - 1;
 
-                for (i = 0; i < lines.Length; i++)
+                // Seek backward in case thre are multiple blocks of statistics
+                for (; startIndex >= 0 ; startIndex--)
                 {
-                    if (lines[i].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
+                    if (lines[startIndex].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
                     {
                         break;
                     }
                 }
 
-                if (i == lines.Length - 1)
+                if (startIndex == lines.Length - 1)
                 {
                     Log.WriteLine($"Didn't find start of statistics");
+                    return;
                 }
                 else
                 {
                     Log.WriteLine($"Parsing custom measures...");
                 }
+
+                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(startIndex + 1).Take(lines.Length - startIndex - 2));
 
                 var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
