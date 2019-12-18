@@ -1504,6 +1504,26 @@ namespace BenchmarkServer
                         }
                     }
                 };
+
+                // Also listen on the error output 
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    if (e != null && e.Data != null)
+                    {
+                        Log.WriteLine("[ERROR] " + e.Data);
+
+                        if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            Log.WriteLine($"Ready state detected, application is now running...");
+                            MarkAsRunning(hostname, job, stopwatch);
+
+                            if (job.Collect && !job.CollectStartup)
+                            {
+                                StartCollection(workingDirectory, job);
+                            }
+                        }
+                    }
+                };
             }
             else
             {
@@ -1535,11 +1555,6 @@ namespace BenchmarkServer
                 if (job.Collect && !job.CollectStartup)
                 {
                     StartCollection(workingDirectory, job);
-                }
-
-                if (job.DotNetTrace && !job.CollectStartup)
-                {
-                    StartDotNetTrace(process.Id, job);
                 }
             }
 

@@ -11,35 +11,34 @@ namespace BenchmarksServer
     {
         private readonly int _capacity;
         private StringBuilder _builder = new StringBuilder();
-
-        public List<string> Lines { get; set; }
+        private List<string> _lines { get; set; }
 
         public RollingLog(int capacity)
         {
-            Lines = new List<string>(capacity);
+            _lines = new List<string>(capacity);
             _capacity = capacity;
         }
 
         public void AddLine(string text)
         {
-            if (Lines.Count == _capacity)
+            if (_lines.Count == _capacity)
             {
-                Lines.RemoveAt(0);
+                _lines.RemoveAt(0);
             }
 
-            Lines.Add(text);
+            _lines.Add(text);
         }
 
         public void Clear()
         {
-            Lines.Clear();
+            _lines.Clear();
         }
 
         public override string ToString()
         {
             _builder.Clear();
 
-            foreach (var line in Lines)
+            foreach (var line in _lines)
             {
                 _builder.AppendLine(line);
             }
