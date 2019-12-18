@@ -60,6 +60,7 @@ namespace BenchmarksDriver
             _collectCountersOption,
             _noStartupLatencyOption,
             _displayBuildOption,
+            _displayErrorOption,
             _dotnetTraceOption
             ;
 
@@ -179,6 +180,8 @@ namespace BenchmarksDriver
                 "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var displayOutputOption = app.Option("--display-output",
                 "Displays the standard output from the server job.", CommandOptionType.NoValue);
+            _displayErrorOption = app.Option("--display-error",
+                "Displays the standard error from the server job.", CommandOptionType.NoValue);
             _displayBuildOption = app.Option("--display-build",
                 "Displays the standard output from the build step.", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
@@ -2225,6 +2228,11 @@ namespace BenchmarksDriver
                     if (_displayOutput)
                     {
                         DisplayOutput(serverJob.Output);
+                    }
+
+                    if (_displayErrorOption.HasValue())
+                    {
+                        Log(serverJob.Error, notime: true, error: true);
                     }
 
                     // Download netperf file
