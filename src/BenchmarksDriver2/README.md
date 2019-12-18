@@ -64,6 +64,104 @@ Options:
   --services.[SERVICE].options.displayOutput <true|false>                               Whether to download and display the standard output of the benchmark.
   --services.[SERVICE].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
   
+  # Custom clients
+  
+  ## Sending measurements
+
+  Measurement metadata and values can be set via Event Pipes or the standard output.
+
+  ### Event Pipe support
+
+  Use this class to register metadata (once), or measurements (as many as required).
+
+  ```csharp
+    internal sealed class BenchmarksEventSource : EventSource
+    {
+        public static readonly BenchmarksEventSource Log = new BenchmarksEventSource();
+
+        internal BenchmarksEventSource()
+            : this("Benchmarks")
+        {
+
+        }
+
+        // Used for testing
+        internal BenchmarksEventSource(string eventSourceName)
+            : base(eventSourceName)
+        {
+        }
+
+        [Event(1, Level = EventLevel.Informational)]
+        public void Measure(string name, long value)
+        {
+            WriteEvent(1, name, value);
+        }
+
+        [Event(2, Level = EventLevel.Informational)]
+        public void Metadata(string name, string aggregate, string reduce, string shortDescription, string longDescription, string format)
+        {
+            WriteEvent(2, name, aggregate, reduce, shortDescription, longDescription, format);
+        }
+    }
+  ```
+
+  ### Standard output support
+
+  Use this example to generate a valid JSON document containing metadata and measurements. Multiple blocks can be displayed.
+
+  ```csharp
+
+    Console.WriteLine("#StartJobStatistics");
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new {
+        Metadata =
+            new object[] {
+                new {
+                    Source= "Source",
+                    Name= "Name",
+                    ShortDescription = "ShortDescription",
+                    LongDescription = "LongDescription"
+                }
+            },
+        Measurements = new object[] {
+                new {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "Name",
+                    Value= 10
+                },
+                new {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "Name",
+                    Value= 20
+                }
+        }
+    }));
+
+    Console.WriteLine("#EndJobStatistics");
+
+    Console.WriteLine("#StartJobStatistics");
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+    {
+        Metadata =
+            new object[] {
+                new {
+                    Source= "Source2",
+                    Name= "Name2",
+                    ShortDescription = "ShortDescription2",
+                    LongDescription = "LongDescription2"
+                }
+            },
+        Measurements = new object[] {
+                new {
+                    Timestamp = DateTime.UtcNow,
+                    Name = "Name2",
+                    Value= 30
+                }
+        }
+    }));
+
+    Console.WriteLine("#EndJobStatistics");
+
+```
 
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server
