@@ -5,6 +5,6 @@ namespace Benchmarks.ServerJob
     public class JobStatistics
     {
         public List<MeasurementMetadata> Metadata = new List<MeasurementMetadata>();
-        public List<Measurement> Measures = new List<Measurement>();
+        public List<Measurement> Measurements = new List<Measurement>();
     }
 }

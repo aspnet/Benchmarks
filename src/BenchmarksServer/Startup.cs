@@ -33,6 +33,7 @@ using Microsoft.Diagnostics.Tracing.Parsers.ApplicationServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repository;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
@@ -1500,6 +1501,29 @@ namespace BenchmarkServer
                             if (start == -1)
                             {
                                 Log.WriteLine($"Didn't find start of statistics");
+                            }
+                            else
+                            {
+                                Log.WriteLine($"Parsing custom measures...");
+                            }
+
+                            var jsonStatistics = buffer.Substring(start);
+
+                            Log.WriteLine(e.Data);
+                            standardOutput.AddLine(e.Data);
+
+                            var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
+
+                            Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
+
+                            foreach (var metadata in jobStatistics.Metadata)
+                            {
+                                job.Metadata.Add(metadata);
+                            }
+
+                            foreach (var measurement in jobStatistics.Measurements)
+                            {
+                                job.Measurements.Add(measurement);
                             }
                         }
                     }
