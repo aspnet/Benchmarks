@@ -1495,11 +1495,19 @@ namespace BenchmarkServer
                         {
                             // Seek the beginning of statistics
 
-                            var buffer = standardOutput.ToString();
+                            var lines = standardOutput.ToArray();
 
-                            var start = buffer.IndexOf("#StartJobStatistics");
+                            var i = 0;
 
-                            if (start == -1)
+                            for (i = 0; i < lines.Length; i++)
+                            {
+                                if (lines[i].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (i == lines.Length - 1)
                             {
                                 Log.WriteLine($"Didn't find start of statistics");
                             }
@@ -1508,10 +1516,7 @@ namespace BenchmarkServer
                                 Log.WriteLine($"Parsing custom measures...");
                             }
 
-                            var jsonStatistics = buffer.Substring(start);
-
-                            Log.WriteLine(e.Data);
-                            standardOutput.AddLine(e.Data);
+                            var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(i).Take(lines.Length - 1 - i));
 
                             var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 

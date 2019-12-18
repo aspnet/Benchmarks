@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,7 +7,7 @@ namespace BenchmarksServer
     /// <summary>
     /// Prevents logs from getting to big to be rendered on the driver
     /// </summary>
-    public class RollingLog
+    public class RollingLog : IEnumerable<string>
     {
         private readonly int _capacity;
         private StringBuilder _builder = new StringBuilder();
@@ -44,6 +44,16 @@ namespace BenchmarksServer
             }
 
             return _builder.ToString();
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            return _lines.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _lines.GetEnumerator();
         }
     }
 }
