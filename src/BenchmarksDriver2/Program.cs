@@ -666,29 +666,11 @@ namespace BenchmarksDriver
                     }
                 }
 
-                // Save results
+                var jobResults = CreateJobResults(configuration, jobsByDependency);
 
+                // Save results
                 if (_outputOption.HasValue())
                 {
-                    var jobResults = new JobResults();
-
-                    foreach (var dependency in configuration.Dependencies)
-                    {
-                        var jobResult = jobResults.Results[dependency] = new JobResult();
-
-                        var service = configuration.Services[dependency];
-
-                        var jobConnections = jobsByDependency[dependency];
-
-                        jobResult.Results = SummarizeResults(jobConnections);
-                        jobResult.Metadata = jobConnections[0].Job.Metadata.ToArray();
-
-                        foreach (var jobConnection in jobConnections)
-                        {
-                            jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
-                        }
-                    }
-
                     var filename = _outputOption.Value();
 
                     if (File.Exists(filename))
@@ -703,6 +685,8 @@ namespace BenchmarksDriver
 
                     Log.Write($"Results saved in '{new FileInfo(filename).FullName}'");
                 }
+
+                // Store data
             }
 
             return 0;
@@ -864,6 +848,31 @@ namespace BenchmarksDriver
 
                 return orderedList[nth];
             };
+        }
+
+
+        private static JobResults CreateJobResults(Configuration configuration, Dictionary<string, List<JobConnection>> jobsByDependency)
+        {
+            var jobResults = new JobResults();
+
+            foreach (var dependency in configuration.Dependencies)
+            {
+                var jobResult = jobResults.Results[dependency] = new JobResult();
+
+                var service = configuration.Services[dependency];
+
+                var jobConnections = jobsByDependency[dependency];
+
+                jobResult.Results = SummarizeResults(jobConnections);
+                jobResult.Metadata = jobConnections[0].Job.Metadata.ToArray();
+
+                foreach (var jobConnection in jobConnections)
+                {
+                    jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
+                }
+            }
+
+            return jobResults;
         }
 
         private static MeasurementSummary[] SummarizeResults(IEnumerable<JobConnection> jobs)

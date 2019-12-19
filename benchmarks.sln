@@ -211,6 +211,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{E5BF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "src\BenchmarksApps\Kestrel\PlatformBenchmarks\PlatformBenchmarks.csproj", "{CCDF6F81-95B5-4941-B1AF-1359D80531DA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrkClient", "src\WrkClient\WrkClient.csproj", "{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -419,6 +421,14 @@ Global
 		{CCDF6F81-95B5-4941-B1AF-1359D80531DA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CCDF6F81-95B5-4941-B1AF-1359D80531DA}.Release|x86.ActiveCfg = Release|Any CPU
 		{CCDF6F81-95B5-4941-B1AF-1359D80531DA}.Release|x86.Build.0 = Release|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Debug|x86.Build.0 = Debug|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -465,6 +475,7 @@ Global
 		{3F564B33-5D49-47AB-91CB-5AA987E691EE} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 		{E5BFE89B-7D77-47A5-8666-71B7CE8EA308} = {A9BDD13F-8E19-459E-BE3F-4484AE699265}
 		{CCDF6F81-95B5-4941-B1AF-1359D80531DA} = {E5BFE89B-7D77-47A5-8666-71B7CE8EA308}
+		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}

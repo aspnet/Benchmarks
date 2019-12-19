@@ -9,7 +9,7 @@
     "serverUri": null,
     "path": null
   },
-  "dependencies": [ "aspnetbenchmarks", "pipelineclient" ],
+  "dependencies": [ "aspnetbenchmarks", "wrk" ],
   "services": {
     "aspnetbenchmarks": {
       "source": {
@@ -76,6 +76,29 @@
         "pipeline": 16
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
+    },
+    "wrk": {
+      "source": {
+        "repository": "https://github.com/aspnet/benchmarks.git",
+        "branchOrCommit": "master",
+        "project": "src/WrkClient/WrkClient.csproj"
+      },
+      "options": {
+        "displayOutput": true
+      },
+      "readyStateText": "Running ",
+      "sdkVersion": "3.0.100",
+      "aspnetcoreversion": "3.0",
+      "runtimeversion": "3.0",
+      "noArguments": true,
+      "waitForExit": true, // Blocking
+      "scenario": "Wrk",
+      "variables": {
+        "connections": 256,
+        "duration": "15",
+        "threads": 32 
+      },
+      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{header-sets[preset-headers]}}"
     },
     "postgresql": {
       "source": {

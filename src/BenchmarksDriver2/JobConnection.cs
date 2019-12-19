@@ -355,7 +355,7 @@ namespace BenchmarksDriver
 
                     // If there is no ReadyStateText defined, the server will never be in Running state
                     // and we'll reach the Stopped state eventually, but that's a normal behavior.
-                    if (Job.IsConsoleApp)
+                    if (Job.WaitForExit)
                     {
                         return Job.Url;
                     }
