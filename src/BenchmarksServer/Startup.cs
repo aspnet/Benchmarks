@@ -882,7 +882,7 @@ namespace BenchmarkServer
                                         Name = "benchmarks/cpu",
                                         Aggregate = Operation.Max,
                                         Reduce = Operation.Max,
-                                        Format = "",
+                                        Format = "n0",
                                         LongDescription = "Amount of time the process has utilized the CPU (ms)",
                                         ShortDescription = "CPU Usage (%)"
                                     });
@@ -2943,8 +2943,8 @@ namespace BenchmarkServer
 
         private static void StartCounters(ServerJob job)
         {
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "", Aggregate = Operation.Max, Reduce = Operation.Max });
+            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
+            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
             job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
             job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
             job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });

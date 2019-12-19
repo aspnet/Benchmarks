@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
@@ -664,6 +665,44 @@ namespace BenchmarksDriver
                         }
                     }
                 }
+
+                // Save results
+
+                if (_outputOption.HasValue())
+                {
+                    var jobResults = new JobResults();
+
+                    foreach (var dependency in configuration.Dependencies)
+                    {
+                        var jobResult = jobResults.Results[dependency] = new JobResult();
+
+                        var service = configuration.Services[dependency];
+
+                        var jobConnections = jobsByDependency[dependency];
+
+                        jobResult.Results = SummarizeResults(jobConnections);
+                        jobResult.Metadata = jobConnections[0].Job.Metadata.ToArray();
+
+                        foreach (var jobConnection in jobConnections)
+                        {
+                            jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
+                        }
+                    }
+
+                    var filename = _outputOption.Value();
+
+                    if (File.Exists(filename))
+                    {
+                        File.Delete(filename);
+                    }
+
+                    using (var stream = File.OpenWrite(filename))
+                    {
+                        await JsonSerializer.SerializeAsync(stream, jobResults, options: new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                    }
+
+                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'");
+                }
             }
 
             return 0;
@@ -827,6 +866,135 @@ namespace BenchmarksDriver
             };
         }
 
+        private static MeasurementSummary[] SummarizeResults(IEnumerable<JobConnection> jobs)
+        {
+            if (jobs == null || !jobs.Any())
+            {
+                return Array.Empty<MeasurementSummary>();
+            }
+
+            // For each job, compute the operation on each measurement
+            var groups = jobs.Select(job =>
+            {
+                // Group by name for easy lookup
+                var measurements = job.Job.Measurements.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.ToList());
+
+                var summaries = new List<MeasurementSummary>();
+
+                foreach (var metadata in job.Job.Metadata)
+                {
+                    if (!measurements.ContainsKey(metadata.Name))
+                    {
+                        continue;
+                    }
+
+                    object result = 0;
+
+                    switch (metadata.Aggregate)
+                    {
+                        case Operation.First:
+                            result = measurements[metadata.Name].First().Value;
+                            break;
+
+                        case Operation.Last:
+                            result = measurements[metadata.Name].Last().Value;
+                            break;
+
+                        case Operation.Avg:
+                            result = measurements[metadata.Name].Average(x => Convert.ToDouble(x.Value));
+                            break;
+
+                        case Operation.Count:
+                            result = measurements[metadata.Name].Count();
+                            break;
+
+                        case Operation.Max:
+                            result = measurements[metadata.Name].Max(x => Convert.ToDouble(x.Value));
+                            break;
+
+                        case Operation.Median:
+                            result = Percentile(50)(measurements[metadata.Name].Select(x => Convert.ToDouble(x.Value)));
+                            break;
+
+                        case Operation.Min:
+                            result = measurements[metadata.Name].Min(x => Convert.ToDouble(x.Value));
+                            break;
+
+                        case Operation.Sum:
+                            result = measurements[metadata.Name].Sum(x => Convert.ToDouble(x.Value));
+                            break;
+                    }
+
+                    if (!String.IsNullOrEmpty(metadata.Format))
+                    {
+                        summaries.Add(new MeasurementSummary { Name = metadata.Name, Value = Convert.ToDouble(result) });
+                    }
+                    else
+                    {
+                        summaries.Add(new MeasurementSummary { Name = metadata.Name, Value = result.ToString() });
+                    }
+                }
+
+                return summaries.ToArray();
+            }).ToArray();
+
+            // Single job, no reduce operation is necessary
+            if (groups.Length == 1)
+            {
+                return groups[0];
+            }
+
+            var reduced = new List<MeasurementSummary>();
+
+            foreach (var metadata in jobs.First().Job.Metadata)
+            {
+                var reducedValues = groups.SelectMany(x => x)
+                    .Where(x => x.Name == metadata.Name);
+
+                object reducedValue = null;
+
+                switch (metadata.Aggregate)
+                {
+                    case Operation.First:
+                        reducedValue = reducedValues.First().Value;
+                        break;
+
+                    case Operation.Last:
+                        reducedValue = reducedValues.Last().Value;
+                        break;
+
+                    case Operation.Avg:
+                        reducedValue = reducedValues.Average(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    case Operation.Count:
+                        reducedValue = reducedValues.Count();
+                        break;
+
+                    case Operation.Max:
+                        reducedValue = reducedValues.Max(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    case Operation.Median:
+                        reducedValue = Percentile(50)(reducedValues.Select(x => Convert.ToDouble(x.Value)));
+                        break;
+
+                    case Operation.Min:
+                        reducedValue = reducedValues.Min(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    case Operation.Sum:
+                        reducedValue = reducedValues.Sum(x => Convert.ToDouble(x.Value));
+                        break;
+                }
+
+                reduced.Add(new MeasurementSummary { Name = metadata.Name, Value = reducedValue });
+            }
+
+            return reduced.ToArray();
+
+        }
+
         private static void WriteMeasures(JobConnection job)
         {
             // Handle old server versions that don't expose measurements
@@ -840,6 +1008,8 @@ namespace BenchmarksDriver
             var maxWidth = job.Job.Metadata.Max(x => x.ShortDescription.Length) + 2;
 
             var previousSource = "";
+
+            var summaries = new List<MeasurementSummary>();
 
             foreach (var metadata in job.Job.Metadata)
             {

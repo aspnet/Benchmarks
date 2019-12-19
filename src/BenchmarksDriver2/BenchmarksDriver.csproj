@@ -5,8 +5,8 @@
     <ToolCommandName>benchmarks</ToolCommandName>
     <PackAsTool>true</PackAsTool>
     <IsPackable>true</IsPackable>
-    <Version>0.0.7-alpha</Version>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>0.0.8-alpha</Version>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <Authors>Microsoft</Authors>
   </PropertyGroup>
