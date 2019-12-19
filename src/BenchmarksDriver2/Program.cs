@@ -482,7 +482,7 @@ namespace BenchmarksDriver
                     if (service.WaitForExit)
                     {
                         // Wait for all clients to stop
-                        while (!jobs.All(client => client.Job.State != ServerState.Running))
+                        while (!jobs.All(client => client.Job.State == ServerState.Stopped || client.Job.State != ServerState.Failed))
                         {
                             // Refresh the local state
                             foreach (var job in jobs)
@@ -492,6 +492,13 @@ namespace BenchmarksDriver
 
                             await Task.Delay(1000);
                         }
+
+                        // Stop a blocking job
+                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                        await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(dependency)));
+
+                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                     }
                 }
 
@@ -536,84 +543,22 @@ namespace BenchmarksDriver
                     }
                 }
 
+                
                 // Stop all jobs in reverse dependency order (clients first)
                 foreach (var dependency in Enumerable.Reverse(configuration.Dependencies))
                 {
                     var service = configuration.Services[dependency];
 
-                    var jobs = jobsByDependency[dependency];
-
-                    await Task.WhenAll(jobs.Select(job => job.StopAsync()));
-                }
-
-                // Download assets
-                foreach (var dependency in configuration.Dependencies)
-                {
-                    var service = configuration.Services[dependency];
-
-                    var jobConnections = jobsByDependency[dependency];
-
-                    foreach (var jobConnection in jobConnections)
+                    if (!service.WaitForExit)
                     {
-                        // Fetch published folder
-                        if (jobConnection.Job.Options.Fetch)
-                        {
-                            try
-                            {
-                                var fetchDestination = jobConnection.Job.Options.FetchOutput;
+                        var jobs = jobsByDependency[dependency];
 
-                                if (String.IsNullOrEmpty(fetchDestination) || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // If it does not end with a *.zip then we add a DATE.zip to it
-                                    if (String.IsNullOrEmpty(fetchDestination))
-                                    {
-                                        fetchDestination = dependency;
-                                    }
+                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
 
-                                    fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
-                                }
+                        await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(dependency)));
 
-                                Log.Write($"Creating published assets '{fetchDestination}' ...");
-
-                                await jobConnection.FetchAsync(fetchDestination);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Write($"Error while fetching published assets for '{dependency}'");
-                                Log.Verbose(e.Message);
-                            }
-                        }
-
-                        // Download individual files
-                        if (jobConnection.Job.Options.DownloadFiles != null && jobConnection.Job.Options.DownloadFiles.Any())
-                        {
-                            foreach (var file in jobConnection.Job.Options.DownloadFiles)
-                            {
-                                Log.Write($"Downloading file '{file}' for '{dependency}'");
-
-                                try
-                                {
-                                    await jobConnection.DownloadFileAsync(file);
-                                }
-                                catch (Exception e)
-                                {
-                                    Log.Write($"Error while downloading file {file}, skipping ...");
-                                    Log.Verbose(e.Message);
-                                    continue;
-                                }
-                            }
-                        }
+                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                     }
-                }
-
-                // Delete jobs
-                foreach (var dependency in Enumerable.Reverse(configuration.Dependencies))
-                {
-                    var service = configuration.Services[dependency];
-
-                    var jobs = jobsByDependency[dependency];
-
-                    await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                 }
 
                 // Display results
@@ -683,7 +628,7 @@ namespace BenchmarksDriver
                         await JsonSerializer.SerializeAsync(stream, jobResults, options: new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                     }
 
-                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'");
+                    Log.Write($"\nResults saved in '{new FileInfo(filename).FullName}'");
                 }
 
                 // Store data

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -490,6 +491,57 @@ namespace BenchmarksDriver
             _keepAlive = false;
         }
 
+        public async Task DownloadAssetsAsync(string dependency)
+        {
+            // Fetch published folder
+            if (Job.Options.Fetch)
+            {
+                try
+                {
+                    var fetchDestination = Job.Options.FetchOutput;
+
+                    if (String.IsNullOrEmpty(fetchDestination) || !fetchDestination.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // If it does not end with a *.zip then we add a DATE.zip to it
+                        if (String.IsNullOrEmpty(fetchDestination))
+                        {
+                            fetchDestination = dependency;
+                        }
+
+                        fetchDestination = fetchDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + ".zip";
+                    }
+
+                    Log.Write($"Creating published assets '{fetchDestination}' ...");
+
+                    await FetchAsync(fetchDestination);
+                }
+                catch (Exception e)
+                {
+                    Log.Write($"Error while fetching published assets for '{dependency}'");
+                    Log.Verbose(e.Message);
+                }
+            }
+
+            // Download individual files
+            if (Job.Options.DownloadFiles != null && Job.Options.DownloadFiles.Any())
+            {
+                foreach (var file in Job.Options.DownloadFiles)
+                {
+                    Log.Write($"Downloading file '{file}' for '{dependency}'");
+
+                    try
+                    {
+                        await DownloadFileAsync(file);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Write($"Error while downloading file {file}, skipping ...");
+                        Log.Verbose(e.Message);
+                        continue;
+                    }
+                }
+            }
+        }
         private static void DoCreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
             sourceDirectoryName = Path.GetFullPath(sourceDirectoryName);
