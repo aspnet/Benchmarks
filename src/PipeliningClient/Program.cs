@@ -33,6 +33,8 @@ namespace PipeliningClient
         public static double Period { get; set; }
         public static List<string> Headers { get; set; }
 
+        private static List<KeyValuePair<int, int>> _statistics = new List<KeyValuePair<int, int>>();
+
         static async Task Main(string[] args)
         {
             var app = new CommandLineApplication();
@@ -143,6 +145,8 @@ namespace PipeliningClient
                             BenchmarksEventSource.Log.Measure("pipelineclient/periodic-rps", periodicTps);
                             BenchmarksEventSource.Log.Measure("pipelineclient/connections", _activeConnections);
 
+                            _statistics.Add(new KeyValuePair<int, int>(_activeConnections, periodicTps));
+
                             lock (_synLock)
                             {
                                 _periodicCounter = 0;
@@ -215,6 +219,16 @@ namespace PipeliningClient
             BenchmarksEventSource.Log.Measure("pipelineclient/bad-response", _errors);
             BenchmarksEventSource.Log.Measure("pipelineclient/socket-errors", _socketErrors);
 
+            if (MinConnections != Connections)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"| Connections | {"RPS ".PadRight(11, ' ')} |");
+                Console.WriteLine($"| ----------- | ----------- |");
+                foreach (var entry in _statistics)
+                {
+                    Console.WriteLine($"| {entry.Key.ToString().PadRight(11)} | {entry.Value.ToString().PadRight(11)} |");
+                }
+            }
         }
 
         public static async Task DoWorkAsync()
