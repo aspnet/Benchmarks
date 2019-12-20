@@ -673,7 +673,7 @@ namespace BenchmarkServer
                                                         {
                                                             Elapsed = now - startMonitorTime,
                                                             WorkingSet = workingSet,
-                                                            CpuPercentage = cpu > 100 ? 0 : cpu
+                                                            CpuPercentage = cpu
                                                         });
 
                                                         job.Measurements.Add(new Measurement
@@ -687,7 +687,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/cpu",
                                                             Timestamp = now,
-                                                            Value = workingSet
+                                                            Value = cpu
                                                         });
                                                     }
                                                 }
