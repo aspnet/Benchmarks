@@ -16,17 +16,21 @@ namespace PipeliningClient
         private static int _errors;
         private static int _socketErrors;
 
-        private static int _running;
-        public static bool IsRunning => _running == 1;
+        private static int _activeConnections;
 
-        private static int _measuring;
-        public static bool Measuring => _measuring == 1;
+        private static int _periodicCounter;
+
+        private static bool _running;
+        private static bool _measuring;
 
         public static string ServerUrl { get; set; }
         public static int PipelineDepth { get; set; }
         public static int WarmupTimeSeconds { get; set; }
         public static int ExecutionTimeSeconds { get; set; }
         public static int Connections { get; set; }
+        public static int MinConnections { get; set; }
+        public static int ConnectionRate { get; set; }
+        public static double Period { get; set; }
         public static List<string> Headers { get; set; }
 
         static async Task Main(string[] args)
@@ -36,6 +40,9 @@ namespace PipeliningClient
             app.HelpOption("-h|--help");
             var optionUrl = app.Option("-u|--url <URL>", "The server url to request", CommandOptionType.SingleValue);
             var optionConnections = app.Option<int>("-c|--connections <N>", "Total number of HTTP connections to keep open", CommandOptionType.SingleValue);
+            var optionPeriod = app.Option<double>("-i|--interval <F>", "Interval in seconds between connection increments. Default is 1. The value can be smaller than 1.", CommandOptionType.SingleValue);
+            var optionMinConnections = app.Option<int>("-m|--min-connections <N>", "Total number of HTTP connections to start the warmup or the actual load. If not specified the number of connections is initially created.", CommandOptionType.SingleValue);
+            var optionRateConnections = app.Option<int>("-r|--rate <N>", "Total number of HTTP connections to create during each Period, until the max number of connections is reached.", CommandOptionType.SingleValue);
             var optionWarmup = app.Option<int>("-w|--warmup <N>", "Duration of the warmup in seconds", CommandOptionType.SingleValue);
             var optionDuration = app.Option<int>("-d|--duration <N>", "Duration of the test in seconds", CommandOptionType.SingleValue);
             var optionHeaders = app.Option("-H|--header <HEADER>", "HTTP header to add to request, e.g. \"User-Agent: edge\"", CommandOptionType.MultipleValue);
@@ -56,6 +63,35 @@ namespace PipeliningClient
                 ExecutionTimeSeconds = int.Parse(optionDuration.Value());
 
                 Connections = int.Parse(optionConnections.Value());
+
+                MinConnections = optionMinConnections.HasValue()
+                    ? int.Parse(optionMinConnections.Value())
+                    : Connections;
+
+                _activeConnections = MinConnections;
+
+                if (MinConnections > Connections)
+                {
+                    Console.WriteLine("The minimum number of connections can't be greater than the number of connections.");
+                    app.ShowHelp();
+                    return Task.CompletedTask;
+                }
+
+                Period = optionPeriod.HasValue()
+                    ? double.Parse(optionPeriod.Value())
+                    : 1;
+
+                ConnectionRate = optionRateConnections.HasValue()
+                    ? int.Parse(optionRateConnections.Value())
+                    : (int) ((Connections - MinConnections) / Period)
+                    ;
+                
+                
+                if (Period < 0 || Period > WarmupTimeSeconds + ExecutionTimeSeconds)
+                {
+                    Console.WriteLine("Invalid period argument, resetting.");
+                    Period = 1;
+                }
 
                 Headers = new List<string>(optionHeaders.Values);
 
@@ -93,9 +129,41 @@ namespace PipeliningClient
                             _socketErrors = 0;
                         }
 
-                        Interlocked.Exchange(ref _measuring, 1);
+                        _measuring = true;
 
                         startTime = DateTime.UtcNow;
+
+                        var otherTasks = new List<Task>();
+
+                        do
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(Period));
+
+                            var periodicTps = (int)(_periodicCounter / Period);
+                            BenchmarksEventSource.Log.Measure("pipelineclient/periodic-rps", periodicTps);
+                            BenchmarksEventSource.Log.Measure("pipelineclient/connections", _activeConnections);
+
+                            lock (_synLock)
+                            {
+                                _periodicCounter = 0;
+                            }
+
+                            if (_running && _activeConnections < Connections)
+                            {
+                                var connectionsToCreate = _activeConnections + ConnectionRate <= Connections
+                                    ? ConnectionRate
+                                    : Connections - _activeConnections
+                                    ;
+
+                                _activeConnections += connectionsToCreate;
+
+                                otherTasks.AddRange(Enumerable.Range(0, connectionsToCreate).Select(_ => Task.Run(DoWorkAsync)));
+                            }
+
+                        } while (_running);
+
+                        await Task.WhenAll(otherTasks);
+
                     });
 
                 // Shutdown everything
@@ -104,21 +172,23 @@ namespace PipeliningClient
                    {
                        await Task.Delay(TimeSpan.FromSeconds(WarmupTimeSeconds + ExecutionTimeSeconds));
 
-                       Console.WriteLine($"Stopping...");
+                       _running = false;
 
-                       Interlocked.Exchange(ref _running, 0);
+                       Console.WriteLine($"Stopping...");
 
                        stopTime = DateTime.UtcNow;
                    });
 
-                foreach (var task in Enumerable.Range(0, Connections)
+                // Create as many as the --min-connections argument
+                foreach (var task in Enumerable.Range(0, MinConnections)
                     .Select(_ => Task.Run(DoWorkAsync)))
                 {
                     yield return task;
                 }
+
             }
 
-            Interlocked.Exchange(ref _running, 1);
+            _running = true;
 
             await Task.WhenAll(CreateTasks());
 
@@ -133,21 +203,23 @@ namespace PipeliningClient
 
             // If multiple samples are provided, take the max RPS, then sum the result from all clients
             BenchmarksEventSource.Log.Metadata("pipelineclient/avg-rps", "max", "sum", "RPS", "Requests per second", "n0");
-            BenchmarksEventSource.Log.Measure("pipelineclient/avg-rps", totalTps);
-
+            BenchmarksEventSource.Log.Metadata("pipelineclient/connections", "max", "sum", "Connections", "Number of active connections", "n0");
+            BenchmarksEventSource.Log.Metadata("pipelineclient/periodic-rps", "max", "sum", "Max RPS", "Instant requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("pipelineclient/status-2xx", "sum", "sum", "Successful Requests", "Successful Requests", "n0");
-            BenchmarksEventSource.Log.Measure("pipelineclient/status-2xx", _counter);
-
             BenchmarksEventSource.Log.Metadata("pipelineclient/bad-response", "sum", "sum", "Bad Responses", "Bad Responses", "n0");
-            BenchmarksEventSource.Log.Measure("pipelineclient/bad-response", _errors);
-
             BenchmarksEventSource.Log.Metadata("pipelineclient/socket-errors", "sum", "sum", "Socket Errors", "Socket Errors", "n0");
+
+            BenchmarksEventSource.Log.Measure("pipelineclient/avg-rps", totalTps);
+            BenchmarksEventSource.Log.Measure("pipelineclient/connections", Connections);
+            BenchmarksEventSource.Log.Measure("pipelineclient/status-2xx", _counter);
+            BenchmarksEventSource.Log.Measure("pipelineclient/bad-response", _errors);
             BenchmarksEventSource.Log.Measure("pipelineclient/socket-errors", _socketErrors);
+
         }
 
         public static async Task DoWorkAsync()
         {
-            while (IsRunning)
+            while (_running)
             {
                 // Creating a new connection every time it is necessary
                 using (var connection = new HttpConnection(ServerUrl, PipelineDepth, Headers))
@@ -163,7 +235,7 @@ namespace PipeliningClient
                     {
                         var sw = new Stopwatch();
 
-                        while (IsRunning)
+                        while (_running)
                         {
                             sw.Start();
 
@@ -178,13 +250,14 @@ namespace PipeliningClient
                             {
                                 var response = responses[k];
 
-                                if (Measuring)
+                                if (_measuring)
                                 {
                                     if (response.State == HttpResponseState.Completed)
                                     {
                                         if (response.StatusCode >= 200 && response.StatusCode < 300)
                                         {
                                             counter++;
+                                            _periodicCounter++;
                                         }
                                         else
                                         {

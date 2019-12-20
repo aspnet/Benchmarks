@@ -628,7 +628,7 @@ namespace BenchmarksDriver
                         await JsonSerializer.SerializeAsync(stream, jobResults, options: new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
                     }
 
-                    Log.Write($"\nResults saved in '{new FileInfo(filename).FullName}'");
+                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'");
                 }
 
                 // Store data

@@ -9,7 +9,7 @@
     "serverUri": null,
     "path": null
   },
-  "dependencies": [ "aspnetbenchmarks", "wrk" ],
+  "dependencies": [ "aspnetbenchmarks", "pipelineclient" ],
   "services": {
     "aspnetbenchmarks": {
       "source": {
@@ -34,12 +34,10 @@
         "branchOrCommit": "master",
         "project": "src/PipeliningClient/PipeliningClient.csproj"
       },
-      "isConsoleApp": true,
       "readyStateText": "Starting",
       "sdkVersion": "3.0.100",
       "aspnetcoreversion": "3.0",
       "runtimeversion": "3.0",
-      "noArguments": true,
       "waitForExit": true, // Blocking
       "scenario": "PipelineClient",
       // "span": "1:00:00", // Keeps repeating the jobs for this duration
@@ -48,9 +46,12 @@
         "warmup": 5,
         "duration": 5,
         "pipeline": 16,
+        "min": 0, // minimum number of connections
+        "rate": 0, // growth rate of connections
+        "interval": 1, // period between rps measurements
         "preset-headers": "none"
       },
-      "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}"
+      "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} {% if min > 0 %} -m {{ min }} {% endif %} {% if rate > 0 %} -r {{ rate }} {% endif %} {% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}"
     },
     "bombardier": {
       "source": {
@@ -65,15 +66,13 @@
       "sdkVersion": "3.0.100",
       "aspnetcoreversion": "3.0",
       "runtimeversion": "3.0",
-      "noArguments": true,
       "waitForExit": true, // Blocking
       "scenario": "Bombardier",
       // "span": "1:00:00", // Keeps repeating the jobs for this duration
       "variables": {
         "connections": 256,
         "warmup": 5,
-        "duration": 5,
-        "pipeline": 16
+        "duration": 5      
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
     },
