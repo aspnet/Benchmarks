@@ -42,7 +42,7 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
             {
                 string ipcPort = null;
                 var attempts = 0;
-
+                var waitTimes = new[] { 100, 1000, 5000 };
                 while (true)
                 {
                     ipcPort = Directory.GetFiles(IpcRootPath, $"dotnet-diagnostic-{processId}-*") // Try best match.
@@ -59,8 +59,8 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient.DiagnosticsIpc
                     }
 
                     // Wait some time for the file to be created
-                    attempts++;
-                    Thread.Sleep(100);
+                    Thread.Sleep(waitTimes[attempts]);
+                    attempts += 1;
                 }
 
                 if (ipcPort == null)
