@@ -21,6 +21,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
     <PackageReference Include="CsvHelper" Version="12.1.2" />
     <PackageReference Include="Fluid.Core" Version="1.0.0-beta-9608" />
+    <PackageReference Include="YamlDotNet" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

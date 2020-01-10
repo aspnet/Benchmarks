@@ -5,12 +5,9 @@
       "plaintext": "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive",
       "connection-close": "--header Connection:close"
     },
-    "preset-headers": "plaintext",
-    "serverUri": null,
-    "path": null
+    "preset-headers": "plaintext"
   },
-  "dependencies": [ "aspnetbenchmarks", "pipelineclient" ],
-  "services": {
+  "jobs": {
     "aspnetbenchmarks": {
       "source": {
         "repository": "https://github.com/aspnet/benchmarks.git",
@@ -45,11 +42,23 @@
         "connections": 256,
         "warmup": 5,
         "duration": 5,
-        "pipeline": 16,
+        "pipeline": 1,
         "min": 0, // minimum number of connections
         "rate": 0, // growth rate of connections
         "interval": 1, // period between rps measurements
         "preset-headers": "none"
+      },
+      "parameters": {
+        "serverUri": {
+          "defaultValue": null,
+          "required": true,
+          "description": "The url of the server, e.g., http://asp-perf-lin:5001"
+        },
+        "path": {
+          "defaultValue": null,
+          "required": true,
+          "description": "The path to query on the server, e.g., /plaintext"
+        }
       },
       "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %} {% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}"
     },
@@ -72,7 +81,7 @@
       "variables": {
         "connections": 256,
         "warmup": 5,
-        "duration": 5      
+        "duration": 5
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
     },
@@ -95,7 +104,7 @@
       "variables": {
         "connections": 256,
         "duration": "15",
-        "threads": 32 
+        "threads": 32
       },
       "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{header-sets[preset-headers]}}"
     },
@@ -110,43 +119,33 @@
       "scenario": "PostgresQL"
     }
   },
-  "profiles": {
+  "scenarios": {
     "plaintext": {
-      "variables": {
-        "path": "/plaintext",
-        "scenario": "Plaintext"
-      }
-    },
-    "plaintextNonPipelined": {
-      "variables": {
-        "path": "/plaintext",
-        "scenario": "plaintext"
+      "application": {
+        "job": "aspnetbenchmarks",
+        "variables": {
+          "path": "/plaintext"
+        }
       },
-      "services": {
-        "load": {
-          "variables": {
-            "pipeline": 1
-          }
+      "load": {
+        "job": "pipelineclient",
+        "variables": {
+          "pipeline": 16
         }
       }
     },
-    "mvcPlaintext": {
-      "variables": {
-        "path": "/mvc/plaintext",
-        "scenario": "mvcplaintext"
-      }
-    },
     "connectionClose": {
-      "variables": {
-        "path": "/plaintext",
-        "scenario": "plaintext",
-        "preset-headers": "connection-close"
+      "application": {
+        "job": "aspnetbenchmarks",
+        "variables": {
+          "path": "/plaintext"
+        }
       },
-      "services": {
-        "load": {
-          "variables": {
-            "pipeline": 1
-          }
+      "load": {
+        "job": "pipelineclient",
+        "variables": {
+          "pipeline": 1,
+          "preset-headers": "connection-close"
         }
       }
     }
@@ -154,6 +153,9 @@
 }
 
 /*
+
+  parameters are values that have to be set on the command line
+
 
 dotnet run -- 
   --services.application.endpoints http://asp-perf-lin:5001 
