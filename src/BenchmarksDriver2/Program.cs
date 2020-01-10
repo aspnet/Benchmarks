@@ -482,7 +482,7 @@ namespace BenchmarksDriver
                     if (service.WaitForExit)
                     {
                         // Wait for all clients to stop
-                        while (!jobs.All(client => client.Job.State == ServerState.Stopped || client.Job.State != ServerState.Failed))
+                        while (jobs.Any(client => client.Job.State != ServerState.Stopped && client.Job.State != ServerState.Failed))
                         {
                             // Refresh the local state
                             foreach (var job in jobs)

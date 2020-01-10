@@ -616,6 +616,7 @@ namespace BenchmarkServer
 
                                                 if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
                                                 {
+                                                    Log.WriteLine($"The Docker container has stopped");
                                                     Log.WriteLine($"{job.State} -> Stopping");
                                                     job.State = ServerState.Stopping;
                                                 }
@@ -1034,6 +1035,8 @@ namespace BenchmarkServer
 
                                 if (OperatingSystem == OperatingSystem.Linux)
                                 {
+                                    Log.WriteLine($"Invoking SIGINT ...");
+
                                     Mono.Unix.Native.Syscall.kill(process.Id, Mono.Unix.Native.Signum.SIGINT);
 
                                     // Tentatively invoke SIGINT
