@@ -272,7 +272,7 @@ namespace BenchmarksDriver
                 }
 
                 var session = sessionOption.Value();
-                if (String.IsNullOrEmpty(session))
+                if (string.IsNullOrEmpty(session))
                 {
                     session = Guid.NewGuid().ToString("n");
                 }
@@ -296,6 +296,12 @@ namespace BenchmarksDriver
                 if (sqlTableOption.HasValue())
                 {
                     _tableName = sqlTableOption.Value();
+                }
+
+                if (!_scenarioOption.HasValue())
+                {
+                    Console.Error.WriteLine("Scenario name must be specified.");
+                    return 1;
                 }
 
                 var scenarioName = _scenarioOption.Value();
