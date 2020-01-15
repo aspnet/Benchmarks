@@ -46,6 +46,8 @@ namespace Benchmarks.ServerJob
         public int Threads { get; set; }
         
         public string ReadyStateText { get; set; }
+        
+        // A console application doesn't expose and endpoint that can be used to detected it is ready
         public bool IsConsoleApp { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";

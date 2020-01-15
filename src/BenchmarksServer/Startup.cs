@@ -2823,11 +2823,6 @@ namespace BenchmarkServer
 
             var stopwatch = new Stopwatch();
 
-            if (String.IsNullOrEmpty(job.ReadyStateText) && job.IsConsoleApp)
-            {
-                RunAndTrace();
-            }
-
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
@@ -2888,8 +2883,15 @@ namespace BenchmarkServer
 
             stopwatch.Start();
             process.Start();
+
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
+
+            // A Console App that has no ReadyStateText should be assumed as started
+            if (String.IsNullOrEmpty(job.ReadyStateText) && job.IsConsoleApp)
+            {
+                RunAndTrace();
+            }
 
             if (job.CollectCounters)
             {
@@ -2915,7 +2917,9 @@ namespace BenchmarkServer
                 }
             }
 
-            if (iis)
+            // We try to detect an endpoint is ready if we are running in IIS (no console logs)
+            // or if no ReadyStateText is provided and the application is not a ConsoleApp
+            if (iis || (String.IsNullOrEmpty(job.ReadyStateText) && !job.IsConsoleApp))
             {
                 await WaitToListen(job, hostname);
                 
