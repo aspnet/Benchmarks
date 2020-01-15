@@ -3360,21 +3360,18 @@ namespace BenchmarkServer
             var root = JObject.Parse(await DownloadContentAsync(packageIndexUrl));
 
             var matchingVersions = root["versions"]
-                .Where(t => t.ToString().StartsWith(versionPrefix)).ToArray();
+                .Select(x => x.ToString())
+                // Unlisting these versions manually as they are breaking the order of 5.0.0-alpha.X
+                .Where(x => !x.StartsWith("5.0.0-alpha1"))
+                .Where(t => t.StartsWith(versionPrefix))
+                .ToArray();
 
-            // We need to "unlist" the versions with `alpha1` for 5.0 as they have switched
-            // to 5.0.0-alpha.1 at some point, breaking the order
-            if (versionPrefix.StartsWith("5.0"))
-            {
-                matchingVersions = matchingVersions.Where(x => !x.Contains("5.0.0-alpha1")).ToArray();
-            }
-            
             // Extract the highest version
-            var lastEntry = matchingVersions.Reverse().FirstOrDefault();
+            var lastEntry = matchingVersions.LastOrDefault();
 
             if (lastEntry != null)
             {
-                return lastEntry.ToString();
+                return lastEntry;
             }
 
             return null;
