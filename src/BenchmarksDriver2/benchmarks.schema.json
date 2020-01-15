@@ -124,7 +124,7 @@
         },
         "isConsoleApp": {
           "type": "boolean",
-          "title": "Whether the application should be considered as started as soon as the process is launched. Use 'true' for applications that don't display a Ready State Text.",
+          "title": "Whether the application should be considered as started as soon as the process is launched. Use 'true' for applications that don't display a Ready State.",
           "default": false,
           "examples": [
             true

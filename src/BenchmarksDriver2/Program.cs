@@ -669,6 +669,11 @@ namespace BenchmarksDriver
 
             foreach(var variableObject in variableObjects)
             {
+                if (variableObject == null)
+                {
+                    continue;
+                }
+
                 result.Merge(JObject.FromObject(variableObject), mergeOptions);
             }
 
@@ -757,21 +762,22 @@ namespace BenchmarksDriver
             var scenario = configurationInstance.Scenarios[scenarioName];
 
             // Clone each service from the selected scenario inside the Jobs property of the Configuration
-            foreach (var dependency in scenario)
+            foreach (var service in scenario)
             {
-                var jobName = dependency.Value.Job;
+                var jobName = service.Value.Job;
+                var serviceName = service.Key;
 
                 if (!configurationInstance.Jobs.ContainsKey(jobName))
                 {
-                    throw new Exception($"The job named `{jobName}` was not found for `{dependency.Key}`");
+                    throw new Exception($"The job named `{jobName}` was not found for `{serviceName}`");
                 }
 
                 var jobObject = JObject.FromObject(configurationInstance.Jobs[jobName]);
-                var dependencyObject = JObject.FromObject(dependency.Value);
+                var dependencyObject = (JObject) configuration["scenarios"][scenarioName][serviceName];
 
                 PatchObject(jobObject, dependencyObject);
 
-                configurationInstance.Jobs[dependency.Key] = jobObject.ToObject<ServerJob>();
+                configurationInstance.Jobs[serviceName] = jobObject.ToObject<ServerJob>();
             }
 
             // After that point we only modify the JObject representation of Configuration

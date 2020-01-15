@@ -31,6 +31,7 @@ namespace BenchmarksDriver
         private readonly Uri _serverJobsUri;
         private string _serverJobUri;
         private bool _keepAlive;
+        private DateTime _runningUtc;
 
         static JobConnection()
         {
@@ -327,11 +328,13 @@ namespace BenchmarksDriver
 
                 Job = JsonConvert.DeserializeObject<ServerJob>(responseContent);
 
+
                 if (Job.State == ServerState.Running)
                 {
                     if (previousJob.State != ServerState.Running)
                     {
                         Log.Write($"Job is running");
+                        _runningUtc = DateTime.UtcNow;
                     }
 
                     return Job.Url;
@@ -473,6 +476,13 @@ namespace BenchmarksDriver
                         // Ping server job to keep it alive
                         Log.Verbose($"GET {_serverJobUri}/touch...");
                         var response = await _httpClient.GetAsync(_serverJobUri + "/touch");
+
+                        // Detect if the job has timed out. This doesn't account for any other service
+                        if (Job.Timeout > 0 && DateTime.UtcNow - _runningUtc > TimeSpan.FromSeconds(Job.Timeout))
+                        {
+                            Log.Write($"Job has timed out, stopping...");
+                            await StopAsync();
+                        }
                     }
                     catch
                     {

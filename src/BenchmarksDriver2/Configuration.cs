@@ -16,6 +16,5 @@ namespace BenchmarksDriver
     public class Dependency
     {
         public string Job { get; set; }
-        public JObject Variables { get; set; } = new JObject();
     }
 }
