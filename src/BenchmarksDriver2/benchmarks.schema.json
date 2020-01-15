@@ -122,6 +122,14 @@
             true
           ]
         },
+        "timeout": {
+          "type": "integer",
+          "title": "The amount of time in seconds the job can run once it has started. Default is infinite.",
+          "default": "0",
+          "examples": [
+            "15"
+          ]
+        },
         "isConsoleApp": {
           "type": "boolean",
           "title": "Whether the application should be considered as started as soon as the process is launched. Use 'true' for applications that don't display a Ready State.",
