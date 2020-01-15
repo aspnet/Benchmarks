@@ -1617,19 +1617,23 @@ namespace BenchmarkServer
                 return true;
             }
 
+            Log.WriteLine($"Polling server on {hostname}:{job.Port}");
+
             for (var i = 1; i <= maxRetries; ++i)
             {
                 try
                 {
-                    Log.WriteLine($"Trying to access server, attempt #{i} ...");
                     using (var tcpClient = new TcpClient())
                     {
                         var connectTask = tcpClient.ConnectAsync(hostname, job.Port);
                         await Task.WhenAny(connectTask, Task.Delay(1000));
                         if (connectTask.IsCompleted)
                         {
+                            Log.WriteLine($"Success!");
                             return true;
                         }
+
+                        Log.WriteLine($"Attempt #{i} failed...");
                     }
                 }
                 catch
