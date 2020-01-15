@@ -3364,7 +3364,7 @@ namespace BenchmarkServer
 
             // We need to "unlist" the versions with `alpha1` for 5.0 as they have switched
             // to 5.0.0-alpha.1 at some point, breaking the order
-            if (versionPrefix == "5.0")
+            if (versionPrefix.StartsWith("5.0"))
             {
                 matchingVersions = matchingVersions.Where(x => !x.Contains("5.0.0-alpha1")).ToArray();
             }
