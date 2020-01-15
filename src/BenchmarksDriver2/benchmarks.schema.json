@@ -96,7 +96,7 @@
           ],
           "pattern": "^(.*)$"
         },
-        "aspnetcoreversion": {
+        "aspNetCoreVersion": {
           "type": "string",
           "title": "The ASP.NET version.",
           "default": "",
@@ -105,7 +105,7 @@
           ],
           "pattern": "^(.*)$"
         },
-        "runtimeversion": {
+        "runtimeVersion": {
           "type": "string",
           "title": "The .NET runtime version.",
           "default": "",
@@ -122,14 +122,13 @@
             true
           ]
         },
-        "scenario": {
-          "type": "string",
-          "title": "The name of the scenario sent to the server. This property will be removed in the future.",
-          "default": "",
+        "isConsoleApp": {
+          "type": "boolean",
+          "title": "Whether the application should be considered as started as soon as the process is launched. Use 'true' for applications that don't display a Ready State Text.",
+          "default": false,
           "examples": [
-            "Benchmarks"
-          ],
-          "pattern": "^(.*)$"
+            true
+          ]
         },
         "variables": {
           "type": "object",
@@ -161,13 +160,11 @@
         "job": {
           "type": "string",
           "title": "The name of the job"
-        },
-        "variables": {
-          "type": "object",
-          "title": "The variables for this job"
         }
       },
-      "required": []
+      "required": [],
+      "additionalProperties": { "$ref": "#/definitions/job" }
+
     }
   },
   "properties": {

@@ -6,7 +6,7 @@
       "plaintext": "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive",
       "connection-close": "--header Connection:close"
     },
-    "preset-headers": "plaintext"
+    "preset-headers": "none"
   },
   "jobs": {
     "aspnetbenchmarks": {
@@ -45,8 +45,7 @@
         "pipeline": 1,
         "min": 0,
         "rate": 0,
-        "interval": 1,
-        "preset-headers": "none"
+        "interval": 1
       },
       "parameters": {
         "serverUri": {
@@ -123,13 +122,14 @@
       "application": {
         "job": "aspnetbenchmarks",
         "variables": {
-          "path": "/plaintext"
         }
       },
       "load": {
         "job": "pipelineclient",
         "variables": {
-          "pipeline": 16
+          "pipeline": 16,
+          "preset-headers": "plaintext",
+          "path": "/plaintext"
         }
       }
     },
@@ -137,14 +137,14 @@
       "application": {
         "job": "aspnetbenchmarks",
         "variables": {
-          "path": "/plaintext"
         }
       },
       "load": {
         "job": "pipelineclient",
         "variables": {
           "pipeline": 1,
-          "preset-headers": "connection-close"
+          "preset-headers": "connection-close",
+          "path": "/plaintext"
         }
       }
     }

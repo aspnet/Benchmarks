@@ -1,10 +1,9 @@
 ﻿variables:
-  header-sets:
+  headerSets:
     none: ''
-    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7
-      --header Connection:keep-alive"
-    connection-close: "--header Connection:close"
-  preset-headers: plaintext
+    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
+    connectionclose: "--header Connection:close"
+  presetHeaders: none
 jobs:
   aspnetbenchmarks:
     source:
@@ -19,12 +18,11 @@ jobs:
       transport: Sockets
       scenario: plaintext
     scenario: Benchmarks
-    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:5000
-      --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:5000 --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
   pipelineclient:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: sebros/dimension
       project: src/PipeliningClient/PipeliningClient.csproj
     readyStateText: Starting
     sdkVersion: 3.0.100
@@ -40,11 +38,8 @@ jobs:
       min: 0
       rate: 0
       interval: 1
-      preset-headers: none
-    arguments: --url "{{serverUri}}{{path}}" --connections {{connections}} {% if min
-      != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %}
-      {% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration
-      {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}
+      presetHeaders: none
+    arguments: '--url "{{serverUri}}{{path}}" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %}{% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{headerSets[presetHeaders]}}'
   bombardier:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -62,7 +57,7 @@ jobs:
       connections: 256
       warmup: 5
       duration: 5
-    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
+    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headeSets[presetHeaders]}}"
   wrk:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -81,8 +76,7 @@ jobs:
       connections: 256
       duration: '15'
       threads: 32
-    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}}
-      {{header-sets[preset-headers]}}"
+    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{headerSets[presetHeaders]}}"
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -96,18 +90,23 @@ scenarios:
     application:
       job: aspnetbenchmarks
       variables:
-        path: "/plaintext"
+        scenario: plaintext
     load:
       job: pipelineclient
       variables:
         pipeline: 16
+        presetHeaders: plaintext
+        path: /plaintext
+        warmup: 3
+        duration: 3
   connectionClose:
     application:
       job: aspnetbenchmarks
       variables:
-        path: "/plaintext"
+        scenario: plaintext
     load:
       job: pipelineclient
       variables:
         pipeline: 1
-        preset-headers: connection-close
+        presetHeaders: connectionclose
+        path: /plaintext  

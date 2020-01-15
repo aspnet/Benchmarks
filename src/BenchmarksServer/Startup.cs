@@ -1608,6 +1608,7 @@ namespace BenchmarkServer
                 }
             }
         }
+
         private static async Task<bool> WaitToListen(ServerJob job, string hostname, int maxRetries = 5)
         {
             if (job.IsConsoleApp)
@@ -2822,6 +2823,11 @@ namespace BenchmarkServer
 
             var stopwatch = new Stopwatch();
 
+            if (String.IsNullOrEmpty(job.ReadyStateText) && job.IsConsoleApp)
+            {
+                RunAndTrace();
+            }
+
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
@@ -2832,20 +2838,7 @@ namespace BenchmarkServer
                     if (job.State == ServerState.Starting &&
                         ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
                     {
-                        MarkAsRunning(hostname, job, stopwatch);
-
-                        if (!job.CollectStartup)
-                        {
-                            if (job.Collect)
-                            {
-                                StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
-                            }
-
-                            if (job.DotNetTrace)
-                            {
-                                StartDotNetTrace(process.Id, job);
-                            }
-                        }
+                        RunAndTrace();
                     }
 
                     ParseMeasurementOutput(job, e.Data, standardOutput);
@@ -2925,23 +2918,30 @@ namespace BenchmarkServer
             if (iis)
             {
                 await WaitToListen(job, hostname);
-                MarkAsRunning(hostname, job, stopwatch);
-
-                if (!job.CollectStartup)
-                {
-                    if (job.Collect)
-                    {
-                        StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
-                    }
-
-                    if (job.DotNetTrace)
-                    {
-                        StartDotNetTrace(process.Id, job);
-                    }
-                }
+                
+                RunAndTrace();
             }
 
             return process;
+
+            void RunAndTrace()
+            {
+                if (MarkAsRunning(hostname, job, stopwatch))
+                {
+                    if (!job.CollectStartup)
+                    {
+                        if (job.Collect)
+                        {
+                            StartCollection(Path.Combine(benchmarksRepo, job.BasePath), job);
+                        }
+
+                        if (job.DotNetTrace)
+                        {
+                            StartDotNetTrace(process.Id, job);
+                        }
+                    }
+                }
+            }
         }
 
         private static void StartCounters(ServerJob job)
@@ -3195,14 +3195,14 @@ namespace BenchmarkServer
             }
         }
 
-        private static void MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
+        private static bool MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
         {
             lock (job)
             {
                 // Already executed this method?
                 if (job.State == ServerState.Running)
                 {
-                    return;
+                    return false;
                 }
 
                 job.StartupMainMethod = stopwatch.Elapsed;
@@ -3212,6 +3212,8 @@ namespace BenchmarkServer
 
                 // Mark the job as running to allow the Client to start the test
                 job.State = ServerState.Running;
+
+                return true;
             }
         }
 

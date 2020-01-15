@@ -812,6 +812,7 @@ namespace BenchmarksDriver
             foreach (var job in result.Jobs.Values)
             {
                 job.NoArguments = true;
+                job.Scenario = scenarioName;
             }
 
             return result;
