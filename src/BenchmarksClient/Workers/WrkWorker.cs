@@ -279,42 +279,55 @@ namespace BenchmarksClient.Workers
                 // Wait for all Output messages to be flushed and available in job.Output
                 Thread.Sleep(100);
 
-                var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
-                if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
+                if (String.IsNullOrEmpty(job.Output))
                 {
-                    job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
+                    return;
                 }
 
-                const string LatencyPattern = @"\s+{0}\s+([\d\.]+)(\w+)";
+                try
+                {
+                    var rpsMatch = Regex.Match(job.Output, @"Requests/sec:\s*([\d\.]*)");
+                    if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
+                    {
+                        job.RequestsPerSecond = double.Parse(rpsMatch.Groups[1].Value);
+                    }
 
-                var latencyMatch = Regex.Match(job.Output, String.Format(LatencyPattern, "Latency"));
-                job.Latency.Average = ReadLatency(latencyMatch);
+                    const string LatencyPattern = @"\s+{0}\s+([\d\.]+)(\w+)";
 
-                var p50Match = Regex.Match(job.Output, String.Format(LatencyPattern, "50%"));
-                job.Latency.Within50thPercentile = ReadLatency(p50Match);
+                    var latencyMatch = Regex.Match(job.Output, String.Format(LatencyPattern, "Latency"));
+                    job.Latency.Average = ReadLatency(latencyMatch);
 
-                var p75Match = Regex.Match(job.Output, String.Format(LatencyPattern, "75%"));
-                job.Latency.Within75thPercentile = ReadLatency(p75Match);
+                    var p50Match = Regex.Match(job.Output, String.Format(LatencyPattern, "50%"));
+                    job.Latency.Within50thPercentile = ReadLatency(p50Match);
 
-                var p90Match = Regex.Match(job.Output, String.Format(LatencyPattern, "90%"));
-                job.Latency.Within90thPercentile = ReadLatency(p90Match);
+                    var p75Match = Regex.Match(job.Output, String.Format(LatencyPattern, "75%"));
+                    job.Latency.Within75thPercentile = ReadLatency(p75Match);
 
-                var p99Match = Regex.Match(job.Output, String.Format(LatencyPattern, "99%"));
-                job.Latency.Within99thPercentile = ReadLatency(p99Match);
+                    var p90Match = Regex.Match(job.Output, String.Format(LatencyPattern, "90%"));
+                    job.Latency.Within90thPercentile = ReadLatency(p90Match);
 
-                var p100Match = Regex.Match(job.Output, @"\s+Latency\s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
-                job.Latency.MaxLatency = ReadLatency(p100Match);
+                    var p99Match = Regex.Match(job.Output, String.Format(LatencyPattern, "99%"));
+                    job.Latency.Within99thPercentile = ReadLatency(p99Match);
 
-                var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
-                job.SocketErrors = CountSocketErrors(socketErrorsMatch);
+                    var p100Match = Regex.Match(job.Output, @"\s+Latency\s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
+                    job.Latency.MaxLatency = ReadLatency(p100Match);
 
-                var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
-                job.BadResponses = ReadBadReponses(badResponsesMatch);
+                    var socketErrorsMatch = Regex.Match(job.Output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
+                    job.SocketErrors = CountSocketErrors(socketErrorsMatch);
 
-                var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(\w*)");
-                job.Requests = ReadRequests(requestsCountMatch);
-                job.ActualDuration = ReadDuration(requestsCountMatch);
+                    var badResponsesMatch = Regex.Match(job.Output, @"Non-2xx or 3xx responses: ([\d\.]*)");
+                    job.BadResponses = ReadBadReponses(badResponsesMatch);
 
+                    var requestsCountMatch = Regex.Match(job.Output, @"([\d\.]*) requests in ([\d\.]*)(\w*)");
+                    job.Requests = ReadRequests(requestsCountMatch);
+                    job.ActualDuration = ReadDuration(requestsCountMatch);
+
+                }
+                catch(Exception e)
+                {
+                    Log("An error occured while parsing the results: " + e.ToString());
+
+                }
                 job.State = ClientState.Completed;
             };
 
