@@ -8,7 +8,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Xml;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.File;
@@ -20,7 +19,7 @@ namespace PRJobProducer
     public class Program
     {
         private const string AppName = "pr-benchmarks";
-        private const string Owner = "aspnet";
+        private const string Owner = "dotnet";
         private const string Repo = "AspNetCore";
 
         private const string ProcessedDirectoryName = "processed";

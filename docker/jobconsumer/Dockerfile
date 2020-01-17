@@ -23,7 +23,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100 AS runtime
 WORKDIR /app
 
 # clone ASP.NET
-RUN git clone https://github.com/aspnet/aspnetcore
+RUN git clone https://github.com/dotnet/aspnetcore
 WORKDIR /app/aspnetcore
 RUN git submodule update --init
 
