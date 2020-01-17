@@ -78,9 +78,8 @@ func (s *testServer) StreamingCall(stream testpb.BenchmarkService_StreamingCallS
 		}
 
 		response := &testpb.SimpleResponse{
-			Payload: new(testpb.Payload),
+			Payload: NewPayload(in.ResponseType, int(in.ResponseSize)),
 		}
-		setPayload(response.Payload, in.ResponseType, int(in.ResponseSize))
 		if err := stream.Send(response); err != nil {
 			return err
 		}
@@ -95,9 +94,8 @@ func (s *testServer) StreamingFromClient(stream testpb.BenchmarkService_Streamin
 func (s *testServer) StreamingFromServer(in *testpb.SimpleRequest, stream testpb.BenchmarkService_StreamingFromServerServer) error {
 	for {
 		response := &testpb.SimpleResponse{
-			Payload: new(testpb.Payload),
+			Payload: NewPayload(in.ResponseType, int(in.ResponseSize)),
 		}
-		setPayload(response.Payload, in.ResponseType, int(in.ResponseSize))
 
 		err := stream.Send(response)
 		if err == io.EOF {
