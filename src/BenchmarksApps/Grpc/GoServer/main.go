@@ -16,7 +16,7 @@ func main() {
 		log.Fatalf("Failed to listen:  %v", err)
 	}
 
-	stop := benchmark.StartServer(benchmark.ServerInfo{Type: "protobuf", Listener: lis})
+	stop := benchmark.StartServer(benchmark.ServerInfo{Listener: lis})
 
 	fmt.Println("Application started.")
 
