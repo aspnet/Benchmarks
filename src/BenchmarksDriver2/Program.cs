@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
+using BenchmarksDriver.Serializers;
 using Fluid;
 using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
@@ -28,7 +29,7 @@ namespace BenchmarksDriver
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
 
-        private static string _tableName = "AspNetBenchmarks";
+        private static string _tableName = "Benchmarks";
         private const string EventPipeOutputFile = "eventpipe.netperf";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
@@ -39,6 +40,8 @@ namespace BenchmarksDriver
             _buildArchiveOption,
             _buildFileOption,
             _outputFileOption,
+            _linuxOnlyOption,
+            _windowsOnlyOption,
             _initializeOption,
             _noStartupLatencyOption,
             
@@ -50,7 +53,15 @@ namespace BenchmarksDriver
             _configOption,
             _scenarioOption,
             _outputOption,
-            _variableOption
+            _variableOption,
+            _sqlConnectionStringOption,
+            _sqlTableOption,
+            _sessionOption,
+            _categoryOption,
+            _hardwareOption,
+            _architectureOption,
+            _operatingSystemOption
+
             ;
 
         // The dynamic arguments that will alter the configurations
@@ -119,6 +130,15 @@ namespace BenchmarksDriver
             _scenarioOption = app.Option("-s|--scenario", "Scenario to execute", CommandOptionType.SingleValue);
             _outputOption = app.Option("-o|--output", "Output filename", CommandOptionType.SingleValue);
             _variableOption = app.Option("-v|--variable", "Variable", CommandOptionType.MultipleValue);
+            _sqlConnectionStringOption = app.Option("--sql",
+                "Connection string of the SQL Server Database to store results in", CommandOptionType.SingleValue);
+            _sqlTableOption = app.Option("--table",
+                "Table name of the SQL Database to store results in", CommandOptionType.SingleValue);
+            _sessionOption = app.Option("--session", "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
+            _categoryOption = app.Option("--category", "A string describing the job.", CommandOptionType.SingleValue);
+            _hardwareOption = app.Option("-hw|--hardware", "A string describing the environment, e.g., Citrine, Physical, Azure", CommandOptionType.SingleValue);
+            _architectureOption = app.Option("-arch|--architecture", "A string describing the architecture, e.g. x64, arm, amd.", CommandOptionType.SingleValue);
+            _operatingSystemOption = app.Option("-os|--operatingsystem", "A string describing the operating system, e.g., linux, windows, osx.", CommandOptionType.SingleValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -134,7 +154,7 @@ namespace BenchmarksDriver
                     if (i + 1 < args.Length)
                     {
                         Arguments.Add(KeyValuePair.Create(arg.Substring(2), args[i + 1]));
-                        args[i+1] = "";
+                        args[i + 1] = "";
 
                         i++;
                     }
@@ -142,18 +162,11 @@ namespace BenchmarksDriver
             }
 
             // Driver Options
-            var sqlConnectionStringOption = app.Option("-q|--sql",
-                "Connection string of SQL Database to store results", CommandOptionType.SingleValue);
-            var sqlTableOption = app.Option("-t|--table",
-                "Table name of the SQL Database to store results", CommandOptionType.SingleValue);
+            
             var verboseOption = app.Option("-v|--verbose",
                 "Verbose output", CommandOptionType.NoValue);
             var quietOption = app.Option("--quiet",
                 "Quiet output, only the results are displayed", CommandOptionType.NoValue);
-            var sessionOption = app.Option("--session",
-                "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
-            var descriptionOption = app.Option("--description",
-                "The description of the job.", CommandOptionType.SingleValue);
             var iterationsOption = app.Option("-i|--iterations",
                 "The number of iterations.", CommandOptionType.SingleValue);
             var excludeOption = app.Option("-x|--exclude",
@@ -164,16 +177,10 @@ namespace BenchmarksDriver
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
             var markdownOption = app.Option("-md|--markdown",
                 "Formats the output in markdown", CommandOptionType.NoValue);
-            var writeToFileOption = app.Option("-wf|--write-file",
-                "Writes the results to a file", CommandOptionType.NoValue);
-            var windowsOnlyOption = app.Option("--windows-only",
+            _windowsOnlyOption = app.Option("--windows-only",
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
-            var linuxOnlyOption = app.Option("--linux-only",
+            _linuxOnlyOption = app.Option("--linux-only",
                 "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
-            var saveOption = app.Option("--save",
-                "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
-            var diffOption = app.Option("--diff",
-                "Displays the results of the run compared to a previously saved result, e.g. --diff baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
             var consoleOption = app.Option("--console",
@@ -185,42 +192,7 @@ namespace BenchmarksDriver
             var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
                 "Maps to KestrelServerOptions.ThreadCount.",
                 CommandOptionType.SingleValue);
-            var serverScenarioOption = app.Option("--server-scenario",
-                "Server scenario to run", CommandOptionType.SingleValue);
-            var clientScenarioOption = app.Option("--client-scenario",
-                "Client scenario to run", CommandOptionType.SingleValue);
-            var schemeOption = app.Option("-m|--scheme",
-                "Scheme (http, https, h2, h2c). Default is http.", CommandOptionType.SingleValue);
-            var webHostOption = app.Option(
-                "-w|--webHost",
-                "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
-                CommandOptionType.SingleValue);
-            _serverAspnetCoreVersionOption = app.Option("--server-aspnet-version",
-                "ASP.NET Core packages version on the server (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
-            _clientAspnetCoreVersionOption = app.Option("--client-aspnet-version",
-                "ASP.NET Core packages version on the server (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
-            _serverRuntimeVersionOption = app.Option("--server-runtime-version",
-                ".NET Core Runtime version on the server (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
-            _clientRuntimeVersionOption = app.Option("--client-runtime-version",
-                ".NET Core Runtime version on the client (Current, Latest, Edge or custom value). Current is the latest public version, Latest is the one enlisted, Edge is the latest available. Default is Latest (2.2.0-*).", CommandOptionType.SingleValue);
-            var serverNoArgumentsOptions = app.Option("--server-no-arguments",
-                "Removes any predefined arguments from the server application command line.", CommandOptionType.NoValue);
-            var clientNoArgumentsOptions = app.Option("--client-no-arguments",
-                "Removes any predefined arguments from the client application command line.", CommandOptionType.NoValue);
-            var portOption = app.Option("--port",
-                "The port used to request the benchmarked application. Default is 5000.", CommandOptionType.SingleValue);
-            var readyTextOption = app.Option("--ready-text",
-                "The text that is displayed when the application is ready to accept requests. (e.g., \"Application started.\")", CommandOptionType.SingleValue);
-            var repositoryOption = app.Option("-r|--repository",
-                "Git repository containing the project to test.", CommandOptionType.SingleValue);
-            var dockerFileOption = app.Option("-df|--docker-file",
-                "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
-            var dockerContextOption = app.Option("-dc|--docker-context",
-                "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
-            var dockerImageOption = app.Option("-di|--docker-image",
-                "The name of the Docker image to create. If not net one will be created from the Docker file name. (e.g., \"aspnetcore21\")", CommandOptionType.SingleValue);
-            var useRuntimeStoreOption = app.Option("--runtime-store",
-                "Runs the benchmarks using the runtime store (2.0) or shared aspnet framework (2.1).", CommandOptionType.NoValue);
+            
             _outputFileOption = app.Option("--output-file",
                 "Output file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
@@ -259,25 +231,13 @@ namespace BenchmarksDriver
                     TimeSpan.TryParse(serverTimeoutOption.Value(), out _timeout);
                 }
 
-                var schemeValue = schemeOption.Value();
-                if (string.IsNullOrEmpty(schemeValue))
-                {
-                    schemeValue = "http";
-                }
-
-                var webHostValue = webHostOption.Value();
-                if (string.IsNullOrEmpty(webHostValue))
-                {
-                    webHostValue = "KestrelSockets";
-                }
-
-                var session = sessionOption.Value();
+                var session = _sessionOption.Value();
                 if (string.IsNullOrEmpty(session))
                 {
                     session = Guid.NewGuid().ToString("n");
                 }
 
-                var description = descriptionOption.Value() ?? "";
+                var category = _categoryOption.Value() ?? "";
 
                 if (iterationsOption.HasValue() && spanOption.HasValue())
                 {
@@ -290,12 +250,11 @@ namespace BenchmarksDriver
                 var iterations = 1;
                 var exclude = 0;
 
-                var sqlConnectionString = sqlConnectionStringOption.Value();
                 var span = TimeSpan.Zero;
 
-                if (sqlTableOption.HasValue())
+                if (_sqlTableOption.HasValue())
                 {
-                    _tableName = sqlTableOption.Value();
+                    _tableName = _sqlTableOption.Value();
                 }
 
                 if (!_scenarioOption.HasValue())
@@ -325,19 +284,7 @@ namespace BenchmarksDriver
 
                 var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments);
 
-                var serializer = new YamlDotNet.Serialization.Serializer();
-
-                Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem = null;
-
-                if (windowsOnlyOption.HasValue())
-                {
-                    requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Windows;
-                }
-
-                if (linuxOnlyOption.HasValue())
-                {
-                    requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Linux;
-                }
+                var serializer = new Serializer();
 
                 // Storing the list of services to run as part of the selected scenario
                 var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
@@ -368,20 +315,13 @@ namespace BenchmarksDriver
                 return Run(
                     configuration,
                     scenarioName,
-                    variables,
-                    sqlConnectionString,
                     session,
-                    description,
+                    variables,
                     iterations,
                     exclude,
                     shutdownOption.Value(),
                     span,
-                    //scriptFileOption,
-                    markdownOption,
-                    writeToFileOption,
-                    requiredOperatingSystem,
-                    saveOption,
-                    diffOption
+                    markdownOption
                     ).Result;
             });
 
@@ -427,10 +367,8 @@ namespace BenchmarksDriver
         private static async Task<int> Run(
             Configuration configuration,
             string scenarioName,
-            JObject commandLineVariables,
-            string sqlConnectionString,
             string session,
-            string description,
+            JObject commandLineVariables,
             int iterations,
             int exclude,
             string shutdownEndpoint,
@@ -441,20 +379,21 @@ namespace BenchmarksDriver
             //bool collectR2RLog,
             // string traceDestination,
             // CommandOption scriptFileOption,
-            CommandOption markdownOption,
-            CommandOption writeToFileOption,
-            Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
-            CommandOption saveOption,
-            CommandOption diffOption
+            CommandOption markdownOption
             )
         {
+
+            if (_sqlConnectionStringOption.HasValue())
+            {
+                await JobSerializer.InitializeDatabaseAsync(_sqlConnectionStringOption.Value(), _tableName);
+            }
 
             // Storing the list of services to run as part of the selected scenario
             var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
 
             var results = new List<Statistics>();
 
-            Log.Write($"Running session '{session}' with description '{description}'");
+            Log.Write($"Running session '{session}' with description '{_categoryOption.Value()}'");
 
             for (var i = 1; i <= iterations; i++)
             {
@@ -489,7 +428,6 @@ namespace BenchmarksDriver
                         {
                             // Start server
                             return job.StartAsync(
-                                requiredOperatingSystem?.ToString(),
                                 _outputArchiveOption,
                                 _buildArchiveOption,
                                 _outputFileOption,
@@ -598,10 +536,10 @@ namespace BenchmarksDriver
 
                     foreach (var jobConnection in jobConnections)
                     {
-                        Log.Quiet("");
-                        Log.Quiet($"SDK:                         {jobConnection.Job.SdkVersion}");
-                        Log.Quiet($"Runtime:                     {jobConnection.Job.RuntimeVersion}");
-                        Log.Quiet($"ASP.NET Core:                {jobConnection.Job.AspNetCoreVersion}");
+                        //Log.Quiet("");
+                        //Log.Quiet($"SDK:                         {jobConnection.Job.SdkVersion}");
+                        //Log.Quiet($"Runtime:                     {jobConnection.Job.RuntimeVersion}");
+                        //Log.Quiet($"ASP.NET Core:                {jobConnection.Job.AspNetCoreVersion}");
 
                         WriteMeasures(jobConnection);
 
@@ -638,6 +576,7 @@ namespace BenchmarksDriver
                 var jobResults = CreateJobResults(configuration, dependencies, jobsByDependency);
 
                 // Save results
+
                 if (_outputOption.HasValue())
                 {
                     var filename = _outputOption.Value();
@@ -656,6 +595,11 @@ namespace BenchmarksDriver
                 }
 
                 // Store data
+
+                if (_sqlConnectionStringOption.HasValue())
+                {
+                    await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _categoryOption.Value(), _scenarioOption.Value(), _hardwareOption.Value(), _architectureOption.Value(), _operatingSystemOption.Value());
+                }
             }
 
             return 0;

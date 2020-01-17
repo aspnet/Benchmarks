@@ -211,5 +211,6 @@ namespace Benchmarks.ServerJob
         public string[] DownloadFiles { get; set; }
         public string TraceOutput { get; set; }
         public bool DisplayBuild { get; set; }
+        public string RequiredOperatingSystem { get; set; }
     }
 }

@@ -54,7 +54,6 @@ namespace BenchmarksDriver
         public ServerState State => Job.State;
 
         public async Task<string> StartAsync(
-            string requiredOperatingSystem,
             CommandOption _outputArchiveOption,
             CommandOption _buildArchiveOption,
             CommandOption _outputFileOption,
@@ -111,7 +110,7 @@ namespace BenchmarksDriver
                     throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
                 }
 
-                if (requiredOperatingSystem != null && requiredOperatingSystem != Job.OperatingSystem.ToString())
+                if (Job.Options.RequiredOperatingSystem != null && !String.Equals(Job.Options.RequiredOperatingSystem, Job.OperatingSystem.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     Log.Write($"Job ignored on this OS, stopping job ...");
 

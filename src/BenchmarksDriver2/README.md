@@ -8,14 +8,22 @@ Usage: BenchmarksDriver [options]
 Options:
   -?|-h|--help                                          Show help information
 
-  These options are not specific to a Job definition
+  These options are not specific to a Job
 
   --config <filename>                                            Configuration file or url. Can be used multiple times.
   --scenario <scenario>                                          Scenario to execute.
   --variable <key=value>                                         A global variable. can be used multiple times.
   --output <filename>                                            An optional filename to store the output.
+  --sql                                                          Connection string of the SQL Server Database to store results in.
+  --table                                                        Table name of the SQL Database to store results in.
+  --session                                                      A logical identifier to group related jobs.
+  --category                                                     A string describing the job.
+  -hw|--hardware                                                 A string describing the environment, e.g., Citrine, Physical, Azure
+  -arch|--architecture                                           A string describing the architecture, e.g. x64, arm, amd
+  -os|--operatingsystem                                          A string describing the operating system, e.g., linux, windows, osx
 
-  These options are specific to a Job definition named [JOB]
+
+  These options are specific to a Job service named [JOB]
 
   --[JOB].endpoints <url>                                                  An endpoint on which to deploy the job definition, e.g., http://asp-perf-lin:5001. Can be used multiple times.
 
@@ -57,6 +65,7 @@ Options:
 
   --[JOB].environmentVariables <key=value>                                 An environment variable key/value pair to assign to the process. Can be used multiple times to define multiple values.
   --[JOB].memoryLimitInBytes <bytes>                                       The amount of memory available for the process.
+  --[JOB].options.requiredOperatingSystem <linux|windows|osx>              The operating system the job needs to run on.
 
   ## Debugging
 
