@@ -5,7 +5,8 @@ namespace BenchmarksDriver
 {
     public class JobResults
     {
-        public Dictionary<string, JobResult> Results { get; set; } = new Dictionary<string, JobResult>();
+        public Dictionary<string, JobResult> Jobs { get; set; } = new Dictionary<string, JobResult>();
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 
     public class JobResult

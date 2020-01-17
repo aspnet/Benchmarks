@@ -17,11 +17,9 @@ namespace BenchmarksDriver.Serializers
             string sqlConnectionString, 
             string tableName,
             string session,
-            string category,
             string scenario,
-            string hardware,
-            string architecture,
-            string operatingSystem)
+            string description
+            )
         {
             var utcNow = DateTime.UtcNow;
 
@@ -33,11 +31,8 @@ namespace BenchmarksDriver.Serializers
                     sqlConnectionString,
                     tableName,
                     session,
-                    category,
                     scenario,
-                    hardware,
-                    architecture,
-                    operatingSystem,
+                    description,
                     document
                     )
                 , 5000);
@@ -52,13 +47,10 @@ namespace BenchmarksDriver.Serializers
                     CREATE TABLE [dbo].[" + tableName + @"](
                         [Id] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         [Excluded] [bit] DEFAULT 0,
-                        [DateTime] [datetimeoffset](7) NOT NULL,
+                        [DateTimeUtc] [datetimeoffset](7) NOT NULL,
                         [Session] [nvarchar](200) NOT NULL,
-                        [Category] [nvarchar](200) NOT NULL,
                         [Scenario] [nvarchar](200) NOT NULL,
-                        [Hardware] [nvarchar](50) NOT NULL,
-                        [Architecture] [nvarchar](128) NOT NULL,
-                        [OperatingSystem] [nvarchar](50) NOT NULL,
+                        [Description] [nvarchar](200) NOT NULL,
                         [Document] [nvarchar](max) NOT NULL
                     )
                 END
@@ -80,11 +72,8 @@ namespace BenchmarksDriver.Serializers
             string connectionString,
             string tableName,
             string session,
-            string category,
             string scenario,
-            string hardware,
-            string architecture,
-            string operatingSystem,
+            string description,
             string document
             )
         {
@@ -92,22 +81,16 @@ namespace BenchmarksDriver.Serializers
             var insertCmd =
                 @"
                 INSERT INTO [dbo].[" + tableName + @"]
-                           ([DateTime]
+                           ([DateTimeUtc]
                            ,[Session]
-                           ,[Category]
                            ,[Scenario]
-                           ,[Hardware]
-                           ,[Architecture]
-                           ,[OperatingSystem]
+                           ,[Description]
                            ,[Document])
                      VALUES
-                           (@DateTime
+                           (@DateTimeUtc
                            ,@Session
-                           ,@Category
                            ,@Scenario
-                           ,@Hardware
-                           ,@Architecture
-                           ,@OperatingSystem
+                           ,@Description
                            ,@Document)
                 ";
 
@@ -120,13 +103,10 @@ namespace BenchmarksDriver.Serializers
                 {
                     var command = new SqlCommand(insertCmd, connection, transaction);
                     var p = command.Parameters;
-                    p.AddWithValue("@DateTime", utcNow);
+                    p.AddWithValue("@DateTimeUtc", utcNow);
                     p.AddWithValue("@Session", session);
-                    p.AddWithValue("@Category", category ?? "");
                     p.AddWithValue("@Scenario", scenario ?? "");
-                    p.AddWithValue("@Hardware", hardware ?? "");
-                    p.AddWithValue("@Architecture", architecture ?? "");
-                    p.AddWithValue("@OperatingSystem", operatingSystem ?? "");
+                    p.AddWithValue("@Description", description ?? "");
                     p.AddWithValue("@Document", document);
 
                     await command.ExecuteNonQueryAsync();

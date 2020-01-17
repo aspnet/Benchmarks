@@ -17,12 +17,8 @@ Options:
   --sql                                                          Connection string of the SQL Server Database to store results in.
   --table                                                        Table name of the SQL Database to store results in.
   --session                                                      A logical identifier to group related jobs.
-  --category                                                     A string describing the job.
-  -hw|--hardware                                                 A string describing the environment, e.g., Citrine, Physical, Azure
-  -arch|--architecture                                           A string describing the architecture, e.g. x64, arm, amd
-  -os|--operatingsystem                                          A string describing the operating system, e.g., linux, windows, osx
-
-
+  --property <key=value>                                         Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux
+  
   These options are specific to a Job service named [JOB]
 
   --[JOB].endpoints <url>                                                  An endpoint on which to deploy the job definition, e.g., http://asp-perf-lin:5001. Can be used multiple times.

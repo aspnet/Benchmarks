@@ -43,12 +43,6 @@ namespace BenchmarksDriver
             _linuxOnlyOption,
             _windowsOnlyOption,
             _initializeOption,
-            _noStartupLatencyOption,
-            
-            _serverRuntimeVersionOption,
-            _clientRuntimeVersionOption,
-            _serverAspnetCoreVersionOption,
-            _clientAspnetCoreVersionOption,
 
             _configOption,
             _scenarioOption,
@@ -57,10 +51,8 @@ namespace BenchmarksDriver
             _sqlConnectionStringOption,
             _sqlTableOption,
             _sessionOption,
-            _categoryOption,
-            _hardwareOption,
-            _architectureOption,
-            _operatingSystemOption
+            _descriptionOption,
+            _propertyOption
 
             ;
 
@@ -135,10 +127,8 @@ namespace BenchmarksDriver
             _sqlTableOption = app.Option("--table",
                 "Table name of the SQL Database to store results in", CommandOptionType.SingleValue);
             _sessionOption = app.Option("--session", "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
-            _categoryOption = app.Option("--category", "A string describing the job.", CommandOptionType.SingleValue);
-            _hardwareOption = app.Option("-hw|--hardware", "A string describing the environment, e.g., Citrine, Physical, Azure", CommandOptionType.SingleValue);
-            _architectureOption = app.Option("-arch|--architecture", "A string describing the architecture, e.g. x64, arm, amd.", CommandOptionType.SingleValue);
-            _operatingSystemOption = app.Option("-os|--operatingsystem", "A string describing the operating system, e.g., linux, windows, osx.", CommandOptionType.SingleValue);
+            _descriptionOption = app.Option("--description", "A string describing the job.", CommandOptionType.SingleValue);
+            _propertyOption = app.Option("-p|--property", "Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux", CommandOptionType.MultipleValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -237,7 +227,7 @@ namespace BenchmarksDriver
                     session = Guid.NewGuid().ToString("n");
                 }
 
-                var category = _categoryOption.Value() ?? "";
+                var description = _descriptionOption.Value() ?? "";
 
                 if (iterationsOption.HasValue() && spanOption.HasValue())
                 {
@@ -280,6 +270,19 @@ namespace BenchmarksDriver
                     }
 
                     variables[segments[0]] = segments[1];
+                }
+
+                foreach (var property in _propertyOption.Values)
+                {
+                    var segments = property.Split('=', 2);
+
+                    if (segments.Length != 2)
+                    {
+                        Console.WriteLine($"Invalid property argument: '{property}', format is \"[NAME]=[VALUE]\"");
+
+                        app.ShowHelp();
+                        return -1;
+                    }
                 }
 
                 var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments);
@@ -393,7 +396,7 @@ namespace BenchmarksDriver
 
             var results = new List<Statistics>();
 
-            Log.Write($"Running session '{session}' with description '{_categoryOption.Value()}'");
+            Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
 
             for (var i = 1; i <= iterations; i++)
             {
@@ -575,6 +578,13 @@ namespace BenchmarksDriver
 
                 var jobResults = CreateJobResults(configuration, dependencies, jobsByDependency);
 
+                foreach (var property in _propertyOption.Values)
+                {
+                    var segments = property.Split('=', 2);
+
+                    jobResults.Properties[segments[0]] = segments[1];
+                }
+
                 // Save results
 
                 if (_outputOption.HasValue())
@@ -598,7 +608,7 @@ namespace BenchmarksDriver
 
                 if (_sqlConnectionStringOption.HasValue())
                 {
-                    await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _categoryOption.Value(), _scenarioOption.Value(), _hardwareOption.Value(), _architectureOption.Value(), _operatingSystemOption.Value());
+                    await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                 }
             }
 
@@ -817,7 +827,7 @@ namespace BenchmarksDriver
 
             foreach (var jobName in dependencies)
             {
-                var jobResult = jobResults.Results[jobName] = new JobResult();
+                var jobResult = jobResults.Jobs[jobName] = new JobResult();
                 var jobConnections = jobsByDependency[jobName];
 
                 jobResult.Results = SummarizeResults(jobConnections);
