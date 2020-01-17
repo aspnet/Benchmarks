@@ -25,7 +25,6 @@ package benchmark
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net"
 
@@ -138,72 +137,4 @@ func StartServer(info ServerInfo, opts ...grpc.ServerOption) func() {
 	return func() {
 		s.Stop()
 	}
-}
-
-// DoUnaryCall performs an unary RPC with given stub and request and response sizes.
-func DoUnaryCall(tc testpb.BenchmarkServiceClient, reqSize, respSize int) error {
-	pl := NewPayload(testpb.PayloadType_COMPRESSABLE, reqSize)
-	req := &testpb.SimpleRequest{
-		ResponseType: pl.Type,
-		ResponseSize: int32(respSize),
-		Payload:      pl,
-	}
-	if _, err := tc.UnaryCall(context.Background(), req); err != nil {
-		return fmt.Errorf("/BenchmarkService/UnaryCall(_, _) = _, %v, want _, <nil>", err)
-	}
-	return nil
-}
-
-// DoStreamingRoundTrip performs a round trip for a single streaming rpc.
-func DoStreamingRoundTrip(stream testpb.BenchmarkService_StreamingCallClient, reqSize, respSize int) error {
-	pl := NewPayload(testpb.PayloadType_COMPRESSABLE, reqSize)
-	req := &testpb.SimpleRequest{
-		ResponseType: pl.Type,
-		ResponseSize: int32(respSize),
-		Payload:      pl,
-	}
-	if err := stream.Send(req); err != nil {
-		return fmt.Errorf("/BenchmarkService/StreamingCall.Send(_) = %v, want <nil>", err)
-	}
-	if _, err := stream.Recv(); err != nil {
-		// EOF is a valid error here.
-		if err == io.EOF {
-			return nil
-		}
-		return fmt.Errorf("/BenchmarkService/StreamingCall.Recv(_) = %v, want <nil>", err)
-	}
-	return nil
-}
-
-// DoByteBufStreamingRoundTrip performs a round trip for a single streaming rpc, using a custom codec for byte buffer.
-func DoByteBufStreamingRoundTrip(stream testpb.BenchmarkService_StreamingCallClient, reqSize, respSize int) error {
-	out := make([]byte, reqSize)
-	if err := stream.(grpc.ClientStream).SendMsg(&out); err != nil {
-		return fmt.Errorf("/BenchmarkService/StreamingCall.(ClientStream).SendMsg(_) = %v, want <nil>", err)
-	}
-	var in []byte
-	if err := stream.(grpc.ClientStream).RecvMsg(&in); err != nil {
-		// EOF is a valid error here.
-		if err == io.EOF {
-			return nil
-		}
-		return fmt.Errorf("/BenchmarkService/StreamingCall.(ClientStream).RecvMsg(_) = %v, want <nil>", err)
-	}
-	return nil
-}
-
-// NewClientConn creates a gRPC client connection to addr.
-func NewClientConn(addr string, opts ...grpc.DialOption) *grpc.ClientConn {
-	return NewClientConnWithContext(context.Background(), addr, opts...)
-}
-
-// NewClientConnWithContext creates a gRPC client connection to addr using ctx.
-func NewClientConnWithContext(ctx context.Context, addr string, opts ...grpc.DialOption) *grpc.ClientConn {
-	opts = append(opts, grpc.WithWriteBufferSize(128*1024))
-	opts = append(opts, grpc.WithReadBufferSize(128*1024))
-	conn, err := grpc.DialContext(ctx, addr, opts...)
-	if err != nil {
-		grpclog.Fatalf("NewClientConn(%q) failed to create a ClientConn %v", addr, err)
-	}
-	return conn
 }
