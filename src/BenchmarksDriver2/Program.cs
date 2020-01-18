@@ -678,11 +678,17 @@ namespace BenchmarksDriver
                             break;
 
                         case ".yml":
-                            var deserializer = new DeserializerBuilder()
-                                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        case ".yaml":
+
+                            var deserializer = new DeserializerBuilder().Build();
+                            var yamlObject = deserializer.Deserialize(new StringReader(configurationContent));
+
+                            var serializer = new SerializerBuilder()
+                                .JsonCompatible()
                                 .Build();
-                            var configurationYaml = deserializer.Deserialize<Configuration>(configurationContent);
-                            localconfiguration = JObject.FromObject(configurationYaml);
+
+                            var json = serializer.Serialize(yamlObject);
+                            localconfiguration = JObject.Parse(json);
                             break;
                     }
 

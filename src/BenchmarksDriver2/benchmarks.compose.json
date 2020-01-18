@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "./benchmarks.schema.json",
   "variables": {
-    "header-sets": {
+    "headers": {
       "none": "",
       "plaintext": "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive",
       "connection-close": "--header Connection:close"
@@ -59,7 +59,7 @@
           "description": "The path to query on the server, e.g., /plaintext"
         }
       },
-      "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %} {% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{header-sets[preset-headers]}}"
+      "arguments": "--url \"{{serverUri}}{{path}}\" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %} {% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{headers[preset-headers]}}"
     },
     "bombardier": {
       "source": {
@@ -81,7 +81,7 @@
         "warmup": 5,
         "duration": 5
       },
-      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{header-sets[preset-headers]}}"
+      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[preset-headers]}}"
     },
     "wrk": {
       "source": {
@@ -104,7 +104,7 @@
         "duration": "15",
         "threads": 32
       },
-      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{header-sets[preset-headers]}}"
+      "arguments": "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{headers[preset-headers]}}"
     },
     "postgresql": {
       "source": {
