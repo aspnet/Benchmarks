@@ -681,7 +681,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
-                                                            Value = workingSet
+                                                            Value = workingSet / 1024
                                                         });
 
                                                         job.Measurements.Add(new Measurement
@@ -750,7 +750,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
-                                                            Value = process.WorkingSet64
+                                                            Value = process.WorkingSet64 / 1024
                                                         });
 
                                                         job.Measurements.Add(new Measurement
@@ -898,8 +898,8 @@ namespace BenchmarkServer
                                         Aggregate = Operation.Max,
                                         Reduce = Operation.Max,
                                         Format = "n0",
-                                        LongDescription = "Amount of working set used by the process (B)",
-                                        ShortDescription = "Working Set (B)"
+                                        LongDescription = "Amount of working set used by the process (MB)",
+                                        ShortDescription = "Working Set (MB)"
                                     });
                                 }
 
