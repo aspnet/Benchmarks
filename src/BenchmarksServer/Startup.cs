@@ -3097,7 +3097,7 @@ namespace BenchmarkServer
                             //});
                             //}
 
-                            if (eventData.EventName == "Measure")
+                            if (eventData.EventName.StartsWith("Measure"))
                             {
                                 job.Measurements.Add(new Measurement
                                 {
