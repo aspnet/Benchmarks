@@ -773,6 +773,19 @@ namespace BenchmarksDriver
                     // The value is automatically converted to the destination type
                     jValue.Value = argument.Value;
                 }
+                else if (node is JObject jObject)
+                {
+                    // String to Object mapping -> try to parse as KEY=VALUE
+                    var argumentSegments = argument.Value.ToString().Split('=', 2);
+
+                    if (argumentSegments.Length != 2)
+                    {
+                        throw new Exception($"Argument value '{argument.Value}' could not assigned to `{segments.Last()}`.");
+                    }
+
+                    jObject.Add(argumentSegments[0], argumentSegments[1]);
+                }
+
             }            
 
             var result = configuration.ToObject<Configuration>();
@@ -799,7 +812,11 @@ namespace BenchmarksDriver
                     // if it's an object, patch it recursively
                     if (sourceProperty.Value.Type == JTokenType.Object)
                     {
-                        PatchObject((JObject)sourceProperty.Value, (JObject)patchProperty.Value);
+                        if (patchProperty.Value.Type == JTokenType.Object)
+                        {
+                            // JObject to JObject mapping
+                            PatchObject((JObject)sourceProperty.Value, (JObject)patchProperty.Value);
+                        }
                     }
                     else if (sourceProperty.Value.Type == JTokenType.Array)
                     {
