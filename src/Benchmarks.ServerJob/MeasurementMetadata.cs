@@ -1,4 +1,7 @@
-﻿namespace Benchmarks.ServerJob
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace Benchmarks.ServerJob
 {
     public class MeasurementMetadata
     {
@@ -8,11 +11,13 @@
         /// <summary>
         /// An operation used to aggregate the value across multiple sources returning the same measurement
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public Operation Reduce { get; set; }
 
         /// <summary>
         /// An operation used to aggregate the measures from the same source
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public Operation Aggregate { get; set; }
 
         public string ShortDescription { get; set; }
@@ -32,5 +37,6 @@
         Max,
         Min,
         Count,
+        All
     }
 }
