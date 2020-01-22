@@ -11,14 +11,8 @@ namespace BenchmarksDriver
 
     public class JobResult
     {
-        public MeasurementSummary[] Results { get; set; }
+        public Dictionary<string, object> Results { get; set; }
         public MeasurementMetadata[] Metadata { get; set; }
         public List<Measurement[]> Measurements { get; set; } = new List<Measurement[]>();
-    }
-
-    public class MeasurementSummary
-    {
-        public string Name { get; set; }
-        public object Value { get; set; }
     }
 }

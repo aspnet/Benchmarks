@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks.ClientJob;
@@ -16,9 +15,10 @@ using BenchmarksDriver.Serializers;
 using Fluid;
 using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace BenchmarksDriver
 {
@@ -431,6 +431,7 @@ namespace BenchmarksDriver
                         {
                             // Start server
                             return job.StartAsync(
+                                jobName,
                                 _outputArchiveOption,
                                 _buildArchiveOption,
                                 _outputFileOption,
@@ -533,18 +534,22 @@ namespace BenchmarksDriver
 
                     var jobConnections = jobsByDependency[jobName];
 
-                    Log.Quiet("");
-                    Log.Quiet($"{jobName}");
-                    Log.Quiet($"-------");
+                    if (!service.Options.DiscardResults && !service.Options.DisplayOutput && !service.Options.DisplayBuild)
+                    {
+                        Log.Quiet("");
+                        Log.Quiet($"{jobName}");
+                        Log.Quiet($"-------");
+                    }
 
                     foreach (var jobConnection in jobConnections)
                     {
-                        //Log.Quiet("");
-                        //Log.Quiet($"SDK:                         {jobConnection.Job.SdkVersion}");
-                        //Log.Quiet($"Runtime:                     {jobConnection.Job.RuntimeVersion}");
-                        //Log.Quiet($"ASP.NET Core:                {jobConnection.Job.AspNetCoreVersion}");
+                        // Convert any json result to an object
+                        NormalizeResults(jobConnections);
 
-                        WriteMeasures(jobConnection);
+                        if (!service.Options.DiscardResults)
+                        {
+                            WriteMeasures(jobConnection);
+                        }
 
                         // Display output log
                         if (jobConnection.Job.Options.DisplayOutput)
@@ -596,12 +601,10 @@ namespace BenchmarksDriver
                         File.Delete(filename);
                     }
 
-                    using (var stream = File.OpenWrite(filename))
-                    {
-                        await JsonSerializer.SerializeAsync(stream, jobResults, options: new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                    }
+                    await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(jobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() } ));
 
-                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'");
+                    Log.Write("", notime: true);
+                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
                 }
 
                 // Store data
@@ -826,6 +829,38 @@ namespace BenchmarksDriver
             };
         }
 
+        private static void NormalizeResults(IEnumerable<JobConnection> jobs)
+        {
+            if (jobs == null || !jobs.Any())
+            {
+                return;
+            }
+
+            // For each job, compute the operation on each measurement
+            foreach(var job in jobs)
+            {
+                // Group by name for easy lookup
+                var measurements = job.Job.Measurements.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.ToList());
+
+                foreach (var metadata in job.Job.Metadata)
+                {
+                    if (!measurements.ContainsKey(metadata.Name))
+                    {
+                        continue;
+                    }
+
+                    if (metadata.Format == "json")
+                    {
+                        foreach (var measurement in measurements[metadata.Name])
+                        {
+                            measurement.Value = JsonConvert.DeserializeObject(measurement.Value.ToString());
+                        }
+
+                        metadata.Format = "object";
+                    }
+                }
+            }
+        }
 
         private static JobResults CreateJobResults(Configuration configuration, string[] dependencies, Dictionary<string, List<JobConnection>> jobsByDependency)
         {
@@ -833,6 +868,11 @@ namespace BenchmarksDriver
 
             foreach (var jobName in dependencies)
             {
+                if (configuration.Jobs[jobName].Options.DiscardResults)
+                {
+                    continue;
+                }
+
                 var jobResult = jobResults.Jobs[jobName] = new JobResult();
                 var jobConnections = jobsByDependency[jobName];
 
@@ -848,11 +888,11 @@ namespace BenchmarksDriver
             return jobResults;
         }
 
-        private static MeasurementSummary[] SummarizeResults(IEnumerable<JobConnection> jobs)
+        private static Dictionary<string, object> SummarizeResults(IEnumerable<JobConnection> jobs)
         {
             if (jobs == null || !jobs.Any())
             {
-                return Array.Empty<MeasurementSummary>();
+                return new Dictionary<string, object>();
             }
 
             // For each job, compute the operation on each measurement
@@ -861,7 +901,7 @@ namespace BenchmarksDriver
                 // Group by name for easy lookup
                 var measurements = job.Job.Measurements.GroupBy(x => x.Name).ToDictionary(x => x.Key, x => x.ToList());
 
-                var summaries = new List<MeasurementSummary>();
+                var summaries = new Dictionary<string, object>();
 
                 foreach (var metadata in job.Job.Metadata)
                 {
@@ -874,6 +914,10 @@ namespace BenchmarksDriver
 
                     switch (metadata.Aggregate)
                     {
+                        case Operation.All:
+                            result = measurements[metadata.Name].Select(x => x.Value).ToArray();
+                            break;
+
                         case Operation.First:
                             result = measurements[metadata.Name].First().Value;
                             break;
@@ -907,17 +951,17 @@ namespace BenchmarksDriver
                             break;
                     }
 
-                    if (!String.IsNullOrEmpty(metadata.Format))
+                    if (!String.IsNullOrEmpty(metadata.Format) && metadata.Format != "object")
                     {
-                        summaries.Add(new MeasurementSummary { Name = metadata.Name, Value = Convert.ToDouble(result) });
+                        summaries.Add(metadata.Name, Convert.ToDouble(result));
                     }
                     else
                     {
-                        summaries.Add(new MeasurementSummary { Name = metadata.Name, Value = result.ToString() });
+                        summaries.Add(metadata.Name, result);
                     }
                 }
 
-                return summaries.ToArray();
+                return summaries;
             }).ToArray();
 
             // Single job, no reduce operation is necessary
@@ -926,17 +970,21 @@ namespace BenchmarksDriver
                 return groups[0];
             }
 
-            var reduced = new List<MeasurementSummary>();
+            var reduced = new Dictionary<string, object>();
 
             foreach (var metadata in jobs.First().Job.Metadata)
             {
                 var reducedValues = groups.SelectMany(x => x)
-                    .Where(x => x.Name == metadata.Name);
+                    .Where(x => x.Key == metadata.Name);
 
                 object reducedValue = null;
 
                 switch (metadata.Aggregate)
                 {
+                    case Operation.All:
+                        reducedValue = reducedValues.ToArray();
+                        break;
+
                     case Operation.First:
                         reducedValue = reducedValues.First().Value;
                         break;
@@ -970,10 +1018,10 @@ namespace BenchmarksDriver
                         break;
                 }
 
-                reduced.Add(new MeasurementSummary { Name = metadata.Name, Value = reducedValue });
+                reduced.Add(metadata.Name, reducedValue);
             }
 
-            return reduced.ToArray();
+            return reduced;
 
         }
 
@@ -990,8 +1038,6 @@ namespace BenchmarksDriver
             var maxWidth = job.Job.Metadata.Max(x => x.ShortDescription.Length) + 2;
 
             var previousSource = "";
-
-            var summaries = new List<MeasurementSummary>();
 
             foreach (var metadata in job.Job.Metadata)
             {
@@ -1012,6 +1058,10 @@ namespace BenchmarksDriver
 
                 switch (metadata.Aggregate)
                 {
+                    case Operation.All:
+                        result = measurements[metadata.Name].Select(x => x.Value).ToArray();
+                        break;
+
                     case Operation.First:
                         result = measurements[metadata.Name].First().Value;
                         break;
@@ -1045,13 +1095,17 @@ namespace BenchmarksDriver
                         break;
                 }
 
-                if (!String.IsNullOrEmpty(metadata.Format))
+                // We don't render the result if it's a raw object
+                if (metadata.Format != "object")
                 {
-                    Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {Convert.ToDouble(result).ToString(metadata.Format)}");
-                }
-                else
-                {
-                    Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {result.ToString()}");
+                    if (!String.IsNullOrEmpty(metadata.Format))
+                    {
+                        Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {Convert.ToDouble(result).ToString(metadata.Format)}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {result.ToString()}");
+                    }
                 }
             }
         }

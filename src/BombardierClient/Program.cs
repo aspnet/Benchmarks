@@ -80,45 +80,36 @@ namespace BombardierClient
 
             var document = JObject.Parse(stringBuilder.ToString());
 
-            BenchmarksEventSource.Log.Metadata("bombardier/req1xx", "max", "sum", "1xx", "Requests with 1xx status code", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/req2xx", "max", "sum", "2xx", "Requests with 2xx status code", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/req3xx", "max", "sum", "3xx", "Requests with 3xx status code", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/req4xx", "max", "sum", "4xx", "Requests with 4xx status code", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/req5xx", "max", "sum", "5xx", "Requests with 5xx status code", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/others", "max", "sum", "others", "Requests with other status code", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/requests", "max", "sum", "Requests", "Total number of requests", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
 
-            BenchmarksEventSource.Log.Metadata("bombardier/latency/mean", "max", "sum", "Mean latency", "Latency: mean", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/latency/max", "max", "sum", "Max latency", "Latency: max", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/latency/mean", "max", "sum", "Mean latency (us)", "Mean latency (us)", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/latency/max", "max", "sum", "Max latency (us)", "Max latency (us)", "n0");
 
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/mean", "max", "sum", "Mean RPS", "RPS: mean", "n0");
             BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
 
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/percentile/50", "max", "sum", "RPS (50th)", "50th percentile RPS", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/percentile/75", "max", "sum", "RPS (75th)", "75th percentile RPS", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/percentile/90", "max", "sum", "RPS (90th)", "90th percentile RPS", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/percentile/95", "max", "sum", "RPS (95th)", "95th percentile RPS", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/percentile/99", "max", "sum", "RPS (99th)", "99th percentile RPS", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/raw", "all", "all", "Raw results", "Raw results", "json");
 
-            BenchmarksEventSource.Measure("bombardier/req1xx", document["result"]["req1xx"].Value<int>());
-            BenchmarksEventSource.Measure("bombardier/req2xx", document["result"]["req2xx"].Value<int>());
-            BenchmarksEventSource.Measure("bombardier/req3xx", document["result"]["req3xx"].Value<int>());
-            BenchmarksEventSource.Measure("bombardier/req4xx", document["result"]["req4xx"].Value<int>());
-            BenchmarksEventSource.Measure("bombardier/req5xx", document["result"]["req5xx"].Value<int>());
-            BenchmarksEventSource.Measure("bombardier/others", document["result"]["others"].Value<int>());
+            var total = 
+                document["result"]["req1xx"].Value<int>()
+                + document["result"]["req2xx"].Value<int>()
+                + document["result"]["req3xx"].Value<int>()
+                + document["result"]["req3xx"].Value<int>()
+                + document["result"]["req4xx"].Value<int>()
+                + document["result"]["req5xx"].Value<int>()
+                + document["result"]["others"].Value<int>();
+
+            var success = document["result"]["req2xx"].Value<int>() + document["result"]["req3xx"].Value<int>();
+
+            BenchmarksEventSource.Measure("bombardier/requests", total);
+            BenchmarksEventSource.Measure("bombardier/badresponses", total - success);
 
             BenchmarksEventSource.Measure("bombardier/latency/mean", document["result"]["latency"]["mean"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/latency/stddev", document["result"]["latency"]["stddev"].Value<double>());
             BenchmarksEventSource.Measure("bombardier/latency/max", document["result"]["latency"]["max"].Value<double>());
 
-            BenchmarksEventSource.Measure("bombardier/rps/mean", document["result"]["rps"]["mean"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/rps/stddev", document["result"]["rps"]["stddev"].Value<double>());
             BenchmarksEventSource.Measure("bombardier/rps/max", document["result"]["rps"]["max"].Value<double>());
 
-            BenchmarksEventSource.Measure("bombardier/rps/percentile/50", document["result"]["rps"]["percentiles"]["50"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/rps/percentile/75", document["result"]["rps"]["percentiles"]["75"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/rps/percentile/90", document["result"]["rps"]["percentiles"]["90"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/rps/percentile/95", document["result"]["rps"]["percentiles"]["95"].Value<double>());
-            BenchmarksEventSource.Measure("bombardier/rps/percentile/99", document["result"]["rps"]["percentiles"]["99"].Value<double>());
+            BenchmarksEventSource.Measure("bombardier/raw", stringBuilder.ToString());
 
         }
     }

@@ -32,6 +32,7 @@ namespace BenchmarksDriver
         private string _serverJobUri;
         private bool _keepAlive;
         private DateTime _runningUtc;
+        private string _jobName;
 
         static JobConnection()
         {
@@ -54,15 +55,18 @@ namespace BenchmarksDriver
         public ServerState State => Job.State;
 
         public async Task<string> StartAsync(
+            string jobName,
             CommandOption _outputArchiveOption,
             CommandOption _buildArchiveOption,
             CommandOption _outputFileOption,
             CommandOption _buildFileOption
             )
         {
+            _jobName = jobName;
+
             var content = JsonConvert.SerializeObject(Job);
 
-            Log.Write($"Starting scenario {Job.Scenario} on benchmark server...");
+            Log.Write($"Starting job '{_jobName}' ...");
 
             Log.Verbose($"POST {_serverJobsUri} {content}...");
 
@@ -380,7 +384,7 @@ namespace BenchmarksDriver
         {
             StopKeepAlive();
 
-            Log.Write($"Stopping scenario '{Job.Scenario}' on benchmark server...");
+            Log.Write($"Stopping job '{_jobName}' ...");
 
             var response = await _httpClient.PostAsync(_serverJobUri + "/stop", new StringContent(""));
             Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -407,7 +411,7 @@ namespace BenchmarksDriver
 
         public async Task DeleteAsync()
         {
-            Log.Write($"Deleting scenario '{Job.Scenario}' on benchmark server...");
+            Log.Write($"Deleting job '{_jobName}' ...");
 
             Log.Verbose($"DELETE {_serverJobUri}...");
             var response = await _httpClient.DeleteAsync(_serverJobUri);

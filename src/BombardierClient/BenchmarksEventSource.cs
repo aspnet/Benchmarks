@@ -50,10 +50,10 @@ namespace Benchmarks
             WriteEvent(3, name, value);
         }
 
-        [Event(4, Level = EventLevel.Informational)]
+        [Event(5, Level = EventLevel.Informational)]
         public void Metadata(string name, string aggregate, string reduce, string shortDescription, string longDescription, string format)
         {
-            WriteEvent(4, name, aggregate, reduce, shortDescription, longDescription, format);
+            WriteEvent(5, name, aggregate, reduce, shortDescription, longDescription, format);
         }
     }
 }

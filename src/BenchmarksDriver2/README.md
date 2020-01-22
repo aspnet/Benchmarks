@@ -71,6 +71,11 @@ Options:
   --[JOB].options.displayOutput <true|false>                               Whether to download and display the standard output of the benchmark.
   --[JOB].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
   
+
+  ## Misc
+
+  --[JOB].options.disardResults <true|false>                               Whether to discard all the results from this job, for instance during a warmup job.
+
   # Example
 
   dotnet run --
