@@ -419,6 +419,10 @@ namespace BenchmarkServer
                     // Find the first job that is waiting to be processed (state New)
                     foreach (var j in _jobs.GetAll())
                     {
+                        if (j.State == ServerState.Deleted)
+                        {
+                            continue;
+                        }
 
                         // Searching for a job to acquire
                         if (j.State == ServerState.New)
