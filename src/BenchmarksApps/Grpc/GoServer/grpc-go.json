@@ -3,8 +3,9 @@
     "Client": "Grpc",
     "ClientProperties": {
     },
-
     "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
       "DockerImageName": "weatherapp-route-to-code",
       "DockerContextDirectory": "src/BenchmarksApps/Grpc/GoServer/",
       "DockerFile": "src/BenchmarksApps/Grpc/GoServer/Dockerfile"
