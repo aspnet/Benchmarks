@@ -212,5 +212,7 @@ namespace Benchmarks.ServerJob
         public string TraceOutput { get; set; }
         public bool DisplayBuild { get; set; }
         public string RequiredOperatingSystem { get; set; }
+
+        public bool DiscardResults { get; set; }
     }
 }

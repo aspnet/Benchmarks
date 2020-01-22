@@ -105,6 +105,8 @@ namespace BenchmarkServer
         public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(1);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
+        public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
+
 
         private static string _startPerfviewArguments;
 
@@ -405,9 +407,19 @@ namespace BenchmarkServer
                 {
                     ServerJob job = null;
 
-                    // Find the first job that is not in New state
+                    // Lookup expired jobs
+                    var expiredJobs = _jobs.GetAll().Where(j => j.State == ServerState.Deleted && DateTime.UtcNow - j.LastDriverCommunicationUtc > DeletedTimeout);
+                    
+                    foreach(var expiredJob in expiredJobs)
+                    {
+                        Log.WriteLine($"Removing exppired job {expiredJob.Id}");
+                        _jobs.Remove(expiredJob.Id);
+                    }
+
+                    // Find the first job that is waiting to be processed (state New)
                     foreach (var j in _jobs.GetAll())
                     {
+
                         // Searching for a job to acquire
                         if (j.State == ServerState.New)
                         {
@@ -1150,7 +1162,9 @@ namespace BenchmarkServer
 
                             tempDir = null;
 
-                            _jobs.Remove(job.Id);
+                            Log.WriteLine($"{job.State} -> Deleted");
+
+                            job.State = ServerState.Deleted;
                         }
                     }
 

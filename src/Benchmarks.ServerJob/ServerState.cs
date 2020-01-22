@@ -12,6 +12,7 @@ namespace Benchmarks.ServerJob
         Running, // The application is running
         Failed,
         Deleting,
+        Deleted,
         Stopping,
         Stopped,
         TraceCollecting,
