@@ -114,16 +114,6 @@ namespace BenchmarksDriver
                     throw new InvalidOperationException("Server is required to set ServerJob.OperatingSystem.");
                 }
 
-                if (Job.Options.RequiredOperatingSystem != null && !String.Equals(Job.Options.RequiredOperatingSystem, Job.OperatingSystem.ToString(), StringComparison.OrdinalIgnoreCase))
-                {
-                    Log.Write($"Job ignored on this OS, stopping job ...");
-
-                    response = await _httpClient.PostAsync(_serverJobUri + "/stop", new StringContent(""));
-                    Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
-
-                    return null;
-                }
-
                 #endregion
 
                 if (Job?.State == ServerState.Initializing)

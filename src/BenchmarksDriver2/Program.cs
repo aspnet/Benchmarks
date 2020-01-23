@@ -418,20 +418,15 @@ namespace BenchmarksDriver
 
                     foreach(var job in jobs)
                     {
-                        if (service.Options.LinuxOnly || service.Options.WindowsOnly)
+                        if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
                         {
                             var info = await job.GetInfoAsync();
 
                             var os = info["os"]?.ToString();
 
-                            if (service.Options.LinuxOnly && !String.Equals(os, "Linux", StringComparison.OrdinalIgnoreCase))
+                            if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
                             {
-                                Log.Write($"Job skipped as the agent doesn't match the Linux constraint");
-                                return 0;
-                            }
-                            else if (service.Options.WindowsOnly && !String.Equals(os, "Windows", StringComparison.OrdinalIgnoreCase))
-                            {
-                                Log.Write($"Job skipped as the agent doesn't match the Windows constraint");
+                                Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
                                 return 0;
                             }
                         }
