@@ -14,9 +14,9 @@ namespace BenchmarkServer.Controllers
         {
             return Json(new
             {
-                hw = Startup.Hardware,
-                env = Startup.HardwareVersion,
-                os = Startup.OperatingSystem,
+                hw = Startup.Hardware.ToString(),
+                env = Startup.HardwareVersion.ToString(),
+                os = Startup.OperatingSystem.ToString(),
                 arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
                 proc = Environment.ProcessorCount
             });
