@@ -715,5 +715,13 @@ namespace BenchmarksDriver
 
             await _httpClient.DownloadFileAsync(uri, _serverJobUri, traceDestination);
         }
+
+        public async Task<Dictionary<string, object>> GetInfoAsync()
+        {
+            var uri = _serverJobUri + "/info";
+            var response = await _httpClient.GetStringAsync(uri);
+
+            return JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+        }
     }
 }

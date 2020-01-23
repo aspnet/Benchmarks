@@ -70,6 +70,19 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("info")]
+        public IActionResult Info()
+        {
+            return Json(new
+            {
+                hw = Startup.Hardware,
+                env = Startup.HardwareVersion,
+                os = Startup.OperatingSystem,
+                arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
+                proc = Environment.ProcessorCount
+            });
+        }
+
         [HttpPost]
         public IActionResult Create([FromBody] ServerJob job)
         {

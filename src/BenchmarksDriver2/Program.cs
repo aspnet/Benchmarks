@@ -416,6 +416,24 @@ namespace BenchmarksDriver
 
                     jobsByDependency.Add(jobName, jobs);
 
+                    foreach(var job in jobs)
+                    {
+                        var info = await job.GetInfoAsync();
+
+                        var os = info["os"]?.ToString();
+
+                        if (service.Options.LinuxOnly && !String.Equals(os, "Linux", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log.Write($"Job skipped as the agent doesn't match the Linux constraint");
+                            return 0;
+                        }
+                        else if (service.Options.WindowsOnly && !String.Equals(os, "Windows", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log.Write($"Job skipped as the agent doesn't match the Windows constraint");
+                            return 0;
+                        }
+                    }
+
                     var variables = MergeVariables(configuration.Variables, service.Variables, commandLineVariables);
 
                     // Format arguments
@@ -559,7 +577,6 @@ namespace BenchmarksDriver
                             Log.Quiet("");
                             Log.DisplayOutput(jobConnection.Job.Output);
                         }
-
 
                         // Display build log
                         if (jobConnection.Job.Options.DisplayBuild)
