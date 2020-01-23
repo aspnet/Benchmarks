@@ -13,7 +13,7 @@ blazorJobs="--config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-
 
 jobs=(
   # Blazor
-  "--scenario blazorwasmbenchmark $blazorJobs"
+  "--scenario blazorwasmbenchmark $blazorJobs --requiredOperatingSystem Linux"
 )
 
 # build driver
@@ -25,7 +25,7 @@ do
     for job in "${jobs[@]}"
     do
         echo "New job  on '$s': $job"
-        dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll --application.endpoints $s $job $BENCHMARKS_ARGS
+        dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll --application.endpoints $s $job --session $SESSION --sql "$BENCHMARKS_SQL" --table BlazorWasm $BENCHMARKS_ARGS
 
         # error code in $?
     done

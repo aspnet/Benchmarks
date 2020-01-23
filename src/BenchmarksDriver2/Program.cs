@@ -596,7 +596,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                var jobResults = CreateJobResults(configuration, dependencies, jobsByDependency);
+                var jobResults = await CreateJobResultsAsync(configuration, dependencies, jobsByDependency);
 
                 foreach (var property in _propertyOption.Values)
                 {
@@ -894,7 +894,7 @@ namespace BenchmarksDriver
             }
         }
 
-        private static JobResults CreateJobResults(Configuration configuration, string[] dependencies, Dictionary<string, List<JobConnection>> jobsByDependency)
+        private static async Task<JobResults> CreateJobResultsAsync(Configuration configuration, string[] dependencies, Dictionary<string, List<JobConnection>> jobsByDependency)
         {
             var jobResults = new JobResults();
 
@@ -915,6 +915,8 @@ namespace BenchmarksDriver
                 {
                     jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
                 }
+
+                jobResult.Environment = await jobConnections.First().GetInfoAsync();
             }
 
             return jobResults;

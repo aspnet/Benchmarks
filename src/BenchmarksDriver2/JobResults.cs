@@ -14,5 +14,6 @@ namespace BenchmarksDriver
         public Dictionary<string, object> Results { get; set; }
         public MeasurementMetadata[] Metadata { get; set; }
         public List<Measurement[]> Measurements { get; set; } = new List<Measurement[]>();
+        public Dictionary<string, object> Environment = new Dictionary<string, object>();
     }
 }
