@@ -718,7 +718,7 @@ namespace BenchmarksDriver
 
         public async Task<Dictionary<string, object>> GetInfoAsync()
         {
-            var uri = _serverJobUri + "/info";
+            var uri = new Uri(_serverUri, "/info");
             var response = await _httpClient.GetStringAsync(uri);
 
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
