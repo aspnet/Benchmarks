@@ -13,7 +13,7 @@ blazorJobs="--config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-
 
 jobs=(
   # Blazor
-  "--scenario blazorwasmbenchmark $blazorJobs --application.requiredOperatingSystem Linux"
+  "--scenario blazorwasmbenchmark $blazorJobs --application.options.requiredOperatingSystem Linux"
 )
 
 # build driver
