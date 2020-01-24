@@ -656,6 +656,7 @@ namespace BenchmarkServer
                                                         var workingSetRaw = data[1];
                                                         var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
                                                         var cpu = double.Parse(cpuPercentRaw.Trim('%'));
+                                                        var rawCPU = cpu;
 
                                                         // On Windows the CPU already takes the number or HT into account
                                                         if (OperatingSystem == OperatingSystem.Linux)
@@ -706,6 +707,13 @@ namespace BenchmarkServer
                                                             Timestamp = now,
                                                             Value = cpu
                                                         });
+
+                                                        job.Measurements.Add(new Measurement
+                                                        {
+                                                            Name = "benchmarks/cpu/raw",
+                                                            Timestamp = now,
+                                                            Value = rawCPU
+                                                        });
                                                     }
                                                 }
                                             }
@@ -747,7 +755,8 @@ namespace BenchmarkServer
                                                     // We need to dig into this
                                                     var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
                                                     var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
-                                                    var cpu = Math.Round((newCPUTime - oldCPUTime).TotalMilliseconds / (Environment.ProcessorCount * elapsed) * 100);
+                                                    var rawCpu = (newCPUTime - oldCPUTime).TotalMilliseconds / elapsed * 100;
+                                                    var cpu = Math.Round(rawCpu / Environment.ProcessorCount);
                                                     lastMonitorTime = now;
 
                                                     process.Refresh();
@@ -774,6 +783,13 @@ namespace BenchmarkServer
                                                             Name = "benchmarks/cpu",
                                                             Timestamp = now,
                                                             Value = cpu
+                                                        });
+
+                                                        job.Measurements.Add(new Measurement
+                                                        {
+                                                            Name = "benchmarks/cpu/raw",
+                                                            Timestamp = now,
+                                                            Value = rawCpu
                                                         });
                                                     }
 
@@ -900,8 +916,22 @@ namespace BenchmarkServer
                                         Aggregate = Operation.Max,
                                         Reduce = Operation.Max,
                                         Format = "n0",
-                                        LongDescription = "Amount of time the process has utilized the CPU (ms)",
+                                        LongDescription = "Amount of time the process has utilized the CPU out of 100%",
                                         ShortDescription = "CPU Usage (%)"
+                                    });
+                                }
+
+                                if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/docker"))
+                                {
+                                    job.Metadata.Add(new MeasurementMetadata
+                                    {
+                                        Source = "Host Process",
+                                        Name = "benchmarks/cpu/raw",
+                                        Aggregate = Operation.Max,
+                                        Reduce = Operation.Max,
+                                        Format = "n2", // two decimals
+                                        LongDescription = "Raw CPU value (not normalized by number of cores)",
+                                        ShortDescription = "Raw CPU Usage (%)"
                                     });
                                 }
 
