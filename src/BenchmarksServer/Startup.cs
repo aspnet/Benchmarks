@@ -921,7 +921,7 @@ namespace BenchmarkServer
                                     });
                                 }
 
-                                if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/docker"))
+                                if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/raw"))
                                 {
                                     job.Metadata.Add(new MeasurementMetadata
                                     {
