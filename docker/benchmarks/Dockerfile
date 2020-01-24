@@ -43,7 +43,7 @@ ADD https://gist.githubusercontent.com/sebastienros/6c28f099d579e37df4000fe457f2
 RUN chmod +x /usr/bin/perfcollect
 
 # Build and install h2load
-ENV NGHTTP2_VERSION 1.32.0
+ENV NGHTTP2_VERSION 1.40.0
 RUN cd /tmp \
     && wget -qO- "https://github.com/tatsuhiro-t/nghttp2/releases/download/v${NGHTTP2_VERSION}/nghttp2-${NGHTTP2_VERSION}.tar.gz" | tar -xz \
     && cd /tmp/nghttp2-$NGHTTP2_VERSION \
