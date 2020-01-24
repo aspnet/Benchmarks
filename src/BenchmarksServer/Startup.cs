@@ -697,7 +697,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
-                                                            Value = workingSet / 1024
+                                                            Value = Math.Ceiling((double) workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
                                                         });
 
                                                         job.Measurements.Add(new Measurement
@@ -766,7 +766,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
-                                                            Value = process.WorkingSet64 / 1024
+                                                            Value = Math.Ceiling((double)process.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
                                                         });
 
                                                         job.Measurements.Add(new Measurement
