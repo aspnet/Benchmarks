@@ -90,15 +90,6 @@ RUN if [ "$(dpkg --print-architecture)" != "arm64" ]; then cd /tmp \
     && cd .. \
     && rm -rf wrk2.zip; fi
 
-# Install openssl 1.1.1
-RUN cd /tmp \
-    && git clone https://github.com/openssl/openssl.git --branch OpenSSL_1_1_1-stable \
-    && cd openssl \
-    && ./config \
-    && make \
-    && make install \
-    && export LD_LIBRARY_PATH=/usr/local/lib
-
 WORKDIR /benchmarks
 
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
