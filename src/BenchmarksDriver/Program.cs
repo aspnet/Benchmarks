@@ -1491,7 +1491,7 @@ namespace BenchmarksDriver
                                 {
                                     var outputFileSegments = outputFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), SearchOption.AllDirectories))
+                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), SearchOption.TopDirectoryOnly))
                                     {
                                         var resolvedFileWithDestination = resolvedFile;
 
