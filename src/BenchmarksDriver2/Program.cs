@@ -40,9 +40,6 @@ namespace BenchmarksDriver
             _buildArchiveOption,
             _buildFileOption,
             _outputFileOption,
-            _linuxOnlyOption,
-            _windowsOnlyOption,
-            _initializeOption,
 
             _configOption,
             _scenarioOption,
@@ -52,7 +49,9 @@ namespace BenchmarksDriver
             _sqlTableOption,
             _sessionOption,
             _descriptionOption,
-            _propertyOption
+            _propertyOption,
+            _excludeMetadataOption,
+            _excludeMeasurementsOption
 
             ;
 
@@ -129,7 +128,9 @@ namespace BenchmarksDriver
             _sessionOption = app.Option("--session", "A logical identifier to group related jobs.", CommandOptionType.SingleValue);
             _descriptionOption = app.Option("--description", "A string describing the job.", CommandOptionType.SingleValue);
             _propertyOption = app.Option("-p|--property", "Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux", CommandOptionType.MultipleValue);
-
+            _excludeMeasurementsOption = app.Option("--no-measurements", "Remove all measurements from the stored results. For instance, all samples of a measure won't be stored, only the final value.", CommandOptionType.SingleOrNoValue);
+            _excludeMetadataOption = app.Option("--no-metadata", "Remove all metadata from the stored results. The metadata is only necessary for being to generate friendly outputs.", CommandOptionType.SingleOrNoValue);
+            
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
             {
@@ -167,10 +168,6 @@ namespace BenchmarksDriver
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
             var markdownOption = app.Option("-md|--markdown",
                 "Formats the output in markdown", CommandOptionType.NoValue);
-            _windowsOnlyOption = app.Option("--windows-only",
-                "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
-            _linuxOnlyOption = app.Option("--linux-only",
-                "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
             var consoleOption = app.Option("--console",
@@ -207,8 +204,6 @@ namespace BenchmarksDriver
                 "Defines custom build arguments to use with the benchmarked application e.g., -b \"/p:foo=bar\" --build-arg \"quiet\"", CommandOptionType.MultipleValue);
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
-            _initializeOption = app.Option("--initialize",
-                "A script to run before the application starts, e.g. \"du\", \"/usr/bin/env bash dotnet-install.sh\"", CommandOptionType.SingleValue);
 
             app.OnExecute(() =>
             {
@@ -909,11 +904,21 @@ namespace BenchmarksDriver
                 var jobConnections = jobsByDependency[jobName];
 
                 jobResult.Results = SummarizeResults(jobConnections);
-                jobResult.Metadata = jobConnections[0].Job.Metadata.ToArray();
 
-                foreach (var jobConnection in jobConnections)
+                // Insert metadata
+                if (!_excludeMetadataOption.HasValue())
                 {
-                    jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
+                    jobResult.Metadata = jobConnections[0].Job.Metadata.ToArray();
+
+                }
+
+                // Insert measurements
+                if (!_excludeMeasurementsOption.HasValue())
+                {
+                    foreach (var jobConnection in jobConnections)
+                    {
+                        jobResult.Measurements.Add(jobConnection.Job.Measurements.ToArray());
+                    }
                 }
 
                 jobResult.Environment = await jobConnections.First().GetInfoAsync();
@@ -983,6 +988,14 @@ namespace BenchmarksDriver
                         case Operation.Sum:
                             result = measurements[metadata.Name].Sum(x => Convert.ToDouble(x.Value));
                             break;
+
+                        case Operation.Delta:
+                            result = measurements[metadata.Name].Max(x => Convert.ToDouble(x.Value)) - measurements[metadata.Name].Min(x => Convert.ToDouble(x.Value));
+                            break;
+
+                        default:
+                            result = measurements[metadata.Name].First().Value;
+                            break;
                     }
 
                     if (!String.IsNullOrEmpty(metadata.Format) && metadata.Format != "object")
@@ -1049,6 +1062,14 @@ namespace BenchmarksDriver
 
                     case Operation.Sum:
                         reducedValue = reducedValues.Sum(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    case Operation.Delta:
+                        reducedValue = reducedValues.Max(x => Convert.ToDouble(x.Value)) - reducedValues.Min(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    default:
+                        reducedValue = reducedValues.First().Value;
                         break;
                 }
 
@@ -1126,6 +1147,14 @@ namespace BenchmarksDriver
 
                     case Operation.Sum:
                         result = measurements[metadata.Name].Sum(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    case Operation.Delta:
+                        result = measurements[metadata.Name].Max(x => Convert.ToDouble(x.Value)) - measurements[metadata.Name].Min(x => Convert.ToDouble(x.Value));
+                        break;
+
+                    default:
+                        result = measurements[metadata.Name].First().Value;
                         break;
                 }
 

@@ -714,6 +714,22 @@ namespace BenchmarkServer
                                                             Timestamp = now,
                                                             Value = rawCPU
                                                         });
+
+                                                        if (OperatingSystem == OperatingSystem.Linux)
+                                                        {
+                                                            try
+                                                            {
+                                                                job.Measurements.Add(new Measurement
+                                                                {
+                                                                    Name = "benchmarks/swap",
+                                                                    Timestamp = now,
+                                                                    Value = GetSwapBytes() / 1024 / 1024
+                                                                });
+                                                            }
+                                                            catch
+                                                            {
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -976,6 +992,21 @@ namespace BenchmarkServer
                                         ShortDescription = "Published Size (KB)"
                                     });
                                 }
+
+                                if (!job.Metadata.Any(x => x.Name == "benchmarks/swap"))
+                                {
+                                    job.Metadata.Add(new MeasurementMetadata
+                                    {
+                                        Source = "Host Process",
+                                        Name = "benchmarks/swap",
+                                        Aggregate = Operation.Delta,
+                                        Reduce = Operation.Max,
+                                        Format = "n0",
+                                        LongDescription = "Amount swapped memory (MB)",
+                                        ShortDescription = "Swap (MB)"
+                                    });
+                                }
+
                             }
 
                             // The driver is supposed to send attachment in the initialize phase
@@ -2155,7 +2186,7 @@ namespace BenchmarkServer
             }
             catch
             {
-                job.Error = $"dotnet-install could not install this runtime: {dotnetInstallStep}";
+                job.Error = $"dotnet-install could not install a component: {dotnetInstallStep}";
 
                 return null;
             }
@@ -3319,6 +3350,22 @@ namespace BenchmarkServer
 
                 return fileName;
             }
+        }
+
+        private static double GetSwapBytes()
+        {
+            var output = ProcessUtil.Run("egrep", "'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false)?.StandardOutput;
+
+            // SwapTotal:       8388604 kB
+            // SwapFree:        8310012 kB
+
+            var lines = output.Split('\n', 2);
+
+            var swapTotal = int.Parse(lines[0].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+            var swapFree = int.Parse(lines[1].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+            var swapkB = swapTotal - swapFree;
+
+            return swapkB * 1024;
         }
 
         private static string ComputeServerUrl(string hostname, ServerJob job)

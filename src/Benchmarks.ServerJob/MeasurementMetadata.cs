@@ -37,6 +37,7 @@ namespace Benchmarks.ServerJob
         Max,
         Min,
         Count,
-        All
+        All,
+        Delta // Difference between min and max of the set
     }
 }
