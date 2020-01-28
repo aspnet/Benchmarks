@@ -147,7 +147,7 @@ namespace JobConsumer
             RunCommand($"git checkout {buildRules.BaselineSHA}");
             RunBuildCommands(buildRules);
 
-            var baselineArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: true);
+            var baselineArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, buildRules, isBaseline: true);
 
             outputBuilder.AppendLine($"Starting baseline run on '{buildRules.BaselineSHA}'...");
             var baselineSuccess = await RunDriver(baselineArguments, outputBuilder, errorBuilder);
@@ -172,7 +172,7 @@ namespace JobConsumer
             RunCommand($"git checkout {session}");
             RunBuildCommands(buildRules);
 
-            var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, isBaseline: false);
+            var prArguments = GetDriverArguments(processingFile.FullName, session, sdkVersion, buildRules, isBaseline: false);
 
             outputBuilder.AppendLine($"Starting PR run on '{buildRules.PullRequestSHA}'...");
             var prSuccess = await RunDriver(prArguments, outputBuilder, errorBuilder);
@@ -434,9 +434,34 @@ namespace JobConsumer
             return null;
         }
 
-        private static string GetDriverArguments(string jobsFilePath, string sessionId, string sdkVersion, bool isBaseline)
+        private static string GetDriverArguments(
+            string jobsFilePath,
+            string sessionId,
+            string sdkVersion,
+            BuildInstructions buildInstructions,
+            bool isBaseline)
         {
-            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId} --self-contained --aspNetCoreVersion Latest --runtimeVersion Latest --quiet");
+            var argumentsBuilder = new StringBuilder($"{DriverPath} --server {ServerUrl} --client {ClientUrl} --jobs {jobsFilePath} --session {sessionId}");
+
+            argumentsBuilder.Append(" --self-contained --aspNetCoreVersion Latest --runtimeVersion Latest --quiet");
+
+            if (!string.IsNullOrWhiteSpace(buildInstructions.ScenarioName) && !string.Equals("Default", buildInstructions.ScenarioName, StringComparison.OrdinalIgnoreCase))
+            {
+                argumentsBuilder.Append(" --scenario ");
+                argumentsBuilder.Append(buildInstructions.ScenarioName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(sdkVersion))
+            {
+                argumentsBuilder.Append(" --sdk ");
+                argumentsBuilder.Append(sdkVersion);
+            }
+
+            if (!string.IsNullOrWhiteSpace(buildInstructions.ExtraDriverArgs))
+            {
+                argumentsBuilder.Append(" ");
+                argumentsBuilder.Append(buildInstructions.ExtraDriverArgs);
+            }
 
             if (isBaseline)
             {
@@ -445,12 +470,6 @@ namespace JobConsumer
             else
             {
                 argumentsBuilder.Append(" --diff baseline --description After");
-            }
-
-            if (!string.IsNullOrWhiteSpace(sdkVersion))
-            {
-                argumentsBuilder.Append(" --sdk ");
-                argumentsBuilder.Append(sdkVersion);
             }
 
             return argumentsBuilder.ToString();
@@ -464,6 +483,9 @@ namespace JobConsumer
             public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
+
+            public string ScenarioName { get; set; }
+            public string ExtraDriverArgs { get; set; }
         }
 
         private class BenchmarkResult

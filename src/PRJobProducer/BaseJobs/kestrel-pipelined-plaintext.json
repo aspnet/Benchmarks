@@ -15,12 +15,28 @@
     },
     "ReadyStateText": "Application started.",
     "Path": "/plaintext",
+
     "OutputFiles": [
       "artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/netcoreapp5.0/*.dll"
     ],
     "DotNetTrace": false,
     "SelfContained": true
   },
+
+  "http2": {
+
+    "Client": "h2load",
+    "ClientProperties": {
+      "Streams": 70
+    },
+
+    "PresetHeaders": "None",
+    "Connections": 4,
+    "Threads": 4,
+    "SkipStartupLatencies": true,
+    "ExtraDriverArgs": "--scheme h2c"
+  },
+
   "BuildInstructions": {
     "BuildCommands": [
       "./build.sh /t:Restore",

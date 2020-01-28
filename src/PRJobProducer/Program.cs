@@ -25,7 +25,7 @@ namespace PRJobProducer
         private const string ProcessedDirectoryName = "processed";
 
         private const string BenchmarkRequest = "@aspnet-hello benchmark";
-        private const string StartingBencmarkComment = "Starting pipelined plaintext benchmark with session ID '{0}'. This could take up to 30 minutes...";
+        private const string StartingBencmarkComment = "Starting '{0}' pipelined plaintext benchmark with session ID '{1}'. This could take up to 30 minutes...";
         private const string CompletedBenchmarkCommentTemplate = "## Baseline\n\n```\n{0}\n```\n\n## PR\n\n```\n{1}\n```";
 
         private static readonly DateTime CommentCutoffDate = DateTime.Now.AddHours(-24);
@@ -130,20 +130,22 @@ namespace PRJobProducer
 
                 Console.WriteLine($"Scanning for benchmark requests in {Owner}/{Repo}.");
 
-                await foreach (var pr in GetPRsToBenchmark(client, botLoginName))
+                await foreach (var prBenchmarkRequest in GetPRsToBenchmark(client, botLoginName))
                 {
+                    var pr = prBenchmarkRequest.PullRequest;
+
                     try
                     {
                         var session = Guid.NewGuid().ToString("n");
                         var newJobFileName = $"{session}.{Path.GetFileName(BaseJobPath)}";
-                        var startingCommentText = string.Format(StartingBencmarkComment, session);
+                        var startingCommentText = string.Format(StartingBencmarkComment, prBenchmarkRequest.ScenarioName, session);
 
-                        Console.WriteLine($"Requesting benchmark for PR #{pr.Number}.");
+                        Console.WriteLine($"Requesting {prBenchmarkRequest.ScenarioName} benchmark for PR #{pr.Number}.");
                         Console.WriteLine($"Benchmark starting comment: {startingCommentText}");
 
                         await client.Issue.Comment.Create(Owner, Repo, pr.Number, startingCommentText);
 
-                        await RequestBenchmark(pr, newJobFileName);
+                        await RequestBenchmark(prBenchmarkRequest, newJobFileName);
 
                         Console.WriteLine($"Benchmark requested for PR #{pr.Number}. Waiting up to {BenchmarkTimeout} for results.");
                         var results = await WaitForBenchmarkResults(newJobFileName);
@@ -179,7 +181,7 @@ namespace PRJobProducer
             return app.Execute(args);
         }
 
-        private static async IAsyncEnumerable<PullRequest> GetPRsToBenchmark(GitHubClient client, string botLoginName)
+        private static async IAsyncEnumerable<PRBenchmarkRequest> GetPRsToBenchmark(GitHubClient client, string botLoginName)
         {
             var prRequest = new PullRequestRequest()
             {
@@ -210,7 +212,18 @@ namespace PRJobProducer
 
                     if (comment.Body.StartsWith(BenchmarkRequest) && await client.Organization.Member.CheckMember(Owner, comment.User.Login))
                     {
-                        yield return pr;
+                        var scenarioName = comment.Body.Substring(BenchmarkRequest.Length).Trim();
+
+                        if (string.IsNullOrWhiteSpace(scenarioName))
+                        {
+                            scenarioName = "Default";
+                        }
+
+                        yield return new PRBenchmarkRequest
+                        {
+                            ScenarioName = scenarioName,
+                            PullRequest = pr,
+                        };
                     }
                     else if (comment.User.Login.Equals(botLoginName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -244,11 +257,24 @@ namespace PRJobProducer
             return buildInstructions.BuildCommands;
         }
 
-        private static async Task RequestBenchmark(PullRequest pr, string newJobFileName)
+        private static async Task RequestBenchmark(PRBenchmarkRequest prBenchmarkRequest, string newJobFileName)
         {
             await using var baseJobStream = File.OpenRead(BaseJobPath);
 
             var jsonDictionary = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(baseJobStream);
+
+            var extraDriverArgs = "";
+            if (jsonDictionary.ContainsKey(prBenchmarkRequest.ScenarioName))
+            {
+                var scenarioElement = (JsonElement)jsonDictionary[prBenchmarkRequest.ScenarioName];
+
+                if (scenarioElement.TryGetProperty("ExtraDriverArgs", out var extraDriverArgsElement))
+                {
+                    extraDriverArgs = extraDriverArgsElement.GetString();
+                }
+            }
+
+            var pr = prBenchmarkRequest.PullRequest;
 
             jsonDictionary["BuildInstructions"] = new BuildInstructions
             {
@@ -256,6 +282,8 @@ namespace PRJobProducer
                 PullRequestNumber = pr.Number,
                 BaselineSHA = pr.Base.Sha,
                 PullRequestSHA = pr.Head.Sha,
+                ScenarioName = prBenchmarkRequest.ScenarioName,
+                ExtraDriverArgs = extraDriverArgs,
             };
 
             using var newJobStream = new MemoryStream();
@@ -410,6 +438,9 @@ namespace PRJobProducer
             public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
+
+            public string ScenarioName { get; set; }
+            public string ExtraDriverArgs { get; set; }
         }
 
         private class BenchmarkResult
