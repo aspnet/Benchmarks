@@ -16,6 +16,7 @@ namespace Benchmarks.ServerJob
         public bool InitSubmodules { get; set; }
         public string DockerFile { get; set; }
         public string DockerImageName { get; set; }
+        public string DockerLoad { get; set; } // Relative to the docker folder
         public string DockerContextDirectory { get; set; }
         public string DockerFetchPath { get; set; }
         public string LocalFolder { get; set; }
@@ -24,6 +25,11 @@ namespace Benchmarks.ServerJob
         {
             if (!string.IsNullOrEmpty(DockerImageName))
             {
+                if (DockerImageName.StartsWith("benchmarks_")
+                {
+                    return DockerImageName;
+                }
+
                 return $"benchmarks_{DockerImageName}".ToLowerInvariant();
             }
             else

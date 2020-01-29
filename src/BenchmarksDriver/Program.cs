@@ -225,6 +225,8 @@ namespace BenchmarksDriver
                 "Local folder containing the project to test.", CommandOptionType.SingleValue);
             var dockerFileOption = app.Option("-df|--docker-file",
                 "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
+            var dockerLoadOption = app.Option("--docker-load",
+                "File path of the Docker image to load, relative to the Docker context. (e.g, \"myimage.tar\")", CommandOptionType.SingleValue);
             var dockerContextOption = app.Option("-dc|--docker-context",
                 "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
             var dockerImageOption = app.Option("-di|--docker-image",
@@ -774,24 +776,27 @@ namespace BenchmarksDriver
                 if (dockerFileOption.HasValue())
                 {
                     serverJob.Source.DockerFile = dockerFileOption.Value();
+                }
+                if (dockerLoadOption.HasValue())
+                {
+                    serverJob.Source.DockerLoad = dockerLoadOption.Value();
+                }
+                if (dockerContextOption.HasValue())
+                {
+                    serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
+                }
+                else
+                {
+                    serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                }
 
-                    if (dockerContextOption.HasValue())
-                    {
-                        serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
-                    }
-                    else
-                    {
-                        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
-                    }
-
-                    if (dockerImageOption.HasValue())
-                    {
-                        serverJob.Source.DockerImageName = dockerImageOption.Value();
-                    }
-                    else
-                    {
-                        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
-                    }
+                if (dockerImageOption.HasValue())
+                {
+                    serverJob.Source.DockerImageName = dockerImageOption.Value();
+                }
+                else
+                {
+                    serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
                 }
                 if (dockerFetchPath.HasValue())
                 {

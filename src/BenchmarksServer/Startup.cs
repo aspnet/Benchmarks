@@ -26,6 +26,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tools.Trace;
 using Microsoft.Diagnostics.Tracing;
@@ -1483,28 +1484,36 @@ namespace BenchmarkServer
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            string buildParameters = "";
-
-            // Apply custom build arguments sent from the driver
-            foreach (var argument in job.BuildArguments)
+            // The DockerLoad argument contains the path of a tar file that can be loaded
+            if (String.IsNullOrEmpty(source.DockerLoad))
             {
-                buildParameters += $"--build-arg {argument} ";
+                string buildParameters = "";
+
+                // Apply custom build arguments sent from the driver
+                foreach (var argument in job.BuildArguments)
+                {
+                    buildParameters += $"--build-arg {argument} ";
+                }
+
+                ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+
+                stopwatch.Stop();
+
+                job.BuildTime = stopwatch.Elapsed;
+
+                job.Measurements.Add(new Measurement
+                {
+                    Name = "benchmarks/build-time",
+                    Timestamp = DateTime.UtcNow,
+                    Value = stopwatch.ElapsedMilliseconds
+                });
+
+                stopwatch.Reset();
             }
-
-            ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
-
-            stopwatch.Stop();
-
-            job.BuildTime = stopwatch.Elapsed;
-
-            job.Measurements.Add(new Measurement
+            else
             {
-                Name = "benchmarks/build-time",
-                Timestamp = DateTime.UtcNow,
-                Value = stopwatch.ElapsedMilliseconds
-            });
-
-            stopwatch.Reset();
+                ProcessUtil.Run("docker", $"load -i {source.DockerLoad} ", workingDirectory: workingDirectory, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+            }
 
             if (cancellationToken.IsCancellationRequested)
             {
