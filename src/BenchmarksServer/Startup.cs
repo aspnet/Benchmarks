@@ -2113,6 +2113,21 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Detected Windows Desktop version: {desktopVersion}");
 
+
+                    _installedDesktopRuntimes.Clear();
+                    
+                    foreach(var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
+                    {
+                        var version = new DirectoryInfo(dir).Name;
+                        _installedDesktopRuntimes.Add(version);
+                        if (version.StartsWith(channel))
+                        {
+                            desktopVersion = version;
+                        }
+                    }
+
+                    Log.WriteLine($"Forcing Windows Desktop version: {desktopVersion}");
+
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
