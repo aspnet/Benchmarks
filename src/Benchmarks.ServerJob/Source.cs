@@ -25,7 +25,7 @@ namespace Benchmarks.ServerJob
         {
             if (!string.IsNullOrEmpty(DockerImageName))
             {
-                if (DockerImageName.StartsWith("benchmarks_")
+                if (DockerImageName.StartsWith("benchmarks_"))
                 {
                     return DockerImageName;
                 }
