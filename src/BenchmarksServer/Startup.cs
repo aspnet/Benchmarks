@@ -1512,7 +1512,9 @@ namespace BenchmarkServer
             }
             else
             {
-                ProcessUtil.Run("docker", $"load -i {source.DockerLoad} ", workingDirectory: workingDirectory, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+                Log.WriteLine($"Loading docker image {source.DockerLoad} from {srcDir}");
+
+                ProcessUtil.Run("docker", $"load -i {source.DockerLoad} ", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
             }
 
             if (cancellationToken.IsCancellationRequested)
