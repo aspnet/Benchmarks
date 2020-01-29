@@ -77,6 +77,7 @@
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
@@ -98,6 +99,7 @@
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
@@ -117,8 +119,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-alpha1.19468.7" />
 
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
+      
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />

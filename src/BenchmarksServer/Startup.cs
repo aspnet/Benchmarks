@@ -70,6 +70,7 @@ namespace BenchmarkServer
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
+        private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
         private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version"; // used to find which version of the SDK the ASP.NET repository is using
@@ -78,7 +79,8 @@ namespace BenchmarkServer
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private static readonly HashSet<string> _installedRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _installedDotnetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _installedDesktopRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedSdks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private const string _defaultUrl = "http://*:5001";
@@ -1859,6 +1861,7 @@ namespace BenchmarkServer
 
             string targetFramework;
             string runtimeVersion;
+            string desktopVersion;
             string aspNetCoreVersion;
             string channel;
 
@@ -1925,6 +1928,9 @@ namespace BenchmarkServer
                     targetFramework = "netcoreapp5.0";
                 }
             }
+
+            // Use channel version for Desktop runtime, not a custom one (doesn't matter for perf right now)
+            desktopVersion = await GetRuntimeChannelVersion(channel);
 
             // If a specific framework is set, use it instead of the detected one
             if (!String.IsNullOrEmpty(job.Framework))
@@ -2115,7 +2121,7 @@ namespace BenchmarkServer
                         _installedSdks.Add(sdkVersion);
                     }
 
-                    if (!_installedRuntimes.Contains(runtimeVersion))
+                    if (!_installedDotnetRuntimes.Contains(runtimeVersion))
                     {
                         dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
@@ -2125,14 +2131,19 @@ namespace BenchmarkServer
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
-                        dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{runtimeVersion}'";
+                        _installedDotnetRuntimes.Add(runtimeVersion);
+                    }
 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                    if (!_installedDesktopRuntimes.Contains(desktopVersion))
+                    {
+                        dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
+
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
-                        _installedRuntimes.Add(runtimeVersion);
+                        _installedDesktopRuntimes.Add(desktopVersion);
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -2163,7 +2174,7 @@ namespace BenchmarkServer
                         _installedSdks.Add(sdkVersion);
                     }
 
-                    if (!_installedRuntimes.Contains(runtimeVersion))
+                    if (!_installedDotnetRuntimes.Contains(runtimeVersion))
                     {
                         dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
@@ -2173,7 +2184,7 @@ namespace BenchmarkServer
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
-                        _installedRuntimes.Add(runtimeVersion);
+                        _installedDotnetRuntimes.Add(runtimeVersion);
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -2216,6 +2227,7 @@ namespace BenchmarkServer
                 $"/p:BenchmarksRuntimeFrameworkVersion={runtimeVersion} " +
                 $"/p:BenchmarksTargetFramework={targetFramework} " +
                 $"/p:MicrosoftNETCoreAppPackageVersion={runtimeVersion} " +
+                $"/p:MicrosoftWindowsDesktopAppPackageVersion={desktopVersion} " +
                 $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
 
             if (targetFramework == "netcoreapp2.1")
