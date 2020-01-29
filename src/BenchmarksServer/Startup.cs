@@ -2117,10 +2117,17 @@ namespace BenchmarkServer
 
                     if (!_installedRuntimes.Contains(runtimeVersion))
                     {
-                        dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
+                        dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
-                        // Install runtime required for this scenario
+                        // Install runtimes required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        log: true,
+                        workingDirectory: _dotnetInstallPath,
+                        environmentVariables: env));
+
+                        dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{runtimeVersion}'";
+
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
@@ -2131,7 +2138,7 @@ namespace BenchmarkServer
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
                     if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                     {
-                        dotnetInstallStep = $"ASP.NET version '{aspNetCoreVersion}'";
+                        dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
 
                         // Install aspnet runtime required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
@@ -2158,7 +2165,7 @@ namespace BenchmarkServer
 
                     if (!_installedRuntimes.Contains(runtimeVersion))
                     {
-                        dotnetInstallStep = $"Core CLR version '{runtimeVersion}'";
+                        dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
                         // Install required runtime 
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
@@ -2172,7 +2179,7 @@ namespace BenchmarkServer
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
                     if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                     {
-                        dotnetInstallStep = $"ASP.NET version '{aspNetCoreVersion}'";
+                        dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
 
                         // Install required runtime 
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
