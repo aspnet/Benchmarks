@@ -234,6 +234,7 @@ namespace BenchmarkServer.Controllers
 
         [HttpPost("{id}/attachment")]
         [RequestSizeLimit(1_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
         public async Task<IActionResult> UploadAttachment(AttachmentViewModel attachment)
         {
             Log($"Uploading attachment: {attachment.DestinationFilename}");
@@ -259,6 +260,7 @@ namespace BenchmarkServer.Controllers
 
         [HttpPost("{id}/source")]
         [RequestSizeLimit(1_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
         public async Task<IActionResult> UploadSource(AttachmentViewModel attachment)
         {
             Log($"Uploading source code");
@@ -284,6 +286,7 @@ namespace BenchmarkServer.Controllers
 
         [HttpPost("{id}/build")]
         [RequestSizeLimit(1_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
         public async Task<IActionResult> UploadBuildFile(AttachmentViewModel attachment)
         {
             Log($"Uploading build files");
