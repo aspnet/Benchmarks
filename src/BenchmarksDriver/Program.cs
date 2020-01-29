@@ -775,13 +775,13 @@ namespace BenchmarksDriver
                 {
                     serverJob.Source.BranchOrCommit = "#" + _hashOption.Value();
                 }
-                if (dockerFileOption.HasValue())
-                {
-                    serverJob.Source.DockerFile = dockerFileOption.Value();
-                }
                 if (dockerLoadOption.HasValue())
                 {
                     serverJob.Source.DockerLoad = dockerLoadOption.Value();
+                }
+                if (dockerCommandOption.HasValue())
+                {
+                    serverJob.Source.DockerCommand = dockerCommandOption.Value();
                 }
                 if (dockerContextOption.HasValue())
                 {
@@ -789,7 +789,10 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                    if (String.IsNullOrEmpty(serverJob.Source.DockerContextDirectory))
+                    {
+                        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                    }
                 }
 
                 if (dockerImageOption.HasValue())

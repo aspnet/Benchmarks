@@ -1446,7 +1446,7 @@ namespace BenchmarkServer
 
                 File.Delete(job.Source.SourceCode.TempFilename);
             }
-            else
+            else if (!String.IsNullOrEmpty(source.Repository))
             {
                 var branchAndCommit = source.BranchOrCommit.Split('#', 2);
 
@@ -1463,6 +1463,10 @@ namespace BenchmarkServer
                 {
                     Git.InitSubModules(srcDir);
                 }
+            }
+            else
+            {
+                srcDir = path;
             }
 
             if (String.IsNullOrEmpty(source.DockerContextDirectory))
