@@ -227,6 +227,8 @@ namespace BenchmarksDriver
                 "File path of the Docker script. (e.g, \"frameworks/CSharp/aspnetcore/aspcore.dockerfile\")", CommandOptionType.SingleValue);
             var dockerLoadOption = app.Option("--docker-load",
                 "File path of the Docker image to load, relative to the Docker context. (e.g, \"myimage.tar\")", CommandOptionType.SingleValue);
+            var dockerCommandOption = app.Option("--docker-command",
+                "Optional 'docker run' command. (e.g, \"./startup.sh\")", CommandOptionType.SingleValue);
             var dockerContextOption = app.Option("-dc|--docker-context",
                 "Docker context directory. Defaults to the Docker file directory. (e.g., \"frameworks/CSharp/aspnetcore/\")", CommandOptionType.SingleValue);
             var dockerImageOption = app.Option("-di|--docker-image",
@@ -796,7 +798,10 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
+                    if (String.IsNullOrEmpty(serverJob.Source.DockerImageName))
+                    {
+                        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
+                    }
                 }
                 if (dockerFetchPath.HasValue())
                 {

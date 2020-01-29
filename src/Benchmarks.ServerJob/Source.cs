@@ -17,6 +17,7 @@ namespace Benchmarks.ServerJob
         public string DockerFile { get; set; }
         public string DockerImageName { get; set; }
         public string DockerLoad { get; set; } // Relative to the docker folder
+        public string DockerCommand { get; set; } // Optional command arguments for 'docker run'
         public string DockerContextDirectory { get; set; }
         public string DockerFetchPath { get; set; }
         public string LocalFolder { get; set; }
