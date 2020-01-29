@@ -500,7 +500,7 @@ namespace BenchmarkServer
                                 workingDirectory = null;
                                 dockerImage = null;
 
-                                if (job.Source.DockerFile != null)
+                                if (job.Source.IsDocker())
                                 {
                                     try
                                     {

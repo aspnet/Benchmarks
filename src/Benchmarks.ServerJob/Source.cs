@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 
 namespace Benchmarks.ServerJob
@@ -21,6 +22,11 @@ namespace Benchmarks.ServerJob
         public string DockerContextDirectory { get; set; }
         public string DockerFetchPath { get; set; }
         public string LocalFolder { get; set; }
+
+        public bool IsDocker()
+        {
+            return !String.IsNullOrEmpty(DockerFile) || !String.IsNullOrEmpty(DockerImageName);
+        }
 
         public string GetNormalizedImageName()
         {
