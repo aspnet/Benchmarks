@@ -1481,6 +1481,24 @@ namespace BenchmarkServer
                 standardOutput.AddLine(processResult.StandardOutput);
             }
 
+            // Copy build files before building/publishing
+            foreach (var attachment in job.BuildAttachments)
+            {
+                var filename = Path.Combine(srcDir, attachment.Filename.Replace("\\", "/"));
+
+                Log.WriteLine($"Creating build file: {filename}");
+
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filename));
+
+                File.Copy(attachment.TempFilename, filename);
+                File.Delete(attachment.TempFilename);
+            }
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -2338,7 +2356,7 @@ namespace BenchmarkServer
                 }
             }
 
-            // Copye build files before building/publishing
+            // Copy build files before building/publishing
             foreach (var attachment in job.BuildAttachments)
             {
                 var filename = Path.Combine(benchmarkedApp, attachment.Filename.Replace("\\", "/"));
