@@ -1871,6 +1871,7 @@ namespace BenchmarkServer
             if (String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
             {
                 runtimeVersion = await GetRuntimeChannelVersion(CurrentChannel);
+                desktopVersion = runtimeVersion; // This should match the runtime version
                 targetFramework = CurrentTargetFramework;
                 channel = CurrentChannel;
             }
@@ -1879,6 +1880,7 @@ namespace BenchmarkServer
                 // Get the version that is defined by the ASP.NET repository
                 // Note: to use the latest build available, use a wildcard match like 3.0.*
                 runtimeVersion = await GetAspNetRuntimeVersion(buildToolsPath, LatestTargetFramework);
+                desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, LatestChannel);
                 channel = LatestChannel;
             }
             else
@@ -1894,17 +1896,21 @@ namespace BenchmarkServer
                     channel = String.Join(".", runtimeVersion.Split('.').Take(2));
 
                     runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
+                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, runtimeVersion.TrimEnd('*'));
                 }
                 else if (runtimeVersion.Split('.').Length == 2)
                 {
                     // Channel version with a prefix, e.g. 2.1
                     channel = runtimeVersion;
                     runtimeVersion = await GetRuntimeChannelVersion(runtimeVersion);
+                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, runtimeVersion);
+
                 }
                 else
                 {
                     // Specific version
                     channel = String.Join(".", runtimeVersion.Split('.').Take(2));
+                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, channel);
                 }
 
                 if (runtimeVersion.StartsWith("2.1"))
@@ -1928,11 +1934,6 @@ namespace BenchmarkServer
                     targetFramework = "netcoreapp5.0";
                 }
             }
-
-            Log.WriteLine($"Using channel: {channel}");
-
-            // Use channel version for Desktop runtime, not a custom one (doesn't matter for perf right now)
-            desktopVersion = runtimeVersion.Substring(0, 3);
 
             // If a specific framework is set, use it instead of the detected one
             if (!String.IsNullOrEmpty(job.Framework))
@@ -2110,6 +2111,8 @@ namespace BenchmarkServer
             {
                 if (OperatingSystem == OperatingSystem.Windows)
                 {
+                    Log.WriteLine($"Detected Windows Desktop version: {desktopVersion}");
+
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
@@ -2140,7 +2143,7 @@ namespace BenchmarkServer
                     {
                         dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
