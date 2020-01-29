@@ -2140,7 +2140,7 @@ namespace BenchmarkServer
                     {
                         dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Channel {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
