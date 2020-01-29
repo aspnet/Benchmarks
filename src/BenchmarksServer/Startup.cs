@@ -1929,8 +1929,10 @@ namespace BenchmarkServer
                 }
             }
 
+            Log.WriteLine($"Using channel: {channel}");
+
             // Use channel version for Desktop runtime, not a custom one (doesn't matter for perf right now)
-            desktopVersion = await GetRuntimeChannelVersion(channel);
+            desktopVersion = runtimeVersion.Substring(0, 3);
 
             // If a specific framework is set, use it instead of the detected one
             if (!String.IsNullOrEmpty(job.Framework))
