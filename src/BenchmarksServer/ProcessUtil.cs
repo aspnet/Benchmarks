@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,9 +24,14 @@ namespace BenchmarkServer
             Action<string> outputDataReceived = null,
             bool log = false,
             Action onStart = null,
-            CancellationToken cancellationToken = default(CancellationToken)
+            CancellationToken cancellationToken = default(CancellationToken),
+            bool captureOutput = false,
+            bool captureError = false
             )
         {
+            var standardOutput = new StringBuilder();
+            var standardError = new StringBuilder();
+
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
 
             if (log)
@@ -67,6 +73,11 @@ namespace BenchmarkServer
                         outputDataReceived.Invoke(e.Data);
                     }
 
+                    if (captureOutput)
+                    {
+                        standardOutput.AppendLine(e.Data);
+                    }
+
                     if (log)
                     {
                         Log.WriteLine(e.Data);
@@ -78,6 +89,11 @@ namespace BenchmarkServer
                     if (outputDataReceived != null)
                     {
                         outputDataReceived.Invoke("[STDERR] " + e.Data);
+                    }
+
+                    if (captureError)
+                    {
+                        standardError.AppendLine(e.Data);
                     }
 
                     Log.WriteLine("[STDERR] " + e.Data);
@@ -124,7 +140,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Exit code: {process.ExitCode}");
                 }
 
-                return new ProcessResult(process.ExitCode);
+                return new ProcessResult(process.ExitCode, standardOutput.ToString(), standardError.ToString());
             }
         }
 

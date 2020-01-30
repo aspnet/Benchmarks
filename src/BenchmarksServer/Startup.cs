@@ -414,7 +414,7 @@ namespace BenchmarkServer
                     
                     foreach(var expiredJob in expiredJobs)
                     {
-                        Log.WriteLine($"Removing exppired job {expiredJob.Id}");
+                        Log.WriteLine($"Removing expired job {expiredJob.Id}");
                         _jobs.Remove(expiredJob.Id);
                     }
 

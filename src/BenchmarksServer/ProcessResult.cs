@@ -5,11 +5,15 @@ namespace BenchmarkServer
 {
     public class ProcessResult
     {
-        public ProcessResult(int exitCode)
+        public ProcessResult(int exitCode, string standardOutput, string standardError)
         {
             ExitCode = exitCode;
+            StandardOutput = standardOutput;
+            StandardError = standardError;
         }
 
+        public string StandardOutput { get; }
+        public string StandardError { get; }
         public int ExitCode { get; }
     }
 }
