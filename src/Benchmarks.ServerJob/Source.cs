@@ -30,14 +30,24 @@ namespace Benchmarks.ServerJob
 
         public string GetNormalizedImageName()
         {
+            // If DockerLoad option is used, the image must be set to the one used to build it
+            if (!string.IsNullOrEmpty(DockerLoad))
+            {
+                return DockerImageName;
+            }
+
             if (!string.IsNullOrEmpty(DockerImageName))
             {
+                // If the docker image name already starts with benchmarks, reuse it
+                // This prefix is used to clean any dangling container that would not have been stopped automatically
                 if (DockerImageName.StartsWith("benchmarks_"))
                 {
                     return DockerImageName;
                 }
-
-                return $"benchmarks_{DockerImageName}".ToLowerInvariant();
+                else
+                {
+                    return $"benchmarks_{DockerImageName}".ToLowerInvariant();
+                }
             }
             else
             {

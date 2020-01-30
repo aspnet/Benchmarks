@@ -47,6 +47,8 @@ Options:
   --[JOB].source.dockerImageName                                           The name of the docker image to create, e.g., actix_raw
   --[JOB].source.dockerContextDirectory                                    The folder in which the Docker file is built relative to, e.g., frameworks/Rust/actix/
   --[JOB].source.dockerFetchPath                                           The path in the Docker container that contains the base path for the --fetch option, e.g., ./output
+  --[JOB].source.dockerLoad                                                The path of an image to use for 'docker load', e.g, "./myimage.tar"
+  --[JOB].source.dockerCommand                                             The 'docker run' command, e.g, "./startup.sh"
   --[JOB].buildArguments <argument>                                        An argument to pass to 'docker build' as a '--build-arg' value. Can be used multiple times to define multiple values.
 
   ## Diagnostics
@@ -70,9 +72,12 @@ Options:
   --[JOB].options.fetchOutput <filename>                                   The name of the fetched archive. Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g., c:\publishedapps\myApp
   --[JOB].options.displayOutput <true|false>                               Whether to download and display the standard output of the benchmark.
   --[JOB].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
-  
 
-  ## Misc
+  ## Files
+  --[JOB].options.buildFiles <filename>                                    Build files that will be copied before the application is built. Format is 'path[;destination]'. Path can be a URL. e.g., c:\images\mydockerimage.tar, c:\code\Program.cs
+  --[JOB].options.outputFiles <filename>                                   Output files that will be copied in the final application folder. Format is 'path[;destination]'. Path can be a URL. e.g., c:\build\Microsoft.AspNetCore.Mvc.dll, c:\files\samples\picture.png;wwwroot\picture.png
+
+  ## Telemetry
 
   --[JOB].options.disardResults <true|false>                               Whether to discard all the results from this job, for instance during a warmup job.
 

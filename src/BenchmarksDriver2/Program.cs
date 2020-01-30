@@ -38,8 +38,6 @@ namespace BenchmarksDriver
         private static CommandOption
             _outputArchiveOption,
             _buildArchiveOption,
-            _buildFileOption,
-            _outputFileOption,
 
             _configOption,
             _scenarioOption,
@@ -180,16 +178,6 @@ namespace BenchmarksDriver
                 "Maps to KestrelServerOptions.ThreadCount.",
                 CommandOptionType.SingleValue);
             
-            _outputFileOption = app.Option("--output-file",
-                "Output file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
-                "\"--output-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
-                "\"--output-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
-                CommandOptionType.MultipleValue);
-            _buildFileOption = app.Option("--build-file",
-                "Build file attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
-                "\"--build-file c:\\build\\Microsoft.AspNetCore.Mvc.dll\", " +
-                "\"--build-file c:\\files\\samples\\picture.png;wwwroot\\picture.png\"",
-                CommandOptionType.MultipleValue);
             _outputArchiveOption = app.Option("--output-archive",
                 "Output archive attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
                 "\"--output-archive c:\\build\\Microsoft.AspNetCore.Mvc.zip\", " +
@@ -444,9 +432,7 @@ namespace BenchmarksDriver
                             return job.StartAsync(
                                 jobName,
                                 _outputArchiveOption,
-                                _buildArchiveOption,
-                                _outputFileOption,
-                                _buildFileOption
+                                _buildArchiveOption
                             );
                         })
                     );

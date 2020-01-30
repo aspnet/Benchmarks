@@ -1,0 +1,49 @@
+﻿variables:
+  headers:
+    none: ''
+    json: "--header Accept:application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
+    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
+    connectionclose: "--header Connection:close"
+  presetHeaders: none
+  path: "/"
+jobs:
+  weatherapp-route-to-code:
+    source:
+      repository: https://github.com/rynowak/benchmarks-playground.git
+      branchOrCommit: master
+      dockerImageName: "weatherapp-route-to-code"
+      dockerContextDirectory: "dotnet/weatherapp-route-to-code/"
+      dockerFile: "dotnet/weatherapp-route-to-code/Dockerfile"
+    readyStateText: Application started.
+    variables:
+  bombardier:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BombardierClient/BombardierClient.csproj
+    readyStateText: Bombardier Client
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: '3.0'
+    runtimeVersion: '3.0'
+    waitForExit: true
+    scenario: Bombardier
+    variables:
+      connections: 256
+      duration: 5
+    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s {% if headers[presetHeaders] != '' %} -l {{headers[presetHeaders]}} {% endif %}"
+scenarios:
+  route-to-code:
+    application:
+      job: weatherapp-route-to-code
+    warmup:
+      job: bombardier
+      options:
+          discardResults: true
+      variables:
+        path: /
+        duration: 1
+    load:
+      job: bombardier
+      variables:
+        path: /
+        duration: 5

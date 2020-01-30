@@ -208,10 +208,12 @@ namespace Benchmarks.ServerJob
         public bool DisplayOutput { get; set; }
         public bool Fetch { get; set; }
         public string FetchOutput { get; set; }
-        public string[] DownloadFiles { get; set; }
+        public List<string> DownloadFiles { get; set; } = new List<string>();
         public string TraceOutput { get; set; }
         public bool DisplayBuild { get; set; }
         public string RequiredOperatingSystem { get; set; }
         public bool DiscardResults { get; set; }
+        public List<string> BuildFiles { get; set; } = new List<string>();
+        public List<string> OutputFiles { get; set; } = new List<string>();
     }
 }

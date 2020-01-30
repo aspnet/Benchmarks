@@ -57,9 +57,7 @@ namespace BenchmarksDriver
         public async Task<string> StartAsync(
             string jobName,
             CommandOption _outputArchiveOption,
-            CommandOption _buildArchiveOption,
-            CommandOption _outputFileOption,
-            CommandOption _buildFileOption
+            CommandOption _buildArchiveOption
             )
         {
             _jobName = jobName;
@@ -181,11 +179,11 @@ namespace BenchmarksDriver
 
                             if (outputFileSegments.Length > 1)
                             {
-                                _outputFileOption.Values.Add(Path.Combine(tempFolder, "*.*") + ";" + outputFileSegments[1]);
+                                Job.Options.OutputFiles.Add(Path.Combine(tempFolder, "*.*") + ";" + outputFileSegments[1]);
                             }
                             else
                             {
-                                _outputFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
+                                Job.Options.OutputFiles.Add(Path.Combine(tempFolder, "*.*"));
                             }
                         }
                     }
@@ -220,19 +218,19 @@ namespace BenchmarksDriver
 
                             if (buildFileSegments.Length > 1)
                             {
-                                _buildFileOption.Values.Add(Path.Combine(tempFolder, "*.*") + ";" + buildFileSegments[1]);
+                                Job.Options.BuildFiles.Add(Path.Combine(tempFolder, "*.*") + ";" + buildFileSegments[1]);
                             }
                             else
                             {
-                                _buildFileOption.Values.Add(Path.Combine(tempFolder, "*.*"));
+                                Job.Options.BuildFiles.Add(Path.Combine(tempFolder, "*.*"));
                             }
                         }
                     }
 
                     // Uploading build files
-                    if (_buildFileOption.HasValue())
+                    if (Job.Options.BuildFiles.Any())
                     {
-                        foreach (var buildFileValue in _buildFileOption.Values)
+                        foreach (var buildFileValue in Job.Options.BuildFiles)
                         {
                             var buildFileSegments = buildFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
@@ -256,9 +254,9 @@ namespace BenchmarksDriver
                     }
 
                     // Uploading attachments
-                    if (_outputFileOption.HasValue())
+                    if (Job.Options.OutputFiles.Any())
                     {
-                        foreach (var outputFileValue in _outputFileOption.Values)
+                        foreach (var outputFileValue in Job.Options.OutputFiles)
                         {
                             var outputFileSegments = outputFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
