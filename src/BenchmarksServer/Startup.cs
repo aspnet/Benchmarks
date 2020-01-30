@@ -1622,7 +1622,9 @@ namespace BenchmarkServer
                 {
                     if (e != null && e.Data != null)
                     {
-                        Log.WriteLine("[ERROR] " + e.Data);
+                        Log.WriteLine("[STDERR] " + e.Data);
+
+                        standardOutput.AddLine("[STDERR] " + e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
@@ -3001,7 +3003,7 @@ namespace BenchmarkServer
             {
                 if (e != null && e.Data != null)
                 {
-                    Log.WriteLine("[ERROR] " + e.Data);
+                    Log.WriteLine("[STDERR] " + e.Data);
                     standardError.AddLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
