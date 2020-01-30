@@ -775,41 +775,45 @@ namespace BenchmarksDriver
                 {
                     serverJob.Source.BranchOrCommit = "#" + _hashOption.Value();
                 }
-                if (dockerLoadOption.HasValue())
+                if (serverJob.Source.IsDocker())
                 {
-                    serverJob.Source.DockerLoad = dockerLoadOption.Value();
-                }
-                if (dockerCommandOption.HasValue())
-                {
-                    serverJob.Source.DockerCommand = dockerCommandOption.Value();
-                }
-                if (dockerContextOption.HasValue())
-                {
-                    serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
-                }
-                else
-                {
-                    if (String.IsNullOrEmpty(serverJob.Source.DockerContextDirectory) && !String.IsNullOrEmpty(serverJob.Source.DockerFile))
+                    if (dockerLoadOption.HasValue())
                     {
-                        serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                        serverJob.Source.DockerLoad = dockerLoadOption.Value();
+                    }
+                    if (dockerCommandOption.HasValue())
+                    {
+                        serverJob.Source.DockerCommand = dockerCommandOption.Value();
+                    }
+                    if (dockerContextOption.HasValue())
+                    {
+                        serverJob.Source.DockerContextDirectory = dockerContextOption.Value();
+                    }
+                    else
+                    {
+                        if (String.IsNullOrEmpty(serverJob.Source.DockerContextDirectory) && !String.IsNullOrEmpty(serverJob.Source.DockerFile))
+                        {
+                            serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
+                        }
+                    }
+
+                    if (dockerImageOption.HasValue())
+                    {
+                        serverJob.Source.DockerImageName = dockerImageOption.Value();
+                    }
+                    else
+                    {
+                        if (String.IsNullOrEmpty(serverJob.Source.DockerImageName))
+                        {
+                            serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
+                        }
+                    }
+                    if (dockerFetchPath.HasValue())
+                    {
+                        serverJob.Source.DockerFetchPath = dockerFetchPath.Value().Replace("\\", "/");
                     }
                 }
 
-                if (dockerImageOption.HasValue())
-                {
-                    serverJob.Source.DockerImageName = dockerImageOption.Value();
-                }
-                else
-                {
-                    if (String.IsNullOrEmpty(serverJob.Source.DockerImageName))
-                    {
-                        serverJob.Source.DockerImageName = Path.GetFileNameWithoutExtension(serverJob.Source.DockerFile).Replace("-", "_").Replace("\\", "/").ToLowerInvariant();
-                    }
-                }
-                if (dockerFetchPath.HasValue())
-                {
-                    serverJob.Source.DockerFetchPath = dockerFetchPath.Value().Replace("\\", "/");
-                }
                 if (_initSubmodulesOption.HasValue())
                 {
                     serverJob.Source.InitSubmodules = true;
