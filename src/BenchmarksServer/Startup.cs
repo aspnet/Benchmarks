@@ -390,8 +390,6 @@ namespace BenchmarkServer
                 Timer timer = null;
                 var executionLock = new object();
                 var disposed = false;
-                var standardOutput = new RollingLog(1000);
-                var standardError = new RollingLog(1000);
                 string benchmarksDir = null;
                 var startMonitorTime = DateTime.UtcNow;
 
@@ -491,8 +489,6 @@ namespace BenchmarkServer
                                 Log.WriteLine($"{job.State} -> Starting");
                                 job.State = ServerState.Starting;
 
-                                standardOutput.Clear();
-                                standardError.Clear();
                                 startMonitorTime = DateTime.UtcNow;
 
                                 Debug.Assert(tempDir == null);
@@ -506,7 +502,7 @@ namespace BenchmarkServer
                                     {
                                         var buildStart = DateTime.UtcNow;
                                         var cts = new CancellationTokenSource();
-                                        var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, dockerHostname, standardOutput, cancellationToken: cts.Token));
+                                        var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, dockerHostname, cancellationToken: cts.Token));
 
                                         while (true)
                                         {
@@ -564,7 +560,7 @@ namespace BenchmarkServer
                                         if (benchmarksDir != null)
                                         {
                                             Debug.Assert(process == null);
-                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome, standardOutput, standardError);
+                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
 
                                             job.ProcessId = process.Id;
 
@@ -745,8 +741,7 @@ namespace BenchmarkServer
                                                     {
                                                         Log.WriteLine($"Job failed");
 
-                                                        job.Error = $"Job failed at runtime:\n{standardError}";
-                                                        job.Output = standardOutput.ToString();
+                                                        job.Error = $"Job failed at runtime:\n{job.Output}";
 
                                                         if (job.State != ServerState.Deleting)
                                                         {
@@ -757,9 +752,6 @@ namespace BenchmarkServer
                                                     else
                                                     {
                                                         Log.WriteLine($"Process has exited ({process.ExitCode})");
-
-                                                        // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
-                                                        job.Output = standardOutput.ToString();
 
                                                         // Don't revert a Deleting state by mistake
                                                         if (job.State != ServerState.Deleting)
@@ -1192,8 +1184,6 @@ namespace BenchmarkServer
 
                                 Log.WriteLine($"Process has stopped");
 
-                                // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
-                                job.Output = standardOutput.ToString();
 
                                 job.State = ServerState.Stopped;
 
@@ -1201,8 +1191,6 @@ namespace BenchmarkServer
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
-                                // The output is assigned before the status is changed as the driver will stopped polling the job as soon as the Stopped state is detected
-                                job.Output = standardOutput.ToString();
 
                                 DockerCleanUp(dockerContainerId, dockerImage, job);
                             }
@@ -1418,7 +1406,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, RollingLog standardOutput, CancellationToken cancellationToken = default(CancellationToken))
+        private static async Task<(string containerId, string imageName, string workingDirectory)> DockerBuildAndRun(string path, ServerJob job, string hostname, CancellationToken cancellationToken = default(CancellationToken))
         {
             var source = job.Source;
             string srcDir;
@@ -1482,8 +1470,7 @@ namespace BenchmarkServer
             if (!String.IsNullOrEmpty(job.BeforeScript))
             {
                 var segments = job.BeforeScript.Split(' ', 2);
-                var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
-                standardOutput.AddLine(processResult.StandardOutput);
+                var processResult = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true, outputDataReceived: text => job.Output.AddLine(text));
             }
 
             // Copy build files before building/publishing
@@ -1567,9 +1554,12 @@ namespace BenchmarkServer
                 StartCollection(workingDirectory, job);
             }
 
-            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start());
+            string containerId = "";
 
-            var containerId = result.StandardOutput.Trim();
+            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start(), outputDataReceived: text => containerId += text + "\n");
+
+            containerId = containerId.Trim();
+
             job.Url = ComputeServerUrl(hostname, job);
 
             Log.WriteLine($"Intercepting Docker logs for '{containerId}' ...");
@@ -1600,7 +1590,8 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
-                        standardOutput.AddLine(e.Data);
+                        
+                        job.Output.AddLine(e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
@@ -1613,7 +1604,7 @@ namespace BenchmarkServer
                             }
                         }
 
-                        ParseMeasurementOutput(job, e.Data, standardOutput);
+                        ParseMeasurementOutput(job, job.Output);
                     }
                 };
 
@@ -1624,7 +1615,7 @@ namespace BenchmarkServer
                     {
                         Log.WriteLine("[STDERR] " + e.Data);
 
-                        standardOutput.AddLine("[STDERR] " + e.Data);
+                        job.Output.AddLine("[STDERR] " + e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
@@ -1648,9 +1639,9 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
-                        standardOutput.AddLine(e.Data);
+                        job.Output.AddLine(e.Data);
 
-                        ParseMeasurementOutput(job, e.Data, standardOutput);
+                        ParseMeasurementOutput(job, job.Output);
                     }
                 };
 
@@ -1677,11 +1668,11 @@ namespace BenchmarkServer
             return (containerId, imageName, workingDirectory);
         }
 
-        private static void ParseMeasurementOutput(ServerJob job, string data, RollingLog standardOutput)
+        private static void ParseMeasurementOutput(ServerJob job, RollingLog standardOutput)
         {
 
             // Detected custom statistics in stdout, parse it
-            if (data.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (standardOutput.LastLine.IndexOf("#EndJobStatistics", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 // Seek the beginning of statistics
 
@@ -1768,15 +1759,19 @@ namespace BenchmarkServer
 
             try
             {
-                var state = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false)?.StandardOutput;
+                var state = "";
+                ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + containerId, throwOnError: false, outputDataReceived: text => state += text + "\n");
 
                 // container is already stopped
                 if (state.Contains("false"))
                 {
-                    if (ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false)?.StandardOutput.Trim() != "0")
+                    var exitCode = "";
+                    ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false, outputDataReceived: text => exitCode += text + "\n");
+                    
+                    if (exitCode.Trim() != "0")
                     {
                         Log.WriteLine("Job failed");
-                        job.Error = ProcessUtil.Run("docker", "logs " + containerId, throwOnError: false)?.StandardError;
+                        job.Error = job.Output.ToString();
                         finalState = ServerState.Failed;
                     }
                 }
@@ -2394,24 +2389,15 @@ namespace BenchmarkServer
             var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
                 workingDirectory: benchmarkedApp,
                 environmentVariables: env,
-                throwOnError: false
+                throwOnError: false,
+                outputDataReceived: text => job.BuildLog.AddLine(text)
                 );
 
-            job.BuildLog = $"Command dotnet {arguments} returned exit code {buildResults.ExitCode} \n";
+            job.BuildLog.AddLine($"Command dotnet {arguments} returned exit code {buildResults.ExitCode}");
             
-            if (!String.IsNullOrWhiteSpace(buildResults.StandardOutput))
-            {
-                job.BuildLog += $"[STDOUT]:\n {buildResults.StandardOutput} \n";
-            }
-
-            if (!String.IsNullOrWhiteSpace(buildResults.StandardError))
-            {
-                job.BuildLog += $"[STDERR]:\n {buildResults.StandardError} \n";
-            }
-
             if (buildResults.ExitCode != 0)
             {
-                job.Error = job.BuildLog;
+                job.Error = job.BuildLog.ToString();
                 return null;
             }
 
@@ -2810,7 +2796,7 @@ namespace BenchmarkServer
                 : Path.Combine(dotnetHome, "dotnet");
         }
 
-        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome, RollingLog standardOutput, RollingLog standardError)
+        private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
         {
             var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
@@ -2825,8 +2811,7 @@ namespace BenchmarkServer
             if (!String.IsNullOrEmpty(job.BeforeScript))
             {
                 var segments = job.BeforeScript.Split(' ', 2);
-                var result = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true);
-                standardOutput.AddLine(result.StandardOutput);
+                var result = ProcessUtil.Run(segments[0], segments.Length > 1 ? segments[1] : "", workingDirectory: workingDirectory, log: true, outputDataReceived: text => job.Output.AddLine(text));
             }
 
             var commandLine = benchmarksDll ?? "";
@@ -2987,7 +2972,8 @@ namespace BenchmarkServer
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
-                    standardOutput.AddLine(e.Data);
+                    
+                    job.Output.AddLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
                         ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
@@ -2995,7 +2981,7 @@ namespace BenchmarkServer
                         RunAndTrace();
                     }
 
-                    ParseMeasurementOutput(job, e.Data, standardOutput);
+                    ParseMeasurementOutput(job, job.Output);
                 }
             };
 
@@ -3003,8 +2989,11 @@ namespace BenchmarkServer
             {
                 if (e != null && e.Data != null)
                 {
-                    Log.WriteLine("[STDERR] " + e.Data);
-                    standardError.AddLine(e.Data);
+                    var log = "[STDERR] " + e.Data;
+
+                    Log.WriteLine(log);
+                    
+                    job.Output.AddLine(log);
 
                     if (job.State == ServerState.Starting &&
                         ((!String.IsNullOrEmpty(job.ReadyStateText) && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0) || job.IsConsoleApp))
@@ -3430,12 +3419,13 @@ namespace BenchmarkServer
 
         private static double GetSwapBytes()
         {
-            var output = ProcessUtil.Run("egrep", "'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false)?.StandardOutput;
+            var meminfo = "";
+            ProcessUtil.Run("egrep", "'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false, outputDataReceived: text => meminfo += text + "\n");
 
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
 
-            var lines = output.Split('\n', 2);
+            var lines = meminfo.Split('\n', 2);
 
             var swapTotal = int.Parse(lines[0].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
             var swapFree = int.Parse(lines[1].Split(':', 2)[1].Trim().Split(' ', 2)[0]);

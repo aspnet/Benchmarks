@@ -50,4 +50,7 @@
   <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
     <MicrosoftAspNetCoreAppPackageVersion>3.0.0</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
+    <MicrosoftAspNetCoreAppPackageVersion>3.1.0</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
 </Project>

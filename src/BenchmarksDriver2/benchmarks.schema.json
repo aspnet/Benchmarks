@@ -28,7 +28,8 @@
               "title": "The branch or commit hash in the repository.",
               "default": "",
               "examples": [
-                "dev", "my_feature_branch"
+                "dev",
+                "my_feature_branch"
               ],
               "pattern": "^(.*)$"
             },
@@ -60,14 +61,32 @@
             },
             "dockerImageName": {
               "type": "string",
-              "title": "The name of the docker image to build, used to prevent conflicts, and reuse cached images.",
+              "title": "The name of the docker image to build or load, used to prevent conflicts, and reuse cached images.",
               "default": "",
               "examples": [
                 "actix_raw"
               ],
               "pattern": "^(.*)$"
             },
-            "dockerContentDirectory": {
+            "dockerCommand": {
+              "type": "string",
+              "title": "\"The 'docker run' command, e.g, \"./startup.sh\"\"",
+              "default": "",
+              "examples": [
+                "./startup.sh"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "dockerLoad": {
+              "type": "string",
+              "title": "\"The path of an image to use for 'docker load', e.g, \"./myimage.tar\"\". The argument 'dockerLoad' is required when this option is set.",
+              "default": "",
+              "examples": [
+                "./myimage.tar"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "dockerContextDirectory": {
               "type": "string",
               "title": "The path to the docker context. If not set, the location of the docker file is used.",
               "default": "",

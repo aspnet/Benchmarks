@@ -57,7 +57,7 @@ jobs:
       connections: 256
       warmup: 5
       duration: 5
-    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{heades[presetHeaders]}}"
+    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}"
   wrk:
     source:
       repository: https://github.com/aspnet/benchmarks.git

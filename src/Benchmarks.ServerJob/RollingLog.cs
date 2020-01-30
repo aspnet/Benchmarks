@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BenchmarksServer
+namespace Benchmarks.ServerJob
 {
     /// <summary>
     /// Prevents logs from getting to big to be rendered on the driver
@@ -12,6 +12,7 @@ namespace BenchmarksServer
         private readonly int _capacity;
         private StringBuilder _builder = new StringBuilder();
         private List<string> _lines { get; set; }
+        private int Discarded { get; set; } // Number of discarded lines
 
         public RollingLog(int capacity)
         {
@@ -24,14 +25,18 @@ namespace BenchmarksServer
             if (_lines.Count == _capacity)
             {
                 _lines.RemoveAt(0);
+                Discarded++;
             }
 
             _lines.Add(text);
         }
 
+        public string LastLine => _lines == null || _lines.Count == 0 ? "" : _lines[_lines.Count - 1];
+
         public void Clear()
         {
             _lines.Clear();
+            Discarded = 0;
         }
 
         public override string ToString()

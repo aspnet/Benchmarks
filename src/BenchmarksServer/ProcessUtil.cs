@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +23,8 @@ namespace BenchmarkServer
             Action<string> outputDataReceived = null,
             bool log = false,
             Action onStart = null,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default(CancellationToken)
+            )
         {
             var logWorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
 
@@ -60,30 +60,27 @@ namespace BenchmarkServer
                     }
                 }
 
-                var outputBuilder = new StringBuilder();
                 process.OutputDataReceived += (_, e) =>
                 {
                     if (outputDataReceived != null)
                     {
                         outputDataReceived.Invoke(e.Data);
                     }
-                    else
-                    {
-                        outputBuilder.AppendLine(e.Data);
-                    }
 
                     if (log)
                     {
                         Log.WriteLine(e.Data);
                     }
-
                 };
 
-                var errorBuilder = new StringBuilder();
                 process.ErrorDataReceived += (_, e) =>
                 {
-                    errorBuilder.AppendLine(e.Data);
-                    Log.WriteLine(e.Data);
+                    if (outputDataReceived != null)
+                    {
+                        outputDataReceived.Invoke("[STDERR] " + e.Data);
+                    }
+
+                    Log.WriteLine("[STDERR] " + e.Data);
                 };
 
                 onStart?.Invoke();
@@ -127,7 +124,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Exit code: {process.ExitCode}");
                 }
 
-                return new ProcessResult(outputBuilder.ToString(), errorBuilder.ToString(), process.ExitCode);
+                return new ProcessResult(process.ExitCode);
             }
         }
 

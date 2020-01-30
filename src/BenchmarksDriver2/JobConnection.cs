@@ -660,6 +660,13 @@ namespace BenchmarksDriver
             return await _httpClient.GetStringAsync(uri);
         }
 
+        public async Task<string> DownloadOutput()
+        {
+            var uri = _serverJobUri + "/output";
+
+            return await _httpClient.GetStringAsync(uri);
+        }
+
         public async Task DownloadFileAsync(string file)
         {
             var uri = _serverJobUri + "/download?path=" + HttpUtility.UrlEncode(file);

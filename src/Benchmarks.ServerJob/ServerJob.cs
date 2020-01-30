@@ -47,7 +47,7 @@ namespace Benchmarks.ServerJob
         
         public string ReadyStateText { get; set; }
         
-        // A console application doesn't expose and endpoint that can be used to detected it is ready
+        // A console application doesn't expose and endpoint that can be used to detect it is ready
         public bool IsConsoleApp { get; set; }
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
@@ -141,7 +141,8 @@ namespace Benchmarks.ServerJob
         public bool NoClean { get; set; }
         public string Framework { get; set; }
         public string Error { get; set; }
-        public string Output { get; set; }
+        [JsonIgnore]
+        public RollingLog Output { get; set; } = new RollingLog(10000);
         public bool SelfContained { get; set; }
         public string BeforeScript { get; set; }
         public string AfterScript { get; set; }
@@ -155,8 +156,8 @@ namespace Benchmarks.ServerJob
         /// The build log. This property is kept on the server side.
         /// </summary>
         [JsonIgnore]        
-        public string BuildLog { get; set; }
-        
+        public RollingLog BuildLog { get; set; } = new RollingLog(10000);
+
         // These properties are used to map custom arguments to the scenario files
 
         [JsonIgnore]

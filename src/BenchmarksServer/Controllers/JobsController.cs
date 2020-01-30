@@ -339,7 +339,24 @@ namespace BenchmarkServer.Controllers
                 try
                 {
                     var job = _jobs.Find(id);
-                    return Content(job.BuildLog);
+                    return Content(job.BuildLog.ToString());
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpGet("{id}/output")]
+        public IActionResult Output(int id)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+                    return Content(job.Output.ToString());
                 }
                 catch
                 {
@@ -465,9 +482,7 @@ namespace BenchmarkServer.Controllers
                         var destinationFilename = Path.Combine(tempDirectory, Path.GetFileName(path));
 
                         // Delete container if the same name already exists
-                        var result = ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{path} {destinationFilename}", throwOnError: false);
-
-                        Log(result.StandardOutput);
+                        var result = ProcessUtil.Run("docker", $"cp {job.Source.GetNormalizedImageName()}:{path} {destinationFilename}", throwOnError: false, log: true);
 
                         return File(System.IO.File.OpenRead(destinationFilename), "application/object");
                     }

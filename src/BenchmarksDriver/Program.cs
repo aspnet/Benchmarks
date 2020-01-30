@@ -1593,9 +1593,12 @@ namespace BenchmarksDriver
                         {
                             Log($"Job failed on benchmark server, stopping...");
 
+                            
                             if (_displayOutput)
                             {
-                                DisplayOutput(serverJob.Output);
+                                var uri = serverJobUri + "/buildlog";
+
+                                DisplayOutput(await _httpClient.GetStringAsync(uri));
                             }
 
                             Log(serverJob.Error, notime: true, error: true);
@@ -2258,7 +2261,8 @@ namespace BenchmarksDriver
 
                     if (_displayOutput)
                     {
-                        DisplayOutput(serverJob.Output);
+                        var uri = serverJobUri + "/buildlog";
+                        DisplayOutput(await _httpClient.GetStringAsync(uri));
                     }
 
                     if (_displayErrorOption.HasValue())

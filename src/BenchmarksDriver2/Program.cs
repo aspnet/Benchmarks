@@ -554,7 +554,7 @@ namespace BenchmarksDriver
                             Log.Quiet("");
                             Log.Quiet("Output:");
                             Log.Quiet("");
-                            Log.DisplayOutput(jobConnection.Job.Output);
+                            Log.DisplayOutput(await jobConnection.DownloadOutput());
                         }
 
                         // Display build log
