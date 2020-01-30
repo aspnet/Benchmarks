@@ -789,7 +789,7 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (String.IsNullOrEmpty(serverJob.Source.DockerContextDirectory))
+                    if (String.IsNullOrEmpty(serverJob.Source.DockerContextDirectory) && !String.IsNullOrEmpty(serverJob.Source.DockerFile))
                     {
                         serverJob.Source.DockerContextDirectory = Path.GetDirectoryName(serverJob.Source.DockerFile).Replace("\\", "/");
                     }
