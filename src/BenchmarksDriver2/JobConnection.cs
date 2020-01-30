@@ -92,7 +92,7 @@ namespace BenchmarksDriver
 
                 #region Ensure the job is valid
 
-                if (Job.ServerVersion < 2)
+                if (Job.ServerVersion < 3)
                 {
                     throw new Exception($"Invalid server version ({Job.ServerVersion}), please update your server to match this driver version.");
                 }

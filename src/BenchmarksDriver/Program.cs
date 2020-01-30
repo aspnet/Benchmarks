@@ -1331,7 +1331,7 @@ namespace BenchmarksDriver
                             throw new InvalidOperationException("Invalid response from the server");
                         }
 
-                        if (serverJob.ServerVersion < 1)
+                        if (serverJob.ServerVersion < 3)
                         {
                             Log($"Invalid server version ({serverJob.ServerVersion}), please update your server to match this driver version.");
                             return 20;

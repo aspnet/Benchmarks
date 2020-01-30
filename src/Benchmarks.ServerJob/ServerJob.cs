@@ -18,7 +18,8 @@ namespace Benchmarks.ServerJob
 
         // 1: Introduced Initializing state
         // 2: Introduced Measurements/Metadata
-        public int ServerVersion { get; set; } = 2;
+        // 3: Output value not serialized
+        public int ServerVersion { get; set; } = 3;
 
         public int Id { get; set; }
 
