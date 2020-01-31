@@ -639,7 +639,7 @@ namespace BenchmarkServer
                                                 {
                                                     // Get docker stats
                                                     var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
-                                                        log: true, throwOnError: false, captureOutput: true);
+                                                        log: false, throwOnError: false, captureOutput: true, captureError: true);
 
                                                     var stats = result.StandardOutput;
 

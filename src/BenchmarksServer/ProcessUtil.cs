@@ -88,7 +88,7 @@ namespace BenchmarkServer
                 {
                     if (outputDataReceived != null)
                     {
-                        outputDataReceived.Invoke("[STDERR] " + e.Data);
+                        outputDataReceived.Invoke(e.Data);
                     }
 
                     if (captureError)
