@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
@@ -357,6 +358,24 @@ namespace BenchmarkServer.Controllers
                 {
                     var job = _jobs.Find(id);
                     return Content(job.Output.ToString());
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpGet("{id}/output/{start}")]
+        public IActionResult Output(int id, int start)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+
+                    return Json(job.Output.Get(start));
                 }
                 catch
                 {
