@@ -24,7 +24,7 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: sebros/dimension
       project: src/PipeliningClient/PipeliningClient.csproj
-    readyStateText: Starting
+    readyStateText: Pipelining Client
     sdkVersion: 3.0.100
     aspNetCoreVersion: '3.0'
     runtimeVersion: '3.0'

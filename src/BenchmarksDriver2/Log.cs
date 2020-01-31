@@ -46,6 +46,11 @@ namespace BenchmarksDriver
 
         public static void DisplayOutput(string content)
         {
+            if (String.IsNullOrEmpty(content.Trim()))
+            {
+                return;
+            }
+
             #region Switching console mode on Windows to preserve colors for stdout
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

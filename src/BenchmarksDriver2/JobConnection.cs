@@ -34,6 +34,9 @@ namespace BenchmarksDriver
         private DateTime _runningUtc;
         private string _jobName;
 
+        private int _outputCursor;
+        private int _buildCursor;
+
         static JobConnection()
         {
             _httpClientHandler = new HttpClientHandler();
@@ -484,7 +487,43 @@ namespace BenchmarksDriver
                         await Task.Delay(2000);
                     }
                 }
-            });            
+            });
+
+            if (Job.Options.DisplayBuild)
+            {
+                Task.Run(async () =>
+                {
+                    while (_keepAlive)
+                    {
+                        try
+                        {
+                            Log.DisplayOutput(await StreamBuildLogAsync());
+                        }
+                        finally
+                        {
+                            await Task.Delay(500);
+                        }
+                    }
+                });
+            }
+
+            if (Job.Options.DisplayOutput)
+            {
+                Task.Run(async () =>
+                {
+                    while (_keepAlive)
+                    {
+                        try
+                        {
+                            Log.DisplayOutput(await StreamOutputAsync());
+                        }
+                        finally
+                        {
+                            await Task.Delay(500);
+                        }
+                    }
+                });
+            }
         }
 
         public void StopKeepAlive()
@@ -658,6 +697,46 @@ namespace BenchmarksDriver
             var uri = _serverJobUri + "/buildlog";
 
             return await _httpClient.GetStringAsync(uri);
+        }
+
+        public async Task<string> StreamOutputAsync()
+        {
+            var uri = _serverJobUri + "/output/" + _outputCursor;
+
+            var jsonLines = await _httpClient.GetStringAsync(uri);
+            var lines = JsonConvert.DeserializeObject<string[]>(jsonLines);
+
+            _outputCursor += lines.Length;
+
+            using (var sw = new StringWriter())
+            {
+                foreach (var line in lines)
+                {
+                    sw.WriteLine($"[{_jobName}] {line}");
+                }
+
+                return sw.ToString();
+            }
+        }
+
+        public async Task<string> StreamBuildLogAsync()
+        {
+            var uri = _serverJobUri + "/buildlog/" + _buildCursor;
+
+            var jsonLines = await _httpClient.GetStringAsync(uri);
+            var lines = JsonConvert.DeserializeObject<string[]>(jsonLines);
+
+            _buildCursor += lines.Length;
+
+            using (var sw = new StringWriter())
+            {
+                foreach (var line in lines)
+                {
+                    sw.WriteLine($"[{_jobName}] {line}");
+                }
+
+                return sw.ToString();
+            }
         }
 
         public async Task<string> DownloadOutput()

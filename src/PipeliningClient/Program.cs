@@ -52,6 +52,8 @@ namespace PipeliningClient
 
             app.OnExecuteAsync(cancellationToken =>
             {
+                Console.WriteLine("Pipelining Client");
+
                 PipelineDepth = optionPipeline.HasValue()
                     ? int.Parse(optionPipeline.Value())
                     : 1;

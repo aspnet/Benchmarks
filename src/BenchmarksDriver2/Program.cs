@@ -531,7 +531,7 @@ namespace BenchmarksDriver
 
                     var jobConnections = jobsByDependency[jobName];
 
-                    if (!service.Options.DiscardResults && !service.Options.DisplayOutput && !service.Options.DisplayBuild)
+                    if (!service.Options.DiscardResults)
                     {
                         Log.Quiet("");
                         Log.Quiet($"{jobName}");
@@ -546,33 +546,6 @@ namespace BenchmarksDriver
                         if (!service.Options.DiscardResults)
                         {
                             WriteMeasures(jobConnection);
-                        }
-
-                        // Display output log
-                        if (jobConnection.Job.Options.DisplayOutput)
-                        {
-                            Log.Quiet("");
-                            Log.Quiet("Output:");
-                            Log.Quiet("");
-                            Log.DisplayOutput(await jobConnection.DownloadOutput());
-                        }
-
-                        // Display build log
-                        if (jobConnection.Job.Options.DisplayBuild)
-                        {
-                            try
-                            {
-                                Log.Quiet("");
-                                Log.Quiet("Build:");
-                                Log.Quiet("");
-
-                                Log.DisplayOutput(await jobConnection.DownloadBuildLog());
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Write($"Error while downloading build logs");
-                                Log.Verbose(e.Message);
-                            }
                         }
                     }
                 }
