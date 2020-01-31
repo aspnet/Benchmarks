@@ -50,7 +50,7 @@ namespace Benchmarks.ServerJob
         {
             lock (this)
             {
-                return _lines.Skip(Math.Min(0, skip - Discarded)).ToArray();
+                return _lines.Skip(Math.Max(0, skip - Discarded)).ToArray();
             }
         }
 
@@ -58,7 +58,7 @@ namespace Benchmarks.ServerJob
         {
             lock (this)
             {
-                return _lines.Skip(Math.Min(0, skip - Discarded)).Take(take).ToArray();
+                return _lines.Skip(Math.Max(0, skip - Discarded)).Take(take).ToArray();
             }
         }
 
