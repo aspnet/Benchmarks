@@ -43,6 +43,9 @@ namespace BenchmarksDriver
         private const string _defaultTraceArguments = "BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile";
         private static List<string> _temporaryFolders = new List<string>();
 
+        private static int _outputCursor = 0;
+        private static int _buildCursor = 0;
+
         private static CommandOption
             _outputArchiveOption,
             _buildArchiveOption,
@@ -1555,6 +1558,11 @@ namespace BenchmarksDriver
                         response = await _httpClient.GetAsync(serverJobUri);
                         responseContent = await response.Content.ReadAsStringAsync();
 
+                        if (_displayBuildOption.HasValue())
+                        {
+                            DisplayOutput(await StreamBuildAsync(serverJobUri));
+                        }
+
                         LogVerbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
 
                         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -2593,6 +2601,11 @@ namespace BenchmarksDriver
                         LogVerbose($"GET {serverJobUri}/touch...");
                         response = await _httpClient.GetAsync(serverJobUri + "/touch");
 
+                        if (_displayOutput)
+                        {
+                            DisplayOutput(await StreamOutputAsync(serverJobUri));
+                        }
+
                         LogVerbose($"GET {clientJobUri}...");
                         response = await _httpClient.GetAsync(clientJobUri);
                         responseContent = await response.Content.ReadAsStringAsync();
@@ -2616,7 +2629,7 @@ namespace BenchmarksDriver
                     }
                     else
                     {
-                        await Task.Delay(1000);
+                        await Task.Delay(500);
                     }
                 }
 
@@ -2628,6 +2641,11 @@ namespace BenchmarksDriver
                         // Ping server job to keep it alive
                         LogVerbose($"GET {serverJobUri}/touch...");
                         response = await _httpClient.GetAsync(serverJobUri + "/touch");
+
+                        if (_displayOutput)
+                        {
+                            DisplayOutput(await StreamOutputAsync(serverJobUri));
+                        }
 
                         LogVerbose($"GET {clientJobUri}...");
                         response = await _httpClient.GetAsync(clientJobUri);
@@ -2657,7 +2675,7 @@ namespace BenchmarksDriver
                     }
                     else
                     {
-                        await Task.Delay(1000);
+                        await Task.Delay(500);
                     }
                 }
             }
@@ -2733,6 +2751,11 @@ namespace BenchmarksDriver
 
         internal static void Log(string message, bool notime = false, bool error = false)
         {
+            if (String.IsNullOrEmpty(message.Trim()))
+            {
+                return;
+            }
+
             if (error)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -2883,6 +2906,46 @@ namespace BenchmarksDriver
 
                 return orderedList[nth];
             };
+        }
+
+        public static async Task<string> StreamOutputAsync(Uri serverJobUri)
+        {
+            var uri = serverJobUri + "/output/" + _outputCursor;
+
+            var jsonLines = await _httpClient.GetStringAsync(uri);
+            var lines = JsonConvert.DeserializeObject<string[]>(jsonLines);
+
+            _outputCursor += lines.Length;
+
+            using (var sw = new StringWriter())
+            {
+                foreach (var line in lines)
+                {
+                    sw.WriteLine(line);
+                }
+
+                return sw.ToString();
+            }
+        }
+
+        public static async Task<string> StreamBuildAsync(Uri serverJobUri)
+        {
+            var uri = serverJobUri + "/buildlog/" + _buildCursor;
+
+            var jsonLines = await _httpClient.GetStringAsync(uri);
+            var lines = JsonConvert.DeserializeObject<string[]>(jsonLines);
+
+            _buildCursor += lines.Length;
+
+            using (var sw = new StringWriter())
+            {
+                foreach (var line in lines)
+                {
+                    sw.WriteLine(line);
+                }
+
+                return sw.ToString();
+            }
         }
     }
 }

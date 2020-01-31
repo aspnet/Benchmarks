@@ -349,6 +349,24 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("{id}/buildlog/{start}")]
+        public IActionResult Output(int id, int start)
+        {
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+
+                    return Json(job.BuildLog.Get(start));
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
         [HttpGet("{id}/output")]
         public IActionResult Output(int id)
         {
