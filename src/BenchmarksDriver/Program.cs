@@ -2763,7 +2763,7 @@ namespace BenchmarksDriver
 
         internal static void Log(string message, bool notime = false, bool error = false)
         {
-            if (String.IsNullOrEmpty(message.Trim()))
+            if (String.IsNullOrEmpty(message))
             {
                 return;
             }

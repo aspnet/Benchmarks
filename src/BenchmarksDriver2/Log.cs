@@ -46,7 +46,7 @@ namespace BenchmarksDriver
 
         public static void DisplayOutput(string content)
         {
-            if (String.IsNullOrEmpty(content.Trim()))
+            if (String.IsNullOrEmpty(content))
             {
                 return;
             }
