@@ -1635,13 +1635,19 @@ namespace BenchmarksDriver
                         }
                         else
                         {
-                            await Task.Delay(1000);
+                            await Task.Delay(500);
                         }
 
                         if (DateTime.UtcNow - buildStarted > _buildTimeout)
                         {
                             throw new InvalidOperationException("Build is taking too long. Halting.");
                         }
+                    }
+
+                    // Flush build log
+                    if (_displayBuildOption.HasValue())
+                    {
+                        DisplayOutput(await StreamBuildAsync(serverJobUri));
                     }
 
                     Thread.Sleep(200);  // Make it clear on traces when startup has finished and warmup begins.
@@ -2267,12 +2273,6 @@ namespace BenchmarksDriver
 
                     } while (serverJob.State != ServerState.Stopped);
 
-                    if (_displayOutput)
-                    {
-                        var uri = serverJobUri + "/buildlog";
-                        DisplayOutput(await _httpClient.GetStringAsync(uri));
-                    }
-
                     if (_displayErrorOption.HasValue())
                     {
                         Log(serverJob.Error, notime: true, error: true);
@@ -2633,6 +2633,12 @@ namespace BenchmarksDriver
                     }
                 }
 
+                // Flush output log
+                if (_displayOutput)
+                {
+                    DisplayOutput(await StreamOutputAsync(serverJobUri));
+                }
+
                 while (true)
                 {
                     // Retry block, prevent any network communication error from stopping the job
@@ -2677,6 +2683,12 @@ namespace BenchmarksDriver
                     {
                         await Task.Delay(500);
                     }
+                }
+
+                // Flush output log
+                if (_displayOutput)
+                {
+                    DisplayOutput(await StreamOutputAsync(serverJobUri));
                 }
             }
             finally
