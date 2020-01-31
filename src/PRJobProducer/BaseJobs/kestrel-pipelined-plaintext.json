@@ -40,7 +40,8 @@
   "BuildInstructions": {
     "BuildCommands": [
       "./build.sh /t:Restore",
-      ".dotnet/dotnet build -c Release src/Servers/Kestrel/Kestrel/src/"
+      ".dotnet/dotnet build -c Release -nodeReuse:false src/Servers/Kestrel/Kestrel/src/",
+      "sh -c \"pkill dotnet || true\""
     ]
   }
 }
