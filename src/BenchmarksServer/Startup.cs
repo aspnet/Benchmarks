@@ -1676,7 +1676,7 @@ namespace BenchmarkServer
             {
                 // Seek the beginning of statistics
 
-                var lines = standardOutput.ToArray();
+                var lines = standardOutput.Get(0);
 
                 var startIndex = lines.Length - 1;
 
@@ -1699,7 +1699,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Parsing custom measures...");
                 }
 
-                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Skip(startIndex + 1).Take(lines.Length - startIndex - 2));
+                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Get(startIndex + 1, lines.Length - startIndex - 2));
 
                 var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
