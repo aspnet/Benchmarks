@@ -1699,7 +1699,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Parsing custom measures...");
                 }
 
-                var jsonStatistics = String.Join(Environment.NewLine, standardOutput.Get(startIndex + 1, lines.Length - startIndex - 2));
+                var jsonStatistics = String.Join(Environment.NewLine, lines.Skip(startIndex + 1).Take(lines.Length - startIndex - 2));
 
                 var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
