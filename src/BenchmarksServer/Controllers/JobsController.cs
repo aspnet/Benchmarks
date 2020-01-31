@@ -350,7 +350,7 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpGet("{id}/buildlog/{start}")]
-        public IActionResult Output(int id, int start)
+        public IActionResult BuildLog(int id, int start)
         {
             lock (_jobs)
             {
