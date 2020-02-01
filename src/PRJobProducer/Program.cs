@@ -35,7 +35,7 @@ namespace PRJobProducer
 
         private static IFileSystem JobFileSystem { get; set; }
         private static string BaseJobPath { get; set; }
-        private static string[] BuildCommands { get; set; }
+        private static BuildInstructions BaseBuildInstructions { get; set; }
 
         public static int Main(string[] args)
         {
@@ -126,7 +126,7 @@ namespace PRJobProducer
                 }
 
                 await JobFileSystem.CreateDirectoryIfNotExists(ProcessedDirectoryName);
-                BuildCommands = await GetBuildCommands();
+                BaseBuildInstructions = await GetBuildInstructions();
 
                 Console.WriteLine($"Scanning for benchmark requests in {Owner}/{Repo}.");
 
@@ -234,27 +234,17 @@ namespace PRJobProducer
             }
         }
 
-        private static async Task<string[]> GetBuildCommands()
+        private static async Task<BuildInstructions> GetBuildInstructions()
         {
             using var processingJsonStream = File.OpenRead(BaseJobPath);
             using var jsonDocument = await JsonDocument.ParseAsync(processingJsonStream);
-            BuildInstructions buildInstructions = null;
 
-            foreach (var element in jsonDocument.RootElement.EnumerateObject())
-            {
-                if (element.NameEquals(nameof(BuildInstructions)))
-                {
-                    buildInstructions = JsonSerializer.Deserialize<BuildInstructions>(element.Value.GetRawText());
-                    break;
-                }
-            }
-
-            if (buildInstructions is null)
+            if (!jsonDocument.RootElement.TryGetProperty(nameof(BuildInstructions), out var buildInstructionsElement))
             {
                 throw new InvalidDataException($"Job file {Path.GetFileName(BaseJobPath)} doesn't include a top-level '{nameof(BuildInstructions)}' property.");
             }
 
-            return buildInstructions.BuildCommands;
+            return JsonSerializer.Deserialize<BuildInstructions>(buildInstructionsElement.GetRawText());
         }
 
         private static async Task RequestBenchmark(PRBenchmarkRequest prBenchmarkRequest, string newJobFileName)
@@ -263,27 +253,14 @@ namespace PRJobProducer
 
             var jsonDictionary = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(baseJobStream);
 
-            var extraDriverArgs = "";
-            if (jsonDictionary.ContainsKey(prBenchmarkRequest.ScenarioName))
+            jsonDictionary[nameof(BuildInstructions)] = new BuildInstructions
             {
-                var scenarioElement = (JsonElement)jsonDictionary[prBenchmarkRequest.ScenarioName];
-
-                if (scenarioElement.TryGetProperty("ExtraDriverArgs", out var extraDriverArgsElement))
-                {
-                    extraDriverArgs = extraDriverArgsElement.GetString();
-                }
-            }
-
-            var pr = prBenchmarkRequest.PullRequest;
-
-            jsonDictionary["BuildInstructions"] = new BuildInstructions
-            {
-                BuildCommands = BuildCommands,
-                PullRequestNumber = pr.Number,
-                BaselineSHA = pr.Base.Sha,
-                PullRequestSHA = pr.Head.Sha,
+                BuildCommands = BaseBuildInstructions.BuildCommands,
+                ExtraDriverArgs = BaseBuildInstructions.ExtraDriverArgs,
+                PullRequestNumber = prBenchmarkRequest.PullRequest.Number,
+                BaselineSHA = prBenchmarkRequest.PullRequest.Base.Sha,
+                PullRequestSHA = prBenchmarkRequest.PullRequest.Head.Sha,
                 ScenarioName = prBenchmarkRequest.ScenarioName,
-                ExtraDriverArgs = extraDriverArgs,
             };
 
             using var newJobStream = new MemoryStream();
@@ -312,15 +289,12 @@ namespace PRJobProducer
             using var processedJsonStream = await JobFileSystem.ReadFile(expectedProcessedJobPath);
             using var jsonDocument = await JsonDocument.ParseAsync(processedJsonStream);
 
-            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            if (!jsonDocument.RootElement.TryGetProperty(nameof(BenchmarkResult), out var benchmarkResultElement))
             {
-                if (element.NameEquals(nameof(BenchmarkResult)))
-                {
-                    return JsonSerializer.Deserialize<BenchmarkResult>(element.Value.GetRawText());
-                }
+                throw new InvalidDataException($"Processed benchmark job '{newJobFileName}' did not include a top-level '{nameof(BenchmarkResult)}' property.");
             }
 
-            throw new InvalidDataException($"Processed benchmark job '{newJobFileName}' did not include a top-level '{nameof(BenchmarkResult)}' property.");
+            return JsonSerializer.Deserialize<BenchmarkResult>(benchmarkResultElement.GetRawText());
         }
 
         private static async Task<bool> WaitForCompleteJsonFile(string jsonFilePath, TimeSpan timeout)
@@ -434,13 +408,13 @@ namespace PRJobProducer
         private class BuildInstructions
         {
             public string[] BuildCommands { get; set; }
+            public string ExtraDriverArgs { get; set; }
 
             public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
 
             public string ScenarioName { get; set; }
-            public string ExtraDriverArgs { get; set; }
         }
 
         private class BenchmarkResult

@@ -277,15 +277,31 @@ namespace JobConsumer
             using var processingJsonStream = File.OpenRead(processingFile.FullName);
             using var jsonDocument = await JsonDocument.ParseAsync(processingJsonStream);
 
-            foreach (var element in jsonDocument.RootElement.EnumerateObject())
+            if (!jsonDocument.RootElement.TryGetProperty(nameof(BuildInstructions), out var buildInstructionsElement))
             {
-                if (element.NameEquals(nameof(BuildInstructions)))
+                throw new InvalidDataException($"Job file {processingFile.Name} doesn't include a top-level '{nameof(BuildInstructions)}' property.");
+            }
+
+            var buildInstructions = JsonSerializer.Deserialize<BuildInstructions>(buildInstructionsElement.GetRawText());
+
+            if (!jsonDocument.RootElement.TryGetProperty(buildInstructions.ScenarioName, out var scenarioElement))
+            {
+                throw new InvalidDataException($"Job file {processingFile.Name} doesn't include a top-level '{buildInstructions.ScenarioName}' property for the specified scenario.");
+            }
+
+            if (scenarioElement.TryGetProperty(nameof(BuildInstructions.ExtraDriverArgs), out var extraDriverArgsElement) && extraDriverArgsElement.ValueKind == JsonValueKind.String)
+            {
+                if (string.IsNullOrEmpty(buildInstructions.ExtraDriverArgs))
                 {
-                    return JsonSerializer.Deserialize<BuildInstructions>(element.Value.GetRawText());
+                    buildInstructions.ExtraDriverArgs = extraDriverArgsElement.GetString();
+                }
+                else
+                {
+                    buildInstructions.ExtraDriverArgs = $"{buildInstructions.ExtraDriverArgs} {extraDriverArgsElement.GetString()}";
                 }
             }
 
-            throw new InvalidDataException($"Job file {processingFile.Name} doesn't include a top-level '{nameof(BuildInstructions)}' property.");
+            return buildInstructions;
         }
 
         private static void RunBuildCommands(BuildInstructions buildRules)
@@ -479,13 +495,13 @@ namespace JobConsumer
         private class BuildInstructions
         {
             public string[] BuildCommands { get; set; }
+            public string ExtraDriverArgs { get; set; }
 
             public int PullRequestNumber { get; set; }
             public string BaselineSHA { get; set; }
             public string PullRequestSHA { get; set; }
 
             public string ScenarioName { get; set; }
-            public string ExtraDriverArgs { get; set; }
         }
 
         private class BenchmarkResult
