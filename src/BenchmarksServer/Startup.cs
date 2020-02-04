@@ -347,7 +347,7 @@ namespace BenchmarkServer
         {
             var host = new WebHostBuilder()
                     .UseKestrel()
-                    .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 10 * 1024 * 1024 * 1024)
+                    .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = (long) 10 * 1024 * 1024 * 1024)
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .ConfigureLogging((hostingContext, logging) =>
