@@ -234,24 +234,26 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost("{id}/attachment")]
-        [RequestSizeLimit(1_000_000_000)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
-        public async Task<IActionResult> UploadAttachment(AttachmentViewModel attachment)
+        [RequestSizeLimit(10_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10_000_000_000)]
+        public async Task<IActionResult> UploadAttachment(int id)
         {
-            Log($"Uploading attachment: {attachment.DestinationFilename}");
+            var destinationFilename = Request.Headers["destinationFilename"].ToString();
 
-            var job = _jobs.Find(attachment.Id);
+            Log($"Uploading attachment: {destinationFilename}");
+
+            var job = _jobs.Find(id);
             var tempFilename = Path.GetTempFileName();
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await attachment.Content.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs);
             }
 
             job.Attachments.Add(new Attachment
             {
                 TempFilename = tempFilename,
-                Filename = attachment.DestinationFilename,
+                Filename = destinationFilename,
             });
 
             job.LastDriverCommunicationUtc = DateTime.UtcNow;
@@ -260,24 +262,26 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost("{id}/source")]
-        [RequestSizeLimit(1_000_000_000)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
-        public async Task<IActionResult> UploadSource(AttachmentViewModel attachment)
+        [RequestSizeLimit(10_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10_000_000_000)]
+        public async Task<IActionResult> UploadSource(int id)
         {
+            var destinationFilename = Request.Headers["destinationFilename"].ToString();
+
             Log($"Uploading source code");
 
-            var job = _jobs.Find(attachment.Id);
+            var job = _jobs.Find(id);
             var tempFilename = Path.GetTempFileName();
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await attachment.Content.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs);
             }
 
             job.Source.SourceCode = new Attachment
             {
                 TempFilename = tempFilename,
-                Filename = attachment.DestinationFilename,
+                Filename = destinationFilename,
             };
 
             job.LastDriverCommunicationUtc = DateTime.UtcNow;
@@ -286,24 +290,26 @@ namespace BenchmarkServer.Controllers
         }
 
         [HttpPost("{id}/build")]
-        [RequestSizeLimit(1_000_000_000)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 1_000_000_000)]
-        public async Task<IActionResult> UploadBuildFile(AttachmentViewModel attachment)
+        [RequestSizeLimit(10_000_000_000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 10_000_000_000)]
+        public async Task<IActionResult> UploadBuildFile(int id)
         {
+            var destinationFilename = Request.Headers["destinationFilename"].ToString();
+
             Log($"Uploading build files");
 
-            var job = _jobs.Find(attachment.Id);
+            var job = _jobs.Find(id);
             var tempFilename = Path.GetTempFileName();
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await attachment.Content.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs);
             }
 
             job.BuildAttachments.Add(new Attachment
             {
                 TempFilename = tempFilename,
-                Filename = attachment.DestinationFilename,
+                Filename = destinationFilename,
             });
 
             job.LastDriverCommunicationUtc = DateTime.UtcNow;

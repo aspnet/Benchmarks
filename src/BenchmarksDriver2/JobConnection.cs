@@ -630,7 +630,7 @@ namespace BenchmarksDriver
                     ? outputFileSegments[1]
                     : Path.GetFileName(uploadFilename);
 
-                using (var requestContent = new MultipartFormDataContent())
+                using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
                 {
                     var fileContent = uploadFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                         ? new StreamContent(await _httpClient.GetStreamAsync(uploadFilename))
@@ -638,11 +638,11 @@ namespace BenchmarksDriver
 
                     using (fileContent)
                     {
-                        requestContent.Add(fileContent, nameof(AttachmentViewModel.Content), Path.GetFileName(uploadFilename));
-                        requestContent.Add(new StringContent(serverJob.Id.ToString()), nameof(AttachmentViewModel.Id));
-                        requestContent.Add(new StringContent(destinationFilename), nameof(AttachmentViewModel.DestinationFilename));
+                        request.Content = fileContent;
+                        request.Headers.Add("id", serverJob.Id.ToString());
+                        request.Headers.Add("destinationFilename", destinationFilename);
 
-                        await _httpClient.PostAsync(uri, requestContent);
+                        await _httpClient.SendAsync(request);
                     }
                 }
             }
