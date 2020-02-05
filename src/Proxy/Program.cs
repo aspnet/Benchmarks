@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Proxy
 {
@@ -81,9 +82,18 @@ namespace Proxy
             _httpClientPool.BaseAddress = _httpClient.BaseAddress;
 
             var builder = new WebHostBuilder()
+                .ConfigureLogging(loggerFactory =>
+                {
+                    if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
+                    {
+                        Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
+                        loggerFactory.AddConsole().SetMinimumLevel(logLevel);
+                    }
+                })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseConfiguration(config);
+                .UseConfiguration(config)
+                ;
 
             if (pool)
             {
