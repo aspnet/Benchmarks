@@ -142,7 +142,13 @@ namespace BenchmarkServer
             // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
             // that use the temp folder, and create a sub-folder (process-id) for each server running.
             // The cron job is responsible for cleaning the folders
-            _rootTempDir = Path.Combine(Path.GetTempPath(), $"benchmarks-server-{Process.GetCurrentProcess().Id}");
+            _rootTempDir = Path.Combine(Path.GetTempPath(), "benchmarks-agent", $"benchmarks-server-{Process.GetCurrentProcess().Id}");
+
+            if (Directory.Exists(_rootTempDir))
+            {
+                Directory.Delete(_rootTempDir, true);
+            }
+
             Directory.CreateDirectory(_rootTempDir);
 
             // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
