@@ -1,0 +1,22 @@
+variables:
+  - name: _TeamName
+    value: AspNetCore
+
+# CI and PR triggers
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - sebros/azdo
+
+pr:
+  autoCancel: false
+  branches:
+    include:
+    - '*'
+
+jobs:
+- job: One
+  steps:
+  - bash: echo 'First step!'
