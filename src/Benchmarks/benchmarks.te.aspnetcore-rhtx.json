@@ -1,0 +1,38 @@
+﻿{
+  "Default": {
+    "Source": {
+      "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
+      "BranchOrCommit": "master",
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-rhtx.dockerfile",
+      "DockerImageName": "aspnetcore_rhtx",
+      "DockerContextDirectory": "frameworks/CSharp/aspnetcore/"
+    },
+    "Client": "Wrk",
+    "Port": 8080,
+    "ReadyStateText": "Application started."
+  },
+  "Plaintext-AspNetCore": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    }
+  },
+  "PlaintextNonPipelined-AspNetCore": {
+    "Path": "/plaintext",
+    "PresetHeaders": "Plaintext"
+  },
+  "Json-AspNetCore": {
+    "Path": "/json",
+    "PresetHeaders": "Json"
+  },
+  "FortunesPostgreSql-AspNetCore": {
+    "Path": "/fortunes",
+    "PresetHeaders": "Html",
+    "Source": {
+      "DockerFile": "frameworks/CSharp/aspnetcore/aspcore-rhtx-pg.dockerfile",
+      "DockerImageName": "aspnetcore_rhtx_pg"
+    }
+  }
+}

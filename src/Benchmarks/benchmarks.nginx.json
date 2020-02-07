@@ -11,15 +11,7 @@
     "Port": 8080
     //"ReadyStateText": ""
   },
-  "Nginx": {
-    "Path": "/",
-    "PresetHeaders": "Plaintext",
-    "ClientProperties": {
-      "ScriptName": "pipeline",
-      "PipelineDepth": 16
-    }
-  },
-  "NginxNonPipelined": {
+  "Proxy-Nginx": {
     "Path": "/",
     "PresetHeaders": "Plaintext"
   }

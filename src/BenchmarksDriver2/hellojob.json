@@ -1,0 +1,24 @@
+﻿{
+  "$schema": "./benchmarks.schema.json",
+  "jobs": {
+    "featherhttp":{
+      "source": {
+        "repository": "https://github.com/davidfowl/BasicKestrel",
+        "project": "BasicKestrel/BasicKestrel.csproj"
+      },
+      "sdkVersion": "3.1.100",
+      "aspNetCoreVersion": "3.0",
+      "runtimeVersion": "3.0",
+      "waitForExit": true,
+      "timeout": 10,
+      "port": 8888
+    }
+  },
+  "scenarios": {
+    "david": {
+      "application": {
+        "job": "featherhttp"
+      }
+    }
+  }   
+}

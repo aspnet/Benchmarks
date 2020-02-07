@@ -712,6 +712,13 @@ namespace BenchmarksDriver
                 configurationInstance.Jobs[serviceName] = jobObject.ToObject<ServerJob>();
             }
 
+            // Force all jobs as self-contained by default. This can be overrided by command line config.
+            // This can't be done in ServerJob for backward compatibility
+            foreach (var job in configurationInstance.Jobs)
+            {
+                job.Value.SelfContained = true;
+            }
+
             // After that point we only modify the JObject representation of Configuration
 
             configuration = JObject.FromObject(configurationInstance);

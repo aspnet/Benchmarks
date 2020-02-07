@@ -1,0 +1,83 @@
+﻿variables:
+  headers:
+    none:
+    plaintext: --header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive
+    connectionclose: --header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:close
+  presetHeaders: plaintext
+jobs:
+  httpclientproxy:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Proxy/Proxy.csproj
+    readyStateText: Application started.
+    variables:
+      baseUri: http://TFB-database:5001
+    arguments: --baseUri {{baseUri}}
+  nginxproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/nginx/nginx.dockerfile
+      DockerImageName: nginx-reverseproxy
+      DockerContextDirectory: docker/nginx
+  haproxyproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/haproxy/haproxy.dockerfile
+      DockerImageName: haproxy-reverseproxy
+      DockerContextDirectory: docker/haproxy
+  bombardier:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BombardierClient/BombardierClient.csproj
+    # options:
+    #   displayOutput: true
+    readyStateText: Bombardier Client
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: 3.0
+    runtimeVersion: 3.0
+    waitForExit: true
+    scenario: Bombardier
+    variables:
+      connections: 256
+      duration: 5
+    arguments: -c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
+scenarios:
+  proxy-httpclient:
+    application:
+      job: httpclientproxy
+    warmup:
+      job: bombardier
+      variables:
+        path: /
+    load:
+      job: bombardier
+      variables:
+        path: /
+scenarios:
+  proxy-nginx:
+    application:
+      job: nginxproxy
+    warmup:
+      job: bombardier
+      variables:
+        path: /
+    load:
+      job: bombardier
+      variables:
+        path: /
+scenarios:
+  proxy-haproxy:
+    application:
+      job: haproxyproxy
+    warmup:
+      job: bombardier
+      variables:
+        path: /
+    load:
+      job: bombardier
+      variables:
+        path: /

@@ -10,16 +10,8 @@
     "Client": "Wrk",
     "Port": 8080
     //"ReadyStateText": ""
-  },
-  "HAProxy": {
-    "Path": "/",
-    "PresetHeaders": "Plaintext",
-    "ClientProperties": {
-      "ScriptName": "pipeline",
-      "PipelineDepth": 16
-    }
-  },
-  "HAProxyNonPipelined": {
+  }
+  "Proxy-HAProxy": {
     "Path": "/",
     "PresetHeaders": "Plaintext"
   }

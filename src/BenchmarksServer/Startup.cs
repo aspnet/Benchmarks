@@ -3560,6 +3560,11 @@ namespace BenchmarkServer
 
         private static string FormatPathSeparators(string path)
         {
+            if (String.IsNullOrEmpty(path))
+            {
+                return "";
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 return path.Replace("\\", "/");
