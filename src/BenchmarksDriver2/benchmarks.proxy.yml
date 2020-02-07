@@ -40,14 +40,13 @@ jobs:
     aspNetCoreVersion: 3.0
     runtimeVersion: 3.0
     waitForExit: true
-    scenario: Bombardier
     variables:
       connections: 256
       duration: 5
     arguments: -c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
 scenarios:
   proxy-httpclient:
-    application:
+    application: # custom name for a service to deploy
       job: httpclientproxy
     warmup:
       job: bombardier
@@ -57,7 +56,8 @@ scenarios:
       job: bombardier
       variables:
         path: /
-scenarios:
+      options:
+        displayOutput: true
   proxy-nginx:
     application:
       job: nginxproxy
@@ -69,7 +69,6 @@ scenarios:
       job: bombardier
       variables:
         path: /
-scenarios:
   proxy-haproxy:
     application:
       job: haproxyproxy
