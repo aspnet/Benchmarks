@@ -12,8 +12,10 @@ Options:
 
   --config <filename>                                            Configuration file or url. Can be used multiple times.
   --scenario <scenario>                                          Scenario to execute.
+  --profile <profile>                                            Profiles to apply. Can be used multiple times.
   --variable <key=value>                                         A global variable. can be used multiple times.
   --output <filename>                                            An optional filename to store the output.
+  --compare <filename>                                           An optional filename to compare the results to. Can be used multiple times.
   --sql                                                          Connection string of the SQL Server Database to store results in.
   --table                                                        Table name of the SQL Database to store results in.
   --session                                                      A logical identifier to group related jobs.

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -43,6 +44,7 @@ namespace BenchmarksDriver
             _scenarioOption,
             _profileOption,
             _outputOption,
+            _compareOption,
             _variableOption,
             _sqlConnectionStringOption,
             _sqlTableOption,
@@ -120,6 +122,7 @@ namespace BenchmarksDriver
             _scenarioOption = app.Option("-s|--scenario", "Scenario to execute", CommandOptionType.SingleValue);
             _profileOption = app.Option("--profile", "Profile name", CommandOptionType.MultipleValue);
             _outputOption = app.Option("-o|--output", "Output filename", CommandOptionType.SingleValue);
+            _compareOption = app.Option("--compare", "An optional filename to compare the results to. Can be used multiple times.", CommandOptionType.MultipleValue);
             _variableOption = app.Option("-v|--variable", "Variable", CommandOptionType.MultipleValue);
             _sqlConnectionStringOption = app.Option("--sql",
                 "Connection string of the SQL Server Database to store results in", CommandOptionType.SingleValue);
@@ -584,9 +587,103 @@ namespace BenchmarksDriver
                 {
                     await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                 }
+
+                // Display diff
+
+                if (_compareOption.HasValue())
+                {
+                    foreach (var filename in _compareOption.Values)
+                    {
+                        if (!File.Exists(filename))
+                        {
+                            Log.Write($"Diff source file not found: '{new FileInfo(filename).FullName}'", notime: true);
+                            return -1;
+                        }
+                    }
+
+                    var compareResults = _compareOption.Values.Select(filename => JsonConvert.DeserializeObject<JobResults>(File.ReadAllText(filename))).ToList();
+                    compareResults.Add(jobResults);
+
+                    var resultNames = _compareOption.Values.Select(filename => Path.GetFileNameWithoutExtension(filename)).ToList();
+
+                    if (_outputOption.HasValue())
+                    {
+                        resultNames.Add(Path.GetFileNameWithoutExtension(_outputOption.Value()));
+                    }
+                    else
+                    {
+                        resultNames.Add("Current");
+                    }
+
+                    DisplayDiff(compareResults, resultNames);
+                }
             }
 
             return 0;
+        }
+
+        private static void DisplayDiff(IEnumerable<JobResults> allResults, IEnumerable<string> allNames)
+        {
+            // Use the first job results as the reference for metadata:
+            var firstJob = allResults.First();
+
+            foreach(var jobEntry in firstJob.Jobs)
+            {
+                var jobName = jobEntry.Key;
+                var jobResult = jobEntry.Value;
+
+                Console.WriteLine();
+                Console.WriteLine($"## {jobName}");
+                Console.WriteLine();
+
+                var maxWidth = jobResult.Metadata.Select(x => x.ShortDescription.Length).Max() + 2;
+
+                foreach (var metadata in jobResult.Metadata)
+                {
+                    if (!jobResult.Results.ContainsKey(metadata.Name))
+                    {
+                        continue;
+                    }
+
+                    Console.Write($"| {(metadata.ShortDescription + ":").PadRight(maxWidth)} | ");
+
+                    foreach (var result in allResults)
+                    {
+                        var job = result.Jobs[jobName];                         
+
+                        // We don't render the result if it's a raw object
+                        if (metadata.Format != "object")
+                        {
+                            if (!String.IsNullOrEmpty(metadata.Format))
+                            {
+                                var measure = Convert.ToDouble(job.Results.ContainsKey(metadata.Name) ? job.Results[metadata.Name] : 0);
+                                var previous = Convert.ToDouble(jobResult.Results.ContainsKey(metadata.Name) ? jobResult.Results[metadata.Name] : 0);
+
+                                var improvement = measure == 0
+                                ? 0
+                                : (measure - previous) / previous * 100;
+
+                                Console.Write($"{Convert.ToDouble(measure).ToString(metadata.Format).PadLeft(12)}");
+
+                                if (improvement != 0)
+                                {
+                                    Console.Write($"({improvement:n2}%)".PadLeft(12));
+                                }
+                            }
+                            else
+                            {
+                                var measure = job.Results.ContainsKey(metadata.Name) ? job.Results[metadata.Name] : 0;
+                                Console.Write($"{measure.ToString().PadRight(12)}");
+                            }
+
+                            Console.Write(" | ");
+                        }
+                    }
+
+                    Console.WriteLine();
+
+                }
+            }
         }
 
         public static JObject MergeVariables(params object[] variableObjects)
