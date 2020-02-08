@@ -41,6 +41,7 @@ namespace BenchmarksDriver
 
             _configOption,
             _scenarioOption,
+            _profileOption,
             _outputOption,
             _variableOption,
             _sqlConnectionStringOption,
@@ -110,13 +111,14 @@ namespace BenchmarksDriver
                 FullName = "ASP.NET Benchmark Driver",
                 Description = "Driver for ASP.NET Benchmarks",
                 ResponseFileHandling = ResponseFileHandling.ParseArgsAsSpaceSeparated,
-                OptionsComparison = StringComparison.OrdinalIgnoreCase
+                OptionsComparison = StringComparison.OrdinalIgnoreCase,                
             };
 
             app.HelpOption("-?|-h|--help");
 
             _configOption = app.Option("-c|--config", "Configuration file or url", CommandOptionType.MultipleValue);
             _scenarioOption = app.Option("-s|--scenario", "Scenario to execute", CommandOptionType.SingleValue);
+            _profileOption = app.Option("--profile", "Profile name", CommandOptionType.MultipleValue);
             _outputOption = app.Option("-o|--output", "Output filename", CommandOptionType.SingleValue);
             _variableOption = app.Option("-v|--variable", "Variable", CommandOptionType.MultipleValue);
             _sqlConnectionStringOption = app.Option("--sql",
@@ -268,7 +270,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-                var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments);
+                var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
 
                 var serializer = new Serializer();
 
@@ -612,10 +614,11 @@ namespace BenchmarksDriver
         /// 2- For each scenario's job, clone it in the Configuration's jobs list
         /// 3- Path the new job with the scenario's properties
         /// </summary>
-        public static Configuration BuildConfiguration(IEnumerable<string> configurationFileOrUrls, string scenarioName, IEnumerable<KeyValuePair<string, string>> arguments)
+        public static Configuration BuildConfiguration(IEnumerable<string> configurationFileOrUrls, string scenarioName, IEnumerable<KeyValuePair<string, string>> arguments, IEnumerable<string> profiles)
         {
             JObject configuration = null;
 
+            // Merge all configuration sources
             foreach (var configurationFileOrUrl in configurationFileOrUrls)
             {
                 JObject localconfiguration;
@@ -720,8 +723,35 @@ namespace BenchmarksDriver
             }
 
             // After that point we only modify the JObject representation of Configuration
-
             configuration = JObject.FromObject(configurationInstance);
+
+            // Apply profiles
+            foreach (var profileName in profiles)
+            {
+                if (!configurationInstance.Profiles.ContainsKey(profileName))
+                {
+                    throw new Exception($"Could not find a profile named '{profileName}'");
+                }
+
+                var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+                var profile = (JObject)configuration["Profiles"][profileName];
+
+                // Fix casing
+                if (profile["variables"] != null)
+                {
+                    profile[nameof(Configuration.Variables)] = profile["variables"];
+                    profile.Remove("variables");
+                }
+
+                if (profile["jobs"] != null)
+                {
+                    profile[nameof(Configuration.Jobs)] = profile["jobs"];
+                    profile.Remove("jobs");
+                }
+
+                configuration.Merge(profile, mergeOptions);
+            }
 
             // Apply custom arguments
             foreach (var argument in arguments)
@@ -761,8 +791,7 @@ namespace BenchmarksDriver
 
                     jObject.Add(argumentSegments[0], argumentSegments[1]);
                 }
-
-            }            
+            }
 
             var result = configuration.ToObject<Configuration>();
 

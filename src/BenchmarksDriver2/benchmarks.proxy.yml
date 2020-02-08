@@ -43,7 +43,7 @@ jobs:
     variables:
       connections: 256
       duration: 5
-    arguments: -c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
+    arguments: -c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
 scenarios:
   proxy-httpclient:
     application: # custom name for a service to deploy
@@ -51,10 +51,12 @@ scenarios:
     warmup:
       job: bombardier
       variables:
+        serverPort: 5000
         path: /
     load:
       job: bombardier
       variables:
+        serverPort: 5000
         path: /
       options:
         displayOutput: true
@@ -64,10 +66,12 @@ scenarios:
     warmup:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /
   proxy-haproxy:
     application:
@@ -75,8 +79,39 @@ scenarios:
     warmup:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /
     load:
       job: bombardier
       variables:
+        serverPort: 8080
         path: /
+profiles:
+  aspnet-physical:
+    variables:
+      serverUri: http://10.0.0.102
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-win:5001
+        options:
+          displayOutput: true
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-win:5001
