@@ -81,12 +81,9 @@
     <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1" />
-
-    <!-- The EF provider doesn't handle 3.0
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion30)" />
-    -->
 
   </ItemGroup>
 
@@ -102,13 +99,10 @@
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
     <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
 
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion31)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
-
-    <!-- The EF provider doesn't handle 3.0
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion30)" />
-    -->
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion31)" />
 
   </ItemGroup>
   
@@ -123,9 +117,9 @@
       
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
 
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion30)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion30)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion50)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion31)" />
 
     <!-- The EF provider doesn't handle 3.0
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion30)" />
