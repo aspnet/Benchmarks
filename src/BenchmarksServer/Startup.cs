@@ -1560,7 +1560,7 @@ namespace BenchmarkServer
 
             var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start());
 
-            var containerId = result.StandardError;
+            var containerId = result.StandardOutput;
 
             job.Url = ComputeServerUrl(hostname, job);
 
