@@ -1558,11 +1558,9 @@ namespace BenchmarkServer
                 StartCollection(workingDirectory, job);
             }
 
-            string containerId = "";
+            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start());
 
-            var result = ProcessUtil.Run("docker", $"{command} ", throwOnError: false, onStart: () => stopwatch.Start(), outputDataReceived: text => containerId += text + "\n");
-
-            containerId = containerId.Trim();
+            var containerId = result.StandardError;
 
             job.Url = ComputeServerUrl(hostname, job);
 
