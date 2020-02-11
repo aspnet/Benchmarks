@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Enumeration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -198,9 +197,8 @@ namespace BenchmarksDriver
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
 
-            app.OnExecute(() =>
+            app.OnExecute(async () =>
             {
-
                 Log.IsQuiet = quietOption.HasValue();
                 Log.IsVerbose = verboseOption.HasValue();
 
@@ -235,75 +233,79 @@ namespace BenchmarksDriver
                     _tableName = _sqlTableOption.Value();
                 }
 
-                if (!_scenarioOption.HasValue())
+                if (!_scenarioOption.HasValue() && !_compareOption.HasValue())
                 {
                     Console.Error.WriteLine("Scenario name must be specified.");
                     return 1;
-                }
+                }                
+
+                var results = new ExecutionResult();
 
                 var scenarioName = _scenarioOption.Value();
 
-                var variables = new JObject();
-
-                foreach (var variable in _variableOption.Values)
+                if (scenarioName != null)
                 {
-                    var segments = variable.Split('=', 2);
+                    var variables = new JObject();
 
-                    if (segments.Length != 2)
+                    foreach (var variable in _variableOption.Values)
                     {
-                        Console.WriteLine($"Invalid variable argument: '{variable}', format is \"[NAME]=[VALUE]\"");
+                        var segments = variable.Split('=', 2);
 
-                        app.ShowHelp();
-                        return -1;
-                    }
-
-                    variables[segments[0]] = segments[1];
-                }
-
-                foreach (var property in _propertyOption.Values)
-                {
-                    var segments = property.Split('=', 2);
-
-                    if (segments.Length != 2)
-                    {
-                        Console.WriteLine($"Invalid property argument: '{property}', format is \"[NAME]=[VALUE]\"");
-
-                        app.ShowHelp();
-                        return -1;
-                    }
-                }
-
-                var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
-
-                var serializer = new Serializer();
-
-                // Storing the list of services to run as part of the selected scenario
-                var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
-
-                // Verifying endpoints
-                foreach (var jobName in dependencies)
-                {
-                    var service = configuration.Jobs[jobName];
-
-                    foreach (var endpoint in service.Endpoints)
-                    {
-                        try
+                        if (segments.Length != 2)
                         {
-                            using (var cts = new CancellationTokenSource(2000))
+                            Console.WriteLine($"Invalid variable argument: '{variable}', format is \"[NAME]=[VALUE]\"");
+
+                            app.ShowHelp();
+                            return -1;
+                        }
+
+                        variables[segments[0]] = segments[1];
+                    }
+
+                    foreach (var property in _propertyOption.Values)
+                    {
+                        var segments = property.Split('=', 2);
+
+                        if (segments.Length != 2)
+                        {
+                            Console.WriteLine($"Invalid property argument: '{property}', format is \"[NAME]=[VALUE]\"");
+
+                            app.ShowHelp();
+                            return -1;
+                        }
+                    }
+
+                    var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
+
+                    var serializer = new Serializer();
+
+                    // Storing the list of services to run as part of the selected scenario
+                    var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
+
+                    // Verifying endpoints
+                    foreach (var jobName in dependencies)
+                    {
+                        var service = configuration.Jobs[jobName];
+
+                        foreach (var endpoint in service.Endpoints)
+                        {
+                            try
                             {
-                                var response = _httpClient.GetAsync(endpoint, cts.Token).Result;
-                                response.EnsureSuccessStatusCode();
+                                using (var cts = new CancellationTokenSource(2000))
+                                {
+                                    var response = _httpClient.GetAsync(endpoint, cts.Token).Result;
+                                    response.EnsureSuccessStatusCode();
+                                }
+                            }
+                            catch
+                            {
+                                Console.WriteLine($"The specified endpoint url '{endpoint}' for '{service}' is invalid or not responsive.");
+                                return 2;
                             }
                         }
-                        catch
-                        {
-                            Console.WriteLine($"The specified endpoint url '{endpoint}' for '{service}' is invalid or not responsive.");
-                            return 2;
-                        }
                     }
-                }
 
-                return Run(
+                    results = await Run(
                     configuration,
                     scenarioName,
                     session,
@@ -313,30 +315,70 @@ namespace BenchmarksDriver
                     shutdownOption.Value(),
                     span,
                     markdownOption
-                    ).Result;
-            });
+                    );
 
-            // Resolve response files from urls
 
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (args[i].StartsWith("@http", StringComparison.OrdinalIgnoreCase))
-                {
-                    try
+                    // Save results
+
+                    if (_outputOption.HasValue())
                     {
-                        var tempFilename = Path.GetTempFileName();
+                        var filename = _outputOption.Value();
 
-                        var filecontent = _httpClient.GetStringAsync(args[i].Substring(1)).GetAwaiter().GetResult();
-                        File.WriteAllText(tempFilename, filecontent);
-                        args[i] = "@" + tempFilename;
+                        if (File.Exists(filename))
+                        {
+                            File.Delete(filename);
+                        }
+
+                        await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(results.JobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+
+                        Log.Write("", notime: true);
+                        Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
                     }
-                    catch
+
+                    // Store data
+
+                    if (_sqlConnectionStringOption.HasValue())
                     {
-                        Console.WriteLine($"Invalid reponse file url '{args[i].Substring(1)}'");
-                        return -1;
+                        await JobSerializer.WriteJobResultsToSqlAsync(results.JobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                     }
                 }
-            }
+
+                // Display diff
+
+                if (_compareOption.HasValue())
+                {
+                    foreach (var filename in _compareOption.Values)
+                    {
+                        if (!File.Exists(filename))
+                        {
+                            Log.Write($"Diff source file not found: '{new FileInfo(filename).FullName}'", notime: true);
+                            return -1;
+                        }
+                    }
+
+                    var compareResults = _compareOption.Values.Select(filename => JsonConvert.DeserializeObject<JobResults>(File.ReadAllText(filename))).ToList();
+
+                    compareResults.Add(results.JobResults);
+
+                    var resultNames = _compareOption.Values.Select(filename => Path.GetFileNameWithoutExtension(filename)).ToList();
+
+                    if (_scenarioOption.HasValue())
+                    {
+                        if (_outputOption.HasValue())
+                        {
+                            resultNames.Add(Path.GetFileNameWithoutExtension(_outputOption.Value()));
+                        }
+                        else
+                        {
+                            resultNames.Add("Current");
+                        }
+                    }
+
+                    DisplayDiff(compareResults, resultNames);
+                }
+
+                return results.ReturnCode;
+            });
 
             try
             {
@@ -344,18 +386,12 @@ namespace BenchmarksDriver
             }
             catch (CommandParsingException e)
             {
-                Console.WriteLine();
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.ToString());
                 return -1;
-            }
-            finally
-            {
-                // TODO: clean the files for all jobs
-                //CleanTemporaryFiles();
             }
         }
 
-        private static async Task<int> Run(
+        private static async Task<ExecutionResult> Run(
             Configuration configuration,
             string scenarioName,
             string session,
@@ -373,7 +409,7 @@ namespace BenchmarksDriver
             CommandOption markdownOption
             )
         {
-
+        
             if (_sqlConnectionStringOption.HasValue())
             {
                 await JobSerializer.InitializeDatabaseAsync(_sqlConnectionStringOption.Value(), _tableName);
@@ -385,6 +421,8 @@ namespace BenchmarksDriver
             var results = new List<Statistics>();
 
             Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
+
+            var executionResults = new ExecutionResult();
 
             for (var i = 1; i <= iterations; i++)
             {
@@ -415,7 +453,7 @@ namespace BenchmarksDriver
                             if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
                             {
                                 Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
-                                return 0;
+                                return new ExecutionResult();
                             }
                         }
                     }
@@ -564,62 +602,10 @@ namespace BenchmarksDriver
                     jobResults.Properties[segments[0]] = segments[1];
                 }
 
-                // Save results
-
-                if (_outputOption.HasValue())
-                {
-                    var filename = _outputOption.Value();
-
-                    if (File.Exists(filename))
-                    {
-                        File.Delete(filename);
-                    }
-
-                    await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(jobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() } ));
-
-                    Log.Write("", notime: true);
-                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
-                }
-
-                // Store data
-
-                if (_sqlConnectionStringOption.HasValue())
-                {
-                    await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
-                }
-
-                // Display diff
-
-                if (_compareOption.HasValue())
-                {
-                    foreach (var filename in _compareOption.Values)
-                    {
-                        if (!File.Exists(filename))
-                        {
-                            Log.Write($"Diff source file not found: '{new FileInfo(filename).FullName}'", notime: true);
-                            return -1;
-                        }
-                    }
-
-                    var compareResults = _compareOption.Values.Select(filename => JsonConvert.DeserializeObject<JobResults>(File.ReadAllText(filename))).ToList();
-                    compareResults.Add(jobResults);
-
-                    var resultNames = _compareOption.Values.Select(filename => Path.GetFileNameWithoutExtension(filename)).ToList();
-
-                    if (_outputOption.HasValue())
-                    {
-                        resultNames.Add(Path.GetFileNameWithoutExtension(_outputOption.Value()));
-                    }
-                    else
-                    {
-                        resultNames.Add("Current");
-                    }
-
-                    DisplayDiff(compareResults, resultNames);
-                }
+                executionResults.JobResults = jobResults;
             }
 
-            return 0;
+            return executionResults;
         }
 
         private static void DisplayDiff(IEnumerable<JobResults> allResults, IEnumerable<string> allNames)
