@@ -39,8 +39,9 @@
     <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
     <PomeloEntityFrameworkCoreMySqlVersion30>3.0.1</PomeloEntityFrameworkCoreMySqlVersion30>
     <PomeloEntityFrameworkCoreMySqlVersion31>3.1.1</PomeloEntityFrameworkCoreMySqlVersion31>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.0</MicrosoftEntityFrameworkCoreSqlServerVersion30>
-    
+    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.2</MicrosoftEntityFrameworkCoreSqlServerVersion30>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion31>3.1.1</MicrosoftEntityFrameworkCoreSqlServerVersion31>
+
     <!-- Using 2.2 EF version for netcoreapp3.0 benchmarks as it doesn't work with current providers -->
   </PropertyGroup>
 
