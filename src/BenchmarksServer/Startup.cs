@@ -26,6 +26,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tools.Trace;
@@ -3443,7 +3444,9 @@ namespace BenchmarkServer
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
 
-            var lines = result.StandardOutput.Split('\n', 2);
+            Log.WriteLine("/proc/meminfo -> \n" + result.StandardOutput);
+
+            var lines = result.StandardOutput.Split('\n', 2, StringSplitOptions.RemoveEmptyEntries);
 
             var swapTotal = int.Parse(lines[0].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
             var swapFree = int.Parse(lines[1].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
