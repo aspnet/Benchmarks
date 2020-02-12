@@ -211,5 +211,47 @@ namespace BenchmarkServer
                 } while (process != null && !process.HasExited);
             }
         }
+
+        public static void KillTree(this Process process, TimeSpan timeout)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Run("taskkill", $"/T /F /PID {process.Id}", timeout);
+            }
+            else
+            {
+                var children = new HashSet<int>();
+                GetAllChildIdsUnix(process.Id, children, timeout);
+                foreach (var childId in children)
+                {
+                    KillProcessUnix(childId, timeout);
+                }
+                KillProcessUnix(process.Id, timeout);
+            }
+        }
+
+        private static void KillProcessUnix(int processId, TimeSpan timeout) => Run("kill", $"-TERM {processId}", timeout);
+
+        private static void GetAllChildIdsUnix(int parentId, HashSet<int> children, TimeSpan timeout)
+        {
+            var runResult = Run("pgrep", $"-P {parentId}", timeout, captureOutput: true);
+
+            if (runResult.ExitCode != 0 || string.IsNullOrEmpty(runResult.StandardOutput))
+                return;
+
+            using (var reader = new StringReader(runResult.StandardOutput))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (int.TryParse(line, out int id) && !children.Contains(id))
+                    {
+                        children.Add(id);
+                        // Recursively get the children
+                        GetAllChildIdsUnix(id, children, timeout);
+                    }
+                }
+            }
+        }
     }
 }
