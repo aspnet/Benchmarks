@@ -3439,7 +3439,7 @@ namespace BenchmarkServer
 
         private static double GetSwapBytes()
         {
-            var result = ProcessUtil.Run("cat", "/proc/meminfo", throwOnError: false, captureOutput: true, log: true);
+            var result = ProcessUtil.Run("cat", "/proc/meminfo", throwOnError: false, captureOutput: true);
 
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
