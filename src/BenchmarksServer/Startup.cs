@@ -728,7 +728,7 @@ namespace BenchmarkServer
                                                                 {
                                                                     Name = "benchmarks/swap",
                                                                     Timestamp = now,
-                                                                    Value = GetSwapBytes() / 1024 / 1024
+                                                                    Value = (int) GetSwapBytes() / 1024 / 1024
                                                                 });
                                                             }
                                                             catch(Exception e)
@@ -821,7 +821,7 @@ namespace BenchmarkServer
                                                             {
                                                                 Name = "benchmarks/swap",
                                                                 Timestamp = now,
-                                                                Value = GetSwapBytes() / 1024 / 1024
+                                                                Value = (int) GetSwapBytes() / 1024 / 1024
                                                             });
                                                         }
                                                         catch (Exception e)
