@@ -3422,7 +3422,7 @@ namespace BenchmarkServer
 
         private static double GetSwapBytes()
         {
-            var result = ProcessUtil.Run("egrep", "'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false, captureOutput: true, log: true);
+            var result = ProcessUtil.Run("/usr/bin/env", $"bash egrep 'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false, captureOutput: true, log: true);
 
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
