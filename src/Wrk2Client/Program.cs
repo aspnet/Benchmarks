@@ -54,8 +54,8 @@ namespace Wrk2Client
             Console.WriteLine(output);
 
             BenchmarksEventSource.Log.Metadata("wrk2/requests", "max", "sum", "Requests", "Total number of requests", "n0");
-            BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n0.##");
-            BenchmarksEventSource.Log.Metadata("wrk2/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n0.##");
+            BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
+            BenchmarksEventSource.Log.Metadata("wrk2/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
 
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
@@ -77,14 +77,14 @@ namespace Wrk2Client
 
             if (parseLatency)
             {
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/50", "max", "avg", "Latency 50th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/75", "max", "avg", "Latency 75th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/90", "max", "avg", "Latency 90th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/99", "max", "avg", "Latency 99th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.9", "max", "avg", "Latency 99.9th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.99", "max", "avg", "Latency 99.99th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.999", "max", "avg", "Latency 99.999th (ms)", "Latency 50th (ms)", "n0.##");
-                BenchmarksEventSource.Log.Metadata("wrk2/latency/100", "max", "avg", "Latency 100th (ms)", "Latency 50th (ms)", "n0.##");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/50", "max", "avg", "Latency 50th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/75", "max", "avg", "Latency 75th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/90", "max", "avg", "Latency 90th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/99", "max", "avg", "Latency 99th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.9", "max", "avg", "Latency 99.9th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.99", "max", "avg", "Latency 99.99th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/99.999", "max", "avg", "Latency 99.999th (ms)", "Latency 50th (ms)", "n2");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/100", "max", "avg", "Latency 100th (ms)", "Latency 50th (ms)", "n2");
                 BenchmarksEventSource.Log.Metadata("wrk/latency/distribution", "all", "all", "Latency distribution", "Latency distribution", "json");
 
                 BenchmarksEventSource.Measure("wrk2/latency/50", ReadLatency(Regex.Match(output, String.Format(LatencyPattern, "50\\.000%"))));
