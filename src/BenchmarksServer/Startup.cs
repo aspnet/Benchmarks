@@ -1020,7 +1020,7 @@ namespace BenchmarkServer
                                         Aggregate = Operation.Delta,
                                         Reduce = Operation.Max,
                                         Format = "n0",
-                                        LongDescription = "Amount swapped memory (MB)",
+                                        LongDescription = "Amount of swapped memory (MB)",
                                         ShortDescription = "Swap (MB)"
                                     });
                                 }
@@ -3460,12 +3460,14 @@ namespace BenchmarkServer
                     {
                         totalFound = true;
                         swapTotal = ParseMeminfo(line);
+                        Console.WriteLine($"SwapTotal: {swapTotal}");
                     }
 
                     if (line.StartsWith("SwapFree"))
                     {
                         freeFound = true;
                         swapFree = ParseMeminfo(line);
+                        Console.WriteLine($"SwapFree: {swapFree}");
                     }
 
                     line = sr.ReadLine();
@@ -3483,7 +3485,7 @@ namespace BenchmarkServer
 
             int ParseMeminfo(string line)
             {
-                return int.Parse(line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries)[1].Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries)[0]);
+                return int.Parse(line.Split(':', StringSplitOptions.RemoveEmptyEntries)[1].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]);
             }
         }
 
