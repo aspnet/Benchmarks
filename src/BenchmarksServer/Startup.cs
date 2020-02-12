@@ -352,6 +352,8 @@ namespace BenchmarkServer
 
         private static async Task<int> Run(string url, string hostname, string dockerHostname)
         {
+            var processesAliveBefore = Process.GetProcesses().Select(process => process.Id).ToHashSet();
+
             var host = new WebHostBuilder()
                     .UseKestrel()
                     .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = (long) 10 * 1024 * 1024 * 1024)
@@ -367,21 +369,28 @@ namespace BenchmarkServer
             var hostTask = host.RunAsync();
 
             var processJobsCts = new CancellationTokenSource();
-            var processJobsTask = ProcessJobs(hostname, dockerHostname, processJobsCts.Token);
+            var processJobsTask = ProcessJobs(hostname, dockerHostname, processesAliveBefore, processJobsCts.Token);
 
             var completedTask = await Task.WhenAny(hostTask, processJobsTask);
 
-            // Propagate exception (and exit process) if either task faulted
-            await completedTask;
+            try
+            {
+                // Propagate exception (and exit process) if either task faulted
+                await completedTask;
 
-            // Host exited normally, so cancel job processor
-            processJobsCts.Cancel();
-            await processJobsTask;
+                // Host exited normally, so cancel job processor
+                processJobsCts.Cancel();
+                await processJobsTask;
 
-            return 0;
+                return 0;
+            }
+            finally
+            {
+                ProcessUtil.TryKillAllProcesses(except: processesAliveBefore);
+            }
         }
 
-        private static async Task ProcessJobs(string hostname, string dockerHostname, CancellationToken cancellationToken)
+        private static async Task ProcessJobs(string hostname, string dockerHostname, HashSet<int> processesAliveBefore, CancellationToken cancellationToken)
         {
             string dotnetHome = null;
 
@@ -859,7 +868,14 @@ namespace BenchmarkServer
                         {
                             Log.WriteLine($"Stopping job '{job.Id}' with scenario '{job.Scenario}'");
 
-                            await StopJobAsync();
+                            try
+                            {
+                                await StopJobAsync();
+                            }
+                            finally
+                            {
+                                ProcessUtil.TryKillAllProcesses(except: processesAliveBefore);
+                            }
                         }
                         else if (job.State == ServerState.Stopped)
                         {
@@ -1232,7 +1248,14 @@ namespace BenchmarkServer
 
                         async Task DeleteJobAsync()
                         {
-                            await StopJobAsync();
+                            try
+                            {
+                                await StopJobAsync();
+                            }
+                            finally
+                            {
+                                ProcessUtil.TryKillAllProcesses(except: processesAliveBefore);
+                            }
 
                             if (_cleanup && !job.NoClean && tempDir != null)
                             {

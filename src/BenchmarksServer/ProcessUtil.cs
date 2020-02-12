@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -212,7 +213,21 @@ namespace BenchmarkServer
             }
         }
 
-        public static void KillTree(this Process process, TimeSpan timeout)
+        internal static void TryKillAllProcesses(HashSet<int> except)
+        {
+            foreach(var process in Process.GetProcesses().Where(process => !except.Contains(process.Id)))
+            {
+                Log.WriteLine($"Trying to kill {process.Id} {process.ProcessName}");
+
+                try
+                {
+                    process.KillTree(TimeSpan.FromSeconds(3));
+                }
+                catch { } // swallow the exception on purpose
+            }
+        }
+
+        internal static void KillTree(this Process process, TimeSpan timeout)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
