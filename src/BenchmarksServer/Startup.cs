@@ -2348,6 +2348,9 @@ namespace BenchmarkServer
                 throw new NotSupportedException($"Unsupported framework: {targetFramework}");
             }
 
+            // #1445 force no cache for restore to avoid restore failures for packages published within last 30 minutes
+            buildParameters += "/p:RestoreNoCache=true ";
+
             // Apply custom build arguments sent from the driver
             foreach (var argument in job.BuildArguments)
             {
