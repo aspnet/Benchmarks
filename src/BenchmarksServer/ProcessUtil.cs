@@ -217,10 +217,10 @@ namespace BenchmarkServer
         {
             foreach(var process in Process.GetProcesses().Where(process => !except.Contains(process.Id)))
             {
-                Log.WriteLine($"Trying to kill {process.Id} {process.ProcessName}");
-
                 try
                 {
+                    Log.WriteLine($"Trying to kill {process.Id} {process.ProcessName}");
+
                     process.KillTree(TimeSpan.FromSeconds(3));
                 }
                 catch { } // swallow the exception on purpose
