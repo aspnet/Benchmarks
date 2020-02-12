@@ -811,9 +811,25 @@ namespace BenchmarkServer
                                                     }
 
                                                     oldCPUTime = newCPUTime;
+
+                                                    if (OperatingSystem == OperatingSystem.Linux)
+                                                    {
+                                                        try
+                                                        {
+                                                            job.Measurements.Add(new Measurement
+                                                            {
+                                                                Name = "benchmarks/swap",
+                                                                Timestamp = now,
+                                                                Value = GetSwapBytes() / 1024 / 1024
+                                                            });
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            Log.WriteLine($"[ERROR] Could not get swap memory:" + e.ToString());
+                                                        }
+                                                    }
                                                 }
                                             }
-
                                         }
                                         finally
                                         {
