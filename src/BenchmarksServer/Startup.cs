@@ -3444,28 +3444,36 @@ namespace BenchmarkServer
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
 
-            Log.WriteLine("/proc/meminfo -> \n" + result.StandardOutput);
-
             int swapTotal = 0, swapFree = 0;
+            bool totalFound = false, freeFound = true;
 
             using (var sr = new StringReader(result.StandardOutput))
             {
-                string line = null;
+                var line = sr.ReadLine();
 
-                while (null != (line = sr.ReadLine()))
+                while (line != null && !(totalFound && freeFound))
                 {
                     if (line.StartsWith("SwapTotal"))
                     {
+                        totalFound = true;
                         swapTotal = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
                     }
 
                     if (line.StartsWith("SwapFree"))
                     {
-                        swapTotal = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                        freeFound = true;
+                        swapFree = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
                     }
+
+                    line = sr.ReadLine();
                 }
             }
                 
+            if (!totalFound || !freeFound)
+            {
+                return -1;
+            }
+
             var swapkB = swapTotal - swapFree;
 
             return swapkB * 1024;
