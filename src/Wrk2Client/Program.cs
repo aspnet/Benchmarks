@@ -41,7 +41,7 @@ namespace Wrk2Client
             {
                 if (e != null && e.Data != null)
                 {
-                    stringBuilder.Append(e.Data);
+                    stringBuilder.AppendLine(e.Data);
                 }
             };
 
