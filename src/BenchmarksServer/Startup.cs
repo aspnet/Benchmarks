@@ -3446,13 +3446,26 @@ namespace BenchmarkServer
 
             Log.WriteLine("/proc/meminfo -> \n" + result.StandardOutput);
 
-            var lines = result.StandardOutput.Split('\n', 2, StringSplitOptions.RemoveEmptyEntries);
+            int swapTotal = 0, swapFree = 0;
 
-            var swapTotalLine = lines.FirstOrDefault(x => x.StartsWith("SwapTotal"));
-            var swapFreeLine = lines.FirstOrDefault(x => x.StartsWith("SwapFree"));
+            using (var sr = new StringReader(result.StandardOutput))
+            {
+                string line = null;
 
-            var swapTotal = int.Parse(swapTotalLine.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
-            var swapFree = int.Parse(swapFreeLine.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                while (null != (line = sr.ReadLine()))
+                {
+                    if (line.StartsWith("SwapTotal"))
+                    {
+                        swapTotal = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                    }
+
+                    if (line.StartsWith("SwapFree"))
+                    {
+                        swapTotal = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                    }
+                }
+            }
+                
             var swapkB = swapTotal - swapFree;
 
             return swapkB * 1024;
