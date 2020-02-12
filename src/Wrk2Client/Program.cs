@@ -105,7 +105,7 @@ namespace Wrk2Client
                         line = sr.ReadLine();
                     } while (line != null && !line.Contains("Detailed Percentile spectrum:"));
 
-                    var doc = new JObject();
+                    var doc = new JArray();
 
                     if (line != null)
                     {
@@ -119,7 +119,12 @@ namespace Wrk2Client
                             Console.WriteLine("Analyzing: " + line);
 
                             var values = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                            doc[values[0]] = double.Parse(values[1], CultureInfo.InvariantCulture);
+                            doc.Add(
+                                new JObject(
+                                    new JProperty("latency_us", decimal.Parse(values[0], CultureInfo.InvariantCulture)), 
+                                    new JProperty("count", decimal.Parse(values[2], CultureInfo.InvariantCulture)),
+                                    new JProperty("percentile", decimal.Parse(values[1], CultureInfo.InvariantCulture))
+                                    ));
 
                             line = sr.ReadLine();
                         }
