@@ -3439,7 +3439,7 @@ namespace BenchmarkServer
 
         private static double GetSwapBytes()
         {
-            var result = ProcessUtil.Run("egrep", "'SwapTotal|SwapFree' /proc/meminfo", throwOnError: false, captureOutput: true, log: true);
+            var result = ProcessUtil.Run("cat", "/proc/meminfo", throwOnError: false, captureOutput: true, log: true);
 
             // SwapTotal:       8388604 kB
             // SwapFree:        8310012 kB
@@ -3448,8 +3448,11 @@ namespace BenchmarkServer
 
             var lines = result.StandardOutput.Split('\n', 2, StringSplitOptions.RemoveEmptyEntries);
 
-            var swapTotal = int.Parse(lines[0].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
-            var swapFree = int.Parse(lines[1].Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+            var swapTotalLine = lines.FirstOrDefault(x => x.StartsWith("SwapTotal"));
+            var swapFreeLine = lines.FirstOrDefault(x => x.StartsWith("SwapFree"));
+
+            var swapTotal = int.Parse(swapTotalLine.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+            var swapFree = int.Parse(swapFreeLine.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
             var swapkB = swapTotal - swapFree;
 
             return swapkB * 1024;
