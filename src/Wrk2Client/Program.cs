@@ -63,7 +63,7 @@ namespace Wrk2Client
                 BenchmarksEventSource.Measure("wrk2/rps", double.Parse(rpsMatch.Groups[1].Value));
             }
 
-            const string LatencyPattern = @"\s+{0}\s+([\d\.]+)(\w+)";
+            const string LatencyPattern = @"\s+{0}\s*([\d\.]+)([a-z]+)";
 
             var avgLatencyMatch = Regex.Match(output, String.Format(LatencyPattern, "Latency"));
             BenchmarksEventSource.Measure("wrk2/latency/mean", ReadLatency(avgLatencyMatch));
