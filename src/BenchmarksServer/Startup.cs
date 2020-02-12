@@ -3480,7 +3480,7 @@ namespace BenchmarkServer
 
             int ParseMeminfo(string line)
             {
-                return int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                return int.Parse(line.Split(':', 2, StringSplitOptions.RemoveEmptyEntries)[1].Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries)[0]);
             }
         }
 
