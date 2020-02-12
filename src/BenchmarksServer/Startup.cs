@@ -730,9 +730,9 @@ namespace BenchmarkServer
                                                                     Value = GetSwapBytes() / 1024 / 1024
                                                                 });
                                                             }
-                                                            catch
+                                                            catch(Exception e)
                                                             {
-                                                                Log.WriteLine($"[ERROR] Could not get swap memory");
+                                                                Log.WriteLine($"[ERROR] Could not get swap memory:" + e.ToString());
                                                             }
                                                         }
                                                     }
