@@ -3456,13 +3456,13 @@ namespace BenchmarkServer
                     if (line.StartsWith("SwapTotal"))
                     {
                         totalFound = true;
-                        swapTotal = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                        swapTotal = ParseMeminfo(line);
                     }
 
                     if (line.StartsWith("SwapFree"))
                     {
                         freeFound = true;
-                        swapFree = int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+                        swapFree = ParseMeminfo(line);
                     }
 
                     line = sr.ReadLine();
@@ -3477,6 +3477,11 @@ namespace BenchmarkServer
             var swapkB = swapTotal - swapFree;
 
             return swapkB * 1024;
+
+            int ParseMeminfo(string line)
+            {
+                return int.Parse(line.Split(':', 2)[1].Trim().Split(' ', 2)[0]);
+            }
         }
 
         private static string ComputeServerUrl(string hostname, ServerJob job)
