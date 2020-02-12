@@ -44,6 +44,24 @@ jobs:
       connections: 256
       duration: 5
     arguments: -c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
+  wrk2:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Wrk2Client/Wrk2Client.csproj
+    # options:
+    #   displayOutput: true
+    readyStateText: WRK2 Client
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: 3.0
+    runtimeVersion: 3.0
+    waitForExit: true
+    variables:
+      connections: 256
+      thread: 12
+      duration: 5
+      rate: 500
+    arguments: -c {{connections}} -d {{duration}}s {{headers[presetHeaders]}} -L -R {{rate}} {{serverUri}}:{{serverPort}}{{path}} 
 scenarios:
   proxy-httpclient:
     application: # custom name for a service to deploy
@@ -63,13 +81,8 @@ scenarios:
   proxy-nginx:
     application:
       job: nginxproxy
-    warmup:
-      job: bombardier
-      variables:
-        serverPort: 8080
-        path: /
     load:
-      job: bombardier
+      job: wrk2
       variables:
         serverPort: 8080
         path: /
