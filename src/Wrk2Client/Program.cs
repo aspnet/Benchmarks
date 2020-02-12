@@ -85,7 +85,7 @@ namespace Wrk2Client
                 BenchmarksEventSource.Log.Metadata("wrk2/latency/99.99", "max", "avg", "Latency 99.99th (ms)", "Latency 50th (ms)", "n2");
                 BenchmarksEventSource.Log.Metadata("wrk2/latency/99.999", "max", "avg", "Latency 99.999th (ms)", "Latency 50th (ms)", "n2");
                 BenchmarksEventSource.Log.Metadata("wrk2/latency/100", "max", "avg", "Latency 100th (ms)", "Latency 50th (ms)", "n2");
-                BenchmarksEventSource.Log.Metadata("wrk/latency/distribution", "all", "all", "Latency distribution", "Latency distribution", "json");
+                BenchmarksEventSource.Log.Metadata("wrk2/latency/distribution", "all", "all", "Latency distribution", "Latency distribution", "json");
 
                 BenchmarksEventSource.Measure("wrk2/latency/50", ReadLatency(Regex.Match(output, String.Format(LatencyPattern, "50\\.000%"))));
                 BenchmarksEventSource.Measure("wrk2/latency/75", ReadLatency(Regex.Match(output, String.Format(LatencyPattern, "75\\.000%"))));
@@ -103,7 +103,7 @@ namespace Wrk2Client
                     do
                     {
                         line = sr.ReadLine();
-                    } while (line != null && line != "Detailed Percentile spectrum:");
+                    } while (line != null && !line.Contains("Detailed Percentile spectrum:"));
 
                     var doc = new JObject();
 
@@ -116,12 +116,16 @@ namespace Wrk2Client
 
                         while (line != null && !line.StartsWith("#"))
                         {
+                            Console.WriteLine("Analyzing: " + line);
+
                             var values = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                             doc[values[0]] = double.Parse(values[1], CultureInfo.InvariantCulture);
+
+                            line = sr.ReadLine();
                         }
                     }
 
-                    BenchmarksEventSource.Measure("wrk/latency/distribution", doc.ToString());
+                    BenchmarksEventSource.Measure("wrk2/latency/distribution", doc.ToString());
                 }
             }
         }
