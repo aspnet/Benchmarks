@@ -3448,7 +3448,7 @@ namespace BenchmarkServer
             // SwapFree:        8310012 kB
 
             int swapTotal = 0, swapFree = 0;
-            bool totalFound = false, freeFound = true;
+            bool totalFound = false, freeFound = false;
 
             using (var sr = new StringReader(result.StandardOutput))
             {
@@ -3460,14 +3460,12 @@ namespace BenchmarkServer
                     {
                         totalFound = true;
                         swapTotal = ParseMeminfo(line);
-                        Console.WriteLine($"SwapTotal: {swapTotal}");
                     }
 
                     if (line.StartsWith("SwapFree"))
                     {
                         freeFound = true;
                         swapFree = ParseMeminfo(line);
-                        Console.WriteLine($"SwapFree: {swapFree}");
                     }
 
                     line = sr.ReadLine();
