@@ -15,10 +15,14 @@
     <OutputType>Exe</OutputType>
     <LangVersion>8.0</LangVersion>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
-    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
     <NoWarn>0618;NU1605</NoWarn>
+  </PropertyGroup>
+
+  <!-- Old way of overriding the dotnet runtime -->
+  <PropertyGroup Condition="$(TargetFramework) != 'netcoreapp5.0'">
+    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
