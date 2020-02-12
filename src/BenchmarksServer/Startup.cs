@@ -582,9 +582,6 @@ namespace BenchmarkServer
                                             Log.WriteLine($"Process started: {process.Id}");
 
                                             workingDirectory = process.StartInfo.WorkingDirectory;
-
-
-
                                         }
                                         else
                                         {
@@ -1121,7 +1118,7 @@ namespace BenchmarkServer
                                     }
                                     else if (OperatingSystem == OperatingSystem.Linux)
                                     {
-                                        // TODO: Stop perfcollect
+                                        await StopPerfcollectAsync(perfCollectProcess);
                                     }
                                 }
 
@@ -1229,7 +1226,6 @@ namespace BenchmarkServer
                             }
                             else if (!String.IsNullOrEmpty(dockerImage))
                             {
-
                                 DockerCleanUp(dockerContainerId, dockerImage, job);
                             }
 
@@ -1383,7 +1379,7 @@ namespace BenchmarkServer
                 return;
             }
 
-            if (perfCollectProcess.HasExited)
+            if (perfCollectProcess == null || perfCollectProcess.HasExited)
             {
                 Log.WriteLine($"PerfCollect is not running");
                 return;
@@ -1436,7 +1432,6 @@ namespace BenchmarkServer
             Log.WriteLine($"Process has stopped");
 
             perfCollectProcess = null;
-
         }
 
         private static void ConvertLines(string path)
