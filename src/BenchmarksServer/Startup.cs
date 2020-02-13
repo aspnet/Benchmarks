@@ -46,7 +46,7 @@ namespace BenchmarkServer
     {
         /*
          * List of accepted values for AspNetCoreVersion and RuntimeVersion
-         * 
+         *
             Current The latest stable version
             Latest  The latest available version
             2.1     The latest stable version for 2.1, e.g. 2.1.9 (channel version)
@@ -97,7 +97,7 @@ namespace BenchmarkServer
         private static readonly string _rootTempDir;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
-        
+
         private static Task dotnetTraceTask;
         private static ManualResetEvent dotnetTraceManualReset;
 
@@ -417,7 +417,7 @@ namespace BenchmarkServer
 
                     // Lookup expired jobs
                     var expiredJobs = _jobs.GetAll().Where(j => j.State == ServerState.Deleted && DateTime.UtcNow - j.LastDriverCommunicationUtc > DeletedTimeout);
-                    
+
                     foreach(var expiredJob in expiredJobs)
                     {
                         Log.WriteLine($"Removing expired job {expiredJob.Id}");
@@ -1610,7 +1610,7 @@ namespace BenchmarkServer
                     if (e != null && e.Data != null)
                     {
                         Log.WriteLine(e.Data);
-                        
+
                         job.Output.AddLine(e.Data);
 
                         if (job.State == ServerState.Starting && e.Data.IndexOf(job.ReadyStateText, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -1628,7 +1628,7 @@ namespace BenchmarkServer
                     }
                 };
 
-                // Also listen on the error output 
+                // Also listen on the error output
                 process.ErrorDataReceived += (_, e) =>
                 {
                     if (e != null && e.Data != null)
@@ -1787,7 +1787,7 @@ namespace BenchmarkServer
                 {
                     var exitCode = "";
                     ProcessUtil.Run("docker", "inspect -f {{.State.ExitCode}} " + containerId, throwOnError: false, outputDataReceived: text => exitCode += text + "\n");
-                    
+
                     if (exitCode.Trim() != "0")
                     {
                         Log.WriteLine("Job failed");
@@ -2054,7 +2054,7 @@ namespace BenchmarkServer
             // Looking for the first existing global.json file to update
 
             var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-            
+
             while (globalJsonPath != null && !File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
             {
                 globalJsonPath = globalJsonPath.Parent;
@@ -2163,7 +2163,7 @@ namespace BenchmarkServer
                 if (OperatingSystem == OperatingSystem.Windows)
                 {
                     Log.WriteLine($"Detected Windows Desktop version: {desktopVersion}");
-                    
+
                     if (!_installedSdks.Contains(sdkVersion))
                     {
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
@@ -2250,7 +2250,7 @@ namespace BenchmarkServer
                     {
                         dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
-                        // Install required runtime 
+                        // Install required runtime
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
@@ -2264,7 +2264,7 @@ namespace BenchmarkServer
                     {
                         dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
 
-                        // Install required runtime 
+                        // Install required runtime
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
@@ -2368,6 +2368,10 @@ namespace BenchmarkServer
                 {
                     buildParameters += "-r win-x64 ";
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    buildParameters += "-r osx-x64 ";
+                }
                 else
                 {
                     if (job.Hardware == Hardware.ARM64)
@@ -2417,7 +2421,7 @@ namespace BenchmarkServer
                 );
 
             job.BuildLog.AddLine($"Command dotnet {arguments} returned exit code {buildResults.ExitCode}");
-            
+
             if (buildResults.ExitCode != 0)
             {
                 job.Error = job.BuildLog.ToString();
@@ -2472,12 +2476,12 @@ namespace BenchmarkServer
                     if (!File.Exists(runtimePath))
                     {
                         Log.WriteLine($"Downloading runtime package");
-                        
+
                         var found = false;
                         foreach (var feed in _runtimeFeedUrls)
                         {
                             var url = $"https://{feed}/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
-        
+
                             if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                             {
                                 found = true;
@@ -2995,7 +2999,7 @@ namespace BenchmarkServer
                 if (e != null && e.Data != null)
                 {
                     Log.WriteLine(e.Data);
-                    
+
                     job.Output.AddLine(e.Data);
 
                     if (job.State == ServerState.Starting &&
@@ -3015,7 +3019,7 @@ namespace BenchmarkServer
                     var log = "[STDERR] " + e.Data;
 
                     Log.WriteLine(log);
-                    
+
                     job.Output.AddLine(log);
 
                     if (job.State == ServerState.Starting &&
@@ -3093,7 +3097,7 @@ namespace BenchmarkServer
             if (iis || (String.IsNullOrEmpty(job.ReadyStateText) && !job.IsConsoleApp))
             {
                 await WaitToListen(job, hostname);
-                
+
                 RunAndTrace();
             }
 
@@ -3471,7 +3475,7 @@ namespace BenchmarkServer
                     line = sr.ReadLine();
                 }
             }
-                
+
             if (!totalFound || !freeFound)
             {
                 return -1;
@@ -3614,13 +3618,13 @@ namespace BenchmarkServer
                 return "";
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return path.Replace("\\", "/");
+                return path.Replace("/", "\\");
             }
             else
             {
-                return path.Replace("/", "\\");
+                return path.Replace("\\", "/");
             }
         }
 
