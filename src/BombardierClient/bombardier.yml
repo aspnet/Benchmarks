@@ -18,6 +18,6 @@ jobs:
     waitForExit: true
     variables:
       connections: 256
-      warmup: 5
       duration: 5
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}"
+      rate: 0
+    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {{headers[presetHeaders]}}"

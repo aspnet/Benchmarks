@@ -132,7 +132,7 @@ namespace BenchmarksDriver
             _propertyOption = app.Option("-p|--property", "Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux", CommandOptionType.MultipleValue);
             _excludeMeasurementsOption = app.Option("--no-measurements", "Remove all measurements from the stored results. For instance, all samples of a measure won't be stored, only the final value.", CommandOptionType.SingleOrNoValue);
             _excludeMetadataOption = app.Option("--no-metadata", "Remove all metadata from the stored results. The metadata is only necessary for being to generate friendly outputs.", CommandOptionType.SingleOrNoValue);
-            
+
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
             {
@@ -742,7 +742,12 @@ namespace BenchmarksDriver
         /// 2- For each scenario's job, clone it in the Configuration's jobs list
         /// 3- Path the new job with the scenario's properties
         /// </summary>
-        public static async Task<Configuration> BuildConfigurationAsync(IEnumerable<string> configurationFileOrUrls, string scenarioName, IEnumerable<KeyValuePair<string, string>> arguments, IEnumerable<string> profiles)
+        public static async Task<Configuration> BuildConfigurationAsync(
+            IEnumerable<string> configurationFileOrUrls, 
+            string scenarioName, 
+            IEnumerable<KeyValuePair<string, string>> arguments, 
+            IEnumerable<string> profiles
+            )
         {
             JObject configuration = null;
 

@@ -1,11 +1,13 @@
-﻿imports:
+﻿# Examples:
+# --config benchmarks.proxy.yml --scenario proxy-httpclient --profile aspnet-physical 
+# --config benchmarks.proxy.yml --scenario proxy-nginx --profile aspnet-physical 
+# --config benchmarks.proxy.yml --scenario proxy-haproxy --profile aspnet-physical 
+
+imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
 variables:
-  headers:
-    none:
-    plaintext: --header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive
-    connectionclose: --header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:close
-  presetHeaders: plaintext
+  downstreamUri: http://tfb-database:5000
 jobs:
   httpclientproxy:
     source:
@@ -14,8 +16,7 @@ jobs:
       project: src/Proxy/Proxy.csproj
     readyStateText: Application started.
     variables:
-      baseUri: http://TFB-database:5001
-    arguments: --baseUri {{baseUri}}
+    arguments: --baseUri {{downstreamUri}}
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -30,40 +31,63 @@ jobs:
       DockerFile: docker/haproxy/haproxy.dockerfile
       DockerImageName: haproxy-reverseproxy
       DockerContextDirectory: docker/haproxy
+  downstream:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Downstream/Downstream.csproj
+    readyStateText: Application started.
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: '3.0'
+    runtimeVersion: '3.0'
+    variables:
+      downstreamPort: 5000
+    arguments: --baseUri http://*:{{downstreamPort}}
 scenarios:
   proxy-httpclient:
+    downstream:
+      job: downstream
     application: # custom name for a service to deploy
       job: httpclientproxy
     warmup:
-      job: wrk2
+      job: bombardier
       variables:
         serverPort: 5000
         path: /
     load:
-      job: wrk2
+      job: bombardier
       variables:
         serverPort: 5000
         path: /
       options:
         displayOutput: true
   proxy-nginx:
+    downstream:
+      job: downstream
     application:
       job: nginxproxy
+    warmup:
+      job: bombardier
+      variables:
+        serverPort: 8080
+        path: /
     load:
-      job: wrk2
+      job: bombardier
       variables:
         serverPort: 8080
         path: /
   proxy-haproxy:
+    downstream:
+      job: downstream
     application:
       job: haproxyproxy
     warmup:
-      job: wrk2
+      job: bombardier
       variables:
         serverPort: 8080
         path: /
     load:
-      job: wrk2
+      job: bombardier
       variables:
         serverPort: 8080
         path: /
@@ -72,27 +96,33 @@ profiles:
     variables:
       serverUri: http://10.0.0.102
     jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-db:6001
       application:
         endpoints: 
           - http://asp-perf-lin:5001
       warmup:
         endpoints: 
-          - http://asp-perf-win:5001
+          - http://asp-perf-load:5001
       load:
         endpoints: 
-          - http://asp-perf-win:5001
+          - http://asp-perf-load:5001
         options:
           displayOutput: true
   aspnet-citrine:
     variables:
       serverUri: http://10.0.0.102
     jobs: 
+      downstream:
+        endpoints: 
+          - http://asp-citrine-db:6001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
       warmup:
         endpoints: 
-          - http://asp-citrine-win:5001
+          - http://asp-citrine-load:5001
       load:
         endpoints: 
-          - http://asp-citrine-win:5001
+          - http://asp-citrine-load:5001
