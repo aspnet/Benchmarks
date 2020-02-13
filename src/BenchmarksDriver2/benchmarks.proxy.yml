@@ -1,4 +1,6 @@
-﻿variables:
+﻿imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
+variables:
   headers:
     none:
     plaintext: --header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive
@@ -28,47 +30,17 @@ jobs:
       DockerFile: docker/haproxy/haproxy.dockerfile
       DockerImageName: haproxy-reverseproxy
       DockerContextDirectory: docker/haproxy
-  bombardier:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
-      project: src/BombardierClient/BombardierClient.csproj
-    readyStateText: Bombardier Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: 3.0
-    runtimeVersion: 3.0
-    waitForExit: true
-    variables:
-      connections: 256
-      duration: 5
-    arguments: -c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}
-  wrk2:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
-      project: src/Wrk2Client/Wrk2Client.csproj
-    readyStateText: WRK2 Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: 3.0
-    runtimeVersion: 3.0
-    waitForExit: true
-    variables:
-      connections: 256
-      thread: 12
-      duration: 5
-      rate: 500
-    arguments: -c {{connections}} -d {{duration}}s {{headers[presetHeaders]}} -L -R {{rate}} {{serverUri}}:{{serverPort}}{{path}} 
 scenarios:
   proxy-httpclient:
     application: # custom name for a service to deploy
       job: httpclientproxy
     warmup:
-      job: bombardier
+      job: wrk2
       variables:
         serverPort: 5000
         path: /
     load:
-      job: bombardier
+      job: wrk2
       variables:
         serverPort: 5000
         path: /
@@ -86,12 +58,12 @@ scenarios:
     application:
       job: haproxyproxy
     warmup:
-      job: bombardier
+      job: wrk2
       variables:
         serverPort: 8080
         path: /
     load:
-      job: bombardier
+      job: wrk2
       variables:
         serverPort: 8080
         path: /
