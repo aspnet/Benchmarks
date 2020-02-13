@@ -6,8 +6,7 @@
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
-variables:
-  downstreamUri: http://tfb-database:5000
+
 jobs:
   httpclientproxy:
     source:
@@ -16,7 +15,7 @@ jobs:
       project: src/Proxy/Proxy.csproj
     readyStateText: Application started.
     variables:
-    arguments: --baseUri {{downstreamUri}}
+    arguments: '--baseUri {{downstreamUri}}'
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -24,6 +23,9 @@ jobs:
       DockerFile: docker/nginx/nginx.dockerfile
       DockerImageName: nginx-reverseproxy
       DockerContextDirectory: docker/nginx
+    environmentVariables:
+        PROXY_PASS: '{{downstreamUri}}'
+        WORKER_PROCESSES: '{{cores}}'
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -42,7 +44,8 @@ jobs:
     runtimeVersion: '3.0'
     variables:
       downstreamPort: 5000
-    arguments: --baseUri http://*:{{downstreamPort}}
+    arguments: '--baseUri http://*:{{downstreamPort}}'
+
 scenarios:
   proxy-httpclient:
     downstream:
@@ -91,10 +94,13 @@ scenarios:
       variables:
         serverPort: 8080
         path: /
+
 profiles:
   aspnet-physical:
     variables:
       serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
+      cores: 12
     jobs:
       downstream:
         endpoints: 
@@ -113,6 +119,8 @@ profiles:
   aspnet-citrine:
     variables:
       serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
+      cores: 28
     jobs: 
       downstream:
         endpoints: 
