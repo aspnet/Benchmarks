@@ -1,9 +1,8 @@
-﻿variables:
-  headers:
-    none: ''
-    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
-    connectionclose: "--header Connection:close"
-  presetHeaders: none
+﻿imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/PipeliningClient/pipelining.yml
 jobs:
   aspnetbenchmarks:
     source:
@@ -17,82 +16,7 @@ jobs:
       server: Kestrel
       transport: Sockets
       scenario: plaintext
-    scenario: Benchmarks
-    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:5000 --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
-  pipelineclient:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: sebros/dimension
-      project: src/PipeliningClient/PipeliningClient.csproj
-    readyStateText: Pipelining Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
-    waitForExit: true
-    scenario: PipelineClient
-    variables:
-      connections: 256
-      warmup: 5
-      duration: 5
-      pipeline: 1
-      min: 0
-      rate: 0
-      interval: 1
-      presetHeaders: none
-    arguments: '--url "{{serverUri}}{{path}}" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %}{% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{headers[presetHeaders]}}'
-  bombardier:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
-      project: src/BombardierClient/BombardierClient.csproj
-    options:
-      displayOutput: true
-    readyStateText: Bombardier Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
-    waitForExit: true
-    scenario: Bombardier
-    variables:
-      connections: 256
-      warmup: 5
-      duration: 5
-    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -l {{headers[presetHeaders]}}"
-  wrk:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
-      project: src/WrkClient/WrkClient.csproj
-    options:
-      displayOutput: true
-    readyStateText: 'Running '
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
-    noArguments: true
-    waitForExit: true
-    scenario: Wrk
-    variables:
-      connections: 256
-      duration: '15'
-      threads: 32
-    arguments: "-c {{connections}} {{serverUri}}{{path}} -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}}"
-  wrk2:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
-      project: src/Wrk2Client/Wrk2Client.csproj
-    readyStateText: 'WRK2 Client'
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
-    waitForExit: true
-    variables:
-      connections: 256
-      duration: 15
-      threads: 32
-      rate: 500
-    arguments: "-c {{connections}} -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} -R {{rate}} -L {{serverUri}}{{path}} "
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -108,13 +32,12 @@ scenarios:
       variables:
         scenario: plaintext
     load:
-      job: pipelineclient
+      job: wrk2
       variables:
-        pipeline: 16
         presetHeaders: plaintext
         path: /plaintext
-        warmup: 3
         duration: 3
+        serverPort: 5000
   connectionClose:
     application:
       job: aspnetbenchmarks
@@ -126,3 +49,4 @@ scenarios:
         pipeline: 1
         presetHeaders: connectionclose
         path: /plaintext  
+        serverPort: 5000

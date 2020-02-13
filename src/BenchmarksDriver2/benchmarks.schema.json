@@ -195,6 +195,13 @@
     }
   },
   "properties": {
+    "imports": {
+      "type": "array",
+      "title": "External files or urls to import",
+      "items": {
+        "type": "string"
+      }
+    },
     "variables": {
       "type": "object",
       "title": "The global variables",
@@ -204,8 +211,8 @@
     "jobs": {
       "type": "object",
       "title": "The Jobs",
-      "required": [ ],
-      "properties": { },
+      "required": [],
+      "properties": {},
       "additionalProperties": { "$ref": "#/definitions/job" }
     },
     "scenarios": {

@@ -1,0 +1,28 @@
+﻿variables:
+  headers:
+    none: ''
+    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
+    connectionclose: "--header Connection:close"
+  presetHeaders: none
+
+jobs:
+  pipelining:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/PipeliningClient/PipeliningClient.csproj
+    readyStateText: Pipelining Client
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: '3.0'
+    runtimeVersion: '3.0'
+    waitForExit: true
+    variables:
+      connections: 256
+      warmup: 5
+      duration: 5
+      pipeline: 1
+      min: 0
+      rate: 0
+      interval: 1
+      presetHeaders: none
+    arguments: '--url "{{serverUri}}{{serverPort}}{{path}}" --connections {{connections}} {% if min != 0 %} -m {{ min }} {% endif %} {% if rate != 0 %} -r {{ rate }} {% endif %}{% if interval != 1 %} -i {{ interval }} {% endif %} --warmup {{warmup}} --duration {{duration}} --pipeline {{pipeline}} {{headers[presetHeaders]}}'

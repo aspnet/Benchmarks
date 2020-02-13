@@ -275,7 +275,7 @@ namespace BenchmarksDriver
                         }
                     }
 
-                    var configuration = BuildConfiguration(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
+                    var configuration = await BuildConfigurationAsync(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
 
                     var serializer = new Serializer();
 
@@ -742,64 +742,14 @@ namespace BenchmarksDriver
         /// 2- For each scenario's job, clone it in the Configuration's jobs list
         /// 3- Path the new job with the scenario's properties
         /// </summary>
-        public static Configuration BuildConfiguration(IEnumerable<string> configurationFileOrUrls, string scenarioName, IEnumerable<KeyValuePair<string, string>> arguments, IEnumerable<string> profiles)
+        public static async Task<Configuration> BuildConfigurationAsync(IEnumerable<string> configurationFileOrUrls, string scenarioName, IEnumerable<KeyValuePair<string, string>> arguments, IEnumerable<string> profiles)
         {
             JObject configuration = null;
 
             // Merge all configuration sources
             foreach (var configurationFileOrUrl in configurationFileOrUrls)
             {
-                JObject localconfiguration;
-
-                if (!string.IsNullOrWhiteSpace(configurationFileOrUrl))
-                {
-                    string configurationContent;
-
-                    // Load the job definition from a url or locally
-                    try
-                    {
-                        if (configurationFileOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                        {
-                            configurationContent = _httpClient.GetStringAsync(configurationFileOrUrl).GetAwaiter().GetResult();
-                        }
-                        else
-                        {
-                            configurationContent = File.ReadAllText(configurationFileOrUrl);
-                        }
-                    }
-                    catch
-                    {
-                        throw new Exception($"Configuration '{configurationFileOrUrl}' could not be loaded.");
-                    }
-
-                    localconfiguration = null;
-
-                    switch (Path.GetExtension(configurationFileOrUrl))
-                    {
-                        case ".json": 
-                            localconfiguration = JObject.Parse(configurationContent);
-                            break;
-
-                        case ".yml":
-                        case ".yaml":
-
-                            var deserializer = new DeserializerBuilder().Build();
-                            var yamlObject = deserializer.Deserialize(new StringReader(configurationContent));
-
-                            var serializer = new SerializerBuilder()
-                                .JsonCompatible()
-                                .Build();
-
-                            var json = serializer.Serialize(yamlObject);
-                            localconfiguration = JObject.Parse(json);
-                            break;
-                    }
-
-                }
-                else
-                {
-                    throw new Exception($"Invalid file path or url: '{configurationFileOrUrl}'");
-                }
+                var localconfiguration = await LoadConfigurationAsync(configurationFileOrUrl);
 
                 if (configuration != null)
                 {
@@ -931,6 +881,82 @@ namespace BenchmarksDriver
             }
 
             return result;
+        }
+
+        public static async Task<JObject> LoadConfigurationAsync(string configurationFilenameOrUrl)
+        {
+            JObject localconfiguration;
+
+            if (!string.IsNullOrWhiteSpace(configurationFilenameOrUrl))
+            {
+                string configurationContent;
+
+                // Load the job definition from a url or locally
+                try
+                {
+                    if (configurationFilenameOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        configurationContent = await _httpClient.GetStringAsync(configurationFilenameOrUrl);
+                    }
+                    else
+                    {
+                        configurationContent = File.ReadAllText(configurationFilenameOrUrl);
+                    }
+                }
+                catch
+                {
+                    throw new Exception($"Configuration '{configurationFilenameOrUrl}' could not be loaded.");
+                }
+
+                localconfiguration = null;
+
+                switch (Path.GetExtension(configurationFilenameOrUrl))
+                {
+                    case ".json":
+                        localconfiguration = JObject.Parse(configurationContent);
+                        break;
+
+                    case ".yml":
+                    case ".yaml":
+
+                        var deserializer = new DeserializerBuilder().Build();
+                        var yamlObject = deserializer.Deserialize(new StringReader(configurationContent));
+
+                        var serializer = new SerializerBuilder()
+                            .JsonCompatible()
+                            .Build();
+
+                        var json = serializer.Serialize(yamlObject);
+                        localconfiguration = JObject.Parse(json);
+                        break;
+                }
+                
+                // Process imports
+                if (localconfiguration.ContainsKey("imports"))
+                {
+                    var mergeOptions = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace, MergeNullValueHandling = MergeNullValueHandling.Merge };
+
+                    foreach (JValue import in (JArray) localconfiguration.GetValue("imports"))
+                    {
+                        var importFilenameOrUrl = import.ToString();
+
+                        var importedConfiguration = await LoadConfigurationAsync(importFilenameOrUrl);
+
+                        if (importedConfiguration != null)
+                        {
+                            localconfiguration.Merge(importedConfiguration, mergeOptions);
+                        }
+                    }
+                }
+
+                localconfiguration.Remove("imports");
+
+                return localconfiguration;
+            }
+            else
+            {
+                throw new Exception($"Invalid file path or url: '{configurationFilenameOrUrl}'");
+            }            
         }
 
         public static void PatchObject(JObject source, JObject patch)
