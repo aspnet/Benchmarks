@@ -1,0 +1,17 @@
+﻿jobs:
+  wrk2:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Wrk2Client/Wrk2Client.csproj
+    readyStateText: 'WRK2 Client'
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: '3.0'
+    runtimeVersion: '3.0'
+    waitForExit: true
+    variables:
+      connections: 256
+      duration: 15
+      threads: 32
+      rate: 500
+    arguments: '-c {{connections}} -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} -R {{rate}} -L {{serverUri}}:{{serverPort}}{{path}}'
