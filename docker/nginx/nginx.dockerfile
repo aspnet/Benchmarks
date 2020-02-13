@@ -7,3 +7,4 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 CMD sed -i "s|WORKER_PROCESSES|$WORKER_PROCESSES|g" /etc/nginx/nginx.conf
 CMD sed -i "s|PROXY_PASS|$PROXY_PASS|g" /etc/nginx/nginx.conf
+CMD cat /etc/nginx/nginx.conf
