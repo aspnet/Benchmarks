@@ -275,7 +275,7 @@ namespace BenchmarksDriver
                         }
                     }
 
-                    var configuration = await BuildConfigurationAsync(_configOption.Values, scenarioName, Arguments, _profileOption.Values);
+                    var configuration = await BuildConfigurationAsync(_configOption.Values, scenarioName, Arguments, variables, _profileOption.Values);
 
                     var serializer = new Serializer();
 
@@ -309,7 +309,6 @@ namespace BenchmarksDriver
                     configuration,
                     scenarioName,
                     session,
-                    variables,
                     iterations,
                     exclude,
                     shutdownOption.Value(),
@@ -395,7 +394,6 @@ namespace BenchmarksDriver
             Configuration configuration,
             string scenarioName,
             string session,
-            JObject commandLineVariables,
             int iterations,
             int exclude,
             string shutdownEndpoint,
@@ -456,15 +454,6 @@ namespace BenchmarksDriver
                                 return new ExecutionResult();
                             }
                         }
-                    }
-
-                    var variables = MergeVariables(configuration.Variables, service.Variables, commandLineVariables);
-
-                    // Format arguments
-
-                    if (FluidTemplate.TryParse(service.Arguments, out var template))
-                    {
-                        service.Arguments = template.Render(new TemplateContext { Model = variables });
                     }
 
                     // Start this group of jobs
@@ -746,6 +735,7 @@ namespace BenchmarksDriver
             IEnumerable<string> configurationFileOrUrls, 
             string scenarioName, 
             IEnumerable<KeyValuePair<string, string>> arguments, 
+            JObject commandLineVariables,
             IEnumerable<string> profiles
             )
         {
@@ -876,6 +866,19 @@ namespace BenchmarksDriver
                 }
             }
 
+            // Evaluate templates
+
+            foreach (JProperty property in configuration["Jobs"] ?? new JObject())
+            {
+                var job = property.Value;
+                var rootVariables = configuration["Variables"] as JObject ?? new JObject();
+                var jobVariables = job["Variables"] as JObject ?? new JObject();
+
+                var variables = MergeVariables(rootVariables, jobVariables, commandLineVariables);
+
+                ApplyTemplates(job, new TemplateContext { Model = variables });
+            }
+
             var result = configuration.ToObject<Configuration>();
 
             // Override default values in ServerJob for backward compatibility as the server would automatically add custom arguments to the applications.
@@ -886,6 +889,32 @@ namespace BenchmarksDriver
             }
 
             return result;
+        }
+
+        private static void ApplyTemplates(JToken node, TemplateContext templateContext)
+        {
+            foreach(var token in node.Children())
+            {
+                if (token is JValue jValue)
+                {
+                    if (jValue.Type == JTokenType.String)
+                    {
+                        var template = jValue.ToString();
+
+                        if (template.Contains("{"))
+                        {
+                            if (FluidTemplate.TryParse(template, out var tree))
+                            {
+                                jValue.Value = tree.Render(templateContext);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    ApplyTemplates(token, templateContext);
+                }
+            }
         }
 
         public static async Task<JObject> LoadConfigurationAsync(string configurationFilenameOrUrl)
