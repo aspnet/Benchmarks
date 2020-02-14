@@ -3,15 +3,14 @@
 
 using System;
 using System.Data.SqlClient;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace BenchmarksDriver.Serializers
 {
     public class JobSerializer
     {
-        private static JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { WriteIndented = false, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
         public static Task WriteJobResultsToSqlAsync(
             JobResults jobResults, 
             string sqlConnectionString, 
@@ -23,7 +22,7 @@ namespace BenchmarksDriver.Serializers
         {
             var utcNow = DateTime.UtcNow;
 
-            var document = JsonSerializer.Serialize(jobResults, _serializerOptions);
+            var document = JsonConvert.SerializeObject(jobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
             return RetryOnExceptionAsync(5, () =>
                  WriteResultsToSql(
