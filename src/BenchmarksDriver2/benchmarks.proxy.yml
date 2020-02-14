@@ -44,7 +44,7 @@ jobs:
     runtimeVersion: '3.0'
     variables:
       downstreamPort: 5000
-    arguments: '--baseUri http://*:{{downstreamPort}}'
+    arguments: '--urls http://*:{{downstreamPort}}'
 
 scenarios:
   proxy-httpclient:
@@ -94,6 +94,21 @@ scenarios:
       variables:
         serverPort: 8080
         path: /
+  proxy-baseline:
+    application:
+      job: downstream
+    warmup:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
+      options:
+        displayOutput: true
 
 profiles:
   aspnet-physical:
