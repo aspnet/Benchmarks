@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Immutable;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -12,25 +12,10 @@ namespace Downstream
 {
     public class Program
     {
-        // We only handle powers of 2 long results, up to 2^15 = 32KB
-        private const int MaxSize = 16;
-        private static readonly byte[][] _responses;
-        private static readonly int[] _responseLengths;
+        private const int MaxSize = 100_000; // ~ 100 KB
+        private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         private const int MaxDelay = 2_000;
-
-        static Program()
-        {
-            _responses = new byte[MaxSize][];
-            _responseLengths = new int[MaxSize];
-
-            for (var i = 0; i < MaxSize; i++)
-            {
-                var length = (int)Math.Pow(2, i);
-                _responses[i] = Encoding.UTF8.GetBytes(new string('a', length));
-                _responseLengths[i] = length;
-            }         
-        }
-
+        
         public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -46,7 +31,7 @@ namespace Downstream
                     if (!int.TryParse(context.Request.Query["s"], out var size) || size < 0 || size >= MaxSize)
                     {
                         // Default to 1KB
-                        size = 10;
+                        size = 1024;
                     }
 
                     if (!int.TryParse(context.Request.Query["d"], out var delay) || delay < 0 || delay >= MaxDelay)
@@ -54,15 +39,18 @@ namespace Downstream
                         delay = 0;
                     }
 
-                    var _response = _responses[size];
-                    var _length = _responseLengths[size];
+                    if (!_payloads.TryGetValue(size, out var payload))
+                    {
+                        payload = Encoding.UTF8.GetBytes(new string('a', size));
+                        _payloads = _payloads.Add(size, payload);
+                    }
 
                     if (delay != 0)
                     {
                         await Task.Delay(delay);
                     }
 
-                    await context.Response.Body.WriteAsync(_response, 0, _length);
+                    await context.Response.Body.WriteAsync(payload, 0, payload.Length);
                 }))
                 .Build()
                 .Run();

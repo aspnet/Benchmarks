@@ -7,6 +7,9 @@ imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
 
+variables:
+    path: /
+
 jobs:
   httpclientproxy:
     source:
@@ -56,14 +59,11 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
-        path: /
     load:
       job: bombardier
       variables:
         serverPort: 5000
         path: /
-      options:
-        displayOutput: true
   proxy-nginx:
     downstream:
       job: downstream
@@ -73,12 +73,10 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 8080
-        path: /
     load:
       job: bombardier
       variables:
         serverPort: 8080
-        path: /
   proxy-haproxy:
     downstream:
       job: downstream
@@ -88,12 +86,10 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 8080
-        path: /
     load:
       job: bombardier
       variables:
         serverPort: 8080
-        path: /
   proxy-baseline:
     application:
       job: downstream
@@ -101,14 +97,10 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
-        path: /
     load:
       job: bombardier
       variables:
         serverPort: 5000
-        path: /
-      options:
-        displayOutput: true
 
 profiles:
   aspnet-physical:
