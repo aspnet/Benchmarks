@@ -22,7 +22,7 @@ namespace BenchmarksDriver.Serializers
         {
             var utcNow = DateTime.UtcNow;
 
-            var document = JsonConvert.SerializeObject(jobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            var document = JsonConvert.SerializeObject(jobResults, Formatting.None, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
             return RetryOnExceptionAsync(5, () =>
                  WriteResultsToSql(
