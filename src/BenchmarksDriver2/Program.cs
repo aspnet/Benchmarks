@@ -172,8 +172,6 @@ namespace BenchmarksDriver
                 "Formats the output in markdown", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
-            var consoleOption = app.Option("--console",
-                "Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.", CommandOptionType.NoValue);
 
             // ServerJob Options
             var databaseOption = app.Option("--database",
