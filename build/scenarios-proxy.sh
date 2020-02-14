@@ -30,19 +30,16 @@ protocols=(
 cd $ROOT/src/BenchmarksDriver2
 dotnet publish -c Release -o $ROOT/.build/BenchmarksDriver2
 
-for profile in ${PROXY_PROFILES//,/ }
+for job in "${jobs[@]}"
 do
-    for job in "${jobs[@]}"
+    for protocol in "${protocols[@]}"
     do
-        for protocol in "${protocols[@]}"
+        for payload in "${payloads[@]}"
         do
-            for payload in "${payloads[@]}"
-            do
-                echo "New job  on '$s': $job"
-                dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll $job --variable payload=$payload --property payload=$payload --variable protocol=$protocol --property protocol=$protocol --profile aspnet-citrine --session $SESSION --sql "$BENCHMARKS_SQL" --table ProxyBenchmarks $BENCHMARKS_ARGS
+            echo "New job  on '$s': $job"
+            dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll $job --variable payload=$payload --property payload=$payload --variable protocol=$protocol --property protocol=$protocol --profile aspnet-citrine --session $SESSION --sql "$BENCHMARKS_SQL" --table ProxyBenchmarks $BENCHMARKS_ARGS
 
-                # error code in $?
-            done
+            # error code in $?
         done
     done
 done
