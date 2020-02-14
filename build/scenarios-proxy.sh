@@ -37,7 +37,7 @@ do
         for payload in "${payloads[@]}"
         do
             echo "New job  on '$s': $job"
-            dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll $job --variable payload=$payload --property payload=$payload --variable protocol=$protocol --property protocol=$protocol --session $SESSION --sql "$BENCHMARKS_SQL" --table ProxyBenchmarks $BENCHMARKS_ARGS
+            dotnet $ROOT/.build/BenchmarksDriver2/BenchmarksDriver.dll $job --variable path=/?s=$payload --property payload=$payload --variable protocol=$protocol --property protocol=$protocol --session $SESSION --sql "$BENCHMARKS_SQL" --table ProxyBenchmarks $BENCHMARKS_ARGS
 
             # error code in $?
         done
