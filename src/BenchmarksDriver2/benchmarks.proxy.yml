@@ -19,6 +19,7 @@ jobs:
     readyStateText: Application started.
     variables:
     arguments: '--baseUri {{downstreamUri}}'
+    port: 5000
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -29,6 +30,7 @@ jobs:
     environmentVariables:
         PROXY_PASS : '{{downstreamUri}}'
         WORKER_PROCESSES: '{{cores}}'
+    port: 8080
   envoyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -36,9 +38,11 @@ jobs:
       DockerFile: docker/envoy/envoy.dockerfile
       DockerImageName: envoy-reverseproxy
       DockerContextDirectory: docker/envoy
+    readyStateText: starting workers
     environmentVariables:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
         DOWNSTREAM_PORT: '{{downstreamPort}}'
+    port: 8080
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -46,6 +50,7 @@ jobs:
       DockerFile: docker/haproxy/haproxy.dockerfile
       DockerImageName: haproxy-reverseproxy
       DockerContextDirectory: docker/haproxy
+    port: 8080
   downstream:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -58,6 +63,7 @@ jobs:
     variables:
       downstreamPort: 5000
     arguments: '--urls http://*:{{downstreamPort}}'
+    port: 5000
 
 scenarios:
   proxy-httpclient:
