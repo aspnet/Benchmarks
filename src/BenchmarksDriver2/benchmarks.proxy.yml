@@ -27,8 +27,18 @@ jobs:
       DockerImageName: nginx-reverseproxy
       DockerContextDirectory: docker/nginx
     environmentVariables:
-        PROXY_PASS: '{{downstreamUri}}'
+        PROXY_PASS : '{{downstreamUri}}'
         WORKER_PROCESSES: '{{cores}}'
+  envoyproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/envoy/envoy.dockerfile
+      DockerImageName: envoy-reverseproxy
+      DockerContextDirectory: docker/envoy
+    environmentVariables:
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -101,12 +111,27 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
+  proxy-envoy:
+    downstream:
+      job: downstream
+    application:
+      job: envoyproxy
+    warmup:
+      job: bombardier
+      variables:
+        serverPort: 8080
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
 
 profiles:
   aspnet-physical:
     variables:
       serverUri: http://10.0.0.102
       downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
       cores: 12
     jobs:
       downstream:
@@ -127,6 +152,8 @@ profiles:
     variables:
       serverUri: http://10.0.0.102
       downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
       cores: 28
     jobs: 
       downstream:

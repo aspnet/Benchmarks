@@ -1028,6 +1028,7 @@ namespace BenchmarkServer
                             }
 
                             // The driver is supposed to send attachment in the initialize phase
+                            // TODO: Check the last driver communication instead, as if the transfer fails the timeout might be to generous
                             if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
                             {
                                 Log.WriteLine($"Job didn't initialize during the expected delay");

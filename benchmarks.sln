@@ -134,6 +134,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nginx", "nginx", "{3B18E572
 	ProjectSection(SolutionItems) = preProject
 		docker\nginx\nginx.conf = docker\nginx\nginx.conf
 		docker\nginx\nginx.dockerfile = docker\nginx\nginx.dockerfile
+		docker\nginx\run.sh = docker\nginx\run.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "haproxy", "haproxy", "{662D547D-7365-4E86-8515-E8AE33316D84}"
@@ -216,6 +217,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrkClient", "src\WrkClient\WrkClient.csproj", "{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wrk2Client", "src\Wrk2Client\Wrk2Client.csproj", "{82A080E6-2708-47D2-8973-60D2BE64BFE6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "envoy", "envoy", "{6C649972-F0F4-4310-A10F-605D7F3B7932}"
+	ProjectSection(SolutionItems) = preProject
+		docker\envoy\envoy.dockerfile = docker\envoy\envoy.dockerfile
+		docker\envoy\envoy.yaml = docker\envoy\envoy.yaml
+		docker\envoy\run.sh = docker\envoy\run.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -489,6 +497,7 @@ Global
 		{CCDF6F81-95B5-4941-B1AF-1359D80531DA} = {E5BFE89B-7D77-47A5-8666-71B7CE8EA308}
 		{7B2952D4-1EF2-4BCD-A452-E03A4C5616FB} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 		{82A080E6-2708-47D2-8973-60D2BE64BFE6} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
+		{6C649972-F0F4-4310-A10F-605D7F3B7932} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
