@@ -39,16 +39,19 @@ baselines=(
   "--description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.* "
 
   # Stable 2.2
-  "--description Baseline22 --aspnetCoreVersion 2.2 --runtimeVersion 2.2 "
+  # "--description Baseline22 --aspnetCoreVersion 2.2 --runtimeVersion 2.2 "
 
   # Servicing 2.2
-  "--description Baseline22Servicing --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.* "
+  # "--description Baseline22Servicing --aspnetCoreVersion 2.2.* --runtimeVersion 2.2.* "
 
   # Stable 3.0
-  "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0 "
-  
+  # "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0 "
+
+  # Stable 3.1
+  "--description Baseline31 --aspnetCoreVersion 3.1 --runtimeVersion 3.1 "
+    
   # Current dev, running close to other baselines, with same repeat parameters
-  "--description Baseline --aspnetCoreVersion Latest --runtimeVersion Latest "
+  "--description Baseline "
 
 )
 
