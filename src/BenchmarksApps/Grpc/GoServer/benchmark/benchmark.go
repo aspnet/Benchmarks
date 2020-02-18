@@ -33,7 +33,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/testdata"
 )
 
 // Allows reuse of the same testpb.Payload object.
@@ -138,7 +137,7 @@ func StartServer(info ServerInfo, opts ...grpc.ServerOption) func() {
 
 	if info.TLS {
 		// Use certs from gRPC testdata module
-		creds, err := credentials.NewServerTLSFromFile(testdata.Path("server1.pem"), testdata.Path("server1.key"))
+		creds, err := credentials.NewServerTLSFromFile("certs/server1.pem", "certs/server1.key")
 		if err != nil {
 			log.Fatalf("failed to create credentials: %v", err)
 		}

@@ -7,5 +7,6 @@ RUN go build -o benchmarks
 FROM alpine 
 WORKDIR /app
 COPY --from=build-env /src/benchmarks /app/
+COPY --from=build-env /src/certs /app/certs
 EXPOSE 5000
-ENTRYPOINT ./benchmarks
+ENTRYPOINT ["./benchmarks"]

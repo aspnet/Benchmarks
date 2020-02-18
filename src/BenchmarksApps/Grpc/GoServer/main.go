@@ -15,6 +15,8 @@ func main() {
 	protocol := flag.String("protocol", "h2c", "Enable TLS on server")
 	flag.Parse()
 
+	fmt.Println("Args:", os.Args)
+
 	tls := *protocol == "h2"
 	fmt.Println("Using TLS:", *protocol)
 
