@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -10,13 +11,17 @@ import (
 	benchmark "github.com/grpc/grpc-dotnet/benchmark"
 )
 
+var tls = flag.Bool("tls", true, "Enable TLS on server")
+
 func main() {
 	lis, err := net.Listen("tcp", ":5000")
 	if err != nil {
-		log.Fatalf("Failed to listen:  %v", err)
+		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	stop := benchmark.StartServer(benchmark.ServerInfo{Listener: lis})
+	fmt.Println("Using TLS:", *tls)
+
+	stop := benchmark.StartServer(benchmark.ServerInfo{Listener: lis, TLS: *tls})
 
 	fmt.Println("Application started.")
 

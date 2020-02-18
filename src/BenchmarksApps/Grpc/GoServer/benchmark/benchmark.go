@@ -26,11 +26,14 @@ package benchmark
 import (
 	"context"
 	"io"
+	"log"
 	"net"
 
 	testpb "github.com/grpc/grpc-dotnet/grpc_testing"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/testdata"
 )
 
 // Allows reuse of the same testpb.Payload object.
@@ -120,6 +123,9 @@ type ServerInfo struct {
 	// For "bytebuf", it should be an int representing response size.
 	Metadata interface{}
 
+	// Flag indicating whether to use TLS
+	TLS bool
+
 	// Listener is the network listener for the server to use
 	Listener net.Listener
 }
@@ -129,6 +135,17 @@ type ServerInfo struct {
 func StartServer(info ServerInfo, opts ...grpc.ServerOption) func() {
 	opts = append(opts, grpc.WriteBufferSize(128*1024))
 	opts = append(opts, grpc.ReadBufferSize(128*1024))
+
+	if info.TLS {
+		// Use certs from gRPC testdata module
+		creds, err := credentials.NewServerTLSFromFile(testdata.Path("server1.pem"), testdata.Path("server1.key"))
+		if err != nil {
+			log.Fatalf("failed to create credentials: %v", err)
+		}
+
+		opts = append(opts, grpc.Creds(creds))
+	}
+
 	s := grpc.NewServer(opts...)
 	testpb.RegisterBenchmarkServiceServer(s, &testServer{})
 	go s.Serve(info.Listener)
