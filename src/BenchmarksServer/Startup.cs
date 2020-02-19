@@ -320,6 +320,8 @@ namespace BenchmarkServer
 
             try
             {
+                await EnsureDotnetInstallExistsAsync();
+
                 // Create a temporary folder to store all installed dotnet runtimes/sdk
                 dotnetHome = GetTempDir();
 
@@ -2687,6 +2689,7 @@ namespace BenchmarkServer
         private static string GetTempDir()
         {
             var temp = Path.Combine(_rootTempDir, Path.GetRandomFileName());
+
             if (Directory.Exists(temp))
             {
                 // Retry
