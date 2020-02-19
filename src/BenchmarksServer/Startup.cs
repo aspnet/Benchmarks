@@ -87,14 +87,14 @@ namespace BenchmarkServer
 
         private const string _defaultUrl = "http://*:5001";
         private static readonly string _defaultHostname = Environment.MachineName.ToLowerInvariant();
-        private static readonly string _perfviewPath;
-        private static readonly string _dotnetInstallPath;
+        private static string _perfviewPath;
+        private static string _dotnetInstallPath;
 
         // https://docs.docker.com/config/containers/resource_constraints/
         private const double _defaultDockerCfsPeriod = 100000;
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
-        private static readonly string _rootTempDir;
+        private static string _rootTempDir;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
 
@@ -140,80 +140,13 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
 
-            // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
-            // that use the temp folder, and create a sub-folder (process-id) for each server running.
-            // The cron job is responsible for cleaning the folders
-            _rootTempDir = Path.Combine(Path.GetTempPath(), "benchmarks-agent", $"benchmarks-server-{Process.GetCurrentProcess().Id}");
-
-            if (Directory.Exists(_rootTempDir))
-            {
-                Directory.Delete(_rootTempDir, true);
-            }
-
-            Directory.CreateDirectory(_rootTempDir);
-
-            // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
-
-            var rootNugetConfig = Path.Combine(_rootTempDir, "NuGet.Config");
-
-            if (!File.Exists(rootNugetConfig))
-            {
-                File.WriteAllText(rootNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key=""aspnetcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json"" />
-    <add key=""dotnet-core"" value=""https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"" />
-    <add key=""extensions"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json"" />
-    <add key=""aspnetcore-tooling"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json"" />
-    <add key=""entityframeworkcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json"" />
-    <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
-  </packageSources>
-</configuration>
-");
-            }
-
+            
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             _httpClientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
 
             _httpClient = new HttpClient(_httpClientHandler);
-
-            // Download PerfView
-            if (OperatingSystem == OperatingSystem.Windows)
-            {
-                _perfviewPath = Path.Combine(Path.GetTempPath(), PerfViewVersion, Path.GetFileName(_perfviewUrl));
-
-                // Ensure the folder already exists
-                Directory.CreateDirectory(Path.GetDirectoryName(_perfviewPath));
-
-                if (!File.Exists(_perfviewPath))
-                {
-                    Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
-                    DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    Log.WriteLine($"Found PerfView locally at '{_perfviewPath}'");
-                }
-            }
-
-            // Download dotnet-install at startup, once.
-            _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName());
-
-            // Ensure the folder already exists
-            Directory.CreateDirectory(_dotnetInstallPath);
-
-            var _dotnetInstallUrl = OperatingSystem == OperatingSystem.Windows
-                ? _dotnetInstallPs1Url
-                : _dotnetInstallShUrl
-                ;
-
-            var dotnetInstallFilename = Path.Combine(_dotnetInstallPath, Path.GetFileName(_dotnetInstallUrl));
-
-            Log.WriteLine($"Downloading dotnet-install to '{dotnetInstallFilename}'");
-            DownloadFileAsync(_dotnetInstallUrl, dotnetInstallFilename, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
 
             Action shutdown = () =>
             {
@@ -455,6 +388,9 @@ namespace BenchmarkServer
                         }
 
                         Log.WriteLine($"Processing job {j.Id} in state {j.State}");
+
+                        // Ensure all local assets are available
+                        await EnsureDotnetInstallExistsAsync();
 
                         job = j;
                         break;
@@ -3749,6 +3685,91 @@ namespace BenchmarkServer
             durationTimer?.Dispose();
 
             return failed ? -1 : 0;
+        }
+
+        public static Task EnsureDotnetInstallExistsAsync()
+        {
+            if (String.IsNullOrEmpty(_rootTempDir))
+            {
+                // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
+                // that use the temp folder, and create a sub-folder (process-id) for each server running.
+                // The cron job is responsible for cleaning the folders
+                _rootTempDir = Path.Combine(Path.GetTempPath(), "benchmarks-agent", $"benchmarks-server-{Process.GetCurrentProcess().Id}");
+
+                if (Directory.Exists(_rootTempDir))
+                {
+                    Directory.Delete(_rootTempDir, true);
+                }
+            }
+
+            Directory.CreateDirectory(_rootTempDir);
+
+            // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
+
+            var rootNugetConfig = Path.Combine(_rootTempDir, "NuGet.Config");
+
+            if (!File.Exists(rootNugetConfig))
+            {
+                File.WriteAllText(rootNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""aspnetcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json"" />
+    <add key=""dotnet-core"" value=""https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"" />
+    <add key=""extensions"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json"" />
+    <add key=""aspnetcore-tooling"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json"" />
+    <add key=""entityframeworkcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json"" />
+    <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+  </packageSources>
+</configuration>
+");
+            }
+
+            // Download PerfView
+            if (OperatingSystem == OperatingSystem.Windows)
+            {
+                if (String.IsNullOrEmpty(_perfviewPath))
+                {
+                    _perfviewPath = Path.Combine(Path.GetTempPath(), PerfViewVersion, Path.GetFileName(_perfviewUrl));
+                }
+
+                // Ensure the folder already exists
+                Directory.CreateDirectory(Path.GetDirectoryName(_perfviewPath));
+
+                if (!File.Exists(_perfviewPath))
+                {
+                    Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
+                    DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
+                }
+                else
+                {
+                    Log.WriteLine($"Found PerfView locally at '{_perfviewPath}'");
+                }
+            }
+
+            if (String.IsNullOrEmpty(_dotnetInstallPath))
+            {
+                // Download dotnet-install at startup, once.
+                _dotnetInstallPath = Path.Combine(_rootTempDir, Path.GetRandomFileName());
+            }
+
+            // Ensure the folder already exists
+            Directory.CreateDirectory(_dotnetInstallPath);
+
+            var _dotnetInstallUrl = OperatingSystem == OperatingSystem.Windows
+                ? _dotnetInstallPs1Url
+                : _dotnetInstallShUrl
+                ;
+
+            var dotnetInstallFilename = Path.Combine(_dotnetInstallPath, Path.GetFileName(_dotnetInstallUrl));
+
+            if (!File.Exists(dotnetInstallFilename))
+            {
+                Log.WriteLine($"Downloading dotnet-install to '{dotnetInstallFilename}'");
+                return DownloadFileAsync(_dotnetInstallUrl, dotnetInstallFilename, maxRetries: 5, timeout: 60);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
