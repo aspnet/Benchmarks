@@ -60,6 +60,7 @@ jobs=(
   "-n Plaintext --webHost KestrelSockets $plaintextJobs"
   "-n PlaintextNonPipelined --webHost KestrelSockets $plaintextJobs"
   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs"
+  "-n EndpointPlaintext --webHost KestrelSockets $plaintextJobs"
   "-n Json --webHost KestrelSockets $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $jsonJobs"
 
@@ -84,7 +85,7 @@ do
         for baseline in "${baselines[@]}"
         do
             echo "New job  on '$s': $job $baseline"
-            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 30 --warmup 5 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS --self-contained
+            dotnet $ROOT/.build/BenchmarksDriver/BenchmarksDriver.dll -s $s -c $BENCHMARKS_CLIENT $job $baseline -i 1 --duration 20 --warmup 5 --quiet --session $SESSION -q "$BENCHMARKS_SQL" --table AspNetBaselines $BENCHMARKS_ARGS --self-contained
             # error code in $?
         done
     done
