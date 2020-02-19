@@ -1,0 +1,55 @@
+// Copyright (c) .NET Foundation. All rights reserved. 
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+package benchmark;
+
+service BenchmarkService {
+  rpc Json (google.protobuf.Empty) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "grpc/json"
+    };
+  }
+  rpc Json2k (google.protobuf.Empty) returns (EntriesCollection) {
+    option (google.api.http) = {
+      get: "grpc/json2k"
+      response_body: "entries"
+    };
+  }
+  rpc JsonInput (EntriesCollection) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "grpc/jsoninput"
+      body: "entries"
+    };
+  }
+}
+
+message HelloReply {
+  string message = 1;
+}
+
+message EntriesCollection {
+  repeated Entry entries = 1;
+}
+
+message Entry {
+  Attributes attributes = 1;
+  string content_type = 2;
+  string id = 3;
+  bool managed = 4;
+  repeated string tags = 5;
+}
+
+message Attributes {
+  google.protobuf.Timestamp created = 1;
+  bool enabled = 2;
+  google.protobuf.Timestamp expires = 3;
+  google.protobuf.Timestamp not_before = 4;
+  string recovery_level = 5;
+  google.protobuf.Timestamp updated = 6;
+}

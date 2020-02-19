@@ -30,6 +30,7 @@ SESSION=`date '+%Y%m%d%H%M%S'`
 grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json"
 grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json"
 grpcGoJobs="-j $ROOT/src/BenchmarksApps/Grpc/GoServer/grpc-go.json"
+grpcHttpApiJobs="-j $ROOT/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json"
 
 trend="--description Trend/Latest"
 
@@ -85,6 +86,14 @@ jobs=(
   "-n GrpcPingPongStreaming-1MB-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcPingPongStreaming-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcPingPongStreaming-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+
+  # GRPC HTTP API
+  "-n GrpcJson --webHost KestrelSockets $trend $grpcHttpApiJobs -m http"
+  "-n GrpcJson --webHost KestrelSockets $trend $grpcHttpApiJobs -m https"
+  "-n GrpcJson2k --webHost KestrelSockets $trend $grpcHttpApiJobs -m http"
+  "-n GrpcJson2k --webHost KestrelSockets $trend $grpcHttpApiJobs -m https"
+  "-n GrpcJsonInput2k --webHost KestrelSockets $trend $grpcHttpApiJobs -m http"
+  "-n GrpcJsonInput2k --webHost KestrelSockets $trend $grpcHttpApiJobs -m https"
 )
 
 # build driver
