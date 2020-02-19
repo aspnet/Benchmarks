@@ -1,0 +1,26 @@
+{
+  "Default": {
+
+    "Client": "Wrk",
+    "PresetHeaders": "Json",
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/benchmarks.git",
+      "BranchOrCommit": "master",
+      "Project": "src/BenchmarksApps/Grpc/GrpcHttpApiServer/Server/Server.csproj"
+    },
+    "ReadyStateText": "Application started."
+  },
+  "GrpcJson": {
+    "Path": "/grpc/json"
+  },
+  "GrpcJson2k": {
+    "Path": "/grpc/json2k"
+  },
+  "GrpcJsonInput2k": {
+    "Path": "/grpc/jsoninput",
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
+    }
+  }
+}
