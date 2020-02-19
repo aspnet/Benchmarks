@@ -70,22 +70,22 @@ jobs=(
 
   # GRPC Go
   "-n GrpcUnary-h2load --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --headers None --linux-only"
-  "-n GrpcUnary-h2load --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --headers None --linux-only"
+  "-n GrpcUnary-h2load --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --headers None --linux-only"
   "-n GrpcUnary-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcUnary-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
-  "-n GrpcUnary-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+  "-n GrpcUnary-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
   "-n GrpcUnary-1MB-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcUnary-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
-  "-n GrpcUnary-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+  "-n GrpcUnary-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
   "-n GrpcServerStreaming-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcServerStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
-  "-n GrpcServerStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+  "-n GrpcServerStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
   "-n GrpcPingPongStreaming-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcPingPongStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
-  "-n GrpcPingPongStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+  "-n GrpcPingPongStreaming-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
   "-n GrpcPingPongStreaming-1MB-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcPingPongStreaming-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
-  "-n GrpcPingPongStreaming-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --linux-only"
+  "-n GrpcPingPongStreaming-1MB-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
 
   # GRPC HTTP API
   "-n GrpcJson --webHost KestrelSockets $trend $grpcHttpApiJobs -m http"
