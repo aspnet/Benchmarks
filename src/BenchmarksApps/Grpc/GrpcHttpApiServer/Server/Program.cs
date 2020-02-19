@@ -55,9 +55,15 @@ namespace Server
                                 {
                                     listenOptions.Protocols = HttpProtocols.Http2;
                                 }
-                                else if (protocol.Equals("http1", StringComparison.OrdinalIgnoreCase))
+                                else if (protocol.Equals("http", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    listenOptions.Protocols = HttpProtocols.Http1;
+                                    // Nothing
+                                }
+                                else if (protocol.Equals("https", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+                                    var certPath = Path.Combine(basePath!, "Certs/testCert.pfx");
+                                    listenOptions.UseHttps(certPath, "testPassword");
                                 }
                                 else
                                 {
