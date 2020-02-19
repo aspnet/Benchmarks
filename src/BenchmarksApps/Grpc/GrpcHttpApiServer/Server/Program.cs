@@ -64,6 +64,7 @@ namespace Server
                                 {
                                     var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                                     var certPath = Path.Combine(basePath!, "Certs/testCert.pfx");
+                                    Console.WriteLine("Loading certificate from " + certPath);
                                     listenOptions.UseHttps(certPath, "testPassword");
                                 }
                                 else
