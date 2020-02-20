@@ -75,7 +75,7 @@ namespace BenchmarkServer
         private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
-        private static readonly string _buildToolsSdk = "https://raw.githubusercontent.com/aspnet/BuildTools/master/files/KoreBuild/config/sdk.version"; // used to find which version of the SDK the ASP.NET repository is using
+        private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
         private static readonly string _runtimeMonoPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.mono/{0}/runtime.linux-x64.microsoft.netcore.runtime.mono.{0}.nupkg";
         private static readonly string[] _runtimeFeedUrls = new string[] { "dotnetfeed.blob.core.windows.net/dotnet-core", "api.nuget.org/v3" };
 
@@ -1954,8 +1954,8 @@ namespace BenchmarkServer
                     }
                     else
                     {
-                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
-                        Log.WriteLine($"Detecting latest SDK version (master branch): {sdkVersion}");
+                        sdkVersion = await GetAspNetSdkVersion();
+                        Log.WriteLine($"Detecting ASP.NET SDK version (master branch): {sdkVersion}");
                     }
                 }
                 else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))
@@ -2512,6 +2512,13 @@ namespace BenchmarkServer
                 }
                 return size;
             }
+        }
+
+        public static async Task<string> GetAspNetSdkVersion()
+        {
+            var globalJson = await DownloadContentAsync(_aspnetSdkVersionUrl, maxRetries: 5, timeout: 10);
+            var globalObject = JObject.Parse(globalJson);
+            return globalObject["sdk"]["version"].ToString();
         }
 
         /// <summary>
