@@ -33,7 +33,7 @@ static_resources:
           - name: envoy.router
             typed_config: {}
 
-clusters:
+  clusters:
   - name: downstream
     connect_timeout: 0.25s
     type: strict_dns
