@@ -12,18 +12,18 @@ package benchmark;
 service BenchmarkService {
   rpc Json (google.protobuf.Empty) returns (HelloReply) {
     option (google.api.http) = {
-      get: "grpc/json"
+      get: "/grpc/json"
     };
   }
   rpc Json2k (google.protobuf.Empty) returns (EntriesCollection) {
     option (google.api.http) = {
-      get: "grpc/json2k"
+      get: "/grpc/json2k"
       response_body: "entries"
     };
   }
   rpc JsonInput (EntriesCollection) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "grpc/jsoninput"
+      post: "/grpc/jsoninput"
       body: "entries"
     };
   }
