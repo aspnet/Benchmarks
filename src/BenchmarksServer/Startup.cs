@@ -107,7 +107,7 @@ namespace BenchmarkServer
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
         public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(5);
-        public static TimeSpan StartTimeout = TimeSpan.FromMinutes(1);
+        public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
         public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
 
