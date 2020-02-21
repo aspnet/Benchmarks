@@ -131,15 +131,6 @@ namespace PlatformBenchmarks
         }
 
 #if NETCOREAPP5_0
-
-        public void OnStaticIndexedHeader(int index)
-        {
-        }
-
-        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-        {
-        }
-
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
@@ -203,12 +194,6 @@ namespace PlatformBenchmarks
                 => RequestHandler = requestHandler;
 
 #if NETCOREAPP5_0
-            public void OnStaticIndexedHeader(int index) 
-                => RequestHandler.OnStaticIndexedHeader(index);
-
-            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-                => RequestHandler.OnStaticIndexedHeader(index, value);
-
             public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
