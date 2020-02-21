@@ -4,6 +4,7 @@
     {
         Cloud,
         Physical,
-        ARM64
+        ARM64,
+        AMD
     }
 }
