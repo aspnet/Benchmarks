@@ -18,6 +18,11 @@ static_resources:
           "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
           codec_type: auto
           stat_prefix: http
+          access_log:
+            name: envoy.file_access_log
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.accesslog.v2.FileAccessLog
+              path: /dev/stdout
           route_config:
             name: local_route
             virtual_hosts:
@@ -49,3 +54,4 @@ static_resources:
               socket_address:
                 address: DOWNSTREAM_ADDRESS
                 port_value: DOWNSTREAM_PORT
+#EOF
