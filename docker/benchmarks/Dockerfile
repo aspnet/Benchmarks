@@ -95,3 +95,5 @@ WORKDIR /benchmarks
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE true
 
 COPY . .
+
+RUN dotnet build -c Release src/BenchmarksServer/BenchmarksServer.csproj -o src/BenchmarksServer/published

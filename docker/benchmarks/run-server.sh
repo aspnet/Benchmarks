@@ -90,7 +90,7 @@ docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     --entrypoint dotnet \
     benchmarks \
-    run -c Release --project src/BenchmarksServer/BenchmarksServer.csproj \
+    src/BenchmarksServer/published/BenchmarksServer.dll \
     -n $server_ip \
     --url $url \
     --hardware $hardware \
