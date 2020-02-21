@@ -12,7 +12,8 @@ namespace Downstream
 {
     public class Program
     {
-        private const int MaxSize = 100_000; // ~ 100 KB
+        private static readonly byte[] InvalidPayloadMessage = Encoding.UTF8.GetBytes("Invalid payload size");
+        private const int MaxSize = 1_000_000; // ~ 1MB
         private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         private const int MaxDelay = 2_000;
         
@@ -28,13 +29,13 @@ namespace Downstream
                 .UseConfiguration(config)
                 .Configure(app => app.Run( async (context) =>
                 {
-                    if (!int.TryParse(context.Request.Query["s"], out var size) || size < 0 || size >= MaxSize)
+                    if (!int.TryParse(context.Request.Query["s"], out var size) || size < 0 || size > MaxSize)
                     {
-                        // Default to 1KB
-                        size = 1024;
+                        context.Response.StatusCode = 500;
+                        await context.Response.Body.WriteAsync(InvalidPayloadMessage);
                     }
 
-                    if (!int.TryParse(context.Request.Query["d"], out var delay) || delay < 0 || delay >= MaxDelay)
+                    if (!int.TryParse(context.Request.Query["d"], out var delay) || delay < 0 || delay > MaxDelay)
                     {
                         delay = 0;
                     }
@@ -50,7 +51,7 @@ namespace Downstream
                         await Task.Delay(delay);
                     }
 
-                    await context.Response.Body.WriteAsync(payload, 0, payload.Length);
+                    await context.Response.Body.WriteAsync(payload);
                 }))
                 .Build()
                 .Run();
