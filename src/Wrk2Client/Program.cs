@@ -56,6 +56,8 @@ namespace Wrk2Client
             BenchmarksEventSource.Log.Metadata("wrk2/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
+            BenchmarksEventSource.Log.Metadata("wrk2/errors/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
+            BenchmarksEventSource.Log.Metadata("wrk2/errors/socketerrors", "max", "sum", "Socket errors", "Socket errors", "n0");
 
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
@@ -74,6 +76,12 @@ namespace Wrk2Client
 
             var requestsCountMatch = Regex.Match(output, @"([\d\.]*) requests in ([\d\.]*)(\w*)");
             BenchmarksEventSource.Measure("wrk2/requests", ReadRequests(requestsCountMatch));
+
+            var badResponsesMatch = Regex.Match(output, @"Non-2xx or 3xx responses: ([\d\.]*)");
+            BenchmarksEventSource.Measure("wrk2/errors/badresponses", ReadBadReponses(badResponsesMatch));
+
+            var socketErrorsMatch = Regex.Match(output, @"Socket errors: connect ([\d\.]*), read ([\d\.]*), write ([\d\.]*), timeout ([\d\.]*)");
+            BenchmarksEventSource.Measure("wrk2/errors/socketerrors", CountSocketErrors(socketErrorsMatch));
 
             if (parseLatency)
             {
