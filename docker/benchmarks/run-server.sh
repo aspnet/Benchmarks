@@ -72,6 +72,10 @@ if [[ $(dpkg --print-architecture) = *arm64* ]]; then
   hardware=ARM64
 fi
 
+if [[ $(dpkg --print-architecture) = *amd64* ]]; then
+  hardware=AMD64
+fi
+
 mkdir -p /mnt/benchmarks
 
 # "--network host" - Better performance than the default "bridge" driver

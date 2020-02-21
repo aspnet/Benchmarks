@@ -5,6 +5,6 @@
         Cloud,
         Physical,
         ARM64,
-        AMD
+        AMD64
     }
 }
