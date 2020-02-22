@@ -2,14 +2,14 @@ admin:
   access_log_path: /tmp/admin_access.log
   address:
     socket_address:
-        address: 0.0.0.0
+        address: SERVER_ADDRESS
         port_value: 8001
 
 static_resources:
   listeners:
   - address:
       socket_address:
-        address: 0.0.0.0
+        address: SERVER_ADDRESS
         port_value: 8080
     filter_chains:
     - filters:
@@ -35,7 +35,7 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: downstream
-                  host_rewrite: ''
+                  host_rewrite: DOWNSTREAM_ADDRESS
           http_filters:
           - name: envoy.router
             typed_config: {}
@@ -43,7 +43,7 @@ static_resources:
   clusters:
   - name: downstream
     connect_timeout: 1s
-    type: static
+    type: static # don't resolve the domain name, expect and IP
     lb_policy: round_robin
     http2_protocol_options: {}
     load_assignment:
