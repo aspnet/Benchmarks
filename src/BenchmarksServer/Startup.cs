@@ -1044,7 +1044,7 @@ namespace BenchmarkServer
                                     }
                                     else if (OperatingSystem == OperatingSystem.Linux)
                                     {
-                                        // TODO: Stop perfcollect
+                                        await StopPerfcollectAsync(perfCollectProcess);
                                     }
                                 }
 
@@ -1299,7 +1299,7 @@ namespace BenchmarkServer
                 return;
             }
 
-            if (perfCollectProcess.HasExited)
+            if (perfCollectProcess == null || perfCollectProcess.HasExited)
             {
                 Log.WriteLine($"PerfCollect is not running");
                 return;
