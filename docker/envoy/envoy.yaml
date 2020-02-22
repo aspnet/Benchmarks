@@ -45,7 +45,6 @@ static_resources:
     connect_timeout: 1s
     type: static # don't resolve the domain name, expect and IP
     lb_policy: round_robin
-    http2_protocol_options: {}
     load_assignment:
       cluster_name: downstream
       endpoints:
