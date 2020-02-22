@@ -35,6 +35,7 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: downstream
+                  host_rewrite: ''
           http_filters:
           - name: envoy.router
             typed_config: {}
