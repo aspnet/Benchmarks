@@ -2,14 +2,14 @@ admin:
   access_log_path: /tmp/admin_access.log
   address:
     socket_address:
-        address: SERVER_ADDRESS
+        address: 0.0.0.0
         port_value: 8001
 
 static_resources:
   listeners:
   - address:
       socket_address:
-        address: SERVER_ADDRESS
+        address: 0.0.0.0
         port_value: 8080
     filter_chains:
     - filters:
@@ -35,7 +35,6 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: downstream
-                  host_rewrite: DOWNSTREAM_ADDRESS
           http_filters:
           - name: envoy.router
             typed_config: {}

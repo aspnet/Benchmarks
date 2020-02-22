@@ -44,7 +44,6 @@ jobs:
     environmentVariables:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
         DOWNSTREAM_PORT: '{{downstreamPort}}'
-        SERVER_ADDRESS: '{{serverAddress}}'
     port: 8080
   haproxyproxy:
     source:
@@ -138,7 +137,6 @@ profiles:
   aspnet-physical:
     variables:
       serverUri: http://10.0.0.102
-      serverAddress: 10.0.0.102
       downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
@@ -161,7 +159,6 @@ profiles:
   aspnet-citrine:
     variables:
       serverUri: http://10.0.0.102
-      serverAddress: 10.0.0.102
       downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
