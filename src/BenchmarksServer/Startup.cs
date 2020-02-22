@@ -3387,6 +3387,15 @@ namespace BenchmarkServer
                 {
                 }
 
+                // But if a specific web.benchmnarks.config is provided, use it
+                try
+                {
+                    File.Move(Path.Combine(publishedFolder, "web.config"), Path.Combine(publishedFolder, "web.benchmarks.config"));
+                }
+                catch (Exception)
+                {
+                }
+
                 return fileName;
             }
         }
