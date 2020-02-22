@@ -21,4 +21,4 @@ jobs:
       duration: 5
       rate: 0
       transport: fasthttp # | http1 | http2
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}}"
+    arguments: "-c {{connections}} -d {{duration}}s -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}} {{serverUri}}:{{serverPort}}{{path}}"

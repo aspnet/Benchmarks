@@ -19,11 +19,11 @@ static_resources:
           codec_type: auto
           stat_prefix: http
           # render the log on stdout
-          access_log:
-            name: envoy.file_access_log
-            typed_config:
-              "@type": type.googleapis.com/envoy.config.accesslog.v2.FileAccessLog
-              path: /dev/stdout
+          # access_log:
+          #  name: envoy.file_access_log
+          #  typed_config:
+          #    "@type": type.googleapis.com/envoy.config.accesslog.v2.FileAccessLog
+          #    path: /dev/stdout
           route_config:
             name: local_route
             virtual_hosts:
