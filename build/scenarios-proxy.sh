@@ -12,7 +12,7 @@ jobs=(
   "--scenario proxy-httpclient  $proxyJobs --property proxy=httpclient"
   "--scenario proxy-nginx       $proxyJobs --property proxy=nginx"
   "--scenario proxy-haproxy     $proxyJobs --property proxy=haproxy"
-  "--scenario proxy-envoy       $proxyJobs --property proxy=haproxy"
+  "--scenario proxy-envoy       $proxyJobs --property proxy=envoy"
 )
 
 payloads=(
