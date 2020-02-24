@@ -323,7 +323,7 @@ namespace Benchmarks
             {
                 app.UseMvc();
             }
-#elif NETCOREAPP3_0 || NETCOREAPP5_0
+#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0
             if (Scenarios.Any("EndpointPlaintext"))
             {
                 app.UseRouting();
