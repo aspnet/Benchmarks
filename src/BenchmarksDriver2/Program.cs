@@ -504,9 +504,22 @@ namespace BenchmarksDriver
 
                     foreach (var jobConnection in jobConnections)
                     {
+                        var info = await jobConnection.GetInfoAsync();
+                        var os = Enum.Parse<Benchmarks.ServerJob.OperatingSystem>(info["os"]?.ToString() ?? "linux", ignoreCase: true);
+
+                        var traceExtension = ".nettrace";
+
                         // Download trace
-                        if (jobConnection.Job.DotNetTrace)
+                        if (jobConnection.Job.DotNetTrace || jobConnection.Job.Collect)
                         {
+                            if (jobConnection.Job.Collect)
+                            {
+                                traceExtension = os == Benchmarks.ServerJob.OperatingSystem.Windows
+                                    ? ".etl.zip"
+                                    : ".trace.zip"
+                                    ;
+                            }
+
                             try
                             {
                                 var traceDestination = jobConnection.Job.Options.TraceOutput;
@@ -516,8 +529,7 @@ namespace BenchmarksDriver
                                     traceDestination = jobName;
                                 }
 
-                                var traceExtension = ".nettrace";
-
+                                
                                 if (!traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
                                 {
                                     traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + traceExtension;
@@ -529,7 +541,7 @@ namespace BenchmarksDriver
                             }
                             catch (Exception e)
                             {
-                                Log.Write($"Error while fetching published assets for '{jobName}'");
+                                Log.Write($"Error while fetching trace for '{jobName}'");
                                 Log.Verbose(e.Message);
                             }
                         }
