@@ -28,7 +28,7 @@ ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
 grpcNativeJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json"
-grpcManagedJobs="-j https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/protobuf-buffer-benchmark/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json"
+grpcManagedJobs="-j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json"
 grpcGoJobs="-j $ROOT/src/BenchmarksApps/Grpc/GoServer/grpc-go.json"
 grpcHttpApiJobs="-j $ROOT/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json"
 
