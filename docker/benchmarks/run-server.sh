@@ -72,7 +72,7 @@ if [[ $(dpkg --print-architecture) = *arm64* ]]; then
   hardware=ARM64
 fi
 
-if [[ $(dpkg --print-architecture) = *amd64* ]]; then
+if lscpu | grep -q 'AuthenticAMD'; then
   hardware=AMD64
 fi
 
