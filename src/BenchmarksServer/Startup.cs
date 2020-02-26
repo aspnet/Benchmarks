@@ -978,12 +978,12 @@ namespace BenchmarkServer
                         async Task StopJobAsync()
                         {
                             // Restore cgroup defaults
-                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                            {
-                                Log.WriteLine($"Resetting cgroup limits");
-                                ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 /");
-                                ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 /");
-                            }
+                            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                            //{
+                            //    Log.WriteLine($"Resetting cgroup limits");
+                            //    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 /");
+                            //    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 /");
+                            //}
 
                             // Check if we already passed here
                             if (timer == null)
@@ -2870,7 +2870,7 @@ namespace BenchmarkServer
 
             // The cgroup limits are set on the root group as .NET is reading these only, and not the ones that it would run inside
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0 || !String.IsNullOrEmpty(job.CpuSet)))
             {
                 var cgcreate = ProcessUtil.Run("cgcreate", "-g memory,cpu:benchmarks\"", log: true);
 
@@ -2891,6 +2891,8 @@ namespace BenchmarkServer
 
                 if (job.CpuLimitRatio > 0)
                 {
+                    // Ensure the cfs_period_us is the same as what docker would use
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={_defaultDockerCfsPeriod} benchmarks", log: true);
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} benchmarks", log: true);
                 }
                 else
@@ -2898,7 +2900,16 @@ namespace BenchmarkServer
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 benchmarks", log: true);
                 }
 
-                commandLine = $"-g memory,cpu:benchmarks {executable} {commandLine}";
+                if (!String.IsNullOrEmpty(job.CpuSet))
+                {
+                    ProcessUtil.Run("cgset", $"-r cpuset.cpus={job.CpuSet} benchmarks", log: true);
+                }
+                else
+                {
+                    ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount-1} benchmarks", log: true);
+                }
+
+                commandLine = $"-g memory,cpu,cpuset:benchmarks {executable} {commandLine}";
                 executable = "cgexec";
             }
 
