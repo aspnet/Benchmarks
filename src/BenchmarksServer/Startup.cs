@@ -2870,25 +2870,57 @@ namespace BenchmarkServer
 
             // The cgroup limits are set on the root group as .NET is reading these only, and not the ones that it would run inside
 
-            if (job.MemoryLimitInBytes > 0)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Log.WriteLine($"Setting cgroup memory limits: {job.MemoryLimitInBytes}");
+                var cgcreate = ProcessUtil.Run("cgcreate", "-g memory,cpu:benchmarks\"", log: true);
 
-                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} /");
+                if (cgcreate.ExitCode > 0)
+                {
+                    job.Error += "Could not create cgroup";
+                    return null;
                 }
+
+                if (job.MemoryLimitInBytes > 0)
+                {
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks", log: true);
+                }
+                else
+                {
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 benchmarks", log: true);
+                }
+
+                if (job.CpuLimitRatio > 0)
+                {
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} benchmarks", log: true);
+                }
+                else
+                {
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 benchmarks", log: true);
+                }
+
+                commandLine = $"-g memory,cpu:benchmarks {executable} {commandLine}";
+                executable = "cgexec";
             }
 
-            if (job.CpuLimitRatio > 0)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    Log.WriteLine($"Setting cgroup cpu limits: {job.CpuLimitRatio}");
+            //if (job.MemoryLimitInBytes > 0)
+            //{
+            //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            //    {
+            //        Log.WriteLine($"Setting cgroup memory limits: {job.MemoryLimitInBytes}");
 
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} /", log: true);
-                }
-            }
+            //        ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} /");
+            //    }
+            //}
+
+            //if (job.CpuLimitRatio > 0)
+            //{
+            //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            //    {
+            //        Log.WriteLine($"Setting cgroup cpu limits: {job.CpuLimitRatio}");
+
+            //        ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} /", log: true);
+            //    }
+            //}
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
 
