@@ -33,15 +33,6 @@ RUN apt-get update \
         libgdiplus \
     && rm -rf /var/lib/apt/lists/*
 
-# Make perf visible for perfcollect
-RUN cp /usr/bin/perf_4.19 /usr/bin/perf
-
-# downloading perfcollect
-#ADD https://raw.githubusercontent.com/dotnet/corefx-tools/master/src/performance/perfcollect/perfcollect /usr/bin/perfcollect
-ADD https://gist.githubusercontent.com/sebastienros/6c28f099d579e37df4000fe457f277d6/raw/b3a585225053a2009ec4c7a8aff68d2c3359c61d/perfcollect /usr/bin/perfcollect
-
-RUN chmod +x /usr/bin/perfcollect
-
 # Build and install h2load
 ENV NGHTTP2_VERSION 1.40.0
 RUN cd /tmp \
@@ -89,6 +80,15 @@ RUN if [ "$(dpkg --print-architecture)" != "arm64" ]; then cd /tmp \
     && cp wrk2 /usr/local/bin \
     && cd .. \
     && rm -rf wrk2.zip; fi
+
+# Make perf visible for perfcollect
+RUN cp /usr/bin/perf_4.19 /usr/bin/perf
+
+# downloading perfcollect
+#ADD https://raw.githubusercontent.com/dotnet/corefx-tools/master/src/performance/perfcollect/perfcollect /usr/bin/perfcollect
+ADD https://raw.githubusercontent.com/sebastienros/perfview/sebros/sigint/src/perfcollect/perfcollect /usr/bin/perfcollect
+
+RUN chmod +x /usr/bin/perfcollect
 
 WORKDIR /benchmarks
 
