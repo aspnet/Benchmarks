@@ -2908,7 +2908,10 @@ namespace BenchmarkServer
 
                 if (!String.IsNullOrEmpty(job.CpuSet))
                 {
+                    // Both cpus and mems need to be initialized
+
                     ProcessUtil.Run("cgset", $"-r cpuset.cpus={job.CpuSet} benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpuset.mems=0 benchmarks", log: true);
                 }
                 else
                 {
