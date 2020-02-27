@@ -34,7 +34,7 @@ namespace Benchmarks.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
@@ -53,13 +53,14 @@ namespace Benchmarks.Middleware
                 {
                     _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
                 }
+
+                return Task.CompletedTask;
 #else
-                await JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
+                return JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
 #endif
-                return;
             }
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 
