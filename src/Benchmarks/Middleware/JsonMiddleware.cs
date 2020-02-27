@@ -29,10 +29,7 @@ namespace Benchmarks.Middleware
 #endif
         private readonly RequestDelegate _next;
 
-        public JsonMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        public JsonMiddleware(RequestDelegate next) => _next = next;
 
         public Task Invoke(HttpContext httpContext)
         {
@@ -66,10 +63,7 @@ namespace Benchmarks.Middleware
 
     public static class JsonMiddlewareExtensions
     {
-        public static IApplicationBuilder UseJson(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<JsonMiddleware>();
-        }
+        public static IApplicationBuilder UseJson(this IApplicationBuilder builder) => builder.UseMiddleware<JsonMiddleware>();
     }
 
     public struct JsonMessage
