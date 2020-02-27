@@ -985,6 +985,12 @@ namespace BenchmarkServer
                             //    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 /");
                             //}
 
+                            // Delete the benchmarks group
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0 || !String.IsNullOrEmpty(job.CpuSet)))
+                            {
+                                ProcessUtil.Run("cgdelete", "cpu,memory,cpuset:benchmarks", log: true, throwOnError: false);
+                            }
+
                             // Check if we already passed here
                             if (timer == null)
                             {
@@ -2872,7 +2878,7 @@ namespace BenchmarkServer
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0 || !String.IsNullOrEmpty(job.CpuSet)))
             {
-                var cgcreate = ProcessUtil.Run("cgcreate", "-g memory,cpu:benchmarks\"", log: true);
+                var cgcreate = ProcessUtil.Run("cgcreate", "-g memory,cpu,cpuset:benchmarks", log: true);
 
                 if (cgcreate.ExitCode > 0)
                 {

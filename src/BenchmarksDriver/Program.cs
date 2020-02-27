@@ -54,6 +54,7 @@ namespace BenchmarksDriver
             _cleanOption,
             _memoryLimitOption,
             _cpuLimitOption,
+            _cpuSetOption,
             _enableEventPipeOption,
             _eventPipeArgumentsOption,
             _initSubmodulesOption,
@@ -323,6 +324,8 @@ namespace BenchmarksDriver
                 "The amount of memory available for the process, e.g. -mem 64mb, -mem 1gb. Supported units are (gb, mb, kb, b or none for bytes).", CommandOptionType.SingleValue);
             _cpuLimitOption = app.Option("--cpus",
                 "The amount of CPU available for the process, e.g. --cpus 0.5. For a 12 cores machines this value would result in 50% of 1200% total available CPU time.", CommandOptionType.SingleValue);
+            _cpuSetOption = app.Option("--cpuset",
+                "The list of CPUs available for the process, e.g. --cpuset 0, --cpuset 0-3, --cpuset 1,3-4", CommandOptionType.SingleValue);
 
             // ClientJob Options
             var clientThreadsOption = app.Option("--client-threads",
@@ -665,6 +668,10 @@ namespace BenchmarksDriver
                         Console.WriteLine("Invalid cpu limit value");
                         return -1;
                     }
+                }
+                if (_cpuSetOption.HasValue())
+                {
+                    serverJob.CpuSet = _cpuSetOption.Value();
                 }
                 if (_initializeOption.HasValue())
                 {
