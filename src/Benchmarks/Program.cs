@@ -166,20 +166,15 @@ namespace Benchmarks
                 }
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {
-#if NETCOREAPP2_1 || NETCOREAPP2_2
-                    webHostBuilder.UseSockets(x =>
+                    webHostBuilder.UseSockets(socketOptions =>
                     {
                         if (threadCount > 0)
                         {
-                            x.IOQueueCount = threadCount;
+                            socketOptions.IOQueueCount = threadCount;
                         }
 
-                        Console.WriteLine($"Using Sockets with {x.IOQueueCount} threads");
+                        Console.WriteLine($"Using Sockets with {socketOptions.IOQueueCount} threads");
                     });
-#else
-                    webHostBuilder.UseSockets();
-                    Console.WriteLine($"Using Sockets");
-#endif
                 }
                 else if (string.IsNullOrEmpty(kestrelTransport))
                 {
