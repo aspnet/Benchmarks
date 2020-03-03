@@ -2906,17 +2906,23 @@ namespace BenchmarkServer
                     ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 benchmarks", log: true);
                 }
 
+
                 if (!String.IsNullOrEmpty(job.CpuSet))
                 {
-                    // Both cpus and mems need to be initialized
 
                     ProcessUtil.Run("cgset", $"-r cpuset.cpus={job.CpuSet} benchmarks", log: true);
-                    ProcessUtil.Run("cgset", $"-r cpuset.mems=0 benchmarks", log: true);
                 }
                 else
                 {
                     ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount-1} benchmarks", log: true);
                 }
+
+                // The cpuset.mems value for the 'benchmarks' controller need to match the root one
+                // to be compatible with the allowed nodes
+                var memsRoot = File.ReadAllText("/sys/fs/cgroup/cpuset/cpuset.mems");
+
+                // Both cpus and mems need to be initialized
+                ProcessUtil.Run("cgset", $"-r cpuset.mems={memsRoot} benchmarks", log: true);
 
                 commandLine = $"-g memory,cpu,cpuset:benchmarks {executable} {commandLine}";
                 executable = "cgexec";
