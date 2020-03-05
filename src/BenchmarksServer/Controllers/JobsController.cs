@@ -71,6 +71,25 @@ namespace BenchmarkServer.Controllers
             }
         }
 
+        [HttpGet("{id}/state")]
+        public IActionResult State(int id)
+        {
+            lock (_jobs)
+            {
+                var job = _jobs.Find(id);
+                if (job == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    // Mark when the job was last read to notify that the driver is still connected
+                    job.LastDriverCommunicationUtc = DateTime.UtcNow;
+                    return Content(job.State.ToString());
+                }
+            }
+        }
+
         [HttpGet("info")]
         public IActionResult Info()
         {
@@ -192,6 +211,7 @@ namespace BenchmarkServer.Controllers
                     var job = _jobs.Find(id);
                     job.ClearServerCounters();
                     job.Counters.Clear();
+                    job.Measurements.Clear();
                     _jobs.Update(job);
                     return Ok();
                 }
