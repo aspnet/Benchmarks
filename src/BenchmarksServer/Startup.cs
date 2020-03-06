@@ -637,21 +637,21 @@ namespace BenchmarkServer
                                                             CpuPercentage = cpu
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
                                                             Value = Math.Ceiling((double) workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/cpu",
                                                             Timestamp = now,
                                                             Value = cpu
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/cpu/raw",
                                                             Timestamp = now,
@@ -662,7 +662,7 @@ namespace BenchmarkServer
                                                         {
                                                             try
                                                             {
-                                                                job.Measurements.Add(new Measurement
+                                                                job.Measurements.Enqueue(new Measurement
                                                                 {
                                                                     Name = "benchmarks/swap",
                                                                     Timestamp = now,
@@ -727,21 +727,21 @@ namespace BenchmarkServer
                                                             CpuPercentage = cpu
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
                                                             Value = Math.Ceiling((double)process.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/cpu",
                                                             Timestamp = now,
                                                             Value = cpu
                                                         });
 
-                                                        job.Measurements.Add(new Measurement
+                                                        job.Measurements.Enqueue(new Measurement
                                                         {
                                                             Name = "benchmarks/cpu/raw",
                                                             Timestamp = now,
@@ -755,7 +755,7 @@ namespace BenchmarkServer
                                                     {
                                                         try
                                                         {
-                                                            job.Measurements.Add(new Measurement
+                                                            job.Measurements.Enqueue(new Measurement
                                                             {
                                                                 Name = "benchmarks/swap",
                                                                 Timestamp = now,
@@ -881,7 +881,7 @@ namespace BenchmarkServer
                             {
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/cpu",
@@ -895,7 +895,7 @@ namespace BenchmarkServer
 
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/raw"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/cpu/raw",
@@ -909,7 +909,7 @@ namespace BenchmarkServer
 
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/working-set"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/working-set",
@@ -923,7 +923,7 @@ namespace BenchmarkServer
 
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/build-time"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/build-time",
@@ -937,7 +937,7 @@ namespace BenchmarkServer
 
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/published-size"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/published-size",
@@ -951,7 +951,7 @@ namespace BenchmarkServer
 
                                 if (!job.Metadata.Any(x => x.Name == "benchmarks/swap"))
                                 {
-                                    job.Metadata.Add(new MeasurementMetadata
+                                    job.Metadata.Enqueue(new MeasurementMetadata
                                     {
                                         Source = "Host Process",
                                         Name = "benchmarks/swap",
@@ -1478,7 +1478,7 @@ namespace BenchmarkServer
 
                 job.BuildTime = stopwatch.Elapsed;
 
-                job.Measurements.Add(new Measurement
+                job.Measurements.Enqueue(new Measurement
                 {
                     Name = "benchmarks/build-time",
                     Timestamp = DateTime.UtcNow,
@@ -1672,12 +1672,12 @@ namespace BenchmarkServer
 
                 foreach (var metadata in jobStatistics.Metadata)
                 {
-                    job.Metadata.Add(metadata);
+                    job.Metadata.Enqueue(metadata);
                 }
 
                 foreach (var measurement in jobStatistics.Measurements)
                 {
-                    job.Measurements.Add(measurement);
+                    job.Measurements.Enqueue(measurement);
                 }
             }
         }
@@ -2377,7 +2377,7 @@ namespace BenchmarkServer
 
             job.BuildTime = stopwatch.Elapsed;
 
-            job.Measurements.Add(new Measurement
+            job.Measurements.Enqueue(new Measurement
             {
                 Name = "benchmarks/build-time",
                 Timestamp = DateTime.UtcNow,
@@ -2392,7 +2392,7 @@ namespace BenchmarkServer
             {
                 job.PublishedSize = publishedSize;
 
-                job.Measurements.Add(new Measurement
+                job.Measurements.Enqueue(new Measurement
                 {
                     Name = "benchmarks/published-size",
                     Timestamp = DateTime.UtcNow,
@@ -3130,24 +3130,24 @@ namespace BenchmarkServer
 
         private static void StartCounters(ServerJob job)
         {
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Add(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
+            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
 
             eventPipeTerminated = false;
             eventPipeTask = new Task(() =>
@@ -3215,7 +3215,7 @@ namespace BenchmarkServer
 
                         measurement.Timestamp = eventData.TimeStamp;
 
-                        job.Measurements.Add(measurement);
+                        job.Measurements.Enqueue(measurement);
                     };
 
                     source.Process();
@@ -3265,7 +3265,7 @@ namespace BenchmarkServer
                             // And configure the filterData in the provider
                             //if (!eventData.EventName.Equals("EventCounters"))
                             //{
-                            //job.Measurements.Add(new Measurement
+                            //job.Measurements.Enqueue(new Measurement
                             //{
                             //    Timestamp = eventData.TimeStamp,
                             //    Name = eventData.PayloadByName("name").ToString(),
@@ -3275,7 +3275,7 @@ namespace BenchmarkServer
 
                             if (eventData.EventName.StartsWith("Measure"))
                             {
-                                job.Measurements.Add(new Measurement
+                                job.Measurements.Enqueue(new Measurement
                                 {
                                     Timestamp = eventData.TimeStamp,
                                     Name = eventData.PayloadByName("name").ToString(),
@@ -3284,7 +3284,7 @@ namespace BenchmarkServer
                             }
                             else if (eventData.EventName == "Metadata")
                             {
-                                job.Metadata.Add(new MeasurementMetadata
+                                job.Metadata.Enqueue(new MeasurementMetadata
                                 {
                                     Source = "Benchmark",
                                     Name = eventData.PayloadByName("name").ToString(),

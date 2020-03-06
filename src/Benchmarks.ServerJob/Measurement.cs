@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace Benchmarks.ServerJob
 {
@@ -9,6 +10,8 @@ namespace Benchmarks.ServerJob
         public DateTime Timestamp { get; set; }
         public string Name { get; set; }
         public object Value { get; set; }
-        public bool IsDelimiter => Name == Delimiter;
+
+        [JsonIgnore]
+        public bool IsDelimiter => String.Equals(Name, Delimiter, StringComparison.OrdinalIgnoreCase);
     }
 }

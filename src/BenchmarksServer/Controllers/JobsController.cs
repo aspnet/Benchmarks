@@ -240,14 +240,12 @@ namespace BenchmarkServer.Controllers
                         return Ok();
                     }
 
-                    // Get all items after the fist delimiter
-                    var items = job.Measurements
-                        .OrderBy(x => x.Timestamp)
-                        .SkipWhile(x => !x.IsDelimiter)
-                        .Skip(1) // Skip delimiter
-                        ;
+                    Measurement measurement;
 
-                    job.Measurements = new ConcurrentBag<Measurement>(items);
+                    do
+                    {
+                        job.Measurements.TryDequeue(out measurement);
+                    } while (!measurement.IsDelimiter);
 
                     _jobs.Update(job);
                     return Ok();

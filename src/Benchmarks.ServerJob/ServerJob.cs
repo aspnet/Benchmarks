@@ -151,8 +151,8 @@ namespace Benchmarks.ServerJob
         public double CpuLimitRatio { get; set; }
         public string CpuSet { get; set; } // e.g., 0 or 0-3 or 1-4,6
         public ConcurrentDictionary<string, ConcurrentQueue<string>> Counters { get; set; } = new ConcurrentDictionary<string, ConcurrentQueue<string>>();
-        public ConcurrentBag<Measurement> Measurements { get; set; } = new ConcurrentBag<Measurement>();
-        public ConcurrentBag<MeasurementMetadata> Metadata { get; set; } = new ConcurrentBag<MeasurementMetadata>();
+        public ConcurrentQueue<Measurement> Measurements { get; set; } = new ConcurrentQueue<Measurement>();
+        public ConcurrentQueue<MeasurementMetadata> Metadata { get; set; } = new ConcurrentQueue<MeasurementMetadata>();
 
         /// <summary>
         /// The build log. This property is kept on the server side.
