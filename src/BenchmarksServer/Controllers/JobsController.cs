@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -212,6 +213,42 @@ namespace BenchmarkServer.Controllers
                     job.ClearServerCounters();
                     job.Counters.Clear();
                     job.Measurements.Clear();
+                    _jobs.Update(job);
+                    return Ok();
+                }
+                catch
+                {
+                    return NotFound();
+                }
+            }
+        }
+
+        [HttpPost("{id}/measurements/flush")]
+        public IActionResult FlushMeasurement(int id)
+        {
+            // Remove all the measurements before the first result marker
+
+            lock (_jobs)
+            {
+                try
+                {
+                    var job = _jobs.Find(id);
+
+                    // No delimiter?
+                    if (!job.Measurements.Any(x => x.IsDelimiter))
+                    {
+                        return Ok();
+                    }
+
+                    // Get all items after the fist delimiter
+                    var items = job.Measurements
+                        .OrderBy(x => x.Timestamp)
+                        .SkipWhile(x => !x.IsDelimiter)
+                        .Skip(1) // Skip delimiter
+                        ;
+
+                    job.Measurements = new ConcurrentBag<Measurement>(items);
+
                     _jobs.Update(job);
                     return Ok();
                 }
