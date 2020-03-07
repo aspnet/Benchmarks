@@ -52,7 +52,6 @@ baselines=(
     
   # Current dev, running close to other baselines, with same repeat parameters
   "--description Baseline --runtimeversion 5.0.*"
-"
 
 )
 
