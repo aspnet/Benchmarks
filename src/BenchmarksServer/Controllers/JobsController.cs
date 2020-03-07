@@ -241,11 +241,14 @@ namespace BenchmarkServer.Controllers
                     }
 
                     Measurement measurement;
-
+                    int count = 0;
                     do
                     {
                         job.Measurements.TryDequeue(out measurement);
+                        count++;
                     } while (!measurement.IsDelimiter);
+
+                    Log($"Flushed {count} measurements");
 
                     _jobs.Update(job);
                     return Ok();
