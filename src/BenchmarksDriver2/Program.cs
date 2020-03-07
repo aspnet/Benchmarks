@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,8 +52,8 @@ namespace BenchmarksDriver
             _descriptionOption,
             _propertyOption,
             _excludeMetadataOption,
-            _excludeMeasurementsOption
-
+            _excludeMeasurementsOption,
+            _autoflush
             ;
 
         // The dynamic arguments that will alter the configurations
@@ -132,6 +133,7 @@ namespace BenchmarksDriver
             _propertyOption = app.Option("-p|--property", "Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux", CommandOptionType.MultipleValue);
             _excludeMeasurementsOption = app.Option("--no-measurements", "Remove all measurements from the stored results. For instance, all samples of a measure won't be stored, only the final value.", CommandOptionType.SingleOrNoValue);
             _excludeMetadataOption = app.Option("--no-metadata", "Remove all metadata from the stored results. The metadata is only necessary for being to generate friendly outputs.", CommandOptionType.SingleOrNoValue);
+            _autoflush = app.Option("--auto-flush", "Runs a single long-running job and flushes measurements automatically.", CommandOptionType.NoValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -168,8 +170,6 @@ namespace BenchmarksDriver
                 "An endpoint to call before the application has shut down.", CommandOptionType.SingleValue);
             var spanOption = app.Option("-sp|--span",
                 "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
-            var markdownOption = app.Option("-md|--markdown",
-                "Formats the output in markdown", CommandOptionType.NoValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
 
@@ -302,41 +302,35 @@ namespace BenchmarksDriver
                             }
                         }
                     }
-
-                    results = await Run(
-                    configuration,
-                    scenarioName,
-                    session,
-                    iterations,
-                    exclude,
-                    shutdownOption.Value(),
-                    span,
-                    markdownOption
-                    );
-
-
-                    // Save results
-
-                    if (_outputOption.HasValue())
-                    {
-                        var filename = _outputOption.Value();
-
-                        if (File.Exists(filename))
-                        {
-                            File.Delete(filename);
-                        }
-
-                        await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(results.JobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
-
-                        Log.Write("", notime: true);
-                        Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
-                    }
-
-                    // Store data
-
+                    
+                    // Initialize database
                     if (_sqlConnectionStringOption.HasValue())
                     {
-                        await JobSerializer.WriteJobResultsToSqlAsync(results.JobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
+                        await JobSerializer.InitializeDatabaseAsync(_sqlConnectionStringOption.Value(), _tableName);
+                    }
+
+                    Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
+
+                    if (_autoflush.HasValue())
+                    {
+                        results = await RunAutoFlush(
+                            configuration,
+                            scenarioName,
+                            session,
+                            span
+                            );
+                    }
+                    else
+                    {
+                        results = await Run(
+                            configuration,
+                            scenarioName,
+                            session,
+                            iterations,
+                            exclude,
+                            shutdownOption.Value(),
+                            span
+                            );
                     }
                 }
 
@@ -395,28 +389,11 @@ namespace BenchmarksDriver
             int iterations,
             int exclude,
             string shutdownEndpoint,
-            TimeSpan span,
-            //List<string> downloadFiles,
-            //bool fetch,
-            //string fetchDestination,
-            //bool collectR2RLog,
-            // string traceDestination,
-            // CommandOption scriptFileOption,
-            CommandOption markdownOption
+            TimeSpan span
             )
         {
-        
-            if (_sqlConnectionStringOption.HasValue())
-            {
-                await JobSerializer.InitializeDatabaseAsync(_sqlConnectionStringOption.Value(), _tableName);
-            }
-
             // Storing the list of services to run as part of the selected scenario
             var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
-
-            var results = new List<Statistics>();
-
-            Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
 
             var executionResults = new ExecutionResult();
 
@@ -436,11 +413,13 @@ namespace BenchmarksDriver
 
                     var jobs = service.Endpoints.Select(endpoint => new JobConnection(service, new Uri(endpoint))).ToList();
 
-                    jobsByDependency.Add(jobName, jobs);
+                    jobsByDependency[jobName] = jobs;
 
-                    foreach(var job in jobs)
+                    // Check that each configured agent endpoint for this service 
+                    // has a compatible OS
+                    if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
                     {
-                        if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+                        foreach (var job in jobs)
                         {
                             var info = await job.GetInfoAsync();
 
@@ -454,11 +433,11 @@ namespace BenchmarksDriver
                         }
                     }
 
-                    // Start this group of jobs
+                    // Start this service on all configured agent endpoints
                     await Task.WhenAll(
                         jobs.Select(job =>
                         {
-                            // Start server
+                            // Start job on agent
                             return job.StartAsync(
                                 jobName,
                                 _outputArchiveOption,
@@ -467,6 +446,7 @@ namespace BenchmarksDriver
                         })
                     );
 
+                    // Start threads that will keep the jobs alive
                     foreach (var job in jobs)
                     {
                         job.StartKeepAlive();
@@ -475,19 +455,29 @@ namespace BenchmarksDriver
                     if (service.WaitForExit)
                     {
                         // Wait for all clients to stop
-                        while (jobs.Any(client => client.Job.State != ServerState.Stopped && client.Job.State != ServerState.Failed))
+                        while (true)
                         {
-                            // Refresh the local state
+                            var stop = true;
+
                             foreach (var job in jobs)
                             {
-                                await job.TryUpdateStateAsync();
+                                var state = await job.GetStateAsync();
+
+                                stop = stop && (state == ServerState.Stopped || state == ServerState.Failed);
                             }
 
+                            if (stop)
+                            {
+                                break;
+                            }
+                            
                             await Task.Delay(1000);
                         }
-
+                        
                         // Stop a blocking job
                         await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                        await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
 
                         await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
 
@@ -548,8 +538,7 @@ namespace BenchmarksDriver
                     }
                 }
 
-
-                // Stop all jobs in reverse dependency order (clients first)
+                // Stop all non-blocking jobs in reverse dependency order (clients first)
                 foreach (var jobName in dependencies)
                 {
                     var service = configuration.Jobs[jobName];
@@ -559,6 +548,8 @@ namespace BenchmarksDriver
                         var jobs = jobsByDependency[jobName];
 
                         await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                        await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
 
                         await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
 
@@ -603,6 +594,182 @@ namespace BenchmarksDriver
 
                 executionResults.JobResults = jobResults;
             }
+
+            // Save results
+
+            if (_outputOption.HasValue())
+            {
+                var filename = _outputOption.Value();
+
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
+                await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(executionResults.JobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+
+                Log.Write("", notime: true);
+                Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
+            }
+
+            // Store data
+
+            if (_sqlConnectionStringOption.HasValue())
+            {
+                await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
+            }
+
+            return executionResults;
+        }
+
+        private static async Task<ExecutionResult> RunAutoFlush(
+            Configuration configuration,
+            string scenarioName,
+            string session,
+            TimeSpan span
+            )
+        {
+            var executionResults = new ExecutionResult();
+
+            // Storing the list of services to run as part of the selected scenario
+            var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
+
+            if (dependencies.Length != 1)
+            {
+                Log.Write($"With --auto-flush a single job is required.");
+                return executionResults;
+            }
+
+            var jobName = dependencies.First();
+            var service = configuration.Jobs[jobName];
+            
+            if (service.Endpoints.Count() != 1)
+            {
+                Log.Write($"With --auto-flush a single endpoint is required.");
+                return executionResults;
+            }
+
+            if (!service.WaitForExit && span == TimeSpan.Zero)
+            {
+                Log.Write($"With --auto-flush a --span duration or a blocking job is required (missing 'waitForExit' option).");
+                return executionResults;
+            }
+
+            service.DriverVersion = 2;
+
+            var job = new JobConnection(service, new Uri(service.Endpoints.First()));
+
+            // Check that each configured agent endpoint for this service 
+            // has a compatible OS
+            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+            {
+                var info = await job.GetInfoAsync();
+
+                var os = info["os"]?.ToString();
+
+                if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                    return new ExecutionResult();
+                }
+            }
+
+            // Start this service on the configured agent endpoint
+            await job.StartAsync(jobName, _outputArchiveOption, _buildArchiveOption);
+
+            // Start threads that will keep the jobs alive
+            job.StartKeepAlive();
+
+            var start = DateTime.UtcNow;
+
+            // Wait for the job to stop
+            while (true)
+            {
+                await Task.Delay(5000);
+
+                await job.TryUpdateJobAsync();
+
+                var stop = job.Job.State == ServerState.Stopped || job.Job.State == ServerState.Deleted || job.Job.State == ServerState.Failed;
+
+                if (start + span > DateTime.UtcNow)
+                {
+                    stop = true;
+                }
+
+                if (job.Job.Measurements.Any(x => x.IsDelimiter))
+                {
+                    // Remove all values after the delimiter locally
+                    Measurement measurement;
+                    var measurements = new List<Measurement>();
+
+                    do
+                    {
+                        job.Job.Measurements.TryDequeue(out measurement);
+                        measurements.Add(measurement);
+                    } while (!measurement.IsDelimiter);
+
+                    job.Job.Measurements = new ConcurrentQueue<Measurement>(measurements);
+
+                    // Removes all values before the delimiter on the server
+                    await job.FlushMeasurements();
+
+                    // Convert any json result to an object
+                    NormalizeResults(new[] { job });
+
+                    if (!service.Options.DiscardResults)
+                    {
+                        WriteMeasures(job);
+                    }
+
+                    var jobResults = await CreateJobResultsAsync(configuration, dependencies, new Dictionary<string, List<JobConnection>> { [jobName] = new List<JobConnection> { job } });
+
+                    foreach (var property in _propertyOption.Values)
+                    {
+                        var segments = property.Split('=', 2);
+
+                        jobResults.Properties[segments[0]] = segments[1];
+                    }
+
+                    // Save results
+
+                    if (_outputOption.HasValue())
+                    {
+                        var filename = _outputOption.Value();
+                        var index = 1;
+
+                        do
+                        {
+                            var filenameWithoutExtension = Path.GetFileNameWithoutExtension(_outputOption.Value());
+                            filename = filenameWithoutExtension + "-" + index++ + Path.GetExtension(_outputOption.Value());
+                        } while (File.Exists(filename));
+
+                        await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(jobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+
+                        Log.Write("", notime: true);
+                        Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
+                    }
+
+                    // Store data
+
+                    if (_sqlConnectionStringOption.HasValue())
+                    {
+                        await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
+                    }
+                }
+
+                if (stop)
+                {
+                    break;
+                }
+            }
+
+            await job.StopAsync();
+
+            await  job.TryUpdateJobAsync();
+
+            await  job.DownloadAssetsAsync(jobName);
+
+            await  job.DeleteAsync();
 
             return executionResults;
         }
@@ -872,7 +1039,7 @@ namespace BenchmarksDriver
                         throw new Exception($"Argument value '{argument.Value}' could not assigned to `{segments.Last()}`.");
                     }
 
-                    jObject.Add(argumentSegments[0], argumentSegments[1]);
+                    jObject[argumentSegments[0]] = argumentSegments[1];
                 }
             }
 
@@ -1193,11 +1360,11 @@ namespace BenchmarksDriver
 
                     if (!String.IsNullOrEmpty(metadata.Format) && metadata.Format != "object")
                     {
-                        summaries.Add(metadata.Name, Convert.ToDouble(result));
+                        summaries[metadata.Name] = Convert.ToDouble(result);
                     }
                     else
                     {
-                        summaries.Add(metadata.Name, result);
+                        summaries[metadata.Name] = result;
                     }
                 }
 
@@ -1266,7 +1433,7 @@ namespace BenchmarksDriver
                         break;
                 }
 
-                reduced.Add(metadata.Name, reducedValue);
+                reduced[metadata.Name] = reducedValue;
             }
 
             return reduced;

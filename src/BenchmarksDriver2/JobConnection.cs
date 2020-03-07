@@ -55,8 +55,6 @@ namespace BenchmarksDriver
 
         public ServerJob Job { get; private set; }
 
-        public ServerState State => Job.State;
-
         public async Task<string> StartAsync(
             string jobName,
             CommandOption _outputArchiveOption,
@@ -368,9 +366,8 @@ namespace BenchmarksDriver
         }
 
         /// <summary>
-        /// Stops the job on the server and the keep alive.
+        /// Stops the job on the server without deleting it.
         /// </summary>
-        /// <returns></returns>
         public async Task StopAsync()
         {
             StopKeepAlive();
@@ -382,11 +379,16 @@ namespace BenchmarksDriver
             var jobStoppedUtc = DateTime.UtcNow;
 
             // Wait for Stop state
-            do
+            while (true)
             {
                 await Task.Delay(1000);
 
-                await TryUpdateStateAsync();
+                var state = await GetStateAsync();
+
+                if (state == ServerState.Stopped || state == ServerState.Failed)
+                {
+                    break;
+                }
 
                 if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(30))
                 {
@@ -395,11 +397,12 @@ namespace BenchmarksDriver
 
                     break;
                 }
-
-            } while (Job.State != ServerState.Stopped);
-
+            }
         }
 
+        /// <summary>
+        /// Deletes the job on the server.
+        /// </summary>
         public async Task DeleteAsync()
         {
             Log.Write($"Deleting job '{_jobName}' ...");
@@ -421,7 +424,11 @@ namespace BenchmarksDriver
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<bool> TryUpdateStateAsync()
+
+        /// <summary>
+        /// Downloads the whole job including the measurements.
+        /// </summary>
+        public async Task<bool> TryUpdateJobAsync()
         {
             Log.Verbose($"GET {_serverJobUri}...");
             var response = await _httpClient.GetAsync(_serverJobUri);
@@ -446,6 +453,45 @@ namespace BenchmarksDriver
                 }
 
                 return true;
+            }
+        }
+
+        public async Task FlushMeasurements()
+        {
+            Log.Verbose($"POST {_serverJobUri}/measurements/flush...");
+            var response = await _httpClient.PostAsync(_serverJobUri + "/measurements/flush", new StringContent(""));
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        /// <summary>
+        /// Returns the current state of the job.
+        /// </summary>
+        public async Task<ServerState> GetStateAsync()
+        {
+            Log.Verbose($"GET {_serverJobUri}/state...");
+            var response = await _httpClient.GetAsync(_serverJobUri + "/state");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            Log.Verbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
+            {
+                return ServerState.Failed;
+            }
+            else
+            {
+                try
+                {
+                    return Enum.Parse<ServerState>(responseContent);
+                }
+                catch
+                {
+                    Log.Write($"ERROR while reading state on {_serverJobUri}");
+                    return ServerState.Failed;
+                }
             }
         }
 
@@ -769,13 +815,15 @@ namespace BenchmarksDriver
 
             while (true)
             {
-                if (!await TryUpdateStateAsync())
+                var state = await GetStateAsync();
+
+                if (state == ServerState.Stopped || state == ServerState.Failed)
                 {
                     Log.Write($"Can't download the trace. The job was forcibly stopped by the server.");
                     return;
                 }
 
-                if (State == ServerState.TraceCollecting)
+                if (state == ServerState.TraceCollecting)
                 {
                     // Server is collecting the trace
                 }
