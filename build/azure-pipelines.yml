@@ -18,7 +18,14 @@ pr:
     include:
     - '*'
 
+# all the jobs are triggered at the same time
+# jobs are in parallel
+# steps are serial
+
 jobs:
-- job: One
+- job: Plaintext
   steps:
-  - bash: echo 'First step!'
+  - powershell: |
+        cd ./src/BenchmarksDriver2;
+        dotnet run -c release -- --config benchmarks.compose.yml --scenario plaintext --application.endpoints http://10.0.0.6:6001 --load.endpoints http://10.0.0.6:6002 --variable serverUri=http://10.0.0.6;
+  

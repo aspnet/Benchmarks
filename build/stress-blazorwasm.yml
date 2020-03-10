@@ -1,0 +1,32 @@
+variables:
+  - name: _TeamName
+    value: AspNetCore
+
+pool: ASP.NET-Performance-Controller
+
+# CI and PR triggers
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+
+pr:
+  autoCancel: false
+  branches:
+    include:
+    - '*'
+
+# all the jobs are triggered at the same time
+# jobs are in parallel
+# steps are serial
+
+jobs:
+- job: Plaintext
+  steps:
+  - powershell: |
+        cd ./src/BenchmarksDriver2
+        $SESSION = "session"
+        $BENCHMARKS_SQL = "connectionstring"
+        $DURATION = 180 #86400
+        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$DURATION --application.endpoints http://172.16.228.106:5001 --application.options.displayOutput true --auto-flush # --session $SESSION --sql "$BENCHMARKS_SQL" --table BlazorWasmStress
