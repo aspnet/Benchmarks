@@ -23,7 +23,7 @@ pool: ASP.NET-Performance-Controller
 # Steps are serial
 
 jobs:
-- job: Blazor Wasm Stress
+- job: BlazorWasmStress
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver2
