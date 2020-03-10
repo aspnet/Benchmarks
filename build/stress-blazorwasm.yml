@@ -4,25 +4,26 @@ variables:
 
 pool: ASP.NET-Performance-Controller
 
-# CI and PR triggers
-trigger:
-  batch: true
-  branches:
-    include:
-    - master
+# Don't trigger this job on code changes
+# trigger:
+#   batch: true
+#   branches:
+#     include:
+#     - master
 
-pr:
-  autoCancel: false
-  branches:
-    include:
-    - '*'
+# Don't run on PRs
+# pr:
+#   autoCancel: false
+#   branches:
+#     include:
+#     - '*'
 
-# all the jobs are triggered at the same time
-# jobs are in parallel
-# steps are serial
+# All the jobs are triggered at the same time
+# Jobs are run in parallel
+# Steps are serial
 
 jobs:
-- job: Plaintext
+- job: Blazor Wasm Stress
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver2

@@ -56,22 +56,20 @@ namespace BenchmarksDriver
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-                if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
+                if (GetConsoleMode(iStdOut, out uint outConsoleMode))
                 {
-                    Console.WriteLine("failed to get output console mode");
-                }
+                    var tempConsoleMode = outConsoleMode;
 
-                var tempConsoleMode = outConsoleMode;
+                    outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+                    if (!SetConsoleMode(iStdOut, outConsoleMode))
+                    {
+                        Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
+                    }
 
-                outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
-                if (!SetConsoleMode(iStdOut, outConsoleMode))
-                {
-                    Console.WriteLine($"failed to set output console mode, error code: {GetLastError()}");
-                }
-
-                if (!SetConsoleMode(iStdOut, tempConsoleMode))
-                {
-                    Console.WriteLine($"failed to restore console mode, error code: {GetLastError()}");
+                    if (!SetConsoleMode(iStdOut, tempConsoleMode))
+                    {
+                        Console.WriteLine($"failed to restore console mode, error code: {GetLastError()}");
+                    }
                 }
             }
 
@@ -83,9 +81,8 @@ namespace BenchmarksDriver
                 content = content?.Replace("\n", Environment.NewLine) ?? "";
             }
 
-            Log.Write(content, notime: true);
+            Log.Write(content.Trim(), notime: true);
         }
-
 
         private const int STD_OUTPUT_HANDLE = -11;
         private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
