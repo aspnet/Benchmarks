@@ -29,4 +29,4 @@ jobs:
         $SESSION = "session"
         $BENCHMARKS_SQL = "connectionstring"
         $DURATION = 180 #86400
-        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$DURATION --application.endpoints http://172.16.228.106:5001 --application.options.displayOutput true --auto-flush # --session $SESSION --sql "$BENCHMARKS_SQL" --table BlazorWasmStress
+        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$DURATION --application.endpoints http://10.0.0.6:6001 --application.options.displayOutput true --auto-flush # --session $SESSION --sql "$BENCHMARKS_SQL" --table BlazorWasmStress
