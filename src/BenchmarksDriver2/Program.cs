@@ -31,6 +31,8 @@ namespace BenchmarksDriver
         private static readonly HttpClientHandler _httpClientHandler;
 
         private static string _tableName = "Benchmarks";
+        private static string _sqlConnectionString = "";
+
         private const string EventPipeOutputFile = "eventpipe.netperf";
 
         // Default to arguments which should be sufficient for collecting trace of default Plaintext run
@@ -229,6 +231,21 @@ namespace BenchmarksDriver
                 if (_sqlTableOption.HasValue())
                 {
                     _tableName = _sqlTableOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(_tableName)))
+                    {
+                        _tableName = Environment.GetEnvironmentVariable(_tableName);
+                    }
+                }
+
+                if (_sqlConnectionStringOption.HasValue())
+                {
+                    _sqlConnectionString = _sqlConnectionStringOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(_sqlConnectionString)))
+                    {
+                        _sqlConnectionString = Environment.GetEnvironmentVariable(_sqlConnectionString);
+                    }
                 }
 
                 if (!_scenarioOption.HasValue() && !_compareOption.HasValue())
@@ -304,9 +321,9 @@ namespace BenchmarksDriver
                     }
                     
                     // Initialize database
-                    if (_sqlConnectionStringOption.HasValue())
+                    if (!String.IsNullOrWhiteSpace(_sqlConnectionString))
                     {
-                        await JobSerializer.InitializeDatabaseAsync(_sqlConnectionStringOption.Value(), _tableName);
+                        await JobSerializer.InitializeDatabaseAsync(_sqlConnectionString, _tableName);
                     }
 
                     Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
@@ -614,9 +631,9 @@ namespace BenchmarksDriver
 
             // Store data
 
-            if (_sqlConnectionStringOption.HasValue())
+            if (!String.IsNullOrEmpty(_sqlConnectionString))
             {
-                await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
+                await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionString, _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
             }
 
             return executionResults;
@@ -751,9 +768,9 @@ namespace BenchmarksDriver
 
                     // Store data
 
-                    if (_sqlConnectionStringOption.HasValue())
+                    if (!String.IsNullOrEmpty(_sqlConnectionString))
                     {
-                        await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionStringOption.Value(), _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
+                        await JobSerializer.WriteJobResultsToSqlAsync(jobResults, _sqlConnectionString, _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                     }
                 }
 

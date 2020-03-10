@@ -1,22 +1,9 @@
 variables:
-  - name: _TeamName
-    value: AspNetCore
+  - group: 'ASP.NET Benchmarks' # variable group
+  - name: 'duration' # duration of the stress benchmarks
+    value: 240
 
 pool: ASP.NET-Performance-Controller
-
-# Don't trigger this job on code changes
-# trigger:
-#   batch: true
-#   branches:
-#     include:
-#     - master
-
-# Don't run on PRs
-# pr:
-#   autoCancel: false
-#   branches:
-#     include:
-#     - '*'
 
 # All the jobs are triggered at the same time
 # Jobs are run in parallel
@@ -28,6 +15,6 @@ jobs:
   - powershell: |
         cd ./src/BenchmarksDriver2
         $SESSION = "session"
-        $BENCHMARKS_SQL = "connectionstring"
-        $DURATION = 180 #86400
-        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$DURATION --application.endpoints http://10.0.0.6:6001 --application.options.displayOutput true --auto-flush # --session $SESSION --sql "$BENCHMARKS_SQL" --table BlazorWasmStress
+        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$(duration) --application.endpoints http://10.0.0.6:6001 --application.options.displayOutput true --auto-flush # --session $SESSION --sql CONNECTION_STRING --table BlazorWasmStress
+    env:
+        CONNECTION_STRING: $(sql.connectionstring)
