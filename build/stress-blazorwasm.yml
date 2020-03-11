@@ -14,8 +14,6 @@ jobs:
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver2
-        $SESSION = '{0:yyyyMMddHHmmss}' -f $Date
-        echo "SESSION: $SESSION"
-        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --description "stressdaily" --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$(duration) --application.endpoints http://10.0.0.6:6001 --application.options.displayOutput false --auto-flush --sql CONNECTION_STRING --table BlazorWasmStress --session "$SESSION"
+        dotnet run -c release -- --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json --scenario blazorwasmbenchmark --description "stressdaily" --application.options.requiredOperatingSystem Linux --application.environmentVariables StressRunDuration=$(duration) --application.endpoints http://10.0.0.6:6001 --application.options.displayOutput false --auto-flush --sql CONNECTION_STRING --table BlazorWasmStress
     env:
         CONNECTION_STRING: $(sql.connectionstring)
