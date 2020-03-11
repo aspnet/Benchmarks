@@ -94,11 +94,11 @@ func (s *testServer) StreamingFromClient(stream testpb.BenchmarkService_Streamin
 }
 
 func (s *testServer) StreamingFromServer(in *testpb.SimpleRequest, stream testpb.BenchmarkService_StreamingFromServerServer) error {
-	for {
-		response := &testpb.SimpleResponse{
-			Payload: NewPayload(in.ResponseType, int(in.ResponseSize)),
-		}
+	response := &testpb.SimpleResponse{
+		Payload: NewPayload(in.ResponseType, int(in.ResponseSize)),
+	}
 
+	for {
 		err := stream.Send(response)
 		if err == io.EOF {
 			// read done.
