@@ -1,7 +1,7 @@
 variables:
   - group: 'ASP.NET Benchmarks' # variable group
   - name: 'duration' # duration of the stress benchmarks
-    value: 240
+    value: 43200 # 12 hours
 
 pool: ASP.NET-Performance-Controller
 
