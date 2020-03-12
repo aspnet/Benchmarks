@@ -10,7 +10,7 @@ Options:
   -c|--client            URL of benchmark client
   -s|--server            URL of benchmark server
   -q|--sql               Connection string of SQL Database to store results
-  --clientName           Name of client to use for testing, e.g. Wrk
+  --client-name          Name of client to use for testing, e.g. Wrk
   -v|--verbose           Verbose output
   --quiet                Quiet output, only the results are displayed
   --session              A logical identifier to group related jobs.
