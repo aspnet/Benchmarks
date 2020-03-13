@@ -558,7 +558,7 @@ namespace BenchmarkServer
                                             if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                             {
                                                 Log.WriteLine($"[Heartbeat] Driver didn't communicate for {DriverTimeout}. Halting job.");
-                                                if (job.State == ServerState.Running)
+                                                if (job.State == ServerState.Running || job.State == ServerState.TraceCollected)
                                                 {
                                                     Log.WriteLine($"{job.State} -> Stopping");
                                                     job.State = ServerState.Stopping;
