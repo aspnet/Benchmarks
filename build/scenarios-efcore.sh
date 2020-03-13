@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
-efcoreJobs="-r EntityFrameworkCore@master --description Benchmarks --arg --perflab --server-timeout 00:45:00 -t EFCoreBenchmarks --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102"
+efcoreJobs="-r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 -t EFCoreBenchmarks --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102"
 
 jobs=(
 
