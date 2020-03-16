@@ -11,7 +11,7 @@
     "Port": 8080,
     "ReadyStateText": "Application started."
   },
-  "Plaintext-AspNetCore": {
+  "Plaintext-AspNetCore-Rhtx": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
@@ -19,15 +19,15 @@
       "PipelineDepth": 16
     }
   },
-  "PlaintextNonPipelined-AspNetCore": {
+  "PlaintextNonPipelined-AspNetCore-Rhtx": {
     "Path": "/plaintext",
     "PresetHeaders": "Plaintext"
   },
-  "Json-AspNetCore": {
+  "Json-AspNetCore-Rhtx": {
     "Path": "/json",
     "PresetHeaders": "Json"
   },
-  "FortunesPostgreSql-AspNetCore": {
+  "FortunesPostgreSql-AspNetCore-Rhtx": {
     "Path": "/fortunes",
     "PresetHeaders": "Html",
     "Source": {
