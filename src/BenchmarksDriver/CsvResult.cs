@@ -24,7 +24,7 @@ namespace BenchmarksDriver
             Map(m => m.Error).Name("Error [us]").Default(0);
             Map(m => m.StdDev).Name("StdDev [us]").Default(0);
             Map(m => m.OperationsPerSecond).Name("Op/s").Default(0);
-            Map(m => m.Allocated).Name("Allocated Memory/Op [KB]").Default(0);
+            Map(m => m.Allocated).Name("Allocated [KB]").Default(0);
         }
     }
 }
