@@ -3437,15 +3437,16 @@ namespace BenchmarkServer
                 using (var archive = ZipFile.OpenRead(runtimePath))
                 {
                     var systemCoreLib = archive.GetEntry("runtimes/linux-x64/lib/netstandard1.0/System.Private.CoreLib.dll");
-                    systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"));
+                    systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
 
                     var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
-                    libcoreclr.ExtractToFile(Path.Combine(outputFolder, "libcoreclr.so"));
+                    libcoreclr.ExtractToFile(Path.Combine(outputFolder, "libcoreclr.so"), true);
                 }
             }
             catch (Exception e)
             {
                 Log.WriteLine("ERROR: Failed to download mono runtime. " + e.ToString());
+                throw;
             }
         }
 
