@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Benchmarks.ClientJob;
 using Benchmarks.ServerJob;
 using BenchmarksDriver.Serializers;
 using Fluid;

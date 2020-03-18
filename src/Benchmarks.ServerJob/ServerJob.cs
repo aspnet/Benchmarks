@@ -53,6 +53,7 @@ namespace Benchmarks.ServerJob
         public string AspNetCoreVersion { get; set; } = "Latest";
         public string RuntimeVersion { get; set; } = "Latest";
         public string SdkVersion { get; set; } = "Latest";
+        public bool UseMonoRuntime { get; set; } = false;
         public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
 

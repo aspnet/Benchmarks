@@ -207,6 +207,8 @@ namespace BenchmarksDriver
                 "-w|--webHost",
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
+            var monoOption = app.Option("--mono-runtime",
+                "Use the mono runtime.", CommandOptionType.NoValue);
             var aspnetCoreVersionOption = app.Option("-aspnet|--aspnetCoreVersion",
                 "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("-dotnet|--runtimeVersion",
@@ -703,7 +705,15 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (outputFileOption.HasValue() || _outputArchiveOption.HasValue())
+                    if (monoOption.HasValue())
+                    {
+                        serverJob.SelfContained = true;
+
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Log("WARNING: '--self-contained' has been set implicitly as the mono runtime is used.");
+                        Console.ResetColor();
+                    }
+                    else if (outputFileOption.HasValue() || _outputArchiveOption.HasValue())
                     {
                         serverJob.SelfContained = true;
 
@@ -720,6 +730,10 @@ namespace BenchmarksDriver
                         Console.ResetColor();
                     }
 
+                }
+                if (monoOption.HasValue())
+                {
+                    serverJob.UseMonoRuntime = true;
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {

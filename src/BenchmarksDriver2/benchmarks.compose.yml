@@ -1,4 +1,7 @@
-﻿imports:
+﻿# Examples:
+# --config benchmarks.compose.yml --scenario plaintext --variable serverUri=http://10.0.0.102
+
+imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
