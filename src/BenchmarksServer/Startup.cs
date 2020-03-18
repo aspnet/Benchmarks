@@ -2430,6 +2430,7 @@ namespace BenchmarkServer
                             if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                             {
                                 found = true;
+                                break;
                             }
                             else
                             {
@@ -3410,17 +3411,16 @@ namespace BenchmarkServer
                     var found = false;
                     foreach (var feed in _runtimeFeedUrls)
                     {
-
                         var url = $"https://{feed}/flatcontainer/{packageName}/{runtimeVersion}/{packageName}.{runtimeVersion}.nupkg";
 
                         if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                         {
                             found = true;
+                            break;
                         }
                         else
                         {
                             continue;
-
                         }
                     }
 
