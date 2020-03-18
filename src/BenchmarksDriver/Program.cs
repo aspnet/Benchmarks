@@ -1016,6 +1016,15 @@ namespace BenchmarksDriver
                     }
                 }
 
+                if (monoOption.HasValue() && !serverJob.EnvironmentVariables.ContainsKey("MONO_ENV_OPTIONS"))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Log("WARNING: mono runtime is used, but no value for MONO_ENV_OPTIONS was set, using defaults: '--server --gc=sgen --gc-params=mode=throughput'");
+                    Console.ResetColor();
+
+                    serverJob.EnvironmentVariables["MONO_ENV_OPTIONS"] = "--server --gc=sgen --gc-params=mode=throughput";
+                }
+
                 // Building ClientJob
 
                 var mergedClientJob = new JObject(defaultJob);
