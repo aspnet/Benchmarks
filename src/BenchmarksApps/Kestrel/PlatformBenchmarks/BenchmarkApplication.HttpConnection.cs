@@ -60,7 +60,7 @@ namespace PlatformBenchmarks
 
                     if (_state == State.Body)
                     {
-                        await ProcessRequestAsync();
+                        ProcessRequest();
 
                         _state = State.StartLine;
 
