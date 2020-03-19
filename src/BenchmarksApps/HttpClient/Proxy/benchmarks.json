@@ -7,7 +7,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "master",
-      "Project": "src/BenchmarksApps/HtpClient/Proxy/Proxy.csproj"
+      "Project": "src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj"
     },
     "EnvironmentVariables": {
       "ASPNETCORE_BaseUri": "http://TFB-database:5001"
