@@ -16,9 +16,8 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: master
-      project: src/Proxy/Proxy.csproj
+      project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
-    #selfContained: true
     variables:
     arguments: '--baseUri {{downstreamUri}}'
     port: 5000

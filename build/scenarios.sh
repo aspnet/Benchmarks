@@ -31,7 +31,7 @@ plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
-httpClientJobs="-j $ROOT/src/Benchmarks/benchmarks.httpclient.json"
+httpClientJobs="-j $ROOT/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json"
 plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.1.20118.4"
 jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json"
 routingJobs="-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Routing/benchmarkapps/Benchmarks/benchmarks.json"
@@ -141,8 +141,6 @@ jobs=(
 
   # HttpClient
   "--scenario HttpClient $trend $httpClientJobs"
-  "--scenario HttpClientParallel $trend $httpClientJobs"
-  "--scenario HttpClientFactory $trend $httpClientJobs --duration 20" # custom duration to ensure the DNS refresh is exercized
 
   # Routing Benchmarks
   # "$routingBenchmarks --benchmarkdotnet RouteValueDictionaryBenchmark --arg RouteValueDictionaryBenchmark"

@@ -7,7 +7,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
       "BranchOrCommit": "master",
-      "Project": "src/Proxy/Proxy.csproj"
+      "Project": "src/BenchmarksApps/HtpClient/Proxy/Proxy.csproj"
     },
     "EnvironmentVariables": {
       "ASPNETCORE_BaseUri": "http://TFB-database:5001"
@@ -16,13 +16,5 @@
   },
   "HttpClient": {
     "Path": "/"
-  },
-  "HttpClientParallel": {
-    "Path": "/",
-    "Arguments": "--concurrency 10"
-  },
-  "HttpClientFactory": {
-    "Path": "/",
-    "Arguments": "--httpClientFactory true"
   }
 }
