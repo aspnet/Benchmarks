@@ -54,7 +54,7 @@ namespace PlatformBenchmarks
             _requestType = requestType;
         }
 
-        public ValueTask ProcessRequestAsync()
+        public void ProcessRequest()
         {
             if (_requestType == RequestType.PlainText)
             {
@@ -68,8 +68,6 @@ namespace PlatformBenchmarks
             {
                 Default(Writer);
             }
-
-            return default;
         }
 
         private static void PlainText(PipeWriter pipeWriter)
