@@ -12,12 +12,16 @@ jobs:
       branchOrCommit: master
       project: src/WrkClient/WrkClient.csproj
     readyStateText: 'Running '
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
+    sdkVersion: 3.1.102
+    aspNetCoreVersion: '3.1'
+    runtimeVersion: '3.1'
     waitForExit: true
     variables:
-      connections: 256
-      duration: 15
-      threads: 32
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}}"
+      connections: 256  # total number of HTTP connections to keep open with each thread handling N = connections/threads
+      duration: 15 # duration in seconds
+      threads: 32 # total number of threads to use
+      pipeline: 1
+    requiredVariables:
+      serverUri: http://10.0.0.102
+      serverPort: 5000
+    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% endif %}"
