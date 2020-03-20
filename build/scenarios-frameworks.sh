@@ -53,6 +53,12 @@ jobs=(
   "-j $ROOT/src/Benchmarks/benchmarks.te.ulib.json $trend -n Plaintext-Ulib --connections 1024 --no-clean --linux-only"
   "-j $ROOT/src/Benchmarks/benchmarks.te.ulib.json $trend -n Json-Ulib --connections 512 --no-clean --linux-only"
   "-j $ROOT/src/Benchmarks/benchmarks.te.ulib.json $trend -n FortunesPostgreSql-Ulib --connections 512 --no-clean --linux-only"
+
+  # RHTX (C#)
+
+  "-j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json $trend -n Plaintext-Rhtx --connections 1024 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json $trend -n Json-Rhtx --connections 512 --no-clean --linux-only"
+  "-j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json $trend -n FortunesPostgreSql-Rhtx --connections 512 --no-clean --linux-only"
 )
 
 # build driver
