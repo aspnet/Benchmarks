@@ -34,12 +34,19 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: plaintext
+    warmup:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        duration: 15
+        serverPort: 5000
     load:
       job: wrk
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        duration: 3
+        duration: 15
         serverPort: 5000
   connectionClose:
     application:

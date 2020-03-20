@@ -273,7 +273,15 @@ namespace BenchmarksDriver
                             return -1;
                         }
 
-                        variables[segments[0]] = segments[1];
+                        // Try to parse as integer, or the value would be a string
+                        if (long.TryParse(segments[1], out var intVariable))
+                        {
+                            variables[segments[0]] = intVariable;
+                        }
+                        else
+                        {
+                            variables[segments[0]] = segments[1];
+                        }                        
                     }
 
                     foreach (var property in _propertyOption.Values)
