@@ -567,14 +567,12 @@ namespace BenchmarkServer
 
                                             if (!String.IsNullOrEmpty(dockerImage))
                                             {
-                                                string inspect = "";
-
                                                 // Check the container is still running
-                                                ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
-                                                    outputDataReceived: d => inspect += d,
+                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId, 
+                                                    captureOutput: true,
                                                     log: false, throwOnError: false);
 
-                                                if (String.IsNullOrEmpty(inspect) || inspect.Contains("false"))
+                                                if (String.Equals(inspectResult.StandardOutput.Trim(), "false"))
                                                 {
                                                     Log.WriteLine($"The Docker container has stopped");
                                                     Log.WriteLine($"{job.State} -> Stopping");
