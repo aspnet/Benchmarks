@@ -11,6 +11,7 @@ pool: ASP.NET-Performance-Controller
 
 jobs:
 - job: BlazorWasmStress
+  timeoutInMinutes: 0 # clear default timeout of 60 minutes 
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver2
