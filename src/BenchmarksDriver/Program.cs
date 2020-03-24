@@ -224,9 +224,9 @@ namespace BenchmarksDriver
             var repositoryOption = app.Option("-r|--repository",
                 "Git repository containing the project to test.", CommandOptionType.SingleValue);
             _branchOption = app.Option("-b|--branch",
-                "Git repository containing the project to test.", CommandOptionType.SingleValue);
+                "Git branch containing the project to test.", CommandOptionType.SingleValue);
             _hashOption = app.Option("-h|--hash",
-                "Git repository containing the project to test.", CommandOptionType.SingleValue);
+                "Git commit hash containing the project to test.", CommandOptionType.SingleValue);
             var sourceOption = app.Option("-src|--source",
                 "Local folder containing the project to test.", CommandOptionType.SingleValue);
             var dockerFileOption = app.Option("-df|--docker-file",
