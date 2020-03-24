@@ -74,7 +74,7 @@ namespace PlatformBenchmarks
 
         private static void PlainText(PipeWriter pipeWriter)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, 16 * 132);
 
             // HTTP 1.1 OK
             writer.Write(_http11OK);
