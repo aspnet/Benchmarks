@@ -26,34 +26,32 @@ namespace PlatformBenchmarks
             const byte AsciiDigitStart = (byte)'0';
 
             var span = buffer.Span;
-            var bytesLeftInBlock = span.Length;
 
             // Fast path, try copying to the available memory directly
             var advanceBy = 0;
-            fixed (byte* output = span)
+            if (span.Length >= 3)
             {
-                var start = output;
-                if (number < 10 && bytesLeftInBlock >= 1)
+                if (number < 10)
                 {
-                    start[0] = (byte)(number + AsciiDigitStart);
+                    span[0] = (byte)(number + AsciiDigitStart);
                     advanceBy = 1;
                 }
-                else if (number < 100 && bytesLeftInBlock >= 2)
+                else if (number < 100)
                 {
                     var tens = (byte)((number * 205u) >> 11); // div10, valid to 1028
 
-                    start[0] = (byte)(tens + AsciiDigitStart);
-                    start[1] = (byte)(number - (tens * 10) + AsciiDigitStart);
+                    span[0] = (byte)(tens + AsciiDigitStart);
+                    span[1] = (byte)(number - (tens * 10) + AsciiDigitStart);
                     advanceBy = 2;
                 }
-                else if (number < 1000 && bytesLeftInBlock >= 3)
+                else if (number < 1000)
                 {
                     var digit0 = (byte)((number * 41u) >> 12); // div100, valid to 1098
                     var digits01 = (byte)((number * 205u) >> 11); // div10, valid to 1028
 
-                    start[0] = (byte)(digit0 + AsciiDigitStart);
-                    start[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
-                    start[2] = (byte)(number - (digits01 * 10) + AsciiDigitStart);
+                    span[0] = (byte)(digit0 + AsciiDigitStart);
+                    span[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
+                    span[2] = (byte)(number - (digits01 * 10) + AsciiDigitStart);
                     advanceBy = 3;
                 }
             }
