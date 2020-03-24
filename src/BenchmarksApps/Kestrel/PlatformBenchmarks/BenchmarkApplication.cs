@@ -160,7 +160,7 @@ namespace PlatformBenchmarks
             Json
         }
 
-        public struct JsonMessage
+        public class JsonMessage
         {
             public string message { get; set; }
         }
