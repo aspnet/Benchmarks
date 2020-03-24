@@ -14,13 +14,22 @@ Options:
   --scenario <scenario>                                          Scenario to execute.
   --profile <profile>                                            Profiles to apply. Can be used multiple times.
   --variable <key=value>                                         A global variable. can be used multiple times.
-  --output <filename>                                            An optional filename to store the output.
   --compare <filename>                                           An optional filename to compare the results to. Can be used multiple times.
-  --sql                                                          Connection string of the SQL Server Database to store results in.
-  --table                                                        Table name of the SQL Database to store results in.
+  
   --session                                                      A logical identifier to group related jobs.
+  --description                                                  A string describing the job.
   --property <key=value>                                         Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux
   
+  --sql                                                          Connection string or environment variable name of the SQL Server Database to store results in.
+  --table                                                        Table or environment variable name of the SQL Database to store results in.
+  --output <filename>                                            An optional filename to store the output document.
+  --no-metadata                                                  Don't record metadata in the stored document.
+  --no-measurements                                              Don't record measurements in the stored document.
+
+  --repeat <job>                                                 The job to repeat using the '--duration' argument.
+  --duration <HH:mm:ss>                                          The duration while the job is repeated.
+  --auto-flush                                                   Runs a single long-running job and flushes measurements automatically.
+
   These options are specific to a Job service named [JOB]
 
   --[JOB].endpoints <url>                                                  An endpoint on which to deploy the job definition, e.g., http://asp-perf-lin:5001. Can be used multiple times.

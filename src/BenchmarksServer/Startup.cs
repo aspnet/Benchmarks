@@ -1664,19 +1664,26 @@ namespace BenchmarkServer
 
                 var jsonStatistics = String.Join(Environment.NewLine, lines.Skip(startIndex + 1).Take(lines.Length - startIndex - 2));
 
-                var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
-
-                Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
-
-                foreach (var metadata in jobStatistics.Metadata)
+                try
                 {
-                    job.Metadata.Enqueue(metadata);
-                }
+                    var jobStatistics = JsonConvert.DeserializeObject<JobStatistics>(jsonStatistics);
 
-                foreach (var measurement in jobStatistics.Measurements)
-                {
-                    job.Measurements.Enqueue(measurement);
+                    Log.WriteLine($"Found {jobStatistics.Metadata.Count} metadata and {jobStatistics.Measurements.Count} measurements");
+
+                    foreach (var metadata in jobStatistics.Metadata)
+                    {
+                        job.Metadata.Enqueue(metadata);
+                    }
+
+                    foreach (var measurement in jobStatistics.Measurements)
+                    {
+                        job.Measurements.Enqueue(measurement);
+                    }
                 }
+                catch(Exception e)
+                {
+                    Log.WriteLine($"[ERROR] Invalid Json payload: " + e.Message);
+                }                
             }
         }
 

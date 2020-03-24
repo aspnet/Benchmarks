@@ -456,6 +456,16 @@ namespace BenchmarksDriver
             }
         }
 
+        public async Task ClearMeasurements()
+        {
+            Log.Verbose($"POST {_serverJobUri}/resetstats...");
+            var response = await _httpClient.PostAsync(_serverJobUri + "/resetstats", new StringContent(""));
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
+
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task FlushMeasurements()
         {
             Log.Verbose($"POST {_serverJobUri}/measurements/flush...");

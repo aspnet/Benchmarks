@@ -54,7 +54,9 @@ namespace BenchmarksDriver
             _propertyOption,
             _excludeMetadataOption,
             _excludeMeasurementsOption,
-            _autoflush
+            _autoflushOption,
+            _repeatOption,
+            _spanOption
             ;
 
         // The dynamic arguments that will alter the configurations
@@ -134,7 +136,9 @@ namespace BenchmarksDriver
             _propertyOption = app.Option("-p|--property", "Some custom key/value that will be added to the results, .e.g. --property arch=arm --property os=linux", CommandOptionType.MultipleValue);
             _excludeMeasurementsOption = app.Option("--no-measurements", "Remove all measurements from the stored results. For instance, all samples of a measure won't be stored, only the final value.", CommandOptionType.SingleOrNoValue);
             _excludeMetadataOption = app.Option("--no-metadata", "Remove all metadata from the stored results. The metadata is only necessary for being to generate friendly outputs.", CommandOptionType.SingleOrNoValue);
-            _autoflush = app.Option("--auto-flush", "Runs a single long-running job and flushes measurements automatically.", CommandOptionType.NoValue);
+            _autoflushOption = app.Option("--auto-flush", "Runs a single long-running job and flushes measurements automatically.", CommandOptionType.NoValue);
+            _repeatOption = app.Option("--repeat", "The job to repeat using the '--span' argument.", CommandOptionType.SingleValue);
+            _spanOption = app.Option("--span", "The duration while the job is repeated.", CommandOptionType.SingleValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -169,8 +173,6 @@ namespace BenchmarksDriver
                 "The number of best and worst jobs to skip.", CommandOptionType.SingleValue);
             var shutdownOption = app.Option("--before-shutdown",
                 "An endpoint to call before the application has shut down.", CommandOptionType.SingleValue);
-            var spanOption = app.Option("-sp|--span",
-                "The time during which the client jobs are repeated, in 'HH:mm:ss' format. e.g., 48:00:00 for 2 days.", CommandOptionType.SingleValue);
             var benchmarkdotnetOption = app.Option("--benchmarkdotnet",
                 "Runs a BenchmarkDotNet application, with an optional filter. e.g., --benchmarkdotnet, --benchmarkdotnet:*MyBenchmark*", CommandOptionType.SingleOrNoValue);
 
@@ -207,6 +209,10 @@ namespace BenchmarksDriver
                 }
 
                 var session = _sessionOption.Value();
+                var iterations = 1;
+                var exclude = 0;
+                var span = TimeSpan.Zero;
+
                 if (string.IsNullOrEmpty(session))
                 {
                     session = Guid.NewGuid().ToString("n");
@@ -214,18 +220,17 @@ namespace BenchmarksDriver
 
                 var description = _descriptionOption.Value() ?? "";
 
-                if (iterationsOption.HasValue() && spanOption.HasValue())
+                if (iterationsOption.HasValue() && _spanOption.HasValue())
                 {
                     Console.WriteLine($"The options --iterations and --span can't be used together.");
-
-                    app.ShowHelp();
-                    return 10;
+                    return -1;
                 }
 
-                var iterations = 1;
-                var exclude = 0;
-
-                var span = TimeSpan.Zero;
+                if (_spanOption.HasValue() && !TimeSpan.TryParse(_spanOption.Value(), out span))
+                {
+                    Console.WriteLine($"Invalid value for --span. Format is 'HH:mm:ss'");
+                    return -1;
+                }
 
                 if (_sqlTableOption.HasValue())
                 {
@@ -309,6 +314,12 @@ namespace BenchmarksDriver
                     {
                         var service = configuration.Jobs[jobName];
 
+                        if (!service.Endpoints.Any())
+                        {
+                            Console.WriteLine($"The service '{jobName}' is missing an endpoint to deploy on.");
+                            return -1;
+                        }
+
                         foreach (var endpoint in service.Endpoints)
                         {
                             try
@@ -321,8 +332,8 @@ namespace BenchmarksDriver
                             }
                             catch
                             {
-                                Console.WriteLine($"The specified endpoint url '{endpoint}' for '{service}' is invalid or not responsive.");
-                                return 2;
+                                Console.WriteLine($"The specified endpoint url '{endpoint}' for '{jobName}' is invalid or not responsive.");
+                                return -1;
                             }
                         }
                     }
@@ -335,7 +346,7 @@ namespace BenchmarksDriver
 
                     Log.Write($"Running session '{session}' with description '{_descriptionOption.Value()}'");
 
-                    if (_autoflush.HasValue())
+                    if (_autoflushOption.HasValue())
                     {
                         results = await RunAutoFlush(
                             configuration,
@@ -420,230 +431,299 @@ namespace BenchmarksDriver
             var dependencies = configuration.Scenarios[scenarioName].Select(x => x.Key).ToArray();
 
             var executionResults = new ExecutionResult();
+            var iterationStart = DateTime.UtcNow;
+            var jobsByDependency = new Dictionary<string, List<JobConnection>>();
 
-            for (var i = 1; i <= iterations; i++)
+            do
             {
-                if (iterations > 1)
+
+                // Repeat until the span duration is over
+
+                for (var i = 1; i <= iterations; i++)
                 {
-                    Log.Write($"Job {i} of {iterations}");
-                }
-
-                var jobsByDependency = new Dictionary<string, List<JobConnection>>();
-
-                foreach (var jobName in dependencies)
-                {
-                    var service = configuration.Jobs[jobName];
-                    service.DriverVersion = 2;
-
-                    var jobs = service.Endpoints.Select(endpoint => new JobConnection(service, new Uri(endpoint))).ToList();
-
-                    jobsByDependency[jobName] = jobs;
-
-                    // Check that each configured agent endpoint for this service 
-                    // has a compatible OS
-                    if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+                    
+                    if (iterations > 1)
                     {
-                        foreach (var job in jobs)
+                        jobsByDependency.Clear();
+                        Log.Write($"Job {i} of {iterations}");
+                    }
+
+                    foreach (var jobName in dependencies)
+                    {
+                        var service = configuration.Jobs[jobName];
+                        service.DriverVersion = 2;
+
+                        List<JobConnection> jobs;
+
+                        // Create a new list of JobConnection instances if the service is
+                        // not already running from a previous loop
+
+                        if (jobsByDependency.ContainsKey(jobName) && SpanShouldKeepJobRunning(jobName))
                         {
-                            var info = await job.GetInfoAsync();
+                            jobs = jobsByDependency[jobName];
 
-                            var os = info["os"]?.ToString();
+                            // Clear measurements, only if the service is not a console app as it
+                            // would already be stopped
 
-                            if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                            if (!service.WaitForExit)
                             {
-                                Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
-                                return new ExecutionResult();
+                                await Task.WhenAll(jobs.Select(job => job.ClearMeasurements()));
                             }
                         }
-                    }
-
-                    // Start this service on all configured agent endpoints
-                    await Task.WhenAll(
-                        jobs.Select(job =>
+                        else
                         {
-                            // Start job on agent
-                            return job.StartAsync(
-                                jobName,
-                                _outputArchiveOption,
-                                _buildArchiveOption
+                            jobs = service.Endpoints.Select(endpoint => new JobConnection(service, new Uri(endpoint))).ToList();
+
+                            jobsByDependency[jobName] = jobs;
+
+                            // Check that each configured agent endpoint for this service 
+                            // has a compatible OS
+                            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+                            {
+                                foreach (var job in jobs)
+                                {
+                                    var info = await job.GetInfoAsync();
+
+                                    var os = info["os"]?.ToString();
+
+                                    if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                                        return new ExecutionResult();
+                                    }
+                                }
+                            }
+
+                            // Start this service on all configured agent endpoints
+                            await Task.WhenAll(
+                                jobs.Select(job =>
+                                {
+                                // Start job on agent
+                                return job.StartAsync(
+                                            jobName,
+                                            _outputArchiveOption,
+                                            _buildArchiveOption
+                                        );
+                                })
                             );
-                        })
-                    );
 
-                    // Start threads that will keep the jobs alive
-                    foreach (var job in jobs)
-                    {
-                        job.StartKeepAlive();
-                    }
-
-                    if (service.WaitForExit)
-                    {
-                        // Wait for all clients to stop
-                        while (true)
-                        {
-                            var stop = true;
-
+                            // Start threads that will keep the jobs alive
                             foreach (var job in jobs)
                             {
-                                var state = await job.GetStateAsync();
-
-                                stop = stop && (state == ServerState.Stopped || state == ServerState.Failed);
+                                job.StartKeepAlive();
                             }
 
-                            if (stop)
+                            if (service.WaitForExit)
                             {
-                                break;
+                                // Wait for all clients to stop
+                                while (true)
+                                {
+                                    var stop = true;
+
+                                    foreach (var job in jobs)
+                                    {
+                                        var state = await job.GetStateAsync();
+
+                                        stop = stop && (state == ServerState.Stopped || state == ServerState.Failed);
+                                    }
+
+                                    if (stop)
+                                    {
+                                        break;
+                                    }
+
+                                    await Task.Delay(1000);
+                                }
+
+                                // Stop a blocking job
+                                await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                                await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
+
+                                await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
+
+                                await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                             }
-                            
-                            await Task.Delay(1000);
                         }
-                        
-                        // Stop a blocking job
-                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
-
-                        await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
-
-                        await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
-
-                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                     }
-                }
 
-                // Download traces, before the jobs are stopped
-                foreach (var jobName in dependencies)
-                {
-                    var service = configuration.Jobs[jobName];
-
-                    var jobConnections = jobsByDependency[jobName];
-
-                    foreach (var jobConnection in jobConnections)
+                    // Download traces, before the jobs are stopped
+                    foreach (var jobName in dependencies)
                     {
-                        var info = await jobConnection.GetInfoAsync();
-                        var os = Enum.Parse<Benchmarks.ServerJob.OperatingSystem>(info["os"]?.ToString() ?? "linux", ignoreCase: true);
-
-                        var traceExtension = ".nettrace";
-
-                        // Download trace
-                        if (jobConnection.Job.DotNetTrace || jobConnection.Job.Collect)
+                        // Unless the jobs can't be stopped
+                        if (SpanShouldKeepJobRunning(jobName))
                         {
-                            if (jobConnection.Job.Collect)
-                            {
-                                traceExtension = os == Benchmarks.ServerJob.OperatingSystem.Windows
-                                    ? ".etl.zip"
-                                    : ".trace.zip"
-                                    ;
-                            }
+                            continue;
+                        }
 
-                            try
-                            {
-                                var traceDestination = jobConnection.Job.Options.TraceOutput;
+                        var service = configuration.Jobs[jobName];
 
-                                if (String.IsNullOrWhiteSpace(traceDestination))
+                        var jobConnections = jobsByDependency[jobName];
+
+                        foreach (var jobConnection in jobConnections)
+                        {
+                            var info = await jobConnection.GetInfoAsync();
+                            var os = Enum.Parse<Benchmarks.ServerJob.OperatingSystem>(info["os"]?.ToString() ?? "linux", ignoreCase: true);
+
+                            var traceExtension = ".nettrace";
+
+                            // Download trace
+                            if (jobConnection.Job.DotNetTrace || jobConnection.Job.Collect)
+                            {
+                                if (jobConnection.Job.Collect)
                                 {
-                                    traceDestination = jobName;
+                                    traceExtension = os == Benchmarks.ServerJob.OperatingSystem.Windows
+                                        ? ".etl.zip"
+                                        : ".trace.zip"
+                                        ;
                                 }
 
-                                
-                                if (!traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
+                                try
                                 {
-                                    traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + traceExtension;
+                                    var traceDestination = jobConnection.Job.Options.TraceOutput;
+
+                                    if (String.IsNullOrWhiteSpace(traceDestination))
+                                    {
+                                        traceDestination = jobName;
+                                    }
+
+
+                                    if (!traceDestination.EndsWith(traceExtension, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        traceDestination = traceDestination + "." + DateTime.Now.ToString("MM-dd-HH-mm-ss") + traceExtension;
+                                    }
+
+                                    Log.Write($"Collecting trace file '{traceDestination}' ...");
+
+                                    await jobConnection.DownloadDotnetTrace(traceDestination);
                                 }
-
-                                Log.Write($"Collecting trace file '{traceDestination}' ...");
-
-                                await jobConnection.DownloadDotnetTrace(traceDestination);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Write($"Error while fetching trace for '{jobName}'");
-                                Log.Verbose(e.Message);
+                                catch (Exception e)
+                                {
+                                    Log.Write($"Error while fetching trace for '{jobName}'");
+                                    Log.Verbose(e.Message);
+                                }
                             }
                         }
                     }
-                }
 
-                // Stop all non-blocking jobs in reverse dependency order (clients first)
-                foreach (var jobName in dependencies)
-                {
-                    var service = configuration.Jobs[jobName];
-
-                    if (!service.WaitForExit)
+                    // Stop all non-blocking jobs in reverse dependency order (clients first)
+                    foreach (var jobName in dependencies)
                     {
+                        var service = configuration.Jobs[jobName];
+
                         var jobs = jobsByDependency[jobName];
 
-                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+                        if (!service.WaitForExit)
+                        {
+                            // Unless the jobs can't be stopped
+                            if (!SpanShouldKeepJobRunning(jobName))
+                            {
+                                await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+                            }
 
-                        await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
+                            await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
 
-                        await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
+                            // Unless the jobs can't be stopped
+                            if (!SpanShouldKeepJobRunning(jobName))
+                            {
+                                await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
 
-                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
-                    }
-                }
-
-                // Display results
-                foreach (var jobName in dependencies)
-                {
-                    var service = configuration.Jobs[jobName];
-
-                    var jobConnections = jobsByDependency[jobName];
-
-                    if (!service.Options.DiscardResults)
-                    {
-                        Log.Quiet("");
-                        Log.Quiet($"{jobName}");
-                        Log.Quiet($"-------");
+                                await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                            }
+                        }
                     }
 
-                    foreach (var jobConnection in jobConnections)
+                    // Display results
+                    foreach (var jobName in dependencies)
                     {
-                        // Convert any json result to an object
-                        NormalizeResults(jobConnections);
+                        var service = configuration.Jobs[jobName];
+
+                        var jobConnections = jobsByDependency[jobName];
 
                         if (!service.Options.DiscardResults)
                         {
-                            WriteMeasures(jobConnection);
+                            Log.Quiet("");
+                            Log.Quiet($"{jobName}");
+                            Log.Quiet($"-------");
+                        }
+
+                        foreach (var jobConnection in jobConnections)
+                        {
+                            // Convert any json result to an object
+                            NormalizeResults(jobConnections);
+
+                            if (!service.Options.DiscardResults)
+                            {
+                                WriteMeasures(jobConnection);
+                            }
                         }
                     }
+
+                    var jobResults = await CreateJobResultsAsync(configuration, dependencies, jobsByDependency);
+
+                    foreach (var property in _propertyOption.Values)
+                    {
+                        var segments = property.Split('=', 2);
+
+                        jobResults.Properties[segments[0]] = segments[1];
+                    }
+
+                    executionResults.JobResults = jobResults;
                 }
 
-                var jobResults = await CreateJobResultsAsync(configuration, dependencies, jobsByDependency);
+                // Save results
 
-                foreach (var property in _propertyOption.Values)
+                if (_outputOption.HasValue())
                 {
-                    var segments = property.Split('=', 2);
+                    var filename = _outputOption.Value();
+                    var index = 1;
 
-                    jobResults.Properties[segments[0]] = segments[1];
+                    // If running in a span, create a unique filename for each run
+                    if (span > TimeSpan.Zero)
+                    {
+                        do
+                        {
+                            var filenameWithoutExtension = Path.GetFileNameWithoutExtension(_outputOption.Value());
+                            filename = filenameWithoutExtension + "-" + index++ + Path.GetExtension(_outputOption.Value());
+                        } while (File.Exists(filename));
+                    }
+
+                    await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(executionResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+
+                    Log.Write("", notime: true);
+                    Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
                 }
 
-                executionResults.JobResults = jobResults;
-            }
+                // Store data
 
-            // Save results
-
-            if (_outputOption.HasValue())
-            {
-                var filename = _outputOption.Value();
-
-                if (File.Exists(filename))
+                if (!String.IsNullOrEmpty(_sqlConnectionString))
                 {
-                    File.Delete(filename);
+                    await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionString, _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                 }
 
-                await File.WriteAllTextAsync(filename, JsonConvert.SerializeObject(executionResults.JobResults, Formatting.Indented, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
-
-                Log.Write("", notime: true);
-                Log.Write($"Results saved in '{new FileInfo(filename).FullName}'", notime: true);
             }
+            while (!IsSpanOver());
 
-            // Store data
-
-            if (!String.IsNullOrEmpty(_sqlConnectionString))
-            {
-                await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionString, _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
-            }
 
             return executionResults;
+
+            bool IsSpanOver()
+            {
+                return span == TimeSpan.Zero || (DateTimeOffset.UtcNow - iterationStart > span);
+            }
+
+            bool SpanShouldKeepJobRunning(string jobName)
+            {
+                if (IsSpanOver())
+                {
+                    return false;
+                }
+
+                var repeatAfterJob = _repeatOption.Value();
+                var jobKeptRunning = dependencies.TakeWhile(x => !String.Equals(repeatAfterJob, x, StringComparison.OrdinalIgnoreCase));
+
+                return jobKeptRunning.Any(x => String.Equals(jobName, x , StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         private static async Task<ExecutionResult> RunAutoFlush(
