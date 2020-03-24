@@ -175,8 +175,8 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter)
-            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter));
+        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint = 0)
+            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
 
         private struct WriterAdapter : IBufferWriter<byte>
         {
