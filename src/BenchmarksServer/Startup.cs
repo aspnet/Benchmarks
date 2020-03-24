@@ -378,7 +378,7 @@ namespace BenchmarkServer
                             {
                                 // The job needs to be deleted
                                 Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
-                                Log.WriteLine($"{job.State} -> Deleting");
+                                Log.WriteLine($"{j.State} -> Deleting");
                                 j.State = ServerState.Deleting;
                             }
                             else
