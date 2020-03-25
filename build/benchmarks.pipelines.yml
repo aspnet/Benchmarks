@@ -28,4 +28,4 @@ scenarios:
       variables:
         presetHeaders: html
         path: /mvc/fortunes/ef
-        rate: 10000
+        connections: 64
