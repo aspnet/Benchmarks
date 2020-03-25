@@ -1,0 +1,27 @@
+﻿imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+jobs:
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Benchmarks/Benchmarks.csproj
+    readyStateText: Application started.
+    variables:
+      protocol: https
+      server: Kestrel
+      transport: Sockets
+      scenario: plaintext
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
+scenarios:
+  fortunes:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: MvcDbFortunesEf
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: html
+        path: /mvc/fortunes/ef
+        serverPort: 5000

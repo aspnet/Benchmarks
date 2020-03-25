@@ -1,0 +1,22 @@
+variables:
+  - group: 'ASP.NET Benchmarks' # variable group
+  - name: 'duration' # duration of the stress benchmarks
+    value: 60 # 1 minute, interval between each measurement
+  - name: 'span'
+    value: '24:00:00' # 24 hours
+
+pool: ASP.NET-Performance-Controller
+
+# All the jobs are triggered at the same time
+# Jobs are run in parallel
+# Steps are serial
+
+jobs:
+- job: Benchmark
+  timeoutInMinutes: 0 # clear default timeout of 60 minutes 
+  steps:
+  - powershell: |
+        cd ./src/BenchmarksDriver2
+        dotnet run -c release -- --config ../../build/benchmarks.pipelines.json --scenario fortunes --description "fortunesdaily" --application.endpoints http://10.0.0.5:5001 --variable serverUri=http://10.0.0.5 --variable duration=$(duration) --repeat load --span "$(span)" --no-measurements --no-metadata --sql CONNECTION_STRING --table AspNetReliability
+    env:
+        CONNECTION_STRING: $(sql.connectionstring)

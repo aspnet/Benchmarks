@@ -35,18 +35,18 @@ scenarios:
       variables:
         scenario: plaintext
     warmup:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        duration: 15
+        duration: 5
         serverPort: 5000
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        duration: 15
+        duration: 3
         serverPort: 5000
   connectionClose:
     application:

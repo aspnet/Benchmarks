@@ -1,7 +1,9 @@
 ﻿variables:
   headers:
     none: ''
-    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7 --header Connection:keep-alive"
+    plaintext: "--header Accept:text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"
+    html: "--header Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    json: "--header Accept:application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"
     connectionclose: "--header Connection:close"
   presetHeaders: none
 
