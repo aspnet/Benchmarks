@@ -374,6 +374,9 @@ namespace BenchmarkServer
 
                             Log.WriteLine($"Acquiring Job '{j.Id}'");
 
+                            // Ensure all local assets are available
+                            await EnsureDotnetInstallExistsAsync();
+
                             if (now - j.LastDriverCommunicationUtc > DriverTimeout)
                             {
                                 // The job needs to be deleted
@@ -390,9 +393,6 @@ namespace BenchmarkServer
                         }
 
                         Log.WriteLine($"Processing job {j.Id} in state {j.State}");
-
-                        // Ensure all local assets are available
-                        await EnsureDotnetInstallExistsAsync();
 
                         job = j;
                         break;
@@ -3842,6 +3842,8 @@ namespace BenchmarkServer
 
         public static Task EnsureDotnetInstallExistsAsync()
         {
+            Log.WriteLine($"Checking requirements...");
+            
             if (String.IsNullOrEmpty(_rootTempDir))
             {
                 // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
@@ -3893,10 +3895,6 @@ namespace BenchmarkServer
                 {
                     Log.WriteLine($"Downloading PerfView to '{_perfviewPath}'");
                     DownloadFileAsync(_perfviewUrl, _perfviewPath, maxRetries: 5, timeout: 60).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    Log.WriteLine($"Found PerfView locally at '{_perfviewPath}'");
                 }
             }
 
