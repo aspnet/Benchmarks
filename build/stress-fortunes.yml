@@ -17,6 +17,6 @@ jobs:
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver2
-        dotnet run -c release -- --config ../../build/benchmarks.pipelines.yml --scenario fortunes --description "fortunesdaily" --application.endpoints http://10.0.0.5:5001 --load.endpoints http://10.0.0.7:5001 --variable serverUri=https://10.0.0.5 --variable duration=$(duration) --repeat load --span "$(span)" --no-measurements --no-metadata --sql CONNECTION_STRING --table AspNetReliability
+        dotnet run -c release -- --config ../../build/benchmarks.pipelines.yml --scenario fortunes --description "fortunesdaily" --application.endpoints http://10.0.0.5:5001 --load.endpoints http://10.0.0.7:5001 --variable serverUri=http://10.0.0.5 --variable duration=$(duration) --repeat load --span "$(span)" --no-measurements --no-metadata --sql CONNECTION_STRING --table AspNetReliability
     env:
         CONNECTION_STRING: $(sql.connectionstring)

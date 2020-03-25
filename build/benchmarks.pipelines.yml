@@ -8,7 +8,7 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
-      protocol: https
+      protocol: http
       server: Kestrel
       transport: Sockets
       scenario: plaintext
