@@ -16,6 +16,10 @@
   "PlaintextPlatform": {
     "Path": "/plaintext"
   },
+  "PlaintextPlatform-Mono": {
+    "Path": "/plaintext",
+    "UseMonoRuntime":  true
+  },
   "PlaintextNonPipelinedPlatform": {
     "Path": "/plaintext",
     "ClientProperties": {

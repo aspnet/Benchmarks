@@ -160,6 +160,16 @@ jobs=(
   # Blazor
   "-n BlazorBasic $trend $blazorJobs"
   "-n BlazorFormInput $trend $blazorJobs"
+
+  # Mono
+  "-n PlaintextPlatform-Mono --webHost KestrelSockets $trend $plaintextPlatformJobs --mono-runtime"
+  "-n Plaintext-Mono --webHost KestrelSockets $trend $plaintextJobs -i 3 --mono-runtime"
+  "-n PlaintextNonPipelined-Mono --webHost KestrelSockets $trend $plaintextJobs --mono-runtime"
+  "-n JsonPlatform-Mono --webHost KestrelSockets $trend $jsonPlatformJobs --mono-runtime"
+  "-n Json-Mono --webHost KestrelSockets $trend $jsonJobs --mono-runtime"
+  "-n Plaintext-Mono -m https --webHost KestrelSockets $trend $plaintextJobs --mono-runtime"
+  "-n DbFortunesRaw-Mono --webHost KestrelSockets $trend $htmlJobs --database PostgreSql --mono-runtime"
+
 )
 
 # build driver

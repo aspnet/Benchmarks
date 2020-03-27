@@ -18,12 +18,24 @@
   "Plaintext": {
     "Path": "/plaintext"
   },
+  "Plaintext-Mono": {
+    "Path": "/plaintext",
+    "UseMonoRuntime": true
+  },
   "PlaintextNonPipelined": {
     "Path": "/plaintext",
     "ClientProperties": {
       "ScriptName": "",
       "PipelineDepth": 0
     }
+  },
+  "PlaintextNonPipelined-Mono": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "UseMonoRuntime": true
   },
   "CopyToAsync": {
     "Path": "/copytoasync",
