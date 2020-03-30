@@ -33,6 +33,10 @@ namespace PlatformBenchmarks
                 {
                     options.IOQueueCount = theadCount.Value;
                 }
+
+#if NETCOREAPP5_0
+                options.WaitForDataBeforeAllocatingBuffer = false;
+#endif
             });
 
             return builder;
