@@ -41,41 +41,50 @@ namespace PlatformBenchmarks
         {
             while (true)
             {
-                var task = Reader.ReadAsync();
-
-                if (!task.IsCompleted)
+                var readResult = await Reader.ReadAsync();
+                
+                if (!HandleRequest(readResult))
                 {
-                    // No more data in the input
-                    await OnReadCompletedAsync();
+                    return;
                 }
 
-                var result = await task;
-                var buffer = result.Buffer;
-                while (true)
-                {
-                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
-                    {
-                        return;
-                    }
-
-                    if (_state == State.Body)
-                    {
-                        ProcessRequest();
-
-                        _state = State.StartLine;
-
-                        if (!buffer.IsEmpty)
-                        {
-                            // More input data to parse
-                            continue;
-                        }
-                    }
-
-                    // No more input or incomplete data, Advance the Reader
-                    Reader.AdvanceTo(buffer.Start, examined);
-                    break;
-                }
+                await Writer.FlushAsync();
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleRequest(in ReadResult result)
+        {
+            var buffer = result.Buffer;
+            var writer = GetWriter(Writer);
+
+            while (true)
+            {
+                if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                {
+                    return false;
+                }
+
+                if (_state == State.Body)
+                {
+                    ProcessRequest(ref writer);
+
+                    _state = State.StartLine;
+
+                    if (!buffer.IsEmpty)
+                    {
+                        // More input data to parse
+                        continue;
+                    }
+                }
+
+                // No more input or incomplete data, Advance the Reader
+                Reader.AdvanceTo(buffer.Start, examined);
+                break;
+            }
+
+            writer.Commit();
+            return true;
         }
 
         private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
@@ -156,11 +165,6 @@ namespace PlatformBenchmarks
         {
         }
 #endif
-
-        public async ValueTask OnReadCompletedAsync()
-        {
-            await Writer.FlushAsync();
-        }
 
         private static void ThrowUnexpectedEndOfData()
         {
