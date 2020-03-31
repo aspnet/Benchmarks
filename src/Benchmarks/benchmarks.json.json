@@ -15,8 +15,8 @@
     "Path": "/json"
   },
   "Json-Mono": {
-    "Path": "/json"
-      "UseMonoRuntime": true
+    "Path": "/json",
+    "UseMonoRuntime": true
   },
   "MvcJson": {
     "Path": "/mvc/json"
