@@ -1195,7 +1195,7 @@ namespace BenchmarksDriver
                     requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Windows;
                 }
 
-                if (linuxOnlyOption.HasValue())
+                if (linuxOnlyOption.HasValue() || monoOption.HasValue())
                 {
                     requiredOperatingSystem = Benchmarks.ServerJob.OperatingSystem.Linux;
                 }
