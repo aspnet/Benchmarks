@@ -1,0 +1,46 @@
+﻿# Examples:
+# --config benchmarks.signalr.yml --scenario broadcast --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario echo --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario echoAll --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario echoIdle --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario echoIdle --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --profile aspnet-physical
+
+imports:
+  - ../SignalRClient/signalrclient.yml
+  - ../BenchmarksApps/SignalR/signalrserver.yml
+variables:
+    serverPort: 5000
+scenarios:
+  broadcast:
+    application:
+      job: signalrServer
+    load:
+      job: signalrClient
+      variables:
+        scenario: broadcast
+        path: /echo
+  echo:
+    application:
+      job: signalrServer
+    load:
+      job: signalrClient
+      variables:
+        scenario: echo
+        path: /echo
+  echoAll:
+    application:
+      job: signalrServer
+    load:
+      job: signalrClient
+      variables:
+        scenario: echoAll
+        path: /echo
+  echoIdle:
+    application:
+      job: signalrServer
+    load:
+      job: signalrClient
+      variables:
+        scenario: echoIdle
+        path: /echo
