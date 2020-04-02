@@ -701,15 +701,24 @@ namespace BenchmarksDriver
                     await JobSerializer.WriteJobResultsToSqlAsync(executionResults.JobResults, _sqlConnectionString, _tableName, session, _scenarioOption.Value(), _descriptionOption.Value());
                 }
 
+                if (span > TimeSpan.Zero)
+                {
+                    Console.WriteLine("Remaining job duration: {0}", GetRemainingTime());
+                }
             }
             while (!IsSpanOver());
 
 
             return executionResults;
 
+            TimeSpan GetRemainingTime()
+            {
+                return DateTime.UtcNow - iterationStart;
+            }
+
             bool IsSpanOver()
             {
-                return span == TimeSpan.Zero || (DateTimeOffset.UtcNow - iterationStart > span);
+                return span == TimeSpan.Zero || (DateTime.UtcNow - iterationStart > span);
             }
 
             bool SpanShouldKeepJobRunning(string jobName)
