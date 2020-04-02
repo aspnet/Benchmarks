@@ -67,7 +67,7 @@ jobs=(
   "-n Json-Actix $actixJobs"
   "-n FortunesPostgreSql-Actix $actixJobs"
 
-    # Netty
+  # Netty
   "-n Plaintext-Netty $nettyJobs"
   "-n PlaintextNonPipelined-Netty $nettyJobs"
   "-n Json-Netty $nettyJobs"
