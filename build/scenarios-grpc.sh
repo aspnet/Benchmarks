@@ -39,8 +39,8 @@ jobs=(
   # GRPC ASP.NET Core
   "-n GrpcUnary-h2load --webHost KestrelSockets $trend $grpcManagedJobs --connections 64 --warmup 5 -m h2c --headers None"
   "-n GrpcUnary-h2load --webHost KestrelSockets $trend $grpcManagedJobs --connections 64 --warmup 5 -m h2 --headers None"
-  "-n GrpcUnary-Steams-h2load --webHost KestrelSockets $trend $grpcManagedJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None"
-  "-n GrpcUnary-Steams-h2load --webHost KestrelSockets $trend $grpcManagedJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2 --headers None"
+  "-n GrpcUnary-Streams-h2load --webHost KestrelSockets $trend $grpcManagedJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None"
+  "-n GrpcUnary-Streams-h2load --webHost KestrelSockets $trend $grpcManagedJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2 --headers None"
   "-n GrpcUnary-GrpcCore --webHost KestrelSockets $trend $grpcManagedJobs --connections 64 --warmup 5 -m h2c"
   "-n GrpcUnary-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 64 --warmup 5 -m h2c"
   "-n GrpcUnary-GrpcNetClient --webHost KestrelSockets $trend $grpcManagedJobs --connections 64 --warmup 5 -m h2"
@@ -59,7 +59,7 @@ jobs=(
 
   # GRPC C-core
   "-n GrpcUnary-h2load --webHost CCore $trend $grpcNativeJobs --connections 64 --warmup 5 -m h2c --headers None"
-  "-n GrpcUnary-Steams-h2load --webHost CCore $trend $grpcNativeJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None"
+  "-n GrpcUnary-Streams-h2load --webHost CCore $trend $grpcNativeJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None"
   "-n GrpcUnary-GrpcCore --webHost CCore $trend $grpcNativeJobs --connections 64 --warmup 5 -m h2c"
   "-n GrpcUnary-GrpcNetClient --webHost CCore $trend $grpcNativeJobs --connections 64 --warmup 5 -m h2c"
   "-n GrpcUnary-1MB-GrpcCore --webHost CCore $trend $grpcNativeJobs --connections 64 --warmup 5 -m h2c"
@@ -74,8 +74,8 @@ jobs=(
   # GRPC Go
   "-n GrpcUnary-h2load --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --headers None --linux-only"
   "-n GrpcUnary-h2load --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --headers None --linux-only"
-  "-n GrpcUnary-Steams-h2load --webHost Docker $trend $grpcGoJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None --linux-only"
-  "-n GrpcUnary-Steams-h2load --webHost Docker $trend $grpcGoJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2 --headers None --linux-only"
+  "-n GrpcUnary-Streams-h2load --webHost Docker $trend $grpcGoJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2c --headers None --linux-only"
+  "-n GrpcUnary-Streams-h2load --webHost Docker $trend $grpcGoJobs -p Streams=70 --connections $CPU_COUNT --clientThreads $CPU_COUNT --warmup 5 -m h2 --headers None --linux-only"
   "-n GrpcUnary-GrpcCore --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcUnary-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2c --linux-only"
   "-n GrpcUnary-GrpcNetClient --webHost Docker $trend $grpcGoJobs --connections 64 --warmup 5 -m h2 --env protocol=h2 --linux-only"
