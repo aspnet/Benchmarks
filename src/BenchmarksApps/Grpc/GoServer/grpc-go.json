@@ -114,5 +114,17 @@
       "protocol": "h2c",
       "RequestBody": "eyJOYW1lIjoiV29ybGQifQ=="
     }
+  },
+
+  "GrpcJson-Streams-h2load": {
+    "Client": "h2load",
+    "Path": "/unary",
+    "Headers": {
+      "content-type": "application/json"
+    },
+    "ClientProperties": {
+      "protocol": "h2c",
+      "RequestBody": "eyJOYW1lIjoiV29ybGQifQ=="
+    }
   }
 }
