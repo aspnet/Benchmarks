@@ -104,19 +104,20 @@
     }
   },
 
-  "GrpcJson-h2load": {
+  "GrpcUnary-Streams-h2load": {
     "Client": "h2load",
-    "Path": "/unary",
+    "Path": "/grpc.testing.BenchmarkService/UnaryCall",
     "Headers": {
-      "content-type": "application/json"
+      "content-type": "application/grpc",
+      "TE": "trailers"
     },
     "ClientProperties": {
       "protocol": "h2c",
-      "RequestBody": "eyJOYW1lIjoiV29ybGQifQ=="
+      "RequestBody": "AAAAAAcKBVdvcmxk"
     }
   },
 
-  "GrpcJson-Streams-h2load": {
+  "GrpcJson-h2load": {
     "Client": "h2load",
     "Path": "/unary",
     "Headers": {
