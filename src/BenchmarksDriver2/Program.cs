@@ -713,12 +713,17 @@ namespace BenchmarksDriver
 
             TimeSpan GetRemainingTime()
             {
+                return span - GetEllapsedTime();
+            }
+
+            TimeSpan GetEllapsedTime()
+            {
                 return DateTime.UtcNow - iterationStart;
             }
 
             bool IsSpanOver()
             {
-                return span == TimeSpan.Zero || (DateTime.UtcNow - iterationStart > span);
+                return span == TimeSpan.Zero || GetEllapsedTime() > span;
             }
 
             bool SpanShouldKeepJobRunning(string jobName)
