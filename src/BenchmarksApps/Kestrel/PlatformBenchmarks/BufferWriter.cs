@@ -22,6 +22,8 @@ namespace PlatformBenchmarks
 
         public Span<byte> Span => _span;
 
+        public int Buffered => _buffered;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Commit()
         {

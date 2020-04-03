@@ -6,6 +6,7 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using System.IO.Pipelines;
 
 namespace PlatformBenchmarks
 {
@@ -22,18 +23,29 @@ namespace PlatformBenchmarks
             var threadCountRaw = builder.GetSetting("threadCount");
             int? theadCount = null;
 
-            if (!string.IsNullOrEmpty(threadCountRaw) && Int32.TryParse(threadCountRaw, out var value))
+            if (!string.IsNullOrEmpty(threadCountRaw) &&
+                int.TryParse(threadCountRaw, out var value))
             {
                 theadCount = value;
             }
 
-            builder.UseSockets(options =>
+            if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
             {
-                if (theadCount.HasValue)
+                builder.UseSockets(options =>
                 {
-                    options.IOQueueCount = theadCount.Value;
-                }
-            });
+                    if (theadCount.HasValue)
+                    {
+                        options.IOQueueCount = theadCount.Value;
+                    }
+                });
+            }
+            else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.UseLinuxTransport(options =>
+                {
+                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                });
+            }
 
             return builder;
         }
