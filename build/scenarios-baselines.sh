@@ -31,6 +31,9 @@ plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
+plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8"
+jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8"
+
 baselines=(
   # Stable 2.1
   "--description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1 " 
@@ -56,14 +59,20 @@ baselines=(
 )
 
 jobs=(
+  # Platform
+  "-n PlaintextPlatform --webHost KestrelSockets $plaintextPlatformJobs"
+  "-n JsonPlatform --webHost KestrelSockets $jsonPlatformJobs"
+
   # Plaintext
   "-n Plaintext --webHost KestrelSockets $plaintextJobs"
   "-n PlaintextNonPipelined --webHost KestrelSockets $plaintextJobs"
   "-n MvcPlaintext --webHost KestrelSockets $plaintextJobs"
   "-n EndpointPlaintext --webHost KestrelSockets $plaintextJobs"
-  "-n Json --webHost KestrelSockets $jsonJobs"
   "-n MvcJson --webHost KestrelSockets $jsonJobs"
-
+  
+  # JSon
+  "-n Json --webHost KestrelSockets $jsonJobs"
+  
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $plaintextJobs"
   "-n Json -m https --webHost KestrelSockets $jsonJobs"
