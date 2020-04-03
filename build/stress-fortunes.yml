@@ -3,7 +3,7 @@ variables:
   - name: 'duration' # duration of the stress benchmarks
     value: 60 # 1 minute, interval between each measurement
   - name: 'span'
-    value: '24:00:00' # 24 hours
+    value: '23:00:00' # 24 hours
 
 pool: ASP.NET-Performance-Controller
 
