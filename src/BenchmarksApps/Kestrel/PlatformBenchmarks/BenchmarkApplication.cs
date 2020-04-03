@@ -41,9 +41,9 @@ namespace PlatformBenchmarks
         public static class Paths
         {
             public readonly static AsciiString SingleQuery = "/db";
-            public readonly static AsciiString Json = "/json";
+            public readonly static AsciiString Json = "/j";
             public readonly static AsciiString Fortunes = "/fortunes";
-            public readonly static AsciiString Plaintext = "/plaintext";
+            public readonly static AsciiString Plaintext = "/p";
             public readonly static AsciiString Updates = "/updates/queries=";
             public readonly static AsciiString MultipleQueries = "/queries/queries=";
         }
