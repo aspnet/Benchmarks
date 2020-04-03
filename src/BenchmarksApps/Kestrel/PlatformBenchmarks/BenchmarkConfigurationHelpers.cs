@@ -15,24 +15,16 @@ namespace PlatformBenchmarks
         {
             builder.UseConfiguration(configuration);
 
-            // Handle the transport type
-            var webHost = builder.GetSetting("KestrelTransport");
-
-            // Handle the thread count
-            var threadCountRaw = builder.GetSetting("threadCount");
-            int? theadCount = null;
-
-            if (!string.IsNullOrEmpty(threadCountRaw) && Int32.TryParse(threadCountRaw, out var value))
-            {
-                theadCount = value;
-            }
-
             builder.UseSockets(options =>
             {
-                if (theadCount.HasValue)
+                if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
                 {
-                    options.IOQueueCount = theadCount.Value;
+                    options.IOQueueCount = threadCount;
                 }
+
+#if NETCOREAPP5_0
+                options.WaitForDataBeforeAllocatingBuffer = false;
+#endif
             });
 
             return builder;
