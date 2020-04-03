@@ -5,6 +5,8 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -16,6 +18,8 @@ namespace PlatformBenchmarks
 
         public PipeReader Reader { get; set; }
         public PipeWriter Writer { get; set; }
+
+        protected HtmlEncoder HtmlEncoder { get; } = CreateHtmlEncoder();
 
         private HttpParser<ParsingAdapter> Parser { get; } = new HttpParser<ParsingAdapter>();
 
@@ -37,30 +41,81 @@ namespace PlatformBenchmarks
             }
         }
 
+        private static HtmlEncoder CreateHtmlEncoder()
+        {
+            var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+            settings.AllowCharacter('\u2014');  // allow EM DASH through
+            return HtmlEncoder.Create(settings);
+        }
+
+#if !DATABASE
         private async Task ProcessRequestsAsync()
         {
             while (true)
             {
-                var task = Reader.ReadAsync();
+                var readResult = await Reader.ReadAsync();
 
-                if (!task.IsCompleted)
+                if (!HandleRequest(readResult))
                 {
-                    // No more data in the input
-                    await OnReadCompletedAsync();
+                    return;
                 }
 
-                var result = await task;
-                var buffer = result.Buffer;
+                await Writer.FlushAsync();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleRequest(in ReadResult result)
+        {
+            var buffer = result.Buffer;
+            var writer = GetWriter(Writer);
+
+            while (true)
+            {
+                if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                {
+                    return false;
+                }
+
+                if (_state == State.Body)
+                {
+                    ProcessRequest(ref writer);
+
+                    _state = State.StartLine;
+
+                    if (!buffer.IsEmpty)
+                    {
+                        // More input data to parse
+                        continue;
+                    }
+                }
+
+                // No more input or incomplete data, Advance the Reader
+                Reader.AdvanceTo(buffer.Start, examined);
+                break;
+            }
+
+            writer.Commit();
+            return true;
+        }
+#else
+        private async Task ProcessRequestsAsync()
+        {
+            while (true)
+            {
+                var readResult = await Reader.ReadAsync();
+
+                var buffer = readResult.Buffer;
                 while (true)
                 {
-                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                    if (!ParseHttpRequest(ref buffer, readResult.IsCompleted, out var examined))
                     {
                         return;
                     }
 
                     if (_state == State.Body)
                     {
-                        ProcessRequest();
+                        await ProcessRequestAsync();
 
                         _state = State.StartLine;
 
@@ -75,18 +130,19 @@ namespace PlatformBenchmarks
                     Reader.AdvanceTo(buffer.Start, examined);
                     break;
                 }
+
+                await Writer.FlushAsync();
             }
         }
-
+#endif
         private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
         {
             examined = buffer.End;
-
-            var consumed = buffer.Start;
             var state = _state;
 
             if (!buffer.IsEmpty)
             {
+                SequencePosition consumed;
                 if (state == State.StartLine)
                 {
                     if (Parser.ParseRequestLine(new ParsingAdapter(this), buffer, out consumed, out examined))
@@ -143,7 +199,6 @@ namespace PlatformBenchmarks
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
-
         public void OnHeadersComplete(bool endStream)
         {
         }
@@ -151,16 +206,10 @@ namespace PlatformBenchmarks
         public void OnHeader(Span<byte> name, Span<byte> value)
         {
         }
-
         public void OnHeadersComplete()
         {
         }
 #endif
-
-        public async ValueTask OnReadCompletedAsync()
-        {
-            await Writer.FlushAsync();
-        }
 
         private static void ThrowUnexpectedEndOfData()
         {
@@ -217,18 +266,12 @@ namespace PlatformBenchmarks
 #else
             public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.OnHeader(name, value);
-
             public void OnHeadersComplete()
                 => RequestHandler.OnHeadersComplete();
 #endif
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
-
-#if !NETCOREAPP
-#error This is a .NET Core 3.0 application and needs to be compiled for <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-#endif
         }
     }
-
 }

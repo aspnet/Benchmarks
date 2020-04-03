@@ -6,6 +6,7 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using System.IO.Pipelines;
 
 namespace PlatformBenchmarks
 {
@@ -15,17 +16,30 @@ namespace PlatformBenchmarks
         {
             builder.UseConfiguration(configuration);
 
-            builder.UseSockets(options =>
+            // Handle the transport type
+            var webHost = builder.GetSetting("KestrelTransport");
+
+            if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
             {
-                if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                builder.UseSockets(options =>
                 {
-                    options.IOQueueCount = threadCount;
-                }
+                    if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                    {
+                       options.IOQueueCount = threadCount;
+                    }
 
 #if NETCOREAPP5_0
-                options.WaitForDataBeforeAllocatingBuffer = false;
+                    options.WaitForDataBeforeAllocatingBuffer = false;
 #endif
-            });
+                });
+            }
+            else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.UseLinuxTransport(options =>
+                {
+                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                });
+            }
 
             return builder;
         }
