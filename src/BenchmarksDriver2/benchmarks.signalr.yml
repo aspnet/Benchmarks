@@ -1,10 +1,9 @@
 ﻿# Examples:
-# --config benchmarks.signalr.yml --scenario broadcast --profile aspnet-physical
-# --config benchmarks.signalr.yml --scenario echo --profile aspnet-physical
-# --config benchmarks.signalr.yml --scenario echoAll --profile aspnet-physical
-# --config benchmarks.signalr.yml --scenario echoIdle --profile aspnet-physical
-# --config benchmarks.signalr.yml --scenario echoIdle --profile aspnet-physical
-# --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --profile aspnet-physical
+# --config benchmarks.signalr.yml --scenario broadcast --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario echo --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario echoAll --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario echoIdle --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --variable serverUri=http://10.0.0.102
 
 imports:
   - ../SignalRClient/signalrclient.yml
