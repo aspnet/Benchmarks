@@ -29,7 +29,7 @@ namespace PlatformBenchmarks
                     }
 
 #if NETCOREAPP5_0
-                    //options.WaitForDataBeforeAllocatingBuffer = false;
+                    options.WaitForDataBeforeAllocatingBuffer = false;
 #endif
                 });
             }
