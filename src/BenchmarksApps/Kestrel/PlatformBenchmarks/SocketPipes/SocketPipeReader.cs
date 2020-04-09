@@ -69,7 +69,10 @@ namespace PlatformBenchmarks
 
             _length += args.GetResult();
 
-            return new ReadResult(new System.Buffers.ReadOnlySequence<byte>(array, _offset, _length - _offset), isCanceled: false, isCompleted: true);
+            return new ReadResult(
+                new System.Buffers.ReadOnlySequence<byte>(array, _offset, _length - _offset), 
+                isCanceled: false, 
+                isCompleted: _length == 0); // FIN
         }
     }
 }
