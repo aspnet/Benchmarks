@@ -27,31 +27,7 @@ namespace PlatformBenchmarks
 
             Console.WriteLine($"KestrelTransport={webHost}");
 
-            if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
-            {
-                builder.UseSockets(options =>
-                {
-                    if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
-                    {
-                       options.IOQueueCount = threadCount;
-                    }
-#if NETCOREAPP5_0
-                    typeof(SocketTransportOptions).GetProperty("WaitForDataBeforeAllocatingBuffer")?.SetValue(options, false);
-#endif
-                });
-            }
-            else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
-            {
-                builder.UseLinuxTransport(options =>
-                {
-                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
-                });
-            }
-            else if(string.Equals(webHost, "Kestrel", StringComparison.OrdinalIgnoreCase))
-            {
-                builder.UseKestrel();
-            }
-            else // use the fastest transport by default
+            if (string.IsNullOrEmpty(webHost)) // use the fastest transport by default
             {
                 builder.ConfigureServices(services =>
                 {
@@ -60,6 +36,31 @@ namespace PlatformBenchmarks
                     services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                     services.AddSingleton<IServer, KestrelServer>();
                 });
+            }
+            else
+            {
+                if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
+                {
+                    builder.UseSockets(options =>
+                    {
+                        if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                        {
+                            options.IOQueueCount = threadCount;
+                        }
+#if NETCOREAPP5_0
+                    typeof(SocketTransportOptions).GetProperty("WaitForDataBeforeAllocatingBuffer")?.SetValue(options, false);
+#endif
+                    });
+                }
+                else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+                {
+                    builder.UseLinuxTransport(options =>
+                    {
+                        options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                    });
+                }
+
+                builder.UseKestrel();
             }
 
             return builder;
