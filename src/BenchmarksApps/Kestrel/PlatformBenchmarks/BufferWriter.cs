@@ -91,5 +91,51 @@ namespace PlatformBenchmarks
                 Advance(writable);
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void WriteNumeric(uint number)
+        {
+            const byte AsciiDigitStart = (byte)'0';
+
+            var span = this.Span;
+
+            // Fast path, try copying to the available memory directly
+            var advanceBy = 0;
+            if (span.Length >= 3)
+            {
+                if (number < 10)
+                {
+                    span[0] = (byte)(number + AsciiDigitStart);
+                    advanceBy = 1;
+                }
+                else if (number < 100)
+                {
+                    var tens = (byte)((number * 205u) >> 11); // div10, valid to 1028
+
+                    span[0] = (byte)(tens + AsciiDigitStart);
+                    span[1] = (byte)(number - (tens * 10) + AsciiDigitStart);
+                    advanceBy = 2;
+                }
+                else if (number < 1000)
+                {
+                    var digit0 = (byte)((number * 41u) >> 12); // div100, valid to 1098
+                    var digits01 = (byte)((number * 205u) >> 11); // div10, valid to 1028
+
+                    span[0] = (byte)(digit0 + AsciiDigitStart);
+                    span[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
+                    span[2] = (byte)(number - (digits01 * 10) + AsciiDigitStart);
+                    advanceBy = 3;
+                }
+            }
+
+            if (advanceBy > 0)
+            {
+                Advance(advanceBy);
+            }
+            else
+            {
+                BufferExtensions.WriteNumericMultiWrite(ref this, number);
+            }
+        }
     }
 }
