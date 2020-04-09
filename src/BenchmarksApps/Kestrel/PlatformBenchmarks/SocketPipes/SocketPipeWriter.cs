@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,15 +24,7 @@ namespace PlatformBenchmarks
             _offset = 0;
         }
 
-        public override void Advance(int bytes)
-        {
-            _offset += bytes;
-
-            if (_offset >= _array.Length)
-            {
-                Array.Resize(ref _array, _array.Length * 2);
-            }
-        }
+        public override void Advance(int bytes) => _offset += bytes;
 
         public override void CancelPendingFlush() { } // nop
 
@@ -59,8 +52,27 @@ namespace PlatformBenchmarks
             return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
         }
 
-        public override Memory<byte> GetMemory(int sizeHint = 0) => new Memory<byte>(_array, _offset, _array.Length - _offset);
+        public override Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            ResizeIfNeeded(sizeHint);
 
-        public override Span<byte> GetSpan(int sizeHint = 0) => new Span<byte>(_array, _offset, _array.Length - _offset);
+            return new Memory<byte>(_array, _offset, _array.Length - _offset);
+        }
+
+        public override Span<byte> GetSpan(int sizeHint = 0)
+        {
+            ResizeIfNeeded(sizeHint);
+
+            return new Span<byte>(_array, _offset, _array.Length - _offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ResizeIfNeeded(int sizeHint)
+        {
+            if (sizeHint >= _array.Length)
+            {
+                Array.Resize(ref _array, Math.Max(sizeHint, _array.Length * 2));
+            }
+        }
     }
 }
