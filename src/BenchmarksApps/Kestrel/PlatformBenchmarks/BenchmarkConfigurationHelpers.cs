@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace PlatformBenchmarks
 {
@@ -32,9 +33,8 @@ namespace PlatformBenchmarks
                     {
                        options.IOQueueCount = threadCount;
                     }
-
 #if NETCOREAPP5_0
-                    options.WaitForDataBeforeAllocatingBuffer = false;
+                    typeof(SocketTransportOptions).GetProperty("WaitForDataBeforeAllocatingBuffer")?.SetValue(options, false);
 #endif
                 });
             }
