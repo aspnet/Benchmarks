@@ -51,10 +51,11 @@ baselines=(
   # "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0 "
 
   # Stable 3.1
-  "--description Baseline31 --aspnetCoreVersion 3.1 --runtimeVersion 3.1 --sdk 3.1.102"
+  # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
+  "--description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101"
     
   # Current dev, running close to other baselines, with same repeat parameters
-  "--description Baseline --runtimeversion 5.0.*"
+  "--description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8"
 
 )
 

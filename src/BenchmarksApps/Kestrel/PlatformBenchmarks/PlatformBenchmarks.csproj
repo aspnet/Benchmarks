@@ -26,8 +26,4 @@
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
-    <PackageReference Include="System.IO.Pipelines" Version="4.7.1" />
-  </ItemGroup>
 </Project>
