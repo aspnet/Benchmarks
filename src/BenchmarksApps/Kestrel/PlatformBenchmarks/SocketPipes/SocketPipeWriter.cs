@@ -30,7 +30,11 @@ namespace PlatformBenchmarks
 
         public override void Complete(Exception exception = null) => _offset = 0;
 
-        public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+        public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default) 
+            => _offset <= BufferSize ? SendSync() : SendAsync(cancellationToken);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ValueTask<FlushResult> SendSync()
         {
             // we take advantage of the fact that all writes in TE are always small and non-blocking
             // so we perform a SYNC send on purpose
@@ -50,6 +54,15 @@ namespace PlatformBenchmarks
             _offset = 0;
 
             return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, isCompleted: true));
+        }
+
+        private async ValueTask<FlushResult> SendAsync(CancellationToken cancellationToken)
+        {
+            var isCompleted = await _socket.SendAsync(new ReadOnlyMemory<byte>(_array, 0, _offset), SocketFlags.None) == _offset;
+
+            _offset = 0;
+
+            return new FlushResult(isCanceled: cancellationToken.IsCancellationRequested, isCompleted: isCompleted);
         }
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
