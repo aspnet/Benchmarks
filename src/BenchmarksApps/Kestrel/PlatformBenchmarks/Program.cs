@@ -62,7 +62,7 @@ namespace PlatformBenchmarks
 
             var host = new WebHostBuilder()
                 .UseBenchmarksConfiguration(config)
-                .ConfigureKestrel((context, options) =>
+                .UseKestrel((context, options) =>
                 {
                     var endPoint = context.Configuration.CreateIPEndPoint();
 
