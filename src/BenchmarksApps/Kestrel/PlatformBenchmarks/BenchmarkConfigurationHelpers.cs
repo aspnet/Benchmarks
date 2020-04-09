@@ -25,6 +25,8 @@ namespace PlatformBenchmarks
             // Handle the transport type
             var webHost = builder.GetSetting("KestrelTransport");
 
+            Console.WriteLine($"KestrelTransport={webHost}");
+
             if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
             {
                 builder.UseSockets(options =>
