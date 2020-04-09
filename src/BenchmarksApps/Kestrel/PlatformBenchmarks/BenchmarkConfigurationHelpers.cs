@@ -25,13 +25,43 @@ namespace PlatformBenchmarks
             // Handle the transport type
             var webHost = builder.GetSetting("KestrelTransport");
 
-            builder.ConfigureServices(services =>
-            {
-                services.AddSingleton<IConnectionListenerFactory, SocketPipeTransportFactory>();
+            Console.WriteLine($"KestrelTransport={webHost}");
 
-                services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-                services.AddSingleton<IServer, KestrelServer>();
-            });
+            if (string.Equals(webHost, "SocketPipe", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IConnectionListenerFactory, SocketPipeTransportFactory>();
+
+                    services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+                    services.AddSingleton<IServer, KestrelServer>();
+                });
+            }
+            else
+            {
+                if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
+                {
+                    builder.UseSockets(options =>
+                    {
+                        if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                        {
+                            options.IOQueueCount = threadCount;
+                        }
+#if NETCOREAPP5_0
+                    typeof(SocketTransportOptions).GetProperty("WaitForDataBeforeAllocatingBuffer")?.SetValue(options, false);
+#endif
+                    });
+                }
+                else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+                {
+                    builder.UseLinuxTransport(options =>
+                    {
+                        options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                    });
+                }
+
+                builder.UseKestrel();
+            }
 
             return builder;
         }
