@@ -28,6 +28,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
-    <PackageReference Include="System.IO.Pipelines" Condition="$(MicrosoftNETCoreAppPackageVersion) != ''" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <PackageReference Include="System.IO.Pipelines" Version="4.7.1" />
   </ItemGroup>
 </Project>
