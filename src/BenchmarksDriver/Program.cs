@@ -757,7 +757,17 @@ namespace BenchmarksDriver
                         }
                         else
                         {
-                            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
+                            var name = arg.Substring(0, equalSignIndex);
+                            var value = arg.Substring(equalSignIndex + 1);
+
+                            if (value.Any(char.IsWhiteSpace) && !value.StartsWith('"') && !value.EndsWith('"'))
+                            {
+                                serverJob.Arguments += $" {name} \"{value}\"";
+                            }
+                            else
+                            {
+                                serverJob.Arguments += $" {name} {value}";
+                            }
                         }
                     }
                 }
