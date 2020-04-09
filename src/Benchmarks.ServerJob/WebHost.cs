@@ -11,6 +11,7 @@ namespace Benchmarks.ServerJob
         IISInProcess,
         IISOutOfProcess,
         Docker,
-        CCore
+        CCore,
+        SocketPipe
     }
 }

@@ -205,7 +205,7 @@ namespace BenchmarksDriver
                 "Scheme (http, https, h2, h2c). Default is http.", CommandOptionType.SingleValue);
             var webHostOption = app.Option(
                 "-w|--webHost",
-                "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
+                "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys, SocketPipe). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var monoOption = app.Option("--mono-runtime",
                 "Use the mono runtime.", CommandOptionType.NoValue);
