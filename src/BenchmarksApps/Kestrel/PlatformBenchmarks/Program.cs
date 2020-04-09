@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
@@ -62,7 +62,7 @@ namespace PlatformBenchmarks
 
             var host = new WebHostBuilder()
                 .UseBenchmarksConfiguration(config)
-                .UseKestrel((context, options) =>
+                .ConfigureKestrel((context, options) =>
                 {
                     var endPoint = context.Configuration.CreateIPEndPoint();
 

@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Hosting.Server;
 
 namespace PlatformBenchmarks
 {
@@ -38,6 +43,20 @@ namespace PlatformBenchmarks
                 builder.UseLinuxTransport(options =>
                 {
                     options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                });
+            }
+            else if(string.Equals(webHost, "Kestrel", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.UseKestrel();
+            }
+            else // use the fastest transport by default
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IConnectionListenerFactory, SocketPipeTransportFactory>();
+
+                    services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+                    services.AddSingleton<IServer, KestrelServer>();
                 });
             }
 
