@@ -19,13 +19,15 @@
     <PackageReference Include="MySqlConnector" Version="0.63.0" />
     <PackageReference Include="RedHat.AspNetCore.Server.Kestrel.Transport.Linux" Version="3.0.0-*" />
 
-    <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
-    <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
   </ItemGroup>
   
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
+    <PackageReference Include="System.IO.Pipelines" Condition="$(MicrosoftNETCoreAppPackageVersion) != ''" Version="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>
