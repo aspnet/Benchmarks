@@ -27,7 +27,7 @@ namespace PlatformBenchmarks
 
             Console.WriteLine($"KestrelTransport={webHost}");
 
-            if (string.IsNullOrEmpty(webHost)) // use the fastest transport by default
+            if (string.Equals(webHost, "SocketPipe", StringComparison.OrdinalIgnoreCase))
             {
                 builder.ConfigureServices(services =>
                 {
