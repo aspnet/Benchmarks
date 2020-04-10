@@ -141,7 +141,7 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
 
-            
+
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -504,7 +504,6 @@ namespace BenchmarkServer
                                     {
                                         if (benchmarksDir != null)
                                         {
-                                            Debug.Assert(process == null);
                                             process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
 
                                             job.ProcessId = process.Id;
@@ -569,7 +568,7 @@ namespace BenchmarkServer
                                             if (!String.IsNullOrEmpty(dockerImage))
                                             {
                                                 // Check the container is still running
-                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId, 
+                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
                                                     captureOutput: true,
                                                     log: false, throwOnError: false);
 
@@ -1684,7 +1683,7 @@ namespace BenchmarkServer
                 catch(Exception e)
                 {
                     Log.WriteLine($"[ERROR] Invalid Json payload: " + e.Message);
-                }                
+                }
             }
         }
 
@@ -3406,7 +3405,7 @@ namespace BenchmarkServer
 
                 var packageName = "runtime.linux-x64.microsoft.netcore.runtime.mono";
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
-                
+
                 // Ensure the folder already exists
                 Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
 
@@ -3844,7 +3843,7 @@ namespace BenchmarkServer
         public static Task EnsureDotnetInstallExistsAsync()
         {
             Log.WriteLine($"Checking requirements...");
-            
+
             if (String.IsNullOrEmpty(_rootTempDir))
             {
                 // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services
