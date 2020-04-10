@@ -110,6 +110,7 @@ namespace BenchmarkServer
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
         public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
+        public static TimeSpan PerfCollectTimeout = TimeSpan.FromMinutes(2);
 
         private static string _startPerfviewArguments;
 
@@ -1316,7 +1317,7 @@ namespace BenchmarkServer
             Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
 
             // Max delay for perfcollect to stop
-            var delay = Task.Delay(30000);
+            var delay = Task.Delay(PerfCollectTimeout);
 
             while (!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
             {
@@ -1325,7 +1326,7 @@ namespace BenchmarkServer
 
             if (!perfCollectProcess.HasExited)
             {
-                Log.WriteLine($"Forcing process to stop ...");
+                Log.WriteLine($"PerfCollect exceeded allowed time, stopping ...");
                 perfCollectProcess.CloseMainWindow();
 
                 if (!perfCollectProcess.HasExited)
