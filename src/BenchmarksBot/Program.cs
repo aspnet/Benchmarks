@@ -1,34 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Mono.Cecil;
 using Octokit;
 
 namespace BenchmarksBot
 {
     class Program
     {
-        static TimeSpan RecentIssuesTimeSpan = TimeSpan.FromDays(8);
+        private const string AppName = "pr-benchmarks";
 
-        const string AspNetCorePackage = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv";
-        // package-id-lower, version
-        static readonly string _aspNetCorePackageFormat = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/{0}/{1}/{0}.{1}.nupkg";
-        static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
+        static readonly TimeSpan RecentIssuesTimeSpan = TimeSpan.FromDays(8);
+        static readonly TimeSpan GitHubJwtTimeout = TimeSpan.FromMinutes(5);
+
+        static readonly string _aspnetCoreUrlFormat = "https://dotnetcli.azureedge.net/dotnet/aspnetcore/Runtime/{0}/aspnetcore-runtime-{0}-win-x64.zip";
+        static readonly string _dotnetCoreUrlFormat = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
+
         static readonly HttpClient _httpClient = new HttpClient();
 
         static ProductHeaderValue _productHeaderValue = new ProductHeaderValue("BenchmarksBot");
         static long _repositoryId;
         static string _accessToken;
         static string _username;
+        static string _githubAppId;
+        static string _githubAppKey;
+        static string _githubAppInstallationId;
+
+        static Credentials _credentials;
+
         static string _connectionString;
         static HashSet<string> _ignoredScenarios;
         static string _tableName;
@@ -42,7 +54,7 @@ namespace BenchmarksBot
                 .AddCommandLine(args)
                 .Build();
 
-            LoadSettings(config);
+            await LoadSettings(config);
 
             // Regresions
 
@@ -111,13 +123,17 @@ namespace BenchmarksBot
             }
         }
 
-        private static void LoadSettings(IConfiguration config)
+        private static async Task LoadSettings(IConfiguration config)
         {
             // Tip: The repository id van be found using this endpoint: https://api.github.com/repos/aspnet/Benchmarks
 
             long.TryParse(config["RepositoryId"], out _repositoryId);
             _accessToken = config["AccessToken"];
             _username = config["Username"];
+            _githubAppKey = config["GithHubAppKey"];
+            _githubAppId = config["GitHubAppId"];
+            _githubAppInstallationId = config["GitHubInstallationId"];
+
             _connectionString = config["ConnectionString"];
             _ignoredScenarios = new HashSet<string>();
             _tableName = config["Table"];
@@ -127,16 +143,38 @@ namespace BenchmarksBot
                 throw new ArgumentException("RepositoryId argument is missing or invalid");
             }
 
-            if (String.IsNullOrEmpty(_accessToken))
+            if (String.IsNullOrEmpty(_accessToken) && String.IsNullOrEmpty(_githubAppKey))
             {
-                throw new ArgumentException("AccessToken argument is missing");
+                throw new ArgumentException("AccessToken or GitHubAppKey is required");
             }
-
-            if (String.IsNullOrEmpty(_username))
+            else if (!String.IsNullOrEmpty(_githubAppKey))
             {
-                throw new ArgumentException("BotUsername argument is missing");
-            }
+                if(String.IsNullOrEmpty(_githubAppId))
+                {
+                    throw new ArgumentException("GitHubAppId argument is missing");
+                }
 
+                if (String.IsNullOrEmpty(_githubAppInstallationId))
+                {
+                    throw new ArgumentException("GitHubInstallationId argument is missing");
+                }
+
+                if (!long.TryParse(_githubAppInstallationId, out var installationId))
+                {
+                    throw new ArgumentException("GitHubInstallationId should be a number or is invalid");
+                }
+
+                _credentials = await GetCredentialsForApp(_githubAppId, _githubAppKey, installationId);
+            }
+            else
+            {
+                if (String.IsNullOrEmpty(_username))
+                {
+                    throw new ArgumentException("BotUsername argument is missing");
+                }
+
+                _credentials = GetCredentialsForUser(_username, _accessToken);
+            }
             if (String.IsNullOrEmpty(_connectionString))
             {
                 throw new ArgumentException("ConnectionString argument is missing");
@@ -158,7 +196,7 @@ namespace BenchmarksBot
             }
 
             var client = new GitHubClient(_productHeaderValue);
-            client.Credentials = new Credentials(_accessToken);
+            client.Credentials = _credentials;
 
             var body = new StringBuilder();
             body.Append("A performance regression has been detected for the following scenarios:");
@@ -181,17 +219,17 @@ namespace BenchmarksBot
                 body.AppendLine();
                 body.AppendLine("Before versions:");
 
-                body.AppendLine($"Microsoft.AspNetCore.App __{r.PreviousAspNetCoreVersion}__");
-                body.AppendLine($"Microsoft.NetCore.App __{r.PreviousRuntimeVersion}__");
+                body.AppendLine($"ASP.NET Core __{r.PreviousAspNetCoreVersion}__");
+                body.AppendLine($".NET Core __{r.PreviousDotnetCoreVersion}__");
 
                 body.AppendLine();
                 body.AppendLine("After versions:");
 
-                body.AppendLine($"Microsoft.AspNetCore.App __{r.CurrentAspNetCoreVersion}__");
-                body.AppendLine($"Microsoft.NetCore.App __{r.CurrentRuntimeVersion}__");
+                body.AppendLine($"ASP.NET Core __{r.CurrentAspNetCoreVersion}__");
+                body.AppendLine($".NET Core __{r.CurrentDotnetCoreVersion}__");
 
                 var aspNetChanged = r.PreviousAspNetCoreVersion != r.CurrentAspNetCoreVersion;
-                var runtimeChanged = r.PreviousRuntimeVersion != r.CurrentRuntimeVersion;
+                var runtimeChanged = r.PreviousDotnetCoreVersion != r.CurrentDotnetCoreVersion;
 
                 if (aspNetChanged || runtimeChanged)
                 {
@@ -203,25 +241,18 @@ namespace BenchmarksBot
                         if (r.AspNetCoreHashes != null && r.AspNetCoreHashes.Length == 2 && r.AspNetCoreHashes[0] != null && r.AspNetCoreHashes[1] != null)
                         {
                             body.AppendLine();
-                            body.AppendLine("__Microsoft.AspNetCore.App__");
-                            body.AppendLine($"https://github.com/aspnet/AspNetCore/compare/{r.AspNetCoreHashes[0]}...{r.AspNetCoreHashes[1]}");
+                            body.AppendLine("__ASP.NET Core__");
+                            body.AppendLine($"https://github.com/dotnet/aspnetcore/compare/{r.AspNetCoreHashes[0]}...{r.AspNetCoreHashes[1]}");
                         }
                     }
 
                     if (runtimeChanged)
                     {
-                        if (r.CoreFxHashes != null && r.CoreFxHashes.Length == 2 && r.CoreFxHashes[0] != null && r.CoreFxHashes[1] != null)
+                        if (r.DotnetCoreHashes != null && r.DotnetCoreHashes.Length == 2 && r.DotnetCoreHashes[0] != null && r.DotnetCoreHashes[1] != null)
                         {
                             body.AppendLine();
-                            body.AppendLine("__Microsoft.NetCore.App / Core FX__");
-                            body.AppendLine($"https://github.com/dotnet/corefx/compare/{r.CoreFxHashes[0]}...{r.CoreFxHashes[1]}");
-                        }
-
-                        if (r.CoreClrHashes != null && r.CoreClrHashes.Length == 2 && r.CoreClrHashes[0] != null && r.CoreClrHashes[1] != null)
-                        {
-                            body.AppendLine();
-                            body.AppendLine("__Microsoft.NetCore.App / Core CLR__");
-                            body.AppendLine($"https://github.com/dotnet/coreclr/compare/{r.CoreClrHashes[0]}...{r.CoreClrHashes[1]}");
+                            body.AppendLine("__.NET Core__");
+                            body.AppendLine($"https://github.com/dotnet/runtime/compare/{r.DotnetCoreHashes[0]}...{r.DotnetCoreHashes[1]}");
                         }
                     }
                 }
@@ -289,8 +320,8 @@ namespace BenchmarksBot
                             Stdev = (double)reader["STDEV"],
                             PreviousAspNetCoreVersion = Convert.ToString(reader["PreviousAspNetCoreVersion"]),
                             CurrentAspNetCoreVersion = Convert.ToString(reader["CurrentAspNetCoreVersion"]),
-                            PreviousRuntimeVersion = Convert.ToString(reader["PreviousRuntimeVersion"]),
-                            CurrentRuntimeVersion = Convert.ToString(reader["CurrentRuntimeVersion"])
+                            PreviousDotnetCoreVersion = Convert.ToString(reader["PreviousRuntimeVersion"]),
+                            CurrentDotnetCoreVersion = Convert.ToString(reader["CurrentRuntimeVersion"])
                         });
                     }
                 }
@@ -337,7 +368,7 @@ namespace BenchmarksBot
             }
 
             var client = new GitHubClient(_productHeaderValue);
-            client.Credentials = new Credentials(_accessToken);
+            client.Credentials = _credentials;
 
             var body = new StringBuilder();
             body.Append("Some scenarios have stopped running:");
@@ -418,7 +449,7 @@ namespace BenchmarksBot
             }
 
             var client = new GitHubClient(_productHeaderValue);
-            client.Credentials = new Credentials(_accessToken);
+            client.Credentials = _credentials;
 
             var body = new StringBuilder();
             body.Append("Some scenarios return errors:");
@@ -471,7 +502,7 @@ namespace BenchmarksBot
             }
 
             var client = new GitHubClient(_productHeaderValue);
-            client.Credentials = new Credentials(_accessToken);
+            client.Credentials = _credentials;
 
             var recently = new RepositoryIssueRequest
             {
@@ -551,23 +582,17 @@ namespace BenchmarksBot
                 {
                     r.AspNetCoreHashes = new[]
                     {
-                        await GetAspNetCoreCommitHash(r.PreviousAspNetCoreVersion),
-                        await GetAspNetCoreCommitHash(r.CurrentAspNetCoreVersion)
+                        await GetAspNetCommitHash(r.PreviousDotnetCoreVersion),
+                        await GetAspNetCommitHash(r.CurrentDotnetCoreVersion),
                     };
                 }
 
-                if (r.PreviousRuntimeVersion != r.CurrentRuntimeVersion)
+                if (r.PreviousDotnetCoreVersion != r.CurrentDotnetCoreVersion)
                 {
-                    r.CoreClrHashes = new[]
+                    r.DotnetCoreHashes = new[]
                     {
-                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "System.Private.CoreLib.dll"),
-                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "System.Private.CoreLib.dll")
-                    };
-
-                    r.CoreFxHashes = new[]
-                    {
-                        await GetRuntimeAssemblyCommitHash(r.PreviousRuntimeVersion, "System.Collections.dll"),
-                        await GetRuntimeAssemblyCommitHash(r.CurrentRuntimeVersion, "System.Collections.dll")
+                        await GetDotnetCommitHash(r.PreviousDotnetCoreVersion),
+                        await GetDotnetCommitHash(r.CurrentDotnetCoreVersion),
                     };
                 }
             }
@@ -603,66 +628,17 @@ namespace BenchmarksBot
             return false;
         }
 
-        private static async Task<string> GetAspNetCoreCommitHash(string aspNetCoreVersion)
+        public static Task<string> GetDotnetCommitHash(string version)
         {
-            var packagePath = Path.GetTempFileName();
-
-            try
-            {
-                // Download Microsoft.AspNet.App
-
-                var aspNetAppUrl = String.Format(_aspNetCorePackageFormat, AspNetCorePackage.ToLower(), aspNetCoreVersion);
-                if (!await DownloadFileAsync(aspNetAppUrl, packagePath))
-                {
-                    return null;
-                }
-
-                // Extract the .nuspec file
-
-                using (var archive = ZipFile.OpenRead(packagePath))
-                {
-                    var aspNetCoreNuSpecPath = Path.GetTempFileName();
-
-                    try
-                    {
-                        var entry = archive.GetEntry($"{AspNetCorePackage}.nuspec");
-                        entry.ExtractToFile(aspNetCoreNuSpecPath, true);
-
-                        var root = XDocument.Parse(await File.ReadAllTextAsync(aspNetCoreNuSpecPath)).Root;
-
-                        XNamespace xmlns = root.Attribute("xmlns").Value;
-                        return root
-                            .Element(xmlns + "metadata")
-                            .Element(xmlns + "repository")
-                            .Attribute("commit").Value;
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            File.Delete(aspNetCoreNuSpecPath);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                try
-                {
-                    File.Delete(packagePath);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
-                    Console.WriteLine(e);
-                }
-            }
+            return GetRuntimeAssemblyCommitHash(_dotnetCoreUrlFormat, version, "Microsoft.NETCore.App", "System.Collections.dll", ExtractDotnetCoreHash);
         }
 
-        private static async Task<string> GetRuntimeAssemblyCommitHash(string netCoreAppVersion, string assemblyName)
+        public static Task<string> GetAspNetCommitHash(string version)
+        {
+            return GetRuntimeAssemblyCommitHash(_aspnetCoreUrlFormat, version, "Microsoft.AspNetCore.App", "Microsoft.AspNetCore.dll", ExtractAspNetCoreHash);
+        }
+
+        private static async Task<string> GetRuntimeAssemblyCommitHash(string runtimeUrlFormat, string runtimVersion, string runtimeName, string assemblyName, Func<AssemblyDefinition, string> extractor)
         {
             var packagePath = Path.GetTempFileName();
 
@@ -670,13 +646,11 @@ namespace BenchmarksBot
             {
                 // Download the runtime
 
-                var netCoreAppUrl = String.Format(_netCoreUrlPrevix, netCoreAppVersion);
+                var netCoreAppUrl = String.Format(runtimeUrlFormat, runtimVersion);
                 if (!await DownloadFileAsync(netCoreAppUrl, packagePath))
                 {
                     return null;
                 }
-
-                // Extract the .nuspec file
 
                 using (var archive = ZipFile.OpenRead(packagePath))
                 {
@@ -684,33 +658,19 @@ namespace BenchmarksBot
 
                     try
                     {
-                        var entry = archive.GetEntry($@"shared\Microsoft.NETCore.App\{netCoreAppVersion}\{assemblyName}")
-                            ?? archive.GetEntry($@"shared/Microsoft.NETCore.App/{netCoreAppVersion}/{assemblyName}");
+                        var entry = archive.GetEntry($@"shared\{runtimeName}\{runtimVersion}\{assemblyName}")
+                            ?? archive.GetEntry($@"shared/{runtimeName}/{runtimVersion}/{assemblyName}");
 
                         if (entry == null)
                         {
-                            throw new InvalidDataException($"'{netCoreAppUrl}' doesn't contain 'shared/Microsoft.NETCore.App/{netCoreAppVersion}/{assemblyName}'");
+                            throw new InvalidDataException($"'{netCoreAppUrl}' doesn't contain 'shared/{{runtimeName}}/{runtimVersion}/{assemblyName}'");
                         }
 
                         entry.ExtractToFile(versionAssemblyPath, true);
 
-                        using (var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(versionAssemblyPath))
+                        using (var assembly = AssemblyDefinition.ReadAssembly(versionAssemblyPath))
                         {
-                            var informationalVersionAttribute = assembly.CustomAttributes.Where(x => x.AttributeType.Name == "AssemblyInformationalVersionAttribute").FirstOrDefault();
-                            var argumentValule = informationalVersionAttribute.ConstructorArguments[0].Value.ToString();
-
-                            var commitHashRegex = new Regex("[0-9a-f]{40}");
-
-                            var match = commitHashRegex.Match(argumentValule);
-
-                            if (match.Success)
-                            {
-                                return match.Value;
-                            }
-                            else
-                            {
-                                return null;
-                            }
+                            return extractor(assembly);
                         }
                     }
                     finally
@@ -736,6 +696,39 @@ namespace BenchmarksBot
                     Console.WriteLine($"ERROR: Failed to delete file {packagePath}");
                     Console.WriteLine(e);
                 }
+            }
+        }
+
+        private static string ExtractDotnetCoreHash(AssemblyDefinition assembly)
+        {
+            var informationalVersionAttribute = assembly.CustomAttributes.Where(x => x.AttributeType.Name == nameof(AssemblyInformationalVersionAttribute)).FirstOrDefault();
+            var argumentValule = informationalVersionAttribute.ConstructorArguments[0].Value.ToString();
+
+            var commitHashRegex = new Regex("[0-9a-f]{40}");
+
+            var match = commitHashRegex.Match(argumentValule);
+
+            if (match.Success)
+            {
+                return match.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static string ExtractAspNetCoreHash(AssemblyDefinition assembly)
+        {
+            var assemblyMetadata = assembly.CustomAttributes.Where(x => x.AttributeType.Name == nameof(AssemblyMetadataAttribute)).FirstOrDefault(x => x.ConstructorArguments.Any(y => "CommitHash" == y.Value.ToString()));
+
+            if (assemblyMetadata != null)
+            {
+                return assemblyMetadata.ConstructorArguments[1].Value.ToString();
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -780,6 +773,57 @@ namespace BenchmarksBot
             {
                 issue.Body += $"@{owner}\n";
             }
+        }
+
+        private static Credentials GetCredentialsForUser(string userName, string token)
+        {
+            return new Credentials(token);
+        }
+
+        private static RsaSecurityKey GetRsaSecurityKeyFromPemKey(string keyText)
+        {
+            const string pemStart = "-----BEGIN RSA PRIVATE KEY-----\n";
+            const string pemEnd = "\n-----END RSA PRIVATE KEY-----\n";
+
+            using var rsa = RSA.Create();
+
+            if (!keyText.StartsWith(pemStart, StringComparison.Ordinal) ||
+                !keyText.EndsWith(pemEnd, StringComparison.Ordinal))
+            {
+                throw new InvalidDataException("The --key-file is not in the expected pem format.");
+            }
+
+            var base64string = keyText.Substring(pemStart.Length, keyText.Length - pemStart.Length - pemEnd.Length);
+
+            var keyBytes = Convert.FromBase64String(base64string);
+
+            rsa.ImportRSAPrivateKey(keyBytes, out _);
+
+            return new RsaSecurityKey(rsa.ExportParameters(true));
+        }
+
+        private static async Task<Credentials> GetCredentialsForApp(string appId, string keyPath, long installId)
+        {
+            var creds = new SigningCredentials(GetRsaSecurityKeyFromPemKey(_githubAppKey), SecurityAlgorithms.RsaSha256);
+
+            var jwtToken = new JwtSecurityToken(
+                new JwtHeader(creds),
+                new JwtPayload(
+                    issuer: appId,
+                    issuedAt: DateTime.Now,
+                    expires: DateTime.Now.Add(GitHubJwtTimeout),
+                    audience: null,
+                    claims: null,
+                    notBefore: null));
+
+            var jwtTokenString = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+            var initClient = new GitHubClient(new ProductHeaderValue(AppName))
+            {
+                Credentials = new Credentials(jwtTokenString, AuthenticationType.Bearer),
+            };
+
+            var installationToken = await initClient.GitHubApps.CreateInstallationToken(installId);
+            return new Credentials(installationToken.Token, AuthenticationType.Bearer);
         }
     }
 }
