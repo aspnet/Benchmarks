@@ -152,6 +152,9 @@ namespace BenchmarksBot
 
         private static async Task CreateRegressionIssue(IEnumerable<Regression> regressions)
         {
+            // Remove scenarions that shouldn't be reported
+            regressions = regressions.Where(x => Tags.ReportRegressions(x.Scenario)).ToArray();
+
             if (regressions == null || !regressions.Any())
             {
                 return;
@@ -250,7 +253,8 @@ namespace BenchmarksBot
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
-            Console.Write(createIssue.Body);
+            Console.WriteLine(createIssue.Body);
+            Console.WriteLine(String.Join(", ", createIssue.Labels));
 
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
@@ -374,7 +378,8 @@ namespace BenchmarksBot
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
-            Console.Write(createIssue.Body);
+            Console.WriteLine(createIssue.Body);
+            Console.WriteLine(String.Join(", ", createIssue.Labels));
 
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
@@ -455,7 +460,8 @@ namespace BenchmarksBot
 
             AssignTags(createIssue, regressions.Select(x => x.Scenario));
 
-            Console.Write(createIssue.Body);
+            Console.WriteLine(createIssue.Body);
+            Console.WriteLine(String.Join(", ", createIssue.Labels));
 
             var issue = await client.Issue.Create(_repositoryId, createIssue);
         }
@@ -747,22 +753,20 @@ namespace BenchmarksBot
 
             foreach (var scenario in scenarios)
             {
-                if (!Tags.Scenarios.TryGetValue(scenario, out var tag))
+                foreach (var tag in Tags.Match(scenario))
                 {
-                    continue;
-                }
-
-                foreach (var label in tag.Labels)
-                {
-                    if (!String.IsNullOrWhiteSpace(label))
+                    foreach (var label in tag.Labels)
                     {
-                        labels.Add(label);
+                        if (!String.IsNullOrWhiteSpace(label))
+                        {
+                            labels.Add(label);
+                        }
                     }
-                }
 
-                foreach (var owner in tag.Owners)
-                {
-                    owners.Add(owner);
+                    foreach (var owner in tag.Owners)
+                    {
+                        owners.Add(owner);
+                    }
                 }
             }
 
