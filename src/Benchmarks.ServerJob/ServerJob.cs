@@ -197,6 +197,9 @@ namespace Benchmarks.ServerJob
 
         public int Timeout { get; set; } = 0;
 
+        // Custom StartTimeout for the server job
+        public TimeSpan StartTimeout { get; set; } = TimeSpan.Zero;
+
         public Options Options { get; set; } = new Options();
 
         public List<string> Features { get; set; } = new List<string>();

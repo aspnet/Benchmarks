@@ -866,7 +866,12 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Starting)
                         {
-                            if (DateTime.UtcNow - startMonitorTime > StartTimeout)
+                            var startTimeout = job.StartTimeout > TimeSpan.Zero
+                                ? job.StartTimeout
+                                : StartTimeout
+                                ;
+
+                            if (DateTime.UtcNow - startMonitorTime > startTimeout)
                             {
                                 Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Failed;
