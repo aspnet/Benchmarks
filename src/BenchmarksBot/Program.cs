@@ -125,7 +125,7 @@ namespace BenchmarksBot
 
         private static async Task LoadSettings(IConfiguration config)
         {
-            // Tip: The repository id van be found using this endpoint: https://api.github.com/repos/aspnet/Benchmarks
+            // Tip: The repository id can be found using this endpoint: https://api.github.com/repos/dotnet/aspnetcore
 
             long.TryParse(config["RepositoryId"], out _repositoryId);
             _accessToken = config["AccessToken"];
@@ -782,20 +782,9 @@ namespace BenchmarksBot
 
         private static RsaSecurityKey GetRsaSecurityKeyFromPemKey(string keyText)
         {
-            const string pemStart = "-----BEGIN RSA PRIVATE KEY-----\n";
-            const string pemEnd = "\n-----END RSA PRIVATE KEY-----\n";
-
             using var rsa = RSA.Create();
 
-            if (!keyText.StartsWith(pemStart, StringComparison.Ordinal) ||
-                !keyText.EndsWith(pemEnd, StringComparison.Ordinal))
-            {
-                throw new InvalidDataException("The --key-file is not in the expected pem format.");
-            }
-
-            var base64string = keyText.Substring(pemStart.Length, keyText.Length - pemStart.Length - pemEnd.Length);
-
-            var keyBytes = Convert.FromBase64String(base64string);
+            var keyBytes = Convert.FromBase64String(keyText);
 
             rsa.ImportRSAPrivateKey(keyBytes, out _);
 
