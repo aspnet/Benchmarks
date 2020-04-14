@@ -39,6 +39,14 @@ namespace PRJobProducer
 
         public static int Main(string[] args)
         {
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i].StartsWith("env:", StringComparison.OrdinalIgnoreCase))
+                {
+                    args[i] = Environment.GetEnvironmentVariable(args[i].Substring(4));
+                }
+            }
+
             var app = new CommandLineApplication();
 
             app.HelpOption("-h|--help");
@@ -54,7 +62,7 @@ namespace PRJobProducer
             var githubUserToken = app.Option("-t|--github-user-token <TOKEN>", "The GitHub token for the bot", CommandOptionType.SingleValue);
 
             var githubAppId = app.Option("-a|--github-app-id <ID>", "The GitHub App ID for the bot", CommandOptionType.SingleValue);
-            var githubAppKeyPath = app.Option("-k|--github-app-key-file <PATH>", "The GitHub App pem file path", CommandOptionType.SingleValue);
+            var githubAppKey = app.Option("-k|--github-app-key <KEY>", "The GitHub App pem", CommandOptionType.SingleValue);
             var githubAppInstallationId = app.Option("-i|--github-app-install-id <ID>", "The GitHub App installation ID for the repo. E.g. 'https://github.com/settings/installations/{Id}'", CommandOptionType.SingleValue);
 
             app.OnExecuteAsync(async cancellationToken =>
@@ -77,9 +85,9 @@ namespace PRJobProducer
                 }
                 else if (githubAppId.HasValue())
                 {
-                    if (!githubAppKeyPath.HasValue())
+                    if (!githubAppKey.HasValue())
                     {
-                        Console.WriteLine("--github-app-id was provided with no --github-app-key-file.");
+                        Console.WriteLine("--github-app-id was provided with no --github-app-key.");
                         return -1;
                     }
 
@@ -95,7 +103,7 @@ namespace PRJobProducer
                     }
 
                     botLoginName = AppName + "[bot]";
-                    client = await GetClientForApp(githubAppId.Value(), githubAppKeyPath.Value(), installId);
+                    client = await GetClientForApp(githubAppId.Value(), githubAppKey.Value(), installId);
                 }
                 else
                 {
@@ -343,9 +351,9 @@ namespace PRJobProducer
             };
         }
 
-        private static async Task<GitHubClient> GetClientForApp(string appId, string keyPath, long installId)
+        private static async Task<GitHubClient> GetClientForApp(string appId, string key, long installId)
         {
-            var creds = new SigningCredentials(GetRsaSecurityKeyFromPemFile(keyPath), SecurityAlgorithms.RsaSha256);
+            var creds = new SigningCredentials(GetRsaSecurityKeyFromPemKey(key), SecurityAlgorithms.RsaSha256);
 
             var jwtToken = new JwtSecurityToken(
                 new JwtHeader(creds),
@@ -370,24 +378,11 @@ namespace PRJobProducer
             };
         }
 
-        private static RsaSecurityKey GetRsaSecurityKeyFromPemFile(string pemPath)
+        private static RsaSecurityKey GetRsaSecurityKeyFromPemKey(string keyText)
         {
-            const string pemStart = "-----BEGIN RSA PRIVATE KEY-----\n";
-            const string pemEnd = "\n-----END RSA PRIVATE KEY-----\n";
-
             using var rsa = RSA.Create();
 
-            var keyText = File.ReadAllText(pemPath);
-
-            if (!keyText.StartsWith(pemStart, StringComparison.Ordinal) ||
-                !keyText.EndsWith(pemEnd, StringComparison.Ordinal))
-            {
-                throw new InvalidDataException("The --key-file is not in the expected pem format.");
-            }
-
-            var base64string = keyText.Substring(pemStart.Length, keyText.Length - pemStart.Length - pemEnd.Length);
-
-            var keyBytes = Convert.FromBase64String(base64string);
+            var keyBytes = Convert.FromBase64String(keyText);
 
             rsa.ImportRSAPrivateKey(keyBytes, out _);
 

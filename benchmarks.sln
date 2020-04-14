@@ -234,11 +234,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{3E9DA42B-F7FB-42A9-8518-1ADA71AEDF12}"
 	ProjectSection(SolutionItems) = preProject
 		build\benchmarks.pipelines.yml = build\benchmarks.pipelines.yml
+		build\prbenchmarks.yml = build\prbenchmarks.yml
 		build\stress-blazorwasm.yml = build\stress-blazorwasm.yml
 		build\stress-fortunes.yml = build\stress-fortunes.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
