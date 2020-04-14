@@ -11,7 +11,7 @@ jobs:
   steps:
   - powershell: |
         cd ./src/BenchmarksDriver
-        dotnet run -c release -- \
+        dotnet run -c release -- `
             --base-job BaseJobs/kestrel-pipelined-plaintext.json `
             --github-app-id "env:GITHUB_APP_ID" `
             --github-app-install-id "env:GITHUB_INSTALL_ID" `
