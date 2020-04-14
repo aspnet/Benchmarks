@@ -12,11 +12,11 @@ jobs:
   - powershell: |
         cd ./src/BenchmarksDriver
         dotnet run -c release -- \
-            --base-job BaseJobs/kestrel-pipelined-plaintext.json \
-            --github-app-id "env:GITHUB_APP_ID" \
-            --github-app-install-id "env:GITHUB_INSTALL_ID" \
-            --github-app-key "env:GITHUB_PRIVATE_KEY" \
-            --azure-storage-connection-string "env:CONNECTION_STRING" \
+            --base-job BaseJobs/kestrel-pipelined-plaintext.json `
+            --github-app-id "env:GITHUB_APP_ID" `
+            --github-app-install-id "env:GITHUB_INSTALL_ID" `
+            --github-app-key "env:GITHUB_PRIVATE_KEY" `
+            --azure-storage-connection-string "env:CONNECTION_STRING" `
             --azure-storage-file-share-name "env:SHARE_NAME"
 
     env:
