@@ -6,7 +6,7 @@ pool: ASP.NET-Performance-Controller
 # Steps are serial
 
 schedules:
-- cron: "* * * * *"
+- cron: "*/5 * * * *"
   displayName: "every minute"
   branches:
     include:
