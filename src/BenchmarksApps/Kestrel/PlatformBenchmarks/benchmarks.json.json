@@ -7,7 +7,8 @@
       "Repository": "https://github.com/aspnet/Benchmarks.git",
       "BranchOrCommit": "master",
       "Project": "src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj"
-    }
+    },
+    "ReadyStateText": "Application started."
   },
   "JsonPlatform": {
     "Path": "/json"
