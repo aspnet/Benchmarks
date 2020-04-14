@@ -10,7 +10,7 @@ jobs:
   timeoutInMinutes: 60
   steps:
   - powershell: |
-        cd ./src/BenchmarksDriver
+        cd ./src/PRJobProducer
         dotnet run -c release -- `
             --base-job BaseJobs/kestrel-pipelined-plaintext.json `
             --github-app-id "env:GITHUB_APP_ID" `
