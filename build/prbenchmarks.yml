@@ -5,6 +5,15 @@ pool: ASP.NET-Performance-Controller
 # Jobs are run in parallel
 # Steps are serial
 
+schedules:
+- cron: "* * * * *"
+  displayName: "every minute"
+  branches:
+    include:
+    - master
+    - sebros/prbenchmarks
+  always: "true"
+
 jobs:
 - job: Benchmark
   timeoutInMinutes: 60
