@@ -34,7 +34,7 @@ namespace TcpEcho
                     break;
                 }
 
-                await _socket.SendAsync(buffer, SocketFlags.None);
+                await _socket.SendAsync(buffer.AsMemory(0, read), SocketFlags.None);
             }
         }
     }

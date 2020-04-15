@@ -38,6 +38,8 @@ namespace TcpEcho
                         break;
                     }
 
+                    pipe.Writer.Advance(read);
+
                     await pipe.Writer.FlushAsync();
                 }
 

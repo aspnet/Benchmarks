@@ -15,7 +15,7 @@ namespace TcpEcho
 
             app.HelpOption("-h|--help");
             var optionIp = app.Option("-a|--address <IP>", "The server IP address", CommandOptionType.SingleValue);
-            var optionPort = app.Option("-p|--port <PORT>", "The server port. Default is 5201", CommandOptionType.SingleValue);
+            var optionPort = app.Option("-p|--port <PORT>", "The server port. Default is 8081", CommandOptionType.SingleValue);
             var optionBacklog = app.Option("-b|--backlog <BACKLOG>", "The TCP backlog. Default is 128.", CommandOptionType.SingleValue);
             var optionType = app.Option("-t|--type <TYPE>", "The server implementation type. Value values are raw, socketpipe, socketduplexpipe.", CommandOptionType.SingleValue);
 
