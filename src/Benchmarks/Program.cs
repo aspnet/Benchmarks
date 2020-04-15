@@ -70,6 +70,7 @@ namespace Benchmarks
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
+                .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)
                 .Build();

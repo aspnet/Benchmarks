@@ -104,7 +104,7 @@ namespace BenchmarkServer
         public static OperatingSystem OperatingSystem { get; }
         public static Hardware Hardware { get; private set; }
         public static string HardwareVersion { get; private set; }
-        public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
+        public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>(StringComparison.OrdinalIgnoreCase);
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
         public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(5);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
