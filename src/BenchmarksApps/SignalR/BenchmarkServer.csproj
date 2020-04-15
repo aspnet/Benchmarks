@@ -1,9 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="signalrServer.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="signalrserver.yml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />

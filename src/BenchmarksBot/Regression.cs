@@ -15,12 +15,11 @@ namespace BenchmarksBot
         public string Session { get; set; }
         public string PreviousAspNetCoreVersion { get; set; }
         public string CurrentAspNetCoreVersion { get; set; }
-        public string PreviousRuntimeVersion { get; set; }
-        public string CurrentRuntimeVersion { get; set; }
+        public string PreviousDotnetCoreVersion { get; set; }
+        public string CurrentDotnetCoreVersion { get; set; }
         public int Errors { get; set; }
 
         public string[] AspNetCoreHashes { get; set; }
-        public string[] CoreFxHashes { get; set; }
-        public string[] CoreClrHashes { get; set; }
+        public string[] DotnetCoreHashes { get; set; }
     }
 }

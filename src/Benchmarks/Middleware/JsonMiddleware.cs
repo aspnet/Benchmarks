@@ -29,12 +29,9 @@ namespace Benchmarks.Middleware
 #endif
         private readonly RequestDelegate _next;
 
-        public JsonMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        public JsonMiddleware(RequestDelegate next) => _next = next;
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
@@ -53,22 +50,20 @@ namespace Benchmarks.Middleware
                 {
                     _json.Serialize(sw, new JsonMessage { message = "Hello, World!" });
                 }
+
+                return Task.CompletedTask;
 #else
-                await JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
+                return JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
 #endif
-                return;
             }
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 
     public static class JsonMiddlewareExtensions
     {
-        public static IApplicationBuilder UseJson(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<JsonMiddleware>();
-        }
+        public static IApplicationBuilder UseJson(this IApplicationBuilder builder) => builder.UseMiddleware<JsonMiddleware>();
     }
 
     public struct JsonMessage

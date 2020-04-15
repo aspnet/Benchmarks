@@ -67,7 +67,7 @@ namespace BenchmarkServer
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
         private static readonly string _dotnetInstallShUrl = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.sh";
-        private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1";
+        private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/sdk/master/scripts/obtain/dotnet-install.ps1";
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
@@ -110,6 +110,7 @@ namespace BenchmarkServer
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
         public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
+        public static TimeSpan PerfCollectTimeout = TimeSpan.FromMinutes(2);
 
         private static string _startPerfviewArguments;
 
@@ -140,7 +141,7 @@ namespace BenchmarkServer
                 throw new InvalidOperationException($"Invalid OSPlatform: {RuntimeInformation.OSDescription}");
             }
 
-            
+
             // Configuring the http client to trust the self-signed certificate
             _httpClientHandler = new HttpClientHandler();
             _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -503,7 +504,6 @@ namespace BenchmarkServer
                                     {
                                         if (benchmarksDir != null)
                                         {
-                                            Debug.Assert(process == null);
                                             process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
 
                                             job.ProcessId = process.Id;
@@ -568,7 +568,7 @@ namespace BenchmarkServer
                                             if (!String.IsNullOrEmpty(dockerImage))
                                             {
                                                 // Check the container is still running
-                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId, 
+                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
                                                     captureOutput: true,
                                                     log: false, throwOnError: false);
 
@@ -866,7 +866,12 @@ namespace BenchmarkServer
                         }
                         else if (job.State == ServerState.Starting)
                         {
-                            if (DateTime.UtcNow - startMonitorTime > StartTimeout)
+                            var startTimeout = job.StartTimeout > TimeSpan.Zero
+                                ? job.StartTimeout
+                                : StartTimeout
+                                ;
+
+                            if (DateTime.UtcNow - startMonitorTime > startTimeout)
                             {
                                 Log.WriteLine($"Job didn't start during the expected delay");
                                 job.State = ServerState.Failed;
@@ -1316,7 +1321,7 @@ namespace BenchmarkServer
             Mono.Unix.Native.Syscall.kill(processId, Mono.Unix.Native.Signum.SIGINT);
 
             // Max delay for perfcollect to stop
-            var delay = Task.Delay(30000);
+            var delay = Task.Delay(PerfCollectTimeout);
 
             while (!perfCollectProcess.HasExited && !delay.IsCompletedSuccessfully)
             {
@@ -1325,7 +1330,7 @@ namespace BenchmarkServer
 
             if (!perfCollectProcess.HasExited)
             {
-                Log.WriteLine($"Forcing process to stop ...");
+                Log.WriteLine($"PerfCollect exceeded allowed time, stopping ...");
                 perfCollectProcess.CloseMainWindow();
 
                 if (!perfCollectProcess.HasExited)
@@ -1683,7 +1688,7 @@ namespace BenchmarkServer
                 catch(Exception e)
                 {
                     Log.WriteLine($"[ERROR] Invalid Json payload: " + e.Message);
-                }                
+                }
             }
         }
 
@@ -2119,7 +2124,7 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"SDK version '{sdkVersion}'";
 
                         // Install latest SDK version (and associated runtime)
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
@@ -2132,7 +2137,7 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
 
                         // Install runtimes required for this scenario
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
@@ -2160,7 +2165,7 @@ namespace BenchmarkServer
                     {
                         dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
@@ -2174,7 +2179,7 @@ namespace BenchmarkServer
                         dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
 
                         // Install aspnet runtime required for this scenario
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
                         log: true,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
@@ -3405,7 +3410,7 @@ namespace BenchmarkServer
 
                 var packageName = "runtime.linux-x64.microsoft.netcore.runtime.mono";
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
-                
+
                 // Ensure the folder already exists
                 Directory.CreateDirectory(Path.GetDirectoryName(runtimePath));
 
@@ -3843,7 +3848,7 @@ namespace BenchmarkServer
         public static Task EnsureDotnetInstallExistsAsync()
         {
             Log.WriteLine($"Checking requirements...");
-            
+
             if (String.IsNullOrEmpty(_rootTempDir))
             {
                 // From the /tmp folder (in Docker, should be mounted to /mnt/benchmarks) use a specific 'benchmarksserver' root folder to isolate from other services

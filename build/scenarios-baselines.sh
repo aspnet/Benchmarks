@@ -31,8 +31,8 @@ plaintextJobs="-j $ROOT/src/Benchmarks/benchmarks.plaintext.json"
 htmlJobs="-j $ROOT/src/Benchmarks/benchmarks.html.json"
 jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
-plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8"
-jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8"
+plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json"
+jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json"
 
 baselines=(
   # Stable 2.1
@@ -51,10 +51,11 @@ baselines=(
   # "--description Baseline30 --aspnetCoreVersion 3.0 --runtimeVersion 3.0 "
 
   # Stable 3.1
-  "--description Baseline31 --aspnetCoreVersion 3.1 --runtimeVersion 3.1 --sdk 3.1.102"
+  # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
+  "--description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101"
     
   # Current dev, running close to other baselines, with same repeat parameters
-  "--description Baseline --runtimeversion 5.0.*"
+  "--description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8"
 
 )
 

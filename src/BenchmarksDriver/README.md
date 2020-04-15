@@ -88,6 +88,7 @@ Options:
   --console              Runs the benchmarked application as a console application, such that no client is used and its output is displayed locally.
   --server-timeout       Timeout for server job. e.g., 00:05:00. Defaults to 00:05:00.
   --build-timeout        Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.
+  --start-timeout        Timeout for start phase. e.g., 00:05:00".
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
   --sdk                  SDK version to use
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"

@@ -9,26 +9,19 @@ namespace PlatformBenchmarks
     {
         private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions).Length;
 
+        private readonly static AsciiString _jsonPreamble =
+            _http11OK +
+            _headerServer + _crlf +
+            _headerContentTypeJson + _crlf +
+            _headerContentLength + _jsonPayloadSize.ToString();
+
         private static void Json(ref BufferWriter<WriterAdapter> writer)
         {
-            // HTTP 1.1 OK
-            writer.Write(_http11OK);
-
-            // Server headers
-            writer.Write(_headerServer);
+            writer.Write(_jsonPreamble);
 
             // Date header
             writer.Write(DateHeader.HeaderBytes);
 
-            // Content-Type header
-            writer.Write(_headerContentTypeJson);
-
-            // Content-Length header
-            writer.Write(_headerContentLength);
-            writer.WriteNumeric(_jsonPayloadSize);
-
-            // End of headers
-            writer.Write(_eoh);
             writer.Commit();
 
             // Body

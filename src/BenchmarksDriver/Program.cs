@@ -310,6 +310,8 @@ namespace BenchmarksDriver
                 @"Can be a file prefix (app will add *.DATE*.zip) , or a specific name (end in *.zip) and no DATE* will be added e.g. --fetch-output c:\publishedapps\myApp", CommandOptionType.SingleValue);
             var serverTimeoutOption = app.Option("--server-timeout",
                 "Timeout for server jobs. e.g., 00:05:00", CommandOptionType.SingleValue);
+            var startTimeoutOption = app.Option("--start-timeout",
+                "Timeout for start phase. e.g., 00:05:00", CommandOptionType.SingleValue);
             var buildTimeoutOption = app.Option("--build-timeout",
                 "Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.", CommandOptionType.SingleValue);
             var frameworkOption = app.Option("--framework",
@@ -699,6 +701,18 @@ namespace BenchmarksDriver
                 {
                     serverJob.UseRuntimeStore = true;
                 }
+                if (startTimeoutOption.HasValue())
+                {
+                    if (TimeSpan.TryParse(startTimeoutOption.Value(), out var startTimeout))
+                    {
+                        serverJob.StartTimeout = startTimeout;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid --start-timeout timeout argument");
+                        return -1;
+                    }
+                }
                 if (selfContainedOption.HasValue())
                 {
                     serverJob.SelfContained = true;
@@ -757,7 +771,17 @@ namespace BenchmarksDriver
                         }
                         else
                         {
-                            serverJob.Arguments += $" {arg.Substring(0, equalSignIndex)} {arg.Substring(equalSignIndex + 1)}";
+                            var name = arg.Substring(0, equalSignIndex);
+                            var value = arg.Substring(equalSignIndex + 1);
+
+                            if (value.Any(char.IsWhiteSpace) && !value.StartsWith('"') && !value.EndsWith('"'))
+                            {
+                                serverJob.Arguments += $" {name} \"{value}\"";
+                            }
+                            else
+                            {
+                                serverJob.Arguments += $" {name} {value}";
+                            }
                         }
                     }
                 }

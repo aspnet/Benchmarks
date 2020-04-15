@@ -1,0 +1,26 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "PresetHeaders": "Html",
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/Benchmarks.git",
+      "BranchOrCommit": "master",
+      "Project": "src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj"
+    },
+    "ReadyStateText": "Application started.",
+    "BuildArguments": [ "/p:IsDatabase=true" ]
+  },
+  "SingleQueryPlatform": {
+    "Path": "/db"
+  },
+  "FortunesPlatform": {
+    "Path": "/fortunes"
+  },
+  "UpdatesPlatform": {
+    "Path": "/updates/queries="
+  },
+  "MultipleQueriesPlatform": {
+    "Path": "/queries/queries="
+  }
+}
