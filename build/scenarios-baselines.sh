@@ -63,7 +63,7 @@ jobs=(
   # Platform
   "-n PlaintextPlatform --webHost KestrelSockets $plaintextPlatformJobs"
   "-n JsonPlatform --webHost KestrelSockets $jsonPlatformJobs"
-  "-n FortunesPlatform $plaintextPlatformJobs --arg \"Database=PostgreSql\" --arg \"ConnectionString=\\\"Server=TFB-database;Database=hello_world;UserId=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4\\\"\" "
+  "-n FortunesPlatform $htmlPlatformJobs --database PostgreSql"
 
   # Plaintext
   "-n Plaintext --webHost KestrelSockets $plaintextJobs"
