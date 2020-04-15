@@ -26,8 +26,6 @@ namespace PlatformBenchmarks
 
         public int Buffered => _buffered;
 
-        public T Output => _output;
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Commit()
         {
