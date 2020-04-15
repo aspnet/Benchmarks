@@ -18,12 +18,18 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _crlf = "\r\n";
         private readonly static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
-        private readonly static AsciiString _headerServer = "Server: Custom";
+        private readonly static AsciiString _headerServer = "Server: K";
         private readonly static AsciiString _headerContentLength = "Content-Length: ";
-        private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0\r\n";
-        private readonly static AsciiString _headerContentTypeText = "Content-Type: text/plain\r\n";
-        private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json\r\n";
-        private readonly static AsciiString _headerContentTypeHtml = "Content-Type: text/html; charset=UTF-8\r\n";
+        private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
+        private readonly static AsciiString _headerContentTypeText = "Content-Type: text/plain";
+        private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json";
+        private readonly static AsciiString _headerContentTypeHtml = "Content-Type: text/html; charset=UTF-8";
+
+        private readonly static AsciiString _dbPreamble =
+            _http11OK +
+            _headerServer + _crlf +
+            _headerContentTypeJson + _crlf +
+            _headerContentLength;
 
         private readonly static AsciiString _plainTextBody = "Hello, World!";
 
@@ -41,9 +47,9 @@ namespace PlatformBenchmarks
         public static class Paths
         {
             public readonly static AsciiString SingleQuery = "/db";
-            public readonly static AsciiString Json = "/json";
+            public readonly static AsciiString Json = "/j";
             public readonly static AsciiString Fortunes = "/fortunes";
-            public readonly static AsciiString Plaintext = "/plaintext";
+            public readonly static AsciiString Plaintext = "/p";
             public readonly static AsciiString Updates = "/updates/queries=";
             public readonly static AsciiString MultipleQueries = "/queries/queries=";
         }
@@ -57,17 +63,20 @@ namespace PlatformBenchmarks
             var requestType = RequestType.NotRecognized;
             if (method == HttpMethod.Get)
             {
-                var pathLength = path.Length;
 #if !DATABASE
-                if (Paths.Json.Length <= pathLength && path.StartsWith(Paths.Json))
+                if (path.Length >= 2 && path[0] == '/')
                 {
-                    requestType = RequestType.Json;
-                }
-                else if (Paths.Plaintext.Length <= pathLength && path.StartsWith(Paths.Plaintext))
-                {
-                    requestType = RequestType.PlainText;
+                    if (path[1] == 'j')
+                    {
+                        requestType = RequestType.Json;
+                    }
+                    else if (path[1] == 'p')
+                    {
+                        requestType = RequestType.PlainText;
+                    }
                 }
 #else
+                var pathLength = path.Length;
                 if (Paths.SingleQuery.Length <= pathLength && path.StartsWith(Paths.SingleQuery))
                 {
                     requestType = RequestType.SingleQuery;
@@ -160,22 +169,18 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 #endif
+        private readonly static AsciiString _defaultPreamble =
+            _http11OK +
+            _headerServer + _crlf +
+            _headerContentTypeText + _crlf +
+            _headerContentLengthZero;
+
         private static void Default(ref BufferWriter<WriterAdapter> writer)
         {
-            // HTTP 1.1 OK
-            writer.Write(_http11OK);
-
-            // Server headers
-            writer.Write(_headerServer);
+            writer.Write(_defaultPreamble);
 
             // Date header
             writer.Write(DateHeader.HeaderBytes);
-
-            // Content-Length 0
-            writer.Write(_headerContentLengthZero);
-
-            // End of headers
-            writer.Write(_crlf);
         }
 
         private enum RequestType
