@@ -33,7 +33,8 @@ jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
 plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json"
-htmlPlatformJobs="-j ..\BenchmarksApps\Kestrel\PlatformBenchmarks\benchmarks.html.json"
+htmlPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json"
+
 baselines=(
   # Stable 2.1
   "--description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1 " 
