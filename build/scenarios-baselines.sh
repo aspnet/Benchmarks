@@ -33,7 +33,7 @@ jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
 plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json"
-
+htmlPlatformJobs="-j ..\BenchmarksApps\Kestrel\PlatformBenchmarks\benchmarks.html.json"
 baselines=(
   # Stable 2.1
   "--description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1 " 
@@ -82,6 +82,7 @@ jobs=(
   # Database Fortunes
   "-n DbFortunesRaw --webHost KestrelSockets $htmlJobs --database PostgreSql"
   "-n DbFortunesEf --webHost KestrelSockets $htmlJobs --database PostgreSql"
+  "-n FortunesPlatform $plaintextPlatformJobs --arg ""Database=PostgreSql"" --arg ""ConnectionString=Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"" "
 )
 
 # build driver
