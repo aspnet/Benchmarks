@@ -1,0 +1,21 @@
+﻿variables:
+    # serverIp needs to be defined
+
+jobs:
+  pipelining:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/TcpClient/TcpClient.csproj
+    readyStateText: TCP Client
+    sdkVersion: 3.1.201
+    aspNetCoreVersion: '3.1'
+    runtimeVersion: '3.1'
+    waitForExit: true
+    variables:
+      connections: 1
+      warmup: 0
+      duration: 5
+      port: 5201
+      size: 1024
+    arguments: '-a "{{serverIp}}" -p {{port}} -c {{connections}} -w {{warmup}} -d {{duration}} -s {{size}}'
