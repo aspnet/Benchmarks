@@ -76,8 +76,10 @@ jobs=(
 
   # Http2
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2"
+  "-n PlaintextNonPipelined --webHost HttpSys $trend $plaintextJobs $http2Jobs -m h2 --windows-only"
   "-n PlaintextNonPipelined --webHost KestrelSockets $trend $plaintextJobs $http2Jobs -m h2c --no-startup-latency" # no startup time as h2c is not supported by HttpClient
   "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2"
+  "-n Json --webHost HttpSys $trend $jsonJobs $http2Jobs -m h2 --windows-only"
   "-n Json --webHost KestrelSockets $trend $jsonJobs $http2Jobs -m h2c --no-startup-latency" # no startup time as h2c is not supported by HttpClient
 
   # Caching
@@ -125,11 +127,17 @@ jobs=(
 
   # IIS
   "-n Plaintext --webHost IISInProcess $trend $plaintextJobs --windows-only"
+  "-n Plaintext --webHost IISInProcess $trend $plaintextJobs $http2Jobs -m h2 --windows-only"
   "-n Plaintext --webHost IISOutOfProcess $trend $plaintextJobs --windows-only"
+  "-n Plaintext --webHost IISOutOfProcess $trend $plaintextJobs $http2Jobs -m h2 --windows-only"
   "-n PlaintextNonPipelined --webHost IISInProcess $trend $plaintextJobs --windows-only"
+  "-n PlaintextNonPipelined --webHost IISInProcess $trend $plaintextJobs $http2Jobs -m h2 --windows-only"
   "-n PlaintextNonPipelined --webHost IISOutOfProcess $trend $plaintextJobs --windows-only"
+  "-n PlaintextNonPipelined --webHost IISOutOfProcess $trend $plaintextJobs $http2Jobs -m h2 --windows-only"
   "-n Json --webHost IISInProcess $trend $jsonJobs --windows-only"
+  "-n Json --webHost IISInProcess $trend $jsonJobs $http2Jobs -m h2 --windows-only"
   "-n Json --webHost IISOutOfProcess $trend $jsonJobs --windows-only"
+  "-n Json --webHost IISOutOfProcess $trend $jsonJobs $http2Jobs -m h2 --windows-only"
 
   # BasicApi
   # "--scenario BasicApi.GetUsingRouteValue $trend $basicApiJobs"
