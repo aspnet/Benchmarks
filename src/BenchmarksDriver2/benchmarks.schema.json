@@ -102,7 +102,7 @@
           "title": "The text in the console that informs the server it has started",
           "default": "",
           "examples": [
-            "Starting", "Application started", "Listening to reqests"
+            "Starting", "Application started", "Listening to requests"
           ],
           "pattern": "^(.*)$"
         },
