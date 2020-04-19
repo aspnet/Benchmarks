@@ -79,7 +79,7 @@ namespace PlatformBenchmarks
 
             while (true)
             {
-                if (!ParseHttpRequest(ref reader, in buffer, isCompleted))
+                if (!ParseHttpRequest(ref reader, isCompleted))
                 {
                     return false;
                 }
@@ -106,13 +106,17 @@ namespace PlatformBenchmarks
             return true;
         }
 
-        private bool ParseHttpRequest(ref SequenceReader<byte> reader, in ReadOnlySequence<byte> buffer, bool isCompleted)
+        private bool ParseHttpRequest(ref SequenceReader<byte> reader, bool isCompleted)
         {
             var state = _state;
 
             if (state == State.StartLine)
             {
-                var unconsumedSequence = buffer.Slice(reader.Position);
+#if NETCOREAPP5_0
+                var unconsumedSequence = reader.UnreadSequence;
+#else
+                var unconsumedSequence = reader.Sequence.Slice(reader.Position);
+#endif
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), unconsumedSequence, out var consumed, out _))
                 {
                     state = State.Headers;
