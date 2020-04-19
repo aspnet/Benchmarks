@@ -52,32 +52,34 @@ namespace PlatformBenchmarks
 #if !DATABASE
         private async Task ProcessRequestsAsync()
         {
-            var reader = Reader;
-            var writer = Writer;
-            var token = CancellationToken.None;
-
             while (true)
             {
-                var readResult = await reader.ReadAsync(token);
+                var readResult = await Reader.ReadAsync(default);
+                var buffer = readResult.Buffer;
+                var isCompleted = readResult.IsCompleted;
 
-                if (!HandleRequest(readResult))
+                if (buffer.IsEmpty && isCompleted)
                 {
                     return;
                 }
 
-                await writer.FlushAsync(token);
+                if (!HandleRequests(buffer, isCompleted))
+                {
+                    return;
+                }
+
+                await Writer.FlushAsync(default);
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleRequest(in ReadResult result)
+        private bool HandleRequests(in ReadOnlySequence<byte> buffer, bool isCompleted)
         {
-            var buffer = result.Buffer;
+            var reader = new SequenceReader<byte>(buffer);
             var writer = GetWriter(Writer);
 
             while (true)
             {
-                if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                if (!ParseHttpRequest(ref reader, in buffer, isCompleted))
                 {
                     return false;
                 }
@@ -88,7 +90,7 @@ namespace PlatformBenchmarks
 
                     _state = State.StartLine;
 
-                    if (!buffer.IsEmpty)
+                    if (!reader.End)
                     {
                         // More input data to parse
                         continue;
@@ -96,11 +98,46 @@ namespace PlatformBenchmarks
                 }
 
                 // No more input or incomplete data, Advance the Reader
-                Reader.AdvanceTo(buffer.Start, examined);
+                Reader.AdvanceTo(reader.Position, buffer.End);
                 break;
             }
 
             writer.Commit();
+            return true;
+        }
+
+        private bool ParseHttpRequest(ref SequenceReader<byte> reader, in ReadOnlySequence<byte> buffer, bool isCompleted)
+        {
+            var state = _state;
+
+            if (state == State.StartLine)
+            {
+                var unconsumedSequence = buffer.Slice(reader.Position);
+                if (Parser.ParseRequestLine(new ParsingAdapter(this), unconsumedSequence, out var consumed, out _))
+                {
+                    state = State.Headers;
+
+                    var parsedLength = unconsumedSequence.Slice(reader.Position, consumed).Length;
+                    reader.Advance(parsedLength);
+                }
+            }
+
+            if (state == State.Headers)
+            {
+                var success = Parser.ParseHeaders(new ParsingAdapter(this), ref reader);
+
+                if (success)
+                {
+                    state = State.Body;
+                }
+            }
+
+            if (state != State.Body && isCompleted)
+            {
+                ThrowUnexpectedEndOfData();
+            }
+
+            _state = state;
             return true;
         }
 #else
@@ -139,7 +176,7 @@ namespace PlatformBenchmarks
                 await Writer.FlushAsync();
             }
         }
-#endif
+
         private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
         {
             examined = buffer.End;
@@ -190,6 +227,7 @@ namespace PlatformBenchmarks
             _state = state;
             return true;
         }
+#endif
 
 #if NETCOREAPP5_0
 
