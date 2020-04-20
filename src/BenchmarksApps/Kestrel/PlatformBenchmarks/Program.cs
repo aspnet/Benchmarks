@@ -42,6 +42,7 @@ namespace PlatformBenchmarks
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+                .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)
                 .Build();
@@ -49,7 +50,7 @@ namespace PlatformBenchmarks
             var appSettings = config.Get<AppSettings>();
 #if DATABASE
             Console.WriteLine($"Database: {appSettings.Database}");
-            Console.WriteLine($"Database: {appSettings.ConnectionString}");
+            Console.WriteLine($"ConnectionString: {appSettings.ConnectionString}");
 
             if (appSettings.Database == DatabaseServer.PostgreSql)
             {

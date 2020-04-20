@@ -8,6 +8,7 @@
       "BranchOrCommit": "master",
       "Project": "src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj"
     },
+    "ReadyStateText": "Application started.",
     "BuildArguments": [ "/p:IsDatabase=true" ]
   },
   "SingleQueryPlatform": {

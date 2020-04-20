@@ -33,6 +33,7 @@ jsonJobs="-j $ROOT/src/Benchmarks/benchmarks.json.json"
 
 plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json"
 jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json"
+htmlPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json"
 
 baselines=(
   # Stable 2.1
@@ -63,6 +64,7 @@ jobs=(
   # Platform
   "-n PlaintextPlatform --webHost KestrelSockets $plaintextPlatformJobs"
   "-n JsonPlatform --webHost KestrelSockets $jsonPlatformJobs"
+  "-n FortunesPlatform $htmlPlatformJobs --database PostgreSql"
 
   # Plaintext
   "-n Plaintext --webHost KestrelSockets $plaintextJobs"

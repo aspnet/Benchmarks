@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -51,16 +52,20 @@ namespace PlatformBenchmarks
 #if !DATABASE
         private async Task ProcessRequestsAsync()
         {
+            var reader = Reader;
+            var writer = Writer;
+            var token = CancellationToken.None;
+
             while (true)
             {
-                var readResult = await Reader.ReadAsync();
+                var readResult = await reader.ReadAsync(token);
 
                 if (!HandleRequest(readResult))
                 {
                     return;
                 }
 
-                await Writer.FlushAsync();
+                await writer.FlushAsync(token);
             }
         }
 

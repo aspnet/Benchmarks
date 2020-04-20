@@ -12,7 +12,7 @@
     "ReadyStateText": "Started http server"
   },
   "Plaintext-Actix": {
-    "Path": "/plaintext",
+    "Path": "/p",
     "PresetHeaders": "Plaintext",
     "ClientProperties": {
       "ScriptName": "pipeline",
@@ -20,11 +20,11 @@
     }
   },
   "PlaintextNonPipelined-Actix": {
-    "Path": "/plaintext",
+    "Path": "/p",
     "PresetHeaders": "Plaintext"
   },
   "Json-Actix": {
-    "Path": "/json",
+    "Path": "/j",
     "PresetHeaders": "Json"
   },
   "FortunesPostgreSql-Actix": {
