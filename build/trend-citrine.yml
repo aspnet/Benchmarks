@@ -4,6 +4,7 @@
 
 jobs:
 - job: TestServiceBus
+  pool: server
   steps:
   - task: PublishToAzureServiceBus@1
     inputs:
