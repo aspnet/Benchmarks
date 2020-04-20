@@ -1,0 +1,18 @@
+pool: ASP.NET-Performance-Controller
+
+# all the jobs are triggered at the same time
+# jobs are in parallel
+# steps are serial
+
+jobs:
+- job: Test Service Bus
+  steps:
+  - task: PublishToAzureServiceBus@1
+    inputs:
+      #azureSubscription: 
+      messageBody: 'This is the message body'
+      #sessionId: # Optional
+      #signPayload: false 
+      #certificateString: # Required when signPayload == True
+      #signatureKey: 'signature' # Optional
+      #waitForCompletion: false   
