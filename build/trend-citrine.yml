@@ -5,7 +5,7 @@ pool: ASP.NET-Performance-Controller
 # steps are serial
 
 jobs:
-- job: Test Service Bus
+- job: TestServiceBus
   steps:
   - task: PublishToAzureServiceBus@1
     inputs:
