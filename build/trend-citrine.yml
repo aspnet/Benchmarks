@@ -1,5 +1,3 @@
-pool: ASP.NET-Performance-Controller
-
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
