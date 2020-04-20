@@ -1,10 +1,13 @@
+# Agent-less jobs need this pool
+pool: server
+
+
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
 
 jobs:
 - job: TestServiceBus
-  pool: server
   steps:
   - task: PublishToAzureServiceBus@1
     inputs:
@@ -14,4 +17,4 @@ jobs:
       #signPayload: false 
       #certificateString: # Required when signPayload == True
       #signatureKey: 'signature' # Optional
-      #waitForCompletion: false   
+      waitForCompletion: true
