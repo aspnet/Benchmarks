@@ -9,7 +9,7 @@ jobs:
   steps:
   - task: PublishToAzureServiceBus@1
     inputs:
-      #azureSubscription: 
+      azureSubscription: citrine
       messageBody: 'This is the message body'
       #sessionId: # Optional
       #signPayload: false 
