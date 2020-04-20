@@ -7,7 +7,7 @@ jobs:
   steps:
   - task: PublishToAzureServiceBus@1
     inputs:
-      azureSubscription: citrine
+      azureSubscription: ASP.NET Benchmarks Queue
       messageBody: 'This is the message body'
       #sessionId: # Optional
       #signPayload: false 
