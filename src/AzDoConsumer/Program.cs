@@ -24,6 +24,15 @@ namespace JobConsumer
 
         public static int Main(string[] args)
         {
+            // Replace arguments starting with "env:" by the value in the environment variables
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i].StartsWith("env:", StringComparison.OrdinalIgnoreCase))
+                {
+                    args[i] = Environment.GetEnvironmentVariable(args[i].Substring(4));
+                }
+            }
+
             var app = new CommandLineApplication();
 
             app.HelpOption("-h|--help");
