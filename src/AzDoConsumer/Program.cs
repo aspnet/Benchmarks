@@ -13,6 +13,8 @@ namespace AzDoConsumer
 {
     public class Program
     {
+        private static TimeSpan TaskLogFeedDelay = TimeSpan.FromSeconds(2);
+
         private static string ConnectionString { get; set; }
         private static string Queue { get; set; }
         private static string Path { get; set; }
@@ -54,9 +56,10 @@ namespace AzDoConsumer
                 var processor = client.CreateProcessor(Queue, new ServiceBusProcessorOptions
                 {
                     AutoComplete = false,
-                    MaxConcurrentCalls = 1, // process one message at a time
+                    MaxConcurrentCalls = 1, // Process one message at a time
                 });
 
+                // Whenever a message is available on the queue
                 processor.ProcessMessageAsync += async args =>
                 {
                     Console.WriteLine("Processing message: ");
@@ -70,13 +73,17 @@ namespace AzDoConsumer
 
                     try
                     {
+                        // The Body contains the parameters for the application to run
                         jobPayload = JobPayload.Deserialize(message.Body.ToArray());
-                        devopsMessage = new DevopsMessage(message);
 
                         Console.WriteLine("Received payload: " + jobPayload.RawPayload);
 
+                        // The DevopsMessage does the communications with AzDo
+                        devopsMessage = new DevopsMessage(message);
+
                         await devopsMessage.SendTaskStartedEventAsync();
 
+                        // The DriverJob manages the application's lifetime and standard output
                         driverJob = new DriverJob(Path, String.Join(' ', jobPayload.Args) + " " + Args);
 
                         driverJob.OnStandardOutput = log => Console.WriteLine(log);
@@ -85,6 +92,7 @@ namespace AzDoConsumer
 
                         driverJob.Start();
 
+                        // Pump application standard output while it's running
                         while (driverJob.IsRunning)
                         {
                             if ((DateTime.UtcNow - driverJob.StartTimeUtc) > jobPayload.Timeout)
@@ -94,14 +102,19 @@ namespace AzDoConsumer
 
                             var logs = driverJob.FlushStandardOutput().ToArray();
 
-                            await devopsMessage.SendTaskLogFeedsAsync(String.Join("\r\n", logs));
+                            // Send any page of logs to the AzDo task log feed
+                            if (logs.Any())
+                            {
+                                await devopsMessage.SendTaskLogFeedsAsync(String.Join("\r\n", logs));
+                            }
 
-                            await Task.Delay(1000);
+                            await Task.Delay(TaskLogFeedDelay);
                         }
 
+                        // Mark the task as completed
                         await devopsMessage.SendTaskCompletedEventAsync(succeeded: true);
 
-                        // Create task log entry
+                        // Create a task log entry
                         var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();
 
                         var taskLogObject = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(taskLogObjectString);
@@ -113,6 +126,7 @@ namespace AzDoConsumer
                         // Attach task log to the timeline record
                         await devopsMessage?.UpdateTaskTimelineRecordAsync(taskLogObjectString);
 
+                        // Mark the message as completed
                         await args.CompleteAsync(message);
 
                         driverJob.Stop();
