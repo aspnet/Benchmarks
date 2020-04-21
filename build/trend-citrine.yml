@@ -23,7 +23,6 @@ jobs:
       #      "aspnet-physical"
       #      ]
       #  }
-      messageBody: |
-        {
-          "foo": "bar"
-        }
+      messageBody: 
+        foo: "bar"
+        args: [ "a", "b" ]
