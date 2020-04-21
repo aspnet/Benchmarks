@@ -1,7 +1,6 @@
 # Agent-less jobs need this pool
 pool: server
 
-
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
@@ -12,9 +11,16 @@ jobs:
   - task: PublishToAzureServiceBus@1
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
-      messageBody: 'This is the message body'
-      #sessionId: # Optional
-      #signPayload: false 
-      #certificateString: # Required when signPayload == True
-      #signatureKey: 'signature' # Optional
       waitForCompletion: true
+      messageBody: |
+        {
+          "args": [
+            "--config",
+            "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml",
+            "--scenario", 
+            "proxy-httpclient",
+            "--profile",
+            "aspnet-physical"
+            ]
+        }
+      
