@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,35 +59,63 @@ namespace AzDoConsumer
 
                 processor.ProcessMessageAsync += async args =>
                 {
+                    Console.WriteLine("Processing message: ");
+                    Console.WriteLine(args.Message.ToString());
+
                     var message = args.Message;
 
                     JobPayload jobPayload;
                     DevopsMessage devopsMessage = null;
+                    DriverJob driverJob = null;
 
                     try
                     {
                         jobPayload = JobPayload.Deserialize(message.Body.ToArray());
                         devopsMessage = new DevopsMessage(message);
 
-                        var driverJob = new DriverJob();
-
-                        Console.WriteLine("Received message: " + jobPayload.Message);
+                        Console.WriteLine("Received payload: " + jobPayload.RawPayload);
 
                         await devopsMessage.SendTaskStartedEventAsync();
 
-                        // var result = driverJob.Run(Path, String.Join(' ', jobPayload.Args) + " " + Args);
+                        driverJob = new DriverJob(Path, String.Join(' ', jobPayload.Args) + " " + Args);
 
-                        // Console.WriteLine(result);
-
-                        await devopsMessage.SendTaskLogFeedsAsync("line 1", "line 2");
+                        driverJob.OnStandardOutput = log => Console.WriteLine(log);
 
                         Console.WriteLine("Processing...");
 
-                        await Task.Delay(10000);
+                        driverJob.Start();
+
+                        while (driverJob.IsRunning)
+                        {
+                            if ((DateTime.UtcNow - driverJob.StartTimeUtc) > jobPayload.Timeout)
+                            {
+                                throw new Exception("Job timed out");
+                            }
+
+                            var logs = driverJob.FlushStandardOutput().ToArray();
+
+                            await devopsMessage.SendTaskLogFeedsAsync(String.Join("\r\n", logs));
+
+                            await Task.Delay(1000);
+                        }
 
                         await devopsMessage.SendTaskCompletedEventAsync(succeeded: true);
 
+                        // Create task log entry
+                        var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();
+
+                        var taskLogObject = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(taskLogObjectString);
+
+                        var taskLogId = taskLogObject["id"].ToString();
+
+                        await devopsMessage?.AppendToTaskLogAsync(taskLogId, driverJob.OutputBuilder.ToString());
+
+                        // Attach task log to the timeline record
+                        await devopsMessage?.UpdateTaskTimelineRecordAsync(taskLogObjectString);
+
                         await args.CompleteAsync(message);
+
+                        driverJob.Stop();
 
                         Console.WriteLine("Job completed");
                     }
@@ -100,17 +129,7 @@ namespace AzDoConsumer
                     }
                     finally
                     {
-                        // Upload the task logs. Create task log and append the all logs to task log.
-                        
-                        // Create task log entry
-                        var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();
-
-                        //var taskLogObject = System.Text.Json.JsonSerializer.Deserialize(taskLogObjectString);
-
-                        //await devopsMessage?.AppendToTaskLogAsync(taskLogId, "message 1", "message 2");
-
-                        // Attache task log to the timeline record
-                        await devopsMessage?.UpdateTaskTimelineRecordAsync(taskLogObjectString);
+                        driverJob?.Dispose();
                     }
                 };
 
