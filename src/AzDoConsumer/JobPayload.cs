@@ -1,8 +1,4 @@
-﻿using System.IO;
-using System.Runtime.Serialization;
-using System.Xml;
-
-namespace AzDoConsumer
+﻿namespace AzDoConsumer
 {
     public class JobPayload
     {
@@ -10,12 +6,9 @@ namespace AzDoConsumer
 
         public static JobPayload Deserialize(byte[] data)
         {
-            var serializer = new DataContractSerializer(typeof(JobPayload));
-            using (var stream = new MemoryStream(data))
-            using (var reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
-            {
-                return (JobPayload)serializer.ReadObject(reader);
-            }
+            var str = System.Text.Encoding.UTF8.GetString(data);
+            str = str.Substring(str.IndexOf("{"));
+            return System.Text.Json.JsonSerializer.Deserialize<JobPayload>(str);
         }
     }
 }

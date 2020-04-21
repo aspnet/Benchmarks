@@ -12,15 +12,14 @@ jobs:
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
-      #messageBody: |
-      #  {
-      #    "args": [
-      #      "--config",
-      #      "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml",
-      #      "--scenario", 
-      #      "proxy-httpclient",
-      #      "--profile",
-      #      "aspnet-physical"
-      #      ]
-      #  }
-      messageBody: '{ "foo": "bar" }'
+      messageBody: |
+        {
+          "args": [
+            "--config",
+            "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml",
+            "--scenario", 
+            "proxy-httpclient",
+            "--profile",
+            "aspnet-physical"
+            ]
+        }

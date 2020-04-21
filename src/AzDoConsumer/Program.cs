@@ -68,9 +68,9 @@ namespace AzDoConsumer
 
                         await devopsMessage.SendTaskStartedEventAsync();
                         
-                        var result = driverJob.Run(Path, String.Join(' ', jobPayload.Args) + " " + Args);
+                        // var result = driverJob.Run(Path, String.Join(' ', jobPayload.Args) + " " + Args);
 
-                        Console.WriteLine(result);
+                        // Console.WriteLine(result);
 
                         // Provision resource group
 
