@@ -48,18 +48,10 @@ namespace AzDoConsumer
             return PostDataAsync(taskStartedEventUrl, requestBody);
         }
 
-        private Task<HttpResponseMessage> PostDataAsync(string url, string requestBody)
-        {
-            var buffer = Encoding.UTF8.GetBytes(requestBody);
-            var byteContent = new ByteArrayContent(buffer);
-            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            return _httpClient.PostAsync(new Uri(url), byteContent);
-        }
-
+        
         public Task SendTaskCompletedEventAsync(bool succeeded)
         {
-            const string taskCompletedEventUrl = "{0}/{1}/_apis/distributedtask/hubs/{2}/plans/{3}/events?api-version=2.0-preview.1";
+            var taskCompletedEventUrl = $"{PlanUrl}/{ProjectId}/_apis/distributedtask/hubs/{HubName}/plans/{PlanId}/events?api-version=2.0-preview.1";
 
             var body = new
             {
@@ -74,7 +66,7 @@ namespace AzDoConsumer
             return PostDataAsync(taskCompletedEventUrl, requestBody);
         }
 
-        public Task SendTaskLogFeedsAsync(string[] messages)
+        public Task SendTaskLogFeedsAsync(params string[] messages)
         {
             var taskLogFeedsUrl = $"{PlanUrl}/{ProjectId}/_apis/distributedtask/hubs/{HubName}/plans/{PlanId}/timelines/{TimelineId}/records/{JobId}/feed?api-version=4.1";
 
@@ -88,5 +80,89 @@ namespace AzDoConsumer
 
             return PostDataAsync(taskLogFeedsUrl, requestBody);
         }
+
+        public async Task<string> CreateTaskLogAsync()
+        {
+            var taskLogCreateUrl = $"{PlanUrl}/{ProjectId}/_apis/distributedtask/hubs/{HubName}/plans/{PlanId}/logs?api-version=4.1";
+
+            var body = new
+            {
+                path = String.Format(@"logs\{0:D}", TaskInstanceId),
+            };
+
+            var requestBody = JsonSerializer.Serialize(body);
+
+            var response = await PostDataAsync(taskLogCreateUrl, requestBody);
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public Task UpdateTaskTimelineRecordAsync(string taskLogObject)
+        {
+            var updateTimelineUrl = $"{PlanUrl}/{ProjectId}/_apis/distributedtask/hubs/{HubName}/plans/{PlanId}/timelines/{TimelineId}/records?api-version=4.1";
+
+            var body = new
+            {
+                value = new[] {
+                    new
+                    {
+                        id = TaskInstanceId,
+                        log = taskLogObject
+                    }
+                },
+                count = 1
+            };
+
+            var requestBody = JsonSerializer.Serialize(body);
+
+            return PatchDataAsync(updateTimelineUrl, requestBody);
+        }
+
+        public Task AppendToTaskLogAsync(string taskLogId, params string[] messages)
+        {
+            // Append to task log
+            // url: {planUri}/{projectId}/_apis/distributedtask/hubs/{hubName}/plans/{planId}/logs/{taskLogId}?api-version=4.1
+            // body: log messages stream data
+
+            var appendLogContentUrl = $"{PlanUrl}/{ProjectId}/_apis/distributedtask/hubs/{HubName}/plans/{PlanId}/logs/{taskLogId}?api-version=4.1";
+
+            HttpContent content = new StringContent(String.Join("\r\n", messages), Encoding.UTF8);
+
+            return PostDataAsync(appendLogContentUrl, content);
+        }
+
+        private async Task<HttpResponseMessage> PostDataAsync(string url, HttpContent content)
+        {
+            var response = await _httpClient.PostAsync(new Uri(url), content);
+
+            response.EnsureSuccessStatusCode();
+
+            return response;
+        }
+
+        private async Task<HttpResponseMessage> PostDataAsync(string url, string requestBody)
+        {
+            var buffer = Encoding.UTF8.GetBytes(requestBody);
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.PostAsync(new Uri(url), byteContent);
+
+            response.EnsureSuccessStatusCode();
+
+            return response;
+        }
+
+        private async Task PatchDataAsync(string url, string requestBody)
+        {
+            var buffer = Encoding.UTF8.GetBytes(requestBody);
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.PatchAsync(new Uri(url), byteContent);
+
+            response.EnsureSuccessStatusCode();
+        }
+
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -51,40 +52,72 @@ namespace AzDoConsumer
                 var client = new ServiceBusClient(ConnectionString);
                 var processor = client.CreateProcessor(Queue, new ServiceBusProcessorOptions
                 {
-                    AutoComplete = true,
+                    AutoComplete = false,
                     MaxConcurrentCalls = 1, // process one message at a time
                 });
 
                 processor.ProcessMessageAsync += async args =>
                 {
                     var message = args.Message;
+
+                    JobPayload jobPayload;
+                    DevopsMessage devopsMessage = null;
+
                     try
                     {
-                        var jobPayload = JobPayload.Deserialize(message.Body.ToArray());
-
-                        var devopsMessage = new DevopsMessage(message);
+                        jobPayload = JobPayload.Deserialize(message.Body.ToArray());
+                        devopsMessage = new DevopsMessage(message);
 
                         var driverJob = new DriverJob();
 
+                        Console.WriteLine("Received message: " + jobPayload.Message);
+
                         await devopsMessage.SendTaskStartedEventAsync();
-                        
+
                         // var result = driverJob.Run(Path, String.Join(' ', jobPayload.Args) + " " + Args);
 
                         // Console.WriteLine(result);
 
-                        // Provision resource group
+                        await devopsMessage.SendTaskLogFeedsAsync("line 1", "line 2");
+
+                        Console.WriteLine("Processing...");
+
+                        await Task.Delay(10000);
 
                         await devopsMessage.SendTaskCompletedEventAsync(succeeded: true);
+
                         await args.CompleteAsync(message);
+
+                        Console.WriteLine("Job completed");
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        await devopsMessage?.SendTaskCompletedEventAsync(succeeded: false);
+
                         await args.AbandonAsync(message);
+
+                        Console.WriteLine("Job failed: " + e.Message);
+                    }
+                    finally
+                    {
+                        // Upload the task logs. Create task log and append the all logs to task log.
+                        
+                        // Create task log entry
+                        var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();
+
+                        //var taskLogObject = System.Text.Json.JsonSerializer.Deserialize(taskLogObjectString);
+
+                        //await devopsMessage?.AppendToTaskLogAsync(taskLogId, "message 1", "message 2");
+
+                        // Attache task log to the timeline record
+                        await devopsMessage?.UpdateTaskTimelineRecordAsync(taskLogObjectString);
                     }
                 };
 
                 processor.ProcessErrorAsync += args =>
                 {
+                    Console.WriteLine("Process error: " + args.Exception.Message);
+
                     throw args.Exception;
                 };
 
