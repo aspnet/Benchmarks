@@ -5,7 +5,7 @@
       branchOrCommit: master
       project: src/SignalRClient/SignalRClient.csproj
     readyStateText: SignalR Client
-    sdkVersion: 3.1.201
+    sdkVersion: 5.0.100-preview.2.20120.3
     aspNetCoreVersion: '3.1'
     runtimeVersion: '3.1'
     waitForExit: true
