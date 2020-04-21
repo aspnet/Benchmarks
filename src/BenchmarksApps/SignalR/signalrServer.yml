@@ -6,7 +6,6 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/SignalR/BenchmarkServer.csproj
     readyStateText: Application started
-    sdkVersion: 3.1.201
-    aspNetCoreVersion: '3.1'
-    runtimeVersion: '3.1'
+    sdkVersion: 5.0.100-preview.2.20120.3
+    runtimeVersion: '5.0.*'
     waitForExit: false
