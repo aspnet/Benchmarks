@@ -83,8 +83,12 @@ namespace AzDoConsumer
 
                         await devopsMessage.SendTaskStartedEventAsync();
 
+                        // The arguments are built from the Task payload and the ones
+                        // set on the command line
+                        var arguments = String.Join(' ', jobPayload.Args) + " " + Args;
+
                         // The DriverJob manages the application's lifetime and standard output
-                        driverJob = new DriverJob(Path, String.Join(' ', jobPayload.Args) + " " + Args);
+                        driverJob = new DriverJob(Path, arguments);
 
                         driverJob.OnStandardOutput = log => Console.WriteLine(log);
 
