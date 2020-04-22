@@ -76,8 +76,11 @@ namespace BenchmarkServer
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
-        private static readonly string _runtimeMonoPackageUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/runtime.linux-x64.microsoft.netcore.runtime.mono/{0}/runtime.linux-x64.microsoft.netcore.runtime.mono.{0}.nupkg";
-        private static readonly string[] _runtimeFeedUrls = new string[] { "dotnetfeed.blob.core.windows.net/dotnet-core", "api.nuget.org/v3" };
+        private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/7d9f5c21-0d79-403f-bfe3-9a4506529760/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
+        private static readonly string[] _runtimeFeedUrls = new string[] {
+            "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer",
+            "https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/7d9f5c21-0d79-403f-bfe3-9a4506529760/nuget/v3/flat2",
+            "https://api.nuget.org/v3/flatcontainer" };
 
         // Cached lists of SDKs and runtimes already installed
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -2435,7 +2438,7 @@ namespace BenchmarkServer
                         var found = false;
                         foreach (var feed in _runtimeFeedUrls)
                         {
-                            var url = $"https://{feed}/flatcontainer/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
+                            var url = $"{feed}/microsoft.netcore.app.runtime.linux-x64/{runtimeVersion}/microsoft.netcore.app.runtime.linux-x64.{runtimeVersion}.nupkg";
 
                             if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                             {
@@ -3408,7 +3411,7 @@ namespace BenchmarkServer
             try
             {
 
-                var packageName = "runtime.linux-x64.microsoft.netcore.runtime.mono";
+                var packageName = "Microsoft.NETCore.App.Runtime.Mono.linux-x64".ToLowerInvariant();
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
 
                 // Ensure the folder already exists
@@ -3421,7 +3424,7 @@ namespace BenchmarkServer
                     var found = false;
                     foreach (var feed in _runtimeFeedUrls)
                     {
-                        var url = $"https://{feed}/flatcontainer/{packageName}/{runtimeVersion}/{packageName}.{runtimeVersion}.nupkg";
+                        var url = $"{feed}/{packageName}/{runtimeVersion}/{packageName}.{runtimeVersion}.nupkg";
 
                         if (await DownloadFileAsync(url, runtimePath, maxRetries: 3, timeout: 60, throwOnError: false))
                         {
@@ -3446,7 +3449,7 @@ namespace BenchmarkServer
 
                 using (var archive = ZipFile.OpenRead(runtimePath))
                 {
-                    var systemCoreLib = archive.GetEntry("runtimes/linux-x64/lib/netstandard1.0/System.Private.CoreLib.dll");
+                    var systemCoreLib = archive.GetEntry("runtimes/linux-x64/lib/netcoreapp5.0/System.Private.CoreLib.dll");
                     systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
 
                     var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
