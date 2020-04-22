@@ -5,7 +5,6 @@
       branchOrCommit: master
       project: src/SignalRClient/SignalRClient.csproj
     readyStateText: SignalR Client
-    sdkVersion: 5.0.100-preview.2.20120.3
     runtimeVersion: '5.0.*'
     waitForExit: true
     variables:
