@@ -238,11 +238,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{
 		build\regressionbot.yml = build\regressionbot.yml
 		build\stress-blazorwasm.yml = build\stress-blazorwasm.yml
 		build\stress-fortunes.yml = build\stress-fortunes.yml
+		build\trend-citrine.yml = build\trend-citrine.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcpClient", "src\TcpClient\TcpClient.csproj", "{127BD56E-993B-47A7-BC0A-2300DF53FADC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzDoConsumer", "src\AzDoConsumer\AzDoConsumer.csproj", "{499B0522-A7CE-4788-9166-1AFFBF506F68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -614,6 +617,18 @@ Global
 		{127BD56E-993B-47A7-BC0A-2300DF53FADC}.Release|x64.Build.0 = Release|Any CPU
 		{127BD56E-993B-47A7-BC0A-2300DF53FADC}.Release|x86.ActiveCfg = Release|Any CPU
 		{127BD56E-993B-47A7-BC0A-2300DF53FADC}.Release|x86.Build.0 = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|x64.Build.0 = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Debug|x86.Build.0 = Debug|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|x64.ActiveCfg = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|x64.Build.0 = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|x86.ActiveCfg = Release|Any CPU
+		{499B0522-A7CE-4788-9166-1AFFBF506F68}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -668,6 +683,7 @@ Global
 		{B5E3C5E2-121C-4869-8435-8A044EC347B0} = {13D935DC-E6B4-4CE1-AF75-CE82CB245C14}
 		{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 		{127BD56E-993B-47A7-BC0A-2300DF53FADC} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
+		{499B0522-A7CE-4788-9166-1AFFBF506F68} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}
