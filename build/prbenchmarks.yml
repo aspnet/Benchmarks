@@ -31,7 +31,7 @@ jobs:
             --azure-storage-file-share-name "env:SHARE_NAME"
 
     env:
-        CONNECTION_STRING: $(sql.connectionstring)
+        CONNECTION_STRING: $(storage.connectionstring)
         SHARE_NAME: $(storage.sharename)
         GITHUB_APP_ID: $(github.appid)
         GITHUB_INSTALL_ID: $(github.installid)
