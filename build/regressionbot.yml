@@ -1,0 +1,29 @@
+
+pool: ASP.NET-Performance-Controller
+
+# All the jobs are triggered at the same time
+# Jobs are run in parallel
+# Steps are serial
+
+schedules:
+- cron: "0 * * * *"
+  displayName: "every hour"
+  branches:
+    include:
+    - master
+  always: "true"
+
+jobs:
+- job: RegressionBot
+  timeoutInMinutes: 10
+  steps:
+  - powershell: |
+        cd ./src/BenchmarksBot
+        dotnet run -c release -- `
+            --table $(sql.table) --repositoryId $(github.repositoryId)
+
+    env:
+        BENCHMARKSBOT_ConnectionString: $(storage.connectionstring)
+        BENCHMARKSBOT_GitHubAppId: $(github.appid)
+        BENCHMARKSBOT_GitHubInstallationId: $(github.installid)
+        BENCHMARKSBOT_GithHubAppKey: $(github.privatekey)
