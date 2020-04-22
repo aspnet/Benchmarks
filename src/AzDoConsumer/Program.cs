@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using McMaster.Extensions.CommandLineUtils;
@@ -17,8 +18,6 @@ namespace AzDoConsumer
 
         private static string ConnectionString { get; set; }
         private static string Queue { get; set; }
-        private static string Path { get; set; }
-        private static string Args { get; set; }
 
         public static int Main(string[] args)
         {
@@ -36,20 +35,27 @@ namespace AzDoConsumer
             app.HelpOption("-h|--help");
             var connectionStringOption = app.Option("-c|--connection-string <string>", "The Azure Service Bus connection string", CommandOptionType.SingleValue).IsRequired();
             var queueOption = app.Option("-q|--queue <string>", "The Azure Service Bus queue name", CommandOptionType.SingleValue).IsRequired();
-            var pathOption = app.Option("-e|--executable <PATH>", "The application file path", CommandOptionType.SingleValue).IsRequired();
-            var argsOption = app.Option("-a|--args <args>", "The extra arguments to pass", CommandOptionType.SingleValue);
 
             app.OnExecuteAsync(async cancellationToken =>
             {
+                if (!File.Exists("jobs.json"))
+                {
+                    Console.WriteLine($"The file 'jobs.json' could not be found");
+                    return;
+                }
+
+                var jobs = JsonSerializer.Deserialize<Dictionary<string, JobDefinition>>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
                 ConnectionString = connectionStringOption.Value();
                 Queue = queueOption.Value();
-                Path = pathOption.Value();
-                Args = argsOption.HasValue() ? argsOption.Value() : "";
 
-                if (!File.Exists(Path))
+                foreach (var job in jobs)
                 {
-                    Console.WriteLine($"The driver could not be found at: '{Path}'");
-                    return;
+                    if (!File.Exists(job.Value.Executable))
+                    {
+                        Console.WriteLine($"The executable for the job '{job.Key}' could not be found at '{job.Value.Executable}'");
+                        return;
+                    }
                 }
 
                 var client = new ServiceBusClient(ConnectionString);
@@ -69,7 +75,7 @@ namespace AzDoConsumer
 
                     JobPayload jobPayload;
                     DevopsMessage devopsMessage = null;
-                    DriverJob driverJob = null;
+                    Job driverJob = null;
 
                     try
                     {
@@ -78,6 +84,11 @@ namespace AzDoConsumer
 
                         Console.WriteLine("Received payload: " + jobPayload.RawPayload);
 
+                        if (jobs.TryGetValue(jobPayload.Name, out var job))
+                        {
+                            throw new Exception("Invalid job name: " + jobPayload.Name);
+                        }
+
                         // The DevopsMessage does the communications with AzDo
                         devopsMessage = new DevopsMessage(message);
 
@@ -85,10 +96,10 @@ namespace AzDoConsumer
 
                         // The arguments are built from the Task payload and the ones
                         // set on the command line
-                        var arguments = String.Join(' ', jobPayload.Args) + " " + Args;
+                        var arguments = String.Join(' ', jobPayload.Args.Union(job.Arguments));
 
                         // The DriverJob manages the application's lifetime and standard output
-                        driverJob = new DriverJob(Path, arguments);
+                        driverJob = new Job(job.Executable, arguments);
 
                         driverJob.OnStandardOutput = log => Console.WriteLine(log);
 
@@ -121,7 +132,7 @@ namespace AzDoConsumer
                         // Create a task log entry
                         var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();
 
-                        var taskLogObject = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(taskLogObjectString);
+                        var taskLogObject = JsonSerializer.Deserialize<Dictionary<string, object>>(taskLogObjectString);
 
                         var taskLogId = taskLogObject["id"].ToString();
 

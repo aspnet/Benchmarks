@@ -1,55 +1,35 @@
+# Executes the Proxy benchmarks on citrine
+
 # Agent-less jobs need this pool
 pool: server
+
+variables:
+  - name: 'server'
 
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
 
 jobs:
-- job: Proxies
+- job: Trends
   steps:
   - task: PublishToAzureServiceBus@1
-    displayName: HttpClient Proxy
+    displayName: Plaintext
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
       messageBody: |
         {
-          "args": [ "--scenario", "proxy-httpclient", "--config", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml", "--profile", "aspnet-citrine" ]
+          "name": "benchmarksdriver",
+          "args": [ "--server", "$(server)", "--client", "http://asp-perf-load:5002", "-j", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json", "-n", "Plaintext", "--runtimeversion", "5.0.*" ]
         }
   - task: PublishToAzureServiceBus@1
-    displayName: NGinx Proxy
+    displayName: Plaintext non pipelined
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
       messageBody: |
         {
-          "args": [ "--scenario", "proxy-nginx", "--config", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml", "--profile", "aspnet-citrine" ]
-        }
-  - task: PublishToAzureServiceBus@1
-    displayName: HAProxy Proxy
-    inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
-      waitForCompletion: true
-      messageBody: |
-        {
-          "args": [ "--scenario", "proxy-haproxy", "--config", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml", "--profile", "aspnet-citrine" ]
-        }
-  - task: PublishToAzureServiceBus@1
-    displayName: Envoy Proxy
-    inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
-      waitForCompletion: true
-      messageBody: |
-        {
-          "args": [ "--scenario", "proxy-envoy", "--config", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml", "--profile", "aspnet-citrine" ]
-        }  
-  - task: PublishToAzureServiceBus@1
-    displayName: Baseline Proxy
-    inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
-      waitForCompletion: true
-      messageBody: |
-        {
-          "args": [ "--scenario", "proxy-baseline", "--config", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml", "--profile", "aspnet-citrine" ]
+          "name": "benchmarksdriver",
+          "args": [ "--server", "$(server)", "--client", "http://asp-perf-load:5002", "-j", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json", "-n", "PlaintextNonPipelined", "--runtimeversion", "5.0.*" ]
         }

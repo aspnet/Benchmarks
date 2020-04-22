@@ -10,7 +10,7 @@ using System.Text;
 
 namespace AzDoConsumer
 {
-    public class DriverJob : IDisposable
+    public class Job : IDisposable
     {
         private Process _process;
 
@@ -28,7 +28,7 @@ namespace AzDoConsumer
 
         public DateTime StartTimeUtc { get; private set; }
 
-        public DriverJob (string applicationPath, string arguments, string workingDirectory = null)
+        public Job (string applicationPath, string arguments, string workingDirectory = null)
         {
             _process = new Process()
             {

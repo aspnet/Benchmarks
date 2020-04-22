@@ -12,6 +12,7 @@ namespace AzDoConsumer
 
         public TimeSpan Timeout { get; set; } = DefaultJobTimeout;
 
+        public string Name { get; set; }
         public string[] Args { get; set; }
 
         public string RawPayload { get; set; }

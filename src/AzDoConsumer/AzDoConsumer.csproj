@@ -9,4 +9,10 @@
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.0.0-preview.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="jobs.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
