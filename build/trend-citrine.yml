@@ -3,6 +3,10 @@
 # Agent-less jobs need this pool
 pool: server
 
+variables:
+  - name: plaintextJobs
+    value: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
@@ -19,7 +23,7 @@ jobs:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "--foo", "$(server)", "--client", "$(client)", "-j", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json", "-n", "Plaintext", "--runtimeversion", "5.0.*" ]
+          "args": [ "--server", "$(server)", "--client", "$(client)", "-j", "$(plaintextJobs)", "-n", "Plaintext", "--runtimeversion", "5.0.*" ]
         }
   - task: PublishToAzureServiceBus@1
     displayName: Plaintext non pipelined
@@ -30,5 +34,5 @@ jobs:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "--server", "$(server)", "--client", "http://asp-perf-load:5002", "-j", "https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json", "-n", "PlaintextNonPipelined", "--runtimeversion", "5.0.*" ]
+          "args": [ "--server", "$(server)", "--client", "$(client)", "-j", "$(plaintextJobs)", "-n", "PlaintextNonPipelined", "--runtimeversion", "5.0.*" ]
         }
