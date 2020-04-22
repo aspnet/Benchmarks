@@ -1,6 +1,9 @@
 
 pool: ASP.NET-Performance-Controller
 
+variables:
+  - group: 'ASP.NET Benchmarks' 
+
 # All the jobs are triggered at the same time
 # Jobs are run in parallel
 # Steps are serial
@@ -28,7 +31,7 @@ jobs:
             --azure-storage-file-share-name "env:SHARE_NAME"
 
     env:
-        CONNECTION_STRING: $(storage.connectionstring)
+        CONNECTION_STRING: $(sql.connectionstring)
         SHARE_NAME: $(storage.sharename)
         GITHUB_APP_ID: $(github.appid)
         GITHUB_INSTALL_ID: $(github.installid)
