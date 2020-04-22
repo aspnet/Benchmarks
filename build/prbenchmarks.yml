@@ -7,7 +7,7 @@ pool: ASP.NET-Performance-Controller
 
 schedules:
 - cron: "*/5 * * * *"
-  displayName: "every minute"
+  displayName: "every five minutes"
   branches:
     include:
     - master
