@@ -14,7 +14,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,14 +23,12 @@ using Benchmarks.ServerJob;
 using BenchmarksServer;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Diagnostics.Tools.RuntimeClient;
 using Microsoft.Diagnostics.Tools.Trace;
 using Microsoft.Diagnostics.Tracing;
-using Microsoft.Diagnostics.Tracing.Parsers.ApplicationServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -62,7 +59,7 @@ namespace BenchmarkServer
         private static string CurrentTargetFramework = "netcoreapp3.1";
         private static string CurrentChannel = "3.1";
 
-        private const string PerfViewVersion = "P2.0.42";
+        private const string PerfViewVersion = "P2.0.54";
 
         private static readonly HttpClient _httpClient;
         private static readonly HttpClientHandler _httpClientHandler;
@@ -260,8 +257,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    Console.WriteLine("Option --hardware-version is required.");
-                    return 3;
+                    HardwareVersion = "";
                 }
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
@@ -269,12 +265,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    Console.WriteLine($"Option --{hardwareOption.LongName} <TYPE> is required. Available types:");
-                    foreach (Hardware type in Enum.GetValues(typeof(Hardware)))
-                    {
-                        Console.WriteLine($"  {type}");
-                    }
-                    return 2;
+                    Hardware = Hardware.Unknown;
                 }
 
                 var url = urlOption.HasValue() ? urlOption.Value() : _defaultUrl;
@@ -289,9 +280,52 @@ namespace BenchmarkServer
 
         private static async Task<int> Run(string url, string hostname, string dockerHostname)
         {
+            var isDefaultUrl = url == _defaultUrl;
+
+            // if the default url is used, check if the port is already in use
+            if (isDefaultUrl)
+            {
+                while (true)
+                {
+                    try
+                    {
+                        var localCts = new CancellationTokenSource();
+
+                        var localTask = new WebHostBuilder()
+                            .UseUrls(url)
+                            .UseKestrel()
+                            .Configure(_ => { })
+                            .ConfigureLogging((hostingContext, logging) =>
+                            {
+                                logging.ClearProviders();
+                            })
+                            .Build()
+                            .RunAsync(localCts.Token);
+
+                        localCts.Cancel();
+
+                        await localTask;
+
+                        break;
+                    }
+                    catch(IOException e)
+                    {
+                        if (e.InnerException is AddressInUseException)
+                        {
+                            var port = int.Parse(url.Substring(url.LastIndexOf(':') + 1));
+                            url = url.Replace(port.ToString(), (port + 1).ToString());
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
+
             var host = new WebHostBuilder()
                     .UseKestrel()
-                    .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = (long) 10 * 1024 * 1024 * 1024)
+                    .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = (long)10 * 1024 * 1024 * 1024)
                     .UseStartup<Startup>()
                     .UseUrls(url)
                     .ConfigureLogging((hostingContext, logging) =>

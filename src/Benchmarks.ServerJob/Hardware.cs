@@ -2,6 +2,7 @@
 {
     public enum Hardware
     {
+        Unknown,
         Cloud,
         Physical,
         ARM64,
