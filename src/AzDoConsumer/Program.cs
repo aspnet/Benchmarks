@@ -84,7 +84,7 @@ namespace AzDoConsumer
 
                         Console.WriteLine("Received payload: " + jobPayload.RawPayload);
 
-                        if (jobs.TryGetValue(jobPayload.Name, out var job))
+                        if (!jobs.TryGetValue(jobPayload.Name, out var job))
                         {
                             throw new Exception("Invalid job name: " + jobPayload.Name);
                         }
@@ -127,7 +127,7 @@ namespace AzDoConsumer
                         }
 
                         // Mark the task as completed
-                        await devopsMessage.SendTaskCompletedEventAsync(succeeded: true);
+                        await devopsMessage.SendTaskCompletedEventAsync(succeeded: driverJob.WasSuccessful);
 
                         // Create a task log entry
                         var taskLogObjectString = await devopsMessage?.CreateTaskLogAsync();

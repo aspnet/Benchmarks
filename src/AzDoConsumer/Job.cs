@@ -118,6 +118,8 @@ namespace AzDoConsumer
             }
         }
 
+        public bool WasSuccessful => _process != null && _process.ExitCode == 0;
+
         public bool IsRunning => _process != null && !_process.HasExited;
 
         public void Dispose()

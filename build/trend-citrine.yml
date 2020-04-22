@@ -3,9 +3,6 @@
 # Agent-less jobs need this pool
 pool: server
 
-variables:
-  - name: 'server'
-
 # all the jobs are triggered at the same time
 # jobs are in parallel
 # steps are serial
