@@ -3484,7 +3484,10 @@ namespace BenchmarkServer
                 using (var archive = ZipFile.OpenRead(runtimePath))
                 {
                     var systemCoreLib = archive.GetEntry("runtimes/linux-x64/lib/netcoreapp5.0/System.Private.CoreLib.dll");
-                    systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
+                    systemCoreLib?.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
+
+                    systemCoreLib = archive.GetEntry("runtimes/linux-x64/native/System.Private.CoreLib.dll");
+                    systemCoreLib?.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
 
                     var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
                     libcoreclr.ExtractToFile(Path.Combine(outputFolder, "libcoreclr.so"), true);
