@@ -23,9 +23,9 @@ jobs:
         }
   - task: PublishToAzureServiceBus@1
     displayName: Plaintext non pipelined
+    condition: always()
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
-      condition: always()
       waitForCompletion: true
       messageBody: |
         {
