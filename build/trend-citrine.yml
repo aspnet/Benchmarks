@@ -3,12 +3,16 @@
 # Agent-less jobs need this pool
 pool: server
 
+
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
-  scenarios: [
+
+parameters:
+- name: scenarios
+  values: [
     { displayName: "Plaintext", args: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)" },
     { displayName: "Plaintext non pipelined", args: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)" }
   ]
@@ -20,7 +24,7 @@ variables:
 jobs:
 - job: Trends
   steps:
-  - ${{ each s in variables.scenarios }}:
+  - ${{ each s in parameters.scenarios }}:
     - task: PublishToAzureServiceBus@1
       displayName: ${{ s.displayName }}
       condition: always()
