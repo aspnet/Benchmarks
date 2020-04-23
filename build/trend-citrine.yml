@@ -11,7 +11,7 @@ variables:
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
 
 parameters:
-- scenarios:
+  scenarios:
   - displayName: "Plaintext"
     args: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
   - displayName: "Plaintext non pipelined"
