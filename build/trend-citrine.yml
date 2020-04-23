@@ -21,14 +21,14 @@ jobs:
 - job: Trends
   steps:
   - ${{ each s in variables.scenarios }}:
-   - task: PublishToAzureServiceBus@1
-     displayName: ${{ s.displayName }}
-     condition: always()
-     inputs:
-       azureSubscription: ASP.NET Benchmarks Queue
-       waitForCompletion: true
-       messageBody: |
-         {
-           "name": "benchmarksdriver",
-           "args": [ "${{ s.args }}" ]
-         }
+    - task: PublishToAzureServiceBus@1
+      displayName: ${{ s.displayName }}
+      condition: always()
+      inputs:
+        azureSubscription: ASP.NET Benchmarks Queue
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "benchmarksdriver",
+            "args": [ "${{ s.args }}" ]
+          }
