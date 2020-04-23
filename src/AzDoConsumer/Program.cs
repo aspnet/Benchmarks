@@ -45,7 +45,7 @@ namespace AzDoConsumer
                     return;
                 }
 
-                JobDefinitions jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText(jobDefinitionsPathOption.Value()), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 ConnectionString = connectionStringOption.Value();
                 Queue = queueOption.Value();
@@ -80,6 +80,9 @@ namespace AzDoConsumer
 
                     try
                     {
+                        // The DevopsMessage does the communications with AzDo
+                        devopsMessage = new DevopsMessage(message);
+
                         // The Body contains the parameters for the application to run
                         jobPayload = JobPayload.Deserialize(message.Body.ToArray());
 
@@ -89,9 +92,6 @@ namespace AzDoConsumer
                         {
                             throw new Exception("Invalid job name: " + jobPayload.Name);
                         }
-
-                        // The DevopsMessage does the communications with AzDo
-                        devopsMessage = new DevopsMessage(message);
 
                         await devopsMessage.SendTaskStartedEventAsync();
 
@@ -202,9 +202,9 @@ namespace AzDoConsumer
 
                 processor.ProcessErrorAsync += args =>
                 {
-                    Console.WriteLine("Process error: " + args.Exception.Message);
+                    Console.WriteLine("Process error: " + args.Exception.ToString());
 
-                    throw args.Exception;
+                    return Task.CompletedTask;
                 };
 
                 await processor.StartProcessingAsync();
