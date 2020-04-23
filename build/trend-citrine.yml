@@ -12,10 +12,12 @@ variables:
 
 parameters:
 - name: scenarios
-  values: [
-    { displayName: "Plaintext", args: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)" },
-    { displayName: "Plaintext non pipelined", args: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)" }
-  ]
+  values:
+  - displayName: "Plaintext"
+    args: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+  - displayName: "Plaintext non pipelined"
+    args: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+
 
 # all the jobs are triggered at the same time
 # jobs are in parallel
