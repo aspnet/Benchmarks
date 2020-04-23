@@ -1,10 +1,11 @@
 # Executes the Proxy benchmarks on citrine
 
+parameters:
+- name: scenarios
+  values: []
+
 # Agent-less jobs need this pool
 pool: server
-
-parameters:
-  scenarios: []
 
 variables:
   sessionArg: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
