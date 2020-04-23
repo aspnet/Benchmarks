@@ -5,7 +5,9 @@ pool: server
 
 variables:
   - name: plaintextJobs
-    value: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+    value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+  - name: defaultArgs
+    value: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5
 
 # all the jobs are triggered at the same time
 # jobs are in parallel
@@ -23,7 +25,7 @@ jobs:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "--server", "$(server)", "--client", "$(client)", "-j", "$(plaintextJobs)", "-n", "Plaintext", "--runtimeversion", "5.0.*" ]
+          "args": [ "$(plaintextJobs)", "$(defaultArgs)", "-n", "Plaintext" ]
         }
   - task: PublishToAzureServiceBus@1
     displayName: Plaintext non pipelined
@@ -34,5 +36,5 @@ jobs:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "--server", "$(server)", "--client", "$(client)", "-j", "$(plaintextJobs)", "-n", "PlaintextNonPipelined", "--runtimeversion", "5.0.*" ]
+          "args": [ "$(plaintextJobs)", "$(defaultArgs)", "-n", "PlaintextNonPipelined" ]
         }
