@@ -7,9 +7,7 @@ parameters:
   scenarios: []
 
 variables:
-  - template: variables/build.yml
-  - name: sessionArg
-    value: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  sessionArg: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
 - job: Trends
