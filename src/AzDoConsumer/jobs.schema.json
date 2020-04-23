@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://microsoft.com/aspnet/benchmarks/azdoconsumer",
+  "type": "object",
+  "title": "AzDo Consumer Jobs Schema",
+  
+  "definitions": {
+    "job": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "type": "string",
+          "title": "Path to the application to execute2",
+          "default": "",
+          "examples": [
+            "c:\\applications\\worker.exe"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "arguments": {
+          "type": "array",
+          "title": "Mandatory arguments to add to this command",
+          "examples": [
+            ["--log", "verbose"]
+          ],
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    }
+  },
+  "properties": {
+    "jobs": {
+      "type": "object",
+      "title": "Job names that can be triggered on the queue",
+      "required": [],
+      "properties": {},
+      "additionalProperties": { "$ref": "#/definitions/job" }
+    }
+  },
+  "minProperties": 1,
+  "required": [],
+  "additionaProperties": false
+}

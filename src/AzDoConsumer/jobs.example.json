@@ -1,0 +1,16 @@
+{
+  "$schema": "./jobs.schema.json",
+  "jobs": {
+    "benchmarksdriver": {
+      "executable": "C:\\Users\\sebros\\Documents\\Projects\\benchmarks\\src\\BenchmarksDriver\\bin\\build\\BenchmarksDriver.exe",
+      "arguments": [],
+      "bindings": {
+        "BENCHMARKS_CONNECTION_STRING": "RANDOM VALUE"
+      }
+    },
+    "benchmarksdriver2": {
+      "executable": "C:\\Users\\sebros\\Documents\\Projects\\benchmarks\\src\\BenchmarksDriver2\\bin\\build\\BenchmarksDriver.exe",
+      "arguments": []
+    }
+  }
+}

@@ -4,10 +4,10 @@
 pool: server
 
 variables:
-  - name: plaintextJobs
-    value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
-  - name: defaultArgs
-    value: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+  defaultArgs: --server "$(server)" --client "$(client)" --session "$(session)" --runtimeversion "5.0.*" --self-contained --warmup 5 --duration 5 --collect-counters --description "Trend/Latest" 
+  sqlArgs: "--table", "BENCHMARKS_CONNECTION_STRING"
 
 # all the jobs are triggered at the same time
 # jobs are in parallel

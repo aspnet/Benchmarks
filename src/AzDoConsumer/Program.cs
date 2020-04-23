@@ -35,21 +35,22 @@ namespace AzDoConsumer
             app.HelpOption("-h|--help");
             var connectionStringOption = app.Option("-c|--connection-string <string>", "The Azure Service Bus connection string", CommandOptionType.SingleValue).IsRequired();
             var queueOption = app.Option("-q|--queue <string>", "The Azure Service Bus queue name", CommandOptionType.SingleValue).IsRequired();
-
+            var jobDefinitionsPathOption = app.Option("-j|--jobs <path>", "The path for the job definitions file", CommandOptionType.SingleValue).IsRequired();
+            
             app.OnExecuteAsync(async cancellationToken =>
             {
-                if (!File.Exists("jobs.json"))
+                if (!File.Exists(jobDefinitionsPathOption.Value()))
                 {
-                    Console.WriteLine($"The file 'jobs.json' could not be found");
+                    Console.WriteLine($"The file '{0}' could not be found", jobDefinitionsPathOption.Value());
                     return;
                 }
 
-                var jobs = JsonSerializer.Deserialize<Dictionary<string, JobDefinition>>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 ConnectionString = connectionStringOption.Value();
                 Queue = queueOption.Value();
 
-                foreach (var job in jobs)
+                foreach (var job in jobDefinitions.Jobs)
                 {
                     if (!File.Exists(job.Value.Executable))
                     {
@@ -84,7 +85,7 @@ namespace AzDoConsumer
 
                         Console.WriteLine("Received payload: " + jobPayload.RawPayload);
 
-                        if (!jobs.TryGetValue(jobPayload.Name, out var job))
+                        if (!jobDefinitions.Jobs.TryGetValue(jobPayload.Name, out var job))
                         {
                             throw new Exception("Invalid job name: " + jobPayload.Name);
                         }
@@ -96,7 +97,44 @@ namespace AzDoConsumer
 
                         // The arguments are built from the Task payload and the ones
                         // set on the command line
-                        var arguments = String.Join(' ', jobPayload.Args.Union(job.Arguments));
+                        var allArguments = jobPayload.Args.Union(job.Arguments).ToArray();
+
+                        // Convert any arguments with the custom bindings
+
+                        foreach (var binding in job.Bindings.Keys)
+                        {
+                            if (job.Bindings[binding].StartsWith("env:"))
+                            {
+                                job.Bindings[binding] = Environment.GetEnvironmentVariable(binding.Substring(4));
+                            }
+                        }
+
+                        // Create protected arguments string by hiding binding values
+                        for (var i = 0; i < allArguments.Length; i++)
+                        {
+                            var argument = allArguments[i];
+
+                            if (job.Bindings.ContainsKey(argument))
+                            {
+                                allArguments[i] = "****";
+                            }
+                        }
+
+                        var sanitizedArguments = String.Join(' ', allArguments);
+
+                        for (var i = 0; i < allArguments.Length; i++)
+                        {
+                            var argument = allArguments[i];
+
+                            if (job.Bindings.ContainsKey(argument))
+                            {
+                                allArguments[i] = job.Bindings[argument];
+                            }
+                        }
+
+                        var arguments = String.Join(' ', allArguments);
+
+                        Console.WriteLine("Invoking application with arguments: " + sanitizedArguments);
 
                         // The DriverJob manages the application's lifetime and standard output
                         driverJob = new Job(job.Executable, arguments);
