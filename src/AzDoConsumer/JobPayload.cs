@@ -19,17 +19,24 @@ namespace AzDoConsumer
 
         public static JobPayload Deserialize(byte[] data)
         {
-            var str = Encoding.UTF8.GetString(data);
+            try
+            {
+                var str = Encoding.UTF8.GetString(data);
 
-            // Azure Devops adds a DataContractSerializer preamble to the message, and also
-            // an invalid JSON char at the end of the message
-            str = str.Substring(str.IndexOf("{"));
-            str = str.Substring(0, str.LastIndexOf("}") + 1);
-            var result = System.Text.Json.JsonSerializer.Deserialize<JobPayload>(str, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true } );
+                // Azure Devops adds a DataContractSerializer preamble to the message, and also
+                // an invalid JSON char at the end of the message
+                str = str.Substring(str.IndexOf("{"));
+                str = str.Substring(0, str.LastIndexOf("}") + 1);
+                var result = System.Text.Json.JsonSerializer.Deserialize<JobPayload>(str, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            result.RawPayload = str;
+                result.RawPayload = str;
 
-            return result;
+                return result;
+            }
+            catch
+            {
+                throw new Exception("Error while parsing message body: " + Encoding.UTF8.GetString(data));
+            }
         }
     }
 }

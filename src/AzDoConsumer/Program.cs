@@ -45,7 +45,7 @@ namespace AzDoConsumer
                     return;
                 }
 
-                var jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                JobDefinitions jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText("jobs.json"), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 ConnectionString = connectionStringOption.Value();
                 Queue = queueOption.Value();
