@@ -1,0 +1,25 @@
+# Executes the Proxy benchmarks on citrine
+
+# Agent-less jobs need this pool
+pool: server
+
+variables:
+  - template: trend-scenarios.yml
+  - name: sessionArg
+    value: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+
+jobs:
+- job: Trends
+  steps:
+  - ${{ each s in variables.scenarios }}:
+    - task: PublishToAzureServiceBus@1
+      displayName: ${{ s.displayName }}
+      condition: always()
+      inputs:
+        azureSubscription: ASP.NET Benchmarks Queue
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "benchmarksdriver",
+            "args": [ "${{ s.args }} $(sessionArg)" ]
+          }
