@@ -52,19 +52,34 @@ parameters:
 
 # Https
 
-  - displayName: Plaintext Https
-    arguments: -n Plaintext -m https $(plaintextJobs)
-  - displayName: Plaintext HttpSys Https
-    arguments: -n Plaintext -m https --webHost HttpSys --windows-only $(plaintextJobs)
-  - displayName: Plaintext Non Pipelined Https
-    arguments: -n PlaintextNonPipelined -m https $(plaintextJobs)
-  - displayName: Json Https
-    arguments: -n Json -m https $(jsonJobs)
-  - displayName: Json HttpSys Https
-    arguments: -n Json -m https --webHost HttpSys $(jsonJobs)
+#  - displayName: Plaintext Https
+#    arguments: -n Plaintext -m https $(plaintextJobs)
+#  - displayName: Plaintext HttpSys Https
+#    arguments: -n Plaintext -m https --webHost HttpSys --windows-only $(plaintextJobs)
+#  - displayName: Plaintext Non Pipelined Https
+#    arguments: -n PlaintextNonPipelined -m https $(plaintextJobs)
+#  - displayName: Json Https
+#    arguments: -n Json -m https $(jsonJobs)
+#  - displayName: Json HttpSys Https
+#    arguments: -n Json -m https --webHost HttpSys --windows-only $(jsonJobs)
+
+# Http2
+
+  - displayName: Plaintext h2
+    arguments: -n PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
+  - displayName: Plaintext h2
+    arguments: -n PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs)
+  - displayName: Plaintext h2c
+    arguments: -n PlaintextNonPipelined -m h2c --no-startup-latency $(plaintextJobs) $(http2Jobs)
+  - displayName: Json h2
+    arguments: -n Json -m h2 $(plaintextJobs) $(jsonJobs)
+  - displayName: Json h2
+    arguments: -n Json -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(jsonJobs)
+  - displayName: Json h2c
+    arguments: -n Json -m h2c --no-startup-latency $(plaintextJobs) $(jsonJobs)
 
 variables:
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest --session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
 
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
