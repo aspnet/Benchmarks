@@ -3,15 +3,20 @@ variables:
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
 
+parameters:
+  template: "trend-citrine-template.yml"
+
 # Agent-less jobs need this pool
 pool: server
 
 jobs:
 - job: Trend
   steps:
-  - template: trend-steps.yml
+  - template: ${{ parameters.template }}
     parameters:
-      scenarios: [
-        "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)",
-        "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
-      ]
+      displayName: "Plaintext"
+      arguments: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+  - template: ${{ parameters.template }}
+    parameters:
+      displayName: "Plaintext non pipelined"
+      arguments: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
