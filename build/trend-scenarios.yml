@@ -7,7 +7,8 @@ variables:
 pool: server
 
 jobs:
-- template: trend-steps.yml
+- job: Trends
+  template: trend-steps.yml
   parameters:
     scenarios: [
       "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)",
