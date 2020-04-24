@@ -3,11 +3,18 @@
 # Agent-less jobs need this pool
 pool: server
 
+
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
-  defaultArgs: --server $(server) --client $(client) --session $(session) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
-  sqlArgs: '"--table", "BENCHMARKS_CONNECTION_STRING"'
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
+  sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
+  scenarios: 
+  - displayName: "Plaintext"
+    args: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+  - displayName: "Plaintext non pipelined"
+    args: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+
 
 # all the jobs are triggered at the same time
 # jobs are in parallel
@@ -16,25 +23,15 @@ variables:
 jobs:
 - job: Trends
   steps:
-  - task: PublishToAzureServiceBus@1
-    displayName: Plaintext
-    condition: always()
-    inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
-      waitForCompletion: true
-      messageBody: |
-        {
-          "name": "benchmarksdriver",
-          "args": [ "$(plaintextJobs)", "$(defaultArgs)", "-n", "Plaintext", $(sqlArgs) ]
-        }
-  - task: PublishToAzureServiceBus@1
-    displayName: Plaintext non pipelined
-    condition: always()
-    inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
-      waitForCompletion: true
-      messageBody: |
-        {
-          "name": "benchmarksdriver",
-          "args": [ "$(plaintextJobs)", "$(defaultArgs)", "-n", "PlaintextNonPipelined", $(sqlArgs) ]
-        }
+  - ${{ each s in variables.scenarios }}:
+    - task: PublishToAzureServiceBus@1
+      displayName: ${{ s.displayName }}
+      condition: always()
+      inputs:
+        azureSubscription: ASP.NET Benchmarks Queue
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "benchmarksdriver",
+            "args": [ "${{ s.args }}" ]
+          }
