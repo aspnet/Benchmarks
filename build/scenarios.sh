@@ -34,7 +34,6 @@ multiQueryJobs="-j $ROOT/src/Benchmarks/benchmarks.multiquery.json"
 httpClientJobs="-j $ROOT/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json"
 plaintextPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8"
 jsonPlatformJobs="-j $ROOT/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8"
-routingJobs="-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Routing/benchmarkapps/Benchmarks/benchmarks.json"
 basicApiJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60"
 basicViewsJobs="--database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60"
 http2Jobs="--clientName H2Load -p Streams=70 --headers None --connections $CPU_COUNT --clientThreads $CPU_COUNT"
@@ -42,8 +41,6 @@ blazorJobs="-j $ROOT/src/Benchmarks/benchmarks.blazor.json"
 
 trend="--description Trend/Latest"
 plaintextLibuvThreadCount="--kestrelThreadCount $PLAINTEXT_LIBUV_THREAD_COUNT"
-
-routingBenchmarks="-r AspNetCore@master --projectFile src/Http/Routing/perf/Microsoft.AspNetCore.Routing.Performance.csproj --no-arguments --description Benchmarks --arg --config=perflab --server-timeout 00:20:00"
 
 jobs=(
   # Plaintext
@@ -54,8 +51,6 @@ jobs=(
   "-n EndpointPlaintext --webHost KestrelSockets $trend $plaintextJobs -i 3"
   "-n Plaintext --webHost HttpSys $trend $plaintextJobs --windows-only"
   "-n StaticFiles --webHost Kestrelsockets --path plaintext $trend $plaintextJobs -i 3"
-  "-n PlaintextRouting --webHost KestrelSockets $trend $routingJobs"
-  "-n PlaintextDispatcher --webHost KestrelSockets $trend $routingJobs"
 
   # Json
   "-n JsonPlatform --webHost KestrelSockets $trend $jsonPlatformJobs"
@@ -149,13 +144,6 @@ jobs=(
 
   # HttpClient
   "--scenario HttpClient $trend $httpClientJobs"
-
-  # Routing Benchmarks
-  # "$routingBenchmarks --benchmarkdotnet RouteValueDictionaryBenchmark --arg RouteValueDictionaryBenchmark"
-  # "$routingBenchmarks --benchmarkdotnet LinkGenerationGithubBenchmark --arg LinkGenerationGithubBenchmark"
-  # "$routingBenchmarks --benchmarkdotnet MatcherAzureBenchmark --arg MatcherAzureBenchmark"
-  # "$routingBenchmarks --benchmarkdotnet MatcherBuilderAzureBenchmark --arg MatcherBuilderAzureBenchmark"
-  # "$routingBenchmarks --benchmarkdotnet MatcherSingleEntryBenchmark --arg MatcherSingleEntryBenchmark"
 
   # Connections
   "-n ConnectionClose --webHost KestrelSockets $trend $plaintextJobs --warmup 2 --duration 5"

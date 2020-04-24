@@ -27,10 +27,6 @@ parameters:
     arguments: -n Plaintext --webHost HttpSys --windows-only $(plaintextJobs)
   - displayName: Static Files
     arguments: -n StaticFiles $(plaintextJobs)
-  - displayName: Plaintext Routing
-    arguments: -n PlaintextRouting $(routingJobs)
-  - displayName: Plaintext Displatcher
-    arguments: -n PlaintextDispatcher $(routingJobs)
   
 variables:
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest
@@ -43,7 +39,6 @@ variables:
   httpClientJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json
   plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
   jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
-  routingJobs: -j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Routing/benchmarkapps/Benchmarks/benchmarks.json
   basicApiJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60
   basicViewsJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60
   http2Jobs: --clientName H2Load -p Streams=70 --headers None # --connections ${{ cpuCount }} --clientThreads ${{ cpuCount }}
