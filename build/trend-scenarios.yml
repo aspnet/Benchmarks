@@ -79,7 +79,7 @@ parameters:
     arguments: -n Json -m h2c --no-startup-latency $(plaintextJobs) $(jsonJobs)
 
 variables:
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest --session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]
+  defaultArgs: "--server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest --session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
 
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
