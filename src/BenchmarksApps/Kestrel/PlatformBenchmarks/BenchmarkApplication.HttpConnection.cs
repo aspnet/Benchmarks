@@ -323,6 +323,7 @@ namespace PlatformBenchmarks
 
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.OnHeadersComplete(endStream);
+
             public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
                 => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
 #else
