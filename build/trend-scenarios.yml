@@ -1,10 +1,10 @@
+parameters:
+  template: "trend-citrine-template.yml"
+
 variables:
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
-
-parameters:
-  template: "trend-citrine-template.yml"
 
 # Agent-less jobs need this pool
 pool: server
