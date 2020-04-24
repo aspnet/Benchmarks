@@ -8,7 +8,7 @@ parameters:
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-- task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@1
     condition: always()
     inputs:
     azureSubscription: ASP.NET Benchmarks Queue
