@@ -6,9 +6,9 @@ parameters:
 steps:
 - task: PublishToAzureServiceBus@1
   condition: always()
+  displayName: ${{ parameters.scenario }}
   inputs:
     azureSubscription: ASP.NET Benchmarks Queue
-    displayName: ${{ parameters.scenario }}
     waitForCompletion: true
     messageBody: |
       {
