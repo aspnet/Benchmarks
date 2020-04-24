@@ -7,13 +7,13 @@ parameters:
 steps:
 - task: PublishToAzureServiceBus@1
   condition: always()
-  displayName: ${{ displayName }}
+  displayName: ${{ parameters.displayName }}
   inputs:
     azureSubscription: ASP.NET Benchmarks Queue
     waitForCompletion: true
     messageBody: |
       {
         "name": "benchmarksdriver",
-        "args": [ "${{ arguments }}" ]
+        "args": [ "${{ parameters.arguments }}" ]
       }
   
