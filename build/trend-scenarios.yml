@@ -6,11 +6,13 @@ variables:
 # Agent-less jobs need this pool
 pool: server
 
-
-steps:
-- template: trend-citrine-template.yml # todo: make this a variable to use a different task for cloud
-  parameters:
-    scenarios: [
-      "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)",
-      "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
-    ]
+jobs:
+- job: Trends
+  steps:
+  - template: trend-citrine-template.yml # todo: make this a variable to use a different task for cloud
+    parameters:
+      scenarios: [
+        "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)",
+        "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+      ]
+  

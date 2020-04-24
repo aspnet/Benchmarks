@@ -6,17 +6,15 @@ parameters:
 #variables:
 #  sessionArg: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
-jobs:
-- job: Trends
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver",
-            "args": [ "${{ s }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+- task: PublishToAzureServiceBus@1
+    condition: always()
+    inputs:
+    azureSubscription: ASP.NET Benchmarks Queue
+    waitForCompletion: true
+    messageBody: |
+        {
+        "name": "benchmarksdriver",
+        "args": [ "${{ s }}" ]
+        }
