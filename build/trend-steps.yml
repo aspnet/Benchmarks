@@ -1,0 +1,8 @@
+parameters:
+  scenarios: []
+
+steps:
+- ${{ each scenario in parameters.scenarios }}:
+  - template: trend-citrine-template.yml
+    parameters:
+      scenario: ${{ scenario }}

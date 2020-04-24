@@ -8,8 +8,7 @@ pool: server
 
 jobs:
 - job: Trends
-  steps:
-  - template: trend-citrine-template.yml # todo: make this a variable to use a different task for cloud
+  - template: trend-steps.yml
     parameters:
       scenarios: [
         "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)",
