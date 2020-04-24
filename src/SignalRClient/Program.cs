@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,6 +63,20 @@ namespace SignalRClient
             app.OnExecuteAsync(cancellationToken =>
             {
                 Console.WriteLine("SignalR Client");
+
+                Console.WriteLine("#StartJobStatistics");
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    Metadata = new object[]
+                    {
+                        new { Source= "Benchmarks", Name= "SignalRClientVersion", ShortDescription = "ASP.NET Core SignalR Client Version", LongDescription = "ASP.NET Core SignalR Client Version" },
+                    },
+                    Measurements = new object[]
+                    {
+                        new { Timestamp = DateTime.UtcNow, Name = "SignalRClientVersion", Value = typeof(HubConnection).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    }
+                }));
+                Console.WriteLine("#EndJobStatistics");
 
                 Scenario = optionScenario.Value();
 
