@@ -243,6 +243,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{
 		build\trend-citrine.yml = build\trend-citrine.yml
 		build\trend-cloud-template.yml = build\trend-cloud-template.yml
 		build\trend-scenarios.yml = build\trend-scenarios.yml
+		build\trend-steps.yml = build\trend-steps.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
