@@ -1,17 +1,19 @@
 # Executes the Proxy benchmarks on citrine
 
 parameters:
-  scenario: ""
+  displayName: ""
+  arguments: ""
 
 steps:
 - task: PublishToAzureServiceBus@1
   condition: always()
   inputs:
     azureSubscription: ASP.NET Benchmarks Queue
+    displayName: ${{ parameters.displayName }}
     waitForCompletion: true
     messageBody: |
       {
         "name": "benchmarksdriver",
-        "args": [ "${{ parameters.scenario }}" ]
+        "args": [ "${{ parameters.arguments }}" ]
       }
   

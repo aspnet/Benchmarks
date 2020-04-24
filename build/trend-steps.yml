@@ -2,7 +2,15 @@ parameters:
   scenarios: []
 
 steps:
+- bash: |
+    IFS="|" read name value <<< "${{ scenario }}"
+    
+    # create pipeline variables
+    echo "##vso[task.setvariable variable=name]$name"
+    echo "##vso[task.setvariable variable=value]$value"
+
 - ${{ each scenario in parameters.scenarios }}:
   - template: trend-citrine-template.yml
     parameters:
-      scenario: ${{ scenario }}
+      displayName: ${{ name }}
+      arguments: ${{ value}}
