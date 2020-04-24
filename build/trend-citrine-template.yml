@@ -11,10 +11,10 @@ steps:
   - task: PublishToAzureServiceBus@1
     condition: always()
     inputs:
-    azureSubscription: ASP.NET Benchmarks Queue
-    waitForCompletion: true
-    messageBody: |
+      azureSubscription: ASP.NET Benchmarks Queue
+      waitForCompletion: true
+      messageBody: |
         {
-        "name": "benchmarksdriver",
-        "args": [ "${{ s }}" ]
+          "name": "benchmarksdriver",
+          "args": [ "${{ s }}" ]
         }
