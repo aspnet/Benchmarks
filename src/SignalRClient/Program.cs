@@ -65,7 +65,7 @@ namespace SignalRClient
                 Console.WriteLine("SignalR Client");
 
                 Console.WriteLine("#StartJobStatistics");
-                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(new
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     Metadata = new object[]
                     {
