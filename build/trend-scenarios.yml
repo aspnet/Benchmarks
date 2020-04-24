@@ -13,13 +13,24 @@ parameters:
 - name: scenarios 
   type: object
   default: 
+  - displayName: Plaintext Platform
+    arguments: -n PlaintextPlatform $(plaintextPlatformJobs)
   - displayName: Plaintext
     arguments: -n Plaintext $(plaintextJobs)
-  - displayName: Plaintext non pipelined
+  - displayName: Plaintext Non Pipelined
     arguments: -n PlaintextNonPipelined $(plaintextJobs)
   - displayName: Plaintext Mvc
     arguments: -n MvcPlaintext $(plaintextJobs)
-  
+  - displayName: Plaintext Endpoint
+    arguments: -n EndpointPlaintext $(plaintextJobs)
+  - displayName: Plaintext HttpSys
+    arguments: -n Plaintext --webHost HttpSys --windows-only $(plaintextJobs)
+  - displayName: Static Files
+    arguments: -n StaticFiles $(plaintextJobs)
+  - displayName: Plaintext Routing
+    arguments: -n PlaintextRouting $(routingJobs)
+  - displayName: Plaintext Displatcher
+    arguments: -n PlaintextDispatcher $(routingJobs)
   
 variables:
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
