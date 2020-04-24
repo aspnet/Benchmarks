@@ -242,6 +242,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{
 		build\trend-citrine-template.yml = build\trend-citrine-template.yml
 		build\trend-citrine.yml = build\trend-citrine.yml
 		build\trend-cloud-template.yml = build\trend-cloud-template.yml
+		build\trend-job.yml = build\trend-job.yml
 		build\trend-scenarios.yml = build\trend-scenarios.yml
 		build\trend-steps.yml = build\trend-steps.yml
 	EndProjectSection
