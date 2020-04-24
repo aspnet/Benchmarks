@@ -1,6 +1,3 @@
-parameters:
-  template: "trend-citrine-template.yml"
-
 variables:
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
@@ -12,11 +9,11 @@ pool: server
 jobs:
 - job: Trend
   steps:
-  - template: ${{ parameters.template }}
+  - template: trend-citrine-template.yml
     parameters:
       displayName: "Plaintext"
       arguments: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
-  - template: ${{ parameters.template }}
+  - template: trend-citrine-template.yml
     parameters:
       displayName: "Plaintext non pipelined"
       arguments: "-n PlaintextNonPipelined $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
