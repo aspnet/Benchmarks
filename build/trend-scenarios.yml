@@ -18,7 +18,7 @@ parameters:
 
 #  - displayName: Plaintext Platform
 #    arguments: -n PlaintextPlatform $(plaintextPlatformJobs)
-#  - displayName: Plaintext Middleware
+#  - displayName: Plaintext
 #    arguments: -n Plaintext $(plaintextJobs)
 #  - displayName: Plaintext Non Pipelined
 #    arguments: -n PlaintextNonPipelined $(plaintextJobs)
@@ -31,25 +31,38 @@ parameters:
 #  - displayName: Static Files
 #    arguments: -n StaticFiles $(plaintextJobs)
   
-#Json
+# Json
 
-  - displayName: Json Platform
-    arguments: -n JsonPlatform $(jsonPlatformJobs)
-  - displayName: Json Middleware
-    arguments: -n Json $(jsonJobs)
+#  - displayName: Json Platform
+#    arguments: -n JsonPlatform $(jsonPlatformJobs)
+#  - displayName: Json Middleware
+#    arguments: -n Json $(jsonJobs)
   - displayName: Json Mvc
     arguments: -n MvcJson $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft)
-    arguments: -n MvcJsonNet $(jsonJobs)
-  - displayName: Json Mvc (2KB)
-    arguments: -n MvcJson2k $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft, 2KB)
-    arguments: -n MvcJsonNet2k $(jsonJobs)
-  - displayName: Json Mvc Input (2KB)
-    arguments: -n MvcJsonInput2k $(jsonJobs)
-  - displayName: Json Mvc Input (NewtonSoft, 2KB)
-    arguments: -n MvcJsonNetInput2k $(jsonJobs)
-    
+#  - displayName: Json Mvc (NewtonSoft)
+#    arguments: -n MvcJsonNet $(jsonJobs)
+#  - displayName: Json Mvc (2KB)
+#    arguments: -n MvcJson2k $(jsonJobs)
+#  - displayName: Json Mvc (NewtonSoft, 2KB)
+#    arguments: -n MvcJsonNet2k $(jsonJobs)
+#  - displayName: Json Mvc Input (2KB)
+#    arguments: -n MvcJsonInput2k $(jsonJobs)
+#  - displayName: Json Mvc Input (NewtonSoft, 2KB)
+#    arguments: -n MvcJsonNetInput2k $(jsonJobs)
+
+# Https
+
+  - displayName: Plaintext Https
+    arguments: -n Plaintext -m https $(plaintextJobs)
+  - displayName: Plaintext HttpSys Https
+    arguments: -n Plaintext -m https --webHost HttpSys --windows-only $(plaintextJobs)
+  - displayName: Plaintext Non Pipelined Https
+    arguments: -n PlaintextNonPipelined -m https $(plaintextJobs)
+  - displayName: Json Https
+    arguments: -n Json -m https $(jsonJobs)
+  - displayName: Json HttpSys Https
+    arguments: -n Json -m https --webHost HttpSys $(jsonJobs)
+
 variables:
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
