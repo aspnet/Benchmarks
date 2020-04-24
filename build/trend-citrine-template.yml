@@ -3,8 +3,8 @@
 parameters:
   scenarios: []
 
-variables:
-  sessionArg: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+#variables:
+#  sessionArg: "--session $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
 - job: Trends
@@ -18,5 +18,5 @@ jobs:
         messageBody: |
           {
             "name": "benchmarksdriver",
-            "args": [ "${{ s }} $(sessionArg)" ]
+            "args": [ "${{ s }}" ]
           }
