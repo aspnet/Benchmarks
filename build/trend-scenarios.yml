@@ -3,7 +3,9 @@ parameters:
   type: object
   default: 
   - displayName: "Plaintext"
-    arguments: "-n Plaintext $(plaintextJobs) $(defaultArgs) $(sqlArgs)"
+    arguments: "-n Plaintext $(plaintextJobs)"
+  - displayName: "Plaintext non pipelined"
+    arguments: "-n PlaintextNonPipelined $(plaintextJobs)"
 
 variables:
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
@@ -19,5 +21,5 @@ jobs:
   - ${{ each s in parameters.scenarios }}:
     - template: trend-citrine-template.yml
       parameters:
-        displayName: $ {{ s.displayName }}
-        arguments: $ {{ s.arguments }}
+        displayName: ${{ s.displayName }}
+        arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
