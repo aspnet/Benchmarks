@@ -33,7 +33,7 @@ parameters:
     arguments: -n PlaintextDispatcher $(routingJobs)
   
 variables:
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 5 --collect-counters --description Trend/Latest
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest
   sqlArgs: --table \"BENCHMARKS_CONNECTION_STRING\"
 
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
