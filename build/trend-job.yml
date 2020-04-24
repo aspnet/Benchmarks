@@ -1,9 +1,0 @@
-parameters:
-  scenarios: []
-
-jobs:
-- job: ${{ parameters.name }}
-- ${{ each scenario in parameters.scenarios }}:
-  - template: trend-citrine-template.yml
-    parameters:
-      scenarios: ${{ scenarios }}
