@@ -63,6 +63,20 @@ namespace SignalRClient
             {
                 Console.WriteLine("SignalR Client");
 
+                Console.WriteLine("#StartJobStatistics");
+                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(new
+                {
+                    Metadata = new object[]
+                    {
+                        new { Source= "Benchmarks", Name= "SignalRClientVersion", ShortDescription = "ASP.NET Core SignalR Client Version", LongDescription = "ASP.NET Core SignalR Client Version" },
+                    },
+                    Measurements = new object[]
+                    {
+                        new { Timestamp = DateTime.UtcNow, Name = "SignalRClientVersion", Value = typeof(HubConnection).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    }
+                }));
+                Console.WriteLine("#EndJobStatistics");
+
                 Scenario = optionScenario.Value();
 
                 ServerUrl = optionUrl.Value();
