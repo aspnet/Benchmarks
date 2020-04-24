@@ -12,6 +12,6 @@ steps:
     messageBody: |
       {
         "name": "benchmarksdriver",
-        "args": [ "${{ scenario }}" ]
+        "args": [ "${{ parameters.scenario }}" ]
       }
   
