@@ -74,13 +74,13 @@ parameters:
 
   - displayName: Plaintext h2
     arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
-  - displayName: Plaintext h2
+  - displayName: Plaintext HttpSys h2
     arguments: --scenario PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs)
   - displayName: Plaintext h2c
     arguments: --scenario PlaintextNonPipelined -m h2c --no-startup-latency $(plaintextJobs) $(http2Jobs)
   - displayName: Json h2
     arguments: --scenario Json -m h2 $(jsonJobs) $(http2Jobs) 
-  - displayName: Json h2
+  - displayName: Json HttpSys h2
     arguments: --scenario Json -m h2 --webHost HttpSys --windows-only $(jsonJobs) $(http2Jobs) 
   - displayName: Json h2c
     arguments: --scenario Json -m h2c --no-startup-latency $(jsonJobs) $(http2Jobs) 
