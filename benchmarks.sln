@@ -235,6 +235,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{
 	ProjectSection(SolutionItems) = preProject
 		build\baselines-scenarios.yml = build\baselines-scenarios.yml
 		build\benchmarks.pipelines.yml = build\benchmarks.pipelines.yml
+		build\blazor-scenarios.yml = build\blazor-scenarios.yml
 		build\prbenchmarks.yml = build\prbenchmarks.yml
 		build\proxies.yml = build\proxies.yml
 		build\regressionbot.yml = build\regressionbot.yml
