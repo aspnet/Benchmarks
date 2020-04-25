@@ -1,0 +1,71 @@
+# EF Core micro benchmarks
+
+parameters:
+- name: server # the url of the server agent service, e.g. http://asp-perf-lin:5001
+  type: string
+  default: ''
+- name: client # the url of the client agent service, e.g. http://asp-perf-load:5002
+  type: string
+  default: ''
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+# List of scenarios
+
+    - displayName: AddDataVariations
+    arguments: $(efcoreJobs) --benchmarkdotnet:*AddDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: ExistingDataVariations
+    arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: ChildVariations
+    arguments: $(efcoreJobs) --benchmarkdotnet:*ChildVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: Delete
+    arguments: $(efcoreJobs) --benchmarkdotnet:*Delete* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: ExistingDataVariations
+    arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: FuncletizationSqliteTests
+    arguments: $(efcoreJobs) --benchmarkdotnet:*FuncletizationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: InitializationSqliteTests
+    arguments: $(efcoreJobs) --benchmarkdotnet:*InitializationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: Insert
+    arguments: $(efcoreJobs) --benchmarkdotnet:*Insert* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: Mixed
+    arguments: $(efcoreJobs) --benchmarkdotnet:*Mixed* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: ParentVariations
+    arguments: $(efcoreJobs) --benchmarkdotnet:*ParentVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: RawSqlQuerySqliteTests
+    arguments: $(efcoreJobs) --benchmarkdotnet:*RawSqlQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: SimpleQuerySqliteTests
+    arguments: $(efcoreJobs) --benchmarkdotnet:*SimpleQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    - displayName: Update
+    arguments: $(efcoreJobs) --benchmarkdotnet:*Update* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+
+# ... add more scenarios here
+
+variables:
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  defaultArgs: --server $(server) --client $(client) --session $(session)
+  sqlArgs: --table EFCoreBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+
+  efcoreJobs: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
+
+# Agent-less jobs need this pool
+pool: server
+
+jobs:
+- job: Trend
+  steps:
+  - ${{ each s in parameters.scenarios }}:
+    - task: PublishToAzureServiceBus@1
+      condition: always()
+      displayName: ${{ s.displayName }}
+      inputs:
+        azureSubscription: ASP.NET Benchmarks Queue
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "benchmarksdriver",
+            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
+          }
