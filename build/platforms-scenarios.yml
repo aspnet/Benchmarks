@@ -1,0 +1,100 @@
+# Platforms trend scenarios
+
+parameters:
+- name: server # the url of the server agent service, e.g. http://asp-perf-lin:5001
+  type: string
+  default: ''
+- name: client # the url of the client agent service, e.g. http://asp-perf-load:5002
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+# List of scenarios
+
+  # NodeJS (JavaScript)
+
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n Plaintext-NodeJs --connections 4096 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n Json-NodeJs --connections 256 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json -n FortunesPostgreSql-NodeJs --connections 64 --no-clean --linux-only
+
+  # Actix (Rust)
+
+  - displayName:
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n Plaintext-Actix --connections 256 --no-clean --linux-only
+  - displayName:
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n Json-Actix --connections 512 --no-clean --linux-only
+  - displayName:
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.actix.json -n FortunesPostgreSql-Actix --connections 512 --no-clean --linux-only
+
+  # FastHttp (Go)
+
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n Plaintext-FastHttp --connections 512 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n Json-FastHttp --connections 512 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.fasthttp.json -n FortunesPostgreSql-FastHttp --connections 512 --no-clean --linux-only
+
+  # ULib (C++)
+
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.ulib.json -n Plaintext-Ulib --connections 1024 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.ulib.json -n Json-Ulib --connections 512 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.ulib.json -n FortunesPostgreSql-Ulib --connections 512 --no-clean --linux-only
+
+  # RHTX (C#)
+
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json -n Plaintext-Rhtx --connections 1024 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json -n Json-Rhtx --connections 512 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.rhtx.json -n FortunesPostgreSql-Rhtx --connections 512 --no-clean --linux-only
+
+  # Netty
+
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.netty.json -n Plaintext-Netty --connections 1024 --no-clean --linux-only
+  - displayName: 
+    arguments: -j $ROOT/src/Benchmarks/benchmarks.te.netty.json -n Json-Netty --connections 512 --no-clean --linux-only
+
+# ... add more scenarios here
+
+variables:
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  defaultArgs: --server $(server) --client $(client) --session $(session) --description Trend/Latest --warmup $(warmup) --duration $(duration)
+  sqlArgs: --table AspNetBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+
+# Agent-less jobs need this pool
+pool: server
+
+jobs:
+- job: Trend
+  steps:
+  - ${{ each s in parameters.scenarios }}:
+    - task: PublishToAzureServiceBus@1
+      condition: always()
+      displayName: ${{ s.displayName }}
+      inputs:
+        azureSubscription: ASP.NET Benchmarks Queue
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "benchmarksdriver",
+            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
+          }
