@@ -233,6 +233,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "src\BenchmarksApps
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{3E9DA42B-F7FB-42A9-8518-1ADA71AEDF12}"
 	ProjectSection(SolutionItems) = preProject
+		build\baselines-scenarios.yml = build\baselines-scenarios.yml
 		build\benchmarks.pipelines.yml = build\benchmarks.pipelines.yml
 		build\prbenchmarks.yml = build\prbenchmarks.yml
 		build\proxies.yml = build\proxies.yml

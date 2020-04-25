@@ -1,0 +1,93 @@
+parameters:
+- name: server
+  type: string
+- name: client
+  type: string
+
+# Baselines
+- name: baselines 
+  type: object
+  default: 
+  
+  - displayName: "2.1"
+    arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1
+
+  - displayName: "2.1 Servicing"
+    arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
+
+  - displayName: "3.1"
+  # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
+    arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
+    
+  - displayName: "5.0.*"
+  # Current dev, running close to other baselines, with same repeat parameters
+    arguments: --description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+  # Platform
+  - displayName: Plaintext Platform
+    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+  - displayName: Json Platform
+    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+  - displayName: Fortunes Platform
+    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --database PostgreSql
+
+  # Plaintext
+  - displayName: Plaintext
+    arguments: --scenario Plaintext $(plaintextJobs)
+  - displayName: Plaintext Non-Pipelined
+    arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
+  - displayName: Plaintext Mvc
+    arguments: --scenario MvcPlaintext $(plaintextJobs)
+  - displayName: Plaintext Endpoint
+    arguments: --scenario EndpointPlaintext $(plaintextJobs)
+  
+  # JSon
+  - displayName: Json
+    arguments: --scenario Json $(jsonJobs)
+  - displayName: Json Mvc
+    arguments: --scenario MvcJson $(jsonJobs)
+  
+  # Https
+  - displayName: Plaintext Https
+    arguments: --scenario Plaintext -m https $(plaintextJobs)
+  - displayName: Json Https
+    arguments: --scenario Json -m https $(jsonJobs)
+  - displayName: Plaintext Non-Pipelined Https
+    arguments: --scenario PlaintextNonPipelined -m https $(plaintextJobs)
+  
+  # Database Fortunes
+  - displayName: Database Fortunes Raw
+    arguments: --scenario DbFortunesRaw $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes EF
+    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
+
+variables:
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 5 --duration 20 --collect-counters --description Trend/Latest --session $(session)
+  sqlArgs: --table AspNetBaselines # --sql \"BENCHMARKS_CONNECTION_STRING\"
+
+  plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+  htmlJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
+  jsonJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
+
+  plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
+  jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
+  htmlPlatformJobs: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
+
+# Agent-less jobs need this pool
+pool: server
+
+jobs:
+- job: Trend
+  steps:
+  - ${{ each s in parameters.scenarios }}:
+  - ${{ each b in parameters.baselines }}:
+    - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
+      parameters:
+        displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+        arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
