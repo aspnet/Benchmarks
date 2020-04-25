@@ -5,6 +5,7 @@
 # The task template can then be changed to trigger a different kind of job (Cloud vs. Physical with service bus)
 # The parameters can be changed to target different servers too, to reuse the same list of scenarios.
 
+
 parameters:
 - name: server
   type: string
@@ -15,6 +16,11 @@ parameters:
 - name: cpuCount
   type: number
   default: 32
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  default: 15
 
 # Scenarios
 - name: scenarios 
@@ -230,7 +236,7 @@ parameters:
 
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup 0 --duration 5 --collect-counters --description Trend/Latest --session $(session)
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
   sqlArgs: --table AspNetBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
 
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
@@ -255,4 +261,4 @@ jobs:
     - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
       parameters:
         displayName: "${{ s.displayName }}"
-        arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
+        arguments: "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}"
