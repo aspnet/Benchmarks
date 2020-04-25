@@ -3,11 +3,11 @@
 parameters:
   displayName: ""
   arguments: ""
-  condition: false
+  condition: true
 
 steps:
 - task: PublishToAzureServiceBus@1
-  condition: and (always(), eq(${{ parameters.condition }}, true))
+  condition: ${{ parameters.condition }}
   displayName: ${{ parameters.displayName }}
   inputs:
     azureSubscription: ASP.NET Benchmarks Queue
