@@ -19,21 +19,21 @@ parameters:
   
   - displayName: "2.1"
     arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1
-    supportsPlatform: true
+    supportsPlatform: false
 
   - displayName: "2.1 Servicing"
     arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
-    supportsPlatform: true
+    supportsPlatform: false
 
   - displayName: "3.1"
   # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
     arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
-    supportsPlatform: false
+    supportsPlatform: true
 
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
     arguments: --description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8
-    supportsPlatform: false
+    supportsPlatform: true
 
 # Scenarios
 - name: scenarios 
