@@ -21,9 +21,6 @@ parameters:
   type: object
   default: 
 
-  - displayName: Plaintext h2
-    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
-
 # Plaintext
 
   - displayName: Plaintext Platform
@@ -225,7 +222,7 @@ parameters:
   - displayName: Json Platform Mono
     arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime
   - displayName: Json Mono
-    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime"
+    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime
   - displayName: Json Https Mono 
     arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime
   - displayName: Database Fortunes Raw Mono
