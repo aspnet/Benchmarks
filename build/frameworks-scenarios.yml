@@ -23,54 +23,54 @@ parameters:
 
   # NodeJS (JavaScript)
 
-  - displayName: 
+  - displayName: NodeJS - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.nodejs.json -n Plaintext-NodeJs --connections 4096 --no-clean --linux-only
-  - displayName: 
+  - displayName: NodeJS - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.nodejs.json -n Json-NodeJs --connections 256 --no-clean --linux-only
-  - displayName: 
+  - displayName: NodeJS - Fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.nodejs.json -n FortunesPostgreSql-NodeJs --connections 64 --no-clean --linux-only
 
   # Actix (Rust)
 
-  - displayName:
+  - displayName: Actix - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.actix.json -n Plaintext-Actix --connections 256 --no-clean --linux-only
-  - displayName:
+  - displayName: Actix - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.actix.json -n Json-Actix --connections 512 --no-clean --linux-only
-  - displayName:
+  - displayName: Actix - fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.actix.json -n FortunesPostgreSql-Actix --connections 512 --no-clean --linux-only
 
   # FastHttp (Go)
 
-  - displayName: 
+  - displayName: Go - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.fasthttp.json -n Plaintext-FastHttp --connections 512 --no-clean --linux-only
-  - displayName: 
+  - displayName: Go - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.fasthttp.json -n Json-FastHttp --connections 512 --no-clean --linux-only
-  - displayName: 
+  - displayName: Go - Fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.fasthttp.json -n FortunesPostgreSql-FastHttp --connections 512 --no-clean --linux-only
 
   # ULib (C++)
 
-  - displayName: 
+  - displayName: ULib - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.ulib.json -n Plaintext-Ulib --connections 1024 --no-clean --linux-only
-  - displayName: 
+  - displayName: ULib - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.ulib.json -n Json-Ulib --connections 512 --no-clean --linux-only
-  - displayName: 
+  - displayName: ULib - Fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.ulib.json -n FortunesPostgreSql-Ulib --connections 512 --no-clean --linux-only
 
   # RHTX (C#)
 
-  - displayName: 
+  - displayName: RHTX - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n Plaintext-Rhtx --connections 1024 --no-clean --linux-only
-  - displayName: 
+  - displayName: RHTX - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n Json-Rhtx --connections 512 --no-clean --linux-only
-  - displayName: 
+  - displayName: RHTX - Fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n FortunesPostgreSql-Rhtx --connections 512 --no-clean --linux-only
 
   # Netty
 
-  - displayName: 
+  - displayName: Netty - Plaintext
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.netty.json -n Plaintext-Netty --connections 1024 --no-clean --linux-only
-  - displayName: 
+  - displayName: Netty - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.netty.json -n Json-Netty --connections 512 --no-clean --linux-only
 
 # ... add more scenarios here
