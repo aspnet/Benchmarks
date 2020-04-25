@@ -16,31 +16,31 @@ parameters:
 # List of scenarios
 
     - displayName: AddDataVariations
-    arguments: $(efcoreJobs) --benchmarkdotnet:*AddDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*AddDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: ExistingDataVariations
-    arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: ChildVariations
-    arguments: $(efcoreJobs) --benchmarkdotnet:*ChildVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*ChildVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: Delete
-    arguments: $(efcoreJobs) --benchmarkdotnet:*Delete* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*Delete* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: ExistingDataVariations
-    arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: FuncletizationSqliteTests
-    arguments: $(efcoreJobs) --benchmarkdotnet:*FuncletizationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*FuncletizationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: InitializationSqliteTests
-    arguments: $(efcoreJobs) --benchmarkdotnet:*InitializationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*InitializationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: Insert
-    arguments: $(efcoreJobs) --benchmarkdotnet:*Insert* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*Insert* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: Mixed
-    arguments: $(efcoreJobs) --benchmarkdotnet:*Mixed* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*Mixed* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: ParentVariations
-    arguments: $(efcoreJobs) --benchmarkdotnet:*ParentVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*ParentVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: RawSqlQuerySqliteTests
-    arguments: $(efcoreJobs) --benchmarkdotnet:*RawSqlQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*RawSqlQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: SimpleQuerySqliteTests
-    arguments: $(efcoreJobs) --benchmarkdotnet:*SimpleQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*SimpleQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     - displayName: Update
-    arguments: $(efcoreJobs) --benchmarkdotnet:*Update* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --benchmarkdotnet:*Update* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
 
 # ... add more scenarios here
 
