@@ -107,8 +107,8 @@ jobs:
   steps:
   - ${{ each s in parameters.scenarios }}:
     - ${{ each b in parameters.baselines }}:
-        ${{ if or(${{ b.supportsPlatform }}, eq(${{ s.isPlatform }}, false)) }}:
-          - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
-            parameters:
-              displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-              arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
+      - ${{ if or(${{ b.supportsPlatform }}, eq(${{ s.isPlatform }}, false)) }}:
+        - template: trend-citrine-template.yml
+          parameters:
+            displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+            arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
