@@ -13,17 +13,21 @@ parameters:
   
   - displayName: "2.1"
     arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1
+    ignorePlatform: true
 
   - displayName: "2.1 Servicing"
     arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
+    ignorePlatform: true
 
   - displayName: "3.1"
   # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
     arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
-    
+    ignorePlatform: false
+
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
     arguments: --description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8
+    ignorePlatform: false
 
 # Scenarios
 - name: scenarios 
@@ -33,20 +37,27 @@ parameters:
   # Platform
   - displayName: Plaintext Platform
     arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+    isPlatform: true
   - displayName: Json Platform
     arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+    isPlatform: true
   - displayName: Fortunes Platform
     arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --database PostgreSql
+    isPlatform: true
 
   # Plaintext
   - displayName: Plaintext
     arguments: --scenario Plaintext $(plaintextJobs)
+    isPlatform: false
   - displayName: Plaintext Non-Pipelined
     arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
+    isPlatform: false
   - displayName: Plaintext Mvc
     arguments: --scenario MvcPlaintext $(plaintextJobs)
+    isPlatform: false
   - displayName: Plaintext Endpoint
     arguments: --scenario EndpointPlaintext $(plaintextJobs)
+    isPlatform: false
   
   # JSon
   - displayName: Json
@@ -77,8 +88,8 @@ variables:
   htmlJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
   jsonJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
 
-  plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
-  jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
+  plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json
+  jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
   htmlPlatformJobs: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
 
 # Agent-less jobs need this pool
@@ -89,8 +100,9 @@ jobs:
   steps:
   - ${{ each s in parameters.scenarios }}:
     - ${{ each b in parameters.baselines }}:
-      - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
-        parameters:
-          displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-          arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
+      ${{ if not(and(s.isPlatform, b.ignorePlatform)) }}:
+       - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
+         parameters:
+           displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+           arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
   
