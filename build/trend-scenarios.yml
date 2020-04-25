@@ -22,7 +22,7 @@ parameters:
   default: 
 
   - displayName: Plaintext h2
-  arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
+    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
 
 # Plaintext
 
