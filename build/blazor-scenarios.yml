@@ -38,5 +38,5 @@ jobs:
         messageBody: |
           {
             "name": "benchmarksdriver2",
-            "args": [ "${{ s.arguments }}" ]
+            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
           }
