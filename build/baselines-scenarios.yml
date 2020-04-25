@@ -92,5 +92,5 @@ jobs:
       - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
         parameters:
           displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-          arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
+          arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
   
