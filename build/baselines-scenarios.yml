@@ -13,21 +13,21 @@ parameters:
   
   - displayName: "2.1"
     arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1
-    ignorePlatform: true
+    supportsPlatform: true
 
   - displayName: "2.1 Servicing"
     arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
-    ignorePlatform: true
+    supportsPlatform: true
 
   - displayName: "3.1"
   # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
     arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
-    ignorePlatform: false
+    supportsPlatform: false
 
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
     arguments: --description Baseline --runtimeversion 5.0.* --sdk 5.0.100-preview.4.20202.8
-    ignorePlatform: false
+    supportsPlatform: false
 
 # Scenarios
 - name: scenarios 
@@ -62,22 +62,29 @@ parameters:
   # JSon
   - displayName: Json
     arguments: --scenario Json $(jsonJobs)
+    isPlatform: false
   - displayName: Json Mvc
     arguments: --scenario MvcJson $(jsonJobs)
+    isPlatform: false
   
   # Https
   - displayName: Plaintext Https
     arguments: --scenario Plaintext -m https $(plaintextJobs)
+    isPlatform: false
   - displayName: Json Https
     arguments: --scenario Json -m https $(jsonJobs)
+    isPlatform: false
   - displayName: Plaintext Non-Pipelined Https
     arguments: --scenario PlaintextNonPipelined -m https $(plaintextJobs)
+    isPlatform: false
   
   # Database Fortunes
   - displayName: Database Fortunes Raw
     arguments: --scenario DbFortunesRaw $(htmlJobs) --database PostgreSql
+    isPlatform: false
   - displayName: Database Fortunes EF
     arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
+    isPlatform: false
 
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
@@ -100,7 +107,7 @@ jobs:
   steps:
   - ${{ each s in parameters.scenarios }}:
     - ${{ each b in parameters.baselines }}:
-      ${{ if not(and(s.isPlatform, b.ignorePlatform)) }}:
+      ${{ if not(and(eq(s.isPlatform, true), eq(b.supportsPlatform, true))) }}:
        - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
          parameters:
            displayName: "${{ s.displayName }} - ${{ b.displayName }}"
