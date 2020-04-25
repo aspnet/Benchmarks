@@ -1,8 +1,10 @@
 parameters:
 - name: server
   type: string
+  default: ''
 - name: client
   type: string
+  default: ''
 
 # Baselines
 - name: baselines 
