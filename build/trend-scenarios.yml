@@ -102,17 +102,17 @@ parameters:
 
     # Database SingleQuery
   - displayName: Database Single Query Raw
-    arguments: --scenario DbSingleQueryRaw $(jsonJob) --database PostgreSql
+    arguments: --scenario DbSingleQueryRaw $(jsonJobs) --database PostgreSql
   - displayName: Database Single Query Dapper
-    arguments: --scenario DbSingleQueryDapper $(jsonJob) --database PostgreSql
+    arguments: --scenario DbSingleQueryDapper $(jsonJobs) --database PostgreSql
   - displayName: Database Single Query EF
-    arguments: --scenario DbSingleQueryEf $(jsonJob) --database PostgreSql
+    arguments: --scenario DbSingleQueryEf $(jsonJobs) --database PostgreSql
   - displayName: Database Single Query Mvc Raw
-    arguments: --scenario MvcDbSingleQueryRaw $(jsonJob) --database PostgreSql
+    arguments: --scenario MvcDbSingleQueryRaw $(jsonJobs) --database PostgreSql
   - displayName: Database Single Query Mvc Dapper
-    arguments: --scenario MvcDbSingleQueryDapper $(jsonJob) --database PostgreSql
+    arguments: --scenario MvcDbSingleQueryDapper $(jsonJobs) --database PostgreSql
   - displayName: Database Single Query Mvc EF
-    arguments: --scenario MvcDbSingleQueryEf $(jsonJob) --database PostgreSql
+    arguments: --scenario MvcDbSingleQueryEf $(jsonJobs) --database PostgreSql
 
     # Database MultiQuery
   - displayName: Database Multi Query Raw
