@@ -174,13 +174,13 @@ parameters:
   - displayName: Plaintext Non Pipelined IIS Out-Of-Process h2
     arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only
   - displayName: Json In-Process
-    arguments: --scenario Json --webHost IISInProcess $(jsonJob) --windows-only
+    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) --windows-only
   - displayName: Json In-Process h2
-    arguments: --scenario Json --webHost IISInProcess $(jsonJob) $(http2Jobs) -m h2 --windows-only
+    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only
   - displayName: Json Out-Of-Process
-    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJob) --windows-only
+    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) --windows-only
   - displayName: Json Out-Of-Process h2
-    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJob) $(http2Jobs) -m h2 --windows-only
+    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only
 
     # BasicApi
     # arguments: --scenario BasicApi.GetUsingRouteValue $(basicApiJobs)
@@ -192,7 +192,7 @@ parameters:
 
     # HttpClient
   - displayName: HttpClient
-    arguments: --scenario HttpClient $httpClientJobs
+    arguments: --scenario HttpClient $(httpClientJobs)
 
     # Connections
   - displayName: Connections Closed
@@ -222,7 +222,7 @@ parameters:
   - displayName: Json Platform Mono
     arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime
   - displayName: Json Mono
-    arguments: --scenario Json-Mono $(jsonJob) --mono-runtime"
+    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime"
   - displayName: Json Https Mono 
     arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime
   - displayName: Database Fortunes Raw Mono
@@ -242,7 +242,7 @@ variables:
   jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
   basicApiJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60
   basicViewsJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60
-  http2Jobs: --client-name H2Load -p Streams=70 --headers None # --connections ${{ cpuCount }} --clientThreads ${{ cpuCount }}
+  http2Jobs: --client-name H2Load -p Streams=70 --headers None --connections $[ cpuCount ] --clientThreads $[ cpuCount ]
   blazorJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.blazor.json
 
 # Agent-less jobs need this pool
