@@ -111,4 +111,4 @@ jobs:
         parameters:
           displayName: "${{ s.displayName }} - ${{ b.displayName }}"
           arguments: "${{ s.arguments }} ${{ b.arguments }} $(defaultArgs) $(sqlArgs)"
-          condition: and(eq(s.isPlatform, true), eq(b.supportsPlatform, true))
+          condition: and(eq(${{ s.isPlatform }}, true), eq(${{ b.supportsPlatform }}, true))
