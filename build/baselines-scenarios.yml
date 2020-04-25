@@ -88,8 +88,9 @@ jobs:
 - job: Trend
   steps:
   - ${{ each s in parameters.scenarios }}:
-  - ${{ each b in parameters.baselines }}:
-    - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
-      parameters:
-        displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-        arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
+    - ${{ each b in parameters.baselines }}:
+      - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
+        parameters:
+          displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+          arguments: "${{ s.arguments }} $(defaultArgs) $(sqlArgs)"
+  
