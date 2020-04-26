@@ -16,15 +16,15 @@ parameters:
   type: object
   default: 
 
-  - displayName: 
+  - displayName: Baseline
     arguments: --scenario proxy-baseline    $proxyJobs --property proxy=none
-  - displayName: 
+  - displayName: HttpClient
     arguments: --scenario proxy-httpclient  $proxyJobs --property proxy=httpclient
-  - displayName: 
+  - displayName: NGinx
     arguments: --scenario proxy-nginx       $proxyJobs --property proxy=nginx
-  - displayName: 
+  - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $proxyJobs --property proxy=haproxy
-  - displayName: 
+  - displayName: Envoy
     arguments: --scenario proxy-envoy       $proxyJobs --property proxy=envoy
 
 - name: payloads
@@ -49,7 +49,7 @@ parameters:
 
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --session $(session) $job --no-metadata --no-measurements --warmup.variables.duration $(warmup) --load.variables.duration $(duration) --warmup.options.discardResults true
+  defaultArgs: --session $(session) --no-metadata --no-measurements --warmup.variables.duration $(warmup) --load.variables.duration $(duration) --warmup.options.discardResults true
   sqlArgs: --table ProxyBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
 
   proxyJobs: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
