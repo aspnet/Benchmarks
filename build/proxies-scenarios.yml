@@ -1,0 +1,76 @@
+# Proxy scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 5
+- name: duration
+  type: number
+  default: 15
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+  - displayName: 
+    arguments: --scenario proxy-baseline    $proxyJobs --property proxy=none
+  - displayName: 
+    arguments: --scenario proxy-httpclient  $proxyJobs --property proxy=httpclient
+  - displayName: 
+    arguments: --scenario proxy-nginx       $proxyJobs --property proxy=nginx
+  - displayName: 
+    arguments: --scenario proxy-haproxy     $proxyJobs --property proxy=haproxy
+  - displayName: 
+    arguments: --scenario proxy-envoy       $proxyJobs --property proxy=envoy
+
+- name: payloads
+  type: object
+  default:
+    - displayName: "10B"
+      arguments: --variable path=/?s=10 --property payload=10
+    - displayName: "100B"
+      arguments: --variable path=/?s=100 --property payload=100
+    - displayName: "1,000B"
+      arguments: --variable path=/?s=1000 --property payload=1000
+    - displayName: "10,000B"
+      arguments: --variable path=/?s=10000 --property payload=10000
+    - displayName: "100,000B"
+      arguments: --variable path=/?s=100000 --property payload=100000
+
+- name: protocols
+  type: object
+  default:
+    - displayName: http
+    - arguments: --variable protocol=http --property protocol=http
+
+variables:
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  defaultArgs: --session $(session) $job --no-metadata --no-measurements --warmup.variables.duration $(warmup) --load.variables.duration $(duration) --warmup.options.discardResults true
+  sqlArgs: --table ProxyBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+
+proxyJobs: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
+
+# Agent-less jobs need this pool
+pool: server
+
+jobs:
+- job: Trend
+  steps:
+  - ${{ each s in parameters.scenarios }}:
+    - ${{ each payload in parameters.payloads }}:
+      - ${{ each protocol in parameters.protocols }}:
+        - task: PublishToAzureServiceBus@1
+          condition: always()
+          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            azureSubscription: ASP.NET Benchmarks Queue
+            waitForCompletion: true
+            messageBody: |
+              {
+                "name": "benchmarksdriver2",
+                "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
+              }
