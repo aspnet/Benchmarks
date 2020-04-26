@@ -30,16 +30,16 @@ parameters:
 - name: payloads
   type: object
   default:
-    - displayName: "10B"
+    - displayName: "10 B"
       arguments: --variable path=/?s=10 --property payload=10
-    - displayName: "100B"
+    - displayName: "100 B"
       arguments: --variable path=/?s=100 --property payload=100
-    - displayName: "1,000B"
-      arguments: --variable path=/?s=1000 --property payload=1000
-    - displayName: "10,000B"
-      arguments: --variable path=/?s=10000 --property payload=10000
-    - displayName: "100,000B"
-      arguments: --variable path=/?s=100000 --property payload=100000
+    - displayName: "1 KB"
+      arguments: --variable path=/?s=1024 --property payload=1024
+    - displayName: "10 KB"
+      arguments: --variable path=/?s=10240 --property payload=10240
+    - displayName: "100 KB"
+      arguments: --variable path=/?s=102400 --property payload=102400
 
 - name: protocols
   type: object
@@ -59,6 +59,7 @@ pool: server
 
 jobs:
 - job: Trend
+  timeoutInMinutes: 90
   steps:
   - ${{ each s in parameters.scenarios }}:
     - ${{ each payload in parameters.payloads }}:
