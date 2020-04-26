@@ -159,6 +159,7 @@ pool: server
 
 jobs:
 - job: Trend
+  timeoutInMinutes: 120
   steps:
   - ${{ each s in parameters.scenarios }}:
     - task: PublishToAzureServiceBus@1
