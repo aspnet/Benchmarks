@@ -132,17 +132,17 @@ parameters:
 
   # GRPC HTTP API
     - displayName: GrpcJson
-      arguments: n GrpcJson --webHost KestrelSockets $(grpcHttpApiJobs) -m http
+      arguments: -n GrpcJson --webHost KestrelSockets $(grpcHttpApiJobs) -m http
     - displayName: GrpcJson https
-      arguments: n GrpcJson --webHost KestrelSockets $(grpcHttpApiJobs) -m https
+      arguments: -n GrpcJson --webHost KestrelSockets $(grpcHttpApiJobs) -m https
     - displayName: GprcJson2k 
-      arguments: n GrpcJson2k --webHost KestrelSockets $(grpcHttpApiJobs) -m http
+      arguments: -n GrpcJson2k --webHost KestrelSockets $(grpcHttpApiJobs) -m http
     - displayName: GprcJson2k https
-      arguments: n GrpcJson2k --webHost KestrelSockets $(grpcHttpApiJobs) -m https
+      arguments: -n GrpcJson2k --webHost KestrelSockets $(grpcHttpApiJobs) -m https
     - displayName: GrpcJsonInput2k
-      arguments: n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m http
+      arguments: -n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m http
     - displayName: GrpcJsonInput2k https
-      arguments: n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m https
+      arguments: -n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m https
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
