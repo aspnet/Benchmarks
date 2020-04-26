@@ -17,15 +17,15 @@ parameters:
   default: 
 
   - displayName: Baseline
-    arguments: --scenario proxy-baseline    $proxyJobs --property proxy=none
+    arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
   - displayName: HttpClient
-    arguments: --scenario proxy-httpclient  $proxyJobs --property proxy=httpclient
+    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient
   - displayName: NGinx
-    arguments: --scenario proxy-nginx       $proxyJobs --property proxy=nginx
+    arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx
   - displayName: HAProxy
-    arguments: --scenario proxy-haproxy     $proxyJobs --property proxy=haproxy
+    arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
   - displayName: Envoy
-    arguments: --scenario proxy-envoy       $proxyJobs --property proxy=envoy
+    arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
 
 - name: payloads
   type: object
