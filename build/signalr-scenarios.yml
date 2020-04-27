@@ -9,7 +9,7 @@ parameters:
   default: ''
 - name: warmup
   type: number
-  default: 15
+  default: 0
 - name: duration
   type: number
   default: 15
@@ -24,35 +24,35 @@ parameters:
 
   # SignalR
   - displayName: SignalRBroadcast WebSockets Json
-    arguments: -n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalRBroadcast --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast WebSockets MessagePack
-    arguments: -n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalRBroadcast --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalRBroadcast ServerSentEvents Json
-    arguments: -n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalRBroadcast --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast LongPolling Json
-    arguments: -n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalRBroadcast --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast LongPolling MessagePack
-    arguments: -n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalRBroadcast --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREcho WebSockets Json
-    arguments: -n SignalREcho -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREcho --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho WebSockets MessagePack
-    arguments: -n SignalREcho -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalREcho --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREcho ServerSentEvents Json
-    arguments: -n SignalREcho -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREcho --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho LongPolling Json
-    arguments: -n SignalREcho -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREcho --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho LongPolling MessagePack
-    arguments: -n SignalREcho -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalREcho --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREchoAll WebSockets Json
-    arguments: -n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREchoAll --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll WebSockets MessagePack
-    arguments: -n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalREchoAll --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREchoAll ServerSentEvents Json
-    arguments: -n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREchoAll --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll LongPolling Json
-    arguments: -n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
+    arguments: --scenario SignalREchoAll --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll LongPolling MessagePack
-    arguments: -n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
+    arguments: --scenario SignalREchoAll --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -64,6 +64,7 @@ steps:
       waitForCompletion: true
       messageBody: |
         {
-          "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --sql SQL_CONNECTION_STRING --aspnetcoreversion 5.0.0-preview.5.20255.6" ]
+          "name": "benchmarksdriver2",
+          "args": [ "${{ s.arguments }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --aspnetcoreversion 5.0.0-preview.5.20255.6 --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml" ]
         }
+      #--sql SQL_CONNECTION_STRING
