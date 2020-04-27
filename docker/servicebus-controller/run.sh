@@ -15,6 +15,12 @@ then
     exit 1
 fi
 
+if [ -z "SQL_CONNECTION_STRING" ]
+then
+    echo "SQL_CONNECTION_STRING needs to be set"
+    exit 1
+fi
+
 docker run \
     -d \
     -it \
@@ -24,5 +30,6 @@ docker run \
     --restart always \
     --env SERVICE_BUS_CONNECTION_STRING=$SERVICE_BUS_CONNECTION_STRING \
     --env SERVICE_BUS_QUEUE=$SERVICE_BUS_QUEUE \
+    --env SQL_CONNECTION_STRING=$SQL_CONNECTION_STRING \
     servicebus-controller \
     "$@"
