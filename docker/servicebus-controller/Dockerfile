@@ -32,13 +32,6 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS runtime
 
 WORKDIR /app
 
-# clone ASP.NET
-RUN git clone https://github.com/dotnet/aspnetcore
-WORKDIR /app/aspnetcore
-RUN git submodule update --init
-
-WORKDIR /app
-
 COPY --from=build-job /app/out ./
 COPY --from=build-driver1 /app/out ./driver1
 COPY --from=build-driver2 /app/out ./driver2
