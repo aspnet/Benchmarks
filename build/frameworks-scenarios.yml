@@ -78,7 +78,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --session $(session) --description Trend/Latest --warmup $(warmup) --duration $(duration)
-  sqlArgs: --table AspNetBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table AspNetBenchmarks --sql SQL_CONNECTION_STRING
 
 # Agent-less jobs need this pool
 pool: server

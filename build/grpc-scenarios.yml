@@ -146,7 +146,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
-  sqlArgs: --table AspNetBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table AspNetBenchmarks --sql SQL_CONNECTION_STRING
 
   grpcNativeJobs: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json
   grpcManagedJobs: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json

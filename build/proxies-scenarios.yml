@@ -50,7 +50,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --session $(session) --profile $(profile) --no-metadata --no-measurements --warmup.variables.duration $(warmup) --load.variables.duration $(duration) --warmup.options.discardResults true
-  sqlArgs: --table ProxyBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table ProxyBenchmarks --sql SQL_CONNECTION_STRING
 
   proxyJobs: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
 

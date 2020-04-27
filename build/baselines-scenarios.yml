@@ -95,7 +95,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
-  sqlArgs: --table AspNetBaselines # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table AspNetBaselines --sql SQL_CONNECTION_STRING
 
   plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
   htmlJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json

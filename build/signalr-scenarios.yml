@@ -54,7 +54,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
-  sqlArgs: --table SignalR # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table SignalR --sql SQL_CONNECTION_STRING
 
   signalRJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalr.json
 

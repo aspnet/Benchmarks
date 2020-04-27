@@ -18,7 +18,7 @@ parameters:
 variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --application.endpoints $(server) --session $(session)
-  sqlArgs: --table BlazorWasm # --sql \"BENCHMARKS_CONNECTION_STRING\"
+  sqlArgs: --table BlazorWasm --sql SQL_CONNECTION_STRING
 
   blazorJobs: --config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-wasm/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
 
