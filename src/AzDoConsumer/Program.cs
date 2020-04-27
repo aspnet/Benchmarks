@@ -21,15 +21,6 @@ namespace AzDoConsumer
 
         public static int Main(string[] args)
         {
-            // Replace arguments starting with "env:" by the value in the environment variables
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (args[i].StartsWith("env:", StringComparison.OrdinalIgnoreCase))
-                {
-                    args[i] = Environment.GetEnvironmentVariable(args[i].Substring(4));
-                }
-            }
-
             var app = new CommandLineApplication();
 
             app.HelpOption("-h|--help");
@@ -48,7 +39,20 @@ namespace AzDoConsumer
                 var jobDefinitions = JsonSerializer.Deserialize<JobDefinitions>(File.ReadAllText(jobDefinitionsPathOption.Value()), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 ConnectionString = connectionStringOption.Value();
+
+                // Substitute with ENV value if it exists
+                if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(ConnectionString)))
+                {
+                    ConnectionString = Environment.GetEnvironmentVariable(ConnectionString);
+                }
+
                 Queue = queueOption.Value();
+
+                // Substitute with ENV value if it exists
+                if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(Queue)))
+                {
+                    Queue = Environment.GetEnvironmentVariable(Queue);
+                }
 
                 foreach (var job in jobDefinitions.Jobs)
                 {

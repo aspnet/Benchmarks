@@ -1,0 +1,13 @@
+{
+  "$schema": "./jobs.schema.json",
+  "jobs": {
+    "benchmarksdriver": {
+      "executable": "./driver1/BenchmarksDriver",
+      "arguments": []
+    },
+    "benchmarksdriver2": {
+      "executable": "./driver2/BenchmarksDriver",
+      "arguments": []
+    }
+  }
+}
