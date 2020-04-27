@@ -1,0 +1,265 @@
+# This file lists all the scenarios that are run for the Trend/Latest category, which are
+# the jobs that are continuously benchmarked with the latest dotnet and aspnet runtimes available.
+# It iterates over all the command in the `scenarios` parameter and evalutes a 
+# task template defined dynamically.
+# The task template can then be changed to trigger a different kind of job (Cloud vs. Physical with service bus)
+# The parameters can be changed to target different servers too, to reuse the same list of scenarios.
+
+
+parameters:
+- name: server
+  type: string
+  default: ''
+- name: client
+  type: string
+  default: ''
+- name: cpuCount
+  type: number
+  default: 32
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+# Plaintext
+
+  - displayName: Plaintext Platform
+    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+  - displayName: Plaintext
+    arguments: --scenario Plaintext -i 3 $(plaintextJobs)
+  - displayName: Plaintext Non Pipelined
+    arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
+  - displayName: Plaintext Mvc
+    arguments: --scenario MvcPlaintext $(plaintextJobs)
+  - displayName: Plaintext Endpoint
+    arguments: --scenario EndpointPlaintext $(plaintextJobs)
+  - displayName: Plaintext HttpSys
+    arguments: --scenario Plaintext --webHost HttpSys --windows-only $(plaintextJobs)
+  - displayName: Static Files
+    arguments: --scenario StaticFiles $(plaintextJobs)
+  
+# Json
+
+  - displayName: Json Platform
+    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+  - displayName: Json Middleware
+    arguments: --scenario Json $(jsonJobs)
+  - displayName: Json Mvc
+    arguments: --scenario MvcJson $(jsonJobs)
+  - displayName: Json Mvc (NewtonSoft)
+    arguments: --scenario MvcJsonNet $(jsonJobs)
+  - displayName: Json Mvc (2KB)
+    arguments: --scenario MvcJson2k $(jsonJobs)
+  - displayName: Json Mvc (NewtonSoft, 2KB)
+    arguments: --scenario MvcJsonNet2k $(jsonJobs)
+  - displayName: Json Mvc Input (2KB)
+    arguments: --scenario MvcJsonInput2k $(jsonJobs)
+  - displayName: Json Mvc Input (NewtonSoft, 2KB)
+    arguments: --scenario MvcJsonNetInput2k $(jsonJobs)
+
+# Https
+
+  - displayName: Plaintext Https
+    arguments: --scenario Plaintext -m https $(plaintextJobs)
+  - displayName: Plaintext HttpSys Https
+    arguments: --scenario Plaintext -m https --webHost HttpSys --windows-only $(plaintextJobs)
+  - displayName: Plaintext Non Pipelined Https
+    arguments: --scenario PlaintextNonPipelined -m https $(plaintextJobs)
+  - displayName: Json Https
+    arguments: --scenario Json -m https $(jsonJobs)
+  - displayName: Json HttpSys Https
+    arguments: --scenario Json -m https --webHost HttpSys --windows-only $(jsonJobs)
+
+# Http2
+
+  - displayName: Plaintext h2
+    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs)
+  - displayName: Plaintext HttpSys h2
+    arguments: --scenario PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs)
+  - displayName: Plaintext h2c
+    arguments: --scenario PlaintextNonPipelined -m h2c --no-startup-latency $(plaintextJobs) $(http2Jobs)
+  - displayName: Json h2
+    arguments: --scenario Json -m h2 $(jsonJobs) $(http2Jobs) 
+  - displayName: Json HttpSys h2
+    arguments: --scenario Json -m h2 --webHost HttpSys --windows-only $(jsonJobs) $(http2Jobs) 
+  - displayName: Json h2c
+    arguments: --scenario Json -m h2c --no-startup-latency $(jsonJobs) $(http2Jobs) 
+
+# Caching
+
+  - displayName: Memory Cache No-Hit
+    arguments: --scenario MemoryCachePlaintext $(plaintextJobs)
+  - displayName: Memory Cache Set Remove
+    arguments: --scenario MemoryCachePlaintextSetRemove $(plaintextJobs)
+  - displayName: Memory Cache Hit
+    arguments: --scenario ResponseCachingPlaintextCached $(plaintextJobs)
+  - displayName: Memory Cache Response No-Hit
+    arguments: --scenario ResponseCachingPlaintextResponseNoCache $(plaintextJobs)
+  - displayName: Memory Cache Request No-Hit
+    arguments: --scenario ResponseCachingPlaintextRequestNoCache $(plaintextJobs)
+  - displayName: Memory Cache Vary By Hit
+    arguments: --scenario ResponseCachingPlaintextVaryByCached $(plaintextJobs)
+
+    # Database SingleQuery
+  - displayName: Database Single Query Raw
+    arguments: --scenario DbSingleQueryRaw $(jsonJobs) --database PostgreSql
+  - displayName: Database Single Query Dapper
+    arguments: --scenario DbSingleQueryDapper $(jsonJobs) --database PostgreSql
+  - displayName: Database Single Query EF
+    arguments: --scenario DbSingleQueryEf $(jsonJobs) --database PostgreSql
+  - displayName: Database Single Query Mvc Raw
+    arguments: --scenario MvcDbSingleQueryRaw $(jsonJobs) --database PostgreSql
+  - displayName: Database Single Query Mvc Dapper
+    arguments: --scenario MvcDbSingleQueryDapper $(jsonJobs) --database PostgreSql
+  - displayName: Database Single Query Mvc EF
+    arguments: --scenario MvcDbSingleQueryEf $(jsonJobs) --database PostgreSql
+
+    # Database MultiQuery
+  - displayName: Database Multi Query Raw
+    arguments: --scenario DbMultiQueryRaw $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Query Dapper
+    arguments: --scenario DbMultiQueryDapper $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Query EF
+    arguments: --scenario DbMultiQueryEf $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Query  Mvc Raw
+    arguments: --scenario MvcDbMultiQueryRaw $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Query Mvc Dapper
+    arguments: --scenario MvcDbMultiQueryDapper $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Query Mvc EF
+    arguments: --scenario MvcDbMultiQueryEf $(multiQueryJobs) --database PostgreSql
+
+    # Database MultiUpdate
+  - displayName: Database Multi Update Raw
+    arguments: --scenario DbMultiUpdateRaw $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Update Dapper
+    arguments: --scenario DbMultiUpdateDapper $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Update EF
+    arguments: --scenario DbMultiUpdateEf $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Update Mvc Raw
+    arguments: --scenario MvcDbMultiUpdateRaw $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Update Mvc Dapper
+    arguments: --scenario MvcDbMultiUpdateDapper $(multiQueryJobs) --database PostgreSql
+  - displayName: Database Multi Update Mvc EF
+    arguments: --scenario MvcDbMultiUpdateEf $(multiQueryJobs) --database PostgreSql
+
+    # Database Fortunes
+  - displayName: Database Fortunes Raw
+    arguments: --scenario DbFortunesRaw $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes Dapper
+    arguments: --scenario DbFortunesDapper $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes EF
+    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes Mvc Raw
+    arguments: --scenario MvcDbFortunesRaw $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes Mvc Dapper
+    arguments: --scenario MvcDbFortunesDapper $(htmlJobs) --database PostgreSql
+  - displayName: Database Fortunes Mvc EF
+    arguments: --scenario MvcDbFortunesEf $(htmlJobs) --database PostgreSql
+
+    # IIS
+  - displayName: Plaintext IIS In-Process
+    arguments: --scenario Plaintext --webHost IISInProcess $(plaintextJobs) --windows-only
+  - displayName: Plaintext IIS In-Process h2
+    arguments: --scenario Plaintext --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only
+  - displayName: Plaintext IIS Out-Of-Process
+    arguments: --scenario Plaintext --webHost IISOutOfProcess $(plaintextJobs) --windows-only
+  - displayName: Plaintext IIS Out-Of-Process h2
+    arguments: --scenario Plaintext --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only
+  - displayName: Plaintext Non Pipelined IIS In-Process
+    arguments: --scenario PlaintextNonPipelined --webHost IISInProcess $(plaintextJobs) --windows-only
+  - displayName: Plaintext Non Pipelined IIS In-Process h2
+    arguments: --scenario PlaintextNonPipelined --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only
+  - displayName: Plaintext Non Pipelined IIS Out-Of-Process
+    arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) --windows-only
+  - displayName: Plaintext Non Pipelined IIS Out-Of-Process h2
+    arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only
+  - displayName: Json In-Process
+    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) --windows-only
+  - displayName: Json In-Process h2
+    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only
+  - displayName: Json Out-Of-Process
+    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) --windows-only
+  - displayName: Json Out-Of-Process h2
+    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only
+
+    # BasicApi
+    # arguments: --scenario BasicApi.GetUsingRouteValue $(basicApiJobs)
+    # arguments: --scenario BasicApi.Post $(basicApiJobs)
+    
+    # BasicViews
+    # arguments: --scenario BasicViews.GetTagHelpers $(basicViewsJobs)
+    # arguments: --scenario BasicViews.Post $(basicViewsJobs)
+
+    # HttpClient
+  - displayName: HttpClient
+    arguments: --scenario HttpClient $(httpClientJobs)
+
+    # Connections
+  - displayName: Connections Closed
+    arguments: --scenario ConnectionClose $(plaintextJobs) --warmup 2 --duration 5
+  - displayName: Connections Closed Https
+    arguments: --scenario ConnectionClose $(plaintextJobs) --warmup 2 --duration 5 -m https
+    
+    # Logging
+  - displayName: Plaintext Non-Pipelined Log Level Warning
+    arguments: --scenario PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $(plaintextJobs)
+  - displayName: Plaintext Non-Pipelined Log Level Warning Disable Scopes
+    arguments: --scenario PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $(plaintextJobs)
+    
+    # Blazor
+  - displayName: Blazor Basic
+    arguments: --scenario BlazorBasic $(blazorJobs)
+  - displayName: Blazor Form Input
+    arguments: --scenario BlazorFormInput $(blazorJobs)
+    
+    # Mono
+  - displayName: Plaintext Platform Mono
+    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime
+  - displayName: Plaintext Mono
+    arguments: --scenario Plaintext-Mono $(plaintextJobs) --mono-runtime
+  - displayName: Plainttext Non-Pipelined Mono
+    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --mono-runtime
+  - displayName: Json Platform Mono
+    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime
+  - displayName: Json Mono
+    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime
+  - displayName: Json Https Mono 
+    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime
+  - displayName: Database Fortunes Raw Mono
+    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime
+
+variables:
+  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
+  sqlArgs: --table AspNetBenchmarks # --sql \"BENCHMARKS_CONNECTION_STRING\"
+
+  plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+  htmlJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
+  jsonJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
+  multiQueryJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.multiquery.json
+  httpClientJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json
+  plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
+  jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
+  basicApiJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60
+  basicViewsJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60
+  http2Jobs: --client-name H2Load -p Streams=70 --headers None --connections $(cpuCount) --clientThreads $(cpuCount)
+  blazorJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.blazor.json
+
+# Agent-less jobs need this pool
+pool: server
+
+jobs:
+- job: Trend
+  steps:
+  - ${{ each s in parameters.scenarios }}:
+    - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud
+      parameters:
+        displayName: "${{ s.displayName }}"
+        arguments: "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}"

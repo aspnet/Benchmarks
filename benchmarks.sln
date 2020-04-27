@@ -233,13 +233,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "src\BenchmarksApps
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{3E9DA42B-F7FB-42A9-8518-1ADA71AEDF12}"
 	ProjectSection(SolutionItems) = preProject
+		build\baselines-scenarios.yml = build\baselines-scenarios.yml
 		build\benchmarks.pipelines.yml = build\benchmarks.pipelines.yml
+		build\blazor-scenarios.yml = build\blazor-scenarios.yml
+		build\efcore-scenarios.yml = build\efcore-scenarios.yml
+		build\frameworks-scenarios.yml = build\frameworks-scenarios.yml
+		build\grpc-scenarios.yml = build\grpc-scenarios.yml
 		build\prbenchmarks.yml = build\prbenchmarks.yml
+		build\proxies-scenarios.yml = build\proxies-scenarios.yml
 		build\proxies.yml = build\proxies.yml
 		build\regressionbot.yml = build\regressionbot.yml
+		build\signalr-scenarios.yml = build\signalr-scenarios.yml
 		build\stress-blazorwasm.yml = build\stress-blazorwasm.yml
 		build\stress-fortunes.yml = build\stress-fortunes.yml
-		build\trend-citrine.yml = build\trend-citrine.yml
+		build\trend-citrine-template.yml = build\trend-citrine-template.yml
+		build\trend-scenarios.yml = build\trend-scenarios.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
@@ -247,6 +255,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcpClient", "src\TcpClient\TcpClient.csproj", "{127BD56E-993B-47A7-BC0A-2300DF53FADC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzDoConsumer", "src\AzDoConsumer\AzDoConsumer.csproj", "{499B0522-A7CE-4788-9166-1AFFBF506F68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "servicebus-controller", "servicebus-controller", "{C6C8279D-CBC8-467A-875F-79E855D6824E}"
+	ProjectSection(SolutionItems) = preProject
+		docker\servicebus-controller\build.sh = docker\servicebus-controller\build.sh
+		docker\servicebus-controller\Dockerfile = docker\servicebus-controller\Dockerfile
+		docker\servicebus-controller\jobs.json = docker\servicebus-controller\jobs.json
+		docker\servicebus-controller\run.sh = docker\servicebus-controller\run.sh
+		docker\servicebus-controller\stop.sh = docker\servicebus-controller\stop.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -685,6 +702,7 @@ Global
 		{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 		{127BD56E-993B-47A7-BC0A-2300DF53FADC} = {39985004-8041-41FC-BBB1-CCF999D7BC16}
 		{499B0522-A7CE-4788-9166-1AFFBF506F68} = {995FCFF9-E5F6-4BDD-8E5B-FBDEA21145F9}
+		{C6C8279D-CBC8-467A-875F-79E855D6824E} = {EF444B27-3CBA-4581-893A-7F6DB5527371}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C48AD7EE-82B1-4307-A869-3FC14AC9B21F}

@@ -339,9 +339,9 @@ namespace BenchmarksDriver
             var connectionsOption = app.Option("--connections",
                 "Number of connections used by client. Default is 256.", CommandOptionType.SingleValue);
             var durationOption = app.Option("--duration",
-                "Duration of client job in seconds. Default is 15.", CommandOptionType.SingleValue);
+                "Duration of client job in seconds. Default is 15.", CommandOptionType.MultipleValue);
             var warmupOption = app.Option("--warmup",
-                "Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.", CommandOptionType.SingleValue);
+                "Duration of warmup in seconds. Default is 15. 0 disables the warmup and is equivalent to --no-warmup.", CommandOptionType.MultipleValue);
             var noWarmupOption = app.Option("--no-warmup",
                 "Disables the warmup phase.", CommandOptionType.NoValue);
             var headerOption = app.Option("--header",
@@ -416,7 +416,18 @@ namespace BenchmarksDriver
                 var iterations = 1;
                 var exclude = 0;
 
-                var sqlConnectionString = sqlConnectionStringOption.Value();
+                string sqlConnectionString = null;
+
+                if (sqlConnectionStringOption.HasValue())
+                {
+                    sqlConnectionString = sqlConnectionStringOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(sqlConnectionString)))
+                    {
+                        sqlConnectionString = Environment.GetEnvironmentVariable(sqlConnectionString);
+                    }
+                }
+
                 TimeSpan span = TimeSpan.Zero;
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
@@ -466,6 +477,11 @@ namespace BenchmarksDriver
                 if (sqlTableOption.HasValue())
                 {
                     _tableName = sqlTableOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(_tableName)))
+                    {
+                        _tableName = Environment.GetEnvironmentVariable(_tableName);
+                    }
                 }
 
                 var scenarioName = scenarioOption.Value() ?? "Default";
@@ -1132,11 +1148,21 @@ namespace BenchmarksDriver
                 }
                 if (durationOption.HasValue())
                 {
-                    _clientJob.Duration = int.Parse(durationOption.Value());
+                    if (durationOption.Values.Count > 1)
+                    {
+                        Log($"WARNING: '--duration' has been defined multiple times, using the last occurence.");
+                    }
+
+                    _clientJob.Duration = int.Parse(durationOption.Values.Last());
                 }
                 if (warmupOption.HasValue())
                 {
-                    _clientJob.Warmup = int.Parse(warmupOption.Value());
+                    if (warmupOption.Values.Count > 1)
+                    {
+                        Log($"WARNING: '--warmup' has been defined multiple times, using the last occurence.");
+                    }
+
+                    _clientJob.Warmup = int.Parse(warmupOption.Values.Last());
                 }
                 if (noWarmupOption.HasValue())
                 {
