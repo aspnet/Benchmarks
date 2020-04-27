@@ -416,7 +416,18 @@ namespace BenchmarksDriver
                 var iterations = 1;
                 var exclude = 0;
 
-                var sqlConnectionString = sqlConnectionStringOption.Value();
+                string sqlConnectionString = null;
+
+                if (sqlConnectionStringOption.HasValue())
+                {
+                    sqlConnectionString = sqlConnectionStringOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(sqlConnectionString)))
+                    {
+                        sqlConnectionString = Environment.GetEnvironmentVariable(sqlConnectionString);
+                    }
+                }
+
                 TimeSpan span = TimeSpan.Zero;
 
                 if (!Enum.TryParse(schemeValue, ignoreCase: true, result: out Scheme scheme) ||
@@ -466,6 +477,11 @@ namespace BenchmarksDriver
                 if (sqlTableOption.HasValue())
                 {
                     _tableName = sqlTableOption.Value();
+
+                    if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(_tableName)))
+                    {
+                        _tableName = Environment.GetEnvironmentVariable(_tableName);
+                    }
                 }
 
                 var scenarioName = scenarioOption.Value() ?? "Default";
