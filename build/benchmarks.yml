@@ -1,0 +1,18 @@
+# Orchestrates all benchmarks
+
+jobs:
+- template: trend-scenarios.yml
+  parameters:
+    server: http://asp-citrine-lin:5001
+    client: http://asp-citrine-load:5002
+    warmup: 0
+    duration: 2
+    displayName: Trends Intel Linux
+
+- template: baselines-scenarios.yml
+  parameters:
+    server: http://asp-citrine-lin:5001
+    client: http://asp-citrine-load:5002
+    warmup: 0
+    duration: 2
+    displayName: Baselines Intel Linux
