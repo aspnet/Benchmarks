@@ -101,7 +101,7 @@ jobs:
   pool: server
   variables:
     session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-    defaultArgs: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
+    defaultArgs: --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --session ${{ parameter.ssession }}
     sqlArgs: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
     
     plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
