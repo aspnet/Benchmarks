@@ -270,7 +270,7 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
-    displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+    displayName: "${{ s.displayName }}"
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
