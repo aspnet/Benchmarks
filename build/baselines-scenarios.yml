@@ -96,24 +96,24 @@ parameters:
 #    isPlatform: false
 
 - name: session
-  value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+  default: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 - name: defaultArgs
-  value: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
+  default: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
 - name: sqlArgs
-  value: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
+  default: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
 
 - name: plaintextJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
 - name: htmlJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
+  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
 - name: jsonJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
+  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
 - name: plaintextPlatformJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json
+  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json
 - name: jsonPlatformJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
+  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
 - name: htmlPlatformJobs
-  value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
+  default: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
 
 jobs:
 - job: ${{ parameters.displayName }}
