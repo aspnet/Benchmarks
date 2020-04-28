@@ -34,7 +34,7 @@ parameters:
 # Plaintext
 
   - displayName: Plaintext Platform
-    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs) --sdk $(platformSdk)
   - displayName: Plaintext
     arguments: --scenario Plaintext -i 3 $(plaintextJobs)
 #  - displayName: Plaintext Non Pipelined
@@ -51,7 +51,7 @@ parameters:
 ## Json
 #
 #  - displayName: Json Platform
-#    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+#    arguments: --scenario JsonPlatform $(jsonPlatformJobs) --sdk $(platformSdk)
 #  - displayName: Json Middleware
 #    arguments: --scenario Json $(jsonJobs)
 #  - displayName: Json Mvc
@@ -224,13 +224,13 @@ parameters:
 #    
 #    # Mono
 #  - displayName: Plaintext Platform Mono
-#    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime
+#    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime  --sdk $(platformSdk)
 #  - displayName: Plaintext Mono
 #    arguments: --scenario Plaintext-Mono $(plaintextJobs) --mono-runtime
 #  - displayName: Plainttext Non-Pipelined Mono
 #    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --mono-runtime
 #  - displayName: Json Platform Mono
-#    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime
+#    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime  --sdk $(platformSdk)
 #  - displayName: Json Mono
 #    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime
 #  - displayName: Json Https Mono 

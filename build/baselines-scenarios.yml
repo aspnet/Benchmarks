@@ -107,7 +107,7 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
-              "name": "benchmarksdriver2",
+              "name": "benchmarksdriver",
               "args": [ "${{ s.arguments }} ${{ b.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --session $(session) --table AspNetBaselines " ]
             }
 
