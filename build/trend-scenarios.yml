@@ -238,7 +238,6 @@ parameters:
 #  - displayName: Database Fortunes Raw Mono
 #    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime
 
-variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
   sqlArgs: --table AspNetBenchmarks #--sql SQL_CONNECTION_STRING
@@ -256,10 +255,10 @@ variables:
   blazorJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.blazor.json
 
 # Agent-less jobs need this pool
-pool: server
 
 jobs:
 - job: ${{ parameters.displayName }}
+  pool: server
   steps:
   - ${{ each s in parameters.scenarios }}:
     - template: trend-citrine-template.yml # todo: make it a parameter to target a different template for cloud

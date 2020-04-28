@@ -95,7 +95,6 @@ parameters:
 #    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
 #    isPlatform: false
 
-variables:
   session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   defaultArgs: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
   sqlArgs: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
@@ -108,11 +107,9 @@ variables:
   jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
   htmlPlatformJobs: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
 
-# Agent-less jobs need this pool
-pool: server
-
 jobs:
 - job: ${{ parameters.displayName }}
+  pool: server
   steps:
   - ${{ each s in parameters.scenarios }}:
     - ${{ each b in parameters.baselines }}:
