@@ -24,35 +24,35 @@ parameters:
 
   # SignalR
   - displayName: SignalRBroadcast WebSockets Json
-    arguments: --scenario SignalRBroadcast --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario broadcast --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast WebSockets MessagePack
-    arguments: --scenario SignalRBroadcast --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario broadcast --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalRBroadcast ServerSentEvents Json
-    arguments: --scenario SignalRBroadcast --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario broadcast --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast LongPolling Json
-    arguments: --scenario SignalRBroadcast --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario broadcast --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalRBroadcast LongPolling MessagePack
-    arguments: --scenario SignalRBroadcast --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario broadcast --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREcho WebSockets Json
-    arguments: --scenario SignalREcho --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echo --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho WebSockets MessagePack
-    arguments: --scenario SignalREcho --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario echo --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREcho ServerSentEvents Json
-    arguments: --scenario SignalREcho --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echo --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho LongPolling Json
-    arguments: --scenario SignalREcho --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echo --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREcho LongPolling MessagePack
-    arguments: --scenario SignalREcho --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario echo --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREchoAll WebSockets Json
-    arguments: --scenario SignalREchoAll --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echoAll --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll WebSockets MessagePack
-    arguments: --scenario SignalREchoAll --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario echoAll --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
   - displayName: SignalREchoAll ServerSentEvents Json
-    arguments: --scenario SignalREchoAll --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echoAll --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll LongPolling Json
-    arguments: --scenario SignalREchoAll --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
+    arguments: --scenario echoAll --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
   - displayName: SignalREchoAll LongPolling MessagePack
-    arguments: --scenario SignalREchoAll --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
+    arguments: --scenario echoAll --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
 
 steps:
 - ${{ each s in parameters.scenarios }}:
