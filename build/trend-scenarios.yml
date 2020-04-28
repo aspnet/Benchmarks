@@ -59,9 +59,9 @@ parameters:
 # Plaintext
 
   - displayName: Plaintext Platform
-    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+    arguments: --scenario PlaintextPlatform $(parameters.plaintextPlatformJobs)
   - displayName: Plaintext
-    arguments: --scenario Plaintext -i 3 $(plaintextJobs)
+    arguments: --scenario Plaintext -i 3 $(parameters.plaintextJobs)
 #  - displayName: Plaintext Non Pipelined
 #    arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
 #  - displayName: Plaintext Mvc
