@@ -68,15 +68,15 @@ namespace BenchmarkServer
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
-        private static readonly string _latestRuntimeApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.netcore.app/index.json";
+        private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
-        private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/7d9f5c21-0d79-403f-bfe3-9a4506529760/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
+        private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
         private static readonly string[] _runtimeFeedUrls = new string[] {
+            "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2",
             "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer",
-            "https://pkgs.dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/7d9f5c21-0d79-403f-bfe3-9a4506529760/nuget/v3/flat2",
             "https://api.nuget.org/v3/flatcontainer" };
 
         // Cached lists of SDKs and runtimes already installed
