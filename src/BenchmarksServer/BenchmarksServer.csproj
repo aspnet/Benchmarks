@@ -21,6 +21,7 @@
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.44" />
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+    <PackageReference Include="NuGet.Versioning" Version="5.5.1" />
   </ItemGroup>
 
 </Project>

@@ -34,6 +34,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Versioning;
 using Repository;
 using OperatingSystem = Benchmarks.ServerJob.OperatingSystem;
 
@@ -67,7 +68,7 @@ namespace BenchmarkServer
         private static readonly string _dotnetInstallPs1Url = "https://raw.githubusercontent.com/dotnet/sdk/master/scripts/obtain/dotnet-install.ps1";
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
-        private static readonly string _aspnetFlatContainerUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.aspnetcore.server.kestrel.transport.libuv/index.json";
+        private static readonly string _aspnetFlatContainerUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
@@ -3717,17 +3718,16 @@ namespace BenchmarkServer
                 // Unlisting these versions manually as they are breaking the order of 5.0.0-alpha.X
                 .Where(x => !x.StartsWith("5.0.0-alpha1"))
                 .Where(t => t.StartsWith(versionPrefix))
-                .ToArray();
+                .Select(x => new NuGetVersion(x))
+                .ToArray()
+                ;
 
             // Extract the highest version
-            var lastEntry = matchingVersions.LastOrDefault();
+            var latest = matchingVersions
+                .OrderByDescending(v => v, VersionComparer.Default)
+                .FirstOrDefault();
 
-            if (lastEntry != null)
-            {
-                return lastEntry;
-            }
-
-            return null;
+            return latest.OriginalVersion;
         }
 
         // Compares just the repository name
