@@ -2996,7 +2996,12 @@ namespace BenchmarksDriver
 
                 var nth = (int)Math.Ceiling((double)orderedList.Length * percentile / 100);
 
-                return orderedList[nth];
+                if (orderedList.Length > nth)
+                {
+                    return orderedList[nth];
+                }
+
+                return 0;
             };
         }
 
