@@ -113,7 +113,7 @@ parameters:
 - name: session
   default: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 - name: defaultArgs
-  default: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(ssession)
+  default: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
 - name: sqlArgs
   default: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
 
