@@ -72,7 +72,10 @@ namespace BenchmarkServer
         private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
+
+        // SDK URLs are found here: https://github.com/dotnet/installer/blob/master/README.md
         private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
+        private static readonly string _latestSdkVersionUrl = "https://aka.ms/dotnet/net5/dev/Sdk/productCommit-win-x64.txt";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
         private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
         private static readonly string[] _runtimeFeedUrls = new string[] {
@@ -2010,11 +2013,15 @@ namespace BenchmarkServer
                     {
                         sdkVersion = await GetAspNetSdkVersion();
                         Log.WriteLine($"Detecting ASP.NET SDK version (master branch): {sdkVersion}");
+
+                        sdkVersion = "5.0.100-preview.5.20228.3";
+                        Log.WriteLine($"Forcing ASP.NET SDK version for compatibility: {sdkVersion}");
+
                     }
                 }
                 else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))
                 {
-                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
+                    sdkVersion = await ParseLatestVersionFile(_latestSdkVersionUrl);
                     Log.WriteLine($"Detecting edge SDK version (master branch): {sdkVersion}");
                 }
                 else
