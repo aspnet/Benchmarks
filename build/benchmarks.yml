@@ -2,23 +2,23 @@
 
 jobs:
 - job: TrendIntelLinux
-  parameters:
-    server: http://asp-citrine-lin:5001
-    client: http://asp-citrine-load:5002
-    warmup: 0
-    duration: 2
-    displayName: Trends Intel Linux
   steps: 
   - template: trend-scenarios.yml
-
+    parameters:
+      server: http://asp-citrine-lin:5001
+      client: http://asp-citrine-load:5002
+      warmup: 0
+      duration: 2
+      displayName: Trends Intel Linux
+  
 - job: BaselinesIntelLinux
   dependsOn: TrendIntelLinux
-  parameters:
-    server: http://asp-citrine-lin:5001
-    client: http://asp-citrine-load:5002
-    warmup: 0
-    duration: 2
-    displayName: Baselines Intel Linux
   steps:
   - template: baselines-scenarios.yml
-
+    parameters:
+      server: http://asp-citrine-lin:5001
+      client: http://asp-citrine-load:5002
+      warmup: 0
+      duration: 2
+      displayName: Baselines Intel Linux
+  
