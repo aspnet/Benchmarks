@@ -271,7 +271,8 @@ parameters:
 # Agent-less jobs need this pool
 
 jobs:
-- job: ${{ parameters.displayName }}
+- job: Trend
+  displayName: ${{ parameters.displayName }}
   pool: server
   steps:
   - ${{ each s in parameters.scenarios }}:
