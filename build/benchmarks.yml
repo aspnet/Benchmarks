@@ -2,6 +2,8 @@
 
 variables:
   - template: job-definitions.yml
+  - name: session
+    value: $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]
 
 jobs:
 - job: TrendIntelLinux

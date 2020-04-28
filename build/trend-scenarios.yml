@@ -248,7 +248,7 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $[format('{0:yyyyMMddHHmm}', variables['pipeline.startTime'])] ${{ parameters.sqlArgs }} --table AspNetBenchmarks " ] 
+          "args": [ "${{ s.arguments }} --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session) ${{ parameters.sqlArgs }} --table AspNetBenchmarks " ] 
         }
   
   #--sql SQL_CONNECTION_STRING
