@@ -261,7 +261,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    HardwareVersion = "";
+                    HardwareVersion = "Unspecified";
                 }
                 if (Enum.TryParse(hardwareOption.Value(), ignoreCase: true, result: out Hardware hardware))
                 {
@@ -2014,6 +2014,8 @@ namespace BenchmarkServer
                         sdkVersion = await GetAspNetSdkVersion();
                         Log.WriteLine($"Detecting ASP.NET SDK version (master branch): {sdkVersion}");
 
+                        // TODO: Remove once ASP.NET supports latest SDK
+                        // https://github.com/dotnet/aspnetcore/pull/20748
                         sdkVersion = "5.0.100-preview.5.20228.3";
                         Log.WriteLine($"Forcing ASP.NET SDK version for compatibility: {sdkVersion}");
 
@@ -3734,7 +3736,7 @@ namespace BenchmarkServer
                 .OrderByDescending(v => v, VersionComparer.Default)
                 .FirstOrDefault();
 
-            return latest.OriginalVersion;
+            return latest?.OriginalVersion;
         }
 
         // Compares just the repository name
