@@ -277,6 +277,6 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} ${{ defaultArgs }} ${{ sqlArgs }}" ]
+          "args": [ "${{ s.arguments }} ${{ parameters.defaultArgs }} ${{ parameters.sqlArgs }}" ]
         }
   
