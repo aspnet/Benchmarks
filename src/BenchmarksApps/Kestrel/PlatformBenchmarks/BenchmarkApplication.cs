@@ -58,6 +58,54 @@ namespace PlatformBenchmarks
 #if DATABASE
         private int _queries;
 #endif
+
+#if NETCOREAPP5_0
+        public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+        {
+            var requestType = RequestType.NotRecognized;
+            if (versionAndMethod.Method == HttpMethod.Get)
+            {
+#if !DATABASE
+                var pathOffset = targetPath.Offset;
+                if (targetPath.Length >= 2 && startLine[pathOffset] == '/')
+                {
+                    pathOffset += 1;
+                    if (startLine[pathOffset] == 'j')
+                    {
+                        requestType = RequestType.Json;
+                    }
+                    else if (startLine[pathOffset] == 'p')
+                    {
+                        requestType = RequestType.PlainText;
+                    }
+                }
+#else
+                var path = startLine.Slice(targetPath.Offset);
+                var pathLength = path.Length;
+                if (Paths.SingleQuery.Length <= pathLength && path.StartsWith(Paths.SingleQuery))
+                {
+                    requestType = RequestType.SingleQuery;
+                }
+                else if (Paths.Fortunes.Length <= pathLength && path.StartsWith(Paths.Fortunes))
+                {
+                    requestType = RequestType.Fortunes;
+                }
+                else if (Paths.Updates.Length <= pathLength && path.StartsWith(Paths.Updates))
+                {
+                    _queries = ParseQueries(path, Paths.Updates.Length);
+                    requestType = RequestType.Updates;
+                }
+                else if (Paths.MultipleQueries.Length <= pathLength && path.StartsWith(Paths.MultipleQueries))
+                {
+                    _queries = ParseQueries(path, Paths.MultipleQueries.Length);
+                    requestType = RequestType.MultipleQueries;
+                }
+#endif
+            }
+
+            _requestType = requestType;
+        }
+#else
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
             var requestType = RequestType.NotRecognized;
@@ -100,6 +148,7 @@ namespace PlatformBenchmarks
 
             _requestType = requestType;
         }
+#endif
 
 
 #if !DATABASE
