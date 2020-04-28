@@ -1,7 +1,9 @@
 # Orchestrates all benchmarks
 
+
 jobs:
 - job: TrendIntelLinux
+  pool: server
   steps: 
   - template: trend-scenarios.yml
     parameters:
@@ -12,6 +14,7 @@ jobs:
       displayName: Trends Intel Linux
   
 - job: BaselinesIntelLinux
+  pool: server
   dependsOn: TrendIntelLinux
   steps:
   - template: baselines-scenarios.yml
