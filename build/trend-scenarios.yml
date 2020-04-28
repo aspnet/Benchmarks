@@ -238,33 +238,45 @@ parameters:
 #  - displayName: Database Fortunes Raw Mono
 #    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime
 
+- name: session
+  value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+- name: defaultArgs
+  value: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
+- name: sqlArgs
+  value: --table AspNetBenchmarks #--sql SQL_CONNECTION_STRING
+- name: plaintextJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
+- name: htmlJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
+- name: jsonJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
+- name: multiQueryJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.multiquery.json
+- name: httpClientJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json
+- name: plaintextPlatformJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
+- name: jsonPlatformJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
+- name: basicApiJobs
+  value: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60
+- name: basicViewsJobs
+  value: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60
+- name: http2Jobs
+  value: --client-name H2Load -p Streams=70 --headers None --connections $(cpuCount) --clientThreads $(cpuCount)
+- name: blazorJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.blazor.json
  
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
     displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-    variables:
-      session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-      defaultArgs: --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session ${{ parameters.session }}
-      sqlArgs: --table AspNetBenchmarks #--sql SQL_CONNECTION_STRING
-      
-      plaintextJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
-      htmlJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
-      jsonJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
-      multiQueryJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.multiquery.json
-      httpClientJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json
-      plaintextPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json --sdk 5.0.100-preview.4.20202.8
-      jsonPlatformJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json --sdk 5.0.100-preview.4.20202.8
-      basicApiJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicApi/benchmarks.json --duration 60
-      basicViewsJobs: --database MySql --jobs https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Mvc/benchmarkapps/BasicViews/benchmarks.json --duration 60
-      http2Jobs: --client-name H2Load -p Streams=70 --headers None --connections $(cpuCount) --clientThreads $(cpuCount)
-      blazorJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.blazor.json
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} $(defaultArgs) $(sqlArgs)" ]
+          "args": [ "${{ s.arguments }} ${{ defaultArgs }} ${{ sqlArgs }}" ]
         }
   
