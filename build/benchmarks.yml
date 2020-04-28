@@ -3,7 +3,7 @@
 variables:
   - template: job-definitions.yml
   - name: session
-    value: $[format('{0:yyyyMMddHHmm}', pipeline.startTime)]
+    value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
 - job: TrendIntelLinux
@@ -22,6 +22,7 @@ jobs:
   displayName: Baselines Intel Linux
   pool: server
   dependsOn: TrendIntelLinux
+  condition: always()
   steps:
   - template: baselines-scenarios.yml
     parameters:
