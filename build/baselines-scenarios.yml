@@ -15,21 +15,6 @@ parameters:
   type: string
   default: Trend
 
-#Job Definitions
-
-- name: plaintextJobs
-  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json
-- name: htmlJobs
-  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json
-- name: jsonJobs
-  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json
-- name: plaintextPlatformJobs
-  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json
-- name: jsonPlatformJobs
-  default: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
-- name: htmlPlatformJobs
-  default: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
-
 # Baselines
 - name: baselines 
   type: object
@@ -110,13 +95,6 @@ parameters:
 #    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
 #    isPlatform: false
 
-- name: session
-  default: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-- name: defaultArgs
-  default: --server $(server) --client $(client) --self-contained --warmup $(warmup) --duration $(duration) --session $(session)
-- name: sqlArgs
-  default: --table AspNetBaselines #--sql SQL_CONNECTION_STRING
-
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
@@ -129,5 +107,7 @@ steps:
           messageBody: |
             {
               "name": "benchmarksdriver2",
-              "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.defaultArgs }} ${{ parameters.sqlArgs }}" ]
+              "args": [ "${{ s.arguments }} ${{ b.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --session $(session) --table AspNetBaselines " ]
             }
+
+              #--sql SQL_CONNECTION_STRING
