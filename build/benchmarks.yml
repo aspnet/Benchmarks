@@ -1,5 +1,7 @@
 # Orchestrates all benchmarks
 
+variables:
+  - template: job-definitions.yml
 
 jobs:
 - job: TrendIntelLinux

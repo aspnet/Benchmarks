@@ -240,6 +240,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{
 		build\efcore-scenarios.yml = build\efcore-scenarios.yml
 		build\frameworks-scenarios.yml = build\frameworks-scenarios.yml
 		build\grpc-scenarios.yml = build\grpc-scenarios.yml
+		build\job-definitions.yml = build\job-definitions.yml
 		build\prbenchmarks.yml = build\prbenchmarks.yml
 		build\proxies-scenarios.yml = build\proxies-scenarios.yml
 		build\proxies.yml = build\proxies.yml
