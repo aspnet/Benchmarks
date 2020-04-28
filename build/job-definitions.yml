@@ -25,6 +25,3 @@ variables:
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
 - name: htmlPlatformJobs
   value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
-
-- name: platformSdk
-  value: 5.0.100-preview.4.20202.8
