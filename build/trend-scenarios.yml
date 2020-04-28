@@ -59,7 +59,7 @@ parameters:
 # Plaintext
 
   - displayName: Plaintext Platform
-    arguments: --scenario PlaintextPlatform $(parameters.plaintextPlatformJobs)
+    arguments: --scenario PlaintextPlatform ${{ plaintextPlatformJobs }}
   - displayName: Plaintext
     arguments: --scenario Plaintext -i 3 $(parameters.plaintextJobs)
 #  - displayName: Plaintext Non Pipelined
