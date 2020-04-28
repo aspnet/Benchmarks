@@ -2046,7 +2046,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "master"));
+                    sdkVersion = await ParseLatestVersionFile(_latestSdkVersionUrl);
                     Log.WriteLine($"Detecting runtime compatible SDK version (master branch): {sdkVersion}");
                 }
             }
