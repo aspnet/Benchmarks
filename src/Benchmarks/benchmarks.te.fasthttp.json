@@ -4,7 +4,7 @@
       "Repository": "https://github.com/TechEmpower/FrameworkBenchmarks.git",
       "BranchOrCommit": "master",
       "DockerFile": "frameworks/Go/fasthttp/fasthttp-prefork.dockerfile",
-      "DockerImageName": "fasthttp",
+      "DockerImageName": "fasthttp-prefork",
       "DockerContextDirectory": "frameworks/Go/fasthttp/"
     },
     "Port": 8080
@@ -27,11 +27,7 @@
   },
   "FortunesPostgreSql-FastHttp": {
     "Path": "/fortune",
-    "PresetHeaders": "Html",
-    "Source": {
-      "DockerFile": "frameworks/Go/fasthttp/fasthttp-postgresql-prefork.dockerfile",
-      "DockerImageName": "fasthttp_postgresql"
-    }
+    "PresetHeaders": "Html"
   }
 }
 
