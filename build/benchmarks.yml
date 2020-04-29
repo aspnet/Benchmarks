@@ -74,19 +74,26 @@ steps:
       warmup: 15
       duration: 15
   
-#- job: GRPCIntelLinux
-#  displayName: GRPC Intel Linux
-#  pool: server
-#  timeoutInMinutes: 60
-#  dependsOn: TrendIntelLinux
-#  condition: always()
-#  steps:
-#  - template: grpc-scenarios.yml
-#    parameters:
-#      server: http://asp-citrine-lin:5001
-#      client: http://asp-citrine-load:5002
-#      warmup: 5
-#      duration: 15
+- job: GRPCIntelLinux
+  displayName: GRPC Intel Linux
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: TrendIntelLinux
+  condition: always()
+  strategy:
+    maxParallel: 1
+    matrix: 
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
+  steps:
+  - template: grpc-scenarios.yml
+    parameters:
+      server: $(server)
+      client: http://asp-citrine-load:5002
+      warmup: 5
+      duration: 15
 
 - job: SignalRIntelLinux
   displayName: SignalR Intel Linux
