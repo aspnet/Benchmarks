@@ -6,8 +6,7 @@ variables:
     value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
-- job: Trend
-  displayName: Trend Intel Linux
+- job: Trends
   pool: server
   timeoutInMinutes: 120
   strategy:
@@ -29,7 +28,7 @@ jobs:
   displayName: Baselines Intel Linux
   pool: server
   timeoutInMinutes: 60
-  dependsOn: TrendIntelLinux
+  dependsOn: Trends
   condition: always()
   steps:
   - template: baselines-scenarios.yml
