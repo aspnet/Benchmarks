@@ -66,7 +66,7 @@ jobs:
         server: http://asp-citrine-arm:5001
 #      Amd_Linux:
 #        server: http://asp-citrine-arm:5001
-steps:
+  steps:
   - template: frameworks-scenarios.yml
     parameters:
       server: $(server)
@@ -74,11 +74,10 @@ steps:
       warmup: 15
       duration: 15
   
-- job: GRPCIntelLinux
-  displayName: GRPC Intel Linux
+- job: GRPC
   pool: server
   timeoutInMinutes: 60
-  dependsOn: TrendIntelLinux
+  dependsOn: Frameworks
   condition: always()
   strategy:
     maxParallel: 1
@@ -95,11 +94,10 @@ steps:
       warmup: 5
       duration: 15
 
-- job: SignalRIntelLinux
-  displayName: SignalR Intel Linux
+- job: SignalR
   pool: server
   timeoutInMinutes: 120
-  dependsOn: Frameworks
+  dependsOn: GRPC
   condition: always()
   strategy:
     maxParallel: 1
@@ -116,11 +114,11 @@ steps:
       warmup: 15
       duration: 15
 
-- job: ProxiesIntelLinux
+- job: Proxies
   displayName: Proxies Intel Linux
   pool: server
   timeoutInMinutes: 90
-  dependsOn: SignalRIntelLinux
+  dependsOn: SignalR
   condition: always()
   steps:
   - template: proxies-scenarios.yml
@@ -130,10 +128,10 @@ steps:
       duration: 15
 
 - job: EFCoreIntelWindows
-  displayName: Frameworks Intel Linux
+  displayName: EFCore Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: ProxiesIntelLinux
+  dependsOn: Proxies
   condition: always()
   steps:
   - template: frameworks-scenarios.yml
