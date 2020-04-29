@@ -5,6 +5,12 @@
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
   </PropertyGroup>
 
+  <!-- Allow benchmarks to specify the latest framework -->
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+
   <ItemGroup>
     <Protobuf Include="Protos\benchmark.proto" GrpcServices="Server" />
   </ItemGroup>
