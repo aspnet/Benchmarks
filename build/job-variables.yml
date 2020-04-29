@@ -35,5 +35,14 @@ variables:
 - name: grpcHttpApiJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json
 
+- name: efcoreJobs
+  value: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
+
+- name: signalRJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalr.json
+
+- name: proxyJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
+
 - name: h2loadConnectionsCount # Default value for h2load. Should be redefined for each job
   value: 28

@@ -6,42 +6,102 @@ variables:
     value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
-#- job: TrendIntelLinux
-#  displayName: Trend Intel Linux
-#  pool: server
-#  timeoutInMinutes: 120
-#  steps: 
-#  - template: trend-scenarios.yml
-#    parameters:
-#      server: http://asp-citrine-lin:5001
-#      client: http://asp-citrine-load:5002
-#      warmup: 15
-#      duration: 15
-#  
-#- job: BaselinesIntelLinux
-#  displayName: Baselines Intel Linux
+- job: Trend
+  displayName: Trend Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 1
+    matrix: 
+      IntelLinux:
+        server: http://asp-citrine-lin:5001
+        client: http://asp-citrine-load:5002
+      IntelWindows:
+        server: http://asp-citrine-win:5001
+        client: http://asp-citrine-load:5002
+  steps: 
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+  
+- job: BaselinesIntelLinux
+  displayName: Baselines Intel Linux
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: TrendIntelLinux
+  condition: always()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      server: http://asp-citrine-lin:5001
+      client: http://asp-citrine-load:5002
+      warmup: 15
+      duration: 15
+  
+- job: FrameworksIntelLinux
+  displayName: Frameworks Intel Linux
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: TrendIntelLinux
+  condition: always()
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      server: http://asp-citrine-lin:5001
+      client: http://asp-citrine-load:5002
+      warmup: 15
+      duration: 15
+  
+#- job: GRPCIntelLinux
+#  displayName: GRPC Intel Linux
 #  pool: server
 #  timeoutInMinutes: 60
 #  dependsOn: TrendIntelLinux
 #  condition: always()
 #  steps:
-#  - template: baselines-scenarios.yml
+#  - template: grpc-scenarios.yml
 #    parameters:
 #      server: http://asp-citrine-lin:5001
 #      client: http://asp-citrine-load:5002
-#      warmup: 15
+#      warmup: 5
 #      duration: 15
-#  
-- job: GRPCIntelLinux
-  displayName: GRPC Intel Linux
+
+- job: SignalRIntelLinux
+  displayName: SignalR Intel Linux
   pool: server
-  timeoutInMinutes: 60
-#  dependsOn: TrendIntelLinux
+  timeoutInMinutes: 120
+  dependsOn: FrameworksIntelLinux
   condition: always()
   steps:
-  - template: grpc-scenarios.yml
+  - template: signalr-scenarios.yml
     parameters:
       server: http://asp-citrine-lin:5001
       client: http://asp-citrine-load:5002
-      warmup: 2
-      duration: 5
+      warmup: 15
+      duration: 15
+
+- job: ProxiesIntelLinux
+  displayName: Proxies Intel Linux
+  pool: server
+  timeoutInMinutes: 90
+  dependsOn: SignalRIntelLinux
+  condition: always()
+  steps:
+  - template: proxies-scenarios.yml
+    parameters:
+      profile: aspnet-citrine
+      warmup: 15
+      duration: 15
+
+- job: EFCoreIntelWindows
+  displayName: Frameworks Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: ProxiesIntelLinux
+  condition: always()
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      server: http://asp-citrine-win:5001
+      client: http://asp-citrine-load:5002

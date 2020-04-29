@@ -51,28 +51,16 @@ parameters:
   - displayName: SignalREchoAll LongPolling MessagePack
     arguments: -n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
 
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
-  sqlArgs: --table SignalR --sql SQL_CONNECTION_STRING
-
-  signalRJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalr.json
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      displayName: ${{ s.displayName }}
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver",
-            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: always()
+    displayName: ${{ s.displayName }}
+    inputs:
+      azureSubscription: ASP.NET Benchmarks Queue
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver",
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --sql SQL_CONNECTION_STRING" ]
+        }

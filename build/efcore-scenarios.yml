@@ -42,31 +42,17 @@ parameters:
     - displayName: Update
       arguments: $(efcoreJobs) --benchmarkdotnet:*Update* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
 
-# ... add more scenarios here
-
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --server $(server) --client $(client) --session $(session)
-  sqlArgs: --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING
-
-  efcoreJobs: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      timeoutInMinutes: 20 # some micro benchmarks can run that long
-      displayName: ${{ s.displayName }}
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver",
-            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: always()
+    timeoutInMinutes: 20 # some micro benchmarks can run that long
+    displayName: ${{ s.displayName }}
+    inputs:
+      azureSubscription: ASP.NET Benchmarks Queue
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver",
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ]
+        }

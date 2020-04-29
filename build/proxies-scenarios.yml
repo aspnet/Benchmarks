@@ -47,31 +47,18 @@ parameters:
     - displayName: http
     - arguments: --variable protocol=http --property protocol=http
 
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --session $(session) --profile $(profile) --no-metadata --no-measurements --warmup.variables.duration $(warmup) --load.variables.duration $(duration) --warmup.options.discardResults true
-  sqlArgs: --table ProxyBenchmarks --sql SQL_CONNECTION_STRING
-
-  proxyJobs: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  timeoutInMinutes: 90
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - ${{ each payload in parameters.payloads }}:
-      - ${{ each protocol in parameters.protocols }}:
-        - task: PublishToAzureServiceBus@1
-          condition: always()
-          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-          inputs:
-            azureSubscription: ASP.NET Benchmarks Queue
-            waitForCompletion: true
-            messageBody: |
-              {
-                "name": "benchmarksdriver2",
-                "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
-              }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - ${{ each payload in parameters.payloads }}:
+    - ${{ each protocol in parameters.protocols }}:
+      - task: PublishToAzureServiceBus@1
+        condition: always()
+        displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+        inputs:
+          azureSubscription: ASP.NET Benchmarks Queue
+          waitForCompletion: true
+          messageBody: |
+            {
+              "name": "benchmarksdriver2",
+              "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameter.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
+            }
