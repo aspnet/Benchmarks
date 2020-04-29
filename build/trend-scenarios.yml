@@ -243,6 +243,6 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --runtimeversion 5.0.* --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) ${{ parameters.sqlArgs }} --table AspNetBenchmarks --sql SQL_CONNECTION_STRING" ] 
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --runtimeversion 5.0.* --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks --sql SQL_CONNECTION_STRING" ] 
         }
   

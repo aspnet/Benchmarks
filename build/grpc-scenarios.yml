@@ -146,15 +146,13 @@ steps:
   - task: PublishToAzureServiceBus@1
     condition: always()
     displayName: ${{ s.displayName }}
-    variables:
-      session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-      defaultArgs: --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session ${{ parameters.session }}
-      sqlArgs: --table AspNetBenchmarks #--sql SQL_CONNECTION_STRING
     inputs:
       azureSubscription: ASP.NET Benchmarks Queue
       waitForCompletion: true
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks " ]
         }
+
+        #--sql SQL_CONNECTION_STRING
