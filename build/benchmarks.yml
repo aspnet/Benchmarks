@@ -42,7 +42,7 @@ jobs:
   displayName: Frameworks Intel Linux
   pool: server
   timeoutInMinutes: 60
-  dependsOn: TrendIntelLinux
+  dependsOn: BaselinesIntelLinux
   condition: always()
   steps:
   - template: frameworks-scenarios.yml
