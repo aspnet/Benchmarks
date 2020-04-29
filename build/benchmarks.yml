@@ -10,12 +10,13 @@ jobs:
   displayName: Trend Intel Linux
   pool: server
   timeoutInMinutes: 120
+  variables:
+    - cpuCount: 28
   steps: 
   - template: trend-scenarios.yml
     parameters:
       server: http://asp-citrine-lin:5001
       client: http://asp-citrine-load:5002
-      cpuCount: 28
       warmup: 15
       duration: 15
       displayName: Trends Intel Linux
@@ -26,6 +27,7 @@ jobs:
   timeoutInMinutes: 60
   dependsOn: TrendIntelLinux
   condition: always()
+  enabled: false
   steps:
   - template: baselines-scenarios.yml
     parameters:

@@ -13,9 +13,6 @@ parameters:
 - name: client
   type: string
   default: ''
-- name: cpuCount
-  type: number
-  default: 32
 - name: warmup
   type: number
   default: 15
