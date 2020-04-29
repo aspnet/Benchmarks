@@ -60,5 +60,5 @@ steps:
           messageBody: |
             {
               "name": "benchmarksdriver2",
-              "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameter.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
+              "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
             }
