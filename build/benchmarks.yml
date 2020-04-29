@@ -12,17 +12,17 @@ jobs:
   strategy:
     maxParallel: 1
     matrix: 
-      IntelLinux:
+      Intel_Linux:
         server: http://asp-citrine-lin:5001
-        client: http://asp-citrine-load:5002
-      IntelWindows:
+      Intel_Windows:
         server: http://asp-citrine-win:5001
-        client: http://asp-citrine-load:5002
   steps: 
   - template: trend-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
+      server: $(server)
+      client: http://asp-citrine-load:5002
   
 - job: BaselinesIntelLinux
   displayName: Baselines Intel Linux
