@@ -16,6 +16,10 @@ jobs:
         server: http://asp-citrine-lin:5001
       Intel_Windows:
         server: http://asp-citrine-win:5001
+      Arm_Linux:
+        server: http://asp-citrine-arm:5001
+#      Amd_Linux:
+#        server: http://asp-citrine-arm:5001
   steps: 
   - template: trend-scenarios.yml
     parameters:
@@ -24,30 +28,48 @@ jobs:
       server: $(server)
       client: http://asp-citrine-load:5002
   
-- job: BaselinesIntelLinux
-  displayName: Baselines Intel Linux
+- job: Baselines
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends
   condition: always()
+  strategy:
+    maxParallel: 1
+    matrix: 
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
+      Arm_Linux:
+        server: http://asp-citrine-arm:5001
+#      Amd_Linux:
+#        server: http://asp-citrine-arm:5001
   steps:
   - template: baselines-scenarios.yml
     parameters:
-      server: http://asp-citrine-lin:5001
+      server: $(server)
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
   
-- job: FrameworksIntelLinux
-  displayName: Frameworks Intel Linux
+- job: Frameworks
   pool: server
   timeoutInMinutes: 60
-  dependsOn: BaselinesIntelLinux
+  dependsOn: Baselines
   condition: always()
-  steps:
+  strategy:
+    maxParallel: 1
+    matrix: 
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Arm_Linux:
+        server: http://asp-citrine-arm:5001
+#      Amd_Linux:
+#        server: http://asp-citrine-arm:5001
+steps:
   - template: frameworks-scenarios.yml
     parameters:
-      server: http://asp-citrine-lin:5001
+      server: $(server)
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
@@ -70,12 +92,19 @@ jobs:
   displayName: SignalR Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: FrameworksIntelLinux
+  dependsOn: Frameworks
   condition: always()
+  strategy:
+    maxParallel: 1
+    matrix: 
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
   steps:
   - template: signalr-scenarios.yml
     parameters:
-      server: http://asp-citrine-lin:5001
+      server: $(server)
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
