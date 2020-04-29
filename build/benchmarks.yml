@@ -115,7 +115,6 @@ jobs:
       duration: 15
 
 - job: Proxies
-  displayName: Proxies Intel Linux
   pool: server
   timeoutInMinutes: 90
   dependsOn: SignalR
@@ -127,8 +126,8 @@ jobs:
       warmup: 15
       duration: 15
 
-- job: EFCoreIntelWindows
-  displayName: EFCore Intel Windows
+- job: EFCore
+  displayName: EF Core
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies
