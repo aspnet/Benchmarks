@@ -25,3 +25,15 @@ variables:
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
 - name: htmlPlatformJobs
   value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
+
+- name: grpcNativeJobs
+  value: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json
+- name: grpcManagedJobs
+  value: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json
+- name: grpcGoJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go.json
+- name: grpcHttpApiJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json
+
+- name: h2loadConnectionsCount # Default value for h2load. Should be redefined for each job
+  value: 28

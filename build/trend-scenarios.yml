@@ -19,9 +19,6 @@ parameters:
 - name: duration
   type: number
   default: 15
-- name: displayName
-  type: string
-  default: Trend
 
 # Scenarios
 - name: scenarios 
@@ -80,17 +77,17 @@ parameters:
 # Http2
 
   - displayName: Plaintext h2
-    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount) 
+    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount) 
   - displayName: Plaintext HttpSys h2
-    arguments: --scenario PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext h2c
-    arguments: --scenario PlaintextNonPipelined -m h2c --no-startup-latency $(plaintextJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario PlaintextNonPipelined -m h2c --no-startup-latency $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Json h2
-    arguments: --scenario Json -m h2 $(jsonJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Json -m h2 $(jsonJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Json HttpSys h2
-    arguments: --scenario Json -m h2 --webHost HttpSys --windows-only $(jsonJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Json -m h2 --webHost HttpSys --windows-only $(jsonJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Json h2c
-    arguments: --scenario Json -m h2c --no-startup-latency $(jsonJobs) $(http2Jobs) --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Json -m h2c --no-startup-latency $(jsonJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
 
 # Caching
 
@@ -167,27 +164,27 @@ parameters:
   - displayName: Plaintext IIS In-Process
     arguments: --scenario Plaintext --webHost IISInProcess $(plaintextJobs) --windows-only
   - displayName: Plaintext IIS In-Process h2
-    arguments: --scenario Plaintext --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Plaintext --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext IIS Out-Of-Process
     arguments: --scenario Plaintext --webHost IISOutOfProcess $(plaintextJobs) --windows-only
   - displayName: Plaintext IIS Out-Of-Process h2
-    arguments: --scenario Plaintext --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Plaintext --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext Non Pipelined IIS In-Process
     arguments: --scenario PlaintextNonPipelined --webHost IISInProcess $(plaintextJobs) --windows-only
   - displayName: Plaintext Non Pipelined IIS In-Process h2
-    arguments: --scenario PlaintextNonPipelined --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario PlaintextNonPipelined --webHost IISInProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext Non Pipelined IIS Out-Of-Process
     arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) --windows-only
   - displayName: Plaintext Non Pipelined IIS Out-Of-Process h2
-    arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario PlaintextNonPipelined --webHost IISOutOfProcess $(plaintextJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Json In-Process
     arguments: --scenario Json --webHost IISInProcess $(jsonJobs) --windows-only
   - displayName: Json In-Process h2
-    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Json --webHost IISInProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Json Out-Of-Process
     arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) --windows-only
   - displayName: Json Out-Of-Process h2
-    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only --connections $(cpuCount) --clientThreads $(cpuCount)
+    arguments: --scenario Json --webHost IISOutOfProcess $(jsonJobs) $(http2Jobs) -m h2 --windows-only --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
 
     # BasicApi
     # arguments: --scenario BasicApi.GetUsingRouteValue $(basicApiJobs)

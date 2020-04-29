@@ -11,9 +11,6 @@ parameters:
 - name: duration
   type: number
   default: 15
-- name: displayName
-  type: string
-  default: Trend
 
 # Baselines
 - name: baselines 
@@ -24,19 +21,20 @@ parameters:
     arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1
     supportsPlatform: false
 
-  - displayName: "2.1 Servicing"
-    arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
-    supportsPlatform: false
+# TODO: define latest servicing runtime version manually
+#  - displayName: "2.1 Servicing"
+#    arguments: --description Baseline21Servicing --aspnetCoreVersion 2.1.* --runtimeVersion 2.1.*
+#    supportsPlatform: false
 
-#  - displayName: "3.1"
-#  # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
-#    arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
-#    supportsPlatform: true
-#
-#  - displayName: "5.0.*"
-#  # Current dev, running close to other baselines, with same repeat parameters
-#    arguments: --description Baseline --runtimeversion 5.0.*
-#    supportsPlatform: true
+  - displayName: "3.1"
+  # RefPacks are broken for System.IO.Pipelining in 3.1.2, skip this version
+    arguments: --description Baseline31 --aspnetCoreVersion 3.1.1 --runtimeVersion 3.1.1 --sdk 3.1.101
+    supportsPlatform: true
+
+  - displayName: "5.0.*"
+  # Current dev, running close to other baselines, with same repeat parameters
+    arguments: --description Baseline --runtimeversion 5.0.*
+    supportsPlatform: true
 
 # Scenarios
 - name: scenarios 
@@ -44,56 +42,56 @@ parameters:
   default: 
 
   # Platform
-#  - displayName: Plaintext Platform
-#    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
-#    isPlatform: true
-#  - displayName: Json Platform
-#    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
-#    isPlatform: true
-#  - displayName: Fortunes Platform
-#    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --database PostgreSql
-#    isPlatform: true
+  - displayName: Plaintext Platform
+    arguments: --scenario PlaintextPlatform $(plaintextPlatformJobs)
+    isPlatform: true
+  - displayName: Json Platform
+    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+    isPlatform: true
+  - displayName: Fortunes Platform
+    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --database PostgreSql
+    isPlatform: true
 
   # Plaintext
   - displayName: Plaintext
     arguments: --scenario Plaintext $(plaintextJobs)
     isPlatform: false
-#  - displayName: Plaintext Non-Pipelined
-#    arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
-#    isPlatform: false
-#  - displayName: Plaintext Mvc
-#    arguments: --scenario MvcPlaintext $(plaintextJobs)
-#    isPlatform: false
-#  - displayName: Plaintext Endpoint
-#    arguments: --scenario EndpointPlaintext $(plaintextJobs)
-#    isPlatform: false
-#  
-#  # JSon
-#  - displayName: Json
-#    arguments: --scenario Json $(jsonJobs)
-#    isPlatform: false
-#  - displayName: Json Mvc
-#    arguments: --scenario MvcJson $(jsonJobs)
-#    isPlatform: false
-#  
-#  # Https
-#  - displayName: Plaintext Https
-#    arguments: --scenario Plaintext -m https $(plaintextJobs)
-#    isPlatform: false
-#  - displayName: Json Https
-#    arguments: --scenario Json -m https $(jsonJobs)
-#    isPlatform: false
-#  - displayName: Plaintext Non-Pipelined Https
-#    arguments: --scenario PlaintextNonPipelined -m https $(plaintextJobs)
-#    isPlatform: false
-#  
-#  # Database Fortunes
-#  - displayName: Database Fortunes Raw
-#    arguments: --scenario DbFortunesRaw $(htmlJobs) --database PostgreSql
-#    isPlatform: false
-#  - displayName: Database Fortunes EF
-#    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
-#    isPlatform: false
+  - displayName: Plaintext Non-Pipelined
+    arguments: --scenario PlaintextNonPipelined $(plaintextJobs)
+    isPlatform: false
+  - displayName: Plaintext Mvc
+    arguments: --scenario MvcPlaintext $(plaintextJobs)
+    isPlatform: false
+  - displayName: Plaintext Endpoint
+    arguments: --scenario EndpointPlaintext $(plaintextJobs)
+    isPlatform: false
+  
+  # JSon
+  - displayName: Json
+    arguments: --scenario Json $(jsonJobs)
+    isPlatform: false
+  - displayName: Json Mvc
+    arguments: --scenario MvcJson $(jsonJobs)
+    isPlatform: false
+  
+  # Https
+  - displayName: Plaintext Https
+    arguments: --scenario Plaintext -m https $(plaintextJobs)
+    isPlatform: false
+  - displayName: Json Https
+    arguments: --scenario Json -m https $(jsonJobs)
+    isPlatform: false
+  - displayName: Plaintext Non-Pipelined Https
+    arguments: --scenario PlaintextNonPipelined -m https $(plaintextJobs)
+    isPlatform: false
+  
+  # Database Fortunes
+  - displayName: Database Fortunes Raw
+    arguments: --scenario DbFortunesRaw $(htmlJobs) --database PostgreSql
+    isPlatform: false
+  - displayName: Database Fortunes EF
+    arguments: --scenario DbFortunesEf $(htmlJobs) --database PostgreSql
+    isPlatform: false
 
 steps:
 - ${{ each s in parameters.scenarios }}:
