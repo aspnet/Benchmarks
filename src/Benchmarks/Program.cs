@@ -39,7 +39,6 @@ namespace Benchmarks
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
             Console.WriteLine($"AspNetCore location: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
             Console.WriteLine($"AspNetCore version: {typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-            Console.WriteLine($"GCSettings.IsServerGC: {GCSettings.IsServerGC}");
 
             Console.WriteLine($"NetCoreApp location: {typeof(object).GetTypeInfo().Assembly.Location}");
             Console.WriteLine($"CoreCLR version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
