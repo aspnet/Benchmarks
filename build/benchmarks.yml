@@ -27,6 +27,7 @@ jobs:
       duration: 15
       server: $(server)
       client: http://asp-citrine-load:5002
+      connection: 'ASP.NET Benchmarks Queue'
   
 - job: Baselines
   pool: server
@@ -51,6 +52,7 @@ jobs:
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
   
 - job: Frameworks
   pool: server
@@ -71,6 +73,7 @@ jobs:
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
   
 - job: GRPC
   pool: server
@@ -91,6 +94,7 @@ jobs:
       client: http://asp-citrine-load:5002
       warmup: 5
       duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
 
 - job: SignalR
   pool: server
@@ -111,6 +115,7 @@ jobs:
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
 
 - job: Proxies
   pool: server
@@ -123,6 +128,7 @@ jobs:
       profile: aspnet-citrine
       warmup: 15
       duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
 
 - job: EFCore
   displayName: EF Core
@@ -135,3 +141,45 @@ jobs:
     parameters:
       server: http://asp-citrine-win:5001
       client: http://asp-citrine-load:5002
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: Blazor
+  pool: server
+  timeoutInMinutes: 30
+  dependsOn: EFCore
+  condition: always()
+  steps:
+  - template: blazor-scenarios.yml
+    parameters:
+      server: http://asp-perf-lin:5001
+      connection: 'ASP.NET Benchmarks Queue'
+
+# CLOUD SCENARIOS
+
+- job: TrendsAzure
+  displayName: Trends Azure
+  pool: server
+  timeoutInMinutes: 180
+  steps: 
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      server: http://10.0.0.9:5001
+      client: http://10.0.0.10:5001
+      connection: 'ASP.NET Benchmarks Azure Queue'
+
+- job: SignalRAzure
+  displayName: SignalR Azure
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: TrendsAzure
+  condition: always()
+  steps:
+  - template: signalr-scenarios.yml
+    parameters:
+      server: http://10.0.0.9:5001
+      client: http://10.0.0.10:5001
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Azure Queue'

@@ -101,7 +101,7 @@ steps:
         condition: always()
         displayName: "${{ s.displayName }} - ${{ b.displayName }}"
         inputs:
-          azureSubscription: ASP.NET Benchmarks Queue
+          azureSubscription: ${{ parameters.connection }}
           waitForCompletion: true
           messageBody: |
             {

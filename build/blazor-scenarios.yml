@@ -4,6 +4,9 @@ parameters:
 - name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
   type: string
   default: ''
+- name: connection
+  type: string
+  default: ''
 
 # Scenarios
 - name: scenarios 
@@ -13,30 +16,16 @@ parameters:
   - displayName: Blazor Wasm
     arguments: --scenario blazorwasmbenchmark $(blazorJobs) --application.options.requiredOperatingSystem Linux
 
-# ... add more scenarios here
-
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --application.endpoints $(server) --session $(session)
-  sqlArgs: --table BlazorWasm --sql SQL_CONNECTION_STRING
-
-  blazorJobs: --config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-wasm/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      displayName: ${{ s.displayName }}
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver2",
-            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: always()
+    displayName: ${{ s.displayName }}
+    inputs:
+      azureSubscription: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver2",
+          "args": [ "--application.endpoints ${{ parameters.server }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING" ]
+        }

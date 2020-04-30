@@ -13,6 +13,9 @@ parameters:
 - name: duration
   type: number
   default: 15
+- name: connection
+  type: string
+  default: ''
 
 # Scenarios
 - name: scenarios 
@@ -79,7 +82,7 @@ steps:
     condition: always()
     displayName: ${{ s.displayName }}
     inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
+      azureSubscription: ${{ parameters.connection }}
       waitForCompletion: true
       messageBody: |
         {

@@ -7,6 +7,9 @@ parameters:
 - name: client # the url of the client agent service, e.g. http://asp-perf-load:5002
   type: string
   default: ''
+- name: connection
+  type: string
+  default: ''
 
 # Scenarios
 - name: scenarios 
@@ -49,7 +52,7 @@ steps:
     timeoutInMinutes: 20 # some micro benchmarks can run that long
     displayName: ${{ s.displayName }}
     inputs:
-      azureSubscription: ASP.NET Benchmarks Queue
+      azureSubscription: ${{ parameters.connection }}
       waitForCompletion: true
       messageBody: |
         {
