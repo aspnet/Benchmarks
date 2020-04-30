@@ -133,7 +133,7 @@ jobs:
   dependsOn: Proxies
   condition: always()
   steps:
-  - template: frameworks-scenarios.yml
+  - template: efcore-scenarios.yml
     parameters:
       server: http://asp-citrine-win:5001
       client: http://asp-citrine-load:5002

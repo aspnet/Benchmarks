@@ -218,19 +218,19 @@ parameters:
     
     # Mono
   - displayName: Plaintext Platform Mono
-    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime 
+    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime --arch x64
   - displayName: Plaintext Mono
-    arguments: --scenario Plaintext-Mono $(plaintextJobs) --mono-runtime
+    arguments: --scenario Plaintext-Mono $(plaintextJobs) --mono-runtime --arch x64
   - displayName: Plainttext Non-Pipelined Mono
-    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --mono-runtime
+    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --mono-runtime --arch x64
   - displayName: Json Platform Mono
-    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime 
+    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime --arch x64
   - displayName: Json Mono
-    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime
+    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime --arch x64
   - displayName: Json Https Mono 
-    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime
+    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime --arch x64
   - displayName: Database Fortunes Raw Mono
-    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime
+    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime --arch x64
  
 steps:
 - ${{ each s in parameters.scenarios }}:

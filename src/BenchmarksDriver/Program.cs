@@ -178,6 +178,8 @@ namespace BenchmarksDriver
                 "Don't execute the job if the server is not running on Windows", CommandOptionType.NoValue);
             var linuxOnlyOption = app.Option("--linux-only",
                 "Don't execute the job if the server is not running on Linux", CommandOptionType.NoValue);
+            var archOption = app.Option("--arch",
+                "Don't execute the job if the server is not running on the specified architecture (x64, arm64) ", CommandOptionType.SingleValue);
             var saveOption = app.Option("--save",
                 "Stores the results in a local file, e.g. --save baseline. If the extension is not specified, '.bench.json' is used.", CommandOptionType.SingleValue);
             var diffOption = app.Option("--diff",
@@ -1272,6 +1274,7 @@ namespace BenchmarksDriver
                     markdownOption,
                     writeToFileOption,
                     requiredOperatingSystem,
+                    archOption,
                     saveOption,
                     diffOption
                     ).Result;
@@ -1337,6 +1340,7 @@ namespace BenchmarksDriver
             CommandOption markdownOption,
             CommandOption writeToFileOption,
             Benchmarks.ServerJob.OperatingSystem? requiredOperatingSystem,
+            CommandOption archOption,
             CommandOption saveOption,
             CommandOption diffOption
             )
@@ -1360,6 +1364,30 @@ namespace BenchmarksDriver
             if (!string.IsNullOrWhiteSpace(sqlConnectionString))
             {
                 await serializer.InitializeDatabaseAsync(sqlConnectionString, _tableName);
+            }
+
+            // Checking architecture
+
+            if (archOption.HasValue())
+            {
+                try
+                {
+                    var info = await _httpClient.GetStringAsync(serverJobsUri + "/info");
+
+                    var obj = JObject.Parse(info);
+                    var arch = obj["arch"]?.ToString();
+
+                    if (!String.Equals(arch, archOption.Value(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log($"Job ignored on this architecture {arch}, stopping job ...");
+                        return 0;
+                    }
+                }
+                catch(Exception e)
+                {
+                    LogVerbose(e.ToString());
+                    return -1;
+                }
             }
 
             serverJob.DriverVersion = 1;
