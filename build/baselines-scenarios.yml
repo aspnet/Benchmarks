@@ -11,6 +11,9 @@ parameters:
 - name: duration
   type: number
   default: 15
+- name: connection
+  type: string
+  default: ''
 
 # Baselines
 - name: baselines 
