@@ -75,7 +75,8 @@ Options:
 
   --[JOB].environmentVariables <key=value>                                 An environment variable key/value pair to assign to the process. Can be used multiple times to define multiple values.
   --[JOB].memoryLimitInBytes <bytes>                                       The amount of memory available for the process.
-  --[JOB].options.requiredOperatingSystem <linux|windows|osx>              The operating system the job needs to run on.
+  --[JOB].options.requiredOperatingSystem <linux|windows|osx>              The operating system the job can only run on.
+  --[JOB].options.requiredArchitecture <x64|arm64>                         The architecture the job can only run on.
 
   ## Debugging
 

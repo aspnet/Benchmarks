@@ -478,17 +478,25 @@ namespace BenchmarksDriver
 
                             // Check that each configured agent endpoint for this service 
                             // has a compatible OS
-                            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+                            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem)
+                                || !String.IsNullOrEmpty(service.Options.RequiredArchitecture))
                             {
                                 foreach (var job in jobs)
                                 {
                                     var info = await job.GetInfoAsync();
 
                                     var os = info["os"]?.ToString();
+                                    var arch = info["arch"]?.ToString();
 
-                                    if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                                    if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem) && !String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
                                     {
                                         Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                                        return new ExecutionResult();
+                                    }
+
+                                    if (!String.IsNullOrEmpty(service.Options.RequiredArchitecture) && !String.Equals(arch, service.Options.RequiredArchitecture, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        Log.Write($"Scenario skipped as the agent doesn't match the architecture constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
                                         return new ExecutionResult();
                                     }
                                 }
@@ -779,15 +787,23 @@ namespace BenchmarksDriver
 
             // Check that each configured agent endpoint for this service 
             // has a compatible OS
-            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem))
+            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem)
+                || !String.IsNullOrEmpty(service.Options.RequiredArchitecture))
             {
                 var info = await job.GetInfoAsync();
 
                 var os = info["os"]?.ToString();
+                var arch = info["arch"]?.ToString();
 
-                if (!String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem) && !String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
                 {
                     Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                    return new ExecutionResult();
+                }
+
+                if (!String.IsNullOrEmpty(service.Options.RequiredArchitecture) && !String.Equals(arch, service.Options.RequiredArchitecture, StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Write($"Scenario skipped as the agent doesn't match the architecture constraint ({service.Options.RequiredArchitecture}) on service '{jobName}'");
                     return new ExecutionResult();
                 }
             }

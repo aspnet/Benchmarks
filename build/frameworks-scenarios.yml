@@ -13,6 +13,9 @@ parameters:
 - name: duration
   type: number
   default: 15
+- name: connection
+  type: string
+  default: ''
 
 # Scenarios
 - name: scenarios 
@@ -73,28 +76,16 @@ parameters:
   - displayName: Netty - Json
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.netty.json -n Json-Netty --connections 512 --no-clean --linux-only
 
-# ... add more scenarios here
-
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --server $(server) --client $(client) --session $(session) --description Trend/Latest --warmup $(warmup) --duration $(duration)
-  sqlArgs: --table AspNetBenchmarks --sql SQL_CONNECTION_STRING
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      displayName: ${{ s.displayName }}
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver",
-            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: always()
+    displayName: ${{ s.displayName }}
+    inputs:
+      azureSubscription: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver",
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --runtimeversion 5.0.* --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks --sql SQL_CONNECTION_STRING" ] 
+        }

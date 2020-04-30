@@ -8,15 +8,15 @@ parameters:
 - name: client
   type: string
   default: ''
-- name: cpuCount
-  type: number
-  default: 32
 - name: warmup
   type: number
   default: 5
 - name: duration
   type: number
   default: 15
+- name: connection
+  type: string
+  default: ''
 
 # Scenarios
 - name: scenarios 
@@ -30,9 +30,9 @@ parameters:
     - displayName: GrpcUnary h2c
       arguments: -n GrpcUnary-h2load --webHost KestrelSockets $(grpcManagedJobs) --connections 64 -m h2 --headers None
     - displayName: GrpcUnary Streams h2c
-      arguments: -n GrpcUnary-Streams-h2load --webHost KestrelSockets $(grpcManagedJobs) -p Streams=70 --connections $(cpuCount) --clientThreads $(cpuCount)  -m h2c --headers None
+      arguments: -n GrpcUnary-Streams-h2load --webHost KestrelSockets $(grpcManagedJobs) -p Streams=70 --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)  -m h2c --headers None
     - displayName: GrpcUnary Streams h2
-      arguments: -n GrpcUnary-Streams-h2load --webHost KestrelSockets $(grpcManagedJobs) -p Streams=70 --connections $(cpuCount) --clientThreads $(cpuCount)  -m h2 --headers None
+      arguments: -n GrpcUnary-Streams-h2load --webHost KestrelSockets $(grpcManagedJobs) -p Streams=70 --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)  -m h2 --headers None
     - displayName: GrpcUnary GrpcCore
       arguments: -n GrpcUnary-GrpcCore --webHost KestrelSockets $(grpcManagedJobs) --connections 64 -m h2c
     - displayName: GrpcUnray GrpcNetClient h2c
@@ -68,7 +68,7 @@ parameters:
     - displayName: GrpcUnary h2load C-core
       arguments: -n GrpcUnary-h2load --webHost CCore $(grpcNativeJobs) --connections 64 -m h2c --headers None
     - displayName: GrpcUnary Streams h2load C-core
-      arguments: -n GrpcUnary-Streams-h2load --webHost CCore $(grpcNativeJobs) -p Streams=70 --connections $(cpuCount) --clientThreads $(cpuCount)  -m h2c --headers None
+      arguments: -n GrpcUnary-Streams-h2load --webHost CCore $(grpcNativeJobs) -p Streams=70 --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)  -m h2c --headers None
     - displayName: GrpcUnary GrpcCore C-core
       arguments: -n GrpcUnary-GrpcCore --webHost CCore $(grpcNativeJobs) --connections 64 -m h2c
     - displayName: GrpcUnary GrpcNetClient C-core
@@ -96,9 +96,9 @@ parameters:
     - displayName: GrpcUnary h2load h2 Docker
       arguments: -n GrpcUnary-h2load --webHost Docker $(grpcGoJobs) --connections 64 -m h2 --env protocol=h2 --headers None --linux-only
     - displayName: GrpcUnary Streams h2load h2c Docker
-      arguments: -n GrpcUnary-Streams-h2load --webHost Docker $(grpcGoJobs) -p Streams=70 --connections $(cpuCount) --clientThreads $(cpuCount)  -m h2c --headers None --linux-only
+      arguments: -n GrpcUnary-Streams-h2load --webHost Docker $(grpcGoJobs) -p Streams=70 --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)  -m h2c --headers None --linux-only
     - displayName: GrpcUnary Streams h2load h2 Docker
-      arguments: -n GrpcUnary-Streams-h2load --webHost Docker $(grpcGoJobs) -p Streams=70 --connections $(cpuCount) --clientThreads $(cpuCount)  -m h2 --headers None --linux-only
+      arguments: -n GrpcUnary-Streams-h2load --webHost Docker $(grpcGoJobs) -p Streams=70 --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)  -m h2 --headers None --linux-only
     - displayName: GrpcUnary GrpcCore h2c Docker
       arguments: -n GrpcUnary-GrpcCore --webHost Docker $(grpcGoJobs) --connections 64 -m h2c --linux-only
     - displayName: GrpcUnary GrpcNetClient h2c Docker
@@ -143,33 +143,17 @@ parameters:
       arguments: -n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m http
     - displayName: GrpcJsonInput2k https
       arguments: -n GrpcJsonInput2k --webHost KestrelSockets $(grpcHttpApiJobs) -m https
-variables:
-  session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
-  defaultArgs: --server $(server) --client $(client) --runtimeversion 5.0.* --self-contained --warmup $(warmup) --duration $(duration) --collect-counters --description Trend/Latest --session $(session)
-  sqlArgs: --table AspNetBenchmarks --sql SQL_CONNECTION_STRING
 
-  grpcNativeJobs: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json
-  grpcManagedJobs: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json
-  grpcGoJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go.json
-  grpcHttpApiJobs: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json
-
-
-# Agent-less jobs need this pool
-pool: server
-
-jobs:
-- job: Trend
-  timeoutInMinutes: 120
-  steps:
-  - ${{ each s in parameters.scenarios }}:
-    - task: PublishToAzureServiceBus@1
-      condition: always()
-      displayName: ${{ s.displayName }}
-      inputs:
-        azureSubscription: ASP.NET Benchmarks Queue
-        waitForCompletion: true
-        messageBody: |
-          {
-            "name": "benchmarksdriver",
-            "args": [ "$(defaultArgs) $(sqlArgs) ${{ s.arguments }}" ]
-          }
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: always()
+    displayName: ${{ s.displayName }}
+    inputs:
+      azureSubscription: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver",
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks --sql SQL_CONNECTION_STRING" ]
+        }
