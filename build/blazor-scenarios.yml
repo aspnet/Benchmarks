@@ -14,7 +14,7 @@ parameters:
   default: 
 
   - displayName: Blazor Wasm
-    arguments: --scenario blazorwasmbenchmark $(blazorJobs) --application.options.requiredOperatingSystem Linux
+    arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
 steps:
 - ${{ each s in parameters.scenarios }}:
