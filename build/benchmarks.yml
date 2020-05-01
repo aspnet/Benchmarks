@@ -166,7 +166,7 @@ jobs:
       warmup: 15
       duration: 15
       server: http://10.0.0.9:5001
-      client: http://10.0.0.10:5001
+      client: http://10.0.0.10:5002
       connection: 'ASP.NET Benchmarks Azure Queue'
 
 - job: SignalRAzure
@@ -179,7 +179,7 @@ jobs:
   - template: signalr-scenarios.yml
     parameters:
       server: http://10.0.0.9:5001
-      client: http://10.0.0.10:5001
+      client: http://10.0.0.10:5002
       warmup: 15
       duration: 15
       connection: 'ASP.NET Benchmarks Azure Queue'
