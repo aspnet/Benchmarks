@@ -1021,18 +1021,12 @@ namespace BenchmarkServer
 
                         async Task StopJobAsync()
                         {
-                            // Restore cgroup defaults
-                            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                            //{
-                            //    Log.WriteLine($"Resetting cgroup limits");
-                            //    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 /");
-                            //    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 /");
-                            //}
-
                             // Delete the benchmarks group
                             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0 || !String.IsNullOrEmpty(job.CpuSet)))
                             {
-                                ProcessUtil.Run("cgdelete", "cpu,memory,cpuset:benchmarks", log: true, throwOnError: false);
+                                var controller = GetCGroupController(job);
+
+                                ProcessUtil.Run("cgdelete", $"cpu,memory,cpuset:{controller}", log: true, throwOnError: false);
                             }
 
                             // Check if we already passed here
@@ -2947,7 +2941,9 @@ namespace BenchmarkServer
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && (job.MemoryLimitInBytes > 0 || job.CpuLimitRatio > 0 || !String.IsNullOrEmpty(job.CpuSet)))
             {
-                var cgcreate = ProcessUtil.Run("cgcreate", "-g memory,cpu,cpuset:benchmarks", log: true);
+                var controller = GetCGroupController(job);
+
+                var cgcreate = ProcessUtil.Run("cgcreate", $"-g memory,cpu,cpuset:{controller}", log: true);
 
                 if (cgcreate.ExitCode > 0)
                 {
@@ -2957,65 +2953,45 @@ namespace BenchmarkServer
 
                 if (job.MemoryLimitInBytes > 0)
                 {
-                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} {controller}", log: true);
                 }
                 else
                 {
-                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes=-1 {controller}", log: true);
                 }
 
                 if (job.CpuLimitRatio > 0)
                 {
                     // Ensure the cfs_period_us is the same as what docker would use
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={_defaultDockerCfsPeriod} benchmarks", log: true);
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_period_us={_defaultDockerCfsPeriod} {controller}", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} {controller}", log: true);
                 }
                 else
                 {
-                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us=-1 {controller}", log: true);
                 }
 
 
                 if (!String.IsNullOrEmpty(job.CpuSet))
                 {
 
-                    ProcessUtil.Run("cgset", $"-r cpuset.cpus={job.CpuSet} benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpuset.cpus={job.CpuSet} {controller}", log: true);
                 }
                 else
                 {
-                    ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount-1} benchmarks", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount-1} {controller}", log: true);
                 }
 
-                // The cpuset.mems value for the 'benchmarks' controller need to match the root one
+                // The cpuset.mems value for the 'benchmarks' controller needs to match the root one
                 // to be compatible with the allowed nodes
                 var memsRoot = File.ReadAllText("/sys/fs/cgroup/cpuset/cpuset.mems");
 
                 // Both cpus and mems need to be initialized
-                ProcessUtil.Run("cgset", $"-r cpuset.mems={memsRoot} benchmarks", log: true);
+                ProcessUtil.Run("cgset", $"-r cpuset.mems={memsRoot} {controller}", log: true);
 
-                commandLine = $"-g memory,cpu,cpuset:benchmarks {executable} {commandLine}";
+                commandLine = $"-g memory,cpu,cpuset:{controller} {executable} {commandLine}";
                 executable = "cgexec";
             }
-
-            //if (job.MemoryLimitInBytes > 0)
-            //{
-            //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            //    {
-            //        Log.WriteLine($"Setting cgroup memory limits: {job.MemoryLimitInBytes}");
-
-            //        ProcessUtil.Run("cgset", $"-r memory.limit_in_bytes={job.MemoryLimitInBytes} /");
-            //    }
-            //}
-
-            //if (job.CpuLimitRatio > 0)
-            //{
-            //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            //    {
-            //        Log.WriteLine($"Setting cgroup cpu limits: {job.CpuLimitRatio}");
-
-            //        ProcessUtil.Run("cgset", $"-r cpu.cfs_quota_us={Math.Floor(job.CpuLimitRatio * _defaultDockerCfsPeriod)} /", log: true);
-            //    }
-            //}
 
             Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
 
@@ -3195,6 +3171,12 @@ namespace BenchmarkServer
                     }
                 }
             }
+        }
+
+        private static string GetCGroupController(ServerJob job)
+        {
+            // Create a unique cgroup controller per agent
+            return $"benchmarks-{Process.GetCurrentProcess().Id}-{job.Id}";
         }
 
         private static void StartCounters(ServerJob job)
