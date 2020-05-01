@@ -9,8 +9,8 @@ variables:
 # Steps are serial
 
 schedules:
-- cron: "*/5 * * * *"
-  displayName: "every five minutes"
+- cron: "*/10 * * * *"
+  displayName: "every 10 minutes"
   branches:
     include:
     - master
