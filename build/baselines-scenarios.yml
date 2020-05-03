@@ -101,7 +101,7 @@ steps:
   - ${{ each b in parameters.baselines }}:
     - ${{ if or( eq(b.supportsPlatform, true), eq(s.isPlatform, false)) }}:
       - task: PublishToAzureServiceBus@1
-        condition: always()
+        condition: succeededOrFailed()
         displayName: "${{ s.displayName }} - ${{ b.displayName }}"
         inputs:
           azureSubscription: ${{ parameters.connection }}

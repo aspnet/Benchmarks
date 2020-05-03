@@ -52,7 +52,7 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
-    condition: always()
+    condition: succeededOrFailed()
     timeoutInMinutes: 30 # some micro benchmarks can run that long
     displayName: ${{ s.displayName }}
     inputs:

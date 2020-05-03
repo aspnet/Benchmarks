@@ -239,7 +239,7 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
     displayName: "${{ s.displayName }}"
-    condition: always()
+    condition: succeededOrFailed()
     inputs:
       azureSubscription: ${{ parameters.connection }}
       waitForCompletion: true

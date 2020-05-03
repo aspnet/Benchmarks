@@ -33,7 +33,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends
-  condition: always()
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix: 
@@ -58,7 +58,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines
-  condition: always()
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix: 
@@ -79,7 +79,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Frameworks
-  condition: always()
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix: 
@@ -100,7 +100,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: GRPC
-  condition: always()
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix: 
@@ -121,7 +121,7 @@ jobs:
   pool: server
   timeoutInMinutes: 90
   dependsOn: SignalR
-  condition: always()
+  condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
     parameters:
@@ -135,7 +135,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies
-  condition: always()
+  condition: succeededOrFailed()
   steps:
   - template: efcore-scenarios.yml
     parameters:
@@ -147,7 +147,7 @@ jobs:
   pool: server
   timeoutInMinutes: 30
   dependsOn: EFCore
-  condition: always()
+  condition: succeededOrFailed()
   steps:
   - template: blazor-scenarios.yml
     parameters:
@@ -174,7 +174,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: TrendsAzure
-  condition: always()
+  condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
     parameters:

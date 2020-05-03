@@ -55,7 +55,7 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       - task: PublishToAzureServiceBus@1
-        condition: always()
+        condition: succeededOrFailed()
         displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
         inputs:
           azureSubscription: ${{ parameters.connection }}
