@@ -388,8 +388,6 @@ namespace Benchmarks
             }
 
             app.UseAutoShutdown();
-
-            app.RunDebugInfoPage();
         }
     }
 }
