@@ -53,7 +53,7 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
     condition: succeededOrFailed()
-    timeoutInMinutes: 30 # some micro benchmarks can run that long
+    timeoutInMinutes: 30
     displayName: ${{ s.displayName }}
     inputs:
       connectedServiceName: ${{ parameters.connection }}
@@ -61,5 +61,6 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ]
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ],
+          "timeout": "00:30:00"
         }
