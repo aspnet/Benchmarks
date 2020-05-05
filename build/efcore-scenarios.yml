@@ -56,7 +56,7 @@ steps:
     timeoutInMinutes: 30 # some micro benchmarks can run that long
     displayName: ${{ s.displayName }}
     inputs:
-      azureSubscription: ${{ parameters.connection }}
+      connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
       messageBody: |
         {

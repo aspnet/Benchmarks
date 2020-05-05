@@ -104,7 +104,7 @@ steps:
         condition: succeededOrFailed()
         displayName: "${{ s.displayName }} - ${{ b.displayName }}"
         inputs:
-          azureSubscription: ${{ parameters.connection }}
+          connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
           messageBody: |
             {
