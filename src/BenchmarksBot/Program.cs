@@ -264,7 +264,7 @@ namespace BenchmarksBot
 
             body
                 .AppendLine()
-                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                .AppendLine("[Logs](https://dev.azure.com/dnceng/internal/_build?definitionId=825&_a=summary)")
                 ;
 
             var title = "Performance regression: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
@@ -389,7 +389,7 @@ namespace BenchmarksBot
 
             body
                 .AppendLine()
-                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                .AppendLine("[Logs](https://dev.azure.com/dnceng/internal/_build?definitionId=825&_a=summary)")
                 ;
 
             var title = "Scenarios are not running: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
@@ -471,7 +471,7 @@ namespace BenchmarksBot
 
             body
                 .AppendLine()
-                .AppendLine("[Logs](https://aka.ms/aspnet/benchmarks/jenkins)")
+                .AppendLine("[Logs](https://dev.azure.com/dnceng/internal/_build?definitionId=825&_a=summary)")
                 ;
 
             var title = "Bad responses: " + String.Join(", ", regressions.Select(x => x.Scenario).Take(5));
