@@ -1510,7 +1510,11 @@ namespace BenchmarkServer
                     buildParameters += $"--build-arg {argument} ";
                 }
 
-                ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", 
+                var dockerBuildArguments = $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}";
+
+                job.BuildLog.AddLine("docker " + dockerBuildArguments);
+
+                var buildResults = ProcessUtil.Run("docker", dockerBuildArguments, 
                     workingDirectory: srcDir, 
                     timeout: BuildTimeout, 
                     cancellationToken: cancellationToken, 
@@ -1530,6 +1534,11 @@ namespace BenchmarkServer
                 });
 
                 stopwatch.Reset();
+
+                if (buildResults.ExitCode != 0)
+                {
+                    job.Error = job.BuildLog.ToString();
+                }
             }
             else
             {
