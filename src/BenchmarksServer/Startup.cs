@@ -1510,7 +1510,13 @@ namespace BenchmarkServer
                     buildParameters += $"--build-arg {argument} ";
                 }
 
-                ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", workingDirectory: srcDir, timeout: BuildTimeout, cancellationToken: cancellationToken, log: true);
+                ProcessUtil.Run("docker", $"build --pull {buildParameters} -t {imageName} -f {source.DockerFile} {workingDirectory}", 
+                    workingDirectory: srcDir, 
+                    timeout: BuildTimeout, 
+                    cancellationToken: cancellationToken, 
+                    log: true,
+                    outputDataReceived: text => job.BuildLog.AddLine(text)
+                    );
 
                 stopwatch.Stop();
 
