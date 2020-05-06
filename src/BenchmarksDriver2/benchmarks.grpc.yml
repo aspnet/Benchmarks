@@ -7,6 +7,7 @@ imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
+  - ../BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
 variables:
     path: /
     serverPort: 5000
