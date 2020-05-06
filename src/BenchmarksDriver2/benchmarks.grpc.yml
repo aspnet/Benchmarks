@@ -1,8 +1,7 @@
 ﻿# Examples:
-# --config benchmarks.proxy.yml --scenario proxy-httpclient --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-nginx --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-haproxy --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
+# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
+# --config benchmarks.grpc.yml --scenario GrpcUnary-1MB-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
+# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcNetClient --application.endpoints http://server:5001 --load.endpoints http://client:5001
 
 imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
