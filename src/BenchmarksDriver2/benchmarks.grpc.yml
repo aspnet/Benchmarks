@@ -9,6 +9,7 @@ imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
 variables:
     path: /
+    serverPort: 5000
 scenarios:
   GrpcUnary-GrpcCore:
     application:
