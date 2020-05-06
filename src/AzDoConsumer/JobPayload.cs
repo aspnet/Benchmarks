@@ -3,13 +3,16 @@
 
 using System;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace AzDoConsumer
 {
+
     public class JobPayload
     {
         private static TimeSpan DefaultJobTimeout = TimeSpan.FromMinutes(10);
 
+        [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan Timeout { get; set; } = DefaultJobTimeout;
 
         public string Name { get; set; }
@@ -33,9 +36,9 @@ namespace AzDoConsumer
 
                 return result;
             }
-            catch
+            catch (Exception e)
             {
-                throw new Exception("Error while parsing message body: " + Encoding.UTF8.GetString(data));
+                throw new Exception("Error while parsing message body: " + Encoding.UTF8.GetString(data), e);
             }
         }
     }
