@@ -83,22 +83,32 @@ namespace AzDoConsumer
 
         public void Stop()
         {
-            if (_process != null)
+            try
             {
-                if (!_process.HasExited)
+                if (_process != null)
                 {
-                    _process.Close();
-                }
+                    if (!_process.HasExited)
+                    {
+                        _process.Close();
+                    }
 
-                if (!_process.HasExited)
-                {
-                    _process.CloseMainWindow();
-                }
+                    if (!_process.HasExited)
+                    {
+                        _process.CloseMainWindow();
+                    }
 
-                if (!_process.HasExited)
-                {
-                    _process.Kill();
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill();
+                    }
                 }
+            }
+            catch (InvalidOperationException e)
+            {
+                // Ignore if the application is already stopped:
+                //Process error: System.InvalidOperationException: No process is associated with this object.
+                //   at System.Diagnostics.Process.EnsureState(State state)
+                //   at System.Diagnostics.Process.get_HasExited()
             }
         }
 
