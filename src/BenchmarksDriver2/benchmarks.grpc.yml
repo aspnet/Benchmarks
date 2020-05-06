@@ -1,0 +1,61 @@
+﻿# Examples:
+# --config benchmarks.proxy.yml --scenario proxy-httpclient --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-nginx --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-haproxy --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
+variables:
+    path: /
+scenarios:
+  GrpcUnary-GrpcCore:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcClient
+      variables:
+        scenario: unary
+        grpcClientType: GrpcCore
+  GrpcUnary-1MB-GrpcCore:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcClient
+      variables:
+        scenario: unary
+        grpcClientType: GrpcCore
+        requestSize: 1048576
+        responseSize: 1048576
+  GrpcUnary-GrpcNetClient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcClient
+      variables:
+        scenario: unary
+        grpcClientType: GrpcNetClient
+  GrpcUnary-1MB-GrpcNetClient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcClient
+      variables:
+        scenario: unary
+        grpcClientType: GrpcNetClient
+        requestSize: 1048576
+        responseSize: 1048576
+#  GrpcUnary-h2load:
+#    application:
+#      job: grpcAspNetCoreServer
+#    load:
+#      job: h2load
+#      variables:
+#        path: /grpc.testing.BenchmarkService/UnaryCall
+#        headers:
+#          content-type: application/grpc
+#          TE: trailers
+#        protocol: h2c
+#        requestBody: AAAAAAcKBVdvcmxk
