@@ -1619,7 +1619,9 @@ namespace BenchmarksDriver
                                 {
                                     var outputFileSegments = outputFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), SearchOption.TopDirectoryOnly))
+                                    var shouldSearchRecursively = outputFileSegments[0].Contains("*.*");
+
+                                    foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), shouldSearchRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                                     {
                                         var resolvedFileWithDestination = resolvedFile;
 
