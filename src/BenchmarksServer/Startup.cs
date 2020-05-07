@@ -2132,7 +2132,11 @@ namespace BenchmarkServer
             }
             else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
+                aspNetCoreVersion = "5.0.0-preview.5.20255.6";
+                Log.WriteLine($"Forcing ASP.NET version to " + aspNetCoreVersion);
+
+                // Latest version is currently not compatible with net5.0 TFM
+                // aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
             }
             else
             {
