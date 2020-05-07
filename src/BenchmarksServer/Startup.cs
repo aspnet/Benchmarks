@@ -2028,12 +2028,6 @@ namespace BenchmarkServer
                     {
                         sdkVersion = await GetAspNetSdkVersion();
                         Log.WriteLine($"Detecting ASP.NET SDK version (master branch): {sdkVersion}");
-
-                        // TODO: Remove once ASP.NET supports latest SDK
-                        // https://github.com/dotnet/aspnetcore/pull/20748
-                        sdkVersion = "5.0.100-preview.5.20228.3";
-                        Log.WriteLine($"Forcing ASP.NET SDK version for compatibility: {sdkVersion}");
-
                     }
                 }
                 else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))

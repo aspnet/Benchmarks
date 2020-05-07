@@ -15,7 +15,8 @@ namespace CommitResolver
     class Program
     {
         // package-id-lower, version
-        static readonly string _aspNetCorePackageFormat = "https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/flatcontainer/{0}/{1}/{0}.{1}.nupkg";
+        
+        static readonly string _aspNetCorePackageFormat = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/{0}/{1}/{0}.{1}.nupkg";
         static readonly string _extensionsUrlPrevix = "https://dotnet.myget.org/F/aspnetcore-dev/api/v2/package/Microsoft.Extensions.Configuration.Abstractions/";
         static readonly string _netCoreUrlPrevix = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-win-x64.zip";
         static readonly HttpClient _httpClient = new HttpClient();
