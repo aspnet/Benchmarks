@@ -1,0 +1,19 @@
+jobs:
+  grpcDotNetClient:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: jamesnk/grpc-go-client
+      dockerImageName: go-grpc-client
+      dockerContextDirectory: src/BenchmarksApps/Grpc/GoClient/
+      dockerFile: src/BenchmarksApps/Grpc/GoClient/Dockerfile
+    readyStateText: gRPC Client
+    environmentVariables:
+      SERVER_ADDR: '{{serverUri}}:{{serverPort}}'
+      PROTOCOL: '{{protocol}}'
+      SCENARIO: '{{scenario}}'
+      CONNECTIONS: '{{connections}}'
+      STREAMS: '{{streams}}'
+      DURATION: '{{duration}}'
+      WARMUP: '{{warmup}}'
+      REQUEST_SIZE: '{{requestSize}}'
+      RESPONSE_SIZE: '{{responseSize}}'
