@@ -17,3 +17,5 @@ jobs:
       WARMUP: '{{warmup}}'
       REQUEST_SIZE: '{{requestSize}}'
       RESPONSE_SIZE: '{{responseSize}}'
+    options:
+      requiredOperationSystem: linux
