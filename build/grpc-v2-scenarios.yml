@@ -73,9 +73,9 @@ parameters:
   type: object
   default:
     - displayName: "1 stream"
-      arguments: --variable streams=1 --property streams=1
+      arguments: --variable streams=1 --variable connections=64 --property streams=1
     - displayName: "70 streams"
-      arguments: --variable streams=70 --property streams=70
+      arguments: --variable streams=70 --variable connections=64 --property streams=70
 
 steps:
 - ${{ each s in parameters.scenarios }}:
