@@ -89,5 +89,5 @@ steps:
               messageBody: |
                 {
                   "name": "benchmarksdriver2",
-                  "args": [ "--table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ${{ stream.arguments }}" ]
+                  "args": [ "--application.aspnetcoreversion 5.0.0-preview.5.20255.6 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ${{ stream.arguments }}" ]
                 }
