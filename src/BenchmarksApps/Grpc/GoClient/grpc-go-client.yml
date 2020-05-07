@@ -1,8 +1,8 @@
 jobs:
-  grpcDotNetClient:
+  grpcGoClient:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: jamesnk/grpc-go-client
+      BranchOrCommit: master
       dockerImageName: go-grpc-client
       dockerContextDirectory: src/BenchmarksApps/Grpc/GoClient/
       dockerFile: src/BenchmarksApps/Grpc/GoClient/Dockerfile
