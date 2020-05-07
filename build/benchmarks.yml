@@ -96,10 +96,30 @@ jobs:
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
 
+- job: gRPCv2
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: GRPC
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix: 
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: grpc-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
 - job: SignalR
   pool: server
   timeoutInMinutes: 120
-  dependsOn: GRPC
+  dependsOn: gRPCv2
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1

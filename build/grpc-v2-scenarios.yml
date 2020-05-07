@@ -20,25 +20,25 @@ parameters:
   default:
 
   - displayName: ASP.NET Core - Grpc.Net.Client
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver client=grpcnetclient
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient
   - displayName: ASP.NET Core - Grpc.Core
-    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver client=grpccoreclient
+    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient
   - displayName: ASP.NET Core - Go
-    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver client=grpcgoclient
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient
 
   - displayName: Grpc.Core - Grpc.Net.Client
-    arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver client=grpcnetclient
+    arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver --property client=grpcnetclient
   - displayName: Grpc.Core - Grpc.Core
-    arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver client=grpccoreclient
+    arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver --property client=grpccoreclient
   - displayName: Grpc.Core - Go
-    arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver client=grpcgoclient
+    arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver --property client=grpcgoclient
 
   - displayName: Go - Grpc.Net.Client
-    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver client=grpcnetclient
+    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
   - displayName: Go - Grpc.Core
-    arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver client=grpccoreclient
+    arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver --property client=grpccoreclient
   - displayName: Go - Go
-    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver client=grpcgoclient
+    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
 
 - name: callTypes
   type: object
@@ -53,8 +53,6 @@ parameters:
 - name: protocols
   type: object
   default:
-    - displayName: h2
-    - arguments: --variable protocol=h2 --property protocol=h2
     - displayName: h2c
     - arguments: --variable protocol=h2c --property protocol=h2c
 
@@ -89,5 +87,5 @@ steps:
               messageBody: |
                 {
                   "name": "benchmarksdriver2",
-                  "args": [ "--application.aspnetcoreversion 5.0.0-preview.5.20255.6 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ${{ stream.arguments }}" ]
+                  "args": [ "--application.aspnetcoreversion 5.0.0-preview.5.20255.6 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }}" ]
                 }
