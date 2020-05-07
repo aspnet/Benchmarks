@@ -3,9 +3,9 @@ jobs:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
       BranchOrCommit: jamesnk/grpc-go-client
-      DockerFile: docker/nginx/nginx.dockerfile
-      DockerImageName: nginx-reverseproxy
-      DockerContextDirectory: docker/nginx
+      dockerImageName: go-grpc-client
+      dockerContextDirectory: src/BenchmarksApps/Grpc/GoClient/
+      dockerFile: src/BenchmarksApps/Grpc/GoClient/Dockerfile
     readyStateText: gRPC Client
     environmentVariables:
       SERVER_ADDR: '{{serverUri}}:{{serverPort}}'
