@@ -71,15 +71,34 @@ scenarios:
     load:
       job: grpcGoClient
 
-#  GrpcUnary-h2load:
-#    application:
-#      job: grpcAspNetCoreServer
-#    load:
-#      job: h2load
-#      variables:
-#        path: /grpc.testing.BenchmarkService/UnaryCall
-#        headers:
-#          content-type: application/grpc
-#          TE: trailers
-#        protocol: h2c
-#        requestBody: AAAAAAcKBVdvcmxk
+profiles:
+  aspnet-physical:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+          displayOutput: true
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
