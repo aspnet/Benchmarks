@@ -36,7 +36,7 @@ parameters:
 
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
-    arguments: --description Baseline --runtimeversion 5.0.*
+    arguments: --description Baseline --runtimeversion 5.0.* --aspnetcoreversion 5.0.0-preview.5.20255.6
     supportsPlatform: true
 
 # Scenarios
