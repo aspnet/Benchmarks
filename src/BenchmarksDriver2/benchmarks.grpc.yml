@@ -1,0 +1,104 @@
+﻿# Examples:
+# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
+# --config benchmarks.grpc.yml --scenario GrpcUnary-1MB-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
+# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcNetClient --application.endpoints http://server:5001 --load.endpoints http://client:5001
+
+imports:
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
+  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
+  - ../BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
+variables:
+    serverPort: 5000
+scenarios:
+  grpcaspnetcoreserver-grpcnetclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpcnetclient
+  grpccoreserver-grpcnetclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpcnetclient
+  grpcgoserver-grpcnetclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpcnetclient
+
+  grpcaspnetcoreserver-grpccoreclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpccore
+  grpccoreserver-grpccoreclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpccore
+  grpcgoserver-grpccoreclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpccore
+
+  grpcaspnetcoreserver-grpcgoclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcGoClient
+  grpccoreserver-grpcgoclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcGoClient
+  grpcgoserver-grpcgoclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcGoClient
+
+profiles:
+  aspnet-physical:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+          displayOutput: true
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001

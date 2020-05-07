@@ -1,0 +1,12 @@
+jobs:
+  grpcGoServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      dockerImageName: go-grpc-server
+      dockerContextDirectory: src/BenchmarksApps/Grpc/GoServer/
+      dockerFile: src/BenchmarksApps/Grpc/GoServer/Dockerfile
+    readyStateText: Application started
+    waitForExit: false
+    options:
+      requiredOperationSystem: linux
