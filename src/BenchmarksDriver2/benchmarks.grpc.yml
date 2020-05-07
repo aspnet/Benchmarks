@@ -9,45 +9,68 @@ imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
   - ../BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
 variables:
-    path: /
     serverPort: 5000
 scenarios:
-  GrpcUnary-GrpcCore:
+  grpcaspnetcoreserver-grpcnetclient:
     application:
       job: grpcAspNetCoreServer
     load:
-      job: grpcClient
+      job: grpcDotNetClient
       variables:
-        scenario: unary
-        grpcClientType: GrpcCore
-  GrpcUnary-1MB-GrpcCore:
+        client: grpcnetclient
+  grpccoreserver-grpcnetclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpcnetclient
+  grpcgoserver-grpcnetclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpcnetclient
+
+  grpcaspnetcoreserver-grpccoreclient:
     application:
       job: grpcAspNetCoreServer
     load:
-      job: grpcClient
+      job: grpcDotNetClient
       variables:
-        scenario: unary
-        grpcClientType: GrpcCore
-        requestSize: 1048576
-        responseSize: 1048576
-  GrpcUnary-GrpcNetClient:
+        client: grpccore
+  grpccoreserver-grpccoreclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpccore
+  grpcgoserver-grpccoreclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        client: grpccore
+
+  grpcaspnetcoreserver-grpcgoclient:
     application:
       job: grpcAspNetCoreServer
     load:
-      job: grpcClient
-      variables:
-        scenario: unary
-        grpcClientType: GrpcNetClient
-  GrpcUnary-1MB-GrpcNetClient:
+      job: grpcGoClient
+  grpccoreserver-grpcgoclient:
     application:
-      job: grpcAspNetCoreServer
+      job: grpcCoreServer
     load:
-      job: grpcClient
-      variables:
-        scenario: unary
-        grpcClientType: GrpcNetClient
-        requestSize: 1048576
-        responseSize: 1048576
+      job: grpcGoClient
+  grpcgoserver-grpcgoclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcGoClient
+
 #  GrpcUnary-h2load:
 #    application:
 #      job: grpcAspNetCoreServer

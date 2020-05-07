@@ -8,3 +8,5 @@ jobs:
       dockerFile: src/BenchmarksApps/Grpc/GoServer/Dockerfile
     readyStateText: Application started
     waitForExit: false
+    options:
+      requiredOperationSystem: linux

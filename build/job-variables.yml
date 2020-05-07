@@ -35,6 +35,9 @@ variables:
 - name: grpcHttpApiJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json
 
+- name: grpcJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/jamesnk/grpc-new-client/src/BenchmarksDriver2/benchmarks.grpc.yml
+
 - name: blazorWasmJobs
   value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-wasm/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
 

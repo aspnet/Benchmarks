@@ -1,0 +1,87 @@
+# GRPC scenarios
+
+parameters:
+- name: server
+  type: string
+  default: ''
+- name: client
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 5
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default:
+
+  - displayName: ASP.NET Core - Grpc.Net.Client
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver client=grpcnetclient
+  - displayName: ASP.NET Core - Grpc.Core
+    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver client=grpccoreclient
+  - displayName: ASP.NET Core - Go
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver client=grpcgoclient
+
+  - displayName: Grpc.Core - Grpc.Net.Client
+    arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver client=grpcnetclient
+  - displayName: Grpc.Core - Grpc.Core
+    arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver client=grpccoreclient
+  - displayName: Grpc.Core - Go
+    arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver client=grpcgoclient
+
+  - displayName: Go - Grpc.Net.Client
+    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver client=grpcnetclient
+  - displayName: Go - Grpc.Core
+    arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver client=grpccoreclient
+  - displayName: Go - Go
+    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver client=grpcgoclient
+
+- name: callTypes
+  type: object
+  default:
+    - displayName: Unary
+      arguments: --variable scenario=unary --property scenario=unary
+    - displayName: Server Streaming
+      arguments: --variable scenario=serverstreaming --property scenario=serverstreaming
+    - displayName: Ping Pong Streaming
+      arguments: --variable scenario=pingpongstreaming --property scenario=pingpongstreaming
+
+- name: protocols
+  type: object
+  default:
+    - displayName: h2
+    - arguments: --variable protocol=h2 --property protocol=h2
+    - displayName: h2c
+    - arguments: --variable protocol=h2c --property protocol=h2c
+
+- name: payloads
+  type: object
+  default:
+    - displayName: "0 B"
+      arguments: --variable requestSize=0 --variable responseSize=0 --property payload=0
+    - displayName: "1 MB"
+      arguments: --variable requestSize=1048576 --variable responseSize=1048576 --property payload=1048576
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - ${{ each callType in parameters.callTypes }}:
+    - ${{ each payload in parameters.payloads }}:
+      - ${{ each protocol in parameters.protocols }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "name": "benchmarksdriver2",
+                "args": [ "--table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
+              }
