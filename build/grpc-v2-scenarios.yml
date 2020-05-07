@@ -69,19 +69,28 @@ parameters:
     - displayName: "1 MB"
       arguments: --variable requestSize=1048576 --variable responseSize=1048576 --property payload=1048576
 
+- name: connectionStreams
+  type: object
+  default:
+    - displayName: "1 stream"
+      arguments: --variable streams=1 --property streams=1
+    - displayName: "70 streams"
+      arguments: --variable streams=70 --property streams=70
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
       - ${{ each protocol in parameters.protocols }}:
-        - task: PublishToAzureServiceBus@1
-          condition: succeededOrFailed()
-          displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-          inputs:
-            connectedServiceName: ${{ parameters.connection }}
-            waitForCompletion: true
-            messageBody: |
-              {
-                "name": "benchmarksdriver2",
-                "args": [ "--table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
-              }
+        - ${{ each stream in parameters.connectionStreams }}:
+          - task: PublishToAzureServiceBus@1
+            condition: succeededOrFailed()
+            displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ stream.displayName }}
+            inputs:
+              connectedServiceName: ${{ parameters.connection }}
+              waitForCompletion: true
+              messageBody: |
+                {
+                  "name": "benchmarksdriver2",
+                  "args": [ "--table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --warmup.options.discardResults true ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ${{ stream.arguments }}" ]
+                }
