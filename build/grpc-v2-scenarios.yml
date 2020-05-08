@@ -19,57 +19,57 @@ parameters:
   type: object
   default:
 
-  - displayName: ASP.NET Core - Grpc.Net.Client
+  - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
     arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient
-  - displayName: ASP.NET Core - Grpc.Core
+  - displayName: "ASP.NET Core - Client: Grpc.Core"
     arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient
-  - displayName: ASP.NET Core - Go
+  - displayName: "ASP.NET Core - Client: Go"
     arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient
 
-  - displayName: Grpc.Core - Grpc.Net.Client
+  - displayName: "Grpc.Core - Client: Grpc.Net.Client"
     arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver --property client=grpcnetclient
-  - displayName: Grpc.Core - Grpc.Core
+  - displayName: "Grpc.Core - Client: Grpc.Core"
     arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver --property client=grpccoreclient
-  - displayName: Grpc.Core - Go
+  - displayName: "Grpc.Core - Client: Go"
     arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver --property client=grpcgoclient
 
-  - displayName: Go - Grpc.Net.Client
+  - displayName: "Go - Client: Grpc.Net.Client"
     arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
-  - displayName: Go - Grpc.Core
+  - displayName: "Go - Client: Grpc.Core"
     arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver --property client=grpccoreclient
-  - displayName: Go - Go
+  - displayName: "Go - Client: Go"
     arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
 
 - name: callTypes
   type: object
   default:
-    - displayName: Unary
+    - displayName: "Call: Unary"
       arguments: --variable scenario=unary --property scenario=unary
-    - displayName: Server Streaming
+    - displayName: "Call: Server Streaming"
       arguments: --variable scenario=serverstreaming --property scenario=serverstreaming
-    - displayName: Ping Pong Streaming
+    - displayName: "Call: Ping Pong Streaming"
       arguments: --variable scenario=pingpongstreaming --property scenario=pingpongstreaming
 
 - name: protocols
   type: object
   default:
-    - displayName: h2c
+    - displayName: "Protocol: h2c"
       arguments: --variable protocol=h2c --property protocol=h2c
 
 - name: payloads
   type: object
   default:
-    - displayName: "0 B"
+    - displayName: "Payload: 0 B"
       arguments: --variable requestSize=0 --variable responseSize=0 --property payload=0
-    - displayName: "1 MB"
+    - displayName: "Payload: 1 MB"
       arguments: --variable requestSize=1048576 --variable responseSize=1048576 --property payload=1048576
 
 - name: connectionStreams
   type: object
   default:
-    - displayName: "1 stream"
+    - displayName: "Streams: 1"
       arguments: --variable streams=1 --variable connections=64 --property streams=1
-    - displayName: "70 streams"
+    - displayName: "Streams: 70"
       arguments: --variable streams=70 --variable connections=64 --property streams=70
 
 steps:
