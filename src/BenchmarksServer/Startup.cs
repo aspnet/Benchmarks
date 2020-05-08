@@ -2219,18 +2219,22 @@ namespace BenchmarkServer
                         }
                     }
 
-                    Log.WriteLine($"Forcing Windows Desktop version: {desktopVersion}");
-
-                    if (!_installedDesktopRuntimes.Contains(desktopVersion))
+                    // This is not defined from < 3.0
+                    if (!String.IsNullOrEmpty(desktopVersion))
                     {
-                        dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
+                        Log.WriteLine($"Forcing Windows Desktop version: {desktopVersion}");
 
-                        ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: true,
-                        workingDirectory: _dotnetInstallPath,
-                        environmentVariables: env));
+                        if (!_installedDesktopRuntimes.Contains(desktopVersion))
+                        {
+                            dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
 
-                        _installedDesktopRuntimes.Add(desktopVersion);
+                            ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                            log: true,
+                            workingDirectory: _dotnetInstallPath,
+                            environmentVariables: env));
+
+                            _installedDesktopRuntimes.Add(desktopVersion);
+                        }
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
