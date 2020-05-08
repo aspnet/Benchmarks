@@ -54,7 +54,7 @@ parameters:
   type: object
   default:
     - displayName: h2c
-    - arguments: --variable protocol=h2c --property protocol=h2c
+      arguments: --variable protocol=h2c --property protocol=h2c
 
 - name: payloads
   type: object

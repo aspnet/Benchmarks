@@ -48,7 +48,7 @@ parameters:
   type: object
   default:
     - displayName: http
-    - arguments: --variable protocol=http --property protocol=http
+      arguments: --variable protocol=http --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
