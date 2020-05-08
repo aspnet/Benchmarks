@@ -7,6 +7,7 @@ SESSION=`date '+%Y%m%d%H%M%S'`
 proxyJobs="--config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml "
 
 jobs=(
+  "--scenario proxy-yarp        $proxyJobs --property proxy=yarp"
   "--scenario proxy-baseline    $proxyJobs --property proxy=none"
   "--scenario proxy-httpclient  $proxyJobs --property proxy=httpclient"
   "--scenario proxy-nginx       $proxyJobs --property proxy=nginx"

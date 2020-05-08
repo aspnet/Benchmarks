@@ -12,6 +12,16 @@ variables:
     path: /
 
 jobs:
+  yarp:
+    source:
+      repository: https://github.com/microsoft/reverse-proxy.git
+      branchOrCommit: halter73/benchmark
+      project: samples/BenchmarkApp/BenchmarkApp.csproj
+    noClean: true
+    readyStateText: Application started.
+    variables:
+    arguments: '--urls {{proxyUri}} --backendUrls {{downstreamUri}}'
+    port: 5000
   httpclientproxy:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -67,6 +77,20 @@ jobs:
     port: 5000
 
 scenarios:
+  proxy-yarp:
+    downstream:
+      job: downstream
+    application:
+      job: yarp
+    warmup:
+      job: bombardier
+      variables:
+        serverPort: 5000
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
   proxy-httpclient:
     downstream:
       job: downstream
@@ -139,6 +163,7 @@ profiles:
       downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
+      proxyUri: http://asp-perf-lin:5001
       cores: 12
     jobs:
       downstream:
@@ -161,6 +186,7 @@ profiles:
       downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
+      proxyUri: http://asp-citrine-lin:5001
       cores: 28
     jobs: 
       downstream:
