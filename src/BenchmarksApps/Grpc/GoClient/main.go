@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -42,6 +44,24 @@ var (
 type latency struct {
 	count int
 	sum   float64
+}
+
+type jobMetadata struct {
+	Source           string
+	Name             string
+	ShortDescription string
+	LongDescription  string
+}
+
+type jobMeasurement struct {
+	Timestamp time.Time
+	Name      string
+	Value     string
+}
+
+type jobStatistics struct {
+	Metadata     []jobMetadata
+	Measurements []jobMeasurement
 }
 
 func main() {
@@ -107,6 +127,35 @@ func calculateRequestStatistics() {
 	log.Printf("Least Requests per Connection: %d", min)
 	log.Printf("Most Requests per Connection: %d", max)
 	log.Printf("RPS %d", rps)
+
+	metadata := []jobMetadata{
+		jobMetadata{
+			Source:           "Benchmarks",
+			Name:             "grpc/rps/max",
+			ShortDescription: "Max RPS",
+			LongDescription:  "RPS: max",
+		},
+		jobMetadata{
+			Source:           "Benchmarks",
+			Name:             "grpc/requests",
+			ShortDescription: "Requests",
+			LongDescription:  "Total number of requests",
+		},
+	}
+	measurements := []jobMeasurement{
+		jobMeasurement{
+			Name:      "grpc/rps/max",
+			Timestamp: time.Now().UTC(),
+			Value:     strconv.FormatInt(int64(rps), 10),
+		},
+		jobMeasurement{
+			Name:      "grpc/requests",
+			Timestamp: time.Now().UTC(),
+			Value:     strconv.FormatInt(int64(totalRequests), 10),
+		},
+	}
+
+	writeJobStatistics(metadata, measurements)
 }
 
 func calculateLatencyStatistics() {
@@ -122,6 +171,24 @@ func calculateLatencyStatistics() {
 	}
 
 	log.Printf("Average latency %fms", totalSum)
+
+	metadata := []jobMetadata{
+		jobMetadata{
+			Source:           "Benchmarks",
+			Name:             "grpc/latency/mean",
+			ShortDescription: "Mean latency (ms)",
+			LongDescription:  "Mean latency (ms)",
+		},
+	}
+	measurements := []jobMeasurement{
+		jobMeasurement{
+			Name:      "grpc/latency/mean",
+			Timestamp: time.Now().UTC(),
+			Value:     strconv.FormatFloat(totalSum, 'f', 2, 64),
+		},
+	}
+
+	writeJobStatistics(metadata, measurements)
 }
 
 func runWithConn(connectionID int, cc *grpc.ClientConn) {
@@ -234,4 +301,20 @@ func NewPayload(size int) *testpb.Payload {
 	p := new(testpb.Payload)
 	setPayload(p, size)
 	return p
+}
+
+func writeJobStatistics(metadata []jobMetadata, measurements []jobMeasurement) {
+	statistics := jobStatistics{
+		metadata,
+		measurements,
+	}
+
+	json, err := json.Marshal(statistics)
+	if err != nil {
+		log.Fatalf("Failed to create JSON %v", err)
+	}
+
+	fmt.Println("#StartJobStatistics")
+	fmt.Println(string(json))
+	fmt.Println("#EndJobStatistics")
 }
