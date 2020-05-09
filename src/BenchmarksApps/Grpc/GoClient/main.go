@@ -8,7 +8,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -56,7 +55,7 @@ type jobMetadata struct {
 type jobMeasurement struct {
 	Timestamp time.Time
 	Name      string
-	Value     string
+	Value     float64
 }
 
 type jobStatistics struct {
@@ -146,12 +145,12 @@ func calculateRequestStatistics() {
 		jobMeasurement{
 			Name:      "grpc/rps/max",
 			Timestamp: time.Now().UTC(),
-			Value:     strconv.FormatInt(int64(rps), 10),
+			Value:     float64(rps),
 		},
 		jobMeasurement{
 			Name:      "grpc/requests",
 			Timestamp: time.Now().UTC(),
-			Value:     strconv.FormatInt(int64(totalRequests), 10),
+			Value:     float64(totalRequests),
 		},
 	}
 
@@ -184,7 +183,7 @@ func calculateLatencyStatistics() {
 		jobMeasurement{
 			Name:      "grpc/latency/mean",
 			Timestamp: time.Now().UTC(),
-			Value:     strconv.FormatFloat(totalSum, 'f', 2, 64),
+			Value:     totalSum,
 		},
 	}
 
