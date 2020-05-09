@@ -61,6 +61,10 @@ jobs=(
   "-n MvcJsonNet2k --webHost KestrelSockets $trend $jsonJobs"
   "-n MvcJsonInput2k --webHost KestrelSockets $trend $jsonJobs"
   "-n MvcJsonNetInput2k --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonInput2M --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonNetInput2M --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonOutput2M --webHost KestrelSockets $trend $jsonJobs"
+  "-n MvcJsonNetOutput2M --webHost KestrelSockets $trend $jsonJobs"
 
   # Https
   "-n Plaintext -m https --webHost KestrelSockets $trend $plaintextJobs"
@@ -152,7 +156,7 @@ jobs=(
   # Logging
   "-n PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $trend $plaintextJobs"
   "-n PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $trend $plaintextJobs"
-  
+
   # Blazor
   "-n BlazorBasic $trend $blazorJobs"
   "-n BlazorFormInput $trend $blazorJobs"

@@ -42,6 +42,24 @@
       "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
     }
   },
+  "MvcJsonInput2M": {
+    "Path": "/mvc/jsoninput",
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.2mb.lua"
+    }
+  },
+  "MvcJsonNetInput2M": {
+    "Path": "/mvc/jsoninput",
+    "ClientProperties": {
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.2mb.lua"
+    }
+  },
+  "MvcJsonOutput2M": {
+    "Path": "/mvc/json2M"
+  },
+  "MvcJsonNetOutput2M": {
+    "Path": "/mvc/json2M"
+  },
   "DbSingleQueryRaw": {
     "Path": "/db/raw"
   },

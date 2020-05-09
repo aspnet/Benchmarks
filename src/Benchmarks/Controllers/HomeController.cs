@@ -17,7 +17,23 @@ namespace Benchmarks.Controllers
     {
         private static readonly DateTimeOffset BaseDateTime = new DateTimeOffset(new DateTime(2019, 04, 23));
 
-        private static readonly List<Entry> _entries = Enumerable.Range(1, 8).Select(i => new Entry
+        private static readonly List<Entry> _entries4k = Enumerable.Range(1, 8).Select(i => new Entry
+        {
+            Attributes = new Attributes
+            {
+                Created = BaseDateTime.AddDays(i),
+                Enabled = true,
+                Expires = BaseDateTime.AddDays(i).AddYears(1),
+                NotBefore = BaseDateTime,
+                RecoveryLevel = "Purgeable",
+                Updated = BaseDateTime.AddSeconds(i),
+            },
+            ContentType = "application/xml",
+            Id = "https://benchmarktest.id/item/value" + i,
+            Tags = new[] { "test", "perf", "json" },
+        }).ToList();
+
+        private static readonly List<Entry> _entries2MB = Enumerable.Range(1, 5250).Select(i => new Entry
         {
             Attributes = new Attributes
             {
@@ -46,9 +62,14 @@ namespace Benchmarks.Controllers
             return new { message = "Hello, World!" };
         }
 
+        // Note that this produces 4kb data. We're leaving the misnamed scenario as is to avoid loosing historical context
         [HttpGet("json2k")]
         [Produces("application/json")]
-        public object Json2k() => _entries;
+        public object Json2k() => _entries4k;
+
+        [HttpGet("json2k")]
+        [Produces("application/json")]
+        public List<Entry> Json2M() => _entries2MB;
 
         [HttpPost("jsoninput")]
         [Consumes("application/json")]
