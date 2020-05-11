@@ -45,7 +45,7 @@ variables:
   value: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
 
 - name: signalRJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalr.json
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
 
 - name: proxyJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 

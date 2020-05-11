@@ -27,31 +27,3 @@ jobs:
       connection: 'ASP.NET Benchmarks Queue'
       
 # CLOUD SCENARIOS
-
-- job: TrendsAzure
-  displayName: Trends Azure
-  pool: server
-  timeoutInMinutes: 180
-  steps: 
-  - template: trend-scenarios.yml
-    parameters:
-      warmup: 15
-      duration: 15
-      server: http://10.0.0.9:5001
-      client: http://10.0.0.10:5002
-      connection: 'ASP.NET Benchmarks Azure Queue'
-
-- job: SignalRAzure
-  displayName: SignalR Azure
-  pool: server
-  timeoutInMinutes: 180
-  dependsOn: TrendsAzure
-  condition: succeededOrFailed()
-  steps:
-  - template: signalr-scenarios.yml
-    parameters:
-      server: http://10.0.0.9:5001
-      client: http://10.0.0.10:5002
-      warmup: 15
-      duration: 15
-      connection: 'ASP.NET Benchmarks Azure Queue'
