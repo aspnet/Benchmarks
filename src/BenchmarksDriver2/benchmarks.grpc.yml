@@ -18,21 +18,21 @@ scenarios:
     load:
       job: grpcDotNetClient
       variables:
-        client: grpcnetclient
+        grpcClientType: grpcnetclient
   grpccoreserver-grpcnetclient:
     application:
       job: grpcCoreServer
     load:
       job: grpcDotNetClient
       variables:
-        client: grpcnetclient
+        grpcClientType: grpcnetclient
   grpcgoserver-grpcnetclient:
     application:
       job: grpcGoServer
     load:
       job: grpcDotNetClient
       variables:
-        client: grpcnetclient
+        grpcClientType: grpcnetclient
 
   grpcaspnetcoreserver-grpccoreclient:
     application:
@@ -40,21 +40,21 @@ scenarios:
     load:
       job: grpcDotNetClient
       variables:
-        client: grpccore
+        grpcClientType: grpccore
   grpccoreserver-grpccoreclient:
     application:
       job: grpcCoreServer
     load:
       job: grpcDotNetClient
       variables:
-        client: grpccore
+        grpcClientType: grpccore
   grpcgoserver-grpccoreclient:
     application:
       job: grpcGoServer
     load:
       job: grpcDotNetClient
       variables:
-        client: grpccore
+        grpcClientType: grpccore
 
   grpcaspnetcoreserver-grpcgoclient:
     application:
