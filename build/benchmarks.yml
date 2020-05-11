@@ -39,16 +39,21 @@ jobs:
     matrix: 
       Intel_Linux:
         server: http://asp-citrine-lin:5001
+        skip: ""
       Intel_Windows:
         server: http://asp-citrine-win:5001
+        skip: ""
       Arm_Linux:
         server: http://asp-citrine-arm:5001
+        skip: "2.1"
       Amd_Linux:
         server: http://asp-citrine-amd:5001
+        skip: ""
   steps:
   - template: baselines-scenarios.yml
     parameters:
       server: $(server)
+      skip: $(skip)
       client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
