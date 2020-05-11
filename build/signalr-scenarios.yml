@@ -65,6 +65,6 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver2",
-          "args": [ "${{ s.arguments }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --aspnetcoreversion 5.0.0-preview.5.20255.6 --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml" ]
+          "args": [ "${{ s.arguments }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml" ]
         }
       #--sql SQL_CONNECTION_STRING
