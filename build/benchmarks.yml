@@ -9,7 +9,6 @@ jobs:
 - job: SignalR
   pool: server
   timeoutInMinutes: 120
-  dependsOn: gRPCv2
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
