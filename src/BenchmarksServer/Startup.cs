@@ -2353,7 +2353,7 @@ namespace BenchmarkServer
                     buildParameters += $"/p:MicrosoftNETPlatformLibrary=Microsoft.NETCore.App ";
                 }
             }
-            else if (targetFramework == "netcoreapp5.0")
+            else if (targetFramework == "netcoreapp5.0" || targetFramework == "net5.0")
             {
                 buildParameters += $"/p:MicrosoftNETCoreApp50PackageVersion={runtimeVersion} ";
                 buildParameters += $"/p:GenerateErrorForMissingTargetingPacks=false ";
@@ -2364,7 +2364,8 @@ namespace BenchmarkServer
             }
             else
             {
-                throw new NotSupportedException($"Unsupported framework: {targetFramework}");
+                job.Error = $"Unsupported framework: {targetFramework}";
+                return null;
             }
 
             // #1445 force no cache for restore to avoid restore failures for packages published within last 30 minutes
