@@ -67,7 +67,7 @@ namespace Benchmarks.Controllers
         [Produces("application/json")]
         public object Json2k() => _entries4k;
 
-        [HttpGet("json2k")]
+        [HttpGet("json2M")]
         [Produces("application/json")]
         public List<Entry> Json2M() => _entries2MB;
 

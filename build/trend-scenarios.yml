@@ -1,6 +1,6 @@
 # This file lists all the scenarios that are run for the Trend/Latest category, which are
 # the jobs that are continuously benchmarked with the latest dotnet and aspnet runtimes available.
-# It iterates over all the command in the `scenarios` parameter and evalutes a 
+# It iterates over all the command in the `scenarios` parameter and evalutes a
 # task template defined dynamically.
 # The task template can then be changed to trigger a different kind of job (Cloud vs. Physical with service bus)
 # The parameters can be changed to target different servers too, to reuse the same list of scenarios.
@@ -24,9 +24,9 @@ parameters:
   default: ''
 
 # Scenarios
-- name: scenarios 
+- name: scenarios
   type: object
-  default: 
+  default:
 
 # Plaintext
 
@@ -44,7 +44,7 @@ parameters:
     arguments: --scenario Plaintext --webHost HttpSys --windows-only $(plaintextJobs)
   - displayName: Static Files
     arguments: --scenario StaticFiles $(plaintextJobs)
-  
+
 # Json
 
   - displayName: Json Platform
@@ -63,6 +63,15 @@ parameters:
     arguments: --scenario MvcJsonInput2k $(jsonJobs)
   - displayName: Json Mvc Input (NewtonSoft, 2KB)
     arguments: --scenario MvcJsonNetInput2k $(jsonJobs)
+  - displayName: Json Mvc Input (2MB)
+    arguments: --scenario MvcJsonInput2M $(jsonJobs)
+  - displayName: Json Mvc Input (NewtonSoft, 2MB)
+    arguments: --scenario MvcJsonNetInput2M $(jsonJobs)
+  - displayName: Json Mvc (2MB)
+    arguments: --scenario MvcJsonOutput2M $(jsonJobs)
+  - displayName: Json Mvc (NewtonSoft, 2M)
+    arguments: --scenario MvcJsonNetOutput2M $(jsonJobs)
+  - displayName: Json Mvc (2KB)
 
 # Https
 
@@ -80,7 +89,7 @@ parameters:
 # Http2
 
   - displayName: Plaintext h2
-    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount) 
+    arguments: --scenario PlaintextNonPipelined -m h2 $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext HttpSys h2
     arguments: --scenario PlaintextNonPipelined -m h2 --webHost HttpSys --windows-only $(plaintextJobs) $(http2Jobs) --connections $(h2loadConnectionsCount) --clientThreads $(h2loadConnectionsCount)
   - displayName: Plaintext h2c
@@ -192,7 +201,7 @@ parameters:
     # BasicApi
     # arguments: --scenario BasicApi.GetUsingRouteValue $(basicApiJobs)
     # arguments: --scenario BasicApi.Post $(basicApiJobs)
-    
+
     # BasicViews
     # arguments: --scenario BasicViews.GetTagHelpers $(basicViewsJobs)
     # arguments: --scenario BasicViews.Post $(basicViewsJobs)
@@ -206,19 +215,19 @@ parameters:
     arguments: --scenario ConnectionClose $(plaintextJobs) --warmup 2 --duration 5
   - displayName: Connections Closed Https
     arguments: --scenario ConnectionClose $(plaintextJobs) --warmup 2 --duration 5 -m https
-    
+
     # Logging
   - displayName: Plaintext Non-Pipelined Log Level Warning
     arguments: --scenario PlaintextNonPipelinedLogging --env ASPNETCORE_LogLevel=Warning $(plaintextJobs)
   - displayName: Plaintext Non-Pipelined Log Level Warning Disable Scopes
     arguments: --scenario PlaintextNonPipelinedLoggingNoScopes --env ASPNETCORE_LogLevel=Warning --env ASPNETCORE_DisableScopes=true $(plaintextJobs)
-    
+
     # Blazor
   - displayName: Blazor Basic
     arguments: --scenario BlazorBasic $(blazorJobs)
   - displayName: Blazor Form Input
     arguments: --scenario BlazorFormInput $(blazorJobs)
-    
+
     # Mono
   - displayName: Plaintext Platform Mono
     arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime --arch x64
@@ -230,11 +239,11 @@ parameters:
     arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime --arch x64
   - displayName: Json Mono
     arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime --arch x64
-  - displayName: Json Https Mono 
+  - displayName: Json Https Mono
     arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime --arch x64
   - displayName: Database Fortunes Raw Mono
     arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime --arch x64
- 
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
@@ -246,6 +255,5 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --runtimeversion 5.0.* --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks --sql SQL_CONNECTION_STRING --aspnetcoreversion 5.0.0-preview.5.20255.6" ] 
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --self-contained --runtimeversion 5.0.* --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks --sql SQL_CONNECTION_STRING --aspnetcoreversion 5.0.0-preview.5.20255.6" ]
         }
-  

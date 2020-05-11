@@ -66,6 +66,18 @@ namespace Benchmarks.Configuration
         [ScenarioPath("/mvc/jsoninput")]
         public bool MvcJsonNetInput2k { get; set; }
 
+        [ScenarioPath("/mvc/jsoninput")]
+        public bool MvcJsonInput2M { get; set; }
+
+        [ScenarioPath("/mvc/jsoninput")]
+        public bool MvcJsonNetInput2M { get; set; }
+
+        [ScenarioPath("/mvc/json2M")] // Uses System.Text.Json
+        public bool MvcJsonOutput2M { get; set; }
+
+        [ScenarioPath("/mvc/json2M")] // Uses Newtonsoft.Json
+        public bool MvcJsonNetOutput2M { get; set; }
+
         [ScenarioPath("/plaintext", "/128B.txt", "/512B.txt", "/1KB.txt", "/4KB.txt", "/16KB.txt", "/512KB.txt", "/1MB.txt", "/5MB.txt")]
         public bool StaticFiles { get; set; }
 
