@@ -16,6 +16,7 @@ jobs:
       grpcClientType: GrpcGoClient
       requestSize: 0
       responseSize: 0
+      streams: 1
     environmentVariables:
       SERVER_ADDR: '{{serverUri}}:{{serverPort}}'
       PROTOCOL: '{{protocol}}'
