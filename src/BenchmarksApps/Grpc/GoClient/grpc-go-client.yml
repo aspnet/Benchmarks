@@ -7,6 +7,15 @@ jobs:
       dockerContextDirectory: src/BenchmarksApps/Grpc/GoClient/
       dockerFile: src/BenchmarksApps/Grpc/GoClient/Dockerfile
     readyStateText: gRPC Client
+    variables:
+      connections: 1
+      warmup: 5
+      duration: 5
+      scenario: unary
+      protocol: h2c
+      grpcClientType: GrpcGoClient
+      requestSize: 0
+      responseSize: 0
     environmentVariables:
       SERVER_ADDR: '{{serverUri}}:{{serverPort}}'
       PROTOCOL: '{{protocol}}'
@@ -18,4 +27,4 @@ jobs:
       REQUEST_SIZE: '{{requestSize}}'
       RESPONSE_SIZE: '{{responseSize}}'
     options:
-      requiredOperationSystem: linux
+      requiredOperatingSystem: linux
