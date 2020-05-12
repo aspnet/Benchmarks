@@ -9,8 +9,6 @@ jobs:
 - job: Trends
   pool: server
   timeoutInMinutes: 120
-  variables:
-  - session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   strategy:
     maxParallel: 1
     matrix:
