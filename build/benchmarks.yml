@@ -3,7 +3,7 @@
 variables:
   - template: job-variables.yml
   - name: session
-    value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
+    value: "${{ format('{0:yyyyMMddHHmm}', pipeline.startTime) }}"
 
 jobs:
 - job: Trends
