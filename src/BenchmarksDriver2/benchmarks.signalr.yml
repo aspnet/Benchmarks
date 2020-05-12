@@ -6,8 +6,8 @@
 # --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --variable serverUri=http://10.0.0.102
 
 imports:
-  - ../SignalRClient/signalrclient.yml
-  - ../BenchmarksApps/SignalR/signalrserver.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
 variables:
     serverPort: 5000
 scenarios:
