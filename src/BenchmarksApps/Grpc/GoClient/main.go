@@ -327,7 +327,7 @@ func writeJobStatistics(metadata []jobMetadata, measurements []jobMeasurement) {
 		log.Fatalf("Failed to create JSON %v", err)
 	}
 
-	fmt.Printf("#StartJobStatistics\n")
-	fmt.Println(string(json))
-	fmt.Printf("#EndJobStatistics\n")
+	// Need to write statistics JSON together with start and end markers to ensure
+	// that no other console content is mixed together with the JSON.
+	fmt.Println("#StartJobStatistics\n" + string(json) + "\n#EndJobStatistics")
 }
