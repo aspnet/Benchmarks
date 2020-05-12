@@ -9,4 +9,4 @@ jobs:
     readyStateText: Application started
     waitForExit: false
     options:
-      requiredOperationSystem: linux
+      requiredOperatingSystem: linux
