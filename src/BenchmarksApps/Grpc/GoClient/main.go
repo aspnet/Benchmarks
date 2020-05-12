@@ -108,11 +108,14 @@ func main() {
 
 func calculateRequestStatistics() {
 	totalRequests := 0
+	totalFailures := 0
 	min := math.MaxInt32
 	max := 0
 	for connectionID := range connections {
 		connectionRequests := requestsPerConnection[connectionID]
+
 		totalRequests += connectionRequests
+		totalFailures += failuresPerConnection[connectionID]
 
 		if connectionRequests > max {
 			max = connectionRequests
@@ -123,9 +126,9 @@ func calculateRequestStatistics() {
 	}
 
 	rps := totalRequests / int(*duration)
-	log.Printf("Least Requests per Connection: %d", min)
-	log.Printf("Most Requests per Connection: %d", max)
-	log.Printf("RPS %d", rps)
+	fmt.Println("Least Requests per Connection: %d", min)
+	fmt.Println("Most Requests per Connection: %d", max)
+	fmt.Println("RPS %d", rps)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -140,6 +143,12 @@ func calculateRequestStatistics() {
 			ShortDescription: "Requests",
 			LongDescription:  "Total number of requests",
 		},
+		jobMetadata{
+			Source:           "Benchmarks",
+			Name:             "grpc/errors/badresponses",
+			ShortDescription: "Bad responses",
+			LongDescription:  "Non-2xx or 3xx responses",
+		},
 	}
 	measurements := []jobMeasurement{
 		jobMeasurement{
@@ -151,6 +160,11 @@ func calculateRequestStatistics() {
 			Name:      "grpc/requests",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(totalRequests),
+		},
+		jobMeasurement{
+			Name:      "grpc/errors/badresponses",
+			Timestamp: time.Now().UTC(),
+			Value:     float64(totalFailures),
 		},
 	}
 
@@ -270,7 +284,7 @@ func buildConnections(ctx context.Context, opts []grpc.DialOption) {
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "http://")
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "https://")
 
-	log.Printf("Building connections to %s", resolvedAddr)
+	fmt.Println("Building connections to %s", resolvedAddr)
 
 	connections = make([]*grpc.ClientConn, *connectionCount)
 	connectionLocks = make([]sync.Mutex, *connectionCount)
