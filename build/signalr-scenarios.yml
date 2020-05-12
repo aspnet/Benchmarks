@@ -65,7 +65,7 @@ steps:
           messageBody: |
             {
               "name": "benchmarksdriver2",
-              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --load.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table SignalRBenchmarks " ]
+              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --application.endpoints ${{ parameters.server }} --warmup.endpoints ${{ parameters.client }} --load.endpoints ${{ parameters.client }} --load.runtimeversion 5.0.* --warmup.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table SignalRBenchmarks --no-measurements --no-metadata --warmup.options.disardResults true" ]
             }
           #--sql SQL_CONNECTION_STRING
 
