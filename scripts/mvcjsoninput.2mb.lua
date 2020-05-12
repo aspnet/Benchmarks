@@ -1,4 +1,4 @@
-local payloadItems = 8
+local payloadItems = 5250
 local payloadItem = [[{
   "attributes": {
     "created": "2019-04-23T00:45:50+00:00",
@@ -16,7 +16,6 @@ local payloadItem = [[{
 
 function init(args)
     local data = "["
-    -- Note that this produces 4kb data. We're leaving the misnamed scenario as is to avoid loosing historical context
     for i = 1, payloadItems, 1 do
         if (i ~= 1)
         then
