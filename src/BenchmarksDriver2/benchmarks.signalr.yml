@@ -59,3 +59,61 @@ scenarios:
       variables:
         scenario: echoIdle
         path: /echo
+
+profiles:
+  aspnet-physical-lin:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001

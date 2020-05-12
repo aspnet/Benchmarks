@@ -14,13 +14,13 @@ jobs:
     maxParallel: 1
     matrix: 
       Intel_Linux:
-        server: http://asp-citrine-lin:5001
+        profile: aspnet-citrine-lin
       Intel_Windows:
-        server: http://asp-citrine-win:5001
+        profile: aspnet-citrine-win  
   steps:
   - template: signalr-scenarios.yml
     parameters:
-      server: $(server)
+      profile: $(profile)
       client: http://asp-citrine-load:5001
       warmup: 2
       duration: 5
