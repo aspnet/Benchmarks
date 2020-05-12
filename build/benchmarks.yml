@@ -3,12 +3,14 @@
 variables:
   - template: job-variables.yml
   - name: session
-    value: "${{ format('{0:yyyyMMddHHmm}', pipeline.startTime) }}"
+    value: $(Build.BuildNumber)
 
 jobs:
 - job: Trends
   pool: server
   timeoutInMinutes: 120
+  variables:
+  - session: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
   strategy:
     maxParallel: 1
     matrix:
