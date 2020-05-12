@@ -202,8 +202,7 @@ jobs:
 #   steps:
 #   - template: signalr-scenarios.yml
 #     parameters:
-#       server: http://10.0.0.9:5001
-#       client: http://10.0.0.10:5002
-#       warmup: 15
+#       profile: $(profile)
+#       warmup: 1
 #       duration: 15
 #       connection: 'ASP.NET Benchmarks Azure Queue'
