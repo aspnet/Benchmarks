@@ -87,5 +87,5 @@ steps:
               messageBody: |
                 {
                   "name": "benchmarksdriver2",
-                  "args": [ "--application.aspnetcoreversion Latest --load.runtimeversion 5.0.* --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }}" ]
+                  "args": [ "--application.aspnetcoreversion Latest --load.runtimeversion 5.0.* --load.sdkVersion Latest --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }}" ]
                 }
