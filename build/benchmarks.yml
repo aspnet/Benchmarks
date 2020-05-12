@@ -6,13 +6,129 @@ variables:
     value: "$[format('{0:yyyyMMddHHmm}', pipeline.startTime)]"
 
 jobs:
-- job: SignalR
+- job: Trends
   pool: server
   timeoutInMinutes: 120
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
+      Arm_Linux:
+        server: http://asp-citrine-arm:5001
+      Amd_Linux:
+        server: http://asp-citrine-amd:5001
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      server: $(server)
+      client: http://asp-citrine-load:5002
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: Baselines
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Trends
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
-    matrix: 
+    matrix:
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+        skip: ""
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
+        skip: ""
+      Arm_Linux:
+        server: http://asp-citrine-arm:5001
+        skip: "2.1"
+      Amd_Linux:
+        server: http://asp-citrine-amd:5001
+        skip: ""
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      server: $(server)
+      skip: $(skip)
+      client: http://asp-citrine-load:5002
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: Frameworks
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Baselines
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Amd_Linux:
+        server: http://asp-citrine-amd:5001
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      server: $(server)
+      client: http://asp-citrine-load:5002
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: GRPC
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Frameworks
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        server: http://asp-citrine-lin:5001
+      Intel_Windows:
+        server: http://asp-citrine-win:5001
+  steps:
+  - template: grpc-scenarios.yml
+    parameters:
+      server: $(server)
+      client: http://asp-citrine-load:5002
+      warmup: 5
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: gRPCv2
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: GRPC
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: grpc-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: SignalR
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: GRPCv2
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
       Intel_Windows:
@@ -24,5 +140,70 @@ jobs:
       warmup: 2
       duration: 5
       connection: 'ASP.NET Benchmarks Queue'
-      
+
+- job: Proxies
+  pool: server
+  timeoutInMinutes: 90
+  dependsOn: SignalR
+  condition: succeededOrFailed()
+  steps:
+  - template: proxies-scenarios.yml
+    parameters:
+      profile: aspnet-citrine
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: EFCore
+  displayName: EF Core
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: Proxies
+  condition: succeededOrFailed()
+  steps:
+  - template: efcore-scenarios.yml
+    parameters:
+      server: http://asp-citrine-win:5001
+      client: http://asp-citrine-load:5002
+      connection: 'ASP.NET Benchmarks Queue'
+
+- job: Blazor
+  pool: server
+  timeoutInMinutes: 30
+  dependsOn: EFCore
+  condition: succeededOrFailed()
+  steps:
+  - template: blazor-scenarios.yml
+    parameters:
+      server: http://asp-perf-lin:5001
+      connection: 'ASP.NET Benchmarks Queue'
+
 # CLOUD SCENARIOS
+
+- job: TrendsAzure
+  displayName: Trends Azure
+  pool: server
+  timeoutInMinutes: 180
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      server: http://10.0.0.9:5001
+      client: http://10.0.0.10:5002
+      connection: 'ASP.NET Benchmarks Azure Queue'
+
+# - job: SignalRAzure
+#   displayName: SignalR Azure
+#   pool: server
+#   timeoutInMinutes: 180
+#   dependsOn: TrendsAzure
+#   condition: succeededOrFailed()
+#   steps:
+#   - template: signalr-scenarios.yml
+#     parameters:
+#       server: http://10.0.0.9:5001
+#       client: http://10.0.0.10:5002
+#       warmup: 15
+#       duration: 15
+#       connection: 'ASP.NET Benchmarks Azure Queue'
