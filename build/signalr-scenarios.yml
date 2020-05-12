@@ -22,49 +22,50 @@ parameters:
   type: object
   default: 
 
-  # SignalR
-  - displayName: SignalRBroadcast WebSockets Json
-    arguments: --scenario broadcast --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalRBroadcast WebSockets MessagePack
-    arguments: --scenario broadcast --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
-  - displayName: SignalRBroadcast ServerSentEvents Json
-    arguments: --scenario broadcast --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalRBroadcast LongPolling Json
-    arguments: --scenario broadcast --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalRBroadcast LongPolling MessagePack
-    arguments: --scenario broadcast --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
-  - displayName: SignalREcho WebSockets Json
-    arguments: --scenario echo --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREcho WebSockets MessagePack
-    arguments: --scenario echo --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
-  - displayName: SignalREcho ServerSentEvents Json
-    arguments: --scenario echo --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREcho LongPolling Json
-    arguments: --scenario echo --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREcho LongPolling MessagePack
-    arguments: --scenario echo --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
-  - displayName: SignalREchoAll WebSockets Json
-    arguments: --scenario echoAll --load.variable.transport WebSockets --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREchoAll WebSockets MessagePack
-    arguments: --scenario echoAll --load.variable.transport WebSockets --load.variable.protocol messagepack $(signalRJobs)
-  - displayName: SignalREchoAll ServerSentEvents Json
-    arguments: --scenario echoAll --load.variable.transport ServerSentEvents --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREchoAll LongPolling Json
-    arguments: --scenario echoAll --load.variable.transport LongPolling --load.variable.protocol json $(signalRJobs)
-  - displayName: SignalREchoAll LongPolling MessagePack
-    arguments: --scenario echoAll --load.variable.transport LongPolling --load.variable.protocol messagepack $(signalRJobs)
+  - displayName: Broadcast
+    arguments: --scenario broadcast $(signalRJobs)
+  - displayName: Echo
+    arguments: --scenario echo $(signalRJobs)
+  - displayName: Echo All
+    arguments: --scenario echoAll $(signalRJobs)
+
+# Transports
+- name: transports 
+  type: object
+  default: 
+
+  - displayName: WebSockets
+    arguments: --load.variable.transport WebSockets
+  - displayName: ServerSentEvents
+    arguments: --load.variable.transport ServerSentEvents
+  - displayName: LongPolling
+    arguments: --load.variable.transport LongPolling
+
+# Protocols
+- name: protocols
+  type: object
+  default: 
+
+  - displayName: Json
+    arguments: --load.variable.protocol json
+  - displayName: MessagePack
+    arguments: --load.variable.protocol messagepack
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
-    condition: succeededOrFailed()
-    displayName: ${{ s.displayName }}
-    inputs:
-      connectedServiceName: ${{ parameters.connection }}
-      waitForCompletion: true
-      messageBody: |
-        {
-          "name": "benchmarksdriver2",
-          "args": [ "${{ s.arguments }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalRBenchmarks --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml" ]
-        }
-      #--sql SQL_CONNECTION_STRING
+  - ${{ each transport in parameters.transports }}:
+    - ${{ each protocol in parameters.protocols }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        enabled: ${{ not( and( eq(transport.displayName, "ServerSentEvents"), eq(protocol.displayName, "MessagePack"))) }}
+        displayName: ${{ s.displayName }} ${{ transport.displayName }} ${{ protocol.displayName }}
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          messageBody: |
+            {
+              "name": "benchmarksdriver2",
+              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --application.endpoints ${{ parameters.server }} --load.endpoints ${{ parameters.client }} --load.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table SignalRBenchmarks " ]
+            }
+          #--sql SQL_CONNECTION_STRING
+

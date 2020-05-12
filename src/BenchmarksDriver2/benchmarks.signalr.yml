@@ -1,9 +1,5 @@
 ﻿# Examples:
-# --config benchmarks.signalr.yml --scenario broadcast --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echo --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echoAll --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echoIdle --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario echo --load.variables.protocol messagepack --load.variables.logLevel Warning --load.variables.transport LongPolling --variable serverUri=http://10.0.0.102
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
@@ -14,6 +10,11 @@ scenarios:
   broadcast:
     application:
       job: signalrServer
+    warmup:
+      job: signalrClient
+      variables:
+        scenario: broadcast
+        path: /echo
     load:
       job: signalrClient
       variables:
@@ -22,6 +23,11 @@ scenarios:
   echo:
     application:
       job: signalrServer
+    warmup:
+      job: signalrClient
+      variables:
+        scenario: echo
+        path: /echo
     load:
       job: signalrClient
       variables:
@@ -30,6 +36,11 @@ scenarios:
   echoAll:
     application:
       job: signalrServer
+    warmup:
+      job: signalrClient
+      variables:
+        scenario: echoAll
+        path: /echo
     load:
       job: signalrClient
       variables:
@@ -38,6 +49,11 @@ scenarios:
   echoIdle:
     application:
       job: signalrServer
+    warmup:
+      job: signalrClient
+      variables:
+        scenario: echoIdle
+        path: /echo
     load:
       job: signalrClient
       variables:

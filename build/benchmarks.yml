@@ -22,8 +22,8 @@ jobs:
     parameters:
       server: $(server)
       client: http://asp-citrine-load:5002
-      warmup: 15
-      duration: 15
+      warmup: 2
+      duration: 5
       connection: 'ASP.NET Benchmarks Queue'
       
 # CLOUD SCENARIOS
