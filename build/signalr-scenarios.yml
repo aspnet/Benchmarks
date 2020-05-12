@@ -35,11 +35,11 @@ parameters:
   default: 
 
   - displayName: WebSockets
-    arguments: --load.variable.transport WebSockets
+    arguments: --load.variables.transport WebSockets
   - displayName: ServerSentEvents
-    arguments: --load.variable.transport ServerSentEvents
+    arguments: --load.variables.transport ServerSentEvents
   - displayName: LongPolling
-    arguments: --load.variable.transport LongPolling
+    arguments: --load.variables.transport LongPolling
 
 # Protocols
 - name: protocols
@@ -47,9 +47,9 @@ parameters:
   default: 
 
   - displayName: Json
-    arguments: --load.variable.protocol json
+    arguments: --load.variables.protocol json
   - displayName: MessagePack
-    arguments: --load.variable.protocol messagepack
+    arguments: --load.variables.protocol messagepack
 
 steps:
 - ${{ each s in parameters.scenarios }}:
