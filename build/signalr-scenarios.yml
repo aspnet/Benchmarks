@@ -57,7 +57,7 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       - task: PublishToAzureServiceBus@1
         condition: succeededOrFailed()
-        enabled: ${{ not( and( eq(transport.displayName, "ServerSentEvents"), eq(protocol.displayName, "MessagePack"))) }}
+        enabled: ${{ not( and( eq(transport.displayName, 'ServerSentEvents'), eq(protocol.displayName, 'MessagePack'))) }}
         displayName: ${{ s.displayName }} ${{ transport.displayName }} ${{ protocol.displayName }}
         inputs:
           connectedServiceName: ${{ parameters.connection }}
