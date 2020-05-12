@@ -92,7 +92,7 @@ func main() {
 		warmingUp = true
 		time.Sleep(time.Duration(*warmup) * time.Second)
 		warmingUp = false
-		fmt.Print("Finished warming up")
+		fmt.Print("Finished warming up\n")
 		time.Sleep(time.Duration(*duration) * time.Second)
 		stopped = true
 	}()
@@ -128,7 +128,8 @@ func calculateRequestStatistics() {
 	rps := totalRequests / int(*duration)
 	fmt.Printf("Least Requests per Connection: %d\n", min)
 	fmt.Printf("Most Requests per Connection: %d\n", max)
-	fmt.Printf("RPS %d\n", rps)
+	fmt.Printf("Total failures: %d\n", totalFailures)
+	fmt.Printf("RPS: %d\n", rps)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -183,7 +184,7 @@ func calculateLatencyStatistics() {
 		totalSum = totalSum / float64(totalRequests)
 	}
 
-	fmt.Printf("Average latency %fms\n", totalSum)
+	fmt.Printf("Average latency: %fms\n", totalSum)
 
 	metadata := []jobMetadata{
 		jobMetadata{
