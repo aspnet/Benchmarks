@@ -20,11 +20,13 @@ parameters:
   default: 
 
   - displayName: Broadcast
-    arguments: --scenario broadcast $(signalRJobs)
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=broadcast --property scenario=broadcast
   - displayName: Echo
-    arguments: --scenario echo $(signalRJobs)
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=echo --property scenario=echo
   - displayName: Echo All
-    arguments: --scenario echoAll $(signalRJobs)
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=echoAll --property scenario=echoAll
+#  - displayName: Echo Idle
+#    arguments: --scenario signalr $(signalRJobs) --variable scenario=echoIdle --property scenario=echoIdle
 
 # Transports
 - name: transports 
@@ -32,11 +34,11 @@ parameters:
   default: 
 
   - displayName: WebSockets
-    arguments: --load.variables.transport WebSockets
-  - displayName: ServerSentEvents
-    arguments: --load.variables.transport ServerSentEvents
+    arguments: --variable transport=WebSockets --property transport=websockets
+  - displayName: ServerSentEvents 
+    arguments: --variable transport=ServerSentEvents --property transport=serversentevents
   - displayName: LongPolling
-    arguments: --load.variables.transport LongPolling
+    arguments: --variable transport=LongPolling --property transport=longpolling
 
 # Protocols
 - name: protocols
@@ -44,9 +46,9 @@ parameters:
   default: 
 
   - displayName: Json
-    arguments: --load.variables.protocol json
+    arguments: --variable protocol=json --property protocol=json
   - displayName: MessagePack
-    arguments: --load.variables.protocol messagepack
+    arguments: --variable protocol=messagepack --property protocol=messagepack
 
 steps:
 - ${{ each s in parameters.scenarios }}:

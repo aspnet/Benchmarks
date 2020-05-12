@@ -1,63 +1,24 @@
 ﻿# Examples:
-# --config benchmarks.signalr.yml --scenario echo --load.variables.protocol messagepack --load.variables.logLevel Warning --load.variables.transport LongPolling --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-physical-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
+
 variables:
     serverPort: 5000
+
 scenarios:
-  broadcast:
+  signalr:
     application:
       job: signalrServer
     warmup:
       job: signalrClient
       variables:
-        scenario: broadcast
         path: /echo
     load:
       job: signalrClient
       variables:
-        scenario: broadcast
-        path: /echo
-  echo:
-    application:
-      job: signalrServer
-    warmup:
-      job: signalrClient
-      variables:
-        scenario: echo
-        path: /echo
-    load:
-      job: signalrClient
-      variables:
-        scenario: echo
-        path: /echo
-  echoAll:
-    application:
-      job: signalrServer
-    warmup:
-      job: signalrClient
-      variables:
-        scenario: echoAll
-        path: /echo
-    load:
-      job: signalrClient
-      variables:
-        scenario: echoAll
-        path: /echo
-  echoIdle:
-    application:
-      job: signalrServer
-    warmup:
-      job: signalrClient
-      variables:
-        scenario: echoIdle
-        path: /echo
-    load:
-      job: signalrClient
-      variables:
-        scenario: echoIdle
         path: /echo
 
 profiles:
