@@ -92,7 +92,7 @@ Options:
 
   ## Telemetry
 
-  --[JOB].options.disardResults <true|false>                               Whether to discard all the results from this job, for instance during a warmup job.
+  --[JOB].options.discardResults <true|false>                               Whether to discard all the results from this job, for instance during a warmup job.
 
   # Example
 

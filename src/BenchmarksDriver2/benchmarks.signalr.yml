@@ -1,45 +1,93 @@
 ﻿# Examples:
-# --config benchmarks.signalr.yml --scenario broadcast --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echo --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echoAll --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echoIdle --variable serverUri=http://10.0.0.102
-# --config benchmarks.signalr.yml --scenario echo --load.variable.protocol messagepack --load.variable.logLevel Warning --load.variable.transport LongPolling --variable serverUri=http://10.0.0.102
+# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-physical-lin
 
 imports:
-  - ../SignalRClient/signalrclient.yml
-  - ../BenchmarksApps/SignalR/signalrserver.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
+
 variables:
     serverPort: 5000
+
 scenarios:
-  broadcast:
+  signalr:
     application:
       job: signalrServer
+    warmup:
+      job: signalrClient
+      variables:
+        path: /echo
     load:
       job: signalrClient
       variables:
-        scenario: broadcast
         path: /echo
-  echo:
-    application:
-      job: signalrServer
-    load:
-      job: signalrClient
-      variables:
-        scenario: echo
-        path: /echo
-  echoAll:
-    application:
-      job: signalrServer
-    load:
-      job: signalrClient
-      variables:
-        scenario: echoAll
-        path: /echo
-  echoIdle:
-    application:
-      job: signalrServer
-    load:
-      job: signalrClient
-      variables:
-        scenario: echoIdle
-        path: /echo
+
+profiles:
+  aspnet-physical-lin:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-cloud-lin:
+    varaibles:
+      serverUri: http://10.0.0.104
+    jobs:
+      application:
+        endpoints:
+          - http://10.0.0.9:5001
+      warmup:
+        endpoints:
+          - http://10.0.0.10:5002
+      load:
+        endpoints:
+          - http://10.0.0.10:5002

@@ -1,15 +1,12 @@
 # SignalR scenarios
 
 parameters:
-- name: server
-  type: string
-  default: ''
-- name: client
+- name: profile
   type: string
   default: ''
 - name: warmup
   type: number
-  default: 15
+  default: 0
 - name: duration
   type: number
   default: 15
@@ -22,48 +19,52 @@ parameters:
   type: object
   default: 
 
-  # SignalR
-  - displayName: SignalRBroadcast WebSockets Json
-    arguments: -n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalRBroadcast WebSockets MessagePack
-    arguments: -n SignalRBroadcast -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
-  - displayName: SignalRBroadcast ServerSentEvents Json
-    arguments: -n SignalRBroadcast -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalRBroadcast LongPolling Json
-    arguments: -n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalRBroadcast LongPolling MessagePack
-    arguments: -n SignalRBroadcast -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
-  - displayName: SignalREcho WebSockets Json
-    arguments: -n SignalREcho -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREcho WebSockets MessagePack
-    arguments: -n SignalREcho -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
-  - displayName: SignalREcho ServerSentEvents Json
-    arguments: -n SignalREcho -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREcho LongPolling Json
-    arguments: -n SignalREcho -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREcho LongPolling MessagePack
-    arguments: -n SignalREcho -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
-  - displayName: SignalREchoAll WebSockets Json
-    arguments: -n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREchoAll WebSockets MessagePack
-    arguments: -n SignalREchoAll -p TransportType=WebSockets -p HubProtocol=messagepack $(signalRJobs)
-  - displayName: SignalREchoAll ServerSentEvents Json
-    arguments: -n SignalREchoAll -p TransportType=ServerSentEvents -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREchoAll LongPolling Json
-    arguments: -n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=json $(signalRJobs)
-  - displayName: SignalREchoAll LongPolling MessagePack
-    arguments: -n SignalREchoAll -p TransportType=LongPolling -p HubProtocol=messagepack $(signalRJobs)
+  - displayName: Broadcast
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=broadcast --property scenario=broadcast
+  - displayName: Echo
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=echo --property scenario=echo
+  - displayName: Echo All
+    arguments: --scenario signalr $(signalRJobs) --variable scenario=echoAll --property scenario=echoAll
+#  - displayName: Echo Idle
+#    arguments: --scenario signalr $(signalRJobs) --variable scenario=echoIdle --property scenario=echoIdle
+
+# Transports
+- name: transports 
+  type: object
+  default: 
+
+  - displayName: WebSockets
+    arguments: --variable transport=WebSockets --property transport=websockets
+  - displayName: ServerSentEvents 
+    arguments: --variable transport=ServerSentEvents --property transport=serversentevents
+  - displayName: LongPolling
+    arguments: --variable transport=LongPolling --property transport=longpolling
+
+# Protocols
+- name: protocols
+  type: object
+  default: 
+
+  - displayName: Json
+    arguments: --variable protocol=json --property protocol=json
+  - displayName: MessagePack
+    arguments: --variable protocol=messagepack --property protocol=messagepack
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
-    condition: succeededOrFailed()
-    displayName: ${{ s.displayName }}
-    inputs:
-      connectedServiceName: ${{ parameters.connection }}
-      waitForCompletion: true
-      messageBody: |
-        {
-          "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table SignalR --sql SQL_CONNECTION_STRING --aspnetcoreversion 5.0.0-preview.5.20255.6" ]
-        }
+  - ${{ each transport in parameters.transports }}:
+    - ${{ each protocol in parameters.protocols }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        enabled: ${{ not( and( eq(transport.displayName, 'ServerSentEvents'), eq(protocol.displayName, 'MessagePack'))) }}
+        displayName: ${{ s.displayName }} ${{ transport.displayName }} ${{ protocol.displayName }}
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          messageBody: |
+            {
+              "name": "benchmarksdriver2",
+              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.runtimeversion 5.0.* --warmup.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table SignalRBenchmarks --no-measurements --no-metadata --warmup.options.discardResults true" ]
+            }
+          #--sql SQL_CONNECTION_STRING
+
