@@ -92,7 +92,7 @@ func main() {
 		warmingUp = true
 		time.Sleep(time.Duration(*warmup) * time.Second)
 		warmingUp = false
-		log.Print("Finished warming up")
+		fmt.Print("Finished warming up")
 		time.Sleep(time.Duration(*duration) * time.Second)
 		stopped = true
 	}()
@@ -126,9 +126,9 @@ func calculateRequestStatistics() {
 	}
 
 	rps := totalRequests / int(*duration)
-	fmt.Println("Least Requests per Connection: %d", min)
-	fmt.Println("Most Requests per Connection: %d", max)
-	fmt.Println("RPS %d", rps)
+	fmt.Printf("Least Requests per Connection: %d", min)
+	fmt.Printf("Most Requests per Connection: %d", max)
+	fmt.Printf("RPS %d", rps)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -183,7 +183,7 @@ func calculateLatencyStatistics() {
 		totalSum = totalSum / float64(totalRequests)
 	}
 
-	log.Printf("Average latency %fms", totalSum)
+	fmt.Printf("Average latency %fms", totalSum)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -284,7 +284,7 @@ func buildConnections(ctx context.Context, opts []grpc.DialOption) {
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "http://")
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "https://")
 
-	fmt.Println("Building connections to %s", resolvedAddr)
+	fmt.Printf("Building connections to %s", resolvedAddr)
 
 	connections = make([]*grpc.ClientConn, *connectionCount)
 	connectionLocks = make([]sync.Mutex, *connectionCount)
@@ -327,7 +327,7 @@ func writeJobStatistics(metadata []jobMetadata, measurements []jobMeasurement) {
 		log.Fatalf("Failed to create JSON %v", err)
 	}
 
-	fmt.Println("#StartJobStatistics")
+	fmt.Printf("#StartJobStatistics")
 	fmt.Println(string(json))
-	fmt.Println("#EndJobStatistics")
+	fmt.Printf("#EndJobStatistics")
 }
