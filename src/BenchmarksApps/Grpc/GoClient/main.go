@@ -126,9 +126,9 @@ func calculateRequestStatistics() {
 	}
 
 	rps := totalRequests / int(*duration)
-	fmt.Printf("Least Requests per Connection: %d", min)
-	fmt.Printf("Most Requests per Connection: %d", max)
-	fmt.Printf("RPS %d", rps)
+	fmt.Printf("Least Requests per Connection: %d\n", min)
+	fmt.Printf("Most Requests per Connection: %d\n", max)
+	fmt.Printf("RPS %d\n", rps)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -183,7 +183,7 @@ func calculateLatencyStatistics() {
 		totalSum = totalSum / float64(totalRequests)
 	}
 
-	fmt.Printf("Average latency %fms", totalSum)
+	fmt.Printf("Average latency %fms\n", totalSum)
 
 	metadata := []jobMetadata{
 		jobMetadata{
@@ -211,9 +211,9 @@ func runWithConn(connectionID int, cc *grpc.ClientConn) {
 		go func() {
 			defer wg.Done()
 			caller := makeCaller(cc, connectionID, streamID)
-			log.Printf("Starting %d %d", connectionID, streamID)
+			fmt.Printf("Starting %d %d\n", connectionID, streamID)
 			caller()
-			log.Printf("Finished %d %d", connectionID, streamID)
+			fmt.Printf("Finished %d %d\n", connectionID, streamID)
 		}()
 	}
 }
@@ -284,7 +284,7 @@ func buildConnections(ctx context.Context, opts []grpc.DialOption) {
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "http://")
 	resolvedAddr = strings.TrimPrefix(resolvedAddr, "https://")
 
-	fmt.Printf("Building connections to %s", resolvedAddr)
+	fmt.Printf("Building connections to %s\n", resolvedAddr)
 
 	connections = make([]*grpc.ClientConn, *connectionCount)
 	connectionLocks = make([]sync.Mutex, *connectionCount)
@@ -327,7 +327,7 @@ func writeJobStatistics(metadata []jobMetadata, measurements []jobMeasurement) {
 		log.Fatalf("Failed to create JSON %v", err)
 	}
 
-	fmt.Printf("#StartJobStatistics")
+	fmt.Printf("#StartJobStatistics\n")
 	fmt.Println(string(json))
-	fmt.Printf("#EndJobStatistics")
+	fmt.Printf("#EndJobStatistics\n")
 }
