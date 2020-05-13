@@ -48,7 +48,7 @@ parameters:
 # Json
 
   - displayName: Json Platform
-    arguments: --scenario JsonPlatform $(jsonPlatformJobs)
+    arguments: --scenario JsonPlatform $(jsonPlatformJobs) --connections 512
   - displayName: Json Middleware
     arguments: --scenario Json $(jsonJobs)
   - displayName: Json Mvc
