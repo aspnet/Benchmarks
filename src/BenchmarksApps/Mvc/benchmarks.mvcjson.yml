@@ -1,0 +1,212 @@
+﻿# Examples:
+# --config benchmarks.mvcjson.yml --scenario MvcJson2k --profile asp-physical-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
+
+variables:
+    serverPort: 5000
+
+scenarios:
+  # Hello world JSON output
+  MvcJson:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /json-helloworld
+
+  # Hello world JSON output using Newtonsoft.Json
+  MvcJsonNet:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /json-helloworld
+
+  # ~2k Json output
+  MvcJson2k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /json2k
+
+  # ~2k Json output (Newtonsoft.Json)
+  MvcJsonNet2k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /json2k
+
+  # 60k json output.
+  MvcJsonOutput60k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
+
+  # 60k json output.
+  MvcJsonNetOutput60k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
+
+  # 2M json output
+  MvcJsonOutput2M:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
+
+  # 2M json output (Newtonsoft.Json)
+  MvcJsonNetOutput2M:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
+
+  # Sending 2k Json to Mvc
+  MvcJsonInput2k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+
+  # Sending 2k Json to Mvc (Json.NET)
+  MvcJsonNetInput2k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+
+  # Sending 60k Json to Mvc
+  MvcJsonInput60k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
+
+  # Sending 60k Json to Mvc (Json.NET)
+  MvcJsonNetInput60k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
+
+  # 2M json output
+  MvcJsonInput2M:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
+
+  # 2M json output (Json.NET)
+  MvcJsonNetInput2M:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
+
+profiles:
+  aspnet-physical-lin:
+    variables:
+      serverUri: http://10.0.0.102
+    jobs:
+      application:
+        endpoints:
+          - http://asp-perf-lin:5001
+      load:
+        endpoints:
+          - http://asp-perf-load:5001
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.102
+    jobs:
+      application:
+        endpoints:
+          - http://asp-perf-win:5001
+      load:
+        endpoints:
+          - http://asp-perf-load:5001
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+    jobs:
+      application:
+        endpoints:
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints:
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+    jobs:
+      application:
+        endpoints:
+          - http://asp-citrine-win:5001
+      load:
+        endpoints:
+          - http://asp-citrine-load:5001
+  aspnet-cloud-lin:
+    varaibles:
+      serverUri: http://10.0.0.104
+    jobs:
+      application:
+        endpoints:
+          - http://10.0.0.9:5001
+      load:
+        endpoints:
+          - http://10.0.0.10:5002

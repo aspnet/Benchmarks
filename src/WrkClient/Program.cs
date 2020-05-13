@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Wrk2Client;
 
 namespace WrkClient
 {
     class Program
     {
+        const string WrkFilename = "./wrk";
+
         static async Task Main(string[] args)
         {
-            Console.WriteLine("wrk Client");
-            Console.WriteLine("args: " + String.Join(' ', args));
+            Console.WriteLine("WRK Client");
+            Console.WriteLine("args: " + string.Join(' ', args));
 
-            var wrkFilename = "./wrk";
-            Process.Start("chmod", "+x " + wrkFilename);
-
-            var process = Process.Start(wrkFilename, String.Join(' ', args));
-            
+            using var process = Process.Start("chmod", "+x " + WrkFilename);
             process.WaitForExit();
+
+            await WrkProcess.RunAsync(WrkFilename, args);
         }
     }
 }

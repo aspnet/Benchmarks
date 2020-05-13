@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Wrk2Client\BenchmarksEventSource.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="scripts\pipeline.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

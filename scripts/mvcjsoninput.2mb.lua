@@ -27,12 +27,9 @@ function init(args)
 
     data = data .. "]"
 
-   local contentLength = string.len(data)
-
    wrk.method = "POST"
    wrk.body = data
    wrk.headers["Content-Type"] = "application/json"
-   wrk.headers["Content-Length"] = contentLength
 
    req = wrk.format()
 end
