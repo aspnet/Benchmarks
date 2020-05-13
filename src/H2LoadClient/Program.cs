@@ -36,9 +36,9 @@ namespace H2LoadClient
             var optionTimeout = app.Option<int>("-T|--timeout <N>", "Timeout to keep the connection open", CommandOptionType.SingleValue);
             var optionWarmup = app.Option<int>("-w|--warmup <N>", "Duration of the warmup in seconds", CommandOptionType.SingleValue);
             var optionDuration = app.Option<int>("-d|--duration <N>", "Duration of the test in seconds", CommandOptionType.SingleValue);
-            var optionProtocol = app.Option<string>("-p|--protocol <S>", "The SignalR protocol to use 'json', 'messagepack'", CommandOptionType.SingleValue);
+            var optionProtocol = app.Option<string>("-p|--protocol <S>", "The HTTP protocol to use", CommandOptionType.SingleValue);
             var optionBody = app.Option<string>("-b|--body <S>", "Request body as base64 encoded text", CommandOptionType.SingleValue);
-            var optionHeaders = app.Option<string>("--header <S>", "Request body as base64 encoded text", CommandOptionType.MultipleValue);
+            var optionHeaders = app.Option<string>("--header <S>", "Add a header to the request", CommandOptionType.MultipleValue);
 
             app.OnExecuteAsync(async cancellationToken =>
             {
