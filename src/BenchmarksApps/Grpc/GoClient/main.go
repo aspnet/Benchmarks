@@ -30,7 +30,8 @@ var (
 	streams               = flag.Int("streams", 1, "Streams per connection")
 	warmup                = flag.Int("warmup", 5, "Warmup in seconds")
 	duration              = flag.Int("duration", 10, "Duration in seconds")
-	wg                    sync.WaitGroup
+	warmupWg              sync.WaitGroup
+	finishedWg            sync.WaitGroup
 	connections           []*grpc.ClientConn
 	connectionLocks       []sync.Mutex
 	requestsPerConnection []int
@@ -84,24 +85,29 @@ func main() {
 		opts = append(opts, grpc.WithInsecure())
 	}
 
-	opts = append(opts, grpc.WithBlock())
-
+	// Create connections and related collections
 	buildConnections(context.Background(), opts)
 
+	// Start background thread to track warmup and duration
 	go func() {
 		warmingUp = true
+		warmupWg.Add(1)
 		time.Sleep(time.Duration(*warmup) * time.Second)
 		warmingUp = false
+		warmupWg.Done()
 		fmt.Print("Finished warming up\n")
 		time.Sleep(time.Duration(*duration) * time.Second)
 		stopped = true
 	}()
 
+	// Start caller threads for each connection + stream
 	for connectionID, cc := range connections {
 		runWithConn(connectionID, cc)
 	}
-	wg.Wait()
+	// Wait for caller threads to finish
+	finishedWg.Wait()
 
+	// Output results
 	calculateRequestStatistics()
 	calculateLatencyStatistics()
 }
@@ -208,10 +214,13 @@ func calculateLatencyStatistics() {
 func runWithConn(connectionID int, cc *grpc.ClientConn) {
 	for i := 0; i < *streams; i++ {
 		streamID := i
-		wg.Add(1)
+		finishedWg.Add(1)
 		go func() {
-			defer wg.Done()
-			caller := makeCaller(cc, connectionID, streamID)
+			defer finishedWg.Done()
+			caller := makeCaller(cc, connectionID, streamID, *scenario)
+			if caller == nil {
+				log.Fatalf("Unsupported scenario: %s", *scenario)
+			}
 			fmt.Printf("Starting %d %d\n", connectionID, streamID)
 			caller()
 			fmt.Printf("Finished %d %d\n", connectionID, streamID)
@@ -219,33 +228,96 @@ func runWithConn(connectionID int, cc *grpc.ClientConn) {
 	}
 }
 
-func makeCaller(cc *grpc.ClientConn, connectionID int, streamID int) func() {
+func makeCaller(cc *grpc.ClientConn, connectionID int, streamID int, scenario string) func() {
 	client := testpb.NewBenchmarkServiceClient(cc)
-	if *scenario != "unary" {
-		log.Fatalf("Unsupported scenario: %s", *scenario)
+	if scenario == "unary" {
+		return func() {
+			for {
+				request := &testpb.SimpleRequest{
+					Payload:      NewPayload(int(*requestSize)),
+					ResponseSize: int32(*responseSize),
+				}
+
+				start := time.Now()
+				if _, err := client.UnaryCall(context.Background(), request); err != nil {
+					handleFailure(connectionID)
+				} else {
+					end := time.Now()
+					handleSuccess(connectionID, start, end)
+				}
+
+				if stopped {
+					return
+				}
+			}
+		}
 	}
-	return func() {
-		for {
+	if scenario == "serverstreaming" {
+		return func() {
 			request := &testpb.SimpleRequest{
 				Payload:      NewPayload(int(*requestSize)),
 				ResponseSize: int32(*responseSize),
 			}
 
-			start := time.Now()
-			_, err := client.UnaryCall(context.Background(), request)
-			end := time.Now()
-
+			stream, err := client.StreamingFromServer(context.Background(), request)
 			if err != nil {
+				// Wait for warmup to be finished before reporting the call failed
+				warmupWg.Wait()
 				handleFailure(connectionID)
-			} else {
-				handleSuccess(connectionID, start, end)
+				return
 			}
 
-			if stopped {
-				return
+			for {
+				start := time.Now()
+				if _, err := stream.Recv(); err != nil {
+					handleFailure(connectionID)
+				} else {
+					end := time.Now()
+					handleSuccess(connectionID, start, end)
+				}
+
+				if stopped {
+					return
+				}
 			}
 		}
 	}
+	if scenario == "pingpongstreaming" {
+		return func() {
+			stream, err := client.StreamingCall(context.Background())
+			if err != nil {
+				// Wait for warmup to be finished before reporting the call failed
+				warmupWg.Wait()
+				handleFailure(connectionID)
+				return
+			}
+
+			for {
+				request := &testpb.SimpleRequest{
+					Payload:      NewPayload(int(*requestSize)),
+					ResponseSize: int32(*responseSize),
+				}
+
+				start := time.Now()
+				if err := stream.Send(request); err != nil {
+					handleFailure(connectionID)
+				} else {
+					if _, err := stream.Recv(); err != nil {
+						handleFailure(connectionID)
+					} else {
+						end := time.Now()
+						handleSuccess(connectionID, start, end)
+					}
+				}
+
+				if stopped {
+					return
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func handleFailure(connectionID int) {
