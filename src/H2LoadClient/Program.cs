@@ -42,7 +42,7 @@ namespace H2LoadClient
 
             app.OnExecuteAsync(async cancellationToken =>
             {
-                Console.WriteLine("gRPC Client");
+                Console.WriteLine("H2Load Client");
 
                 ServerUrl = optionUrl.Value();
                 Connections = optionConnections.HasValue() ? optionConnections.ParsedValue : 1;

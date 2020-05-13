@@ -8,7 +8,7 @@ jobs:
   h2LoadClient:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: jamesnk/h2load
       project: src/H2LoadClient/H2LoadClient.csproj
     readyStateText: H2Load Client
     sdkVersion: 3.0.100
