@@ -91,16 +91,23 @@ func main() {
 
 	// Start background thread to track warmup and duration
 	go func() {
+		warmup := time.Duration(*warmup) * time.Second
+		fmt.Printf("Warming up for %v\n", warmup)
 		warmingUp = true
 		warmupWg.Add(1)
-		time.Sleep(time.Duration(*warmup) * time.Second)
+		time.Sleep(warmup)
+
+		fmt.Print("Finished warming up\n")
 		warmingUp = false
 		warmupWg.Done()
-		fmt.Print("Finished warming up\n")
-		time.Sleep(time.Duration(*duration) * time.Second)
+
+		duration := time.Duration(*duration) * time.Second
+		fmt.Printf("Running for %v\n", duration)
+		time.Sleep(duration)
+
+		fmt.Print("Stopping benchmarks\n")
 		stopped = true
 		cancel()
-		fmt.Print("Stopping benchmarks\n")
 	}()
 
 	// Start caller threads for each connection + stream
