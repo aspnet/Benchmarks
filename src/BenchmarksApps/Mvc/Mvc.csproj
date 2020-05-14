@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+<PropertyGroup>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
+    <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == ''">5.0.0-*</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="mvcserver.yml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+  </ItemGroup>
+
+  <!-- These references are used when running on the Benchmarks Server -->
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+
+</Project>

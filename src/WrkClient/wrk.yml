@@ -23,7 +23,9 @@ jobs:
       duration: 15 # duration in seconds
       threads: 32 # total number of threads to use
       pipeline: 1
+      script: null
+      scriptArguments: null
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% endif %}"
+    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {%elsif script %} -s {{script}} -- {{scriptArguments}} {% endif %}"

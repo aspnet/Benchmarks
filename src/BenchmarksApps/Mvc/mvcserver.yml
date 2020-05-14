@@ -1,0 +1,12 @@
+jobs:
+  mvcServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/Mvc/Mvc.csproj
+    readyStateText: Application started
+    runtimeVersion: '5.0.*'
+    waitForExit: false
+    variables:
+      useNewtonsoftJson: false
+    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
