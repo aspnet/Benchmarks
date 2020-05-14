@@ -24,3 +24,5 @@ jobs:
       protocol: h2c
       presetHeaders: none
     arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != null %} --body {{ body }} {% endif %}"
+    options:
+      requiredOperatingSystem: linux
