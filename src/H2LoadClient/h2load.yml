@@ -22,7 +22,8 @@ jobs:
       duration: 15
       warmup: 5
       protocol: h2c
+      body: ''
       presetHeaders: none
-    arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != null %} --body {{ body }} {% endif %}"
+    arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != '' %} --body {{ body }} {% endif %}"
     options:
       requiredOperatingSystem: linux

@@ -86,6 +86,8 @@ func main() {
 		opts = append(opts, grpc.WithInsecure())
 	}
 
+	opts = append(opts, grpc.WithBlock())
+
 	// Create connections and related collections
 	buildConnections(context.Background(), opts)
 
@@ -115,6 +117,8 @@ func main() {
 		runWithConn(connectionID, cc)
 	}
 	// Wait for caller threads to finish
+
+	fmt.Print("Waiting for caller threads to finish\n")
 	finishedWg.Wait()
 
 	fmt.Print("Caller threads finished\n")
