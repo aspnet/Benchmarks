@@ -48,7 +48,10 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml
 
 - name: proxyJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml 
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml
+
+- name: yarpJobs
+  value: --config https://raw.githubusercontent.com/microsoft/reverse-proxy/halter73/benchmark/samples/BenchmarkApp/benchmarks.yml
 
 - name: h2loadConnectionsCount # Default value for h2load. Should be redefined for each job
   value: 28
