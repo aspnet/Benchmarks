@@ -64,6 +64,11 @@ namespace H2LoadClient
                     Console.WriteLine($"Header: {key}={value}");
                 }
 
+                if (Headers.Count == 0)
+                {
+                    Console.WriteLine("No headers");
+                }
+
                 if (optionBody.HasValue())
                 {
                     var requestBody = Convert.FromBase64String(optionBody.Value());
@@ -77,11 +82,14 @@ namespace H2LoadClient
                 }
 
                 var process = StartProcess();
+
+                Console.WriteLine("Waiting for process exit");
                 process.WaitForExit();
 
                 // Wait for all Output messages to be flushed and available in Output
                 await Task.Delay(100);
 
+                Console.WriteLine("Parsing output");
                 ParseOutput();
             });
 

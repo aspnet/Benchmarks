@@ -7,6 +7,7 @@ jobs:
       dockerContextDirectory: src/BenchmarksApps/Grpc/GoClient/
       dockerFile: src/BenchmarksApps/Grpc/GoClient/Dockerfile
     readyStateText: gRPC Client
+    waitForExit: true
     variables:
       connections: 1
       warmup: 5
@@ -27,5 +28,7 @@ jobs:
       WARMUP: '{{warmup}}'
       REQUEST_SIZE: '{{requestSize}}'
       RESPONSE_SIZE: '{{responseSize}}'
+      #GRPC_GO_LOG_VERBOSITY_LEVEL: 99
+      #GRPC_GO_LOG_SEVERITY_LEVEL: info
     options:
       requiredOperatingSystem: linux

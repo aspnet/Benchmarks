@@ -78,16 +78,22 @@ scenarios:
       job: grpcAspNetCoreServer
     load:
       job: h2LoadClient
+      variables:
+        presetHeaders: grpc
   grpccoreserver-h2loadclient:
     application:
       job: grpcCoreServer
     load:
       job: h2LoadClient
+      variables:
+        presetHeaders: grpc
   grpcgoserver-h2loadclient:
     application:
       job: grpcGoServer
     load:
       job: h2LoadClient
+      variables:
+        presetHeaders: grpc
 
 profiles:
   aspnet-physical-lin:
