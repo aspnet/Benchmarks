@@ -14,7 +14,7 @@ parameters:
   type: string
   default: ''
 
-# Scenarios
+# Standard scenarios
 - name: scenarios 
   type: object
   default:
@@ -39,6 +39,18 @@ parameters:
     arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver --property client=grpccoreclient
   - displayName: "Go - Client: Go"
     arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
+
+# H2Load scenarios
+- name: h2loadscenarios 
+  type: object
+  default:
+
+  - displayName: "ASP.NET Core - Client: h2load"
+    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.collectCounters true
+  - displayName: "Grpc.Core - Client: h2load"
+    arguments: --scenario grpccoreserver-h2loadclient         $(grpcJobs) --property server=grpccoreserver --property client=h2loadclient --application.collectCounters true
+  - displayName: "Go - Client: h2load"
+    arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
 
 - name: callTypes
   type: object
@@ -73,6 +85,20 @@ parameters:
       arguments: --variable streams=70 --variable connections=64 --property streams=70
 
 steps:
+- ${{ each s in parameters.h2loadscenarios }}:
+  - ${{ each protocol in parameters.protocols }}:
+    - ${{ each stream in parameters.connectionStreams }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        displayName: ${{ s.displayName }} ${{ protocol.displayName }} ${{ stream.displayName }}
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          messageBody: |
+            {
+              "name": "benchmarksdriver2",
+              "args": [ "--application.aspnetcoreversion Latest --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }} --property scenario=unary --property payload=0" ]
+            }
 - ${{ each s in parameters.scenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:

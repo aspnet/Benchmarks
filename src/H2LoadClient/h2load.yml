@@ -1,0 +1,26 @@
+﻿variables:
+  headers:
+    none: ''
+    grpc: "--header content-type=application/grpc --header TE=trailers"
+  presetHeaders: none
+
+jobs:
+  h2LoadClient:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/H2LoadClient/H2LoadClient.csproj
+    readyStateText: H2Load Client
+    sdkVersion: 3.0.100
+    aspNetCoreVersion: '3.0'
+    runtimeVersion: '3.0'
+    waitForExit: true
+    variables:
+      threads: 1
+      streams: 1
+      connections: 1
+      duration: 15
+      warmup: 5
+      protocol: h2c
+      presetHeaders: none
+    arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != null %} --body {{ body }} {% endif %}"

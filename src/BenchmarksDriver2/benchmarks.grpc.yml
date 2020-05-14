@@ -9,6 +9,7 @@ imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/H2LoadClient/h2load.yml
 variables:
     serverPort: 5000
 scenarios:
@@ -71,6 +72,22 @@ scenarios:
       job: grpcGoServer
     load:
       job: grpcGoClient
+
+  grpcaspnetcoreserver-h2loadclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: h2LoadClient
+  grpccoreserver-h2loadclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: h2LoadClient
+  grpcgoserver-h2loadclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: h2LoadClient
 
 profiles:
   aspnet-physical-lin:
