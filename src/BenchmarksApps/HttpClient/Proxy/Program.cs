@@ -49,6 +49,8 @@ namespace Proxy
             _appendQuery = new QueryString(baseUri.Query);
 
             Console.WriteLine($"Base URI: {baseUriArg}");
+            
+            WriteStatistics();
 
             var builder = new WebHostBuilder()
                 .ConfigureLogging(loggerFactory =>
