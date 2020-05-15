@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -97,5 +98,21 @@ namespace Proxy
 
         private static Uri BuildDestinationUri(HttpContext context) => new Uri(UriHelper.BuildAbsolute(_scheme, _host, _pathBase, context.Request.Path, context.Request.QueryString.Add(_appendQuery)));
 
+        private static void WriteStatistics()
+        {
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                Metadata = new object[]
+                {
+                    new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
+                    new { Source= "Benchmarks", Name= "NetCoreAppVersion", ShortDescription = ".NET Runtime Version", LongDescription = ".NET Runtime Version" },
+                },
+                Measurements = new object[]
+                {
+                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                }
+            }));
+        }
     }
 }
