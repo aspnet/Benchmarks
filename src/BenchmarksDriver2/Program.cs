@@ -126,7 +126,7 @@ namespace BenchmarksDriver
             _profileOption = app.Option("--profile", "Profile name", CommandOptionType.MultipleValue);
             _outputOption = app.Option("-o|--output", "Output filename", CommandOptionType.SingleValue);
             _compareOption = app.Option("--compare", "An optional filename to compare the results to. Can be used multiple times.", CommandOptionType.MultipleValue);
-            _variableOption = app.Option("-v|--variable", "Variable", CommandOptionType.MultipleValue);
+            _variableOption = app.Option("--variable", "Variable", CommandOptionType.MultipleValue);
             _sqlConnectionStringOption = app.Option("--sql",
                 "Connection string of the SQL Server Database to store results in", CommandOptionType.SingleValue);
             _sqlTableOption = app.Option("--table",

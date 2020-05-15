@@ -29,6 +29,8 @@ parameters:
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
+  - displayName: YARP
+    arguments: --scenario proxy-yarp        $(yarpJobs)  --property proxy=yarp
 
 - name: payloads
   type: object
