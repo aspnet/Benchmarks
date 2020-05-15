@@ -100,6 +100,8 @@ namespace Proxy
 
         private static void WriteStatistics()
         {
+            Console.WriteLine("#StartJobStatistics");
+
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
             {
                 Metadata = new object[]
@@ -113,6 +115,8 @@ namespace Proxy
                     new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
                 }
             }));
+
+            Console.WriteLine("#EndJobStatistics");
         }
     }
 }
