@@ -22,7 +22,7 @@ parameters:
   - displayName: Baseline
     arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
   - displayName: HttpClient
-    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient
+    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.runtimeversion 5.0.*
   - displayName: NGinx
     arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx
   - displayName: HAProxy
