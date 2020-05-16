@@ -102,8 +102,8 @@ namespace H2LoadClient
             BenchmarksEventSource.Log.Metadata("h2load/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
             BenchmarksEventSource.Log.Metadata("h2load/errors/socketerrors", "max", "sum", "Socket errors", "Socket errors", "n0");
 
-            BenchmarksEventSource.Log.Metadata("h2load/latency/mean", "max", "sum", "Mean latency (us)", "Mean latency (us)", "n0");
-            BenchmarksEventSource.Log.Metadata("h2load/latency/max", "max", "sum", "Max latency (us)", "Max latency (us)", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n0");
 
             BenchmarksEventSource.Log.Metadata("h2load/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
             BenchmarksEventSource.Log.Metadata("h2load/raw", "all", "all", "Raw results", "Raw results", "object");
@@ -231,9 +231,9 @@ namespace H2LoadClient
 
                 switch (unit)
                 {
-                    case "s": return value * 1000;
+                    case "s": return value / 1000;
                     case "ms": return value;
-                    case "us": return value / 1000;
+                    case "us": return value * 1000;
 
                     default:
                         Log("Failed to parse latency unit: " + unit);

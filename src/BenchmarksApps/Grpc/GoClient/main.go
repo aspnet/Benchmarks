@@ -38,6 +38,7 @@ var (
 	requestsPerConnection []int
 	failuresPerConnection []int
 	latencyPerConnection  []latency
+	maxLatency            float64
 	stopped               bool
 	warmingUp             bool
 )
@@ -50,8 +51,11 @@ type latency struct {
 type jobMetadata struct {
 	Source           string
 	Name             string
+	Reduce           string
+	Aggregate        string
 	ShortDescription string
 	LongDescription  string
+	Format           string
 }
 
 type jobMeasurement struct {
@@ -154,37 +158,46 @@ func calculateRequestStatistics() {
 	fmt.Printf("RPS: %d\n", rps)
 
 	metadata := []jobMetadata{
-		jobMetadata{
+		{
 			Source:           "Benchmarks",
 			Name:             "grpc/rps/max",
+			Reduce:           "Sum",
+			Aggregate:        "Max",
 			ShortDescription: "Max RPS",
 			LongDescription:  "RPS: max",
+			Format:           "n0",
 		},
-		jobMetadata{
+		{
 			Source:           "Benchmarks",
 			Name:             "grpc/requests",
+			Reduce:           "Sum",
+			Aggregate:        "Max",
 			ShortDescription: "Requests",
 			LongDescription:  "Total number of requests",
+			Format:           "n0",
 		},
-		jobMetadata{
+		{
 			Source:           "Benchmarks",
 			Name:             "grpc/errors/badresponses",
+			Reduce:           "Sum",
+			Aggregate:        "Max",
 			ShortDescription: "Bad responses",
 			LongDescription:  "Non-2xx or 3xx responses",
+			Format:           "n0",
 		},
 	}
 	measurements := []jobMeasurement{
-		jobMeasurement{
+		{
 			Name:      "grpc/rps/max",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(rps),
 		},
-		jobMeasurement{
+		{
 			Name:      "grpc/requests",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(totalRequests),
 		},
-		jobMeasurement{
+		{
 			Name:      "grpc/errors/badresponses",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(totalFailures),
@@ -207,17 +220,30 @@ func calculateLatencyStatistics() {
 	}
 
 	fmt.Printf("Average latency: %fms\n", totalSum)
+	fmt.Printf("Max latency: %fms\n", maxLatency)
 
 	metadata := []jobMetadata{
-		jobMetadata{
+		{
 			Source:           "Benchmarks",
 			Name:             "grpc/latency/mean",
+			Reduce:           "Sum",
+			Aggregate:        "Max",
 			ShortDescription: "Mean latency (ms)",
 			LongDescription:  "Mean latency (ms)",
+			Format:           "n0",
+		},
+		{
+			Source:           "Benchmarks",
+			Name:             "grpc/latency/max",
+			Reduce:           "Sum",
+			Aggregate:        "Max",
+			ShortDescription: "Max latency (ms)",
+			LongDescription:  "Max latency (ms)",
+			Format:           "n0",
 		},
 	}
 	measurements := []jobMeasurement{
-		jobMeasurement{
+		{
 			Name:      "grpc/latency/mean",
 			Timestamp: time.Now().UTC(),
 			Value:     totalSum,
@@ -360,9 +386,12 @@ func handleSuccess(connectionID int, start time.Time, end time.Time) {
 	sum := latencyPerConnection[connectionID].sum
 
 	callLatency := end.Sub(start)
+	callLatencyMs := float64(callLatency.Nanoseconds()) / float64(1000*1000)
 
 	count++
-	sum += float64(callLatency.Nanoseconds()) / float64(1000*1000)
+	sum += callLatencyMs
+
+	maxLatency = math.Max(callLatencyMs, maxLatency)
 
 	latencyPerConnection[connectionID] = latency{
 		count: count,
