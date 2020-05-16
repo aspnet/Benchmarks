@@ -115,10 +115,10 @@ namespace H2LoadClient
                 rps = double.Parse(rpsMatch.Groups[1].Value);
             }
 
-            var latencyMatch = Regex.Match(Output, @"time to 1st byte: \s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
+            var latencyMatch = Regex.Match(Output, @"time for request: \s+[\d\.]+\w+\s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
             var averageLatency = ReadLatency(latencyMatch);
 
-            var p100Match = Regex.Match(Output, @"time to 1st byte: \s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
+            var p100Match = Regex.Match(Output, @"time for request: \s+[\d\.]+\w+\s+([\d\.]+)(\w+)");
             var maxLatency = ReadLatency(p100Match);
 
             var socketErrorsMatch = Regex.Match(Output, @"([\d\.]+) failed, ([\d\.]+) errored, ([\d\.]+) timeout");
