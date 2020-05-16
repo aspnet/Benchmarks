@@ -248,6 +248,11 @@ func calculateLatencyStatistics() {
 			Timestamp: time.Now().UTC(),
 			Value:     totalSum,
 		},
+		{
+			Name:      "grpc/latency/max",
+			Timestamp: time.Now().UTC(),
+			Value:     maxLatency,
+		},
 	}
 
 	writeJobStatistics(metadata, measurements)
