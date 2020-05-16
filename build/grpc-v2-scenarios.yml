@@ -73,8 +73,6 @@ parameters:
   default:
     - displayName: "Payload: 0 B"
       arguments: --variable requestSize=0 --variable responseSize=0 --property payload=0
-    - displayName: "Payload: 1 MB"
-      arguments: --variable requestSize=1048576 --variable responseSize=1048576 --property payload=1048576
 
 - name: connectionStreams
   type: object
