@@ -37,36 +37,34 @@ namespace Benchmarks
             Console.WriteLine("-----------------------");
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
-            Console.WriteLine($"AspNetCore location: {typeof(WebHostBuilder).GetTypeInfo().Assembly.Location}");
-            Console.WriteLine($"AspNetCore version: {typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            Console.WriteLine($"AspNetCore location: {typeof(IWebHostBuilder).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($"AspNetCore version: {typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
-            Console.WriteLine($"NetCoreApp location: {typeof(object).GetTypeInfo().Assembly.Location}");
-            Console.WriteLine($"CoreCLR version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-            Console.WriteLine($"CoreFx version: {typeof(Regex).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            Console.WriteLine($".NET Runtime location: {typeof(object).GetTypeInfo().Assembly.Location}");
+            Console.WriteLine($".NET Runtime version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
 
-            Console.WriteLine("#StartJobStatistics");
-
-            Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(new
-            {
-                Metadata = new object[] 
+            Console.WriteLine("#StartJobStatistics"
+                + Environment.NewLine
+                + Newtonsoft.Json.JsonConvert.SerializeObject(new
                 {
-                    new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
-                    new { Source= "Benchmarks", Name= "CoreClrVersion", ShortDescription = "CoreCLR Version", LongDescription = "Core CLR Version" },
-                    new { Source= "Benchmarks", Name= "CoreFxVersion", ShortDescription = "CoreFX Version", LongDescription = "Core FX Version" },
-                    new { Source= "Benchmarks", Name= "ProcessorCount", ShortDescription = "Processor Count", LongDescription = "Processor Count", Format = "n0" },
-                },
-                Measurements = new object[] 
-                {
-                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                    new { Timestamp = DateTime.UtcNow, Name = "CoreClrVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                    new { Timestamp = DateTime.UtcNow, Name = "CoreFxVersion", Value = typeof(Regex).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                    new { Timestamp = DateTime.UtcNow, Name = "ProcessorCount", Value = Environment.ProcessorCount }
-                }
-            }));
-
-            Console.WriteLine("#EndJobStatistics");
+                    Metadata = new object[]
+                      {
+                          new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
+                          new { Source= "Benchmarks", Name= "NetCoreAppVersion", ShortDescription = ".NET Runtime Version", LongDescription = ".NET Runtime Version" },
+                          new { Source= "Benchmarks", Name= "ProcessorCount", ShortDescription = "Processor Count", LongDescription = "Processor Count", Format = "n0" },
+                      },
+                    Measurements = new object[]
+                      {
+                          new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                          new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                          new { Timestamp = DateTime.UtcNow, Name = "ProcessorCount", Value = Environment.ProcessorCount }
+                      }
+                })
+                + Environment.NewLine
+                + "#EndJobStatistics"
+             );
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)

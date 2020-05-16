@@ -49,7 +49,7 @@ namespace Proxy
             _appendQuery = new QueryString(baseUri.Query);
 
             Console.WriteLine($"Base URI: {baseUriArg}");
-            
+
             WriteStatistics();
 
             var builder = new WebHostBuilder()
@@ -102,9 +102,9 @@ namespace Proxy
 
         private static void WriteStatistics()
         {
-            Console.WriteLine("#StartJobStatistics");
-
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+            Console.WriteLine("#StartJobStatistics"
+            + Environment.NewLine
+            + System.Text.Json.JsonSerializer.Serialize(new
             {
                 Metadata = new object[]
                 {
@@ -113,12 +113,13 @@ namespace Proxy
                 },
                 Measurements = new object[]
                 {
-                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(WebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
+                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
                     new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
                 }
-            }));
-
-            Console.WriteLine("#EndJobStatistics");
+            })
+            + Environment.NewLine
+            + "#EndJobStatistics"
+            );
         }
     }
 }
