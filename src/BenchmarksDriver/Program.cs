@@ -1077,7 +1077,7 @@ namespace BenchmarksDriver
                 {
                     if (!Enum.TryParse<Worker>(clientNameOption.Value(), ignoreCase: true, result: out var worker))
                     {
-                        Log($"Could not find worker {clientNameOption.Value()}");
+                        Log($"Could not find worker {clientNameOption.Value()}", error: true);
                         return 9;
                     }
 
@@ -1379,7 +1379,7 @@ namespace BenchmarksDriver
 
                     if (!String.Equals(arch, archOption.Value(), StringComparison.OrdinalIgnoreCase))
                     {
-                        Log($"Job ignored on this architecture {arch}, stopping job ...");
+                        Log($"Job ignored on this architecture {arch}, stopping job ...", error: true);
                         return 0;
                     }
                 }
@@ -1438,13 +1438,13 @@ namespace BenchmarksDriver
                                 continue;
                             }
 
-                            Log(responseContent);
+                            Log(responseContent, error: true);
                             throw new InvalidOperationException("Invalid response from the server");
                         }
 
                         if (serverJob.ServerVersion < 3)
                         {
-                            Log($"Invalid server version ({serverJob.ServerVersion}), please update your server to match this driver version.");
+                            Log($"Invalid server version ({serverJob.ServerVersion}), please update your server to match this driver version.", error: true);
                             return 20;
                         }
 
@@ -1465,7 +1465,7 @@ namespace BenchmarksDriver
 
                         if (requiredOperatingSystem.HasValue && requiredOperatingSystem.Value != serverJob.OperatingSystem)
                         {
-                            Log($"Job ignored on this OS, stopping job ...");
+                            Log($"Job ignored on this OS, stopping job ...", error: true);
 
                             response = await _httpClient.PostAsync(serverJobUri + "/stop", new StringContent(""));
                             LogVerbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -1709,7 +1709,7 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.Failed)
                         {
-                            Log($"Job failed on benchmark server, stopping...");
+                            Log($"Job failed on benchmark server, stopping...", error: true);
 
                             
                             if (_displayOutput)
@@ -1726,7 +1726,7 @@ namespace BenchmarksDriver
                         }
                         else if (serverJob.State == ServerState.NotSupported)
                         {
-                            Log("Server does not support this job configuration.");
+                            Log("Server does not support this job configuration.", error: true);
                             return 0;
                         }
                         else if (serverJob.State == ServerState.Stopped)
@@ -1853,9 +1853,7 @@ namespace BenchmarksDriver
                             }
                             else
                             {
-                                Console.ForegroundColor = ConsoleColor.White;
-                                Log($"Server job running for more than {_jobTimeout}, stopping...");
-                                Console.ResetColor();
+                                Log($"Server job running for more than {_jobTimeout}, stopping...", error: true);
                                 serverJob.State = ServerState.Failed;
                             }
 
@@ -1990,7 +1988,7 @@ namespace BenchmarksDriver
 
                                     if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
                                     {
-                                        Log($"The job was forcibly stopped by the server.");
+                                        Log($"The job was forcibly stopped by the server.", error: true);
                                         return 1;
                                     }
 
@@ -2006,7 +2004,7 @@ namespace BenchmarksDriver
                                     }
                                     else
                                     {
-                                        Log($"Unexpected state: {serverJob.State}");
+                                        Log($"Unexpected state: {serverJob.State}", error: true);
                                     }
 
                                     await Task.Delay(1000);
@@ -2029,7 +2027,7 @@ namespace BenchmarksDriver
                                 }
                                 catch (HttpRequestException)
                                 {
-                                    Log($"FAILED: The trace was not successful");
+                                    Log($"FAILED: The trace was not successful", error: true);
                                 }
                             }
 
@@ -2050,7 +2048,7 @@ namespace BenchmarksDriver
 
                                     if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
                                     {
-                                        Log($"The job was forcibly stopped by the server.");
+                                        Log($"The job was forcibly stopped by the server.", error: true);
                                         return 1;
                                     }
 
@@ -2066,7 +2064,7 @@ namespace BenchmarksDriver
                                     }
                                     else
                                     {
-                                        Log($"Unexpected state: {serverJob.State}");
+                                        Log($"Unexpected state: {serverJob.State}", error: true);
                                     }
 
                                     await Task.Delay(1000);
@@ -2087,7 +2085,7 @@ namespace BenchmarksDriver
                                 }
                                 catch (HttpRequestException)
                                 {
-                                    Log($"FAILED: The trace was not successful");
+                                    Log($"FAILED: The trace was not successful", error: true);
                                 }
                             }
 
@@ -2367,7 +2365,7 @@ namespace BenchmarksDriver
 
                         if (response.StatusCode == HttpStatusCode.NotFound || String.IsNullOrEmpty(responseContent))
                         {
-                            Log($"The job was forcibly stopped by the server.");
+                            Log($"The job was forcibly stopped by the server.", error: true);
                             return 0;
                         }
 
@@ -2376,7 +2374,7 @@ namespace BenchmarksDriver
                         if (DateTime.UtcNow - jobStoppedUtc > TimeSpan.FromSeconds(30))
                         {
                             // The job needs to be deleted
-                            Log($"Server didn't stop the job in the expected time, deleting it ...");
+                            Log($"Server didn't stop the job in the expected time, deleting it ...", error: true);
 
                             break;
                         }
@@ -2407,7 +2405,7 @@ namespace BenchmarksDriver
                         }
                         catch (Exception e)
                         {
-                            Log($"Error while downloading EventPipe file {EventPipeOutputFile}");
+                            Log($"Error while downloading EventPipe file {EventPipeOutputFile}", error: true);
                             LogVerbose(e.Message);
                         }
                     }
@@ -2415,8 +2413,8 @@ namespace BenchmarksDriver
                 }
                 catch (Exception e)
                 {
-                    Log($"Interrupting due to an unexpected exception");
-                    Log(e.ToString());
+                    Log($"Interrupting due to an unexpected exception", error: true);
+                    Log(e.ToString(), error: true);
 
                     return -1;
                 }
@@ -2447,7 +2445,7 @@ namespace BenchmarksDriver
                             }
                             catch (Exception e)
                             {
-                                Log($"Error while downloading published application");
+                                Log($"Error while downloading published application", error: true);
                                 LogVerbose(e.Message);
                             }
                         }
@@ -2474,7 +2472,7 @@ namespace BenchmarksDriver
                                 }
                                 catch (Exception e)
                                 {
-                                    Log($"Error while downloading file {file}, skipping ...");
+                                    Log($"Error while downloading file {file}, skipping ...", error: true);
                                     LogVerbose(e.Message);
                                     continue;
                                 }
@@ -2494,7 +2492,7 @@ namespace BenchmarksDriver
                             }
                             catch (Exception e)
                             {
-                                Log($"Error while downloading build logs");
+                                Log($"Error while downloading build logs", error: true);
                                 LogVerbose(e.Message);
                             }
                         }
@@ -2511,8 +2509,8 @@ namespace BenchmarksDriver
                             - Issue while cloning the repository (GitHub unresponsive)
                             - Issue while restoring (MyGet/NuGet unresponsive)
                             - Issue while building
-                            - Issue while running (Timeout)"
-                            );
+                            - Issue while running (Timeout)",
+                            error: true);
                         }
 
                         response.EnsureSuccessful();
@@ -2883,15 +2881,15 @@ namespace BenchmarksDriver
                 Console.ForegroundColor = ConsoleColor.Red;
             }
 
-            if (!_quiet)
+            if (!_quiet || error)
             {
-                var time = DateTime.Now.ToString("hh:mm:ss.fff");
                 if (notime)
                 {
                     Console.WriteLine(message);
                 }
                 else
                 {
+                    var time = DateTime.Now.ToString("hh:mm:ss.fff");
                     Console.WriteLine($"[{time}] {message}");
                 }
             }

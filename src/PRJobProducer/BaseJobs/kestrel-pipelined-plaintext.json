@@ -17,7 +17,7 @@
     "Path": "/plaintext",
 
     "OutputFiles": [
-      "artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/netcoreapp5.0/*.dll"
+      "artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/Release/net5.0/*.dll"
     ],
     "DotNetTrace": false,
     "SelfContained": true
