@@ -30,7 +30,7 @@ parameters:
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
   - displayName: YARP
-    arguments: --scenario proxy-yarp        $(yarpJobs)  --property proxy=yarp
+    arguments: --scenario proxy-yarp        $(yarpJobs)  --property proxy=yarp --application.runtimeversion 5.0.*
 
 - name: payloads
   type: object
