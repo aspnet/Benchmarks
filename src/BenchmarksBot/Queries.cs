@@ -69,7 +69,7 @@
         ";
 
         public const string Error = @"
-            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any sccenario that has worked in the last checked period
+            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any scenario that has worked in the last checked period
 
             SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [LastDateTime], [Errors]
             FROM (
@@ -83,8 +83,8 @@
         ";
 
         public const string NotRunning = @"
-            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any sccenario that has worked in the last checked period
-            DECLARE @lastDate DateTime = DATEADD(hour, -24, GETDATE())          -- if any of these scenarios hasn't worked in the last day
+            DECLARE @startDate DateTime = DATEADD(day, -7, GETDATE())           -- to find any scenario that has worked in the last checked period
+            DECLARE @lastDate DateTime = DATEADD(hour, -36, GETDATE())          -- if any of these scenarios hasn't worked in the last 36 hours
 
             SELECT Scenario, Hardware, OperatingSystem, Scheme, WebHost, [LastDateTime], [Errors]
             FROM (
