@@ -66,6 +66,16 @@
     "ExtraDriverArgs": "--scheme h2c"
   },
 
+  "json": {
+
+    "ClientProperties": {
+    },
+
+    "PresetHeaders": "Json",
+    "Path": "/json"
+
+  },
+
   "BuildInstructions": {
     "BuildCommands": [
       "./build.sh /t:Restore",

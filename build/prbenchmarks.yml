@@ -23,7 +23,7 @@ jobs:
   - powershell: |
         cd ./src/PRJobProducer
         dotnet run -c release -- `
-            --base-job BaseJobs/kestrel-pipelined-plaintext.json `
+            --base-job BaseJobs/kestrel.json `
             --github-app-id "env:GITHUB_APP_ID" `
             --github-app-install-id "env:GITHUB_INSTALL_ID" `
             --github-app-key "env:GITHUB_PRIVATE_KEY" `
