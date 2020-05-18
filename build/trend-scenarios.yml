@@ -51,35 +51,6 @@ parameters:
     arguments: --scenario JsonPlatform $(jsonPlatformJobs) --connections 512
   - displayName: Json Middleware
     arguments: --scenario Json $(jsonJobs)
-  - displayName: Json Mvc
-    arguments: --scenario MvcJson $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft)
-    arguments: --scenario MvcJsonNet $(jsonJobs)
-  - displayName: Json Mvc (2KB)
-    arguments: --scenario MvcJson2k $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNet2k $(jsonJobs)
-  - displayName: Json Mvc Input (2KB)
-    arguments: --scenario MvcJsonInput2k $(jsonJobs)
-  - displayName: Json Mvc Input (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNetInput2k $(jsonJobs)
-  - displayName: Json Mvc (60KB)
-    arguments: --scenario MvcJsonOutput60k $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetOutput60k $(jsonJobs)
-  - displayName: Json Mvc Input (60KB)
-    arguments: --scenario MvcJsonInput60k $(jsonJobs)
-  - displayName: Json Mvc Input (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetInput60k $(jsonJobs)
-  - displayName: Json Mvc Input (2MB)
-    arguments: --scenario MvcJsonInput2M $(jsonJobs)
-  - displayName: Json Mvc Input (NewtonSoft, 2MB)
-    arguments: --scenario MvcJsonNetInput2M $(jsonJobs)
-  - displayName: Json Mvc (2MB)
-    arguments: --scenario MvcJsonOutput2M $(jsonJobs)
-  - displayName: Json Mvc (NewtonSoft, 2M)
-    arguments: --scenario MvcJsonNetOutput2M $(jsonJobs)
-  - displayName: Json Mvc (2KB)
 
 # Https
 
