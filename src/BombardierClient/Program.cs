@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,6 +37,33 @@ namespace BombardierClient
             Console.WriteLine("Bombardier Client");
             Console.WriteLine("args: " + String.Join(' ', args));
 
+            // Extracting duration parameters
+            string warmup = "";
+            string duration = "";
+
+            var argsList = args.ToList();
+
+            var durationIndex = argsList.FindIndex(x => String.Equals("-d", StringComparer.OrdinalIgnoreCase));
+            if (durationIndex >= 0)
+            {
+                duration = argsList[durationIndex + 1];
+                argsList.RemoveAt(durationIndex);
+                argsList.RemoveAt(durationIndex);
+            }
+            else
+            {
+                Console.WriteLine("Couldn't find -d argument");
+                return;
+            }
+
+            var warmupIndex = argsList.FindIndex(x => String.Equals("-w", StringComparer.OrdinalIgnoreCase));
+            if (warmupIndex >= 0)
+            {
+                warmup = argsList[warmupIndex + 1];
+                argsList.RemoveAt(warmupIndex);
+                argsList.RemoveAt(warmupIndex);
+            }
+
             var bombardierUrl = _bombardierUrls[Environment.OSVersion.Platform];
             var bombardierFileName = Path.GetFileName(bombardierUrl);
 
@@ -49,12 +77,12 @@ namespace BombardierClient
                 }
             }
 
+            var baseArguments = String.Join(' ', args.ToArray()) + " --print r --format json";
 
             var process = new Process()
             {
                 StartInfo = {
                     FileName = bombardierFileName,
-                    Arguments = String.Join(' ', args) + " --print r --format json",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -71,6 +99,16 @@ namespace BombardierClient
                 }
             };
 
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+                process.Start();
+                process.WaitForExit();
+            }
+
+            process.StartInfo.Arguments = baseArguments + " -d " + duration;
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
