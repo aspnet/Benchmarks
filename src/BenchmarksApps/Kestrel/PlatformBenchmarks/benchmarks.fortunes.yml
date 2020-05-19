@@ -1,0 +1,70 @@
+﻿# Examples:
+# --config benchmarks.fortunes.yml --scenario fortunesplaforms --profile aspnet-citrine
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  platforms:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
+    readyStateText: Application started.
+    buildArguments: 
+      - "/p:IsDatabase=true"
+
+  postgresql:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      dockerFile: docker/postgres-techempower/Dockerfile
+      dockerImageName: postgres
+      dockerContextDirectory: docker/postgres-techempower
+    readyStateText: PostgreSQL init process complete
+    scenario: PostgresQL
+
+scenarios:
+  fortunesplaforms:
+    db:
+      job: postgresql
+    application:
+      job: platforms
+    warmup:
+      job: bombardier
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        duration: 15
+        serverPort: 5000
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        duration: 15
+        serverPort: 5000
+
+profiles:
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        environmentVariables:
+          database: PostgreSQL
+          connectionstring: Server=10.0.0.106;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+      warmup:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-win:5001
+
