@@ -79,6 +79,8 @@ parameters:
   default:
     - displayName: "Streams: 1"
       arguments: --variable streams=1 --variable connections=$(h2loadConnectionsCount) --variable threads=$(h2loadConnectionsCount) --property streams=1
+    - displayName: "Streams: 1x1"
+      arguments: --variable streams=1 --variable connections=1 --variable threads=1 --property streams=1x1
     - displayName: "Streams: 70"
       arguments: --variable streams=70 --variable connections=$(h2loadConnectionsCount) --variable threads=$(h2loadConnectionsCount) --property streams=70
     - displayName: "Streams: 70x1"
