@@ -27,7 +27,10 @@ namespace PlatformBenchmarks
             // Body
             using (Utf8JsonWriter utf8JsonWriter = new Utf8JsonWriter(writer.Output))
             {
-                JsonSerializer.Serialize<JsonMessage>(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerOptions);
+                var message = new JsonMessage { message = "Hello, World!" };
+                utf8JsonWriter.WriteStartObject();
+                utf8JsonWriter.WriteString("message", message.message);
+                utf8JsonWriter.WriteEndObject();
             }
         }
     }
