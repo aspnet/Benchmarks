@@ -43,7 +43,7 @@ namespace BombardierClient
 
             var argsList = args.ToList();
 
-            var durationIndex = argsList.FindIndex(x => String.Equals("-d", StringComparer.OrdinalIgnoreCase));
+            var durationIndex = argsList.FindIndex(x => String.Equals(x, "-d", StringComparison.OrdinalIgnoreCase));
             if (durationIndex >= 0)
             {
                 duration = argsList[durationIndex + 1];
@@ -56,13 +56,15 @@ namespace BombardierClient
                 return;
             }
 
-            var warmupIndex = argsList.FindIndex(x => String.Equals("-w", StringComparer.OrdinalIgnoreCase));
+            var warmupIndex = argsList.FindIndex(x => String.Equals(x, "-w", StringComparison.OrdinalIgnoreCase));
             if (warmupIndex >= 0)
             {
                 warmup = argsList[warmupIndex + 1];
                 argsList.RemoveAt(warmupIndex);
                 argsList.RemoveAt(warmupIndex);
             }
+
+            args = argsList.ToArray();
 
             var bombardierUrl = _bombardierUrls[Environment.OSVersion.Platform];
             var bombardierFileName = Path.GetFileName(bombardierUrl);
@@ -89,6 +91,15 @@ namespace BombardierClient
                 EnableRaisingEvents = true
             };
 
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+                process.Start();
+                process.WaitForExit();
+            }
+
             var stringBuilder = new StringBuilder();
 
             process.OutputDataReceived += (_, e) =>
@@ -98,15 +109,6 @@ namespace BombardierClient
                     stringBuilder.AppendLine(e.Data);
                 }
             };
-
-            // Warmup
-
-            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
-            {
-                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
-                process.Start();
-                process.WaitForExit();
-            }
 
             process.StartInfo.Arguments = baseArguments + " -d " + duration;
             process.Start();
