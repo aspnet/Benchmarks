@@ -57,7 +57,8 @@ steps:
         waitForCompletion: true
         messageBody: |
           {
-            "name": "benchmarksdriver",
-            "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --runtimeversion 5.0.* --self-contained --warmup ${{ parameters.warmup }} --duration ${{ parameters.duration }} --collect-counters --description Trend/Latest --session $(session) --table AspNetBenchmarks2 --sql SQL_CONNECTION_STRING" --property protocol=http --property server=kestrel ]
+            "name": "benchmarksdriver2",
+            "args": [ "${{ s.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.runtimeversion 5.0.* --warmup.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table MvcBenchmarks --sql SQL_CONNECTION_STRING --no-measurements --no-metadata --warmup.options.discardResults true" ]
           }
+
 

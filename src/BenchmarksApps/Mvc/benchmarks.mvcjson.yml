@@ -13,6 +13,10 @@ scenarios:
   MvcJson:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        /json-helloworld
     load:
       job: wrk
       variables:
@@ -24,6 +28,10 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /json-helloworld
     load:
       job: wrk
       variables:
@@ -33,6 +41,10 @@ scenarios:
   MvcJson2k:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /json2k
     load:
       job: wrk
       variables:
@@ -44,6 +56,10 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /json2k
     load:
       job: wrk
       variables:
@@ -53,6 +69,10 @@ scenarios:
   MvcJsonOutput60k:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
     load:
       job: wrk
       variables:
@@ -64,6 +84,10 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
     load:
       job: wrk
       variables:
@@ -73,6 +97,10 @@ scenarios:
   MvcJsonOutput2M:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
     load:
       job: wrk
       variables:
@@ -84,6 +112,10 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
     load:
       job: wrk
       variables:
@@ -93,6 +125,11 @@ scenarios:
   MvcJsonInput2k:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
     load:
       job: wrk
       variables:
@@ -105,6 +142,11 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
     load:
       job: wrk
       variables:
@@ -115,6 +157,12 @@ scenarios:
   MvcJsonInput60k:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
     load:
       job: wrk
       variables:
@@ -128,6 +176,12 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
     load:
       job: wrk
       variables:
@@ -139,6 +193,12 @@ scenarios:
   MvcJsonInput2M:
     application:
       job: mvcServer
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
     load:
       job: wrk
       variables:
@@ -152,6 +212,12 @@ scenarios:
       job: mvcServer
       variables:
         useNewtonsoftJson: true
+    warmup:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
     load:
       job: wrk
       variables:
