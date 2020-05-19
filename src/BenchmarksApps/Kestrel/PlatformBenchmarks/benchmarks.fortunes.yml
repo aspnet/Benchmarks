@@ -1,19 +1,17 @@
 ﻿# Examples:
-# --config benchmarks.fortunes.yml --scenario fortunesplatforms --profile aspnet-citrine
+# --config benchmarks.fortunes.yml --scenario fortunesplatform --profile aspnet-citrine
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
 
 jobs:
-  platforms:
+  platformbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: master
       project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
-    buildArguments: 
-      - "/p:IsDatabase=true"
 
   postgresql:
     source:
@@ -23,27 +21,24 @@ jobs:
       dockerImageName: postgres
       dockerContextDirectory: docker/postgres-techempower
     readyStateText: PostgreSQL init process complete
-    scenario: PostgresQL
 
 scenarios:
-  fortunesplatforms:
+  fortunesplatform:
     db:
       job: postgresql
+
     application:
-      job: platforms
-    warmup:
-      job: bombardier
-      variables:
-        presetHeaders: html
-        path: /fortunes
-        duration: 15
-        serverPort: 5000
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+
     load:
       job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
-        duration: 15
+        warmup: 5 
+        duration: 10
         serverPort: 5000
 
 profiles:
@@ -65,6 +60,8 @@ profiles:
         endpoints: 
           - http://asp-citrine-win:5001
       load:
+        variables:
+          connections: 512
         endpoints: 
           - http://asp-citrine-win:5001
 
