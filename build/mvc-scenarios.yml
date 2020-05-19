@@ -19,33 +19,33 @@ parameters:
   type: object
   default:
   - displayName: Json Mvc
-    arguments: --scenario MvcJson $(jsonJobs) --property displayname="Json Mvc (Hello world)"
+    arguments: --scenario MvcJson $(mvcJobs) --property displayname="Json Mvc (Hello world)"
   - displayName: Json Mvc (NewtonSoft)
-    arguments: --scenario MvcJsonNet $(jsonJobs) --property displayname="Json Mvc NewtonSoft (Hello world)"
+    arguments: --scenario MvcJsonNet $(mvcJobs) --property displayname="Json Mvc NewtonSoft (Hello world)"
   - displayName: Json Mvc (2KB)
-    arguments: --scenario MvcJson2k $(jsonJobs) --property displayname="Json Mvc Output (2KB)"
+    arguments: --scenario MvcJson2k $(mvcJobs) --property displayname="Json Mvc Output (2KB)"
   - displayName: Json Mvc (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNet2k $(jsonJobs) --property displayname="Json Mvc Output NewtonSoft (2KB)"
+    arguments: --scenario MvcJsonNet2k $(mvcJobs) --property displayname="Json Mvc Output NewtonSoft (2KB)"
   - displayName: Json Mvc Input (2KB)
-    arguments: --scenario MvcJsonInput2k $(jsonJobs) --property displayname="Json Mvc Input (2KB)"
+    arguments: --scenario MvcJsonInput2k $(mvcJobs) --property displayname="Json Mvc Input (2KB)"
   - displayName: Json Mvc Input (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNetInput2k $(jsonJobs) --property displayname="Json Mvc Input NewtonSoft (2KB)"
+    arguments: --scenario MvcJsonNetInput2k $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (2KB)"
   - displayName: Json Mvc (60KB)
-    arguments: --scenario MvcJsonOutput60k $(jsonJobs) --property displayname="Json Mvc Output (60KB)"
+    arguments: --scenario MvcJsonOutput60k $(mvcJobs) --property displayname="Json Mvc Output (60KB)"
   - displayName: Json Mvc (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetOutput60k $(jsonJobs) --property displayname="Json Mvc Output NewtonSoft (60KB)"
+    arguments: --scenario MvcJsonNetOutput60k $(mvcJobs) --property displayname="Json Mvc Output NewtonSoft (60KB)"
   - displayName: Json Mvc Input (60KB)
-    arguments: --scenario MvcJsonInput60k $(jsonJobs) --property displayname="Json Mvc Input (60KB)"
+    arguments: --scenario MvcJsonInput60k $(mvcJobs) --property displayname="Json Mvc Input (60KB)"
   - displayName: Json Mvc Input (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetInput60k $(jsonJobs) --property displayname="Json Mvc Input NewtonSoft (60KB)"
+    arguments: --scenario MvcJsonNetInput60k $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (60KB)"
   - displayName: Json Mvc Input (2MB)
-    arguments: --scenario MvcJsonInput2M $(jsonJobs) --property displayname="Json Mvc Input (2MB)"
+    arguments: --scenario MvcJsonInput2M $(mvcJobs) --property displayname="Json Mvc Input (2MB)"
   - displayName: Json Mvc Input (NewtonSoft, 2MB)
-    arguments: --scenario MvcJsonNetInput2M $(jsonJobs) --property displayname="Json Mvc Input NewtonSoft (2MB)"
+    arguments: --scenario MvcJsonNetInput2M $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (2MB)"
   - displayName: Json Mvc (2MB)
-    arguments: --scenario MvcJsonOutput2M $(jsonJobs) --property displayname="Json Mvc Output (2MB)"
+    arguments: --scenario MvcJsonOutput2M $(mvcJobs) --property displayname="Json Mvc Output (2MB)"
   - displayName: Json Mvc (NewtonSoft, 2M)
-    arguments: --scenario MvcJsonNetOutput2M $(jsonJobs) --property displayname="Json Mvc NewtonSoft (2MB)"
+    arguments: --scenario MvcJsonNetOutput2M $(mvcJobs) --property displayname="Json Mvc NewtonSoft (2MB)"
 
 steps:
   - ${{ each s in parameters.scenarios }}:
