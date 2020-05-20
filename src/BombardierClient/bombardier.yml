@@ -20,7 +20,7 @@ jobs:
     waitForExit: true
     variables:
       connections: 256
-      duration: 5
+      duration: 15
       warmup: 0
       rate: 0
       transport: fasthttp # | http1 | http2

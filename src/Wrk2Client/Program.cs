@@ -21,14 +21,44 @@ namespace Wrk2Client
 
             Process.Start("chmod", "+x " + Wrk2Filename);
 
-            // Dowe need to parse latency?
+            // Do we need to parse latency?
             var parseLatency = args.Any(x => x == "--latency" || x == "-L");
+
+            // Extracting duration parameters
+            string warmup = "";
+            string duration = "";
+
+            var argsList = args.ToList();
+
+            var durationIndex = argsList.FindIndex(x => String.Equals(x, "-d", StringComparison.OrdinalIgnoreCase));
+            if (durationIndex >= 0)
+            {
+                duration = argsList[durationIndex + 1];
+                argsList.RemoveAt(durationIndex);
+                argsList.RemoveAt(durationIndex);
+            }
+            else
+            {
+                Console.WriteLine("Couldn't find -d argument");
+                return;
+            }
+
+            var warmupIndex = argsList.FindIndex(x => String.Equals(x, "-w", StringComparison.OrdinalIgnoreCase));
+            if (warmupIndex >= 0)
+            {
+                warmup = argsList[warmupIndex + 1];
+                argsList.RemoveAt(warmupIndex);
+                argsList.RemoveAt(warmupIndex);
+            }
+
+            args = argsList.ToArray();
+
+            var baseArguments = String.Join(' ', args.ToArray());
 
             var process = new Process()
             {
                 StartInfo = {
                     FileName = Wrk2Filename,
-                    Arguments = String.Join(' ', args),
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -41,18 +71,48 @@ namespace Wrk2Client
             {
                 if (e != null && e.Data != null)
                 {
-                    stringBuilder.AppendLine(e.Data);
+                    Console.WriteLine(e.Data);
+
+                    lock (stringBuilder)
+                    {
+                        stringBuilder.AppendLine(e.Data);
+                    }
                 }
             };
+
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
+
+                Console.WriteLine("> wrk2 " + process.StartInfo.Arguments);
+
+                process.Start();
+                process.WaitForExit();
+            }
+            
+            lock (stringBuilder)
+            {
+                stringBuilder.Clear();
+            }
+
+            process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
+
+            Console.WriteLine("> wrk2 " + process.StartInfo.Arguments);
 
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            var output = stringBuilder.ToString();
+            string output;
 
-            Console.WriteLine(output);
+            lock (stringBuilder)
+            {
+                output = stringBuilder.ToString();
+            }
 
+            BenchmarksEventSource.Log.Metadata("wrk2/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
@@ -62,7 +122,7 @@ namespace Wrk2Client
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
             {
-                BenchmarksEventSource.Measure("wrk2/rps", double.Parse(rpsMatch.Groups[1].Value));
+                BenchmarksEventSource.Measure("wrk2/rps/mean", double.Parse(rpsMatch.Groups[1].Value));
             }
 
             const string LatencyPattern = @"\s+{0}\s*([\d\.]+)([a-z]+)";

@@ -21,7 +21,7 @@ namespace WrkClient
             try
             {
                 await ProcessScriptFile(args, tempScriptFile);
-                RunCore(fileName, string.Join(' ', args), parseLatency);
+                RunCore(fileName, args, parseLatency);
             }
             finally
             {
@@ -34,6 +34,8 @@ namespace WrkClient
 
         static async Task ProcessScriptFile(string[] args, string tempScriptFile)
         {
+            using var httpClient = new HttpClient();
+
             for (var i = 0; i < args.Length - 1; i++)
             {
                 // wrk does not support loading scripts from the network. We'll shim it in this client.
@@ -41,7 +43,6 @@ namespace WrkClient
                     Uri.TryCreate(args[i + 1], UriKind.Absolute, out var uri) &&
                     (uri.Scheme == "http" || uri.Scheme == "https"))
                 {
-                    using var httpClient = new HttpClient();
                     using var response = await httpClient.GetStreamAsync(uri);
 
                     using var fileStream = File.Create(tempScriptFile);
@@ -52,14 +53,44 @@ namespace WrkClient
             }
         }
 
-        static void RunCore(string fileName, string args, bool parseLatency)
-        { 
+        static void RunCore(string fileName, string[] args, bool parseLatency)
+        {
+            // Extracting duration parameters
+            string warmup = "";
+            string duration = "";
+
+            var argsList = args.ToList();
+
+            var durationIndex = argsList.FindIndex(x => String.Equals(x, "-d", StringComparison.OrdinalIgnoreCase));
+            if (durationIndex >= 0)
+            {
+                duration = argsList[durationIndex + 1];
+                argsList.RemoveAt(durationIndex);
+                argsList.RemoveAt(durationIndex);
+            }
+            else
+            {
+                Console.WriteLine("Couldn't find -d argument");
+                return;
+            }
+
+            var warmupIndex = argsList.FindIndex(x => String.Equals(x, "-w", StringComparison.OrdinalIgnoreCase));
+            if (warmupIndex >= 0)
+            {
+                warmup = argsList[warmupIndex + 1];
+                argsList.RemoveAt(warmupIndex);
+                argsList.RemoveAt(warmupIndex);
+            }
+
+            args = argsList.ToArray();
+
+            var baseArguments = String.Join(' ', args.ToArray());
+
             var process = new Process()
             {
                 StartInfo = 
                 {
                     FileName = fileName,
-                    Arguments = args,
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
@@ -72,6 +103,8 @@ namespace WrkClient
             {
                 if (e != null && e.Data != null)
                 {
+                    Console.WriteLine(e.Data);
+
                     lock (stringBuilder)
                     {
                         stringBuilder.AppendLine(e.Data);
@@ -79,15 +112,39 @@ namespace WrkClient
                 }
             };
 
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = $"-d {warmup} {baseArguments}";
+
+                Console.WriteLine("> wrk " + process.StartInfo.Arguments);
+
+                process.Start();
+                process.WaitForExit();
+            }
+
+            lock (stringBuilder)
+            {
+                stringBuilder.Clear();
+            }
+
+            process.StartInfo.Arguments = $"-d {duration} {baseArguments}";
+
+            Console.WriteLine("> wrk " + process.StartInfo.Arguments);
+
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            var output = stringBuilder.ToString();
+            string output;
 
-            Console.WriteLine(output);
+            lock (stringBuilder)
+            {
+                output = stringBuilder.ToString();
+            }
 
-            BenchmarksEventSource.Log.Metadata("wrk/rps", "max", "sum", "Requests/sec", "Requests per second", "n0");
+            BenchmarksEventSource.Log.Metadata("wrk/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("wrk/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
             BenchmarksEventSource.Log.Metadata("wrk/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
@@ -102,7 +159,7 @@ namespace WrkClient
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
             {
-                BenchmarksEventSource.Measure("wrk/rps", double.Parse(rpsMatch.Groups[1].Value));
+                BenchmarksEventSource.Measure("wrk/rps/mean", double.Parse(rpsMatch.Groups[1].Value));
             }
 
             // Max latency is 3rd number after "Latency "

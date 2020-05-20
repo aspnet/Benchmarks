@@ -21,6 +21,7 @@ jobs:
     variables:
       connections: 256  # total number of HTTP connections to keep open with each thread handling N = connections/threads
       duration: 15 # duration in seconds
+      warmup: 0 # warmup in seconds
       threads: 32 # total number of threads to use
       pipeline: 1
       script: null
@@ -28,4 +29,4 @@ jobs:
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {%elsif script %} -s {{script}} -- {{scriptArguments}} {% endif %}"
+    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {%elsif script %} -s {{script}} -- {{scriptArguments}} {% endif %}"

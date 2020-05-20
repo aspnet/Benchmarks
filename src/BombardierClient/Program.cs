@@ -91,33 +91,54 @@ namespace BombardierClient
                 EnableRaisingEvents = true
             };
 
-            // Warmup
-
-            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
-            {
-                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
-                process.Start();
-                process.WaitForExit();
-            }
-
             var stringBuilder = new StringBuilder();
 
             process.OutputDataReceived += (_, e) =>
             {
                 if (e != null && e.Data != null)
                 {
-                    stringBuilder.AppendLine(e.Data);
+                    Console.WriteLine(e.Data);
+
+                    lock (stringBuilder)
+                    {
+                        stringBuilder.AppendLine(e.Data);
+                    }
                 }
             };
 
-            process.StartInfo.Arguments = baseArguments + " -d " + duration;
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
+
+                Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
+
+                process.Start();
+                process.WaitForExit();
+            }
+
+            lock (stringBuilder)
+            {
+                stringBuilder.Clear();
+            }
+
+            process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
+
+            Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
+
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            Console.WriteLine(stringBuilder);
+            string output;
 
-            var document = JObject.Parse(stringBuilder.ToString());
+            lock (stringBuilder)
+            {
+                output = stringBuilder.ToString();
+            }
+
+            var document = JObject.Parse(output);
 
             BenchmarksEventSource.Log.Metadata("bombardier/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("bombardier/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
@@ -125,7 +146,8 @@ namespace BombardierClient
             BenchmarksEventSource.Log.Metadata("bombardier/latency/mean", "max", "sum", "Mean latency (us)", "Mean latency (us)", "n0");
             BenchmarksEventSource.Log.Metadata("bombardier/latency/max", "max", "sum", "Max latency (us)", "Max latency (us)", "n0");
 
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Requests/sec (max)", "Max requests per second", "n0");
 
             BenchmarksEventSource.Log.Metadata("bombardier/raw", "all", "all", "Raw results", "Raw results", "json");
 
@@ -147,8 +169,9 @@ namespace BombardierClient
             BenchmarksEventSource.Measure("bombardier/latency/max", document["result"]["latency"]["max"].Value<double>());
 
             BenchmarksEventSource.Measure("bombardier/rps/max", document["result"]["rps"]["max"].Value<double>());
+            BenchmarksEventSource.Measure("bombardier/rps/mean", document["result"]["rps"]["mean"].Value<double>());
 
-            BenchmarksEventSource.Measure("bombardier/raw", stringBuilder.ToString());
+            BenchmarksEventSource.Measure("bombardier/raw", output);
 
         }
     }
