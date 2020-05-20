@@ -128,7 +128,7 @@ namespace WrkClient
 
             process.StartInfo.Arguments = $"-d {duration} {baseArguments}";
 
-            Console.WriteLine("Running load with arguments: " + process.StartInfo.Arguments);
+            Console.WriteLine("> wrk " + process.StartInfo.Arguments);
 
             process.Start();
             process.BeginOutputReadLine();
