@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json;
 
 namespace PlatformBenchmarks
@@ -15,6 +16,9 @@ namespace PlatformBenchmarks
             _headerContentTypeJson + _crlf +
             _headerContentLength + _jsonPayloadSize.ToString();
 
+        [ThreadStatic]
+        private static Utf8JsonWriter t_writer;
+
         private static void Json(ref BufferWriter<WriterAdapter> writer)
         {
             writer.Write(_jsonPreamble);
@@ -24,11 +28,11 @@ namespace PlatformBenchmarks
 
             writer.Commit();
 
+            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(writer.Output);
+            utf8JsonWriter.Reset(writer.Output);
+
             // Body
-            using (Utf8JsonWriter utf8JsonWriter = new Utf8JsonWriter(writer.Output))
-            {
-                JsonSerializer.Serialize<JsonMessage>(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerOptions);
-            }
+            JsonSerializer.Serialize<JsonMessage>(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerOptions);
         }
     }
 }
