@@ -65,6 +65,17 @@ namespace Wrk2Client
                 EnableRaisingEvents = true
             };
 
+            var stringBuilder = new StringBuilder();
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    stringBuilder.AppendLine(e.Data);
+                    Console.WriteLine(e.Data);
+                }
+            };
+
             // Warmup
 
             if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
@@ -74,15 +85,7 @@ namespace Wrk2Client
                 process.WaitForExit();
             }
 
-            var stringBuilder = new StringBuilder();
-
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (e != null && e.Data != null)
-                {
-                    stringBuilder.AppendLine(e.Data);
-                }
-            };
+            stringBuilder.Clear();
 
             process.StartInfo.Arguments = baseArguments + " -d " + duration;
 
@@ -91,8 +94,6 @@ namespace Wrk2Client
             process.WaitForExit();
 
             var output = stringBuilder.ToString();
-
-            Console.WriteLine(output);
 
             BenchmarksEventSource.Log.Metadata("wrk2/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");

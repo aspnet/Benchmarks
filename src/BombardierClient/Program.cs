@@ -91,6 +91,17 @@ namespace BombardierClient
                 EnableRaisingEvents = true
             };
 
+            var stringBuilder = new StringBuilder();
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (e != null && e.Data != null)
+                {
+                    Console.WriteLine(e.Data);
+                    stringBuilder.AppendLine(e.Data);
+                }
+            };
+
             // Warmup
 
             if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
@@ -100,22 +111,12 @@ namespace BombardierClient
                 process.WaitForExit();
             }
 
-            var stringBuilder = new StringBuilder();
-
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (e != null && e.Data != null)
-                {
-                    stringBuilder.AppendLine(e.Data);
-                }
-            };
+            stringBuilder.Clear();
 
             process.StartInfo.Arguments = baseArguments + " -d " + duration;
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
-
-            Console.WriteLine(stringBuilder);
 
             var document = JObject.Parse(stringBuilder.ToString());
 
