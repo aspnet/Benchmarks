@@ -21,6 +21,7 @@ jobs:
     variables:
       connections: 256
       duration: 15
+      warmup: 5
       threads: 32
       rate: 500
-    arguments: '-c {{connections}} -d {{duration}}s -t {{threads}} {{headers[presetHeaders]}} -R {{rate}} -L {{serverUri}}:{{serverPort}}{{path}}'
+    arguments: '-c {{connections}} -d {{duration}}s -w {{warmup}s -t {{threads}} {{headers[presetHeaders]}} -R {{rate}} -L {{serverUri}}:{{serverPort}}{{path}}'

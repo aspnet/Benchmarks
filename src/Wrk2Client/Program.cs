@@ -21,19 +21,58 @@ namespace Wrk2Client
 
             Process.Start("chmod", "+x " + Wrk2Filename);
 
-            // Dowe need to parse latency?
+            // Do we need to parse latency?
             var parseLatency = args.Any(x => x == "--latency" || x == "-L");
+
+            // Extracting duration parameters
+            string warmup = "";
+            string duration = "";
+
+            var argsList = args.ToList();
+
+            var durationIndex = argsList.FindIndex(x => String.Equals(x, "-d", StringComparison.OrdinalIgnoreCase));
+            if (durationIndex >= 0)
+            {
+                duration = argsList[durationIndex + 1];
+                argsList.RemoveAt(durationIndex);
+                argsList.RemoveAt(durationIndex);
+            }
+            else
+            {
+                Console.WriteLine("Couldn't find -d argument");
+                return;
+            }
+
+            var warmupIndex = argsList.FindIndex(x => String.Equals(x, "-w", StringComparison.OrdinalIgnoreCase));
+            if (warmupIndex >= 0)
+            {
+                warmup = argsList[warmupIndex + 1];
+                argsList.RemoveAt(warmupIndex);
+                argsList.RemoveAt(warmupIndex);
+            }
+
+            args = argsList.ToArray();
+
+            var baseArguments = String.Join(' ', args.ToArray());
 
             var process = new Process()
             {
                 StartInfo = {
                     FileName = Wrk2Filename,
-                    Arguments = String.Join(' ', args),
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                 },
                 EnableRaisingEvents = true
             };
+
+            // Warmup
+
+            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            {
+                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+                process.Start();
+                process.WaitForExit();
+            }
 
             var stringBuilder = new StringBuilder();
 
@@ -44,6 +83,8 @@ namespace Wrk2Client
                     stringBuilder.AppendLine(e.Data);
                 }
             };
+
+            process.StartInfo.Arguments = baseArguments + " -d " + duration;
 
             process.Start();
             process.BeginOutputReadLine();
