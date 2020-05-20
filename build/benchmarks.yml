@@ -142,31 +142,31 @@ jobs:
 #      duration: 15
 #      connection: 'ASP.NET Benchmarks Queue'
 
-- job: SignalR
-  pool: server
-  timeoutInMinutes: 120
+#- job: SignalR
+#  pool: server
+#  timeoutInMinutes: 120
 #  dependsOn: MVC
-  dependsOn: gRPCv2
-  condition: succeededOrFailed()
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Linux:
-        profile: aspnet-citrine-lin
-      Intel_Windows:
-        profile: aspnet-citrine-win
-  steps:
-  - template: signalr-scenarios.yml
-    parameters:
-      profile: $(profile)
-      warmup: 1
-      duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+#  condition: succeededOrFailed()
+#  strategy:
+#    maxParallel: 1
+#    matrix:
+#      Intel_Linux:
+#        profile: aspnet-citrine-lin
+#      Intel_Windows:
+#        profile: aspnet-citrine-win
+#  steps:
+#  - template: signalr-scenarios.yml
+#    parameters:
+#      profile: $(profile)
+#      warmup: 1
+#      duration: 15
+#      connection: 'ASP.NET Benchmarks Queue'
 
 - job: Proxies
   pool: server
   timeoutInMinutes: 90
-  dependsOn: SignalR
+#  dependsOn: SignalR
+  dependsOn: gRPCv2
   condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
