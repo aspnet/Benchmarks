@@ -97,9 +97,10 @@ namespace BombardierClient
             {
                 if (e != null && e.Data != null)
                 {
+                    Console.WriteLine(e.Data);
+
                     lock (stringBuilder)
                     {
-                        Console.WriteLine(e.Data);
                         stringBuilder.AppendLine(e.Data);
                     }
                 }
@@ -117,7 +118,10 @@ namespace BombardierClient
                 process.WaitForExit();
             }
 
-            stringBuilder.Clear();
+            lock (stringBuilder)
+            {
+                stringBuilder.Clear();
+            }
 
             process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
 
@@ -127,7 +131,14 @@ namespace BombardierClient
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            var document = JObject.Parse(stringBuilder.ToString());
+            string output;
+
+            lock (stringBuilder)
+            {
+                output = stringBuilder.ToString();
+            }
+
+            var document = JObject.Parse(output);
 
             BenchmarksEventSource.Log.Metadata("bombardier/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("bombardier/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
@@ -160,7 +171,7 @@ namespace BombardierClient
             BenchmarksEventSource.Measure("bombardier/rps/max", document["result"]["rps"]["max"].Value<double>());
             BenchmarksEventSource.Measure("bombardier/rps/mean", document["result"]["rps"]["mean"].Value<double>());
 
-            BenchmarksEventSource.Measure("bombardier/raw", stringBuilder.ToString());
+            BenchmarksEventSource.Measure("bombardier/raw", output);
 
         }
     }

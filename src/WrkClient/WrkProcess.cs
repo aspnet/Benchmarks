@@ -124,7 +124,10 @@ namespace WrkClient
                 process.WaitForExit();
             }
 
-            stringBuilder.Clear();
+            lock (stringBuilder)
+            {
+                stringBuilder.Clear();
+            }
 
             process.StartInfo.Arguments = $"-d {duration} {baseArguments}";
 
@@ -134,7 +137,12 @@ namespace WrkClient
             process.BeginOutputReadLine();
             process.WaitForExit();
 
-            var output = stringBuilder.ToString();
+            string output;
+
+            lock (stringBuilder)
+            {
+                output = stringBuilder.ToString();
+            }
 
             BenchmarksEventSource.Log.Metadata("wrk/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("wrk/requests", "max", "sum", "Requests", "Total number of requests", "n0");
