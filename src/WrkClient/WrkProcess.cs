@@ -118,7 +118,7 @@ namespace WrkClient
             {
                 process.StartInfo.Arguments = $"-d {warmup} {baseArguments}";
 
-                Console.WriteLine("Running warmup with arguments: " + process.StartInfo.Arguments);
+                Console.WriteLine("> wrk " + process.StartInfo.Arguments);
 
                 process.Start();
                 process.WaitForExit();
@@ -136,9 +136,7 @@ namespace WrkClient
 
             var output = stringBuilder.ToString();
 
-            Console.WriteLine(output);
-
-            BenchmarksEventSource.Log.Metadata("wrk/rps", "max", "sum", "Requests/sec", "Requests per second", "n0");
+            BenchmarksEventSource.Log.Metadata("wrk/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("wrk/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
             BenchmarksEventSource.Log.Metadata("wrk/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
@@ -153,7 +151,7 @@ namespace WrkClient
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
             {
-                BenchmarksEventSource.Measure("wrk/rps", double.Parse(rpsMatch.Groups[1].Value));
+                BenchmarksEventSource.Measure("wrk/rps/mean", double.Parse(rpsMatch.Groups[1].Value));
             }
 
             // Max latency is 3rd number after "Latency "

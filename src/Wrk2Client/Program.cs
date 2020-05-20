@@ -71,8 +71,12 @@ namespace Wrk2Client
             {
                 if (e != null && e.Data != null)
                 {
-                    stringBuilder.AppendLine(e.Data);
                     Console.WriteLine(e.Data);
+
+                    lock (stringBuilder)
+                    {
+                        stringBuilder.AppendLine(e.Data);
+                    }
                 }
             };
 
@@ -80,9 +84,9 @@ namespace Wrk2Client
 
             if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
             {
-                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+                process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
 
-                Console.WriteLine("Running warmup with arguments: " + process.StartInfo.Arguments);
+                Console.WriteLine("> wrk2 " + process.StartInfo.Arguments);
 
                 process.Start();
                 process.WaitForExit();
@@ -90,9 +94,9 @@ namespace Wrk2Client
 
             stringBuilder.Clear();
 
-            process.StartInfo.Arguments = baseArguments + " -d " + duration;
+            process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
 
-            Console.WriteLine("Running load with arguments: " + process.StartInfo.Arguments);
+            Console.WriteLine("> wrk2 " + process.StartInfo.Arguments);
 
             process.Start();
             process.BeginOutputReadLine();
@@ -100,6 +104,7 @@ namespace Wrk2Client
 
             var output = stringBuilder.ToString();
 
+            BenchmarksEventSource.Log.Metadata("wrk/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/requests", "max", "sum", "Requests", "Total number of requests", "n0");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n2");
             BenchmarksEventSource.Log.Metadata("wrk2/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n2");
@@ -109,7 +114,7 @@ namespace Wrk2Client
             var rpsMatch = Regex.Match(output, @"Requests/sec:\s*([\d\.]*)");
             if (rpsMatch.Success && rpsMatch.Groups.Count == 2)
             {
-                BenchmarksEventSource.Measure("wrk2/rps", double.Parse(rpsMatch.Groups[1].Value));
+                BenchmarksEventSource.Measure("wrk2/rps/mean", double.Parse(rpsMatch.Groups[1].Value));
             }
 
             const string LatencyPattern = @"\s+{0}\s*([\d\.]+)([a-z]+)";

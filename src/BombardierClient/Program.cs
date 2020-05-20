@@ -111,7 +111,7 @@ namespace BombardierClient
             {
                 process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
 
-                Console.WriteLine("Running warmup with arguments: " + process.StartInfo.Arguments);
+                Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
 
                 process.Start();
                 process.WaitForExit();
@@ -121,7 +121,7 @@ namespace BombardierClient
 
             process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
 
-            Console.WriteLine("Running load with arguments: " + process.StartInfo.Arguments);
+            Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
 
             process.Start();
             process.BeginOutputReadLine();
@@ -135,8 +135,8 @@ namespace BombardierClient
             BenchmarksEventSource.Log.Metadata("bombardier/latency/mean", "max", "sum", "Mean latency (us)", "Mean latency (us)", "n0");
             BenchmarksEventSource.Log.Metadata("bombardier/latency/max", "max", "sum", "Max latency (us)", "Max latency (us)", "n0");
 
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
-            BenchmarksEventSource.Log.Metadata("bombardier/rps/mean", "max", "sum", "Avg. RPS", "RPS: avg", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/rps/mean", "max", "sum", "Requests/sec", "Requests per second", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Requests/sec (max)", "Max requests per second", "n0");
 
             BenchmarksEventSource.Log.Metadata("bombardier/raw", "all", "all", "Raw results", "Raw results", "json");
 
