@@ -34,29 +34,28 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: plaintext
-    warmup:
-      job: bombardier
-      variables:
-        presetHeaders: plaintext
-        path: /plaintext
-        duration: 5
-        serverPort: 5000
     load:
       job: bombardier
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        duration: 3
+        duration: 15
+        warmup: 5
         serverPort: 5000
-  connectionClose:
-    application:
-      job: aspnetbenchmarks
-      variables:
-        scenario: plaintext
-    load:
-      job: pipelineclient
-      variables:
-        pipeline: 1
-        presetHeaders: connectionclose
-        path: /plaintext  
-        serverPort: 5000
+
+profiles:
+  aspnet-physical:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+          displayOutput: true
+        source:
+          branchOrCommit: sebros/clients
