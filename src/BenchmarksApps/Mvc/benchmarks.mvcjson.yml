@@ -233,16 +233,22 @@ profiles:
       application:
         endpoints:
           - http://asp-perf-lin:5001
+      warmup:
+        endpoints:
+          - http://asp-perf-load:5001
       load:
         endpoints:
           - http://asp-perf-load:5001
   aspnet-physical-win:
     variables:
-      serverUri: http://10.0.0.102
+      serverUri: http://10.0.0.110
     jobs:
       application:
         endpoints:
           - http://asp-perf-win:5001
+      warmup:
+        endpoints:
+          - http://asp-perf-load:5001
       load:
         endpoints:
           - http://asp-perf-load:5001
@@ -253,6 +259,9 @@ profiles:
       application:
         endpoints:
           - http://asp-citrine-lin:5001
+      warmups:
+        endpoints:
+          - http://asp-citrine-load:5001
       load:
         endpoints:
           - http://asp-citrine-load:5001
@@ -263,16 +272,9 @@ profiles:
       application:
         endpoints:
           - http://asp-citrine-win:5001
+      warmup:
+        endpoints:
+          - http://asp-citrine-load:5001
       load:
         endpoints:
           - http://asp-citrine-load:5001
-  aspnet-cloud-lin:
-    varaibles:
-      serverUri: http://10.0.0.104
-    jobs:
-      application:
-        endpoints:
-          - http://10.0.0.9:5001
-      load:
-        endpoints:
-          - http://10.0.0.10:5002

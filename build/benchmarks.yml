@@ -121,31 +121,32 @@ jobs:
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
 
-- job: MVC
-  pool: server
-  timeoutInMinutes: 60
-  dependsOn: gRPCv2
-  condition: succeededOrFailed()
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Linux:
-        server: http://asp-citrine-lin:5001
-      Intel_Windows:
-        server: http://asp-citrine-win:5001
-  steps:
-  - template: mvc-scenarios.yml
-    parameters:
-      server: $(server)
-      client: http://asp-citrine-load:5002
-      warmup: 5
-      duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+#- job: MVC
+#  pool: server
+#  timeoutInMinutes: 60
+#  dependsOn: gRPCv2
+#  condition: succeededOrFailed()
+#  strategy:
+#    maxParallel: 1
+#    matrix:
+#      Intel_Linux:
+#        profile: aspnet-citrine-lin
+#      Intel_Windows:
+#        profile: aspnet-citrine-win
+#  steps:
+#  - template: mvc-scenarios.yml
+#    parameters:
+#      server: $(server)
+#      client: http://asp-citrine-load:5002
+#      warmup: 5
+#      duration: 15
+#      connection: 'ASP.NET Benchmarks Queue'
 
 - job: SignalR
   pool: server
   timeoutInMinutes: 120
-  dependsOn: MVC
+#  dependsOn: MVC
+  dependsOn: gRPCv2
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
