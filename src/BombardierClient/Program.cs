@@ -126,6 +126,7 @@ namespace BombardierClient
             BenchmarksEventSource.Log.Metadata("bombardier/latency/max", "max", "sum", "Max latency (us)", "Max latency (us)", "n0");
 
             BenchmarksEventSource.Log.Metadata("bombardier/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
+            BenchmarksEventSource.Log.Metadata("bombardier/rps/mean", "max", "sum", "Avg. RPS", "RPS: avg", "n0");
 
             BenchmarksEventSource.Log.Metadata("bombardier/raw", "all", "all", "Raw results", "Raw results", "json");
 
@@ -147,6 +148,7 @@ namespace BombardierClient
             BenchmarksEventSource.Measure("bombardier/latency/max", document["result"]["latency"]["max"].Value<double>());
 
             BenchmarksEventSource.Measure("bombardier/rps/max", document["result"]["rps"]["max"].Value<double>());
+            BenchmarksEventSource.Measure("bombardier/rps/mean", document["result"]["rps"]["mean"].Value<double>());
 
             BenchmarksEventSource.Measure("bombardier/raw", stringBuilder.ToString());
 
