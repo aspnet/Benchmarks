@@ -81,6 +81,9 @@ namespace Wrk2Client
             if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
             {
                 process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+
+                Console.WriteLine("Running warmup with arguments: " + process.StartInfo.Arguments);
+
                 process.Start();
                 process.WaitForExit();
             }
@@ -88,6 +91,8 @@ namespace Wrk2Client
             stringBuilder.Clear();
 
             process.StartInfo.Arguments = baseArguments + " -d " + duration;
+
+            Console.WriteLine("Running load with arguments: " + process.StartInfo.Arguments);
 
             process.Start();
             process.BeginOutputReadLine();
