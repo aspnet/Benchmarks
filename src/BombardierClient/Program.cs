@@ -97,8 +97,11 @@ namespace BombardierClient
             {
                 if (e != null && e.Data != null)
                 {
-                    Console.WriteLine(e.Data);
-                    stringBuilder.AppendLine(e.Data);
+                    lock (stringBuilder)
+                    {
+                        Console.WriteLine(e.Data);
+                        stringBuilder.AppendLine(e.Data);
+                    }
                 }
             };
 
@@ -106,7 +109,7 @@ namespace BombardierClient
 
             if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
             {
-                process.StartInfo.Arguments = baseArguments + " -d " + warmup;
+                process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
 
                 Console.WriteLine("Running warmup with arguments: " + process.StartInfo.Arguments);
 
@@ -116,7 +119,7 @@ namespace BombardierClient
 
             stringBuilder.Clear();
 
-            process.StartInfo.Arguments = baseArguments + " -d " + duration;
+            process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
 
             Console.WriteLine("Running load with arguments: " + process.StartInfo.Arguments);
 
