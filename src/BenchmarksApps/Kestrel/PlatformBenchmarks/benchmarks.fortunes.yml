@@ -56,9 +56,6 @@ profiles:
         environmentVariables:
           database: PostgreSQL
           connectionstring: Server=10.0.0.106;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
-      warmup:
-        endpoints: 
-          - http://asp-citrine-win:5001
       load:
         variables:
           connections: 512

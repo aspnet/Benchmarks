@@ -55,7 +55,3 @@ profiles:
       load:
         endpoints: 
           - http://asp-perf-load:5001
-        options:
-          displayOutput: true
-        source:
-          branchOrCommit: sebros/clients
