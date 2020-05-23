@@ -1,7 +1,5 @@
 ﻿# Examples:
-# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
-# --config benchmarks.grpc.yml --scenario GrpcUnary-1MB-GrpcCore --application.endpoints http://server:5001 --load.endpoints http://client:5001
-# --config benchmarks.grpc.yml --scenario GrpcUnary-GrpcNetClient --application.endpoints http://server:5001 --load.endpoints http://client:5001
+# --config benchmarks.grpc.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-physical-lin --variable scenario=unary --variable streams=70
 
 imports:
   - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
@@ -98,7 +96,7 @@ scenarios:
 profiles:
   aspnet-physical-lin:
     variables:
-      serverUri: http://10.0.0.110
+      serverUri: http://10.0.0.102
       cores: 12
     jobs:
       application:
@@ -112,7 +110,7 @@ profiles:
           - http://asp-perf-load:5001
   aspnet-physical-win:
     variables:
-      serverUri: http://10.0.0.102
+      serverUri: http://10.0.0.110
       cores: 12
     jobs:
       application:
