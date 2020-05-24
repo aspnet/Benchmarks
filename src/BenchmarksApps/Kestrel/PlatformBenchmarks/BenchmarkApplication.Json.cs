@@ -28,7 +28,7 @@ namespace PlatformBenchmarks
 
             writer.Commit();
 
-            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(writer.Output);
+            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(writer.Output, new JsonWriterOptions { SkipValidation = true });
             utf8JsonWriter.Reset(writer.Output);
 
             // Body
