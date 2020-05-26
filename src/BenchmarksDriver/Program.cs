@@ -2125,7 +2125,7 @@ namespace BenchmarksDriver
 
                                 foreach (var counter in statistics.Other.Keys)
                                 {
-                                    average.Other[counter] = samples.Average(x => x.Other[counter]);
+                                    average.Other[counter] = samples.Where(x => x.Other.ContainsKey(counter)).Average(x => x.Other[counter]);
                                     average.Samples[counter] = samples.Last().Samples[counter];
                                 }
 
