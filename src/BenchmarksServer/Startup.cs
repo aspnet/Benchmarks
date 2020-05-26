@@ -552,9 +552,6 @@ namespace BenchmarkServer
                                             Log.WriteLine($"Process started: {process.Id}");
 
                                             workingDirectory = process.StartInfo.WorkingDirectory;
-
-
-
                                         }
                                         else
                                         {
@@ -1845,11 +1842,20 @@ namespace BenchmarkServer
             if (job.Source.SourceCode != null)
             {
                 benchmarkedDir = "src";
-
+                
                 var src = Path.Combine(path, benchmarkedDir);
-                Log.WriteLine($"Extracting source code to {src}");
+                var published = Path.Combine(src, "published");
 
-                ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, src);
+                if (String.IsNullOrEmpty(job.Executable))
+                {
+                    Log.WriteLine($"Extracting files to {src}");
+                    ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, src);
+                }
+                else
+                {
+                    Log.WriteLine($"Extracting files to {published}");
+                    ZipFile.ExtractToDirectory(job.Source.SourceCode.TempFilename, published);
+                }
 
                 File.Delete(job.Source.SourceCode.TempFilename);
             }
@@ -1913,7 +1919,12 @@ namespace BenchmarkServer
             }
 
             // Computes the location of the benchmarked app
-            var benchmarkedApp = Path.Combine(path, benchmarkedDir, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
+            var benchmarkedApp = Path.Combine(path, benchmarkedDir);
+
+            if (!String.IsNullOrEmpty(job.Source.Project))
+            {
+                benchmarkedApp = Path.Combine(benchmarkedApp, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
+            }
 
             Log.WriteLine($"Benchmarked Application in {benchmarkedApp}");
 
@@ -2419,43 +2430,49 @@ namespace BenchmarkServer
                 File.Delete(attachment.TempFilename);
             }
 
-            var outputFolder = Path.Combine(benchmarkedApp, "published");
-            var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
+            var outputFolder = Path.Combine(benchmarkedApp);
 
-            var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
-
-            Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
-                workingDirectory: benchmarkedApp,
-                environmentVariables: env,
-                throwOnError: false,
-                outputDataReceived: text => job.BuildLog.AddLine(text)
-                );
-
-            job.BuildLog.AddLine($"Command dotnet {arguments} returned exit code {buildResults.ExitCode}");
-
-            if (buildResults.ExitCode != 0)
+            if (String.IsNullOrEmpty(job.Executable))
             {
-                job.Error = job.BuildLog.ToString();
-                return null;
+                outputFolder = Path.Combine(benchmarkedApp, "published");
+
+                var projectFileName = Path.GetFileName(FormatPathSeparators(job.Source.Project));
+
+                var arguments = $"publish {projectFileName} -c Release -o {outputFolder} {buildParameters}";
+
+                Log.WriteLine($"Publishing application in {outputFolder} with: \n {arguments}");
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                var buildResults = ProcessUtil.Run(dotnetExecutable, arguments,
+                    workingDirectory: benchmarkedApp,
+                    environmentVariables: env,
+                    throwOnError: false,
+                    outputDataReceived: text => job.BuildLog.AddLine(text)
+                    );
+
+                job.BuildLog.AddLine($"Command dotnet {arguments} returned exit code {buildResults.ExitCode}");
+
+                if (buildResults.ExitCode != 0)
+                {
+                    job.Error = job.BuildLog.ToString();
+                    return null;
+                }
+
+                stopwatch.Stop();
+
+                job.BuildTime = stopwatch.Elapsed;
+
+                job.Measurements.Enqueue(new Measurement
+                {
+                    Name = "benchmarks/build-time",
+                    Timestamp = DateTime.UtcNow,
+                    Value = stopwatch.ElapsedMilliseconds
+                });
+
+                Log.WriteLine($"Application published successfully in {job.BuildTime.TotalMilliseconds} ms");
             }
-
-            stopwatch.Stop();
-
-            job.BuildTime = stopwatch.Elapsed;
-
-            job.Measurements.Enqueue(new Measurement
-            {
-                Name = "benchmarks/build-time",
-                Timestamp = DateTime.UtcNow,
-                Value = stopwatch.ElapsedMilliseconds
-            });
-
-            Log.WriteLine($"Application published successfully in {job.BuildTime.TotalMilliseconds} ms");
 
             var publishedSize = DirSize(new DirectoryInfo(outputFolder)) / 1024;
 
@@ -2861,13 +2878,21 @@ namespace BenchmarkServer
 
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
         {
-            var workingDirectory = Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
+            var workingDirectory = !String.IsNullOrEmpty(job.Source.Project) 
+                ? Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)))
+                : benchmarksRepo
+                ;
+
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
             var serverUrl = $"{scheme}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
             var projectFilename = Path.GetFileNameWithoutExtension(FormatPathSeparators(job.Source.Project));
 
-            var benchmarksDll = Path.Combine(workingDirectory, "published", $"{projectFilename}.dll");
+            var benchmarksDll = !String.IsNullOrEmpty(projectFilename)
+                ? Path.Combine(workingDirectory, "published", $"{projectFilename}.dll")
+                : Path.Combine(workingDirectory, "published")
+                ;
+
             var iis = job.WebHost == WebHost.IISInProcess || job.WebHost == WebHost.IISOutOfProcess;
 
             // Running BeforeScript
@@ -2893,6 +2918,16 @@ namespace BenchmarkServer
                 }
 
                 commandLine = "";
+            }
+
+            if (!String.IsNullOrEmpty(job.Executable))
+            {
+                executable = job.Executable;
+
+                if (String.Equals(executable, "dotnet", StringComparison.OrdinalIgnoreCase))
+                {
+                    executable = GetDotNetExecutable(dotnetHome);
+                }
             }
 
             job.BasePath = workingDirectory;

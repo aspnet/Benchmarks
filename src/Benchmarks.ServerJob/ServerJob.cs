@@ -106,6 +106,7 @@ namespace Benchmarks.ServerJob
         /// </summary>
         public Source Source { get; set; } = new Source();
 
+        public string Executable { get; set; }
         public string Arguments { get; set; }
         public bool NoArguments { get; set; } = false;
 
