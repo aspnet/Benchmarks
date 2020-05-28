@@ -2233,10 +2233,16 @@ namespace BenchmarkServer
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
             var buildParameters =
-                $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
-                $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
                 $"/p:MicrosoftNETCoreAppPackageVersion={runtimeVersion} " +
                 $"/p:MicrosoftWindowsDesktopAppPackageVersion={desktopVersion} " +
+                $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
+                // The following properties could be removed in a future version
+                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
+                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
+                $"/p:BenchmarksRuntimeFrameworkVersion={runtimeVersion} " +
+                $"/p:BenchmarksTargetFramework={targetFramework} " +
+                $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
+                $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
                 $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
 
             if (targetFramework == "netcoreapp2.1")
