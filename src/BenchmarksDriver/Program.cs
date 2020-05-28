@@ -318,6 +318,8 @@ namespace BenchmarksDriver
                 "Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.", CommandOptionType.SingleValue);
             var frameworkOption = app.Option("--framework",
                 "TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1", CommandOptionType.SingleValue);
+            var channel = app.Option("--channel",
+                "Channel that is used to resolve runtimes versions. e.g., 'current' (default), 'latest', 'edge'", CommandOptionType.SingleValue);
             var sdkOption = app.Option("--sdk",
                 "SDK version to use", CommandOptionType.SingleValue);
             _noGlobalJsonOption = app.Option("--no-global-json",

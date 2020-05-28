@@ -45,20 +45,21 @@ namespace BenchmarkServer
         /*
          * List of accepted values for AspNetCoreVersion and RuntimeVersion
          *
-            Current The latest stable version
-            Latest  The latest available version
+            [Empty] The default channel
+            Current The released (or preview) version
+            Latest  The latest ingested version (in the ASP.NET repository)
+            Edge    The latest build
+            
+            // Legacy, this will be converted automatically to new channel/targetFramework semantics
             2.1     The latest stable version for 2.1, e.g. 2.1.9 (channel version)
             2.1.*   The latest service release for 2.1, e.g. 2.1.10-servicing-12345
             2.1.8   This specific version
+
+            Based on the target framework
          */
 
-        // Substituion values when "Latest" is passed as the version
-        private static string LatestTargetFramework = "netcoreapp5.0";
-        private static string LatestChannel = "5.0";
-
-        // Substituion values when "Current" is passed as the version
-        private static string CurrentTargetFramework = "netcoreapp3.1";
-        private static string CurrentChannel = "3.1";
+        private static string DefaultTargetFramework = "netcoreapp5.0";
+        private static string DefaultChannel = "current";
 
         private const string PerfViewVersion = "P2.0.54";
 
@@ -70,11 +71,9 @@ namespace BenchmarkServer
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
-        private static readonly string _latestDesktopApiUrl = "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer/microsoft.windowsdesktop.app/index.json";
+        private static readonly string _latestDesktopApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.win-x64/index.json";
         private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
 
-        // SDK URLs are found here: https://github.com/dotnet/installer/blob/master/README.md
-        private static readonly string _sdkVersionUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{0}/latest.version";
         private static readonly string _latestSdkVersionUrl = "https://aka.ms/dotnet/net5/dev/Sdk/productCommit-win-x64.txt";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
         private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
@@ -87,6 +86,7 @@ namespace BenchmarkServer
         private static readonly HashSet<string> _installedAspNetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedDotnetRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedDesktopRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> _ignoredDesktopRuntimes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static readonly HashSet<string> _installedSdks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private const string _defaultUrl = "http://*:5001";
@@ -99,8 +99,10 @@ namespace BenchmarkServer
 
         private static readonly IRepository<ServerJob> _jobs = new InMemoryRepository<ServerJob>();
         private static string _rootTempDir;
+        private static string _dotnethome;
         private static bool _cleanup = true;
         private static Process perfCollectProcess;
+        private static object _synLock = new object();
 
         private static Task dotnetTraceTask;
         private static ManualResetEvent dotnetTraceManualReset;
@@ -153,11 +155,33 @@ namespace BenchmarkServer
 
             _httpClient = new HttpClient(_httpClientHandler);
 
+            var isShutdown = false;
+
             Action shutdown = () =>
             {
-                if (_cleanup && Directory.Exists(_rootTempDir))
+                lock (_synLock)
                 {
-                    TryDeleteDir(_rootTempDir, false);
+                    if (isShutdown)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        Log.WriteLine("Cleaning up temporary folder...");
+                        // build servers will hold locks on dotnet.exe otherwise
+                        // c.f. https://github.com/dotnet/sdk/issues/9487
+                        ProcessUtil.Run(GetDotNetExecutable(_dotnethome), "build-server shutdown", workingDirectory: _dotnethome, log: true);
+
+                        if (_cleanup && Directory.Exists(_rootTempDir))
+                        {
+                            TryDeleteDir(_rootTempDir, false);
+                        }
+                    }
+                    finally
+                    {
+                        isShutdown = true;
+                    }
                 }
             };
 
@@ -312,7 +336,7 @@ namespace BenchmarkServer
 
                         break;
                     }
-                    catch(IOException e)
+                    catch (IOException e)
                     {
                         if (e.InnerException is AddressInUseException)
                         {
@@ -358,14 +382,9 @@ namespace BenchmarkServer
 
         private static async Task ProcessJobs(string hostname, string dockerHostname, CancellationToken cancellationToken)
         {
-            string dotnetHome = null;
-
             try
             {
                 await EnsureDotnetInstallExistsAsync();
-
-                // Create a temporary folder to store all installed dotnet runtimes/sdk
-                dotnetHome = GetTempDir();
 
                 Process process = null;
 
@@ -395,7 +414,7 @@ namespace BenchmarkServer
                     // Lookup expired jobs
                     var expiredJobs = _jobs.GetAll().Where(j => j.State == ServerState.Deleted && DateTime.UtcNow - j.LastDriverCommunicationUtc > DeletedTimeout);
 
-                    foreach(var expiredJob in expiredJobs)
+                    foreach (var expiredJob in expiredJobs)
                     {
                         Log.WriteLine($"Removing expired job {expiredJob.Id}");
                         _jobs.Remove(expiredJob.Id);
@@ -539,24 +558,35 @@ namespace BenchmarkServer
                                     try
                                     {
                                         // returns the application directory and the dotnet directory to use
-                                        benchmarksDir = await CloneRestoreAndBuild(tempDir, job, dotnetHome);
+                                        benchmarksDir = await CloneRestoreAndBuild(tempDir, job, _dotnethome);
                                     }
                                     finally
                                     {
                                         if (benchmarksDir != null)
                                         {
-                                            process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, dotnetHome);
+                                            try
+                                            {
+                                                process = await StartProcess(hostname, Path.Combine(tempDir, benchmarksDir), job, _dotnethome);
 
-                                            job.ProcessId = process.Id;
+                                                job.ProcessId = process.Id;
 
-                                            Log.WriteLine($"Process started: {process.Id}");
+                                                Log.WriteLine($"Process started: {process.Id}");
 
-                                            workingDirectory = process.StartInfo.WorkingDirectory;
+                                                workingDirectory = process.StartInfo.WorkingDirectory;
+                                            }
+                                            catch(Exception e)
+                                            {
+                                                workingDirectory = null;
+                                                Log.WriteLine($"Job failed while starting");
+                                                Log.WriteLine($"{job.State} -> Failed");
+                                                job.Error = "Server error: " + e.Message;
+                                                job.State = ServerState.Failed;
+                                            }
                                         }
                                         else
                                         {
                                             workingDirectory = null;
-                                            Log.WriteLine($"Job failed with CloneRestoreAndBuild");
+                                            Log.WriteLine($"Job failed while building");
                                             Log.WriteLine($"{job.State} -> Failed");
                                             job.State = ServerState.Failed;
                                         }
@@ -677,7 +707,7 @@ namespace BenchmarkServer
                                                         {
                                                             Name = "benchmarks/working-set",
                                                             Timestamp = now,
-                                                            Value = Math.Ceiling((double) workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
+                                                            Value = Math.Ceiling((double)workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
                                                         });
 
                                                         job.Measurements.Enqueue(new Measurement
@@ -702,10 +732,10 @@ namespace BenchmarkServer
                                                                 {
                                                                     Name = "benchmarks/swap",
                                                                     Timestamp = now,
-                                                                    Value = (int) GetSwapBytes() / 1024 / 1024
+                                                                    Value = (int)GetSwapBytes() / 1024 / 1024
                                                                 });
                                                             }
-                                                            catch(Exception e)
+                                                            catch (Exception e)
                                                             {
                                                                 Log.WriteLine($"[ERROR] Could not get swap memory:" + e.ToString());
                                                             }
@@ -795,7 +825,7 @@ namespace BenchmarkServer
                                                             {
                                                                 Name = "benchmarks/swap",
                                                                 Timestamp = now,
-                                                                Value = (int) GetSwapBytes() / 1024 / 1024
+                                                                Value = (int)GetSwapBytes() / 1024 / 1024
                                                             });
                                                         }
                                                         catch (Exception e)
@@ -1234,13 +1264,6 @@ namespace BenchmarkServer
             {
                 Log.WriteLine($"Unnexpected error: {e.ToString()}");
             }
-            finally
-            {
-                if (_cleanup && dotnetHome != null)
-                {
-                    TryDeleteDir(dotnetHome, false);
-                }
-            }
         }
 
         private static string RunPerfview(string arguments, string workingDirectory)
@@ -1511,10 +1534,10 @@ namespace BenchmarkServer
 
                 job.BuildLog.AddLine("docker " + dockerBuildArguments);
 
-                var buildResults = ProcessUtil.Run("docker", dockerBuildArguments, 
-                    workingDirectory: srcDir, 
-                    timeout: BuildTimeout, 
-                    cancellationToken: cancellationToken, 
+                var buildResults = ProcessUtil.Run("docker", dockerBuildArguments,
+                    workingDirectory: srcDir,
+                    timeout: BuildTimeout,
+                    cancellationToken: cancellationToken,
                     log: true,
                     outputDataReceived: text => job.BuildLog.AddLine(text)
                     );
@@ -1702,7 +1725,7 @@ namespace BenchmarkServer
                 var startIndex = lines.Length - 1;
 
                 // Seek backward in case thre are multiple blocks of statistics
-                for (; startIndex >= 0 ; startIndex--)
+                for (; startIndex >= 0; startIndex--)
                 {
                     if (lines[startIndex].Contains("#StartJobStatistics", StringComparison.OrdinalIgnoreCase))
                     {
@@ -1738,7 +1761,7 @@ namespace BenchmarkServer
                         job.Measurements.Enqueue(measurement);
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Log.WriteLine($"[ERROR] Invalid Json payload: " + e.Message);
                 }
@@ -1822,7 +1845,7 @@ namespace BenchmarkServer
                         ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Log.WriteLine("An error occured while deleting the docker container: " + e.Message);
                     finalState = ServerState.Failed;
@@ -1842,7 +1865,7 @@ namespace BenchmarkServer
             if (job.Source.SourceCode != null)
             {
                 benchmarkedDir = "src";
-                
+
                 var src = Path.Combine(path, benchmarkedDir);
                 var published = Path.Combine(src, "published");
 
@@ -1897,6 +1920,28 @@ namespace BenchmarkServer
 
             Debug.Assert(benchmarkedDir != null);
 
+
+            // Computes the location of the benchmarked app
+            var benchmarkedApp = Path.Combine(path, benchmarkedDir);
+
+            if (!String.IsNullOrEmpty(job.Source.Project))
+            {
+                benchmarkedApp = Path.Combine(benchmarkedApp, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
+            }
+
+            Log.WriteLine($"Benchmarked Application in {benchmarkedApp}");
+
+            var requireDotnetBuild =
+                !String.IsNullOrEmpty(job.Source.Project) ||
+                String.Equals("dotnet", job.Executable, StringComparison.OrdinalIgnoreCase)
+                ;
+
+            // Skip installing dotnet or building project if not necessary
+            if (!requireDotnetBuild)
+            {
+                return benchmarkedDir;
+            }
+
             var env = new Dictionary<string, string>
             {
                 // for repos using the latest build tools from aspnet/BuildTools
@@ -1918,94 +1963,40 @@ namespace BenchmarkServer
                 Directory.CreateDirectory(buildToolsPath);
             }
 
-            // Computes the location of the benchmarked app
-            var benchmarkedApp = Path.Combine(path, benchmarkedDir);
-
-            if (!String.IsNullOrEmpty(job.Source.Project))
-            {
-                benchmarkedApp = Path.Combine(benchmarkedApp, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)));
-            }
-
-            Log.WriteLine($"Benchmarked Application in {benchmarkedApp}");
-
             Log.WriteLine($"Installing dotnet runtimes and sdk");
 
             // Define which Runtime and SDK will be installed.
 
-            string targetFramework;
-            string runtimeVersion;
-            string desktopVersion;
-            string aspNetCoreVersion;
-            string channel;
+            string targetFramework = DefaultTargetFramework;
+            string channel = DefaultChannel;
 
-            // Default targetFramework (Latest)
-            targetFramework = LatestTargetFramework;
+            string runtimeVersion = job.RuntimeVersion;
+            string desktopVersion = job.RuntimeVersion;
+            string aspNetCoreVersion = job.AspNetCoreVersion;
+            string sdkVersion = job.SdkVersion;
 
-            if (String.Equals(job.RuntimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            // Converting legacy values
+
+            if (runtimeVersion.EndsWith("*")) // 2.1.*, 2.*, 5.0.*
             {
-                runtimeVersion = await GetRuntimeChannelVersion(CurrentChannel);
-                desktopVersion = runtimeVersion; // This should match the runtime version
-                targetFramework = CurrentTargetFramework;
-                channel = CurrentChannel;
+                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3); 
+                runtimeVersion = "edge";
             }
-            else if (String.Equals(job.RuntimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+
+            if (runtimeVersion.Split('.').Length == 2) // 2.1, 5.0
             {
-                // Get the version that is defined by the ASP.NET repository
-                // Note: to use the latest build available, use a wildcard match like 3.0.*
-                runtimeVersion = await GetAspNetRuntimeVersion(buildToolsPath, LatestTargetFramework);
-                desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, LatestChannel);
-                channel = LatestChannel;
+                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3);
+                runtimeVersion = "current";
             }
-            else
+
+            if (aspNetCoreVersion.EndsWith("*")) // 2.1.*, 2.*
             {
-                // Custom version
-                runtimeVersion = job.RuntimeVersion;
+                aspNetCoreVersion = "edge";
+            }
 
-                if (runtimeVersion.EndsWith("*", StringComparison.Ordinal))
-                {
-                    // Prefixed version
-                    // Detect the latest available version with this prefix
-
-                    channel = String.Join(".", runtimeVersion.Split('.').Take(2));
-
-                    runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, runtimeVersion.TrimEnd('*'));
-                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, runtimeVersion.TrimEnd('*'));
-                }
-                else if (runtimeVersion.Split('.').Length == 2)
-                {
-                    // Channel version with a prefix, e.g. 2.1
-                    channel = runtimeVersion;
-                    runtimeVersion = await GetRuntimeChannelVersion(runtimeVersion);
-                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, runtimeVersion);
-
-                }
-                else
-                {
-                    // Specific version
-                    channel = String.Join(".", runtimeVersion.Split('.').Take(2));
-                    desktopVersion = await GetFlatContainerVersion(_latestDesktopApiUrl, channel);
-                }
-
-                if (runtimeVersion.StartsWith("2.1"))
-                {
-                    targetFramework = "netcoreapp2.1";
-                }
-                else if (runtimeVersion.StartsWith("2.2"))
-                {
-                    targetFramework = "netcoreapp2.2";
-                }
-                else if (runtimeVersion.StartsWith("3.0"))
-                {
-                    targetFramework = "netcoreapp3.0";
-                }
-                else if (runtimeVersion.StartsWith("3.1"))
-                {
-                    targetFramework = "netcoreapp3.1";
-                }
-                else if (runtimeVersion.StartsWith("5.0"))
-                {
-                    targetFramework = "netcoreapp5.0";
-                }
+            if (aspNetCoreVersion.Split('.').Length == 2) // 2.1, 5.0
+            {
+                aspNetCoreVersion = "current";
             }
 
             // If a specific framework is set, use it instead of the detected one
@@ -2013,168 +2004,79 @@ namespace BenchmarkServer
             {
                 targetFramework = job.Framework;
             }
-
-            string sdkVersion = null;
-
-            if (!String.IsNullOrEmpty(job.SdkVersion))
+            else
             {
-                if (String.Equals(job.SdkVersion, "stable", StringComparison.OrdinalIgnoreCase))
+                var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
+
+                if (File.Exists(projectFileName))
                 {
-                    sdkVersion = await GetReleasedSdkChannelVersion(channel);
-                    Log.WriteLine($"Using stable channel SDK version: {sdkVersion}");
-                }
-                else if (String.Equals(job.SdkVersion, "latest", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (targetFramework == "netcoreapp3.0")
+                    var project = XDocument.Load(projectFileName);
+                    var targetFrameworkElement = project.Root
+                        .Elements("PropertyGroup")
+                        .Where(p => !p.Attributes("Condition").Any())
+                        .SelectMany(x => x.Elements("TargetFramework"))
+                        .FirstOrDefault();
+
+                    if (targetFrameworkElement != null)
                     {
-                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
-                        Log.WriteLine($"Detecting latest SDK version (release/3.0.1xx): {sdkVersion}");
-                    }
-                    else if (targetFramework == "netcoreapp3.1")
-                    {
-                        sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.1.1xx"));
-                        Log.WriteLine($"Detecting latest SDK version (release/3.1.1xx): {sdkVersion}");
+                        targetFramework = targetFrameworkElement.Value;
+
+                        Log.WriteLine($"Detected target framework: '{targetFramework}'");
                     }
                     else
                     {
-                        sdkVersion = await GetAspNetSdkVersion();
-                        Log.WriteLine($"Detecting ASP.NET SDK version (master branch): {sdkVersion}");
+                        var targetFrameworksElement = project.Root
+                            .Elements("PropertyGroup")
+                            .Where(p => !p.Attributes("Condition").Any())
+                            .SelectMany(x => x.Elements("TargetFrameworks"))
+                            .FirstOrDefault();
+
+                        if (targetFrameworksElement != null)
+                        {
+                            targetFramework = targetFrameworksElement.Value.Split(';').FirstOrDefault();
+
+                            Log.WriteLine($"Detected target framework: '{targetFramework}'");
+                        }
                     }
                 }
-                else if (String.Equals(job.SdkVersion, "edge", StringComparison.OrdinalIgnoreCase))
-                {
-                    sdkVersion = await ParseLatestVersionFile(_latestSdkVersionUrl);
-                    Log.WriteLine($"Detecting edge SDK version (master branch): {sdkVersion}");
-                }
-                else
-                {
-                    sdkVersion = job.SdkVersion;
-                    Log.WriteLine($"Using specified SDK version: {sdkVersion}");
-                }
             }
-            else if (!job.NoGlobalJson)
+
+            // If a specific channel is set, use it instead of the detected one
+            if (!String.IsNullOrEmpty(job.Channel))
             {
-                // We don't try to find an sdk if the global.json can't be overwritten, in which case we'll parse it to find which version to use
-
-                if (targetFramework == "netcoreapp3.0")
-                {
-                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.0.1xx"));
-                    Log.WriteLine($"Detecting runtime compatible SDK version (release/3.0.1xx): {sdkVersion}");
-                }
-                else if (targetFramework == "netcoreapp3.1")
-                {
-                    sdkVersion = await ParseLatestVersionFile(String.Format(_sdkVersionUrl, "release/3.1.1xx"));
-                    Log.WriteLine($"Detecting runtime compatible SDK version (release/3.1.1xx): {sdkVersion}");
-                }
-                else
-                {
-                    sdkVersion = await ParseLatestVersionFile(_latestSdkVersionUrl);
-                    Log.WriteLine($"Detecting runtime compatible SDK version (master branch): {sdkVersion}");
-                }
+                channel = job.Channel;
             }
 
-            // Looking for the first existing global.json file to update
-
-            var globalJsonPath = new DirectoryInfo(benchmarkedApp);
-
-            while (globalJsonPath != null && !File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
+            if (String.IsNullOrEmpty(runtimeVersion))
             {
-                globalJsonPath = globalJsonPath.Parent;
+                runtimeVersion = channel;
             }
 
-            globalJsonPath = globalJsonPath ?? new DirectoryInfo(benchmarkedApp);
-
-            var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
-
-            if (job.NoGlobalJson)
+            if (String.IsNullOrEmpty(desktopVersion))
             {
-                if (!File.Exists(globalJsonFilename))
-                {
-                    Log.WriteLine($"Could not find global.json file");
-                }
-                else
-                {
-                    Log.WriteLine($"Searching SDK version in global.json");
-
-                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
-                    sdkVersion = globalObject["sdk"]["version"].ToString();
-
-                    Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
-                }
+                desktopVersion = channel;
             }
-            else
+
+            if (String.IsNullOrEmpty(aspNetCoreVersion))
             {
-                if (String.IsNullOrEmpty(sdkVersion))
-                {
-                    Log.WriteLine($"[ERROR] An SDK version should have been set.");
-                }
-
-                if (!File.Exists(globalJsonFilename))
-                {
-                    // No global.json found
-                    Log.WriteLine($"Creating custom global.json with content");
-
-                    var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
-                    File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
-                }
-                else
-                {
-                    // File found, we need to update it
-                    Log.WriteLine($"Patching existing global.json file");
-
-                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
-
-                    // Create the "sdk" property if it doesn't exist
-                    globalObject.TryAdd("sdk", new JObject());
-
-                    globalObject["sdk"]["version"] = new JValue(sdkVersion);
-
-                    File.WriteAllText(globalJsonFilename, globalObject.ToString());
-                }
+                aspNetCoreVersion = channel;
             }
 
-            // Define which ASP.NET Core packages version to use
-
-            if (String.Equals(job.AspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            if (String.IsNullOrEmpty(sdkVersion))
             {
-                // The Current versions of ASP.NET match the Runtime ones
-                // It's also less tricky as each release version of ASP.NET has a different way to get the "Current" version (.App, .All, no release-metadata like dotnet)
-                aspNetCoreVersion = await GetRuntimeChannelVersion(CurrentChannel);
-            }
-            else if (String.Equals(job.AspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
-            {
-                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, LatestChannel + ".");
-            }
-            else
-            {
-                // Custom version
-                aspNetCoreVersion = job.AspNetCoreVersion;
-
-                if (aspNetCoreVersion.EndsWith("*", StringComparison.Ordinal))
-                {
-                    // Prefixed version
-                    // Detect the latest available version with this prefix
-
-                    aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, aspNetCoreVersion.TrimEnd('*'));
-
-                    if (String.IsNullOrEmpty(aspNetCoreVersion))
-                    {
-                        var message = $"[ERROR] The prefixed aspnet version could not be found for {job.AspNetCoreVersion} in {_aspnetFlatContainerUrl}. This version is probably not published on this feed.";
-
-                        job.Error += message;
-                        Log.WriteLine(message);
-                    }
-
-                }
-                else if (aspNetCoreVersion.Split('.').Length == 2)
-                {
-                    // Channel version with a prefix, e.g. 2.1, 2.2, 3.0
-                    // The channel versions of ASP.NET match the ones for the runtime
-                    aspNetCoreVersion = await GetRuntimeChannelVersion(aspNetCoreVersion);
-                }
+                sdkVersion = channel;
             }
 
-            Log.WriteLine($"Detected ASP.NET version: {aspNetCoreVersion}");
+            // Retrieve current versions
+            var (currentRuntimeVersion, currentDesktopVersion, currentAspNetCoreVersion, currentSdkVersion) = await GetCurrentVersions(targetFramework);
+
+            runtimeVersion = await ResolveRuntimeVersion(buildToolsPath, targetFramework, runtimeVersion, currentRuntimeVersion);
+
+            sdkVersion = await ResolveSdkVersion(sdkVersion, currentSdkVersion);
+
+            aspNetCoreVersion = await ResolveAspNetCoreVersion(aspNetCoreVersion, currentAspNetCoreVersion);
+
+            sdkVersion = PatchOrCreateGlobalJson(job, benchmarkedApp, sdkVersion);
 
             var installAspNetSharedFramework = job.UseRuntimeStore || aspNetCoreVersion.StartsWith("3.0") || aspNetCoreVersion.StartsWith("3.1") || aspNetCoreVersion.StartsWith("5.0");
 
@@ -2184,15 +2086,16 @@ namespace BenchmarkServer
             {
                 if (OperatingSystem == OperatingSystem.Windows)
                 {
-                    Log.WriteLine($"Detected Windows Desktop version: {desktopVersion}");
+                    desktopVersion = ResolveDestopVersion(desktopVersion, currentDesktopVersion);
 
                     if (!_installedSdks.Contains(sdkVersion))
                     {
-                        dotnetInstallStep = $"SDK version '{sdkVersion}'";
+                        dotnetInstallStep = $"SDK '{sdkVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install latest SDK version (and associated runtime)
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {sdkVersion} -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -2201,57 +2104,66 @@ namespace BenchmarkServer
 
                     if (!_installedDotnetRuntimes.Contains(runtimeVersion))
                     {
-                        dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
+                        dotnetInstallStep = $"Runtime '{runtimeVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install runtimes required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
                         _installedDotnetRuntimes.Add(runtimeVersion);
                     }
 
-                    // Seeking already installed Desktop runtimes
-                    // c.f. https://github.com/dotnet/sdk/issues/4237
-                    _installedDesktopRuntimes.Clear();
-
-                    foreach (var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
+                    try
                     {
-                        var version = new DirectoryInfo(dir).Name;
-                        _installedDesktopRuntimes.Add(version);
-                        if (version.StartsWith(channel))
+                        // This is not required for < 3.0
+                        var beforeDesktop = new[] { "netcoreapp2.1", "netcoreapp2.2", "netcoreapp3.0" };
+
+                        if (!beforeDesktop.Contains(targetFramework))
                         {
-                            desktopVersion = version;
+                            if (!_installedDesktopRuntimes.Contains(desktopVersion) &&
+                                !_ignoredDesktopRuntimes.Contains(desktopVersion))
+                            {
+                                dotnetInstallStep = $"Desktop runtime '{desktopVersion}'";
+                                Log.WriteLine($"Installing {dotnetInstallStep} ...");
+
+                                ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
+                                log: false,
+                                workingDirectory: _dotnetInstallPath,
+                                environmentVariables: env));
+
+                                _installedDesktopRuntimes.Add(desktopVersion);
+                            }
+                            else
+                            { 
+                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion); 
+                            }
                         }
                     }
-
-                    // This is not defined from < 3.0
-                    if (!String.IsNullOrEmpty(desktopVersion))
+                    catch
                     {
-                        Log.WriteLine($"Forcing Windows Desktop version: {desktopVersion}");
+                        // Record that we don't need to try to download this version next time
+                        _ignoredDesktopRuntimes.Add(desktopVersion);
 
-                        if (!_installedDesktopRuntimes.Contains(desktopVersion))
-                        {
-                            dotnetInstallStep = $"Microsoft.WindowsDesktop.App shared runtime '{desktopVersion}'";
+                        // if the specified SDK can't be installed
 
-                            ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {desktopVersion} -Runtime windowsdesktop -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                            log: true,
-                            workingDirectory: _dotnetInstallPath,
-                            environmentVariables: env));
+                        // Seeking already installed Desktop runtimes
+                        // c.f. https://github.com/dotnet/sdk/issues/4237
 
-                            _installedDesktopRuntimes.Add(desktopVersion);
-                        }
+                        desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
                     if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                     {
-                        dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
+                        dotnetInstallStep = $"ASP.NET runtime '{aspNetCoreVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install aspnet runtime required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {aspNetCoreVersion} -Runtime aspnetcore -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -2262,11 +2174,12 @@ namespace BenchmarkServer
                 {
                     if (!_installedSdks.Contains(sdkVersion))
                     {
-                        dotnetInstallStep = $"SDK version '{sdkVersion}'";
+                        dotnetInstallStep = $"SDK '{sdkVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install latest SDK version (and associated runtime)
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {sdkVersion} --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
                         _installedSdks.Add(sdkVersion);
@@ -2274,11 +2187,12 @@ namespace BenchmarkServer
 
                     if (!_installedDotnetRuntimes.Contains(runtimeVersion))
                     {
-                        dotnetInstallStep = $"Microsoft.NETCore.App shared runtime '{runtimeVersion}'";
+                        dotnetInstallStep = $"Runtime '{runtimeVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install required runtime
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {runtimeVersion} --runtime dotnet --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -2288,11 +2202,12 @@ namespace BenchmarkServer
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
                     if (installAspNetSharedFramework && !_installedAspNetRuntimes.Contains(aspNetCoreVersion))
                     {
-                        dotnetInstallStep = $"Microsoft.AspNetCore.App shared runtime '{aspNetCoreVersion}'";
+                        dotnetInstallStep = $"ASP.NET runtime '{aspNetCoreVersion}'";
+                        Log.WriteLine($"Installing {dotnetInstallStep} ...");
 
                         // Install required runtime
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("/usr/bin/env", $"bash dotnet-install.sh --version {aspNetCoreVersion} --runtime aspnetcore --no-path --skip-non-versioned-files --install-dir {dotnetHome}",
-                        log: true,
+                        log: false,
                         workingDirectory: _dotnetInstallPath,
                         environmentVariables: env));
 
@@ -2317,13 +2232,9 @@ namespace BenchmarkServer
             // Build and Restore
             var dotnetExecutable = GetDotNetExecutable(dotnetDir);
 
-            var buildParameters = $"/p:BenchmarksAspNetCoreVersion={aspNetCoreVersion} " +
+            var buildParameters =
                 $"/p:MicrosoftAspNetCoreAllPackageVersion={aspNetCoreVersion} " +
                 $"/p:MicrosoftAspNetCoreAppPackageVersion={aspNetCoreVersion} " +
-                $"/p:BenchmarksNETStandardImplicitPackageVersion={aspNetCoreVersion} " +
-                $"/p:BenchmarksNETCoreAppImplicitPackageVersion={aspNetCoreVersion} " +
-                $"/p:BenchmarksRuntimeFrameworkVersion={runtimeVersion} " +
-                $"/p:BenchmarksTargetFramework={targetFramework} " +
                 $"/p:MicrosoftNETCoreAppPackageVersion={runtimeVersion} " +
                 $"/p:MicrosoftWindowsDesktopAppPackageVersion={desktopVersion} " +
                 $"/p:NETCoreAppMaximumVersion=99.9 "; // Force the SDK to accept the TFM even if it's an unknown one. For instance using SDK 2.1 to build a netcoreapp2.2 TFM.
@@ -2393,7 +2304,14 @@ namespace BenchmarkServer
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    buildParameters += "-r win-x64 ";
+                    if (job.Hardware == Hardware.ARM64)
+                    {
+                        buildParameters += "-r win-arm64 ";
+                    }
+                    else
+                    {
+                        buildParameters += "-r win-x64 ";
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -2620,6 +2538,192 @@ namespace BenchmarkServer
             }
         }
 
+        private static string SeekCompatibleDesktopRuntime(string dotnetHome, string channel, string desktopVersion)
+        {
+            foreach (var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
+            {
+                var version = new DirectoryInfo(dir).Name;
+                _installedDesktopRuntimes.Add(version);
+
+                // At least one matching Desktop runtime should be found as the sdk was installed
+                // before
+                if (version.StartsWith(channel))
+                {
+                    desktopVersion = version;
+                }
+            }
+
+            return desktopVersion;
+        }
+
+        private static async Task<string> ResolveAspNetCoreVersion(string aspNetCoreVersion, string currentAspNetCoreVersion)
+        {
+            // Define which ASP.NET Core packages version to use
+
+            if (String.Equals(aspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            {
+                aspNetCoreVersion = currentAspNetCoreVersion;
+                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Current)");
+            }
+            else if (String.Equals(aspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+            {
+                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, "");
+                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Latest)");
+            }
+            else if (String.Equals(aspNetCoreVersion, "Edge", StringComparison.OrdinalIgnoreCase))
+            {
+                // Same as Latest for ASP.NET
+                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, "");
+                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Edge)");
+            }
+            else
+            {
+                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Specific)");
+            }
+
+            return aspNetCoreVersion;
+        }
+
+        private static string PatchOrCreateGlobalJson(ServerJob job, string benchmarkedApp, string sdkVersion)
+        {
+            // Looking for the first existing global.json file to update
+
+            var globalJsonPath = new DirectoryInfo(benchmarkedApp);
+
+            while (globalJsonPath != null && !File.Exists(Path.Combine(globalJsonPath.FullName, "global.json")) && globalJsonPath != null)
+            {
+                globalJsonPath = globalJsonPath.Parent;
+            }
+
+            globalJsonPath = globalJsonPath ?? new DirectoryInfo(benchmarkedApp);
+
+            var globalJsonFilename = Path.Combine(globalJsonPath.FullName, "global.json");
+
+            if (job.NoGlobalJson)
+            {
+                if (!File.Exists(globalJsonFilename))
+                {
+                    Log.WriteLine($"Could not find global.json file");
+                }
+                else
+                {
+                    Log.WriteLine($"Searching SDK version in global.json");
+
+                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+                    sdkVersion = globalObject["sdk"]["version"].ToString();
+
+                    Log.WriteLine($"Detecting global.json SDK version: {sdkVersion}");
+                }
+            }
+            else
+            {
+                if (!File.Exists(globalJsonFilename))
+                {
+                    // No global.json found
+                    Log.WriteLine($"Creating custom global.json");
+
+                    var globalJson = "{ \"sdk\": { \"version\": \"" + sdkVersion + "\" } }";
+                    File.WriteAllText(Path.Combine(benchmarkedApp, "global.json"), globalJson);
+                }
+                else
+                {
+                    // File found, we need to update it
+                    Log.WriteLine($"Patching existing global.json file");
+
+                    var globalObject = JObject.Parse(File.ReadAllText(globalJsonFilename));
+
+                    // Create the "sdk" property if it doesn't exist
+                    globalObject.TryAdd("sdk", new JObject());
+
+                    globalObject["sdk"]["version"] = new JValue(sdkVersion);
+
+                    File.WriteAllText(globalJsonFilename, globalObject.ToString());
+                }
+            }
+
+            return sdkVersion;
+        }
+
+        private static async Task<string> ResolveSdkVersion(string sdkVersion, string currentSdkVersion)
+        {
+            if (String.Equals(sdkVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            {
+                sdkVersion = currentSdkVersion;
+                Log.WriteLine($"SDK: {sdkVersion} (Current)");
+            }
+            else if (String.Equals(sdkVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+            {
+                sdkVersion = await GetAspNetSdkVersion();
+                Log.WriteLine($"SDK: {sdkVersion} (Latest)");
+            }
+            else if (String.Equals(sdkVersion, "Edge", StringComparison.OrdinalIgnoreCase))
+            {
+                sdkVersion = await ParseLatestVersionFile(_latestSdkVersionUrl);
+                Log.WriteLine($"SDK: {sdkVersion} (Edge)");
+            }
+            else
+            {
+                Log.WriteLine($"SDK: {sdkVersion} (Specific)");
+            }
+
+            return sdkVersion;
+        }
+
+        private static async Task<string> ResolveRuntimeVersion(string buildToolsPath, string targetFramework, string runtimeVersion, string currentRuntimeVersion)
+        {
+            if (String.Equals(runtimeVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            {
+                runtimeVersion = currentRuntimeVersion;
+                Log.WriteLine($"Runtime: {runtimeVersion} (Current)");
+            }
+            else if (String.Equals(runtimeVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+            {
+                // Get the version that is defined by the ASP.NET repository
+                // Note: to use the latest build available, use Edge channel
+                runtimeVersion = await GetAspNetRuntimeVersion(buildToolsPath, targetFramework);
+                Log.WriteLine($"Runtime: {runtimeVersion} (Latest)");
+            }
+            else if (String.Equals(runtimeVersion, "Edge", StringComparison.OrdinalIgnoreCase))
+            {
+                runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, "");
+                Log.WriteLine($"Runtime: {runtimeVersion} (Edge)");
+            }
+            else
+            {
+                // Custom version
+                Log.WriteLine($"Runtime: {runtimeVersion} (Specific)");
+            }
+
+            return runtimeVersion;
+        }
+
+        private static string ResolveDestopVersion(string desktopVersion, string currentDesktopVersion)
+        {
+            if (String.Equals(desktopVersion, "Current", StringComparison.OrdinalIgnoreCase))
+            {
+                desktopVersion = currentDesktopVersion;
+                Log.WriteLine($"Desktop: {desktopVersion} (Current)");
+            }
+            else if (String.Equals(desktopVersion, "Latest", StringComparison.OrdinalIgnoreCase))
+            {
+                desktopVersion = currentDesktopVersion;
+                Log.WriteLine($"Desktop: {currentDesktopVersion} (Latest)");
+            }
+            else if (String.Equals(desktopVersion, "Edge", StringComparison.OrdinalIgnoreCase))
+            {
+                desktopVersion = currentDesktopVersion;
+                Log.WriteLine($"Desktop: {currentDesktopVersion} (Edge)");
+            }
+            else
+            {
+                // Custom version
+                desktopVersion = currentDesktopVersion;
+                Log.WriteLine($"Desktop: {desktopVersion} (Current)");
+            }
+
+            return desktopVersion;
+        }
+
         public static async Task<string> GetAspNetSdkVersion()
         {
             var globalJson = await DownloadContentAsync(_aspnetSdkVersionUrl, maxRetries: 5, timeout: 10);
@@ -2704,31 +2808,28 @@ namespace BenchmarkServer
         }
 
         /// <summary>
-        /// Retrieves the current runtime version for a channel
+        /// Retrieves the Current runtime and sdk versions for a tfm
         /// </summary>
-        private static async Task<string> GetRuntimeChannelVersion(string channel)
+        private static async Task<(string Runtime, string Sesktop, string AspNet, string Sdk)> GetCurrentVersions(string targetFramework)
         {
-            var content = await DownloadContentAsync(_releaseMetadata);
+            var frameworkVersion = targetFramework.Substring(targetFramework.Length - 3); // 3.1
+            var metadataUrl = $"https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/{frameworkVersion}/releases.json";
 
+            var content = await DownloadContentAsync(metadataUrl);
             var index = JObject.Parse(content);
-            var channelDotnetRuntime = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-runtime").ToString();
 
-            Log.WriteLine($"Detecting current runtime version for channel {channel}: {channelDotnetRuntime}");
-            return channelDotnetRuntime;
-        }
+            var aspnet = index.SelectToken($"$.releases[0].aspnetcore-runtime.version").ToString();
+            var sdk = index.SelectToken($"$.releases[0].sdk.version").ToString();
+            var runtime = index.SelectToken($"$.releases[0].runtime.version").ToString();
+            var desktop = index.SelectToken($"$.releases[0].windowsdesktop.version").ToString();
 
-        /// <summary>
-        /// Retrieves the current sdk version for a channel
-        /// </summary>
-        private static async Task<string> GetReleasedSdkChannelVersion(string channel)
-        {
-            var content = await DownloadContentAsync(_releaseMetadata);
-
-            var index = JObject.Parse(content);
-            var channelSdk = index.SelectToken($"$.releases-index[?(@.channel-version == '{channel}')].latest-sdk").ToString();
-
-            Log.WriteLine($"Detecting current SDK version for channel {channel}: {channelSdk}");
-            return channelSdk;
+            //Log.WriteLine($"Detecting current version for target framework {targetFramework}: ");
+            //Log.WriteLine($"  SDK: {sdk} ");
+            //Log.WriteLine($"  Runtime: {runtime} ");
+            //Log.WriteLine($"  ASP.NET: {aspnet} ");
+            //Log.WriteLine($"  Desktop: {desktop} ");
+            
+            return (runtime, desktop, aspnet, sdk);
         }
 
         /// <summary>
@@ -2878,7 +2979,7 @@ namespace BenchmarkServer
 
         private static async Task<Process> StartProcess(string hostname, string benchmarksRepo, ServerJob job, string dotnetHome)
         {
-            var workingDirectory = !String.IsNullOrEmpty(job.Source.Project) 
+            var workingDirectory = !String.IsNullOrEmpty(job.Source.Project)
                 ? Path.Combine(benchmarksRepo, Path.GetDirectoryName(FormatPathSeparators(job.Source.Project)))
                 : benchmarksRepo
                 ;
@@ -2927,6 +3028,11 @@ namespace BenchmarkServer
                 if (String.Equals(executable, "dotnet", StringComparison.OrdinalIgnoreCase))
                 {
                     executable = GetDotNetExecutable(dotnetHome);
+                }
+                else
+                {
+                    // we need the full path to run this, as it is not in the path
+                    executable = Path.Combine(workingDirectory, executable);
                 }
             }
 
@@ -3034,7 +3140,7 @@ namespace BenchmarkServer
                 }
                 else
                 {
-                    ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount-1} {controller}", log: true);
+                    ProcessUtil.Run("cgset", $"-r cpuset.cpus=0-{Environment.ProcessorCount - 1} {controller}", log: true);
                 }
 
                 // The cpuset.mems value for the 'benchmarks' controller needs to match the root one
@@ -3048,7 +3154,9 @@ namespace BenchmarkServer
                 executable = "cgexec";
             }
 
-            Log.WriteLine($"Invoking executable: {executable}, with arguments: {commandLine}");
+            Log.WriteLine($"Invoking executable: {executable}");
+            Log.WriteLine($"  Arguments: {commandLine}");
+            Log.WriteLine($"  Working directory: {workingDirectory}");
 
             var process = new Process()
             {
@@ -3950,6 +4058,11 @@ namespace BenchmarkServer
 
             Directory.CreateDirectory(_rootTempDir);
 
+            if (String.IsNullOrEmpty(_dotnethome))
+            {
+                _dotnethome = GetTempDir();
+            }
+
             // Add a Nuget.config for the self-contained deployments to be able to find the runtime packages on the CI feeds
 
             var rootNugetConfig = Path.Combine(_rootTempDir, "NuGet.Config");
@@ -3959,13 +4072,14 @@ namespace BenchmarkServer
                 File.WriteAllText(rootNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <clear />
-    <add key=""aspnetcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json"" />
-    <add key=""dotnet-core"" value=""https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"" />
-    <add key=""extensions"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json"" />
-    <add key=""aspnetcore-tooling"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json"" />
-    <add key=""entityframeworkcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json"" />
-    <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""benchmarks-dotnet5"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json"" />
+    <add key=""benchmarks-dotnet5-transport"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5-transport/nuget/v3/index.json"" />
+    <add key=""benchmarks-aspnetcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json"" />
+    <add key=""benchmarks-dotnet-core"" value=""https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"" />
+    <add key=""benchmarks-extensions"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json"" />
+    <add key=""benchmarks-aspnetcore-tooling"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json"" />
+    <add key=""benchmarks-entityframeworkcore"" value=""https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json"" />
+    <add key=""benchmarks-nuget"" value=""https://api.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>
 ");
