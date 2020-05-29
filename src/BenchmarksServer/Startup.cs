@@ -46,14 +46,14 @@ namespace BenchmarkServer
          * List of accepted values for AspNetCoreVersion and RuntimeVersion
          *
             [Empty] The default channel
-            Current The released (or preview) version
-            Latest  The latest ingested version (in the ASP.NET repository)
+            Current The publicly released version
+            Latest  The latest transitive version 
             Edge    The latest build
             
             // Legacy, this will be converted automatically to new channel/targetFramework semantics
-            2.1     The latest stable version for 2.1, e.g. 2.1.9 (channel version)
-            2.1.*   The latest service release for 2.1, e.g. 2.1.10-servicing-12345
-            2.1.8   This specific version
+            2.1     -> current
+            2.1.*   -> edge
+            2.1.8   -> specific version
 
             Based on the target framework
          */
@@ -71,8 +71,10 @@ namespace BenchmarkServer
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json";
         private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
-        private static readonly string _latestDesktopApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.win-x64/index.json";
-        private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
+        
+        // Safe-keeping these urls
+        //private static readonly string _latestDesktopApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.win-x64/index.json";
+        //private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
 
         private static readonly string _latestSdkVersionUrl = "https://aka.ms/dotnet/net5/dev/Sdk/productCommit-win-x64.txt";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
@@ -1974,30 +1976,8 @@ namespace BenchmarkServer
             string desktopVersion = job.RuntimeVersion;
             string aspNetCoreVersion = job.AspNetCoreVersion;
             string sdkVersion = job.SdkVersion;
-
-            // Converting legacy values
-
-            if (runtimeVersion.EndsWith("*")) // 2.1.*, 2.*, 5.0.*
-            {
-                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3); 
-                runtimeVersion = "edge";
-            }
-
-            if (runtimeVersion.Split('.').Length == 2) // 2.1, 5.0
-            {
-                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3);
-                runtimeVersion = "current";
-            }
-
-            if (aspNetCoreVersion.EndsWith("*")) // 2.1.*, 2.*
-            {
-                aspNetCoreVersion = "edge";
-            }
-
-            if (aspNetCoreVersion.Split('.').Length == 2) // 2.1, 5.0
-            {
-                aspNetCoreVersion = "current";
-            }
+            
+            ConvertLegacyVersions(ref targetFramework, ref runtimeVersion, ref aspNetCoreVersion);
 
             // If a specific framework is set, use it instead of the detected one
             if (!String.IsNullOrEmpty(job.Framework))
@@ -2137,8 +2117,8 @@ namespace BenchmarkServer
                                 _installedDesktopRuntimes.Add(desktopVersion);
                             }
                             else
-                            { 
-                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion); 
+                            {
+                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
                             }
                         }
                     }
@@ -2544,6 +2524,33 @@ namespace BenchmarkServer
             }
         }
 
+        private static void ConvertLegacyVersions(ref string targetFramework, ref string runtimeVersion, ref string aspNetCoreVersion)
+        {
+            // Converting legacy values
+
+            if (runtimeVersion.EndsWith("*")) // 2.1.*, 2.*, 5.0.*
+            {
+                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3);
+                runtimeVersion = "edge";
+            }
+
+            if (runtimeVersion.Split('.').Length == 2) // 2.1, 5.0
+            {
+                targetFramework = "netcoreapp" + runtimeVersion.Substring(0, 3);
+                runtimeVersion = "current";
+            }
+
+            if (aspNetCoreVersion.EndsWith("*")) // 2.1.*, 2.*
+            {
+                aspNetCoreVersion = "edge";
+            }
+
+            if (aspNetCoreVersion.Split('.').Length == 2) // 2.1, 5.0
+            {
+                aspNetCoreVersion = "current";
+            }
+        }
+
         private static string SeekCompatibleDesktopRuntime(string dotnetHome, string channel, string desktopVersion)
         {
             foreach (var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
@@ -2829,12 +2836,6 @@ namespace BenchmarkServer
             var runtime = index.SelectToken($"$.releases[0].runtime.version").ToString();
             var desktop = index.SelectToken($"$.releases[0].windowsdesktop.version").ToString();
 
-            //Log.WriteLine($"Detecting current version for target framework {targetFramework}: ");
-            //Log.WriteLine($"  SDK: {sdk} ");
-            //Log.WriteLine($"  Runtime: {runtime} ");
-            //Log.WriteLine($"  ASP.NET: {aspnet} ");
-            //Log.WriteLine($"  Desktop: {desktop} ");
-            
             return (runtime, desktop, aspnet, sdk);
         }
 
