@@ -575,6 +575,26 @@ namespace BenchmarksDriver
                                 await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
                             }
                         }
+
+                        var aJobFailed = false;
+
+                        // Skipped other services if a job has failed
+                        foreach (var job in jobs)
+                        {
+                            var state = await job.GetStateAsync();
+
+                            if (state == ServerState.Failed)
+                            {
+                                aJobFailed = true;
+                                break;
+                            }
+                        }
+
+                        if (aJobFailed)
+                        {
+                            Log.Write($"Job has failed, interrupting benchmarks ...");
+                            break;
+                        }
                     }
 
                     // Download traces, before the jobs are stopped
@@ -587,6 +607,12 @@ namespace BenchmarksDriver
                         }
 
                         var service = configuration.Jobs[jobName];
+
+                        // Skip failed jobs
+                        if (!jobsByDependency.ContainsKey(jobName))
+                        {
+                            continue;
+                        }
 
                         var jobConnections = jobsByDependency[jobName];
 
@@ -641,6 +667,12 @@ namespace BenchmarksDriver
                     {
                         var service = configuration.Jobs[jobName];
 
+                        // Skip failed jobs
+                        if (!jobsByDependency.ContainsKey(jobName))
+                        {
+                            continue;
+                        }
+
                         var jobs = jobsByDependency[jobName];
 
                         if (!service.WaitForExit)
@@ -667,6 +699,12 @@ namespace BenchmarksDriver
                     foreach (var jobName in dependencies)
                     {
                         var service = configuration.Jobs[jobName];
+
+                        // Skip failed jobs
+                        if (!jobsByDependency.ContainsKey(jobName))
+                        {
+                            continue;
+                        }
 
                         var jobConnections = jobsByDependency[jobName];
 
@@ -1415,6 +1453,12 @@ namespace BenchmarksDriver
             foreach (var jobName in dependencies)
             {
                 if (configuration.Jobs[jobName].Options.DiscardResults)
+                {
+                    continue;
+                }
+
+                // Skip failed jobs
+                if (!jobsByDependency.ContainsKey(jobName))
                 {
                     continue;
                 }

@@ -67,7 +67,7 @@ namespace BenchmarksDriver
 
             Log.Write($"Starting job '{_jobName}' ...");
 
-            Log.Verbose($"POST {_serverJobsUri} {content}...");
+            Log.Verbose($"POST {_serverJobsUri} {content} ...");
 
             var response = await _httpClient.PostAsync(_serverJobsUri, new StringContent(content, Encoding.UTF8, "application/json"));
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -83,7 +83,7 @@ namespace BenchmarksDriver
 
             while (true)
             {
-                Log.Verbose($"GET {_serverJobUri}...");
+                Log.Verbose($"GET {_serverJobUri} ...");
                 response = await _httpClient.GetAsync(_serverJobUri);
                 responseContent = await response.Content.ReadAsStringAsync();
 
@@ -235,7 +235,9 @@ namespace BenchmarksDriver
                         {
                             var buildFileSegments = buildFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                            foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(buildFileSegments[0]), Path.GetFileName(buildFileSegments[0]), SearchOption.AllDirectories))
+                            var shouldSearchRecursively = buildFileSegments[0].Contains("*.*");
+
+                            foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(buildFileSegments[0]), Path.GetFileName(buildFileSegments[0]), shouldSearchRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                             {
                                 var resolvedFileWithDestination = resolvedFile;
 
@@ -261,7 +263,9 @@ namespace BenchmarksDriver
                         {
                             var outputFileSegments = outputFileValue.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
 
-                            foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), SearchOption.AllDirectories))
+                            var shouldSearchRecursively = outputFileSegments[0].Contains("*.*");
+
+                            foreach (var resolvedFile in Directory.GetFiles(Path.GetDirectoryName(outputFileSegments[0]), Path.GetFileName(outputFileSegments[0]), shouldSearchRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                             {
                                 var resolvedFileWithDestination = resolvedFile;
 
@@ -307,7 +311,7 @@ namespace BenchmarksDriver
             {
                 var previousJob = Job;
 
-                Log.Verbose($"GET {_serverJobUri}...");
+                Log.Verbose($"GET {_serverJobUri} ...");
                 response = await _httpClient.GetAsync(_serverJobUri);
                 responseContent = await response.Content.ReadAsStringAsync();
 
@@ -333,7 +337,7 @@ namespace BenchmarksDriver
                 }
                 else if (Job.State == ServerState.Failed)
                 {
-                    Log.Write($"Job failed on benchmark server, stopping...");
+                    Log.Write($"Job failed on benchmark server, stopping ...");
 
                     Log.Write(Job.Error, notime: true, error: true);
 
@@ -407,7 +411,7 @@ namespace BenchmarksDriver
         {
             Log.Write($"Deleting job '{_jobName}' ...");
 
-            Log.Verbose($"DELETE {_serverJobUri}...");
+            Log.Verbose($"DELETE {_serverJobUri} ...");
             var response = await _httpClient.DeleteAsync(_serverJobUri);
             Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
 
@@ -430,7 +434,7 @@ namespace BenchmarksDriver
         /// </summary>
         public async Task<bool> TryUpdateJobAsync()
         {
-            Log.Verbose($"GET {_serverJobUri}...");
+            Log.Verbose($"GET {_serverJobUri} ...");
             var response = await _httpClient.GetAsync(_serverJobUri);
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -458,7 +462,7 @@ namespace BenchmarksDriver
 
         public async Task ClearMeasurements()
         {
-            Log.Verbose($"POST {_serverJobUri}/resetstats...");
+            Log.Verbose($"POST {_serverJobUri}/resetstats ...");
             var response = await _httpClient.PostAsync(_serverJobUri + "/resetstats", new StringContent(""));
             var responseContent = await response.Content.ReadAsStringAsync();
             Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -468,7 +472,7 @@ namespace BenchmarksDriver
 
         public async Task FlushMeasurements()
         {
-            Log.Verbose($"POST {_serverJobUri}/measurements/flush...");
+            Log.Verbose($"POST {_serverJobUri}/measurements/flush ...");
             var response = await _httpClient.PostAsync(_serverJobUri + "/measurements/flush", new StringContent(""));
             var responseContent = await response.Content.ReadAsStringAsync();
             Log.Verbose($"{(int)response.StatusCode} {response.StatusCode}");
@@ -481,7 +485,7 @@ namespace BenchmarksDriver
         /// </summary>
         public async Task<ServerState> GetStateAsync()
         {
-            Log.Verbose($"GET {_serverJobUri}/state...");
+            Log.Verbose($"GET {_serverJobUri}/state ...");
             var response = await _httpClient.GetAsync(_serverJobUri + "/state");
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -524,13 +528,13 @@ namespace BenchmarksDriver
                     try
                     {
                         // Ping server job to keep it alive
-                        Log.Verbose($"GET {_serverJobUri}/touch...");
+                        Log.Verbose($"GET {_serverJobUri}/touch ...");
                         var response = await _httpClient.GetAsync(_serverJobUri + "/touch");
 
                         // Detect if the job has timed out. This doesn't account for any other service
                         if (Job.Timeout > 0 && DateTime.UtcNow - _runningUtc > TimeSpan.FromSeconds(Job.Timeout))
                         {
-                            Log.Write($"Job has timed out, stopping...");
+                            Log.Write($"Job has timed out, stopping ...");
                             await StopAsync();
                         }
                     }

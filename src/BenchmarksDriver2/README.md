@@ -87,7 +87,7 @@ Options:
   --[JOB].options.displayBuild <true|false>                                Whether to download and display the standard output of the build step (works for .NET and Docker).
 
   ## Files
-  --[JOB].options.buildFiles <filename>                                    Build files that will be copied before the application is built. Format is 'path[;destination]'. Path can be a URL. e.g., c:\images\mydockerimage.tar, c:\code\Program.cs
+  --[JOB].options.buildFiles <filename>                                    Build files that will be copied before the application is built. Format is 'path[;destination]'. Path can be a URL. e.g., c:\images\mydockerimage.tar, c:\code\Program.cs. [destination] is relative to the project file localtion.
   --[JOB].options.outputFiles <filename>                                   Output files that will be copied in the final application folder. Format is 'path[;destination]'. Path can be a URL. e.g., c:\build\Microsoft.AspNetCore.Mvc.dll, c:\files\samples\picture.png;wwwroot\picture.png
 
   ## Telemetry
