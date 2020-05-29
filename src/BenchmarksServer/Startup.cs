@@ -70,9 +70,9 @@ namespace BenchmarkServer
         private static readonly string _aspNetCoreDependenciesUrl = "https://raw.githubusercontent.com/aspnet/AspNetCore/{0}";
         private static readonly string _perfviewUrl = $"https://github.com/Microsoft/perfview/releases/download/{PerfViewVersion}/PerfView.exe";
         private static readonly string _aspnetFlatContainerUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json";
-        private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
-        
+
         // Safe-keeping these urls
+        //private static readonly string _latestRuntimeApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json";
         //private static readonly string _latestDesktopApiUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.win-x64/index.json";
         //private static readonly string _releaseMetadata = "https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json";
 
@@ -1986,40 +1986,10 @@ namespace BenchmarkServer
             }
             else
             {
-                var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
-
-                if (File.Exists(projectFileName))
-                {
-                    var project = XDocument.Load(projectFileName);
-                    var targetFrameworkElement = project.Root
-                        .Elements("PropertyGroup")
-                        .Where(p => !p.Attributes("Condition").Any())
-                        .SelectMany(x => x.Elements("TargetFramework"))
-                        .FirstOrDefault();
-
-                    if (targetFrameworkElement != null)
-                    {
-                        targetFramework = targetFrameworkElement.Value;
-
-                        Log.WriteLine($"Detected target framework: '{targetFramework}'");
-                    }
-                    else
-                    {
-                        var targetFrameworksElement = project.Root
-                            .Elements("PropertyGroup")
-                            .Where(p => !p.Attributes("Condition").Any())
-                            .SelectMany(x => x.Elements("TargetFrameworks"))
-                            .FirstOrDefault();
-
-                        if (targetFrameworksElement != null)
-                        {
-                            targetFramework = targetFrameworksElement.Value.Split(';').FirstOrDefault();
-
-                            Log.WriteLine($"Detected target framework: '{targetFramework}'");
-                        }
-                    }
-                }
+                targetFramework = ResolveProjectTFM(job, benchmarkedApp, targetFramework);
             }
+
+            PatchProjectFrameworkReference(job, benchmarkedApp);
 
             // If a specific channel is set, use it instead of the detected one
             if (!String.IsNullOrEmpty(job.Channel))
@@ -2054,7 +2024,7 @@ namespace BenchmarkServer
 
             sdkVersion = await ResolveSdkVersion(sdkVersion, currentSdkVersion);
 
-            aspNetCoreVersion = await ResolveAspNetCoreVersion(aspNetCoreVersion, currentAspNetCoreVersion);
+            aspNetCoreVersion = await ResolveAspNetCoreVersion(aspNetCoreVersion, currentAspNetCoreVersion, targetFramework);
 
             sdkVersion = PatchOrCreateGlobalJson(job, benchmarkedApp, sdkVersion);
 
@@ -2524,6 +2494,77 @@ namespace BenchmarkServer
             }
         }
 
+        private static string ResolveProjectTFM(ServerJob job, string benchmarkedApp, string targetFramework)
+        {
+            var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
+
+            if (File.Exists(projectFileName))
+            {
+                var project = XDocument.Load(projectFileName);
+                var targetFrameworkElement = project.Root
+                    .Elements("PropertyGroup")
+                    .Where(p => !p.Attributes("Condition").Any())
+                    .SelectMany(x => x.Elements("TargetFramework"))
+                    .FirstOrDefault();
+
+                if (targetFrameworkElement != null)
+                {
+                    targetFramework = targetFrameworkElement.Value;
+
+                    Log.WriteLine($"Detected target framework: '{targetFramework}'");
+                }
+                else
+                {
+                    var targetFrameworksElement = project.Root
+                        .Elements("PropertyGroup")
+                        .Where(p => !p.Attributes("Condition").Any())
+                        .SelectMany(x => x.Elements("TargetFrameworks"))
+                        .FirstOrDefault();
+
+                    if (targetFrameworksElement != null)
+                    {
+                        targetFramework = targetFrameworksElement.Value.Split(';').FirstOrDefault();
+
+                        Log.WriteLine($"Detected target framework: '{targetFramework}'");
+                    }
+                }
+            }
+
+            return targetFramework;
+        }
+
+        private static void PatchProjectFrameworkReference(ServerJob job, string benchmarkedApp)
+        {
+            var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
+
+            if (File.Exists(projectFileName))
+            {
+                Log.WriteLine("Patching project file with Framework References");
+
+                var project = XDocument.Load(projectFileName);
+
+                project.Root.Add(
+                    new XElement("ItemGroup",
+                        new XAttribute("Condition", "$(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netcoreapp3.1' or $(TargetFramework) == 'netcoreapp5.0' or $(TargetFramework) == 'net5.0'"),
+                        new XElement("FrameworkReference",
+                            new XAttribute("Update", "Microsoft.AspNetCore.App"),
+                            new XAttribute("RuntimeFrameworkVersion", "$(MicrosoftAspNetCoreAppPackageVersion)")
+                            ),
+                        new XElement("FrameworkReference",
+                            new XAttribute("Update", "Microsoft.NETCore.App"),
+                            new XAttribute("RuntimeFrameworkVersion", "$(MicrosoftNETCoreAppPackageVersion)")
+                            ),
+                        new XElement("FrameworkReference",
+                            new XAttribute("Update", "Microsoft.WindowsDesktop.App"),
+                            new XAttribute("RuntimeFrameworkVersion", "$(MicrosoftWindowsDesktopAppPackageVersion)")
+                            )
+                    )
+                );
+
+                project.Save(projectFileName);
+            }
+        }
+
         private static void ConvertLegacyVersions(ref string targetFramework, ref string runtimeVersion, ref string aspNetCoreVersion)
         {
             // Converting legacy values
@@ -2569,8 +2610,10 @@ namespace BenchmarkServer
             return desktopVersion;
         }
 
-        private static async Task<string> ResolveAspNetCoreVersion(string aspNetCoreVersion, string currentAspNetCoreVersion)
+        private static async Task<string> ResolveAspNetCoreVersion(string aspNetCoreVersion, string currentAspNetCoreVersion, string targetFramework)
         {
+            var versionPrefix = targetFramework.Substring(targetFramework.Length - 3);
+
             // Define which ASP.NET Core packages version to use
 
             if (String.Equals(aspNetCoreVersion, "Current", StringComparison.OrdinalIgnoreCase))
@@ -2580,14 +2623,31 @@ namespace BenchmarkServer
             }
             else if (String.Equals(aspNetCoreVersion, "Latest", StringComparison.OrdinalIgnoreCase))
             {
-                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, "");
-                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Latest)");
+                // aspnet runtime service releases are not published on feeds
+                if (versionPrefix != "5.0")
+                {
+                    aspNetCoreVersion = currentAspNetCoreVersion;
+                    Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Latest - Fallback on Current)");
+                }
+                else
+                {
+                    aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, versionPrefix);
+                    Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Latest)");
+                }
             }
             else if (String.Equals(aspNetCoreVersion, "Edge", StringComparison.OrdinalIgnoreCase))
             {
-                // Same as Latest for ASP.NET
-                aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, "");
-                Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Edge)");
+                // aspnet runtime service releases are not published on feeds
+                if (versionPrefix != "5.0")
+                {
+                    aspNetCoreVersion = currentAspNetCoreVersion;
+                    Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Edge - Fallback on Current)");
+                }
+                else
+                {
+                    aspNetCoreVersion = await GetFlatContainerVersion(_aspnetFlatContainerUrl, versionPrefix);
+                    Log.WriteLine($"ASP.NET: {aspNetCoreVersion} (Latest)");
+                }
             }
             else
             {
@@ -2698,8 +2758,24 @@ namespace BenchmarkServer
             }
             else if (String.Equals(runtimeVersion, "Edge", StringComparison.OrdinalIgnoreCase))
             {
-                runtimeVersion = await GetFlatContainerVersion(_latestRuntimeApiUrl, "");
-                Log.WriteLine($"Runtime: {runtimeVersion} (Edge)");
+                // Older versions are still published on old feed. Including service releases
+
+                foreach (var runtimeApiUrl in _runtimeFeedUrls)
+                {
+                    try
+                    {
+                        runtimeVersion = await GetFlatContainerVersion(runtimeApiUrl + "/microsoft.netcore.app.runtime.win-x64/index.json", targetFramework.Substring(targetFramework.Length - 3));
+
+                        if (!String.IsNullOrEmpty(runtimeVersion))
+                        {
+                            Log.WriteLine($"Runtime: {runtimeVersion} (Edge)");
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }                
             }
             else
             {
