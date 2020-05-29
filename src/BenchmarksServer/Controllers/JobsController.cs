@@ -537,9 +537,10 @@ namespace BenchmarkServer.Controllers
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    return NotFound();
+                    Log($"Error in /{id}/fetch: " + e.Message);
+                    return StatusCode(500, e.Message);
                 }
             }
         }
