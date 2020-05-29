@@ -1984,7 +1984,8 @@ namespace BenchmarkServer
             {
                 targetFramework = job.Framework;
             }
-            else
+            // If no version is set for runtime, check project's default tfm
+            else if (!IsVersionPrefix(job.RuntimeVersion))
             {
                 targetFramework = ResolveProjectTFM(job, benchmarkedApp, targetFramework);
             }
@@ -2531,6 +2532,11 @@ namespace BenchmarkServer
             }
 
             return targetFramework;
+        }
+
+        private static bool IsVersionPrefix(string version)
+        {
+            return !String.IsNullOrEmpty(version) && char.IsDigit(version[0]);
         }
 
         private static void PatchProjectFrameworkReference(ServerJob job, string benchmarkedApp)
