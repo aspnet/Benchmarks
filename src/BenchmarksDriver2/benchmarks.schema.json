@@ -102,7 +102,30 @@
           "title": "The text in the console that informs the server it has started",
           "default": "",
           "examples": [
-            "Starting", "Application started", "Listening to requests"
+            "Starting",
+            "Application started",
+            "Listening to requests"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "framework": {
+          "type": "string",
+          "title": "The TFM to used during the build step. If empty it will be autodetected.",
+          "default": "",
+          "examples": [
+            "netcoreapp3.1",
+            "netcoreapp5.0"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "channel": {
+          "type": "string",
+          "title": "The channel resolving runtime versions.",
+          "default": "current",
+          "examples": [
+            "current",
+            "latest",
+            "edge"
           ],
           "pattern": "^(.*)$"
         },
@@ -111,7 +134,10 @@
           "title": "The .NET SDK version to build and run the project.",
           "default": "",
           "examples": [
-            "3.0.100", "Latest", "5.*"
+            "current",
+            "latest",
+            "edge",
+            "3.1.300"
           ],
           "pattern": "^(.*)$"
         },
@@ -120,7 +146,10 @@
           "title": "The ASP.NET version.",
           "default": "",
           "examples": [
-            "3.1"
+            "current",
+            "latest",
+            "edge",
+            "5.0.0-preview.4.20257.10"
           ],
           "pattern": "^(.*)$"
         },
@@ -129,7 +158,10 @@
           "title": "The .NET runtime version.",
           "default": "",
           "examples": [
-            "3.0.100", "Latest", "5.*"
+            "current",
+            "latest",
+            "edge",
+            "5.0.0-preview.6.20278.6"
           ],
           "pattern": "^(.*)$"
         },

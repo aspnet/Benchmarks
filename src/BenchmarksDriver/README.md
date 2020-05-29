@@ -90,6 +90,7 @@ Options:
   --build-timeout        Timeout for build phase. e.g., 00:30:00. Defaults to 00:30:00.
   --start-timeout        Timeout for start phase. e.g., 00:05:00".
   --framework            TFM to use if automatic resolution based runtime should not be used. e.g., netcoreapp2.1
+  --channel              Channel that is used to resolve runtimes versions. e.g., 'current' (default), 'latest', 'edge'
   --sdk                  SDK version to use
   --initialize           A script to run before the application starts, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
   --clean                A script to run after the application has stopped, e.g. "du", "/usr/bin/env bash dotnet-install.sh"
