@@ -488,13 +488,13 @@ namespace BenchmarkServer
                             string dockerImage = tracker.dockerImage;
                             string dockerContainerId = tracker.dockerContainerId;
 
-                            ulong eventPipeSessionId = tracker.eventPipeSessionId;
-                            var eventPipeTask = tracker.eventPipeTask;
-                            var eventPipeTerminated = tracker.eventPipeTerminated;
+                            eventPipeSessionId = tracker.eventPipeSessionId;
+                            eventPipeTask = tracker.eventPipeTask;
+                            eventPipeTerminated = tracker.eventPipeTerminated;
 
-                            ulong measurementsSessionId = tracker.measurementsSessionId;
-                            var measurementsTask = tracker.measurementsTask;
-                            var measurementsTerminated = tracker.measurementsTerminated;
+                            measurementsSessionId = tracker.measurementsSessionId;
+                            measurementsTask = tracker.measurementsTask;
+                            measurementsTerminated = tracker.measurementsTerminated;
 
                             Log.WriteLine($"Processing job {job.Id} in state {job.State}");
 
