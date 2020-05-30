@@ -319,10 +319,14 @@ namespace BenchmarksDriver
 
                 var serializer = new Serializer();
 
+                string groupId = Guid.NewGuid().ToString("n");
+
                 // Verifying jobs
                 foreach (var jobName in dependencies)
                 {
                     var service = configuration.Jobs[jobName];
+
+                    service.RunId = groupId;
 
                     if (String.IsNullOrEmpty(service.Source.Project) &&
                         String.IsNullOrEmpty(service.Source.DockerFile) &&
@@ -554,7 +558,11 @@ namespace BenchmarksDriver
                                     {
                                         var state = await job.GetStateAsync();
 
-                                        stop = stop && (state == ServerState.Stopped || state == ServerState.Failed);
+                                        stop = stop && (
+                                            state == ServerState.Stopped || 
+                                            state == ServerState.Failed ||
+                                            state == ServerState.Deleted
+                                            );
                                     }
 
                                     if (stop)
@@ -715,11 +723,11 @@ namespace BenchmarksDriver
                             Log.Quiet($"-------");
                         }
 
+                        // Convert any json result to an object
+                        NormalizeResults(jobConnections);
+
                         foreach (var jobConnection in jobConnections)
                         {
-                            // Convert any json result to an object
-                            NormalizeResults(jobConnections);
-
                             if (!service.Options.DiscardResults)
                             {
                                 WriteMeasures(jobConnection);
@@ -1582,6 +1590,8 @@ namespace BenchmarksDriver
 
             var reduced = new Dictionary<string, object>();
 
+            var maxWidth = jobs.First().Job.Metadata.Max(x => x.ShortDescription.Length) + 2;
+
             foreach (var metadata in jobs.First().Job.Metadata)
             {
                 var reducedValues = groups.SelectMany(x => x)
@@ -1589,7 +1599,7 @@ namespace BenchmarksDriver
 
                 object reducedValue = null;
 
-                switch (metadata.Aggregate)
+                switch (metadata.Reduce)
                 {
                     case Operation.All:
                         reducedValue = reducedValues.ToArray();
@@ -1637,6 +1647,22 @@ namespace BenchmarksDriver
                 }
 
                 reduced[metadata.Name] = reducedValue;
+
+                Log.Quiet("");
+                Log.Quiet($"# Summary");
+
+                if (metadata.Format != "object")
+                {
+                    if (!String.IsNullOrEmpty(metadata.Format))
+                    {
+                        Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {Convert.ToDouble(reducedValue).ToString(metadata.Format)}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{(metadata.ShortDescription + ":").PadRight(maxWidth)} {reducedValue.ToString()}");
+                    }
+                }
+
             }
 
             return reduced;

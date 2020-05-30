@@ -23,6 +23,12 @@ namespace Benchmarks.ServerJob
 
         public int Id { get; set; }
 
+        /// <summary>
+        /// Common identifier for all jobs in a scenario.
+        /// Multiple jobs with the same RunId can be started on the same agent
+        /// </summary>
+        public string RunId { get; set; } = Guid.NewGuid().ToString("n");
+
         [JsonConverter(typeof(StringEnumConverter))]
         public Hardware? Hardware { get; set; }
 

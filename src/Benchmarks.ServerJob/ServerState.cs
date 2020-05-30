@@ -3,6 +3,7 @@
 
 namespace Benchmarks.ServerJob
 {
+
     public enum ServerState
     {
         New, // The job was submitted
