@@ -9,19 +9,19 @@ variables:
 # Steps are serial
 
 schedules:
-- cron: "0/30 * * * *"
+- cron: "0 * * * *"
   displayName: "On :00"
   branches:
     include:
     - master
   always: "true"
-- cron: "5/20 * * * *"
+- cron: "10 * * * *"
   displayName: "On :10"
   branches:
     include:
     - master
   always: "true"
-- cron: "15/20 * * * *"
+- cron: "20 * * * *"
   displayName: "On :20"
   branches:
     include:
