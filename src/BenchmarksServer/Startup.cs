@@ -1013,6 +1013,15 @@ namespace BenchmarkServer
                                     job.State = ServerState.Failed;
                                     job.Error = "Job didn't start during the expected delay. Check that it outputs a startup message on the log.";
                                 }
+
+                                // Check the driver is still communicating
+                                if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
+                                {
+                                    // The job needs to be deleted
+                                    Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                    Log.WriteLine($"{job.State} -> Deleting");
+                                    job.State = ServerState.Deleting;
+                                }
                             }
                             else if (job.State == ServerState.Initializing)
                             {
@@ -1105,12 +1114,20 @@ namespace BenchmarkServer
                                 }
 
                                 // The driver is supposed to send attachment in the initialize phase
-                                // TODO: Check the last driver communication instead, as if the transfer fails the timeout might be to generous
                                 if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
                                 {
                                     Log.WriteLine($"Job didn't initialize during the expected delay");
                                     job.State = ServerState.Failed;
                                     job.Error = "Job didn't initalize during the expected delay.";
+                                }
+
+                                // Check the driver is still communicating
+                                if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
+                                {
+                                    // The job needs to be deleted
+                                    Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting job.");
+                                    Log.WriteLine($"{job.State} -> Deleting");
+                                    job.State = ServerState.Deleting;
                                 }
                             }
 
