@@ -171,13 +171,19 @@ namespace BenchmarkServer
                     try
                     {
                         Log.WriteLine("Cleaning up temporary folder...");
+
                         // build servers will hold locks on dotnet.exe otherwise
                         // c.f. https://github.com/dotnet/sdk/issues/9487
-                        ProcessUtil.Run(GetDotNetExecutable(_dotnethome), "build-server shutdown", workingDirectory: _dotnethome, log: true);
+
+                        // If dotnet hasn't yet been installed, don't try to shutdown the build servers
+                        if (File.Exists(GetDotNetExecutable(_dotnethome)))
+                        {
+                            ProcessUtil.Run(GetDotNetExecutable(_dotnethome), "build-server shutdown", workingDirectory: _dotnethome, log: true);
+                        }
 
                         if (_cleanup && Directory.Exists(_rootTempDir))
                         {
-                            TryDeleteDir(_rootTempDir, false);
+                                TryDeleteDir(_rootTempDir, false);
                         }
                     }
                     finally
@@ -388,6 +394,8 @@ namespace BenchmarkServer
             try
             {
                 await EnsureDotnetInstallExistsAsync();
+
+                Log.WriteLine($"Agent ready, waiting for jobs...");
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -2958,7 +2966,7 @@ namespace BenchmarkServer
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "release/3.1/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                         .Elements("PropertyGroup")
-                        .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
+                        .Select(x => x.Element("MicrosoftNETCoreAppRuntimewinx64PackageVersion"))
                         .Where(x => x != null)
                         .FirstOrDefault()
                         .Value;
@@ -2970,7 +2978,7 @@ namespace BenchmarkServer
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "master/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
                         .Elements("PropertyGroup")
-                        .Select(x => x.Element("MicrosoftNETCoreAppRefPackageVersion"))
+                        .Select(x => x.Element("MicrosoftNETCoreAppRuntimewinx64PackageVersion"))
                         .Where(x => x != null)
                         .FirstOrDefault()
                         .Value;

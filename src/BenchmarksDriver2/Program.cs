@@ -181,9 +181,6 @@ namespace BenchmarksDriver
             // ServerJob Options
             var databaseOption = app.Option("--database",
                 "The type of database to run the benchmarks with (PostgreSql, SqlServer or MySql). Default is None.", CommandOptionType.SingleValue);
-            var kestrelThreadCountOption = app.Option("--kestrelThreadCount",
-                "Maps to KestrelServerOptions.ThreadCount.",
-                CommandOptionType.SingleValue);
             
             _outputArchiveOption = app.Option("--output-archive",
                 "Output archive attachment. Format is 'path[;destination]'. Path can be a URL. e.g., " +
@@ -1417,7 +1414,14 @@ namespace BenchmarksDriver
 
                 var nth = (int)Math.Ceiling((double)orderedList.Length * percentile / 100);
 
-                return orderedList[nth];
+                if (orderedList.Length > nth)
+                {
+                    return orderedList[nth];
+                }
+                else
+                {
+                    return 0;
+                }
             };
         }
 
