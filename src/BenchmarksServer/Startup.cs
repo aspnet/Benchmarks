@@ -156,50 +156,6 @@ namespace BenchmarkServer
             _httpClientHandler.AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
 
             _httpClient = new HttpClient(_httpClientHandler);
-
-            var isShutdown = false;
-
-            Action shutdown = () =>
-            {
-                lock (_synLock)
-                {
-                    if (isShutdown)
-                    {
-                        return;
-                    }
-
-                    try
-                    {
-                        Log.WriteLine("Cleaning up temporary folder...");
-
-                        // build servers will hold locks on dotnet.exe otherwise
-                        // c.f. https://github.com/dotnet/sdk/issues/9487
-
-                        // If dotnet hasn't yet been installed, don't try to shutdown the build servers
-                        if (File.Exists(GetDotNetExecutable(_dotnethome)))
-                        {
-                            ProcessUtil.Run(GetDotNetExecutable(_dotnethome), "build-server shutdown", workingDirectory: _dotnethome, log: true);
-                        }
-
-                        if (_cleanup && Directory.Exists(_rootTempDir))
-                        {
-                                TryDeleteDir(_rootTempDir, false);
-                        }
-                    }
-                    finally
-                    {
-                        isShutdown = true;
-                    }
-                }
-            };
-
-            // SIGTERM
-            AssemblyLoadContext.GetLoadContext(typeof(Startup).GetTypeInfo().Assembly).Unloading +=
-                context => shutdown();
-
-            // SIGINT
-            Console.CancelKeyPress +=
-                (sender, eventArgs) => shutdown();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -208,8 +164,10 @@ namespace BenchmarkServer
             services.AddSingleton(_jobs);
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostApplicationLifetime hostApplicationLifetime)
         {
+            hostApplicationLifetime.ApplicationStopping.Register(OnShutdown);
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -483,6 +441,9 @@ namespace BenchmarkServer
                         {
                             var tracker = group[job];
 
+                            Log.WriteLine($"Processing job {job.Id} in state {job.State}");
+
+                            // Restore context for the current job
                             Process process = tracker.process;
 
                             string workingDirectory = tracker.workingDirectory;
@@ -503,8 +464,6 @@ namespace BenchmarkServer
                             measurementsSessionId = tracker.measurementsSessionId;
                             measurementsTask = tracker.measurementsTask;
                             measurementsTerminated = tracker.measurementsTerminated;
-
-                            Log.WriteLine($"Processing job {job.Id} in state {job.State}");
 
                             if (job.State == ServerState.New)
                             {
@@ -527,6 +486,94 @@ namespace BenchmarkServer
                                     startMonitorTime = DateTime.UtcNow;
                                     Log.WriteLine($"{job.State} -> Initializing");
                                     job.State = ServerState.Initializing;
+                                }
+
+                                                                lock (job.Metadata)
+                                {
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/cpu",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "Amount of time the process has utilized the CPU out of 100%",
+                                            ShortDescription = "CPU Usage (%)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/raw"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/cpu/raw",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n2", // two decimals
+                                            LongDescription = "Raw CPU value (not normalized by number of cores)",
+                                            ShortDescription = "Raw CPU Usage (%)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/working-set"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/working-set",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "Amount of working set used by the process (MB)",
+                                            ShortDescription = "Working Set (MB)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/build-time"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/build-time",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "How long it took to build the application",
+                                            ShortDescription = "Build Time (ms)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/published-size"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/published-size",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "The size of the published application",
+                                            ShortDescription = "Published Size (KB)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/swap"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/swap",
+                                            Aggregate = Operation.Delta,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "Amount of swapped memory (MB)",
+                                            ShortDescription = "Swap (MB)"
+                                        });
+                                    }
+
                                 }
                             }
                             else if (job.State == ServerState.Failed)
@@ -1025,94 +1072,6 @@ namespace BenchmarkServer
                             }
                             else if (job.State == ServerState.Initializing)
                             {
-                                lock (job.Metadata)
-                                {
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/cpu",
-                                            Aggregate = Operation.Max,
-                                            Reduce = Operation.Max,
-                                            Format = "n0",
-                                            LongDescription = "Amount of time the process has utilized the CPU out of 100%",
-                                            ShortDescription = "CPU Usage (%)"
-                                        });
-                                    }
-
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu/raw"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/cpu/raw",
-                                            Aggregate = Operation.Max,
-                                            Reduce = Operation.Max,
-                                            Format = "n2", // two decimals
-                                            LongDescription = "Raw CPU value (not normalized by number of cores)",
-                                            ShortDescription = "Raw CPU Usage (%)"
-                                        });
-                                    }
-
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/working-set"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/working-set",
-                                            Aggregate = Operation.Max,
-                                            Reduce = Operation.Max,
-                                            Format = "n0",
-                                            LongDescription = "Amount of working set used by the process (MB)",
-                                            ShortDescription = "Working Set (MB)"
-                                        });
-                                    }
-
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/build-time"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/build-time",
-                                            Aggregate = Operation.Max,
-                                            Reduce = Operation.Max,
-                                            Format = "n0",
-                                            LongDescription = "How long it took to build the application",
-                                            ShortDescription = "Build Time (ms)"
-                                        });
-                                    }
-
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/published-size"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/published-size",
-                                            Aggregate = Operation.Max,
-                                            Reduce = Operation.Max,
-                                            Format = "n0",
-                                            LongDescription = "The size of the published application",
-                                            ShortDescription = "Published Size (KB)"
-                                        });
-                                    }
-
-                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/swap"))
-                                    {
-                                        job.Metadata.Enqueue(new MeasurementMetadata
-                                        {
-                                            Source = "Host Process",
-                                            Name = "benchmarks/swap",
-                                            Aggregate = Operation.Delta,
-                                            Reduce = Operation.Max,
-                                            Format = "n0",
-                                            LongDescription = "Amount of swapped memory (MB)",
-                                            ShortDescription = "Swap (MB)"
-                                        });
-                                    }
-
-                                }
-
                                 // The driver is supposed to send attachment in the initialize phase
                                 if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
                                 {
@@ -1170,7 +1129,7 @@ namespace BenchmarkServer
                                     {
                                         if (process != null && !measurementsTerminated && !!process.HasExited)
                                         {
-                                            EventPipeClient.StopTracing(process.Id, tracker.measurementsSessionId);
+                                            EventPipeClient.StopTracing(process.Id, measurementsSessionId);
                                         }
                                     }
                                     catch (EndOfStreamException)
@@ -3558,7 +3517,7 @@ namespace BenchmarkServer
             job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
 
             eventPipeTerminated = false;
-            eventPipeTask = new Task(() =>
+            eventPipeTask = new Task(async () =>
             {
                 Log.WriteLine("Listening to event pipes");
 
@@ -3577,8 +3536,32 @@ namespace BenchmarkServer
                             format: EventPipeSerializationFormat.NetTrace,
                             providers: providerList);
 
-                    var binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out eventPipeSessionId);
-                    var source = new EventPipeEventSource(binaryReader);
+EventPipeEventSource source = null;
+                    Stream binaryReader = null;
+
+                    var retries = 10;
+                    while (retries-- > 0) 
+                    {
+                        try
+                        {
+                            binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out eventPipeSessionId);
+                            break;
+                        }
+                        catch (TimeoutException)
+                        {
+                        }
+
+                        await Task.Delay(100);
+                    }
+
+                    if (retries == 0)
+                    {
+                        Log.WriteLine("[ERROR] Failed to create counters event pipe client");
+                        return;
+                    }
+
+                    source = new EventPipeEventSource(binaryReader);
+
                     source.Dynamic.All += (eventData) =>
                     {
                         // We only track event counters
@@ -3644,7 +3627,7 @@ namespace BenchmarkServer
         private static void StartMeasurement(ServerJob job)
         {
             measurementsTerminated = false;
-            measurementsTask = new Task(() =>
+            measurementsTask = new Task(async () =>
             {
                 Log.WriteLine("Starting measurement");
 
@@ -3662,8 +3645,30 @@ namespace BenchmarkServer
                             format: EventPipeSerializationFormat.NetTrace,
                             providers: providerList);
 
-                    var binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out measurementsSessionId);
-                    var source = new EventPipeEventSource(binaryReader);
+                    EventPipeEventSource source = null;
+                    Stream binaryReader = null;
+
+                    var retries = 10;
+                    while (retries-- > 0) 
+                    {
+                        try
+                        {
+                            binaryReader = EventPipeClient.CollectTracing(job.ProcessId, configuration, out measurementsSessionId);
+                            break;
+                        }
+                        catch (TimeoutException)
+                        {
+                        }
+
+                        await Task.Delay(100);
+                    }
+
+                    if (retries == 0)
+                    {
+                        Log.WriteLine("[ERROR] Failed to create measurements event pipe client");
+                        return;
+                    }
+                    
                     source.Dynamic.All += (eventData) =>
                     {
                         // We only track event counters for System.Runtime
@@ -4320,6 +4325,31 @@ namespace BenchmarkServer
             }
 
             return Task.CompletedTask;
+        }
+
+        private void OnShutdown()
+        {
+            try
+            {
+                Log.WriteLine("Cleaning up temporary folder...");
+
+                // build servers will hold locks on dotnet.exe otherwise
+                // c.f. https://github.com/dotnet/sdk/issues/9487
+
+                // If dotnet hasn't yet been installed, don't try to shutdown the build servers
+                if (File.Exists(GetDotNetExecutable(_dotnethome)))
+                {
+                    ProcessUtil.Run(GetDotNetExecutable(_dotnethome), "build-server shutdown", workingDirectory: _dotnethome, log: true);
+                }
+
+                if (_cleanup && Directory.Exists(_rootTempDir))
+                {
+                    TryDeleteDir(_rootTempDir, false);
+                }
+            }
+            finally
+            {
+            }
         }
     }
 }
