@@ -1111,7 +1111,8 @@ namespace BenchmarkServer
                                 {
                                     try
                                     {
-                                        if (process != null && !eventPipeTerminated && !!process.HasExited)
+                                        Log.WriteLine($"Stopping counter event pipes for job {job.Id}");
+                                        if (process != null && !eventPipeTerminated && !process.HasExited)
                                         {
                                             EventPipeClient.StopTracing(process.Id, eventPipeSessionId);
                                         }
@@ -1127,7 +1128,8 @@ namespace BenchmarkServer
                                 {
                                     try
                                     {
-                                        if (process != null && !measurementsTerminated && !!process.HasExited)
+                                        Log.WriteLine($"Stopping measurement event pipes for job {job.Id}");
+                                        if (process != null && !eventPipeTerminated && !process.HasExited)
                                         {
                                             EventPipeClient.StopTracing(process.Id, measurementsSessionId);
                                         }
@@ -2411,6 +2413,8 @@ namespace BenchmarkServer
                 });
 
                 Log.WriteLine($"Application published successfully in {job.BuildTime.TotalMilliseconds} ms");
+
+                PatchRuntimeConfig(job, outputFolder, aspNetCoreVersion, runtimeVersion);
             }
 
             var publishedSize = DirSize(new DirectoryInfo(outputFolder)) / 1024;
@@ -2785,6 +2789,50 @@ namespace BenchmarkServer
             }
 
             return sdkVersion;
+        }
+
+        private static void PatchRuntimeConfig(ServerJob job, string publishFolder, string aspnetcoreversion, string runtimeversion)
+        {
+            var folder = new DirectoryInfo(publishFolder);
+            var runtimeConfigFilename = folder.GetFiles("*.runtimeconfig.json").FirstOrDefault()?.FullName;
+
+            if (!File.Exists(runtimeConfigFilename))
+            {
+                throw new Exception("No runtimeconfig.json was found");
+            }
+
+            // File found, we need to update it
+            Log.WriteLine($"Patching {Path.GetFileName(runtimeConfigFilename)} ");
+
+            var runtimeObject = JObject.Parse(File.ReadAllText(runtimeConfigFilename));
+            
+            var runtimeOptions = runtimeObject["runtimeOptions"] as JObject;
+
+            if (runtimeOptions.ContainsKey("includedFrameworks"))
+            {
+                Log.WriteLine("Application is self-contained, skipping runtimconfig");
+                return;
+            }
+
+            // Remove exising "framework" (singular) node
+            runtimeOptions.Remove("framework");
+            
+            // Create the "frameworks" property instead
+            var frameworks = new JArray();
+            runtimeOptions.TryAdd("frameworks", frameworks);
+            
+            frameworks.Add(
+                    new JObject(
+                        new JProperty("name", "Microsoft.NETCore.App"),
+                        new JProperty("version", runtimeversion)
+                    ));
+            frameworks.Add(
+                    new JObject(
+                        new JProperty("name", "Microsoft.AspNetCore.App"),
+                        new JProperty("version", aspnetcoreversion)
+                    ));
+
+            File.WriteAllText(runtimeConfigFilename, runtimeObject.ToString());
         }
 
         private static async Task<string> ResolveSdkVersion(string sdkVersion, string currentSdkVersion)
@@ -3536,7 +3584,7 @@ namespace BenchmarkServer
                             format: EventPipeSerializationFormat.NetTrace,
                             providers: providerList);
 
-EventPipeEventSource source = null;
+                    EventPipeEventSource source = null;
                     Stream binaryReader = null;
 
                     var retries = 10;
@@ -3613,7 +3661,15 @@ EventPipeEventSource source = null;
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    if (ex.Message == "Read past end of stream.")
+                    {
+                        // Expected if the process has exited by itself
+                        // and the event pipe is till trying to read from it
+                    }
+                    else
+                    {
+                        Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    }
                 }
                 finally
                 {
@@ -3717,7 +3773,15 @@ EventPipeEventSource source = null;
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    if (ex.Message == "Read past end of stream.")
+                    {
+                        // Expected if the process has exited by itself
+                        // and the event pipe is till trying to read from it
+                    }
+                    else
+                    {
+                        Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    }
                 }
                 finally
                 {
