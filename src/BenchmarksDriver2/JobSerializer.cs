@@ -55,13 +55,18 @@ namespace BenchmarksDriver.Serializers
                 END
                 ";
 
-            using (var connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync();
+            await RetryOnExceptionAsync(5, () => InitializeDatabaseInternalAsync(connectionString, createCmd), 5000);
 
-                using (var command = new SqlCommand(createCmd, connection))
+            static async Task InitializeDatabaseInternalAsync(string connectionString, string createCmd)
+            {
+                using (var connection = new SqlConnection(connectionString))
                 {
-                    await command.ExecuteNonQueryAsync();
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand(createCmd, connection))
+                    {
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
             }
         }

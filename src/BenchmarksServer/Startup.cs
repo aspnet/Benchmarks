@@ -1223,7 +1223,7 @@ namespace BenchmarkServer
                                         }
                                         catch
                                         {
-                                            Log.WriteLine($"/shutdown endpoint failed...");
+                                            Log.WriteLine($"/shutdown endpoint failed... ({job.Url}/shutdown)");
                                         }
                                     }
 
@@ -3668,7 +3668,9 @@ EventPipeEventSource source = null;
                         Log.WriteLine("[ERROR] Failed to create measurements event pipe client");
                         return;
                     }
-                    
+
+                    source = new EventPipeEventSource(binaryReader);
+
                     source.Dynamic.All += (eventData) =>
                     {
                         // We only track event counters for System.Runtime
