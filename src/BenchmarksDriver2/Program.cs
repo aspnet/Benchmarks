@@ -1314,7 +1314,28 @@ namespace BenchmarksDriver
 
                 localconfiguration = null;
 
-                switch (Path.GetExtension(configurationFilenameOrUrl))
+                string configurationExtension = null;
+
+                if (configurationFilenameOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Remove any query string to detect the correct extension
+                    var questionMarkIndex = configurationFilenameOrUrl.IndexOf("?");
+                    if (questionMarkIndex != -1)
+                    {
+                        var filename = configurationFilenameOrUrl.Substring(0, questionMarkIndex);
+                        configurationExtension = Path.GetExtension(filename);
+                    }
+                    else
+                    {
+                        configurationExtension = Path.GetExtension(configurationFilenameOrUrl);
+                    }
+                }
+                else
+                {
+                   configurationExtension = Path.GetExtension(configurationFilenameOrUrl);
+                }
+
+                switch (configurationExtension)
                 {
                     case ".json":
                         localconfiguration = JObject.Parse(configurationContent);
@@ -1333,6 +1354,8 @@ namespace BenchmarksDriver
                         var json = serializer.Serialize(yamlObject);
                         localconfiguration = JObject.Parse(json);
                         break;
+                    default:
+                        throw new DriverException($"Unsupported configuration format: {configurationExtension}");
                 }
                 
                 // Process imports
