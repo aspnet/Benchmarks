@@ -60,6 +60,7 @@ namespace Benchmarks.ServerJob
         public string RuntimeVersion { get; set; } = "";
         public string SdkVersion { get; set; } = "";
         public bool UseMonoRuntime { get; set; } = false;
+        public bool UseMonoRuntime_LlvmJit = false;
         public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
 
