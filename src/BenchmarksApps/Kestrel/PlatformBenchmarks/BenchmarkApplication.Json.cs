@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Text.Json;
 
 namespace PlatformBenchmarks
@@ -19,7 +20,7 @@ namespace PlatformBenchmarks
         [ThreadStatic]
         private static Utf8JsonWriter t_writer;
 
-        private static void Json(ref BufferWriter<WriterAdapter> writer)
+        private static void Json(ref BufferWriter<WriterAdapter> writer, IBufferWriter<byte> bodyWriter)
         {
             writer.Write(_jsonPreamble);
 
@@ -28,8 +29,8 @@ namespace PlatformBenchmarks
 
             writer.Commit();
 
-            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(writer.Output, new JsonWriterOptions { SkipValidation = true });
-            utf8JsonWriter.Reset(writer.Output);
+            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(bodyWriter, new JsonWriterOptions { SkipValidation = true });
+            utf8JsonWriter.Reset(bodyWriter);
 
             // Body
             JsonSerializer.Serialize<JsonMessage>(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerOptions);
