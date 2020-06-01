@@ -1111,7 +1111,8 @@ namespace BenchmarkServer
                                 {
                                     try
                                     {
-                                        if (process != null && !eventPipeTerminated && !!process.HasExited)
+                                        Log.WriteLine($"Stopping counter event pipes for job {job.Id}");
+                                        if (process != null && !eventPipeTerminated && !process.HasExited)
                                         {
                                             EventPipeClient.StopTracing(process.Id, eventPipeSessionId);
                                         }
@@ -1127,7 +1128,8 @@ namespace BenchmarkServer
                                 {
                                     try
                                     {
-                                        if (process != null && !measurementsTerminated && !!process.HasExited)
+                                        Log.WriteLine($"Stopping measurement event pipes for job {job.Id}");
+                                        if (process != null && !eventPipeTerminated && !process.HasExited)
                                         {
                                             EventPipeClient.StopTracing(process.Id, measurementsSessionId);
                                         }
@@ -3582,7 +3584,7 @@ namespace BenchmarkServer
                             format: EventPipeSerializationFormat.NetTrace,
                             providers: providerList);
 
-EventPipeEventSource source = null;
+                    EventPipeEventSource source = null;
                     Stream binaryReader = null;
 
                     var retries = 10;
@@ -3659,7 +3661,15 @@ EventPipeEventSource source = null;
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    if (ex.Message == "Read past end of stream.")
+                    {
+                        // Expected if the process has exited by itself
+                        // and the event pipe is till trying to read from it
+                    }
+                    else
+                    {
+                        Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    }
                 }
                 finally
                 {
@@ -3763,7 +3773,15 @@ EventPipeEventSource source = null;
                 }
                 catch (Exception ex)
                 {
-                    Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    if (ex.Message == "Read past end of stream.")
+                    {
+                        // Expected if the process has exited by itself
+                        // and the event pipe is till trying to read from it
+                    }
+                    else
+                    {
+                        Log.WriteLine($"[ERROR] {ex.ToString()}");
+                    }
                 }
                 finally
                 {
