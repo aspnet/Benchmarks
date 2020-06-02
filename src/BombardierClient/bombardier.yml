@@ -20,8 +20,9 @@ jobs:
     waitForExit: true
     variables:
       connections: 256
-      duration: 15
       warmup: 0
+      duration: 15
+      requests: 0
       rate: 0
       transport: fasthttp # | http1 | http2
-    arguments: "-c {{connections}} -d {{duration}}s -w {{warmup}}s --insecure -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}} {{serverUri}}:{{serverPort}}{{path}}"
+    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -n {{requests}} --insecure -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}} {{serverUri}}:{{serverPort}}{{path}}"
