@@ -3542,73 +3542,95 @@ namespace BenchmarkServer
             return $"benchmarks-{Process.GetCurrentProcess().Id}-{job.Id}";
         }
 
-        private static readonly MeasurementMetadata[] MeasurementMetadatas = new[]
+        private static readonly Dictionary<string, string> MetadataProviderPrefixes = new Dictionary<string, string>()
         {
-            // System.Runtime
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/System.Runtime", Name = "Counters/System.Runtime/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            ["System.Runtime"] = "runtime-counter",
+            ["Microsoft-AspNetCore-Server-Kestrel"] = "aspnet-counter",
+            ["Npgsql"] = "npgsql-counter"
+        };
 
-            // Kestrel
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/connections-per-second", LongDescription = "Connection Rate", ShortDescription = "Connection Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/total-connections", LongDescription = "Total Connections", ShortDescription = "Total Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/tls-handshakes-per-second", LongDescription = "TLS Handshake Rate", ShortDescription = "TLS Handshake Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/total-tls-handshakes", LongDescription = "Total TLS Handshakes", ShortDescription = "Total TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/current-tls-handshakes", LongDescription = "Current TLS Handshakes", ShortDescription = "Current TLS Handshakes", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/failed-tls-handshakes", LongDescription = "Failed TLS Handshakes", ShortDescription = "Failed TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/current-connections", LongDescription = "Current Connections", ShortDescription = "Current Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/connection-queue-length", LongDescription = "Connection Queue Length", ShortDescription = "Connection Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/request-queue-length", LongDescription = "Request Queue Length", ShortDescription = "Request Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Microsoft-AspNetCore-Server-Kestrel", Name = "Counters/Microsoft-AspNetCore-Server-Kestrel/current-upgraded-requests", LongDescription = "Current Upgraded Requests (WebSockets)", ShortDescription = "Current Upgraded Requests (WebSockets)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+        private static readonly Dictionary<string, MeasurementMetadata[]> MetadataProviders = new Dictionary<string, MeasurementMetadata[]>
+        {
+            ["System.Runtime"] = new MeasurementMetadata[] 
+            {
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "Counters/System.Runtime/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            },
 
-            // Npgsql
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/bytes-written-per-second", LongDescription = "Bytes Written", ShortDescription = "Bytes Written", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/bytes-read-per-second", LongDescription = "Bytes Read", ShortDescription = "Bytes Read", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/commands-per-second", LongDescription = "Command Rate", ShortDescription = "Command Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/total-commands", LongDescription = "Total Commands", ShortDescription = "Total Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/current-commands", LongDescription = "Current Commands", ShortDescription = "Current Commands", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/failed-commands", LongDescription = "Failed Commands", ShortDescription = "Failed Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/prepared-commands-ratio", LongDescription = "Prepared Commands Ratio", ShortDescription = "Prepared Commands Ratio", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/connection-pools", LongDescription = "Connection Pools", ShortDescription = "Connection Pools", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/idle-connections", LongDescription = "Idle Connections", ShortDescription = "Idle Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/busy-connections", LongDescription = "Busy Connections", ShortDescription = "Busy Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/multiplexing-average-commands-per-batch", LongDescription = "Average commands per multiplexing batch", ShortDescription = "Commands per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/multiplexing-average-waits-per-batch", LongDescription = "Average waits per multiplexing batch", ShortDescription = "Waits per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-            new MeasurementMetadata { Source = "Counters/Npgsql", Name = "Counters/Npgsql/multiplexing-average-write-time-per-batch", LongDescription = "Average write time per multiplexing batch (us)", ShortDescription = "Time per multiplexing batch (us)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            ["Microsoft-AspNetCore-Server-Kestrel"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/connections-per-second", LongDescription = "Connection Rate", ShortDescription = "Connection Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-connections", LongDescription = "Total Connections", ShortDescription = "Total Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/tls-handshakes-per-second", LongDescription = "TLS Handshake Rate", ShortDescription = "TLS Handshake Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-tls-handshakes", LongDescription = "Total TLS Handshakes", ShortDescription = "Total TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-tls-handshakes", LongDescription = "Current TLS Handshakes", ShortDescription = "Current TLS Handshakes", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/failed-tls-handshakes", LongDescription = "Failed TLS Handshakes", ShortDescription = "Failed TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-connections", LongDescription = "Current Connections", ShortDescription = "Current Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/connection-queue-length", LongDescription = "Connection Queue Length", ShortDescription = "Connection Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/request-queue-length", LongDescription = "Request Queue Length", ShortDescription = "Request Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-upgraded-requests", LongDescription = "Current Upgraded Requests (WebSockets)", ShortDescription = "Current Upgraded Requests (WebSockets)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            },
+            ["Npgsql"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/bytes-written-per-second", LongDescription = "Bytes Written", ShortDescription = "Bytes Written", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/bytes-read-per-second", LongDescription = "Bytes Read", ShortDescription = "Bytes Read", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/commands-per-second", LongDescription = "Command Rate", ShortDescription = "Command Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/total-commands", LongDescription = "Total Commands", ShortDescription = "Total Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/current-commands", LongDescription = "Current Commands", ShortDescription = "Current Commands", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/failed-commands", LongDescription = "Failed Commands", ShortDescription = "Failed Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/prepared-commands-ratio", LongDescription = "Prepared Commands Ratio", ShortDescription = "Prepared Commands Ratio", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/connection-pools", LongDescription = "Connection Pools", ShortDescription = "Connection Pools", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/idle-connections", LongDescription = "Idle Connections", ShortDescription = "Idle Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/busy-connections", LongDescription = "Busy Connections", ShortDescription = "Busy Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-commands-per-batch", LongDescription = "Average commands per multiplexing batch", ShortDescription = "Commands per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-waits-per-batch", LongDescription = "Average waits per multiplexing batch", ShortDescription = "Waits per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-write-time-per-batch", LongDescription = "Average write time per multiplexing batch (us)", ShortDescription = "Time per multiplexing batch (us)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            }
         };
 
         private static void StartCounters(ServerJob job)
         {
-            foreach (var measurementMetadata in MeasurementMetadatas)
-                job.Metadata.Enqueue(measurementMetadata);
+            foreach (var providerName in job.CounterProviders)
+            {
+                if (MetadataProviders.TryGetValue(providerName, out var providerMetadata))
+                {
+                    foreach (var metadata in providerMetadata)
+                    {
+                        job.Metadata.Enqueue(metadata);
+                    }
+                }                
+            }
 
             eventPipeTerminated = false;
             eventPipeTask = new Task(async () =>
             {
-                var providerNames = job.CounterProviders.Count > 0
-                    ? job.CounterProviders
-                    : new List<string> { "System.Runtime" };
+                // If not specific provider was defined, add System.Runtime
+                if (job.CounterProviders.Count == 0)
+                {
+                    job.CounterProviders.Add("System.Runtime");
+                }
 
-                Log.WriteLine($"Listening to counter event pipes (providers: {string.Join(", ", providerNames)})");
+                Log.WriteLine($"Listening to counter event pipes (providers: {string.Join(", ", job.CounterProviders)})");
 
                 try
                 {
-                    var providerList = providerNames
+                    var providerList = job.CounterProviders
                         .Select(p => new Provider(
                             name: p,
                             eventLevel: EventLevel.Informational,
@@ -3671,7 +3693,13 @@ namespace BenchmarkServer
                             }
                         }
 
-                        measurement.Name = $"Counters/{eventData.ProviderName}/{counterName}";
+                        // Skip value if the provider is unknown
+                        if (!MetadataProviderPrefixes.TryGetValue(eventData.ProviderName, out var prefix))
+                        {
+                            return;
+                        }
+
+                        measurement.Name = $"{prefix}/{counterName}";
 
                         switch (payloadFields["CounterType"])
                         {
