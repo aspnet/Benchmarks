@@ -25,7 +25,7 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient
                 throw new ArgumentException("Unrecognized format");
             if (providers == null)
                 throw new ArgumentNullException(nameof(providers));
-            if (providers.Count() <= 0)
+            if (providers.Count <= 0)
                 throw new ArgumentException($"Specified providers collection is empty.");
 
             CircularBufferSizeInMB = circularBufferSizeMB;
@@ -36,7 +36,6 @@ namespace Microsoft.Diagnostics.Tools.RuntimeClient
 
         public uint CircularBufferSizeInMB { get; }
         public EventPipeSerializationFormat Format { get; }
-
 
         public IReadOnlyCollection<Provider> Providers => _providers.AsReadOnly();
 
