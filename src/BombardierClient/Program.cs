@@ -38,11 +38,13 @@ namespace BombardierClient
             Console.WriteLine("args: " + String.Join(' ', args));
 
             // Extracting parameters
-            int warmup = 0, duration = 0, requests = 0;
-
             var argsList = args.ToList();
 
-            if (!(TryGetArgumentValue("-d", argsList, out duration) || TryGetArgumentValue("-n", argsList, out requests)))
+            TryGetArgumentValue("-w", argsList, out int warmup);
+            TryGetArgumentValue("-d", argsList, out int duration);
+            TryGetArgumentValue("-n", argsList, out int requests);
+
+            if (duration == 0 && requests == 0)
             {
                 Console.WriteLine("Couldn't find valid -d and -n arguments (integers)");
                 return;
