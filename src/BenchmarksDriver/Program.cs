@@ -211,6 +211,8 @@ namespace BenchmarksDriver
                 CommandOptionType.SingleValue);
             var monoOption = app.Option("--mono-runtime",
                 "Use the mono runtime.", CommandOptionType.NoValue);
+            var monoOption_LlvmJit = app.Option("--mono-runtime-llvmjit",
+                "Use the mono runtime with LLVM JIT.", CommandOptionType.NoValue);
             var aspnetCoreVersionOption = app.Option("-aspnet|--aspnetCoreVersion",
                 "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("-dotnet|--runtimeVersion",
@@ -739,7 +741,7 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (monoOption.HasValue())
+                    if (monoOption.HasValue() || monoOption_LlvmJit.HasValue())
                     {
                         serverJob.SelfContained = true;
 
@@ -767,7 +769,11 @@ namespace BenchmarksDriver
                 }
                 if (monoOption.HasValue())
                 {
-                    serverJob.UseMonoRuntime = true;
+                    serverJob.UseMonoRuntime = "jit";
+                }
+                if (monoOption_LlvmJit.HasValue())
+                {
+                    serverJob.UseMonoRuntime = "llvm-jit";
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {
