@@ -741,20 +741,12 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (monoOption.HasValue())
+                    if (monoOption.HasValue() || monoOption_LlvmJit.HasValue())
                     {
                         serverJob.SelfContained = true;
 
                         Console.ForegroundColor = ConsoleColor.DarkYellow;
                         Log("WARNING: '--self-contained' has been set implicitly as the mono runtime is used.");
-                        Console.ResetColor();
-                    }
-                    if (monoOption_LlvmJit.HasValue())
-                    {
-                        serverJob.SelfContained = true;
-
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Log("WARNING: '--self-contained' has been set implicitly as the mono runtime with LLVM JIT is used.");
                         Console.ResetColor();
                     }
                     else if (outputFileOption.HasValue() || _outputArchiveOption.HasValue())
@@ -777,11 +769,11 @@ namespace BenchmarksDriver
                 }
                 if (monoOption.HasValue())
                 {
-                    serverJob.UseMonoRuntime = true;
+                    serverJob.UseMonoRuntime = "jit";
                 }
                 if (monoOption_LlvmJit.HasValue())
                 {
-                    serverJob.UseMonoRuntime_LlvmJit = true;
+                    serverJob.UseMonoRuntime = "llvm-jit";
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {

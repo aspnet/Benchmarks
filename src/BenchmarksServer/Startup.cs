@@ -2509,25 +2509,14 @@ namespace BenchmarkServer
             }
 
             // Download mono runtime
-            if (job.UseMonoRuntime)
+            if (!string.IsNullOrEmpty(job.UseMonoRuntime))
             {
                 if (!job.SelfContained)
                 {
                     throw new Exception("The job is trying to use the mono runtime but was not configured as self-contained.");
                 }
-
-                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, "jit");
-            }
-
-            // Download mono runtime with LLVM JIT
-            if (job.UseMonoRuntime_LlvmJit)
-            {
-                if (!job.SelfContained)
-                {
-                    throw new Exception("The job is trying to use the mono runtime with LLVM JIT but was not configured as self-contained.");
-                }
-
-                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, "llvm-jit");
+		
+                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime);
             }
 
             // Copy all output attachments
