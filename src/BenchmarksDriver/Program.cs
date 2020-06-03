@@ -210,9 +210,7 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var monoOption = app.Option("--mono-runtime",
-                "Use the mono runtime.", CommandOptionType.NoValue);
-            var monoOption_LlvmJit = app.Option("--mono-runtime-llvmjit",
-                "Use the mono runtime with LLVM JIT.", CommandOptionType.NoValue);
+                "Use a mono runtime. e.g., jit (default), llvm-jit", CommandOptionType.SingleOrNoValue);
             var aspnetCoreVersionOption = app.Option("-aspnet|--aspnetCoreVersion",
                 "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("-dotnet|--runtimeVersion",
@@ -741,7 +739,7 @@ namespace BenchmarksDriver
                 }
                 else
                 {
-                    if (monoOption.HasValue() || monoOption_LlvmJit.HasValue())
+                    if (monoOption.HasValue())
                     {
                         serverJob.SelfContained = true;
 
@@ -765,15 +763,15 @@ namespace BenchmarksDriver
                         Log("WARNING: '--self-contained' has been set implicitly as custom runtime versions are used.");
                         Console.ResetColor();
                     }
-
                 }
                 if (monoOption.HasValue())
                 {
-                    serverJob.UseMonoRuntime = "jit";
-                }
-                if (monoOption_LlvmJit.HasValue())
-                {
-                    serverJob.UseMonoRuntime = "llvm-jit";
+                    serverJob.UseMonoRuntime = monoOption.Value();
+
+                    if (String.IsNullOrEmpty(serverJob.UseMonoRuntime))
+                    {
+                        serverJob.UseMonoRuntime = "jit";
+                    }
                 }
                 if (kestrelThreadCountOption.HasValue())
                 {

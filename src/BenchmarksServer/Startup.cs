@@ -3924,17 +3924,27 @@ namespace BenchmarkServer
 
         private static async Task UseMonoRuntimeAsync(string runtimeVersion, string outputFolder, string mode)
         {
+            if (String.IsNullOrEmpty(mode))
+            {
+                return;
+            }
+            
             try
             {
                 var packageName = "";
-                switch (mode) {
+                
+                switch (mode) 
+                {
                     case "jit":
                         packageName = "Microsoft.NETCore.App.Runtime.Mono.linux-x64".ToLowerInvariant();
                         break;
                     case "llvm-jit":
                         packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
                         break;
+                    default:
+                        throw new Exception("Invalid mono runtime moniker: " + mode);
                 }
+
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
 
                 // Ensure the folder already exists
