@@ -17,9 +17,6 @@ jobs:
       branchOrCommit: master
       project: src/Wrk2Client/Wrk2Client.csproj
     readyStateText: 'WRK2 Client'
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
     waitForExit: true
     variables:
       connections: 256
