@@ -58,9 +58,6 @@ jobs:
       branchOrCommit: master
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
     variables:
       downstreamPort: 5000
     arguments: '--urls http://*:{{downstreamPort}}'
