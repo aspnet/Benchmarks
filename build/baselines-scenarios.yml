@@ -24,7 +24,7 @@ parameters:
   default: 
   
   - displayName: "2.1"
-    arguments: --description Baseline21 --aspnetCoreVersion 2.1 --runtimeVersion 2.1 --sdk 2.1.805
+    arguments: --description Baseline21 --channel current --framework netcoreapp2.1
     supportsPlatform: false
 
 # TODO: define latest servicing runtime version manually
@@ -33,12 +33,12 @@ parameters:
 #    supportsPlatform: false
 
   - displayName: "3.1"
-    arguments: --description Baseline31 --aspnetCoreVersion 3.1 --runtimeVersion 3.1 --sdk 3.1.201
+    arguments: --description Baseline31 --channel current --framework netcoreapp3.1
     supportsPlatform: true
 
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
-    arguments: --description Baseline --runtimeversion 5.0.* --aspnetcoreversion Latest
+    arguments: --description Baseline --channel edge --framework netcoreapp5.0
     supportsPlatform: true
 
 # Scenarios
