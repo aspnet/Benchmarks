@@ -17,6 +17,7 @@ using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Serialization;
 using YamlDotNet.Serialization;
 
@@ -1344,7 +1345,10 @@ namespace BenchmarksDriver
                     case ".yml":
                     case ".yaml":
 
-                        var deserializer = new DeserializerBuilder().Build();
+                        var deserializer = new DeserializerBuilder()
+                            .WithNodeTypeResolver(new JsonTypeResolver())
+                            .Build();
+                        
                         var yamlObject = deserializer.Deserialize(new StringReader(configurationContent));
 
                         var serializer = new SerializerBuilder()
@@ -1353,6 +1357,17 @@ namespace BenchmarksDriver
 
                         var json = serializer.Serialize(yamlObject);
                         localconfiguration = JObject.Parse(json);
+
+                        var schemaJson= File.ReadAllText("benchmarks.schema.json");
+                        var schema = JSchema.Parse(schemaJson);
+                        bool valid = localconfiguration.IsValid(schema, out IList<ValidationError> errorMessages);
+
+                        if (!valid)
+                        {
+                            var error = String.Join("\r\n", errorMessages.Select(m => m.Message));
+                            throw new DriverException($"Invalid configuration file {configurationFilenameOrUrl}\r\n\r\n{error}");
+                        }
+
                         break;
                     default:
                         throw new DriverException($"Unsupported configuration format: {configurationExtension}");

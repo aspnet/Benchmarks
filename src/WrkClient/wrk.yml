@@ -21,9 +21,9 @@ jobs:
       warmup: 0 # warmup in seconds
       threads: 32 # total number of threads to use
       pipeline: 1
-      script: null
-      scriptArguments: null
+      script: '' # path or url of a LUA script, e.g., https://raw.githubusercontent.com/wg/wrk/master/scripts/post.lua
+      scriptArguments: '' # arguments passed to the script, e.g., 16
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {%elsif script %} -s {{script}} -- {{scriptArguments}} {% endif %}"
+    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% elsif script.length > 0  %} -s {{script}} -- {{scriptArguments}} {% endif %}"
