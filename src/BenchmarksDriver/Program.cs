@@ -1520,7 +1520,7 @@ namespace BenchmarksDriver
                                     DoCreateFromDirectory(sourceDir, tempFilename);
                                 }
 
-                                var result = await UploadFileAsync(tempFilename, serverJob, serverJobUri + "/source");
+                                var result = await UploadFileAsync(tempFilename, serverJob, serverJobUri, "/source");
 
                                 File.Delete(tempFilename);
 
@@ -1624,7 +1624,7 @@ namespace BenchmarksDriver
                                             resolvedFileWithDestination += ";" + buildFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(buildFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
                                         }
 
-                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri + "/build");
+                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri, "/build");
 
                                         if (result != 0)
                                         {
@@ -1652,7 +1652,7 @@ namespace BenchmarksDriver
                                             resolvedFileWithDestination += ";" + outputFileSegments[1] + Path.GetDirectoryName(resolvedFile).Substring(Path.GetDirectoryName(outputFileSegments[0]).Length) + "/" + Path.GetFileName(resolvedFileWithDestination);
                                         }
 
-                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri + "/attachment");
+                                        var result = await UploadFileAsync(resolvedFileWithDestination, serverJob, serverJobUri, "/attachment");
 
                                         if (result != 0)
                                         {
@@ -2600,9 +2600,29 @@ namespace BenchmarksDriver
                 new KeyValuePair<string, string>("Errors", $"{average.SocketErrors + average.BadResponses}"),
             };
 
-        private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, string uri)
+        private static async Task<int> UploadFileAsync(string filename, ServerJob serverJob, Uri serverJobUri, string actionSegment)
         {
-            Log($"Uploading {filename} to {uri}");
+            Log($"Uploading {filename} to {serverJobUri}");
+
+            var uploadPending = new CancellationTokenSource();
+
+            var keepAliveTask = Task.Run(async () =>
+            {
+                while (!uploadPending.IsCancellationRequested)
+                {
+                    try
+                    {
+                        // Ping server job to keep it alive
+                        var response = await _httpClient.GetAsync(serverJobUri + "/touch", uploadPending.Token);
+                        await Task.Delay(2000);
+                    }
+                    catch
+                    {
+                        // If an error occurs, stop the task
+                        uploadPending.Cancel();
+                    }
+                }
+            });
 
             try
             {
@@ -2619,7 +2639,7 @@ namespace BenchmarksDriver
                     ? outputFileSegments[1]
                     : Path.GetFileName(uploadFilename);
 
-                using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
+                using (var request = new HttpRequestMessage(HttpMethod.Post, serverJobUri + actionSegment))
                 {
                     var fileContent = uploadFilename.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                         ? new StreamContent(await _httpClient.GetStreamAsync(uploadFilename))
@@ -2637,7 +2657,16 @@ namespace BenchmarksDriver
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"An error occured while uploading a file.", e);
+                throw new InvalidOperationException($"An error occurred while uploading a file.", e);
+            }
+            finally
+            {
+                if (!uploadPending.IsCancellationRequested)
+                {
+                    uploadPending.Cancel();
+                }
+
+                await keepAliveTask;
             }
 
             return 0;

@@ -113,7 +113,6 @@ namespace BenchmarkServer
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
-        public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(5);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
         public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
@@ -487,7 +486,7 @@ namespace BenchmarkServer
                                     job.State = ServerState.Initializing;
                                 }
 
-                                                                lock (job.Metadata)
+                                lock (job.Metadata)
                                 {
                                     if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu"))
                                     {
@@ -1071,14 +1070,6 @@ namespace BenchmarkServer
                             }
                             else if (job.State == ServerState.Initializing)
                             {
-                                // The driver is supposed to send attachment in the initialize phase
-                                if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
-                                {
-                                    Log.WriteLine($"Job didn't initialize during the expected delay");
-                                    job.State = ServerState.Failed;
-                                    job.Error = "Job didn't initalize during the expected delay.";
-                                }
-
                                 // Check the driver is still communicating
                                 if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                                 {
