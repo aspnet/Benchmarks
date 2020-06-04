@@ -1083,12 +1083,15 @@ namespace BenchmarksDriver
                 if (monoOption.HasValue() && !serverJob.EnvironmentVariables.ContainsKey("MONO_ENV_OPTIONS"))
                 {
                     string mono_runtime_value = monoOption.Value();
-                    Console.WriteLine(mono_runtime_value);
                     string env_value = "";
-                    if (!string.IsNullOrEmpty(mono_runtime_value) && mono_runtime_value.Contains("llvm"))
+                    if (string.Equals(mono_runtime_value, "llvm-jit"))
+                    {
                         env_value = "--llvm --server --gc=sgen --gc-params=mode=throughput";
+                    }
                     else
+                    {
                         env_value = "--server --gc=sgen --gc-params=mode=throughput";
+                    }
 
                     string warn_msg_part1 = "WARNING: mono runtime is used, but no value for MONO_ENV_OPTIONS was set, using defaults: '";
                     string warn_msg_part2 = "'";
