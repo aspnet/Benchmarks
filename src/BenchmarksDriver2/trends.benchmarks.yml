@@ -67,7 +67,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /fortunes
+        path: /fortunes/raw
         serverPort: 5000
 
 profiles:
