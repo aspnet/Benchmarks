@@ -2614,7 +2614,11 @@ namespace BenchmarksDriver
                     {
                         // Ping server job to keep it alive
                         var response = await _httpClient.GetAsync(serverJobUri + "/touch", uploadPending.Token);
-                        await Task.Delay(2000);
+                        
+                        if (!uploadPending.IsCancellationRequested)
+                        {
+                            await Task.Delay(2000, uploadPending.Token);
+                        }
                     }
                     catch
                     {
