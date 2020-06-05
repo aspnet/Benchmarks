@@ -614,12 +614,13 @@ namespace BenchmarkServer
                                     workingDirectory = null;
                                     dockerImage = null;
 
+                                    var buildStart = DateTime.UtcNow;
+                                    var cts = new CancellationTokenSource();
+
                                     if (job.Source.IsDocker())
                                     {
                                         try
                                         {
-                                            var buildStart = DateTime.UtcNow;
-                                            var cts = new CancellationTokenSource();
                                             var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, dockerHostname, cancellationToken: cts.Token));
 
                                             while (true)
@@ -675,7 +676,48 @@ namespace BenchmarkServer
                                         try
                                         {
                                             // returns the application directory and the dotnet directory to use
-                                            benchmarksDir = await CloneRestoreAndBuild(tempDir, job, _dotnethome);
+                                            var cloneRestoreAndBuildTask = CloneRestoreAndBuild(tempDir, job, _dotnethome, cancellationToken: cts.Token);
+
+                                            while (true)
+                                            {
+                                                if (cloneRestoreAndBuildTask.IsCompleted)
+                                                {
+                                                    benchmarksDir = cloneRestoreAndBuildTask.Result;
+                                                    break;
+                                                }
+
+                                                // Cancel the build if the driver timed out
+                                                if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
+                                                {
+                                                    workingDirectory = null;
+
+                                                    Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
+                                                    cts.Cancel();
+                                                    await cloneRestoreAndBuildTask;
+
+                                                    Log.WriteLine($"{job.State} -> Failed");
+                                                    job.State = ServerState.Failed;
+                                                    break;
+                                                }
+
+                                                // Cancel the build if it's taking too long
+                                                if (DateTime.UtcNow - buildStart > BuildTimeout)
+                                                {
+                                                    workingDirectory = null;
+
+                                                    Log.WriteLine($"Build is taking too long. Halting build.");
+                                                    cts.Cancel();
+                                                    await cloneRestoreAndBuildTask;
+
+                                                    job.Error = "Build is taking too long. Halting build.";
+                                                    Log.WriteLine($"{job.State} -> Failed");
+                                                    job.State = ServerState.Failed;
+                                                    break;
+                                                }
+
+                                                await Task.Delay(1000);
+                                            }
+
                                         }
                                         finally
                                         {
@@ -1921,7 +1963,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
+        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome, CancellationToken cancellationToken)
         {
             // Clone
             string benchmarkedDir = null;
@@ -1961,7 +2003,7 @@ namespace BenchmarkServer
                 {
                     var branchAndCommit = source.BranchOrCommit.Split('#', 2);
 
-                    var dir = Git.Clone(path, source.Repository, shallow: branchAndCommit.Length == 1, branch: branchAndCommit[0]);
+                    var dir = Git.Clone(path, source.Repository, shallow: branchAndCommit.Length == 1, branch: branchAndCommit[0], cancellationToken: cancellationToken);
 
                     var srcDir = Path.Combine(path, dir);
 
@@ -1982,8 +2024,12 @@ namespace BenchmarkServer
                 }
             }
 
-            Debug.Assert(benchmarkedDir != null);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
 
+            Debug.Assert(benchmarkedDir != null);
 
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir);
@@ -2122,9 +2168,11 @@ namespace BenchmarkServer
 
                         // Install runtimes required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: false,
-                        workingDirectory: _dotnetInstallPath,
-                        environmentVariables: env));
+                            log: false,
+                            workingDirectory: _dotnetInstallPath,
+                            environmentVariables: env,
+                            cancellationToken: cancellationToken
+                        ));
 
                         _installedDotnetRuntimes.Add(runtimeVersion);
                     }
