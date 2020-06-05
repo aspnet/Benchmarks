@@ -633,6 +633,8 @@ namespace BenchmarkServer
                                                 // Cancel the build if the driver timed out
                                                 if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                                                 {
+                                                    workingDirectory = null;
+
                                                     Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
                                                     cts.Cancel();
                                                     await buildAndRunTask;
@@ -645,6 +647,8 @@ namespace BenchmarkServer
                                                 // Cancel the build if it's taking too long
                                                 if (DateTime.UtcNow - buildStart > BuildTimeout)
                                                 {
+                                                    workingDirectory = null;
+
                                                     Log.WriteLine($"Build is taking too long. Halting build.");
                                                     cts.Cancel();
                                                     await buildAndRunTask;
@@ -710,13 +714,15 @@ namespace BenchmarkServer
                                     var lastMonitorTime = startMonitorTime;
                                     var oldCPUTime = TimeSpan.Zero;
 
-                                    timer = new Timer(_ =>
+                                    if (workingDirectory != null)
                                     {
-                                    // If we couldn't get the lock it means one of 2 things are true:
-                                    // - We're about to dispose so we don't care to run the scan callback anyways.
-                                    // - The previous the computation took long enough that the next scan tried to run in parallel
-                                    // In either case just do nothing and end the timer callback as soon as possible
-                                    if (!Monitor.TryEnter(executionLock))
+                                        timer = new Timer(_ =>
+                                    {
+                                        // If we couldn't get the lock it means one of 2 things are true:
+                                        // - We're about to dispose so we don't care to run the scan callback anyways.
+                                        // - The previous the computation took long enough that the next scan tried to run in parallel
+                                        // In either case just do nothing and end the timer callback as soon as possible
+                                        if (!Monitor.TryEnter(executionLock))
                                         {
                                             return;
                                         }
@@ -735,8 +741,8 @@ namespace BenchmarkServer
                                             {
                                                 var now = DateTime.UtcNow;
 
-                                            // Stops the job in case the driver is not running
-                                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                                                // Stops the job in case the driver is not running
+                                                if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                                 {
                                                     Log.WriteLine($"[Heartbeat] Driver didn't communicate for {DriverTimeout}. Halting job.");
                                                     if (job.State == ServerState.Running || job.State == ServerState.TraceCollected)
@@ -748,8 +754,8 @@ namespace BenchmarkServer
 
                                                 if (!String.IsNullOrEmpty(dockerImage))
                                                 {
-                                                // Check the container is still running
-                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
+                                                    // Check the container is still running
+                                                    var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
                                                         captureOutput: true,
                                                         log: false, throwOnError: false);
 
@@ -961,8 +967,8 @@ namespace BenchmarkServer
                                         Monitor.Exit(executionLock);
                                         }
                                     }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
-
-                                    disposed = false;
+                                        disposed = false;
+                                    }
                                 }
                                 catch (Exception e)
                                 {
