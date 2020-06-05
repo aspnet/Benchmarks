@@ -3590,7 +3590,11 @@ namespace BenchmarkServer
         private static readonly Dictionary<string, string> MetadataProviderPrefixes = new Dictionary<string, string>()
         {
             ["System.Runtime"] = "runtime-counter",
-            ["Microsoft-AspNetCore-Server-Kestrel"] = "aspnet-counter",
+            ["Microsoft-AspNetCore-Server-Kestrel"] = "kestrel-counter",
+            ["Microsoft.AspNetCore.Hosting"] = "aspnet-counter",
+            ["Microsoft.AspNetCore.Http.Connections"] = "signalr-counter",
+            ["Grpc.AspNetCore.Server"] = "grpc-server-counter",
+            ["Grpc.Net.client"] = "grpc-client-counter",
             ["Npgsql"] = "npgsql-counter"
         };
 
@@ -3617,19 +3621,52 @@ namespace BenchmarkServer
                 new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
                 new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
             },
-
             ["Microsoft-AspNetCore-Server-Kestrel"] = new MeasurementMetadata[]
             {
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/connections-per-second", LongDescription = "Connection Rate", ShortDescription = "Connection Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-connections", LongDescription = "Total Connections", ShortDescription = "Total Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/tls-handshakes-per-second", LongDescription = "TLS Handshake Rate", ShortDescription = "TLS Handshake Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-tls-handshakes", LongDescription = "Total TLS Handshakes", ShortDescription = "Total TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-tls-handshakes", LongDescription = "Current TLS Handshakes", ShortDescription = "Current TLS Handshakes", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/failed-tls-handshakes", LongDescription = "Failed TLS Handshakes", ShortDescription = "Failed TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-connections", LongDescription = "Current Connections", ShortDescription = "Current Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/connection-queue-length", LongDescription = "Connection Queue Length", ShortDescription = "Connection Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/request-queue-length", LongDescription = "Request Queue Length", ShortDescription = "Request Queue Length", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
-                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-upgraded-requests", LongDescription = "Current Upgraded Requests (WebSockets)", ShortDescription = "Current Upgraded Requests (WebSockets)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/connections-per-second", LongDescription = "Connection Rate", ShortDescription = "Connections/s (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/total-connections", LongDescription = "Total Connections", ShortDescription = "Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/tls-handshakes-per-second", LongDescription = "TLS Handshake Rate", ShortDescription = "TLS Handshakes/sec (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/total-tls-handshakes", LongDescription = "Total TLS Handshakes", ShortDescription = "TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-tls-handshakes", LongDescription = "Current TLS Handshakes", ShortDescription = "TLS Handshakes (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/failed-tls-handshakes", LongDescription = "Failed TLS Handshakes", ShortDescription = "Failed TLS Handshakes (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-connections", LongDescription = "Current Connections", ShortDescription = "Concurrent Connections (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/connection-queue-length", LongDescription = "Connection Queue Length", ShortDescription = "Connection Queue Length (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/request-queue-length", LongDescription = "Request Queue Length", ShortDescription = "Request Queue Length (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-upgraded-requests", LongDescription = "Current Upgraded Requests (WebSockets)", ShortDescription = "Upgraded Requests (max)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            },
+            ["Microsoft.AspNetCore.Hosting"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/requests-per-second", LongDescription = "Maximum Requests Per Second", ShortDescription = "Requests/sec (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-requests", LongDescription = "Total Requests", ShortDescription = "Requests", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-requests", LongDescription = "Maximum Current Requests", ShortDescription = "Concurrent Requests (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/failed-requests", LongDescription = "Failed Requests", ShortDescription = "Failed Requests", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Microsoft.AspNetCore.Http.Connections"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-started", LongDescription = "Total Connections Started", ShortDescription = "Connections Started", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-stopped", LongDescription = "Total Connections Stopped", ShortDescription = "Connections Stopped", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-timed-out", LongDescription = "Total Connections Timed Out", ShortDescription = "Timed Out Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/current-connections", LongDescription = "Maximum of Current Connections", ShortDescription = "Concurrent Connections (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-duration", LongDescription = "Average Connection Duration (ms)", ShortDescription = "Connection Duration (avg, ms)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Grpc.AspNetCore.Server"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/total-calls", LongDescription = "Total Calls", ShortDescription = "Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/current-calls", LongDescription = "Current Calls", ShortDescription = "Concurrent Calls (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-failed", LongDescription = "Total Calls Failed", ShortDescription = "Failed Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-deadline-exceeded", LongDescription = "Total Calls Deadline Exceeded", ShortDescription = "Deadline Exceeded Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/messages-sent", LongDescription = "Total Messages Sent", ShortDescription = "Messages Sent", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/messages-received", LongDescription = "Total Messages Received", ShortDescription = "Messages Received", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-unimplemented", LongDescription = "Total Calls Unimplemented", ShortDescription = "Unimplemented Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Grpc.Net.Client"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/total-calls", LongDescription = "Total Calls", ShortDescription = "Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/current-calls", LongDescription = "Current Calls", ShortDescription = "Concurrent Calls (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/calls-failed", LongDescription = "Total Calls Failed", ShortDescription = "Failed Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/calls-deadline-exceeded", LongDescription = "Total Calls Deadline Exceeded", ShortDescription = "Total Calls Deadline Exceeded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/messages-sent", LongDescription = "Total Messages Sent", ShortDescription = "Messages Sent", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/messages-received", LongDescription = "Total Messages Received", ShortDescription = "Messages Received", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
             },
             ["Npgsql"] = new MeasurementMetadata[]
             {
@@ -3727,6 +3764,7 @@ namespace BenchmarkServer
                         var payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
 
                         var counterName = payloadFields["Name"].ToString();
+
                         if (!job.Counters.TryGetValue(counterName, out var values))
                         {
                             lock (job.Counters)
