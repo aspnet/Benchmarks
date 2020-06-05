@@ -21,7 +21,7 @@ namespace BenchmarkServer
 
             var depth = shallow ? "--depth 1" : "";
 
-            var result = RunGitCommand(path, $"clone -c core.longpaths=true {depth} {branchParam} {repository}", CloneTimeout, retries: 5);
+            var result = RunGitCommand(path, $"clone -c core.longpaths=true {depth} {branchParam} {repository}", CloneTimeout, retries: 5, cancellationToken: cancellationToken);
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)
