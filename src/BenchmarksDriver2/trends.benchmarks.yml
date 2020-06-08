@@ -46,7 +46,7 @@ scenarios:
     load:
       job: wrk
       variables:
-        presetHeaders: none
+        presetHeaders: plaintext
         path: /plaintext
         serverPort: 5000
         pipeline: 16
