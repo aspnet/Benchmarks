@@ -2558,7 +2558,7 @@ namespace BenchmarkServer
             }
 
             // Download mono runtime
-            if (!string.IsNullOrEmpty(job.UseMonoRuntime))
+            if (!string.IsNullOrEmpty(job.UseMonoRuntime) && !string.Equals(job.UseMonoRuntime, "false", StringComparison.OrdinalIgnoreCase))
             {
                 if (!job.SelfContained)
                 {
