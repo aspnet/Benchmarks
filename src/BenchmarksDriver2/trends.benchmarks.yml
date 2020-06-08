@@ -87,18 +87,19 @@ profiles:
         endpoints:
           - http://asp-perf-db:5001
 
-  aspnet-physical-single:
+  local:
     variables:
-      serverUri: http://10.0.0.102
-      databaseServer: 10.0.0.102
+      serverUri: http://localhost
+      databaseServer: localhost
       cores: 12
+      localEndpoint: http://localhost:5010
     jobs:
       application:
         endpoints: 
-          - http://asp-perf-lin:5001
+          - {{ localEndpoint }}
       load:
         endpoints: 
-          - http://asp-perf-lin:5001
+          - {{ localEndpoint }}
       db:
         endpoints:
-          - http://asp-perf-lin:5001
+          - {{ localEndpoint }}
