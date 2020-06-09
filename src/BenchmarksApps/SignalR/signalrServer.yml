@@ -15,5 +15,5 @@ jobs:
         DockerFile: docker/redis/redis.dockerfile
         DockerImageName: redis
         DockerContextDirectory: docker/redis
-        DockerCommand: "-p 6379:6379"
+      readyStateText: Ready to accept connections
       waitForExit: false

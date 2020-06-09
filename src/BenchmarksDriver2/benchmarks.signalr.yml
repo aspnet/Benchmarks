@@ -14,6 +14,7 @@ scenarios:
       job: redis
     application:
       job: signalrServer
+      arguments: "--SignalRRedis http://localhost:6739"
     warmup:
       job: signalrClient
       variables:
