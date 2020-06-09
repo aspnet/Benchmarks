@@ -58,7 +58,8 @@ namespace BenchmarksDriver
             _excludeMeasurementsOption,
             _autoflushOption,
             _repeatOption,
-            _spanOption
+            _spanOption,
+            _noValidationOption
             ;
 
         // The dynamic arguments that will alter the configurations
@@ -142,6 +143,7 @@ namespace BenchmarksDriver
             _autoflushOption = app.Option("--auto-flush", "Runs a single long-running job and flushes measurements automatically.", CommandOptionType.NoValue);
             _repeatOption = app.Option("--repeat", "The job to repeat using the '--span' argument.", CommandOptionType.SingleValue);
             _spanOption = app.Option("--span", "The duration while the job is repeated.", CommandOptionType.SingleValue);
+            _noValidationOption = app.Option("--no-validation", "Don't validate configuration files schema.", CommandOptionType.NoValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -1358,14 +1360,17 @@ namespace BenchmarksDriver
                         var json = serializer.Serialize(yamlObject);
                         localconfiguration = JObject.Parse(json);
 
-                        var schemaJson= File.ReadAllText("benchmarks.schema.json");
-                        var schema = JSchema.Parse(schemaJson);
-                        bool valid = localconfiguration.IsValid(schema, out IList<ValidationError> errorMessages);
-
-                        if (!valid)
+                        if (!_noValidationOption.HasValue())
                         {
-                            var error = String.Join("\r\n", errorMessages.Select(m => m.Message));
-                            throw new DriverException($"Invalid configuration file {configurationFilenameOrUrl}\r\n\r\n{error}");
+                            var schemaJson= File.ReadAllText("benchmarks.schema.json");
+                            var schema = JSchema.Parse(schemaJson);
+                            bool valid = localconfiguration.IsValid(schema, out IList<ValidationError> errorMessages);
+
+                            if (!valid)
+                            {
+                                var error = String.Join("\r\n", errorMessages.Select(m => m.Message));
+                                throw new DriverException($"Invalid configuration file {configurationFilenameOrUrl}\r\n\r\n{error}");
+                            }
                         }
 
                         break;
