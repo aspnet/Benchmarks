@@ -16,4 +16,4 @@
       logLevel: none
       protocol: json
       sendDelay: 0
-    arguments: "-c {{connections}} -d {{duration}} -t {{transport}} -s {{scenario}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {% if sendDelay != 0 %} --sendDelay {{ sendDelay }} {% endif %} {% if logLevel != 'none' %} --logLevel {{ logLevel }} {% endif %}"
+    arguments: "-c {{connections}} -d {{duration}} -t {{transport}} -s {{scenario}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {% if sendDelay != 0 %} --sendDelay {{ sendDelay }} {% endif %} {% if logLevel != 'none' %} --loglevel {{ logLevel }} {% endif %}"

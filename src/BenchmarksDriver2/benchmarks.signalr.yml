@@ -24,7 +24,7 @@ scenarios:
 profiles:
   aspnet-physical-lin:
     variables:
-      serverUri: http://10.0.0.110
+      serverUri: http://10.0.0.102
       cores: 12
     jobs:
       application:
