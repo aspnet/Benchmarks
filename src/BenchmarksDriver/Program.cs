@@ -1082,24 +1082,22 @@ namespace BenchmarksDriver
 
                 if (monoOption.HasValue() && !serverJob.EnvironmentVariables.ContainsKey("MONO_ENV_OPTIONS"))
                 {
-                    string mono_runtime_value = monoOption.Value();
-                    string env_value = "";
-                    if (string.Equals(mono_runtime_value, "llvm-jit"))
+                    string monoRuntimeValue = monoOption.Value();
+                    string envValue = "";
+                    if (string.Equals(monoRuntimeValue, "llvm-jit"))
                     {
-                        env_value = "--llvm --server --gc=sgen --gc-params=mode=throughput";
+                        envValue = "--llvm --server --gc=sgen --gc-params=mode=throughput";
                     }
                     else
                     {
-                        env_value = "--server --gc=sgen --gc-params=mode=throughput";
+                        envValue = "--server --gc=sgen --gc-params=mode=throughput";
                     }
 
-                    string warn_msg_part1 = "WARNING: mono runtime is used, but no value for MONO_ENV_OPTIONS was set, using defaults: '";
-                    string warn_msg_part2 = "'";
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Log(warn_msg_part1 + env_value + warn_msg_part2);
+                    Log($"WARNING: mono runtime is used, but no value for MONO_ENV_OPTIONS was set, using defaults: '{envValue}'");
                     Console.ResetColor();
 
-                    serverJob.EnvironmentVariables["MONO_ENV_OPTIONS"] = env_value;
+                    serverJob.EnvironmentVariables["MONO_ENV_OPTIONS"] = envValue;
                 }
 
                 // Building ClientJob
