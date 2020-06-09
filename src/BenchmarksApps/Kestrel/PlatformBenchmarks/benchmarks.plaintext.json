@@ -19,7 +19,11 @@
   },
   "PlaintextPlatform-Mono": {
     "Path": "/p",
-    "UseMonoRuntime":  true
+    "UseMonoRuntime": "jit"
+  },
+  "PlaintextPlatform-Mono-LLVM-JIT": {
+    "Path": "/p",
+    "UseMonoRuntime": "llvm-jit"
   },
   "PlaintextNonPipelinedPlatform": {
     "Path": "/p",
