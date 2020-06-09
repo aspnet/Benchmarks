@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
@@ -29,10 +28,7 @@ namespace PlatformBenchmarks
 
             try
             {
-                if (db.State != ConnectionState.Open)
-                {
-                    await db.OpenAsync();
-                }
+                await db.OpenAsync();
 
                 var (cmd, _) = CreateReadCommand(db);
                 using (cmd)
@@ -54,10 +50,7 @@ namespace PlatformBenchmarks
 
             try
             {
-                if (db.State != ConnectionState.Open)
-                {
-                    await db.OpenAsync();
-                }
+                await db.OpenAsync();
 
                 var (cmd, idParameter) = CreateReadCommand(db);
                 using (cmd)
@@ -84,10 +77,7 @@ namespace PlatformBenchmarks
 
             try
             {
-                if (db.State != ConnectionState.Open)
-                {
-                    await db.OpenAsync();
-                }
+                await db.OpenAsync();
 
                 var (queryCmd, queryParameter) = CreateReadCommand(db);
                 using (queryCmd)
@@ -135,10 +125,7 @@ namespace PlatformBenchmarks
 
             try
             {
-                if (db.State != ConnectionState.Open)
-                {
-                    await db.OpenAsync();
-                }
+                await db.OpenAsync();
 
                 using (var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db))
                 using (var rdr = await cmd.ExecuteReaderAsync())
@@ -176,7 +163,7 @@ namespace PlatformBenchmarks
 
         private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
-            using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
+            using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
             {
                 await rdr.ReadAsync();
 
