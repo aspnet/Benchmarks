@@ -56,15 +56,15 @@ namespace PlatformBenchmarks
             }
         }
 
-        DbCommand CreateReadCommand(DbConnection connection)
+        NpgsqlCommand CreateReadCommand(NpgsqlConnection connection)
         {
             var cmd = connection.CreateCommand();
+
             cmd.CommandText = "SELECT id, randomnumber FROM world WHERE id = @Id";
-            var id = cmd.CreateParameter();
-            id.ParameterName = "@Id";
-            id.DbType = DbType.Int32;
-            id.Value = _random.Next(1, 10001);
-            cmd.Parameters.Add(id);
+
+            cmd.Parameters.Add(
+                new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001))
+            );
 
             return cmd;
         }
