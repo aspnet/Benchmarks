@@ -213,7 +213,7 @@ namespace PlatformBenchmarks
 
         private static void Default(PipeWriter pipeWriter)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, sizeHint: _defaultPreamble.Length + DateHeader.HeaderBytes.Length);
             Default(ref writer);
             writer.Commit();
         }

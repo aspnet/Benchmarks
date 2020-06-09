@@ -75,7 +75,7 @@ namespace PlatformBenchmarks
         private bool HandleRequests(in ReadOnlySequence<byte> buffer, bool isCompleted)
         {
             var reader = new SequenceReader<byte>(buffer);
-            var writer = GetWriter(Writer);
+            var writer = GetWriter(Writer, sizeHint: 160 * 16); // 160*16 is for Plaintext, for Json 160 would be enough
 
             while (true)
             {
@@ -284,8 +284,8 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter)
-            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter));
+        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint)
+            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
 
         private struct WriterAdapter : IBufferWriter<byte>
         {

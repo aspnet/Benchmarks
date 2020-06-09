@@ -16,7 +16,7 @@ namespace PlatformBenchmarks
 
         private static void OutputUpdates(PipeWriter pipeWriter, World[] rows)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, sizeHint: 160); // in reality it's 112
 
             writer.Write(_dbPreamble);
 

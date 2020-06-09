@@ -16,7 +16,7 @@ namespace PlatformBenchmarks
 
         private static void OutputMultipleQueries(PipeWriter pipeWriter, World[] rows)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, sizeHint: 180); // in reality it's 152
 
             writer.Write(_dbPreamble);
 

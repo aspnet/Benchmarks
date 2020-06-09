@@ -16,7 +16,7 @@ namespace PlatformBenchmarks
 
         private static void OutputSingleQuery(PipeWriter pipeWriter, World row)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, sizeHint: 180); // in reality it's 150
 
             writer.Write(_dbPreamble);
 
