@@ -1,44 +1,48 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Npgsql;
 
 namespace PlatformBenchmarks
 {
     public class RawDb
     {
-        private static readonly Comparison<World> WorldSortComparison = (a, b) => a.Id.CompareTo(b.Id);
-
         private readonly ConcurrentRandom _random;
-        private readonly DbProviderFactory _dbProviderFactory;
         private readonly string _connectionString;
 
-        public RawDb(ConcurrentRandom random, DbProviderFactory dbProviderFactory, AppSettings appSettings)
+        public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
             _random = random;
-            _dbProviderFactory = dbProviderFactory;
             _connectionString = appSettings.ConnectionString;
         }
 
         public async Task<World> LoadSingleQueryRow()
         {
-            using (var db = _dbProviderFactory.CreateConnection())
+            var db = new NpgsqlConnection(_connectionString);
+
+            try
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
+                if (db.State != ConnectionState.Open)
+                {
+                    await db.OpenAsync();
+                }
 
                 using (var cmd = CreateReadCommand(db))
                 {
-                    return await ReadSingleRow(db, cmd);
+                    return await ReadSingleRow(cmd);
                 }
+            }
+            finally
+            {
+                db.Close();
             }
         }
 
-        async Task<World> ReadSingleRow(DbConnection connection, DbCommand cmd)
+        async Task<World> ReadSingleRow(DbCommand cmd)
         {
             using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
             {
@@ -70,18 +74,27 @@ namespace PlatformBenchmarks
         {
             var result = new World[count];
 
-            using (var db = _dbProviderFactory.CreateConnection())
+            var db = new NpgsqlConnection(_connectionString);
+
+            try
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
+                if (db.State != ConnectionState.Open)
+                {
+                    await db.OpenAsync();
+                }
+
                 using (var cmd = CreateReadCommand(db))
                 {
                     for (int i = 0; i < count; i++)
                     {
-                        result[i] = await ReadSingleRow(db, cmd);
+                        result[i] = await ReadSingleRow(cmd);
                         cmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
                 }
+            }
+            finally
+            {
+                db.Close();
             }
 
             return result;
@@ -89,10 +102,14 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            using (var db = _dbProviderFactory.CreateConnection())
+            var db = new NpgsqlConnection(_connectionString);
+
+            try
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
+                if (db.State != ConnectionState.Open)
+                {
+                    await db.OpenAsync();
+                }
 
                 using (var updateCmd = db.CreateCommand())
                 using (var queryCmd = CreateReadCommand(db))
@@ -100,7 +117,7 @@ namespace PlatformBenchmarks
                     var results = new World[count];
                     for (int i = 0; i < count; i++)
                     {
-                        results[i] = await ReadSingleRow(db, queryCmd);
+                        results[i] = await ReadSingleRow(queryCmd);
                         queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
 
@@ -128,31 +145,48 @@ namespace PlatformBenchmarks
                     return results;
                 }
             }
+            finally
+            {
+                db.Close();
+            }
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>();
 
-            using (var db = _dbProviderFactory.CreateConnection())
-            using (var cmd = db.CreateCommand())
+            var db = new NpgsqlConnection(_connectionString);
+
+            try
             {
-                cmd.CommandText = "SELECT id, message FROM fortune";
-
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
-
-                using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                if (db.State != ConnectionState.Open)
                 {
-                    while (await rdr.ReadAsync())
+                    await db.OpenAsync();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT id, message FROM fortune";
+
+                    db.ConnectionString = _connectionString;
+                    await db.OpenAsync();
+
+                    using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
-                        result.Add(new Fortune
+                        while (await rdr.ReadAsync())
                         {
-                            Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
-                        });
+                            result.Add(new Fortune
+                            {
+                                Id = rdr.GetInt32(0),
+                                Message = rdr.GetString(1)
+                            });
+                        }
                     }
                 }
+            }
+            finally
+            {
+                db.Close();
             }
 
             result.Add(new Fortune { Message = "Additional fortune added at request time." });
