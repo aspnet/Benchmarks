@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -42,7 +41,7 @@ namespace PlatformBenchmarks
             }
         }
 
-        async Task<World> ReadSingleRow(DbCommand cmd)
+        private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
             using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
             {
@@ -56,7 +55,7 @@ namespace PlatformBenchmarks
             }
         }
 
-        NpgsqlCommand CreateReadCommand(NpgsqlConnection connection)
+        private NpgsqlCommand CreateReadCommand(NpgsqlConnection connection)
         {
             var cmd = connection.CreateCommand();
 
@@ -153,7 +152,7 @@ namespace PlatformBenchmarks
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
-            var result = new List<Fortune>();
+            var result = new List<Fortune>(20);
 
             var db = new NpgsqlConnection(_connectionString);
 
@@ -167,9 +166,6 @@ namespace PlatformBenchmarks
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandText = "SELECT id, message FROM fortune";
-
-                    db.ConnectionString = _connectionString;
-                    await db.OpenAsync();
 
                     using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {

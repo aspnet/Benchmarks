@@ -5,7 +5,7 @@ using System;
 
 namespace PlatformBenchmarks
 {
-    public class Fortune : IComparable<Fortune>, IComparable
+    public sealed class Fortune : IComparable<Fortune>, IComparable
     {
         public int Id { get; set; }
 
