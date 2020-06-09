@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
 using Npgsql;
-using MySql.Data.MySqlClient;
 #endif
 
 namespace PlatformBenchmarks
@@ -56,9 +55,9 @@ namespace PlatformBenchmarks
             {
                 BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), NpgsqlFactory.Instance, appSettings);
             }
-            else if (appSettings.Database == DatabaseServer.MySql)
+            else
             {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), MySqlClientFactory.Instance, appSettings);
+                throw new NotSupportedException($"{appSettings.Database} is not supported");
             }
 #endif
 
