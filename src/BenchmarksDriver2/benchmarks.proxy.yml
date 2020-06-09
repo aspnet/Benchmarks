@@ -18,7 +18,6 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
-    variables:
     arguments: '--baseUri {{downstreamUri}}'
     port: 5000
   nginxproxy:
