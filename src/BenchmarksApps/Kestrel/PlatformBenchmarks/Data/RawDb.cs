@@ -141,7 +141,7 @@ namespace PlatformBenchmarks
                 }
 
                 using (var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db))
-                using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                using (var rdr = await cmd.ExecuteReaderAsync())
                 {
                     while (await rdr.ReadAsync())
                     {
