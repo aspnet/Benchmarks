@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -10,6 +11,9 @@ namespace PlatformBenchmarks
 {
     public class RawDb
     {
+        private static readonly string[] Ids = Enumerable.Range(0, BatchUpdateString.MaxBatch).Select(i => $"@Id_{i}").ToArray();
+        private static readonly string[] Randoms = Enumerable.Range(0, BatchUpdateString.MaxBatch).Select(i => $"@Random_{i}").ToArray();
+
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
 
@@ -85,35 +89,31 @@ namespace PlatformBenchmarks
                     await db.OpenAsync();
                 }
 
-                var (queryCmd, idParameter) = CreateReadCommand(db);
+                var (queryCmd, queryParameter) = CreateReadCommand(db);
                 using (queryCmd)
                 {
                     for (int i = 0; i < count; i++)
                     {
                         results[i] = await ReadSingleRow(queryCmd);
-                        idParameter.TypedValue = _random.Next(1, 10001);
+                        queryParameter.TypedValue = _random.Next(1, 10001);
                     }
                 }
 
-                using (var updateCmd = db.CreateCommand())
+                using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
                 {
-                    updateCmd.CommandText = BatchUpdateString.Query(count);
+                    var ids = Ids;
+                    var randoms = Randoms;
 
                     for (int i = 0; i < count; i++)
                     {
-                        var id = updateCmd.CreateParameter();
-                        id.ParameterName = $"@Id_{i}";
-                        id.DbType = DbType.Int32;
-                        updateCmd.Parameters.Add(id);
-
-                        var random = updateCmd.CreateParameter();
-                        random.ParameterName = $"@Random_{i}";
-                        random.DbType = DbType.Int32;
-                        updateCmd.Parameters.Add(random);
-
                         var randomNumber = _random.Next(1, 10001);
-                        id.Value = results[i].Id;
-                        random.Value = randomNumber;
+
+                        var idParameter = new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id);
+                        var randomParameter = new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber);
+
+                        updateCmd.Parameters.Add(idParameter);
+                        updateCmd.Parameters.Add(randomParameter);
+
                         results[i].RandomNumber = randomNumber;
                     }
 

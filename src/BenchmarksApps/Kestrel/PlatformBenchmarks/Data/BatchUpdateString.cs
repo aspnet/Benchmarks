@@ -9,7 +9,7 @@ namespace PlatformBenchmarks
 {
     internal class BatchUpdateString
     {
-        private const int MaxBatch = 500;
+        internal const int MaxBatch = 500;
 
         private static string[] _queries = new string[MaxBatch+1];
 
