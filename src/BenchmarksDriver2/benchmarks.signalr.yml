@@ -3,13 +3,15 @@
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/brecon/redis/src/BenchmarksApps/SignalR/signalrServer.yml
 
 variables:
     serverPort: 5000
 
 scenarios:
   signalr:
+    redis:
+      job: redis
     application:
       job: signalrServer
     warmup:
@@ -27,6 +29,9 @@ profiles:
       serverUri: http://10.0.0.102
       cores: 12
     jobs:
+      redis:
+        endpoints:
+          - http://asp-perf-lin:5001
       application:
         endpoints: 
           - http://asp-perf-lin:5001

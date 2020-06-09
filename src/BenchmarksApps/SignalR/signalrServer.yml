@@ -8,3 +8,12 @@ jobs:
     readyStateText: Application started
     runtimeVersion: '5.0.*'
     waitForExit: false
+  redis:
+      source:
+        Repository: https://github.com/aspnet/benchmarks.git
+        BranchOrCommit: brecon/redis
+        DockerFile: docker/redis/redis.dockerfile
+        DockerImageName: redis
+        DockerContextDirectory: docker/redis
+        DockerCommand: "-p 6379:6379"
+      waitForExit: false
