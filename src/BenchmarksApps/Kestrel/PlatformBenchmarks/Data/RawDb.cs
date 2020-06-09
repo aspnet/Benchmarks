@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -11,13 +10,8 @@ namespace PlatformBenchmarks
 {
     public class RawDb
     {
-        [ThreadStatic]
-        private static IntReadCommandWrapper s_readCommand;
-
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
-
-        private IntReadCommandWrapper ReadCommand => s_readCommand ??= CreateReadCommandWrapper();
 
         public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
@@ -27,10 +21,7 @@ namespace PlatformBenchmarks
 
         public async Task<World> LoadSingleQueryRow()
         {
-            var wrapper = ReadCommand;
-            var cmd = wrapper.ReadCommand;
             var db = new NpgsqlConnection(_connectionString);
-            cmd.Connection = db;
 
             try
             {
@@ -39,26 +30,50 @@ namespace PlatformBenchmarks
                     await db.OpenAsync();
                 }
 
-                wrapper.IdParameter.Value = _random.Next(1, 10001);
-
-                return await ReadSingleRow(cmd);
+                using (var cmd = CreateReadCommand(db))
+                {
+                    return await ReadSingleRow(cmd);
+                }
             }
             finally
             {
-                cmd.Connection = null;
                 db.Close();
             }
         }
+
+        private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
+        {
+            using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
+            {
+                await rdr.ReadAsync();
+
+                return new World
+                {
+                    Id = rdr.GetInt32(0),
+                    RandomNumber = rdr.GetInt32(1)
+                };
+            }
+        }
+
+        private NpgsqlCommand CreateReadCommand(NpgsqlConnection connection)
+        {
+            var cmd = connection.CreateCommand();
+
+            cmd.CommandText = "SELECT id, randomnumber FROM world WHERE id = @Id";
+
+            cmd.Parameters.Add(
+                new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001))
+            );
+
+            return cmd;
+        }
+
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
-            var wrapper = ReadCommand;
-            var cmd = wrapper.ReadCommand;
-            var parameter = wrapper.IdParameter;
             var db = new NpgsqlConnection(_connectionString);
-            cmd.Connection = db;
 
             try
             {
@@ -67,15 +82,17 @@ namespace PlatformBenchmarks
                     await db.OpenAsync();
                 }
 
-                for (int i = 0; i < count; i++)
+                using (var cmd = CreateReadCommand(db))
                 {
-                    result[i] = await ReadSingleRow(cmd);
-                    parameter.TypedValue = _random.Next(1, 10001);
+                    for (int i = 0; i < count; i++)
+                    {
+                        result[i] = await ReadSingleRow(cmd);
+                        cmd.Parameters["@Id"].Value = _random.Next(1, 10001);
+                    }
                 }
             }
             finally
             {
-                cmd.Connection = null;
                 db.Close();
             }
 
@@ -84,11 +101,7 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var wrapper = ReadCommand;
-            var queryCmd = wrapper.ReadCommand;
-            var queryParameter = wrapper.IdParameter;
             var db = new NpgsqlConnection(_connectionString);
-            queryCmd.Connection = db;
 
             try
             {
@@ -98,12 +111,13 @@ namespace PlatformBenchmarks
                 }
 
                 using (var updateCmd = db.CreateCommand())
+                using (var queryCmd = CreateReadCommand(db))
                 {
                     var results = new World[count];
                     for (int i = 0; i < count; i++)
                     {
                         results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.TypedValue = _random.Next(1, 10001);
+                        queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
 
                     updateCmd.CommandText = BatchUpdateString.Query(count);
@@ -132,7 +146,6 @@ namespace PlatformBenchmarks
             }
             finally
             {
-                queryCmd.Connection = null;
                 db.Close();
             }
         }
@@ -176,42 +189,6 @@ namespace PlatformBenchmarks
             result.Sort();
 
             return result;
-        }
-
-        private static IntReadCommandWrapper CreateReadCommandWrapper()
-        {
-            var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id");
-            var parameter = new NpgsqlParameter<int>(parameterName: "@Id", value: -1);
-
-            cmd.Parameters.Add(parameter);
-
-            return new IntReadCommandWrapper(cmd, parameter);
-        }
-
-        private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
-        {
-            using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
-            {
-                await rdr.ReadAsync();
-
-                return new World
-                {
-                    Id = rdr.GetInt32(0),
-                    RandomNumber = rdr.GetInt32(1)
-                };
-            }
-        }
-
-        private class IntReadCommandWrapper
-        {
-            public IntReadCommandWrapper(NpgsqlCommand readCommand, NpgsqlParameter<int> idParameter)
-            {
-                ReadCommand = readCommand;
-                IdParameter = idParameter;
-            }
-
-            internal NpgsqlCommand ReadCommand { get; }
-            internal NpgsqlParameter<int> IdParameter { get; }
         }
     }
 }
