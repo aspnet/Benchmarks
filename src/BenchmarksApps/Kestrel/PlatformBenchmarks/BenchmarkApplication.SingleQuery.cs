@@ -20,16 +20,22 @@ namespace PlatformBenchmarks
 
             writer.Write(_dbPreamble);
 
-            // Content-Length
-            var jsonPayload = JsonSerializer.SerializeToUtf8Bytes(row, SerializerOptions);
-            writer.WriteNumeric((uint)jsonPayload.Length);
+            var lengthWriter = writer;
+            writer.Write(_contentLengthGap);
 
             // Date header
             writer.Write(DateHeader.HeaderBytes);
 
-            // Body
-            writer.Write(jsonPayload);
             writer.Commit();
+
+            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(pipeWriter, new JsonWriterOptions { SkipValidation = true });
+            utf8JsonWriter.Reset(pipeWriter);
+
+            // Body
+            JsonSerializer.Serialize<World>(utf8JsonWriter, row, SerializerOptions);
+
+            // Content-Length
+            lengthWriter.WriteNumeric((uint)utf8JsonWriter.BytesCommitted);
         }
     }
 }

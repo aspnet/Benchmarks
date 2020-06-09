@@ -44,6 +44,9 @@ namespace PlatformBenchmarks
 
         public static RawDb Db { get; set; }
 
+        [ThreadStatic]
+        private static Utf8JsonWriter t_writer;
+
         public static class Paths
         {
             public readonly static AsciiString SingleQuery = "/db";
