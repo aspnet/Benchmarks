@@ -17,3 +17,6 @@ jobs:
         DockerContextDirectory: docker/redis
       readyStateText: Ready to accept connections
       waitForExit: false
+      variables:
+        redisConnection: ''
+      arguments: "{% if redisConnection != '' %} --SignalRRedis {{ redisConnection }} {% endif %}"
