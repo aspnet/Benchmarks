@@ -10,7 +10,6 @@ namespace PlatformBenchmarks
 {
     public class RawDb
     {
-
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
 
@@ -20,72 +19,28 @@ namespace PlatformBenchmarks
             _connectionString = appSettings.ConnectionString;
         }
 
-        public async Task<World> LoadSingleQueryRow()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task<World> LoadSingleQueryRow() => ReadSingleRow(_connectionString);
+
+        public Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            var db = new NpgsqlConnection(_connectionString);
+            var tasks = new Task<World>[count];
 
-            try
+            for (int i = 0; i < tasks.Length; i++)
             {
-                await db.OpenAsync();
-
-                var (cmd, _) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    return await ReadSingleRow(cmd);
-                }
-            }
-            finally
-            {
-                db.Close();
-            }
-        }
-
-        public async Task<World[]> LoadMultipleQueriesRows(int count)
-        {
-            var result = new World[count];
-
-            var db = new NpgsqlConnection(_connectionString);
-
-            try
-            {
-                await db.OpenAsync();
-
-                var (cmd, idParameter) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    for (int i = 0; i < result.Length; i++)
-                    {
-                        result[i] = await ReadSingleRow(cmd);
-                        idParameter.TypedValue = _random.Next(1, 10001);
-                    }
-                }
-            }
-            finally
-            {
-                db.Close();
+                tasks[i] = ReadSingleRow(_connectionString);
             }
 
-            return result;
+            return Task.WhenAll(tasks);
         }
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var results = new World[count];
-            var db = new NpgsqlConnection(_connectionString);
+            var results = await LoadMultipleQueriesRows(count);
 
-            try
-            {
+            using (var db = new NpgsqlConnection(_connectionString))
+            { 
                 await db.OpenAsync();
-
-                var (queryCmd, queryParameter) = CreateReadCommand(db);
-                using (queryCmd)
-                {
-                    for (int i = 0; i < results.Length; i++)
-                    {
-                        results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.TypedValue = _random.Next(1, 10001);
-                    }
-                }
 
                 using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
                 {
@@ -103,22 +58,17 @@ namespace PlatformBenchmarks
                     }
 
                     await updateCmd.ExecuteNonQueryAsync();
-                    return results;
                 }
             }
-            finally
-            {
-                db.Close();
-            }
+
+            return results;
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>(20);
 
-            var db = new NpgsqlConnection(_connectionString);
-
-            try
+            using (var db = new NpgsqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
@@ -129,15 +79,11 @@ namespace PlatformBenchmarks
                     {
                         result.Add(new Fortune
                         (
-                            id:rdr.GetInt32(0),
+                            id: rdr.GetInt32(0),
                             message: rdr.GetString(1)
                         ));
                     }
                 }
-            }
-            finally
-            {
-                db.Close();
             }
 
             result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
@@ -146,29 +92,33 @@ namespace PlatformBenchmarks
             return result;
         }
 
-        private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
+        private async Task<World> ReadSingleRow(string connectionString)
         {
-            var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id", connection);
-            var parameter = new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001));
+            using (var db = new NpgsqlConnection(connectionString))
+            {
+                await db.OpenAsync();
 
-            cmd.Parameters.Add(parameter);
+                using (var cmd = CreateReadCommand(db))
+                using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.Default))
+                {
+                    await rdr.ReadAsync();
 
-            return (cmd, parameter);
+                    return new World
+                    {
+                        Id = rdr.GetInt32(0),
+                        RandomNumber = rdr.GetInt32(1)
+                    };
+                }
+            }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
+        private NpgsqlCommand CreateReadCommand(NpgsqlConnection connection)
         {
-            using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
-            {
-                await rdr.ReadAsync();
+            var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id", connection);
 
-                return new World
-                {
-                    Id = rdr.GetInt32(0),
-                    RandomNumber = rdr.GetInt32(1)
-                };
-            }
+            cmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001)));
+
+            return cmd;
         }
     }
 }
