@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -155,6 +156,7 @@ namespace PlatformBenchmarks
             return (cmd, parameter);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
             using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
