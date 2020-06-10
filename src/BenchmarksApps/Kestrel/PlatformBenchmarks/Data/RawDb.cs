@@ -10,7 +10,6 @@ namespace PlatformBenchmarks
 {
     public class RawDb
     {
-
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
 
@@ -22,9 +21,7 @@ namespace PlatformBenchmarks
 
         public async Task<World> LoadSingleQueryRow()
         {
-            var db = new NpgsqlConnection(_connectionString);
-
-            try
+            using (var db = new NpgsqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
@@ -34,19 +31,13 @@ namespace PlatformBenchmarks
                     return await ReadSingleRow(cmd);
                 }
             }
-            finally
-            {
-                db.Close();
-            }
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
-            var db = new NpgsqlConnection(_connectionString);
-
-            try
+            using (var db = new NpgsqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
@@ -60,10 +51,6 @@ namespace PlatformBenchmarks
                     }
                 }
             }
-            finally
-            {
-                db.Close();
-            }
 
             return result;
         }
@@ -71,9 +58,8 @@ namespace PlatformBenchmarks
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
-            var db = new NpgsqlConnection(_connectionString);
 
-            try
+            using (var db = new NpgsqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
@@ -103,22 +89,17 @@ namespace PlatformBenchmarks
                     }
 
                     await updateCmd.ExecuteNonQueryAsync();
-                    return results;
                 }
             }
-            finally
-            {
-                db.Close();
-            }
+
+            return results;
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>(20);
 
-            var db = new NpgsqlConnection(_connectionString);
-
-            try
+            using (var db = new NpgsqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
@@ -134,10 +115,6 @@ namespace PlatformBenchmarks
                         ));
                     }
                 }
-            }
-            finally
-            {
-                db.Close();
             }
 
             result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
