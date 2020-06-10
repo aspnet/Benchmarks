@@ -7,6 +7,12 @@ namespace PlatformBenchmarks
 {
     public readonly struct Fortune : IComparable<Fortune>, IComparable
     {
+        public Fortune(int id, string message)
+        {
+            Id = id;
+            Message = message;
+        }
+
         public int Id { get; }
 
         public string Message { get; }
