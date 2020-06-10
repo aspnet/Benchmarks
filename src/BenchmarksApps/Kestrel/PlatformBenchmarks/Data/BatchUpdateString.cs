@@ -1,19 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace PlatformBenchmarks
 {
     internal class BatchUpdateString
     {
-        internal const int MaxBatch = 500;
-
-        private static string[] _queries = new string[MaxBatch+1];
+        private const int MaxBatch = 500;
 
         public static DatabaseServer DatabaseServer;
+
+        internal static readonly string[] Ids = Enumerable.Range(0, MaxBatch).Select(i => $"@Id_{i}").ToArray();
+        internal static readonly string[] Randoms = Enumerable.Range(0, MaxBatch).Select(i => $"@Random_{i}").ToArray();
+
+        private static string[] _queries = new string[MaxBatch + 1];
 
         public static string Query(int batchSize)
         {

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -10,8 +9,6 @@ namespace PlatformBenchmarks
 {
     public class RawDb
     {
-        private static readonly string[] Ids = Enumerable.Range(0, BatchUpdateString.MaxBatch).Select(i => $"@Id_{i}").ToArray();
-        private static readonly string[] Randoms = Enumerable.Range(0, BatchUpdateString.MaxBatch).Select(i => $"@Random_{i}").ToArray();
 
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
@@ -91,8 +88,8 @@ namespace PlatformBenchmarks
 
                 using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
                 {
-                    var ids = Ids;
-                    var randoms = Randoms;
+                    var ids = BatchUpdateString.Ids;
+                    var randoms = BatchUpdateString.Randoms;
 
                     for (int i = 0; i < count; i++)
                     {
