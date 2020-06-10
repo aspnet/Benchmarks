@@ -13,11 +13,11 @@ namespace PlatformBenchmarks
         private Span<byte> _span;
         private int _buffered;
 
-        public BufferWriter(T output)
+        public BufferWriter(T output, int sizeHint)
         {
             _buffered = 0;
             _output = output;
-            _span = output.GetSpan(sizeHint: 16 * 160);
+            _span = output.GetSpan(sizeHint);
         }
 
         public Span<byte> Span => _span;

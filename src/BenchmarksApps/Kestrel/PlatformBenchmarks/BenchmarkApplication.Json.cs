@@ -17,9 +17,6 @@ namespace PlatformBenchmarks
             _headerContentTypeJson + _crlf +
             _headerContentLength + _jsonPayloadSize.ToString();
 
-        [ThreadStatic]
-        private static Utf8JsonWriter t_writer;
-
         private static void Json(ref BufferWriter<WriterAdapter> writer, IBufferWriter<byte> bodyWriter)
         {
             writer.Write(_jsonPreamble);

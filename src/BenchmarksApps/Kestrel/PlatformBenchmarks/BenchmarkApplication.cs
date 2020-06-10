@@ -44,6 +44,9 @@ namespace PlatformBenchmarks
 
         public static RawDb Db { get; set; }
 
+        [ThreadStatic]
+        private static Utf8JsonWriter t_writer;
+
         public static class Paths
         {
             public readonly static AsciiString SingleQuery = "/db";
@@ -213,7 +216,7 @@ namespace PlatformBenchmarks
 
         private static void Default(PipeWriter pipeWriter)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = GetWriter(pipeWriter, sizeHint: _defaultPreamble.Length + DateHeader.HeaderBytes.Length);
             Default(ref writer);
             writer.Commit();
         }
