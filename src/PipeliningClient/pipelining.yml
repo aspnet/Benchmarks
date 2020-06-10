@@ -14,9 +14,6 @@ jobs:
       branchOrCommit: master
       project: src/PipeliningClient/PipeliningClient.csproj
     readyStateText: Pipelining Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
     waitForExit: true
     variables:
       connections: 256
