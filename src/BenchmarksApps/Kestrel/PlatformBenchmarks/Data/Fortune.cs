@@ -5,21 +5,15 @@ using System;
 
 namespace PlatformBenchmarks
 {
-    public sealed class Fortune : IComparable<Fortune>, IComparable
+    public readonly struct Fortune : IComparable<Fortune>, IComparable
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
-        public string Message { get; set; }
-        
-        public int CompareTo(object obj)
-        {
-            return CompareTo((Fortune)obj);
-        }
+        public string Message { get; }
 
-        public int CompareTo(Fortune other)
-        {
-            // Performance critical, using culture insensitive comparison
-            return String.CompareOrdinal(Message, other.Message);
-        }
+        public int CompareTo(object obj) => throw new InvalidOperationException("The non-generic CompareTo should not be used");
+
+        // Performance critical, using culture insensitive comparison
+        public int CompareTo(Fortune other) => string.CompareOrdinal(Message, other.Message);
     }
 }

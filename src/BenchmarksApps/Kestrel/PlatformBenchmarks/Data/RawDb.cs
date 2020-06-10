@@ -128,10 +128,10 @@ namespace PlatformBenchmarks
                     while (await rdr.ReadAsync())
                     {
                         result.Add(new Fortune
-                        {
-                            Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
-                        });
+                        (
+                            id:rdr.GetInt32(0),
+                            message: rdr.GetString(1)
+                        ));
                     }
                 }
             }
@@ -140,7 +140,7 @@ namespace PlatformBenchmarks
                 db.Close();
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
             result.Sort();
 
             return result;
