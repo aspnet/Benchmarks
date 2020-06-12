@@ -119,7 +119,7 @@ profiles:
     jobs:
       downstream:
         endpoints: 
-          - http://asp-perf-db:6001
+          - http://asp-perf-db:5001
       application:
         endpoints: 
           - http://asp-perf-lin:5001
