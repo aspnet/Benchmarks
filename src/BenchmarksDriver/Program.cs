@@ -210,7 +210,7 @@ namespace BenchmarksDriver
                 "WebHost (e.g., KestrelLibuv, KestrelSockets, HttpSys). Default is KestrelSockets.",
                 CommandOptionType.SingleValue);
             var monoOption = app.Option("--mono-runtime",
-                "Use a mono runtime. e.g., jit (default), llvm-jit", CommandOptionType.SingleOrNoValue);
+                "Use a mono runtime. e.g., jit (default), llvm-jit, llvm-aot", CommandOptionType.SingleOrNoValue);
             var aspnetCoreVersionOption = app.Option("-aspnet|--aspnetCoreVersion",
                 "ASP.NET Core packages version (Current, Latest, or custom value). Current is the latest public version (2.0.*), Latest is the currently developed one. Default is Latest (2.2-*).", CommandOptionType.SingleValue);
             var runtimeVersionOption = app.Option("-dotnet|--runtimeVersion",
