@@ -15,6 +15,6 @@
   },
   "JsonPlatform-Mono": {
     "Path": "/j",
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
   }
 }

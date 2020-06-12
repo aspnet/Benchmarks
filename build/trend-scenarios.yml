@@ -209,19 +209,25 @@ parameters:
 
     # Mono
   - displayName: Plaintext Platform Mono
-    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --mono-runtime --arch x64
+    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --arch x64
   - displayName: Plaintext Mono
-    arguments: --scenario Plaintext-Mono $(plaintextJobs) --mono-runtime --arch x64
+    arguments: --scenario Plaintext-Mono $(plaintextJobs) --arch x64
   - displayName: Plainttext Non-Pipelined Mono
-    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --mono-runtime --arch x64
+    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --arch x64
   - displayName: Json Platform Mono
-    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --mono-runtime --arch x64
+    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --arch x64
   - displayName: Json Mono
-    arguments: --scenario Json-Mono $(jsonJobs) --mono-runtime --arch x64
+    arguments: --scenario Json-Mono $(jsonJobs) --arch x64
   - displayName: Json Https Mono
-    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --mono-runtime --arch x64
+    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --arch x64
   - displayName: Database Fortunes Raw Mono
-    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --mono-runtime --arch x64
+    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --arch x64
+  - displayName: Plaintext Platform Mono with LLVM JIT
+    arguments: --scenario PlaintextPlatform-Mono-LLVM-JIT $(plaintextPlatformJobs) --arch x64
+  - displayName: Plaintext Mono with LLVM JIT
+    arguments: --scenario Plaintext-Mono-LLVM-JIT $(plaintextJobs) --arch x64
+  - displayName: Plainttext Non-Pipelined Mono with LLVM JIT
+    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-JIT $(plaintextJobs) --arch x64
 
 steps:
 - ${{ each s in parameters.scenarios }}:

@@ -20,7 +20,11 @@
   },
   "Plaintext-Mono": {
     "Path": "/plaintext",
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
+  },
+  "Plaintext-Mono-LLVM-JIT": {
+    "Path": "/plaintext",
+    "UseMonoRuntime": "llvm-jit"
   },
   "PlaintextNonPipelined": {
     "Path": "/plaintext",
@@ -35,7 +39,15 @@
       "ScriptName": "",
       "PipelineDepth": 0
     },
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
+  },
+  "PlaintextNonPipelined-Mono-LLVM-JIT": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "UseMonoRuntime": "llvm-jit"
   },
   "CopyToAsync": {
     "Path": "/copytoasync",
