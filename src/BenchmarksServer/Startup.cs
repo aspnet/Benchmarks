@@ -4027,8 +4027,6 @@ namespace BenchmarkServer
                         packageName = "Microsoft.NETCore.App.Runtime.Mono.linux-x64".ToLowerInvariant();
                         break;
                     case "llvm-jit":
-                        packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
-                        break;
                     case "llvm-aot":
                         packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
                         break;
@@ -4091,6 +4089,8 @@ namespace BenchmarkServer
         {
             try
             {
+                var fileName = "/bin/bash";
+    
                 //Download dotnet sdk package
                 var dotnetMonoPath = Path.Combine(_rootTempDir, "dotnet-mono", $"dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz");
                 if (Directory.Exists(Path.GetDirectoryName(dotnetMonoPath)))
@@ -4116,7 +4116,9 @@ namespace BenchmarkServer
                 else
                 {
                     var strCmdTar = $"tar -xf dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz";
-                    var resultTar = runBashCmd(strCmdTar, Path.GetDirectoryName(dotnetMonoPath));
+                    var resultTar = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdTar),
+                                                    workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                    log: true);
                 }
 
                 Log.WriteLine($"Patching local dotnet with mono runtime and extracting llvm");
@@ -4125,8 +4127,11 @@ namespace BenchmarkServer
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
 
                 var strCmdGetVer = "./dotnet --list-runtimes | grep -i \"Microsoft.NETCore.App\"";
-                var resultGetVer = runBashCmd(strCmdGetVer, Path.GetDirectoryName(dotnetMonoPath));
-                var MicrosoftNETCoreAppPackageVersion = resultGetVer.Split(' ')[1];
+                var resultGetVer = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdGetVer),
+                                                   workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                   log: true,
+                                                   captureOutput: true);
+                var MicrosoftNETCoreAppPackageVersion = resultGetVer.StandardOutput.Split(' ')[1];
 
                 var llvmExtractDir = Path.Combine(Path.GetDirectoryName(runtimePath), "mono-llvm");
                 if (Directory.Exists(llvmExtractDir))
@@ -4149,18 +4154,20 @@ namespace BenchmarkServer
                     var optExe = archive.GetEntry("runtimes/linux-x64/native/opt");
                     optExe.ExtractToFile(Path.Combine(llvmExtractDir, "opt"), true);
                 }
-                var strChmod = "chmod +x opt llc";
-                var resultChmod = runBashCmd(strChmod, llvmExtractDir);
+                var strCmdChmod = "chmod +x opt llc";
+                var resultChmod = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdChmod),
+                                                  workingDirectory: llvmExtractDir,
+                                                  log: true);
 
                 Log.WriteLine("Pre-compile assemblies inside publish folder");
 
                 var strCmdPreCompile = $@"for assembly in {outputFolder}/*.dll; do
                                               PATH={llvmExtractDir}:${{PATH}} MONO_ENV_OPTIONS=--aot=llvm,mcpu=native ./dotnet $assembly;
                                            done";
-                var resultPreCompile = runBashCmd(strCmdPreCompile, Path.GetDirectoryName(dotnetMonoPath));
-                Log.WriteLine("=========================");
-                Log.WriteLine(resultPreCompile);
-
+                var resultPreCompile = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdPreCompile),
+                                                   workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                   log: true,
+                                                   captureOutput: true);
             }
             catch (Exception e)
             {
@@ -4169,22 +4176,10 @@ namespace BenchmarkServer
             }
         }
 
-	private static string runBashCmd(string cmd, string wd)
+        private static string convertCmd2Arg(string cmd)
         {
             cmd.Replace("\"", "\"\"");
-
-            System.Diagnostics.ProcessStartInfo procStartInfo = new System.Diagnostics.ProcessStartInfo("/bin/bash", $"-c \"{cmd}\"");
-            procStartInfo.RedirectStandardOutput = true;
-            procStartInfo.UseShellExecute = false;
-            procStartInfo.CreateNoWindow = true;
-            procStartInfo.WorkingDirectory = wd;
-            System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo = procStartInfo;
-            proc.Start();
-
-            string result = proc.StandardOutput.ReadToEnd();
-            proc.WaitForExit();
-
+            var result = $"-c \"{cmd}\"";
             return result;
         }
 
