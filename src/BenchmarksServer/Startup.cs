@@ -2842,7 +2842,8 @@ namespace BenchmarkServer
 
             if (!File.Exists(runtimeConfigFilename))
             {
-                throw new Exception("No runtimeconfig.json was found");
+                Log.WriteLine("Ignoring runtimeconfig.json. File not found.");
+                return;
             }
 
             // File found, we need to update it
