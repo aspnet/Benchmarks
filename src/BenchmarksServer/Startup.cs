@@ -554,7 +554,7 @@ namespace BenchmarkServer
                                             Reduce = Operation.Max,
                                             Format = "n0",
                                             LongDescription = "How long it took to start the application",
-                                            ShortDescription = "Start time (ms)"
+                                            ShortDescription = "Start Time (ms)"
                                         });
                                     }
 
