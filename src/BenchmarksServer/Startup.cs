@@ -544,6 +544,20 @@ namespace BenchmarkServer
                                         });
                                     }
 
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/start-time"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/start-time",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "How long it took to start the application",
+                                            ShortDescription = "Start time (ms)"
+                                        });
+                                    }
+
                                     if (!job.Metadata.Any(x => x.Name == "benchmarks/published-size"))
                                     {
                                         job.Metadata.Enqueue(new MeasurementMetadata
@@ -4094,6 +4108,13 @@ namespace BenchmarkServer
                 }
 
                 job.StartupMainMethod = stopwatch.Elapsed;
+
+                job.Measurements.Enqueue(new Measurement
+                {
+                    Name = "benchmarks/start-time",
+                    Timestamp = DateTime.UtcNow,
+                    Value = stopwatch.ElapsedMilliseconds
+                });
 
                 Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                 job.Url = ComputeServerUrl(hostname, job);
