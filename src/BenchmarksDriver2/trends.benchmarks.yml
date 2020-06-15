@@ -50,7 +50,21 @@ scenarios:
         path: /plaintext
         serverPort: 5000
         pipeline: 16
-        warmup: 2
+        warmup: 5
+        duration: 10
+
+  json:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
         duration: 10
 
   fortunes:
@@ -71,7 +85,7 @@ scenarios:
         serverPort: 5000
 
 profiles:
-  aspnet-physical:
+  aspnet-perf-lin:
     variables:
       serverUri: http://10.0.0.102
       databaseServer: 10.0.0.103
@@ -80,6 +94,22 @@ profiles:
       application:
         endpoints: 
           - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+      db:
+        endpoints:
+          - http://asp-perf-db:5001
+
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      databaseServer: 10.0.0.103
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
       load:
         endpoints: 
           - http://asp-perf-load:5001
@@ -96,10 +126,10 @@ profiles:
     jobs:
       application:
         endpoints: 
-          - {{ localEndpoint }}
+          - '{{ localEndpoint }}'
       load:
         endpoints: 
-          - {{ localEndpoint }}
+          - '{{ localEndpoint }}'
       db:
         endpoints:
-          - {{ localEndpoint }}
+          - '{{ localEndpoint }}'

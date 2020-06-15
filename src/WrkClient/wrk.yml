@@ -13,7 +13,7 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: master
       project: src/WrkClient/WrkClient.csproj
-    readyStateText: 'Running '
+    isConsoleApp: true
     waitForExit: true
     variables:
       connections: 256  # total number of HTTP connections to keep open with each thread handling N = connections/threads

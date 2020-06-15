@@ -16,7 +16,7 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: master
       project: src/Wrk2Client/Wrk2Client.csproj
-    readyStateText: 'WRK2 Client'
+    isConsoleApp: true
     waitForExit: true
     variables:
       connections: 256
