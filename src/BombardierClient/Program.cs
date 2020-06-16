@@ -225,8 +225,11 @@ namespace BombardierClient
                 {
                     Console.WriteLine("A timeout occurred while measuring the first request");
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred while measuring the first request: " + e.ToString());
+                }
             }
         }
-
     }
 }

@@ -42,13 +42,17 @@ namespace WrkClient
                         var elapsed = stopwatch.ElapsedMilliseconds;
                         Console.WriteLine($"{elapsed} ms");
 
-                        BenchmarksEventSource.Log.Metadata("http/firstrequest", "max", "avg", "First request (ms)", "First request (ms)", "n0");
+                        BenchmarksEventSource.Log.Metadata("http/firstrequest", "max", "max", "First request (ms)", "First request (ms)", "n0");
                         BenchmarksEventSource.Measure("http/firstrequest", elapsed);
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     Console.WriteLine("A timeout occurred while measuring the first request");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred while measuring the first request: " + e.ToString());
                 }
             }
         }
