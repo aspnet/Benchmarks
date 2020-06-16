@@ -25,6 +25,10 @@
     "Path": "/p",
     "UseMonoRuntime": "llvm-jit"
   },
+  "PlaintextPlatform-Mono-LLVM-AOT": {
+    "Path": "/p",
+    "UseMonoRuntime": "llvm-aot"
+  },
   "PlaintextNonPipelinedPlatform": {
     "Path": "/p",
     "ClientProperties": {
