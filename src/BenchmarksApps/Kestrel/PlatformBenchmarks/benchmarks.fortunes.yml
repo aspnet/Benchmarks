@@ -99,6 +99,8 @@ profiles:
           databaseServer: 10.0.0.106
         environmentVariables:
           database: PostgreSQL
+        options:
+          displayOutput: true
       load:
         variables:
           connections: 512
