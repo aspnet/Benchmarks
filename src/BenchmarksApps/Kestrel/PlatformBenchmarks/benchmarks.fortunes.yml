@@ -12,6 +12,7 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
+    framework: netcoreapp5.0
 
   postgresql:
     source:
