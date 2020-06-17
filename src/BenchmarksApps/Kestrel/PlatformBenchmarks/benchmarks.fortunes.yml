@@ -26,20 +26,62 @@ scenarios:
   fortunesplatform:
     db:
       job: postgresql
-
     application:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-
+      environmentVariables:
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
-        warmup: 5 
-        duration: 10
-        serverPort: 5000
+        
+  single_query:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: json
+        path: /db
+
+  multiple_queries:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: json
+        path: /queries/queries=20
+  
+  updates:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: json
+        path: /updates/queries=20
 
 profiles:
   aspnet-citrine:
@@ -53,12 +95,15 @@ profiles:
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.106
         environmentVariables:
           database: PostgreSQL
-          connectionstring: Server=10.0.0.106;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
       load:
         variables:
           connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
         endpoints: 
           - http://asp-citrine-win:5001
-
