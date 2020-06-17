@@ -23,7 +23,7 @@ jobs:
     readyStateText: PostgreSQL init process complete
 
 scenarios:
-  fortunesplatform:
+  fortunes:
     db:
       job: postgresql
     application:
@@ -33,7 +33,7 @@ scenarios:
       environmentVariables:
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: html
         path: /fortunes
@@ -48,7 +48,7 @@ scenarios:
       environmentVariables:
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: json
         path: /db
@@ -63,7 +63,7 @@ scenarios:
       environmentVariables:
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: json
         path: /queries/queries=20
@@ -78,7 +78,7 @@ scenarios:
       environmentVariables:
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: json
         path: /updates/queries=20
@@ -106,4 +106,4 @@ profiles:
           duration: 10
           serverPort: 5000
         endpoints: 
-          - http://asp-citrine-win:5001
+          - http://asp-citrine-load:5001
