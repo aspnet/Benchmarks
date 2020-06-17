@@ -23,7 +23,7 @@ jobs:
     readyStateText: PostgreSQL init process complete
 
 scenarios:
-  fortunes:
+  fortunesplatform:
     db:
       job: postgresql
     application:
