@@ -228,6 +228,12 @@ parameters:
     arguments: --scenario Plaintext-Mono-LLVM-JIT $(plaintextJobs) --arch x64
   - displayName: Plainttext Non-Pipelined Mono with LLVM JIT
     arguments: --scenario PlaintextNonPipelined-Mono-LLVM-JIT $(plaintextJobs) --arch x64
+  - displayName: Plaintext Platform Mono with LLVM AOT
+    arguments: --scenario PlaintextPlatform-Mono-LLVM-AOT $(plaintextPlatformJobs) --arch x64
+  - displayName: Plaintext Mono with LLVM AOT
+    arguments: --scenario Plaintext-Mono-LLVM-AOT $(plaintextJobs) --arch x64
+  - displayName: Plainttext Non-Pipelined Mono with LLVM AOT
+    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-AOT $(plaintextJobs) --arch x64
 
 steps:
 - ${{ each s in parameters.scenarios }}:
