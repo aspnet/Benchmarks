@@ -2567,10 +2567,10 @@ namespace BenchmarkServer
 		
                 await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime);
 
-		if (job.UseMonoRuntime.Equals("llvm-aot"))
-		{
-		    await AOT4Mono(sdkVersion, runtimeVersion, outputFolder);
-	        }
+                if (job.UseMonoRuntime.Equals("llvm-aot"))
+                {
+                    await AOT4Mono(sdkVersion, runtimeVersion, outputFolder);
+                }
             }
 
             // Copy all output attachments
@@ -4118,7 +4118,7 @@ namespace BenchmarkServer
                     else
                     {
                         var strCmdTar = $"tar -xf dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz";
-                        var resultTar = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdTar),
+                        var resultTar = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdTar),
                                                         workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
                                                         log: true);
                     }
@@ -4126,7 +4126,7 @@ namespace BenchmarkServer
                     Log.WriteLine($"Patching local dotnet with mono runtime and extracting llvm");
 
                     var strCmdGetVer = "./dotnet --list-runtimes | grep -i \"Microsoft.NETCore.App\"";
-                    var resultGetVer = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdGetVer),
+                    var resultGetVer = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdGetVer),
                                                        workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
                                                        log: true,
                                                        captureOutput: true);
@@ -4153,7 +4153,7 @@ namespace BenchmarkServer
                         optExe.ExtractToFile(Path.Combine(llvmExtractDir, "opt"), true);
                     }
                     var strCmdChmod = "chmod +x opt llc";
-                    var resultChmod = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdChmod),
+                    var resultChmod = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdChmod),
                                                       workingDirectory: llvmExtractDir,
                                                       log: true);
 
@@ -4168,7 +4168,7 @@ namespace BenchmarkServer
                 var strCmdPreCompile = $@"for assembly in {outputFolder}/*.dll; do
                                               PATH={llvmExtractDir}:${{PATH}} MONO_ENV_OPTIONS=--aot=llvm,mcpu=native ./dotnet $assembly;
                                            done";
-                var resultPreCompile = ProcessUtil.Run(fileName, convertCmd2Arg(strCmdPreCompile),
+                var resultPreCompile = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdPreCompile),
                                                    workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
                                                    log: true,
                                                    captureOutput: true);
@@ -4180,7 +4180,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static string convertCmd2Arg(string cmd)
+        private static string ConvertCmd2Arg(string cmd)
         {
             cmd.Replace("\"", "\"\"");
             var result = $"-c \"{cmd}\"";
