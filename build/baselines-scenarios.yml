@@ -54,7 +54,7 @@ parameters:
     arguments: --scenario JsonPlatform --connections 512 $(jsonPlatformJobs)
     isPlatform: true
   - displayName: Fortunes Platform
-    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --database PostgreSql
+    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --connections 512 --database PostgreSql
     isPlatform: true
 
   # Plaintext
