@@ -54,7 +54,7 @@ parameters:
     arguments: --scenario JsonPlatform --connections 512 $(jsonPlatformJobs)
     isPlatform: true
   - displayName: Fortunes Platform
-    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --connections 512 --database PostgreSql
+    arguments: --scenario FortunesPlatform $(htmlPlatformJobs) --connections 512 --database PostgreSql --environmentVariable "connectionstring=Server=tfb-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
     isPlatform: true
 
   # Plaintext

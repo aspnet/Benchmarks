@@ -99,7 +99,7 @@ docker run \
     --url $url \
     --hardware $hardware \
     --hardware-version $hardware_version \
-    --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000" \
+    --postgresql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4" \
     --mysql "Server=TFB-database;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;SslMode=None;ConnectionReset=false" \
     --mssql "Server=TFB-database;Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Encrypt=False;Max Pool Size=256;" \
     --mongodb "mongodb://TFB-database:27017?maxPoolSize=256"
