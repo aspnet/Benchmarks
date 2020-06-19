@@ -28,7 +28,7 @@ namespace PlatformBenchmarks
                        options.IOQueueCount = threadCount;
                     }
 
-#if NET5_0
+#if NETCOREAPP5_0 || NET5_0
                     options.WaitForDataBeforeAllocatingBuffer = false;
 #endif
                 });

@@ -12,7 +12,7 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 #endif
 using Microsoft.Extensions.Configuration;
@@ -94,7 +94,7 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                     .Configure<LoggerFilterOptions>(options =>
                     {
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0
                         if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
                             Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
@@ -124,7 +124,7 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0
 
                     var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
                     if (kestrelThreadPoolDispatchingValue != null)
@@ -189,7 +189,7 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
-#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0
+#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseIIS();
