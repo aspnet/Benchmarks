@@ -1,0 +1,91 @@
+﻿# Examples:
+# --config benchmarks.fortunes.yml --scenario jsonplatform --profile aspnet-citrine
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  platformbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
+    readyStateText: Application started.
+    framework: netcoreapp5.0
+
+scenarios:
+  plaintext:
+    application:
+      job: platformbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /p
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  json:
+    application:
+      job: platformbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+profiles:
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-perf-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        variables:
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
