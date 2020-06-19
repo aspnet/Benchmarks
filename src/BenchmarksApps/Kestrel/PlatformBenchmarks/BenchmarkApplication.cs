@@ -62,7 +62,7 @@ namespace PlatformBenchmarks
         private int _queries;
 #endif
 
-#if NET5_0
+#if NETCOREAPP5_0 || NET5_0
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
             var requestType = RequestType.NotRecognized;
