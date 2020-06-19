@@ -110,3 +110,55 @@ profiles:
           serverPort: 5000
         endpoints: 
           - http://asp-citrine-load:5001
+
+  aspnet-perf-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+        environmentVariables:
+          database: PostgreSQL
+        options:
+          displayOutput: true
+      load:
+        variables:
+          connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.103
+        environmentVariables:
+          database: PostgreSQL
+        options:
+          displayOutput: true
+      load:
+        variables:
+          connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
+        endpoints: 
+          - http://asp-perf-load:5001
