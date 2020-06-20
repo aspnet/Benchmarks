@@ -32,6 +32,7 @@ scenarios:
       buildArguments: 
         - "/p:IsDatabase=true"
       environmentVariables:
+        database: PostgreSQL
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -47,6 +48,7 @@ scenarios:
       buildArguments: 
         - "/p:IsDatabase=true"
       environmentVariables:
+        database: PostgreSQL
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -62,6 +64,7 @@ scenarios:
       buildArguments: 
         - "/p:IsDatabase=true"
       environmentVariables:
+        database: PostgreSQL
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -77,7 +80,8 @@ scenarios:
       buildArguments: 
         - "/p:IsDatabase=true"
       environmentVariables:
-        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
@@ -96,10 +100,10 @@ profiles:
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
+          - http://asp-citrine-win:5001 # locks the windows server
+          - http://asp-citrine-arm:5001 # locks the arm server
         variables:
           databaseServer: 10.0.0.106
-        environmentVariables:
-          database: PostgreSQL
         options:
           displayOutput: true
       load:
@@ -124,8 +128,6 @@ profiles:
           - http://asp-perf-lin:5001
         variables:
           databaseServer: 10.0.0.103
-        environmentVariables:
-          database: PostgreSQL
         options:
           displayOutput: true
       load:
@@ -150,8 +152,6 @@ profiles:
           - http://asp-perf-win:5001
         variables:
           databaseServer: 10.0.0.103
-        environmentVariables:
-          database: PostgreSQL
         options:
           displayOutput: true
       load:
