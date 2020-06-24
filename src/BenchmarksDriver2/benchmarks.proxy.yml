@@ -128,6 +128,24 @@ profiles:
           - http://asp-perf-load:5001
         options:
           displayOutput: true
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.110
+      downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
+      cores: 12
+    jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
   aspnet-citrine:
     variables:
       serverUri: http://10.0.0.102
