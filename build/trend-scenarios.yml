@@ -209,31 +209,31 @@ parameters:
 
     # Mono
   - displayName: Plaintext Platform Mono
-    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --arch x64
+    arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono
-    arguments: --scenario Plaintext-Mono $(plaintextJobs) --arch x64
+    arguments: --scenario Plaintext-Mono $(plaintextJobs) --linux-only
   - displayName: Plainttext Non-Pipelined Mono
-    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --arch x64
+    arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --linux-only
   - displayName: Json Platform Mono
-    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs) --arch x64
+    arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs)  --linux-only
   - displayName: Json Mono
-    arguments: --scenario Json-Mono $(jsonJobs) --arch x64
+    arguments: --scenario Json-Mono $(jsonJobs)  --linux-only
   - displayName: Json Https Mono
-    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --arch x64
+    arguments: --scenario Plaintext-Mono -m https $(plaintextJobs) --linux-only
   - displayName: Database Fortunes Raw Mono
-    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --arch x64
+    arguments: --scenario DbFortunesRaw-Mono $(htmlJobs) --database PostgreSql --linux-only
   - displayName: Plaintext Platform Mono with LLVM JIT
-    arguments: --scenario PlaintextPlatform-Mono-LLVM-JIT $(plaintextPlatformJobs) --arch x64
+    arguments: --scenario PlaintextPlatform-Mono-LLVM-JIT $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono with LLVM JIT
-    arguments: --scenario Plaintext-Mono-LLVM-JIT $(plaintextJobs) --arch x64
+    arguments: --scenario Plaintext-Mono-LLVM-JIT $(plaintextJobs) --linux-only
   - displayName: Plainttext Non-Pipelined Mono with LLVM JIT
-    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-JIT $(plaintextJobs) --arch x64
+    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-JIT $(plaintextJobs) --linux-only
   - displayName: Plaintext Platform Mono with LLVM AOT
-    arguments: --scenario PlaintextPlatform-Mono-LLVM-AOT $(plaintextPlatformJobs) --arch x64
+    arguments: --scenario PlaintextPlatform-Mono-LLVM-AOT $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono with LLVM AOT
-    arguments: --scenario Plaintext-Mono-LLVM-AOT $(plaintextJobs) --arch x64
+    arguments: --scenario Plaintext-Mono-LLVM-AOT $(plaintextJobs) --linux-only
   - displayName: Plainttext Non-Pipelined Mono with LLVM AOT
-    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-AOT $(plaintextJobs) --arch x64
+    arguments: --scenario PlaintextNonPipelined-Mono-LLVM-AOT $(plaintextJobs) --linux-only
 
 steps:
 - ${{ each s in parameters.scenarios }}:
