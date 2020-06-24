@@ -1,0 +1,101 @@
+# baseline scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+- name: skip
+  type: string
+  default: ''
+
+# Baselines
+- name: baselines 
+  type: object
+  default: 
+  
+  - displayName: "2.1"
+    arguments: --application.channel current --application.framework netcoreapp2.1 --property framework=2.1
+    supportsPlatform: false
+
+  - displayName: "3.1"
+    arguments: --application.channel current --application.framework --property framework=3.1
+    supportsPlatform: true
+
+  - displayName: "5.0"
+  # Current dev, running close to other baselines, with same repeat parameters
+    arguments: --application.channel current --application.framework net5.0 --property framework=5.0
+    supportsPlatform: true
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+  # Platform
+  - displayName: Plaintext Platform
+    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
+    isPlatform: true
+  - displayName: Json Platform
+    arguments: --scenario json --load.variables.connections 512 $(platformJobs) --property scenario=JsonPlatform
+    isPlatform: true
+  - displayName: Fortunes Platform
+    arguments: --scenario fortunes $(platformJobs) --load.variables.connections 512 --property scenario=FortunesPlatform
+    isPlatform: true
+
+  # Plaintext
+  - displayName: Plaintext
+    arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext
+    isPlatform: false
+  - displayName: Plaintext endpoint
+    arguments: --scenario EndpointPlaintext $(plaintextJobsV2) --property scenario=PlaintextEndpoint
+    isPlatform: false
+  
+  # JSon
+  - displayName: Json
+    arguments: --scenario json $(jsonJobsV2) --property scenario=Json
+    isPlatform: false
+  - displayName: Json Mvc
+    arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc
+    isPlatform: false
+  
+  # Https
+  - displayName: Plaintext Https
+    arguments: --scenario https $(plaintextJobsV2) --property scenario=PlaintextHttps
+    isPlatform: false
+  - displayName: Json Https
+    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps
+    isPlatform: false
+  
+  # Database Fortunes
+  - displayName: Database Fortunes Raw
+    arguments: --scenario DbFortunesRaw $(databaseJobs) --database PostgreSql --property scenario=Fortunes
+    isPlatform: false
+  - displayName: Database Fortunes EF
+    arguments: --scenario DbFortunesEf $(databaseJobs) --database PostgreSql --property scenario=FortunesEF
+    isPlatform: false
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - ${{ each b in parameters.baselines }}:
+    - ${{ if or( eq(b.supportsPlatform, true), eq(s.isPlatform, false)) }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+        enabled: ${{ ne(b.displayName, parameters.skip) }}
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          messageBody: |
+            {
+              "name": "benchmarksdriver2",
+              "args": [ "${{ s.arguments }} ${{ b.arguments }} --profile ${{ parameters.profile }} --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING" ]
+            }

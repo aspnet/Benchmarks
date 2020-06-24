@@ -1,0 +1,126 @@
+﻿# Examples:
+# --config plaintext.benchmarks.yml --scenario plaintext --profile aspnet-physical
+# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Benchmarks/Benchmarks.csproj
+    readyStateText: Application started.
+    variables:
+      server: Kestrel
+      transport: Sockets
+      database: PostgreSQL
+      serverScheme: http
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+    environmentVariables:
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+
+  postgresql:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      dockerFile: docker/postgres-techempower/Dockerfile
+      dockerImageName: postgres
+      dockerContextDirectory: docker/postgres-techempower
+    readyStateText: PostgreSQL init process complete
+
+scenarios:
+  fortunes:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes/raw
+
+  fortunes_ef:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesEf
+        database: PostgreSQL
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes/ef
+
+profiles:
+  aspnet-citrine-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-perf-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.110
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001

@@ -59,6 +59,29 @@ jobs:
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
 
+- job: BaselinesV2
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Baselines
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+        skip: ""
+      Intel_Windows:
+        server: aspnet-citrine-lin
+        skip: ""
+  steps:
+  - template: baselines-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      skip: $(skip)
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
+
 - job: Frameworks
   pool: server
   timeoutInMinutes: 60
