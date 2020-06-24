@@ -69,4 +69,4 @@ variables:
 - name: databaseJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/database.benchmarks.yml
 - name: jsonJobsV2
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/jsonbenchmarks.yml
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/json.benchmarks.yml

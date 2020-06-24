@@ -212,7 +212,7 @@ parameters:
     arguments: --scenario PlaintextPlatform-Mono $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono
     arguments: --scenario Plaintext-Mono $(plaintextJobs) --linux-only
-  - displayName: Plainttext Non-Pipelined Mono
+  - displayName: Plaintext Non-Pipelined Mono
     arguments: --scenario PlaintextNonPipelined-Mono $(plaintextJobs) --linux-only
   - displayName: Json Platform Mono
     arguments: --scenario JsonPlatform-Mono $(jsonPlatformJobs)  --linux-only
@@ -226,13 +226,13 @@ parameters:
     arguments: --scenario PlaintextPlatform-Mono-LLVM-JIT $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono with LLVM JIT
     arguments: --scenario Plaintext-Mono-LLVM-JIT $(plaintextJobs) --linux-only
-  - displayName: Plainttext Non-Pipelined Mono with LLVM JIT
+  - displayName: Plaintext Non-Pipelined Mono with LLVM JIT
     arguments: --scenario PlaintextNonPipelined-Mono-LLVM-JIT $(plaintextJobs) --linux-only
   - displayName: Plaintext Platform Mono with LLVM AOT
     arguments: --scenario PlaintextPlatform-Mono-LLVM-AOT $(plaintextPlatformJobs) --linux-only
   - displayName: Plaintext Mono with LLVM AOT
     arguments: --scenario Plaintext-Mono-LLVM-AOT $(plaintextJobs) --linux-only
-  - displayName: Plainttext Non-Pipelined Mono with LLVM AOT
+  - displayName: Plaintext Non-Pipelined Mono with LLVM AOT
     arguments: --scenario PlaintextNonPipelined-Mono-LLVM-AOT $(plaintextJobs) --linux-only
 
 steps:

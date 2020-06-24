@@ -51,7 +51,6 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: DbFortunesEf
-        database: PostgreSQL
     load:
       job: wrk
       variables:
