@@ -23,16 +23,16 @@ parameters:
   default: 
   
   - displayName: "2.1"
-    arguments: --application.channel current --application.framework netcoreapp2.1 --property framework=2.1
+    arguments: --application.channel current --application.framework netcoreapp2.1 --property framework=netcoreapp2.1
     supportsPlatform: false
 
   - displayName: "3.1"
-    arguments: --application.channel current --application.framework --property framework=3.1
+    arguments: --application.channel current --application.framework netcoreapp3.1 --property framework=netcoreapp3.1
     supportsPlatform: true
 
   - displayName: "5.0"
   # Current dev, running close to other baselines, with same repeat parameters
-    arguments: --application.channel current --application.framework net5.0 --property framework=5.0
+    arguments: --application.channel current --application.framework net5.0 --property framework=net5.0
     supportsPlatform: true
 
 # Scenarios

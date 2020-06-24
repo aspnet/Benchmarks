@@ -71,7 +71,7 @@ jobs:
         profile: aspnet-citrine-lin
         skip: ""
       Intel_Windows:
-        server: aspnet-citrine-lin
+        profile: aspnet-citrine-win
         skip: ""
   steps:
   - template: baselines-v2-scenarios.yml

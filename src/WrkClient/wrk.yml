@@ -30,4 +30,4 @@ jobs:
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000
-    arguments: "-c {{connections}} {% if serverUri = blank or serverUri = empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% elsif script.length > 0  %} -s {{script}} -- {{scriptArguments}} {% endif %}"
+    arguments: "-c {{connections}} {% if serverUri == blank or serverUri == empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% elsif script.length > 0  %} -s {{script}} -- {{scriptArguments}} {% endif %}"
