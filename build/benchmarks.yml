@@ -18,8 +18,8 @@ jobs:
         server: http://asp-citrine-win:5001
       Arm_Linux:
         server: http://asp-citrine-arm:5001
-      Amd_Linux:
-        server: http://asp-citrine-amd:5001
+      # Amd_Linux:
+      #   server: http://asp-citrine-amd:5001
   steps:
   - template: trend-scenarios.yml
     parameters:
@@ -46,9 +46,9 @@ jobs:
       Arm_Linux:
         server: http://asp-citrine-arm:5001
         skip: "2.1"
-      Amd_Linux:
-        server: http://asp-citrine-amd:5001
-        skip: ""
+      # Amd_Linux:
+      #   server: http://asp-citrine-amd:5001
+      #   skip: ""
   steps:
   - template: baselines-scenarios.yml
     parameters:
@@ -92,8 +92,8 @@ jobs:
     matrix:
       Intel_Linux:
         server: http://asp-citrine-lin:5001
-      Amd_Linux:
-        server: http://asp-citrine-amd:5001
+      # Amd_Linux:
+      #   server: http://asp-citrine-amd:5001
   steps:
   - template: frameworks-scenarios.yml
     parameters:
