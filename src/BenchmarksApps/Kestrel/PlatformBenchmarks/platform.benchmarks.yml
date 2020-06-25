@@ -43,6 +43,7 @@ scenarios:
         presetHeaders: json
         path: /j
         serverPort: 5000
+        connections: 512
 
   fortunes:
     db:
@@ -59,6 +60,7 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
+        connections: 512
         
   single_query:
     db:
