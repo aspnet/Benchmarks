@@ -31,8 +31,7 @@ parameters:
     supportsPlatform: true
 
   - displayName: "5.0"
-  # Current dev, running close to other baselines, with same repeat parameters
-    arguments: --application.channel current --application.framework net5.0 --property framework=net5.0
+    arguments: --application.channel edge --application.framework net5.0 --property framework=net5.0
     supportsPlatform: true
 
 # Scenarios
