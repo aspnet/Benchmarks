@@ -33,6 +33,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Trends  
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:

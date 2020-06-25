@@ -65,8 +65,8 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/platform.benchmarks.yml
 
 - name: plaintextJobsV2
-  value: --config j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/plaintext.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/plaintext.benchmarks.yml
 - name: databaseJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/database.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/database.benchmarks.yml
 - name: jsonJobsV2
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/json.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/json.benchmarks.yml

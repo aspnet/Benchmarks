@@ -114,6 +114,9 @@ profiles:
       serverUri: http://10.0.0.102
       cores: 28
     jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
@@ -128,6 +131,43 @@ profiles:
       serverUri: http://10.0.0.104
       cores: 28
     jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-arm:
+    variables:
+      serverUri: http://10.0.0.107
+      cores: 32
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-amd:
+    variables:
+      serverUri: http://10.0.0.106
+      cores: 48
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
