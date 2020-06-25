@@ -16,6 +16,7 @@ jobs:
       presetHeaders: plaintext
       serverPort: 5000
       protocol: http
+      serverScheme: http
       server: Kestrel
       transport: Sockets
       scenario: plaintext

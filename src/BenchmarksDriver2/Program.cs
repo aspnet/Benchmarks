@@ -1196,6 +1196,32 @@ namespace BenchmarksDriver
 
                 var profile = (JObject)configuration["Profiles"][profileName];
 
+                // Copy the profile variables to the jobs in this profile
+                // such that it will override what is in the source job.
+                // Otherwise the variables in the profile would not override
+                // the ones in the source profile as they would be patching
+                // the global variables.
+
+                var profileVariables = profile.GetValue("Variables", StringComparison.OrdinalIgnoreCase);
+                if (profileVariables is JObject variables)
+                {
+                    var profileJobs = profile.GetValue("Jobs", StringComparison.OrdinalIgnoreCase) as JObject ?? new JObject();
+
+                    foreach (var profileJobProperty in profileJobs.Properties())
+                    {
+                        var profileJob = (JObject)profileJobProperty.Value;
+
+                        var profileJobVariables = profileJob.GetValue("Variables", StringComparison.OrdinalIgnoreCase) as JObject;
+
+                        if (profileJobVariables == null)
+                        {
+                            profileJob.Add("Variables", profileJobVariables = new JObject());
+                        }
+
+                        PatchObject(profileJobVariables, variables);
+                    }
+                }
+
                 PatchObject(configuration, profile);
             }
 
