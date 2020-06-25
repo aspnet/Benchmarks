@@ -9,6 +9,7 @@ jobs:
 - job: Trends
   pool: server
   timeoutInMinutes: 120
+  condition: false
   strategy:
     maxParallel: 1
     matrix:
@@ -57,7 +58,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: TrendsV2
-  condition: succeededOrFailed()
+  condition: false # succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
