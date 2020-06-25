@@ -55,7 +55,7 @@ parameters:
     arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext
     isPlatform: false
   - displayName: Plaintext endpoint
-    arguments: --scenario EndpointPlaintext $(plaintextJobsV2) --property scenario=PlaintextEndpoint
+    arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint
     isPlatform: false
   
   # JSon
@@ -76,10 +76,10 @@ parameters:
   
   # Database Fortunes
   - displayName: Database Fortunes Raw
-    arguments: --scenario DbFortunesRaw $(databaseJobs) --database PostgreSql --property scenario=Fortunes
+    arguments: --scenario fortunes $(databaseJobs) --database PostgreSql --property scenario=Fortunes
     isPlatform: false
   - displayName: Database Fortunes EF
-    arguments: --scenario DbFortunesEf $(databaseJobs) --database PostgreSql --property scenario=FortunesEF
+    arguments: --scenario fortunes_ef $(databaseJobs) --database PostgreSql --property scenario=FortunesEF
     isPlatform: false
 
 steps:
