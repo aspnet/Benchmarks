@@ -41,6 +41,7 @@ scenarios:
       variables:
         scenario: plaintext
         protocol: https
+        serverScheme: https
     load:
       job: wrk
       variables:

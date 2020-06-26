@@ -40,6 +40,7 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: json
+        serverScheme: https
         protocol: https
     load:
       job: wrk
