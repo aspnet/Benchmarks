@@ -15,6 +15,8 @@ jobs:
     variables:
       presetHeaders: json
       protocol: http
+      serverScheme: http
+      serverPort: 5000
       server: Kestrel
       transport: Sockets
       scenario: plaintext
