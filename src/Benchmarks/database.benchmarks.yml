@@ -15,10 +15,11 @@ jobs:
     variables:
       server: Kestrel
       transport: Sockets
-      database: PostgreSQL
+      
       serverScheme: http
-    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     environmentVariables:
+      database: PostgresQL
       connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
 
   postgresql:
