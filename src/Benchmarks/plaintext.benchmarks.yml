@@ -74,13 +74,13 @@ scenarios:
     application:
       job: aspnetbenchmarks
       variables:
-        presetHeaders: connectionclose
-        scenario: ConnectionClose
+        scenario: Plaintext
     load:
       job: wrk
       variables:
         path: /plaintext
         pipeline: 0
+        presetHeaders: connectionclose
 
 profiles:
   aspnet-citrine-lin:
