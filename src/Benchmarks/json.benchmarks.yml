@@ -75,6 +75,7 @@ scenarios:
         endpoints: 
           - http://asp-citrine-load:5001
 
+profiles:
   aspnet-citrine-win:
     variables:
       serverPort: 5000

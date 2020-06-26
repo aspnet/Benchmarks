@@ -82,6 +82,7 @@ scenarios:
         path: /plaintext
         pipeline: 0
 
+profiles:
   aspnet-citrine-lin:
     variables:
       serverPort: 5000

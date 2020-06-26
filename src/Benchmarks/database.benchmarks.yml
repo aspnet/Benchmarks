@@ -58,6 +58,7 @@ scenarios:
         presetHeaders: html
         path: /fortunes/ef
 
+profiles:
   aspnet-citrine-lin:
     variables:
       serverPort: 5000
