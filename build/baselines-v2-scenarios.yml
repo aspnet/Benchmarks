@@ -44,10 +44,10 @@ parameters:
     arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
     isPlatform: true
   - displayName: Json Platform
-    arguments: --scenario json --load.variables.connections 512 $(platformJobs) --property scenario=JsonPlatform
+    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
     isPlatform: true
   - displayName: Fortunes Platform
-    arguments: --scenario fortunes $(platformJobs) --load.variables.connections 512 --property scenario=FortunesPlatform
+    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
     isPlatform: true
 
   # Plaintext
@@ -76,10 +76,10 @@ parameters:
   
   # Database Fortunes
   - displayName: Database Fortunes Raw
-    arguments: --scenario fortunes $(databaseJobs) --database PostgreSql --property scenario=Fortunes
+    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
     isPlatform: false
   - displayName: Database Fortunes EF
-    arguments: --scenario fortunes_ef $(databaseJobs) --database PostgreSql --property scenario=FortunesEF
+    arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF
     isPlatform: false
 
 steps:
