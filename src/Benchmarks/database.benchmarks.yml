@@ -58,7 +58,6 @@ scenarios:
         presetHeaders: html
         path: /fortunes/ef
 
-profiles:
   aspnet-citrine-lin:
     variables:
       serverPort: 5000
@@ -88,7 +87,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-win:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -106,7 +105,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-arm:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -124,7 +123,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-amd:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -152,7 +151,7 @@ profiles:
   aspnet-perf-win:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.110
+      serverAddress: 10.0.0.102
       cores: 12
     jobs: 
       db:

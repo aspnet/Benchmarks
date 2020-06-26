@@ -113,7 +113,8 @@ scenarios:
 profiles:
   aspnet-citrine-lin:
     variables:
-      serverUri: http://10.0.0.102
+      serverPort: 5000
+      serverAddress: 10.0.0.102
       cores: 28
     jobs: 
       db:
@@ -130,7 +131,8 @@ profiles:
 
   aspnet-citrine-win:
     variables:
-      serverUri: http://10.0.0.104
+      serverPort: 5000
+      serverAddress: 10.0.0.104
       cores: 28
     jobs: 
       db:
@@ -138,7 +140,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-win:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -147,7 +149,8 @@ profiles:
   
   aspnet-citrine-arm:
     variables:
-      serverUri: http://10.0.0.107
+      serverPort: 5000
+      serverAddress: 10.0.0.107
       cores: 32
     jobs: 
       db:
@@ -155,7 +158,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-arm:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -164,7 +167,8 @@ profiles:
   
   aspnet-citrine-amd:
     variables:
-      serverUri: http://10.0.0.106
+      serverPort: 5000
+      serverAddress: 10.0.0.106
       cores: 48
     jobs: 
       db:
@@ -172,7 +176,7 @@ profiles:
           - http://asp-citrine-db:5001
       application:
         endpoints: 
-          - http://asp-citrine-lin:5001
+          - http://asp-citrine-amd:5001
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -181,7 +185,8 @@ profiles:
   
   aspnet-perf-lin:
     variables:
-      serverUri: http://10.0.0.102
+      serverPort: 5000
+      serverAddress: 10.0.0.102
       cores: 12
     jobs: 
       db:
@@ -198,7 +203,8 @@ profiles:
 
   aspnet-perf-win:
     variables:
-      serverUri: http://10.0.0.110
+      serverPort: 5000
+      serverAddress: 10.0.0.102
       cores: 12
     jobs: 
       db:
