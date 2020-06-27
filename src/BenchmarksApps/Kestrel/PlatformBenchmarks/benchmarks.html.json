@@ -18,9 +18,9 @@
     "Path": "/fortunes"
   },
   "UpdatesPlatform": {
-    "Path": "/updates/queries="
+    "Path": "/updates/"
   },
   "MultipleQueriesPlatform": {
-    "Path": "/queries/queries="
+    "Path": "/queries/"
   }
 }
