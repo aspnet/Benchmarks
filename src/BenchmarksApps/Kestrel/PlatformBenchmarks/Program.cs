@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
@@ -16,7 +17,7 @@ namespace PlatformBenchmarks
     {
         public static string[] Args;
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Args = args;
 
@@ -35,7 +36,10 @@ namespace PlatformBenchmarks
             var host = BuildWebHost(args);
             var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
             BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
-            host.Run();
+#if DATABASE
+            await BenchmarkApplication.Db.PopulateCache();
+#endif
+            await host.RunAsync();
         }
 
         public static IWebHost BuildWebHost(string[] args)
