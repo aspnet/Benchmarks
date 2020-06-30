@@ -50,7 +50,7 @@ jobs:
       dockerFile: frameworks/Java/netty/netty.dockerfile
       dockerImageName: netty
       dockerContextDirectory: frameworks/Java/netty/
-    # readyStateText: Started http server
+      readyStateText: Httpd started
     variables:
       serverPort: 8080
 
