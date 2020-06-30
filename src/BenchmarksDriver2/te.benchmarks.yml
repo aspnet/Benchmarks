@@ -111,7 +111,7 @@ scenarios:
 
   fortunes_nodejs:
     db:
-      job: postgresql
+      job: mysql
     application:
       job: nodejs
     load:
