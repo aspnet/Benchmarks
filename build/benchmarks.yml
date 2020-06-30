@@ -234,7 +234,6 @@ jobs:
   - template: efcore-scenarios.yml
     parameters:
       server: http://asp-citrine-win:5001
-      client: http://asp-citrine-load:5002
       connection: 'ASP.NET Benchmarks Queue'
 
 - job: Blazor
