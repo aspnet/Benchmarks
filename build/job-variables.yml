@@ -70,3 +70,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/database.benchmarks.yml
 - name: jsonJobsV2
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/json.benchmarks.yml
+- name: frameworksV2
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/te.benchmarks.yml

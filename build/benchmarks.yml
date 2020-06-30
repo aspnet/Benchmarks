@@ -4,6 +4,8 @@ variables:
   - template: job-variables.yml
   - name: session
     value: $(Build.BuildNumber)
+  - name: buildUri
+    value: $(Build.BuildUri)
 
 jobs:
 # - job: Trends
@@ -116,14 +118,13 @@ jobs:
     maxParallel: 1
     matrix:
       Intel_Linux:
-        server: http://asp-citrine-lin:5001
+        profile: aspnet-citrine-lin
       Amd_Linux:
-        server: http://asp-citrine-amd:5001
+        profile: aspnet-citrine-amd
   steps:
-  - template: frameworks-scenarios.yml
+  - template: frameworks-v2-scenarios.yml
     parameters:
-      server: $(server)
-      client: http://asp-citrine-load:5002
+      profile: $(profile)
       warmup: 15
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'

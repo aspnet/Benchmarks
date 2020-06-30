@@ -671,7 +671,7 @@ namespace BenchmarksDriver
                     }
 
                     // Stop all non-blocking jobs in reverse dependency order (clients first)
-                    foreach (var jobName in dependencies)
+                    foreach (var jobName in dependencies.Reverse())
                     {
                         var service = configuration.Jobs[jobName];
 
