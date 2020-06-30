@@ -50,10 +50,10 @@ variables:
 # v2
 
 - name: signalRJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/signalr.benchmarks.yml
 
 - name: proxyJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/proxy.benchmarks.yml
 
 - name: yarpJobs
   value: --config https://raw.githubusercontent.com/microsoft/reverse-proxy/master/samples/BenchmarkApp/benchmarks.yml
@@ -62,13 +62,13 @@ variables:
   value: 28
 
 - name: platformJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/platform.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/platform.benchmarks.yml
 
 - name: plaintextJobsV2
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/plaintext.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/plaintext.benchmarks.yml
 - name: databaseJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/database.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/database.benchmarks.yml
 - name: jsonJobsV2
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/json.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/json.benchmarks.yml
 - name: frameworksV2
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/te.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/te.benchmarks.yml

@@ -1,0 +1,182 @@
+﻿# Examples:
+# --config benchmarks.proxy.yml --scenario proxy-httpclient --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-nginx --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-haproxy --profile aspnet-physical
+# --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+
+variables:
+    path: /
+
+jobs:
+  httpclientproxy:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
+    readyStateText: Application started.
+    arguments: '--baseUri {{downstreamUri}}'
+    port: 5000
+  nginxproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/nginx/nginx.dockerfile
+      DockerImageName: nginx-reverseproxy
+      DockerContextDirectory: docker/nginx
+    environmentVariables:
+        PROXY_PASS : '{{downstreamAddress}}:{{downstreamPort}}'
+        WORKER_PROCESSES: '{{cores}}'
+    port: 8080
+  envoyproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/envoy/envoy.dockerfile
+      DockerImageName: envoy-reverseproxy
+      DockerContextDirectory: docker/envoy
+    readyStateText: starting workers
+    environmentVariables:
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
+    port: 8080
+  haproxyproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/haproxy/haproxy.dockerfile
+      DockerImageName: haproxy-reverseproxy
+      DockerContextDirectory: docker/haproxy
+    port: 8080
+  downstream:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Downstream/Downstream.csproj
+    readyStateText: Application started.
+    variables:
+      downstreamPort: 5000
+    arguments: '--urls http://*:{{downstreamPort}}'
+    port: 5000
+  yarp:
+    source:
+      repository: https://github.com/microsoft/reverse-proxy.git
+      branchOrCommit: master
+      project: samples/BenchmarkApp/BenchmarkApp.csproj
+    readyStateText: Application started.
+    arguments: '--urls {{serverUri}}:{{serverPort}} --clusterUrls {{downstreamUri}}'
+    port: 5000
+
+scenarios:
+  proxy-httpclient:
+    downstream:
+      job: downstream
+    application: # custom name for a service to deploy
+      job: httpclientproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
+  proxy-nginx:
+    downstream:
+      job: downstream
+    application:
+      job: nginxproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+  proxy-haproxy:
+    downstream:
+      job: downstream
+    application:
+      job: haproxyproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+  proxy-baseline:
+    application:
+      job: downstream
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+  proxy-envoy:
+    downstream:
+      job: downstream
+    application:
+      job: envoyproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8080
+ proxy-yarp:
+    downstream:
+      job: downstream
+    application:
+      job: yarp
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+              
+profiles:
+  aspnet-physical:
+    variables:
+      serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
+      cores: 12
+    jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+          displayOutput: true
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.110
+      downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
+      cores: 12
+    jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
+      cores: 28
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://asp-citrine-db:6001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001

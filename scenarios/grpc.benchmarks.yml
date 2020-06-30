@@ -1,0 +1,152 @@
+﻿# Examples:
+# --config benchmarks.grpc.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-physical-lin --variable scenario=unary --variable streams=70
+
+imports:
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcClient/grpc-client.yml
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/H2LoadClient/h2load.yml
+variables:
+    serverPort: 5000
+scenarios:
+  grpcaspnetcoreserver-grpcnetclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpcnetclient
+  grpccoreserver-grpcnetclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpcnetclient
+  grpcgoserver-grpcnetclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpcnetclient
+
+  grpcaspnetcoreserver-grpccoreclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpccore
+  grpccoreserver-grpccoreclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpccore
+  grpcgoserver-grpccoreclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcDotNetClient
+      variables:
+        grpcClientType: grpccore
+
+  grpcaspnetcoreserver-grpcgoclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: grpcGoClient
+  grpccoreserver-grpcgoclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: grpcGoClient
+  grpcgoserver-grpcgoclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: grpcGoClient
+
+  grpcaspnetcoreserver-h2loadclient:
+    application:
+      job: grpcAspNetCoreServer
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+  grpccoreserver-h2loadclient:
+    application:
+      job: grpcCoreServer
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+  grpcgoserver-h2loadclient:
+    application:
+      job: grpcGoServer
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+
+profiles:
+  aspnet-physical-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-physical-win:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
