@@ -34,7 +34,7 @@ jobs:
 - job: Baselines
   pool: server
   timeoutInMinutes: 60
-  dependsOn: TrendsV2
+  dependsOn: Trends
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
@@ -57,7 +57,7 @@ jobs:
 - job: Frameworks
   pool: server
   timeoutInMinutes: 60
-  dependsOn: BaselinesV2
+  dependsOn: Baselines
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
