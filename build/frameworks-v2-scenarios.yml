@@ -74,6 +74,6 @@ steps:
       waitForCompletion: true
       messageBody: |
         {
-          "name": "benchmarksdriver",
+          "name": "benchmarksdriver2",
           "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(profile)\" --property buildUri=\"$(buildUri)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING" ] 
         }
