@@ -125,7 +125,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-lin:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -143,7 +143,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-win:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -161,7 +161,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-arm:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -179,7 +179,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001

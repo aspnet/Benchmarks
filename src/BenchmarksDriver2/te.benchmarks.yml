@@ -12,6 +12,7 @@ jobs:
     readyStateText: NodeJS worker listening
     variables:
       serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
 
   actix:
     source:
@@ -23,6 +24,7 @@ jobs:
     readyStateText: Started http server
     variables:
       serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
 
   fasthttp:
     source:
@@ -33,6 +35,7 @@ jobs:
       dockerContextDirectory: frameworks/Go/fasthttp/
     variables:
       serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
 
   ulib:
     source:
@@ -42,6 +45,7 @@ jobs:
     # readyStateText: Started http server
     variables:
       serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
 
   netty:
     source:
@@ -53,6 +57,7 @@ jobs:
       readyStateText: Httpd started
     variables:
       serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
 
   postgresql:
     source:
@@ -264,12 +269,12 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-perf-db:5001
+          - http://asp-citrine-amd:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -286,7 +291,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-win:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -303,7 +308,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-arm:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -320,7 +325,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-load:5001
