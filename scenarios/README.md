@@ -40,7 +40,7 @@ These scenarios return a "Hello World" string and the client uses HTTP pipelinin
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -61,7 +61,7 @@ The serialization is done with `System.Text.Json`.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/json.benchmarks.yml --scenario json --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/json.benchmarks.yml --scenario json --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -80,7 +80,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -98,7 +98,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -119,7 +119,7 @@ The downstream service returns a variable size content. By default the result is
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -150,7 +150,7 @@ These scenarios measure the performance of different other frameworks
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/te.benchmarks.yml --scenario nodejs_plaintext --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml --scenario nodejs_plaintext --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -181,7 +181,7 @@ These scenarios measure the performance of different Grpc  server and clients im
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -211,3 +211,18 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/sc
   - Server streaming: `--variable scenario=serverstreaming`
   - Ping ping streaming: `--variable scenario=pingpongstreaming`
 
+## FAQ
+
+> The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.
+
+### How to use the latest .NET version?
+
+```
+--application.channel latest --application.framework net5.0
+```
+
+### How to upload custom files?
+
+```
+--application.outputFiles System.Private.CoreLib.dll
+```
