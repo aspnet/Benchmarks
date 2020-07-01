@@ -201,10 +201,10 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/sc
 
 ## Arguments
 
-Number of streams: `--variable streams=1`, `--variable streams=70`
-Protocol: `--variable protocol=h2c`
-Call types:
-- Unary: `--variable scenario=unary`
-- Server streaming: `--variable scenario=serverstreaming`
-- Ping ping streaming: `--variable scenario=pingpongstreaming`
+- Number of streams: `--variable streams=1`, `--variable streams=70`
+- Protocol: `--variable protocol=h2c`
+- Call types:
+  - Unary: `--variable scenario=unary`
+  - Server streaming: `--variable scenario=serverstreaming`
+  - Ping ping streaming: `--variable scenario=pingpongstreaming`
 
