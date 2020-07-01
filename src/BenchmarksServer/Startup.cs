@@ -1967,7 +1967,7 @@ namespace BenchmarkServer
                 }
                 catch (Exception e)
                 {
-                    Log.WriteLine("An error occured while deleting the docker container: " + e.Message);
+                    Log.WriteLine("An error occurred while deleting the docker container: " + e.Message);
                     finalState = ServerState.Failed;
                 }
                 finally

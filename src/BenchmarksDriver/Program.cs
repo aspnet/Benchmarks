@@ -2708,7 +2708,7 @@ namespace BenchmarksDriver
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"An error occured while uploading a file.", e);
+                throw new InvalidOperationException($"An error occurred while uploading a file.", e);
             }
 
             return 0;

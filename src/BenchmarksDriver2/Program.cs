@@ -541,12 +541,6 @@ namespace BenchmarksDriver
                                 })
                             );
 
-                            // Start threads that will keep the jobs alive
-                            foreach (var job in jobs)
-                            {
-                                job.StartKeepAlive();
-                            }
-
                             if (service.WaitForExit)
                             {
                                 // Wait for all clients to stop
@@ -875,9 +869,6 @@ namespace BenchmarksDriver
 
             // Start this service on the configured agent endpoint
             await job.StartAsync(jobName, _outputArchiveOption, _buildArchiveOption);
-
-            // Start threads that will keep the jobs alive
-            job.StartKeepAlive();
 
             var start = DateTime.UtcNow;
 

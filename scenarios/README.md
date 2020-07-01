@@ -224,5 +224,5 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 ### How to upload custom files?
 
 ```
---application.outputFiles System.Private.CoreLib.dll
+--application.options.outputFiles c:\build\System.Private.CoreLib.dll
 ```
