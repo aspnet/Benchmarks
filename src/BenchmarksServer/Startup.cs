@@ -1703,15 +1703,19 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
+            var containerName = $"{imageName}-{job.Id}";
+
+            // TODO: Clean previous images 
+
             // Stop container in case it failed to stop earlier
-            ProcessUtil.Run("docker", $"stop {imageName}", throwOnError: false);
+            // ProcessUtil.Run("docker", $"stop {containerName}", throwOnError: false);
 
             // Delete container if the same name already exists
-            ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
+            // ProcessUtil.Run("docker", $"rm {containerName}", throwOnError: false);
 
             var command = OperatingSystem == OperatingSystem.Linux
-                ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName} {source.DockerCommand}"
-                : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName} {source.DockerCommand}";
+                ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {containerName} --privileged --network host {imageName} {source.DockerCommand}"
+                : $"run -d {environmentArguments} {job.Arguments} --name {containerName} --network SELF --ip {hostname} {imageName} {source.DockerCommand}";
 
             if (job.Collect && job.CollectStartup)
             {
