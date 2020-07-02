@@ -1959,13 +1959,14 @@ namespace BenchmarkServer
             {
                 try
                 {
+                    ProcessUtil.Run("docker", $"rm --force {containerId}", throwOnError: false);
+
                     if (job.NoClean)
                     {
                         ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
                     }
                     else
                     {
-                        ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
                         ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
                     }
                 }
