@@ -120,7 +120,7 @@
 
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
+    <!-- <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" /> -->
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion50)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
