@@ -4,8 +4,10 @@ variables:
   - template: job-variables.yml
   - name: session
     value: $(Build.BuildNumber)
-  - name: buildUri
-    value: $(Build.BuildUri)
+  - name: buildId
+    value: $(Build.BuildId)
+  - name: buildNumber
+    value: $(Build.BuildNumber)
 
 jobs:
 
