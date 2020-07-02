@@ -45,6 +45,12 @@ jobs:
       Intel_Windows:
         profile: aspnet-citrine-win
         skip: ""
+      Arm_Linux:
+        profile: aspnet-citrine-arm
+        skip: ""
+      Amd_Linux:
+        profile: aspnet-citrine-amd
+        skip: ""
   steps:
   - template: baselines-v2-scenarios.yml
     parameters:
