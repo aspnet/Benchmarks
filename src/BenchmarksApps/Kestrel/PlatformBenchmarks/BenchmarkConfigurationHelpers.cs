@@ -21,7 +21,14 @@ namespace PlatformBenchmarks
 
             Console.WriteLine($"Transport: {webHost}");
 
-            if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.UseLinuxTransport(options =>
+                {
+                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
+                });
+            }
+            else
             {
                 builder.UseSockets(options =>
                 {
@@ -35,13 +42,6 @@ namespace PlatformBenchmarks
 
                     Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
 #endif
-                });
-            }
-            else if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
-            {
-                builder.UseLinuxTransport(options =>
-                {
-                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
                 });
             }
 
