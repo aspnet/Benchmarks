@@ -19,6 +19,8 @@ namespace PlatformBenchmarks
             // Handle the transport type
             var webHost = builder.GetSetting("KestrelTransport");
 
+            Console.WriteLine($"Transport: {webHost}");
+
             if (string.Equals(webHost, "Sockets", StringComparison.OrdinalIgnoreCase))
             {
                 builder.UseSockets(options =>
@@ -30,6 +32,8 @@ namespace PlatformBenchmarks
 
 #if NETCOREAPP5_0 || NET5_0
                     options.WaitForDataBeforeAllocatingBuffer = false;
+
+                    Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
 #endif
                 });
             }
