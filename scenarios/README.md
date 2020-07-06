@@ -181,7 +181,7 @@ These scenarios measure the performance of different Grpc  server and clients im
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin --variable streams=70 --variable connections=1
 ```
 
 ### Available scenarios
