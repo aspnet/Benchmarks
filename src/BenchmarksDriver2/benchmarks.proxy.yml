@@ -156,7 +156,7 @@ profiles:
     jobs: 
       downstream:
         endpoints: 
-          - http://asp-citrine-db:6001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
