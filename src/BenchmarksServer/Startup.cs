@@ -3067,6 +3067,7 @@ namespace BenchmarkServer
                     break;
 
                 case "netcoreapp5.0":
+                case "net5.0":
 
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "master/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
@@ -3086,7 +3087,7 @@ namespace BenchmarkServer
         /// <summary>
         /// Retrieves the Current runtime and sdk versions for a tfm
         /// </summary>
-        private static async Task<(string Runtime, string Sesktop, string AspNet, string Sdk)> GetCurrentVersions(string targetFramework)
+        private static async Task<(string Runtime, string Desktop, string AspNet, string Sdk)> GetCurrentVersions(string targetFramework)
         {
             var frameworkVersion = targetFramework.Substring(targetFramework.Length - 3); // 3.1
             var metadataUrl = $"https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/{frameworkVersion}/releases.json";
