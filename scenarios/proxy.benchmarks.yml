@@ -126,7 +126,7 @@ scenarios:
         serverPort: 5000
               
 profiles:
-  aspnet-physical:
+  aspnet-perf-lin:
     variables:
       serverUri: http://10.0.0.102
       downstreamUri: http://10.0.0.103:5000
@@ -145,7 +145,7 @@ profiles:
           - http://asp-perf-load:5001
         options:
           displayOutput: true
-  aspnet-physical-win:
+  aspnet-perf-win:
     variables:
       serverUri: http://10.0.0.110
       downstreamUri: http://10.0.0.103:5000
@@ -163,7 +163,7 @@ profiles:
         endpoints: 
           - http://asp-perf-load:5001
         options:
-  aspnet-citrine:
+  aspnet-citrine-lin:
     variables:
       serverUri: http://10.0.0.102
       downstreamUri: http://10.0.0.103:5000
@@ -177,6 +177,23 @@ profiles:
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      downstreamUri: http://10.0.0.103:5000
+      downstreamAddress: 10.0.0.103
+      downstreamPort: 5000
+      cores: 28
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
       load:
         endpoints: 
           - http://asp-citrine-load:5001

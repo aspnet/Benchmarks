@@ -94,7 +94,7 @@ scenarios:
         presetHeaders: grpc
 
 profiles:
-  aspnet-physical-lin:
+  aspnet-perf-lin:
     variables:
       serverUri: http://10.0.0.102
       cores: 12
@@ -108,7 +108,7 @@ profiles:
       load:
         endpoints: 
           - http://asp-perf-load:5001
-  aspnet-physical-win:
+  aspnet-perf-win:
     variables:
       serverUri: http://10.0.0.110
       cores: 12
