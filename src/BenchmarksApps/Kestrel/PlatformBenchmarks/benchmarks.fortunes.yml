@@ -71,7 +71,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /queries/queries=20
+        path: /queries/20
   
   updates:
     db:
@@ -87,7 +87,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /updates/queries=20
+        path: /updates/20
 
 profiles:
   aspnet-citrine:

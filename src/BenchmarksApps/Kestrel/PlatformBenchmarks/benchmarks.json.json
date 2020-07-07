@@ -11,10 +11,10 @@
     "ReadyStateText": "Application started."
   },
   "JsonPlatform": {
-    "Path": "/j"
+    "Path": "/json"
   },
   "JsonPlatform-Mono": {
-    "Path": "/j",
+    "Path": "/json",
     "UseMonoRuntime": "jit"
   }
 }
