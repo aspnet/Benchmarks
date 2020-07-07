@@ -43,6 +43,7 @@ jobs:
       branchOrCommit: master
       dockerContextDirectory: frameworks/C++/ulib/
     # readyStateText: Started http server
+    port: 8080
     variables:
       serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"

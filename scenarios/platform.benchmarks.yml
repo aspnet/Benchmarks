@@ -31,7 +31,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /p
+        path: /plaintext
         serverPort: 5000
         pipeline: 16
 
@@ -42,7 +42,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /j
+        path: /json
         serverPort: 5000
         connections: 512
 
@@ -93,8 +93,24 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /queries/queries=20
+        path: /queries/20
   
+  caching:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /cached-worlds/20
+
   updates:
     db:
       job: postgresql
@@ -109,7 +125,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /updates/queries=20
+        path: /updates/20
 
 profiles:
   aspnet-citrine-lin:

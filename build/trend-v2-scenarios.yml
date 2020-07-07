@@ -31,6 +31,8 @@ parameters:
     arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform --property protocol=http
   - displayName: Updates Platform
     arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform --property protocol=http
+  - displayName: Caching Platform
+    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform --property protocol=http
 
 # Plaintext
 
