@@ -2584,7 +2584,7 @@ namespace BenchmarkServer
                     throw new Exception("The job is trying to use the mono runtime but was not configured as self-contained.");
                 }
 		
-                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime);
+                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime, job.Hardware);
 
                 if (job.UseMonoRuntime.Equals("llvm-aot"))
                 {
@@ -4031,11 +4031,21 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task UseMonoRuntimeAsync(string runtimeVersion, string outputFolder, string mode)
+        private static async Task UseMonoRuntimeAsync(string runtimeVersion, string outputFolder, string mode, Hardware? hardware)
         {
             if (String.IsNullOrEmpty(mode))
             {
                 return;
+            }
+
+            string pkgNameSuffix = "";
+            if (hardware == Hardware.ARM64)
+            {
+                pkgNameSuffix = "arm64";
+            }
+            else
+            {
+                pkgNameSuffix = "x64";
             }
 
             try
@@ -4045,11 +4055,11 @@ namespace BenchmarkServer
                 switch (mode) 
                 {
                     case "jit":
-                        packageName = "Microsoft.NETCore.App.Runtime.Mono.linux-x64".ToLowerInvariant();
+                        packageName = $"Microsoft.NETCore.App.Runtime.Mono.linux-{pkgNameSuffix}".ToLowerInvariant();
                         break;
                     case "llvm-jit":
                     case "llvm-aot":
-                        packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
+                        packageName = $"Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-{pkgNameSuffix}".ToLowerInvariant();
                         break;
                     default:
                         throw new Exception("Invalid mono runtime moniker: " + mode);
@@ -4092,10 +4102,10 @@ namespace BenchmarkServer
 
                 using (var archive = ZipFile.OpenRead(runtimePath))
                 {
-                    var systemCoreLib = archive.GetEntry("runtimes/linux-x64/native/System.Private.CoreLib.dll");
+                    var systemCoreLib = archive.GetEntry($"runtimes/linux-{pkgNameSuffix}/native/System.Private.CoreLib.dll");
                     systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
 
-                    var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
+                    var libcoreclr = archive.GetEntry($"runtimes/linux-{pkgNameSuffix}/native/libcoreclr.so");
                     libcoreclr.ExtractToFile(Path.Combine(outputFolder, "libcoreclr.so"), true);
                 }
             }
