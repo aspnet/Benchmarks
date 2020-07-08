@@ -18,6 +18,7 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _crlf = "\r\n";
         private readonly static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
+        private readonly static AsciiString _http11NotFound = "HTTP/1.1 404 Not Found\r\n";
         private readonly static AsciiString _headerServer = "Server: K";
         private readonly static AsciiString _headerContentLength = "Content-Length: ";
         private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
@@ -164,7 +165,7 @@ namespace PlatformBenchmarks
         }
 #endif
         private readonly static AsciiString _defaultPreamble =
-            _http11OK +
+            _http11NotFound +
             _headerServer + _crlf +
             _headerContentTypeText + _crlf +
             _headerContentLengthZero;
