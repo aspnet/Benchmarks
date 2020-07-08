@@ -1,0 +1,299 @@
+# Examples:
+# --config mono.benchmarks.yml --scenario plaintext-mono-jit --profile aspnet-citrine-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  platformbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
+    readyStateText: Application started.
+    framework: net5.0
+
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Benchmarks/Benchmarks.csproj
+    readyStateText: Application started.
+    variables:
+      presetHeaders: json
+      protocol: http
+      serverScheme: http
+      serverPort: 5000
+      server: Kestrel
+      transport: Sockets
+      scenario: plaintext
+      database: ''
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  plaintextPlatform-mono-jit:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
+  plaintextPlatform-mono-llvm-jit:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
+  plaintextPlatform-mono-llvm-aot:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
+  jsonPlatform-mono-jit:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        connections: 512
+
+  fortunesPlatform-mono-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        connections: 512
+
+  plaintext-mono-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: jit
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  json-mono-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: jit
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+  fortunes-mono-jit:
+    db:
+      job: postgresql
+      useMonoRuntime: jit
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
+        
+  single_query-mono-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+
+  multiple_queries-mono-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/queries=20
+  
+  updates-mono-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/queries=20
+
+profiles:
+  aspnet-citrine-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-arm:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.107
+      cores: 32
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-arm:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-amd:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.103
+      cores: 48
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-perf-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-mono-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 192.168.1.1
+      cores: 56
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-mono-load:5001
+      application:
+        endpoints: 
+          - http://asp-mono-lin:5001
+        variables:
+          databaseServer: 192.168.1.1
+      load:
+        endpoints: 
+          - http://asp-mono-load:5001
