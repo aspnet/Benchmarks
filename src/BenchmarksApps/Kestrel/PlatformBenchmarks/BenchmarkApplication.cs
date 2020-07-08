@@ -18,6 +18,7 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _crlf = "\r\n";
         private readonly static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
+        private readonly static AsciiString _http11NotFound = "HTTP/1.1 404 Not Found\r\n";
         private readonly static AsciiString _headerServer = "Server: K";
         private readonly static AsciiString _headerContentLength = "Content-Length: ";
         private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
@@ -66,42 +67,45 @@ namespace PlatformBenchmarks
 #if NETCOREAPP5_0 || NET5_0
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
+                
+            var path = startLine.Slice(targetPath.Offset);
+            var pathLength = path.Length;
+
             var requestType = RequestType.NotRecognized;
             if (versionAndMethod.Method == HttpMethod.Get)
             {
 #if !DATABASE
-                var pathLength = targetPath.Offset;
-                if (pathLength == 10 && startLine.SequenceEqual(Paths.Plaintext))
+                if (pathLength == 10 && path.SequenceEqual(Paths.Plaintext))
                 {
                     requestType = RequestType.PlainText;
                 }
-                else if (pathLength == 5 && startLine.SequenceEqual(Paths.Json))
+                else if (pathLength == 5 && path.SequenceEqual(Paths.Json))
                 {
                     requestType = RequestType.Json;
                 }
 #else
-                var pathLength = targetPath.Offset;
-                if (Paths.SingleQuery.Length == pathLength && startLine.SequenceEqual(Paths.SingleQuery))
+                if (Paths.SingleQuery.Length == pathLength && path.SequenceEqual(Paths.SingleQuery))
                 {
                     requestType = RequestType.SingleQuery;
                 }
-                else if (Paths.Fortunes.Length == pathLength && startLine.SequenceEqual(Paths.Fortunes))
+                else if (Paths.Fortunes.Length == pathLength && path.SequenceEqual(Paths.Fortunes))
                 {
                     requestType = RequestType.Fortunes;
                 }
-                else if (Paths.Caching.Length <= pathLength && startLine.StartsWith(Paths.Caching))
+                else if (Paths.Caching.Length <= pathLength && path.StartsWith(Paths.Caching))
                 {
-                    _queries = ParseQueries(startLine, Paths.Caching.Length);
+                    
+                    _queries = ParseQueries(path, Paths.Caching.Length);
                     requestType = RequestType.Caching;
                 }
-                else if (Paths.Updates.Length <= pathLength && startLine.StartsWith(Paths.Updates))
+                else if (Paths.Updates.Length <= pathLength && path.StartsWith(Paths.Updates))
                 {
-                    _queries = ParseQueries(startLine, Paths.Updates.Length);
+                    _queries = ParseQueries(path, Paths.Updates.Length);
                     requestType = RequestType.Updates;
                 }
-                else if (Paths.MultipleQueries.Length <= pathLength && startLine.StartsWith(Paths.MultipleQueries))
+                else if (Paths.MultipleQueries.Length <= pathLength && path.StartsWith(Paths.MultipleQueries))
                 {
-                    _queries = ParseQueries(startLine, Paths.MultipleQueries.Length);
+                    _queries = ParseQueries(path, Paths.MultipleQueries.Length);
                     requestType = RequestType.MultipleQueries;
                 }
 #endif
@@ -207,7 +211,7 @@ namespace PlatformBenchmarks
         }
 #endif
         private readonly static AsciiString _defaultPreamble =
-            _http11OK +
+            _http11NotFound +
             _headerServer + _crlf +
             _headerContentTypeText + _crlf +
             _headerContentLengthZero;
