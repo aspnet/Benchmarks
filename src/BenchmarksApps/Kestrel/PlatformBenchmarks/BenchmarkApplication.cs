@@ -59,9 +59,7 @@ namespace PlatformBenchmarks
         }
 
         private RequestType _requestType;
-#if DATABASE
         private int _queries;
-#endif
 
 #if NETCOREAPP5_0 || NET5_0
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
