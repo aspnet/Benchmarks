@@ -72,3 +72,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/json.benchmarks.yml
 - name: frameworksV2
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml
+- name: monoJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/mono.benchmarks.yml

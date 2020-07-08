@@ -1,0 +1,56 @@
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+
+# Scenarios
+- name: scenarios
+  type: object
+  default:
+
+  - displayName: Plaintext Platform - Jit
+    arguments: --scenario plaintextPlatform-mono-jit $(monoJobs) --property scenario=PlaintextPlatform --property runtime=jit
+  - displayName: Plaintext Platform - LLVM Jit
+    arguments: --scenario plaintextPlatform-mono-llvm-jit $(monoJobs) --property scenario=PlaintextPlatform --property runtime=llvm-jit
+  - displayName: Plaintext Platform - LLVM AOT
+    arguments: --scenario plaintextPlatform-mono-aot-jit $(monoJobs) --property scenario=PlaintextPlatform --property runtime=llvm-aot
+  - displayName: Json Platform - Jit
+    arguments: --scenario jsonPlatform-mono-jit $(monoJobs) --property scenario=JsonPlatform --property runtime=jit
+  - displayName: Fortunes Platform - Jit
+    arguments: --scenario fortunesPlatform-mono-jit $(monoJobs) --property scenario=FortunesPlatform --property runtime=jit
+  - displayName: Plaintext - Jit
+    arguments: --scenario plaintext-mono-jit $(monoJobs) --property scenario=Plaintext --property runtime=jit
+  - displayName: Json - Jit
+    arguments: --scenario json-mono-jit $(monoJobs) --property scenario=Json --property runtime=jit
+  - displayName: Fortunes - Jit
+    arguments: --scenario fortunes-mono-jit $(monoJobs) --property scenario=Fortunes --property runtime=jit
+  - displayName: Single Query - Jit
+    arguments: --scenario single_query-mono-jit $(monoJobs) --property scenario=SingleQuery --property runtime=jit
+  - displayName: Multiple Queries - Jit
+    arguments: --scenario multiple_query-mono-jit $(monoJobs) --property scenario=MultipleQueries --property runtime=jit
+  - displayName: Update Queries - Jit
+    arguments: --scenario update-mono-jit $(monoJobs) --property scenario=UpdateQueries --property runtime=jit
+
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    displayName: "${{ s.displayName }}"
+    condition: succeededOrFailed()
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver2",
+          "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.channel edge --application.framework net5.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(profile)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MonoBenchmarks --sql SQL_CONNECTION_STRING" ]
+        }

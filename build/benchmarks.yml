@@ -207,3 +207,17 @@ jobs:
 #       warmup: 1
 #       duration: 15
 #       connection: 'ASP.NET Benchmarks Azure Queue'
+
+# MONO SCENARIOS
+
+- job: Mono
+  displayName: Mono
+  pool: server
+  timeoutInMinutes: 240
+  steps:
+  - template: mono-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      profile: asp-mono-lin
+      connection: 'ASP.NET Benchmarks Mono Queue'
