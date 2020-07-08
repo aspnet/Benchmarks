@@ -13,6 +13,23 @@ jobs:
     readyStateText: Application started.
     framework: net5.0
 
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Benchmarks/Benchmarks.csproj
+    readyStateText: Application started.
+    variables:
+      presetHeaders: json
+      protocol: http
+      serverScheme: http
+      serverPort: 5000
+      server: Kestrel
+      transport: Sockets
+      scenario: plaintext
+      database: ''
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -24,7 +41,7 @@ jobs:
     noClean: true
 
 scenarios:
-  plaintext-mono-jit:
+  plaintextPlatform-mono-jit:
     application:
       job: platformbenchmarks
       useMonoRuntime: jit
@@ -36,7 +53,7 @@ scenarios:
         serverPort: 5000
         pipeline: 16
 
-  plaintext-mono-llvm-jit:
+  plaintextPlatform-mono-llvm-jit:
     application:
       job: platformbenchmarks
       useMonoRuntime: llvm-jit
@@ -48,7 +65,7 @@ scenarios:
         serverPort: 5000
         pipeline: 16
 
-  plaintext-mono-llvm-aot:
+  plaintextPlatform-mono-llvm-aot:
     application:
       job: platformbenchmarks
       useMonoRuntime: llvm-aot
@@ -60,7 +77,7 @@ scenarios:
         serverPort: 5000
         pipeline: 16
 
-  json-mono-jit:
+  jsonPlatform-mono-jit:
     application:
       job: platformbenchmarks
       useMonoRuntime: jit
@@ -72,7 +89,7 @@ scenarios:
         serverPort: 5000
         connections: 512
 
-  fortunes-mono-jit:
+  fortunesPlatform-mono-jit:
     db:
       job: postgresql
     application:
@@ -89,6 +106,55 @@ scenarios:
         presetHeaders: html
         path: /fortunes
         connections: 512
+
+  plaintext-mono-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: jit
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  json-mono-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: jit
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+  fortunes-mono-jit:
+    db:
+      job: postgresql
+      useMonoRuntime: jit
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
         
   single_query-mono-jit:
     db:
@@ -213,7 +279,6 @@ profiles:
       load:
         endpoints: 
           - http://asp-perf-load:5001
-
 
   aspnet-mono-lin:
     variables:
