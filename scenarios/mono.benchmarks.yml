@@ -49,7 +49,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /p
+        path: /plaintext
         serverPort: 5000
         pipeline: 16
 
@@ -61,7 +61,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /p
+        path: /plaintext
         serverPort: 5000
         pipeline: 16
 
@@ -73,7 +73,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /p
+        path: /plaintext
         serverPort: 5000
         pipeline: 16
 
@@ -85,7 +85,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /j
+        path: /json
         serverPort: 5000
         connections: 512
 
@@ -216,12 +216,12 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
         variables:
-          databaseServer: 10.0.0.106
+          databaseServer: 10.0.0.103
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -234,12 +234,12 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-arm:5001
         variables:
-          databaseServer: 10.0.0.106
+          databaseServer: 10.0.0.103
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -247,17 +247,17 @@ profiles:
   aspnet-citrine-amd:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.106
+      serverAddress: 10.0.0.103
       cores: 48
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-amd:5001
         variables:
-          databaseServer: 10.0.0.106
+          databaseServer: 10.0.0.103
       load:
         endpoints: 
           - http://asp-citrine-load:5001
