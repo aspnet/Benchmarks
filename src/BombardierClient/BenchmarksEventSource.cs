@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Tracing;
+﻿using System;
+using System.Diagnostics.Tracing;
 
 namespace Benchmarks
 {
@@ -54,6 +55,11 @@ namespace Benchmarks
         public void Metadata(string name, string aggregate, string reduce, string shortDescription, string longDescription, string format)
         {
             WriteEvent(5, name, aggregate, reduce, shortDescription, longDescription, format);
+        }
+
+        public static void SetChildProcessId(int pid)
+        {
+            Console.Error.WriteLine($"##ChildProcessId:{pid}");
         }
     }
 }
