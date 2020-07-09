@@ -346,7 +346,7 @@ namespace BenchmarkServer
 
         private static async Task ProcessJobs(string hostname, string dockerHostname, CancellationToken cancellationToken)
         {
-            
+
             try
             {
                 await EnsureDotnetInstallExistsAsync();
@@ -387,7 +387,7 @@ namespace BenchmarkServer
 
                     // Select the first job that is not yet Deleted, i.e. 
                     var group = new Dictionary<ServerJob, JobTracker>();
-                    
+
                     while (runId == null)
                     {
                         lock (_jobs)
@@ -790,8 +790,8 @@ namespace BenchmarkServer
                                                 return;
                                             }
 
-                                        // Pause the timer while we're running
-                                        timer.Change(Timeout.Infinite, Timeout.Infinite);
+                                            // Pause the timer while we're running
+                                            timer.Change(Timeout.Infinite, Timeout.Infinite);
 
                                             try
                                             {
@@ -823,9 +823,9 @@ namespace BenchmarkServer
                                                     }
                                                     else
                                                     {
-                                                    // Get docker stats
-                                                    var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
-                                                            log: false, throwOnError: false, captureOutput: true, captureError: true);
+                                                        // Get docker stats
+                                                        var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
+                                                                log: false, throwOnError: false, captureOutput: true, captureError: true);
 
                                                         var stats = result.StandardOutput;
 
@@ -833,25 +833,25 @@ namespace BenchmarkServer
                                                         {
                                                             var data = stats.Trim().Split('-');
 
-                                                        // Format is {value}%
-                                                        var cpuPercentRaw = data[0];
+                                                            // Format is {value}%
+                                                            var cpuPercentRaw = data[0];
 
-                                                        // Format is {used}M/GiB/{total}M/GiB
-                                                        var workingSetRaw = data[1];
+                                                            // Format is {used}M/GiB/{total}M/GiB
+                                                            var workingSetRaw = data[1];
                                                             var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
                                                             var cpu = double.Parse(cpuPercentRaw.Trim('%'));
                                                             var rawCPU = cpu;
 
-                                                        // On Windows the CPU already takes the number or HT into account
-                                                        if (OperatingSystem == OperatingSystem.Linux)
+                                                            // On Windows the CPU already takes the number or HT into account
+                                                            if (OperatingSystem == OperatingSystem.Linux)
                                                             {
                                                                 cpu = cpu / Environment.ProcessorCount;
                                                             }
 
                                                             cpu = Math.Round(cpu);
 
-                                                        // MiB, GiB, B ?
-                                                        var factor = 1;
+                                                            // MiB, GiB, B ?
+                                                            var factor = 1;
                                                             double memory;
 
                                                             if (usedMemoryRaw.EndsWith("GiB"))
@@ -883,7 +883,7 @@ namespace BenchmarkServer
                                                                 Name = "benchmarks/working-set",
                                                                 Timestamp = now,
                                                                 Value = Math.Ceiling((double)workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
-                                                        });
+                                                            });
 
                                                             job.Measurements.Enqueue(new Measurement
                                                             {
@@ -938,8 +938,8 @@ namespace BenchmarkServer
                                                         {
                                                             Log.WriteLine($"Process has exited ({process.ExitCode})");
 
-                                                        // Don't revert a Deleting state by mistake
-                                                        if (job.State != ServerState.Deleting)
+                                                            // Don't revert a Deleting state by mistake
+                                                            if (job.State != ServerState.Deleting)
                                                             {
                                                                 Log.WriteLine($"{job.State} -> Stopped");
                                                                 job.State = ServerState.Stopped;
@@ -948,23 +948,33 @@ namespace BenchmarkServer
                                                     }
                                                     else
                                                     {
-                                                    // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                                    // We need to dig into this
-                                                    var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+
+                                                        // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                                        // We need to dig into this
+
+                                                        var trackProcess = job.ChildProcessId == 0
+                                                            ? process
+                                                            : Process.GetProcessById(job.ChildProcessId)
+                                                            ;
+
+                                                        var newCPUTime = OperatingSystem == OperatingSystem.OSX
+                                                            ? TimeSpan.Zero
+                                                            : trackProcess.TotalProcessorTime;
+
                                                         var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
                                                         var rawCpu = (newCPUTime - oldCPUTime).TotalMilliseconds / elapsed * 100;
                                                         var cpu = Math.Round(rawCpu / Environment.ProcessorCount);
                                                         lastMonitorTime = now;
 
-                                                        process.Refresh();
+                                                        trackProcess.Refresh();
 
-                                                    // Ignore first measure
-                                                    if (oldCPUTime != TimeSpan.Zero)
+                                                        // Ignore first measure
+                                                        if (oldCPUTime != TimeSpan.Zero && cpu <= 100)
                                                         {
                                                             job.AddServerCounter(new ServerCounter
                                                             {
                                                                 Elapsed = now - startMonitorTime,
-                                                                WorkingSet = process.WorkingSet64,
+                                                                WorkingSet = trackProcess.WorkingSet64,
                                                                 CpuPercentage = cpu
                                                             });
 
@@ -972,8 +982,8 @@ namespace BenchmarkServer
                                                             {
                                                                 Name = "benchmarks/working-set",
                                                                 Timestamp = now,
-                                                                Value = Math.Ceiling((double)process.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
-                                                        });
+                                                                Value = Math.Ceiling((double)trackProcess.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
+                                                            });
 
                                                             job.Measurements.Enqueue(new Measurement
                                                             {
@@ -1013,14 +1023,14 @@ namespace BenchmarkServer
                                             }
                                             finally
                                             {
-                                            // Resume once we finished processing all connections
-                                            timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                                                // Resume once we finished processing all connections
+                                                timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
                                             }
                                         }
                                         finally
                                         {
-                                        // Exit the lock now
-                                        Monitor.Exit(executionLock);
+                                            // Exit the lock now
+                                            Monitor.Exit(executionLock);
                                         }
                                     }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
                                         disposed = false;
@@ -2103,7 +2113,7 @@ namespace BenchmarkServer
             string desktopVersion = job.RuntimeVersion;
             string aspNetCoreVersion = job.AspNetCoreVersion;
             string sdkVersion = job.SdkVersion;
-            
+
             ConvertLegacyVersions(ref targetFramework, ref runtimeVersion, ref aspNetCoreVersion);
 
             // If a specific framework is set, use it instead of the detected one
@@ -2583,7 +2593,7 @@ namespace BenchmarkServer
                 {
                     throw new Exception("The job is trying to use the mono runtime but was not configured as self-contained.");
                 }
-		
+
                 await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime, job.Hardware);
 
                 if (job.UseMonoRuntime.Equals("llvm-aot"))
@@ -2874,7 +2884,7 @@ namespace BenchmarkServer
             Log.WriteLine($"Patching {Path.GetFileName(runtimeConfigFilename)} ");
 
             var runtimeObject = JObject.Parse(File.ReadAllText(runtimeConfigFilename));
-            
+
             var runtimeOptions = runtimeObject["runtimeOptions"] as JObject;
 
             if (runtimeOptions.ContainsKey("includedFrameworks"))
@@ -2885,11 +2895,11 @@ namespace BenchmarkServer
 
             // Remove exising "framework" (singular) node
             runtimeOptions.Remove("framework");
-            
+
             // Create the "frameworks" property instead
             var frameworks = new JArray();
             runtimeOptions.TryAdd("frameworks", frameworks);
-            
+
             frameworks.Add(
                     new JObject(
                         new JProperty("name", "Microsoft.NETCore.App"),
@@ -2962,7 +2972,7 @@ namespace BenchmarkServer
                     catch
                     {
                     }
-                }                
+                }
             }
             else
             {
@@ -3524,6 +3534,15 @@ namespace BenchmarkServer
                             }
                         }
                     }
+
+                    // Detect the app is wrapping a child process
+                    var processIdMarker = "##ChildProcessId:";
+                    if (e.Data.StartsWith(processIdMarker) 
+                        && int.TryParse(e.Data.Substring(processIdMarker.Length), out var childProcessId))
+                    {
+                        Log.WriteLine($"Tracking child process id: {childProcessId}");
+                        job.ChildProcessId = childProcessId;
+                    }
                 }
             };
 
@@ -3626,7 +3645,7 @@ namespace BenchmarkServer
 
         private static readonly Dictionary<string, MeasurementMetadata[]> MetadataProviders = new Dictionary<string, MeasurementMetadata[]>
         {
-            ["System.Runtime"] = new MeasurementMetadata[] 
+            ["System.Runtime"] = new MeasurementMetadata[]
             {
                 new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
                 new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
@@ -3731,7 +3750,7 @@ namespace BenchmarkServer
                         {
                             job.Metadata.Enqueue(metadata);
                         }
-                    }                
+                    }
                 }
 
                 Log.WriteLine($"Listening to counter event pipes (providers: {string.Join(", ", job.CounterProviders)})");
@@ -3754,7 +3773,7 @@ namespace BenchmarkServer
                     Stream binaryReader = null;
 
                     var retries = 10;
-                    while (retries-- > 0) 
+                    while (retries-- > 0)
                     {
                         try
                         {
@@ -3878,7 +3897,7 @@ namespace BenchmarkServer
                     Stream binaryReader = null;
 
                     var retries = 10;
-                    while (retries-- > 0) 
+                    while (retries-- > 0)
                     {
                         try
                         {
@@ -4051,8 +4070,8 @@ namespace BenchmarkServer
             try
             {
                 var packageName = "";
-                
-                switch (mode) 
+
+                switch (mode)
                 {
                     case "jit":
                         packageName = $"Microsoft.NETCore.App.Runtime.Mono.linux-{pkgNameSuffix}".ToLowerInvariant();
@@ -4127,7 +4146,7 @@ namespace BenchmarkServer
                 var packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
                 var llvmExtractDir = Path.Combine(Path.GetDirectoryName(runtimePath), "mono-llvm");
-		
+
                 if (!Directory.Exists(Path.GetDirectoryName(dotnetMonoPath)))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(dotnetMonoPath));

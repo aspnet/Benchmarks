@@ -179,6 +179,9 @@ namespace WrkClient
             Console.WriteLine("> wrk " + process.StartInfo.Arguments);
 
             process.Start();
+
+            BenchmarksEventSource.SetChildProcessId(process.Id);
+
             process.BeginOutputReadLine();
             process.WaitForExit();
 

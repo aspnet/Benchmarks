@@ -102,6 +102,9 @@ namespace Wrk2Client
             Console.WriteLine("> wrk2 " + process.StartInfo.Arguments);
 
             process.Start();
+
+            BenchmarksEventSource.SetChildProcessId(process.Id);
+
             process.BeginOutputReadLine();
             process.WaitForExit();
 
