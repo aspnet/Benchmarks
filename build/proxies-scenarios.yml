@@ -30,7 +30,7 @@ parameters:
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
   - displayName: YARP
-    arguments: --scenario proxy-yarp        $(yarpJobs)  --property proxy=yarp --application.channel edge --application.framework netcoreapp5.0
+    arguments: --scenario proxy-yarp        $(proxyJobs)  --property proxy=yarp --application.channel edge --application.framework netcoreapp5.0
 
 - name: payloads
   type: object
