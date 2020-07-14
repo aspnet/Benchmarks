@@ -2228,7 +2228,7 @@ namespace BenchmarkServer
                             }
                             else
                             {
-                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
+                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, targetFramework, desktopVersion);
                             }
                         }
                     }
@@ -2242,7 +2242,7 @@ namespace BenchmarkServer
                         // Seeking already installed Desktop runtimes
                         // c.f. https://github.com/dotnet/sdk/issues/4237
 
-                        desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
+                        desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, targetFramework, desktopVersion);
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -2744,8 +2744,10 @@ namespace BenchmarkServer
             }
         }
 
-        private static string SeekCompatibleDesktopRuntime(string dotnetHome, string channel, string desktopVersion)
+        private static string SeekCompatibleDesktopRuntime(string dotnetHome, string targetFramework, string desktopVersion)
         {
+            var versionPrefix = targetFramework.Substring(targetFramework.Length - 3);
+
             foreach (var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
             {
                 var version = new DirectoryInfo(dir).Name;
@@ -2753,7 +2755,7 @@ namespace BenchmarkServer
 
                 // At least one matching Desktop runtime should be found as the sdk was installed
                 // before
-                if (version.StartsWith(channel))
+                if (version.StartsWith(versionPrefix))
                 {
                     desktopVersion = version;
                 }
