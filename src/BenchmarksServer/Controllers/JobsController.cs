@@ -285,6 +285,13 @@ namespace BenchmarkServer.Controllers
         public IActionResult Start(int id)
         {
             var job = _jobs.Find(id);
+
+            if (job.State != ServerState.Initializing)
+            {
+                Log($"Start rejected, job is {job.State}");
+                return StatusCode(500, $"The job can't be started as its state is {job.State}");
+            }
+
             job.State = ServerState.Waiting;
             _jobs.Update(job);
 
@@ -320,7 +327,7 @@ namespace BenchmarkServer.Controllers
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await Request.Body.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs, Request.HttpContext.RequestAborted);
             }
 
             job.Attachments.Add(new Attachment
@@ -348,7 +355,7 @@ namespace BenchmarkServer.Controllers
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await Request.Body.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs, Request.HttpContext.RequestAborted);
             }
 
             job.Source.SourceCode = new Attachment

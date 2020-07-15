@@ -2110,7 +2110,7 @@ namespace BenchmarkServer
             string channel = DefaultChannel;
 
             string runtimeVersion = job.RuntimeVersion;
-            string desktopVersion = job.RuntimeVersion;
+            string desktopVersion = "";
             string aspNetCoreVersion = job.AspNetCoreVersion;
             string sdkVersion = job.SdkVersion;
 
