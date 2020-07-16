@@ -58,7 +58,7 @@ namespace BenchmarkServer
             Based on the target framework
          */
 
-        private static string DefaultTargetFramework = "netcoreapp5.0";
+        private static string DefaultTargetFramework = "net5.0";
         private static string DefaultChannel = "current";
 
         private const string PerfViewVersion = "P2.0.54";

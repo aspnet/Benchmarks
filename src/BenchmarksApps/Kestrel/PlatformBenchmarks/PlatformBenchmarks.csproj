@@ -19,7 +19,7 @@
     <PackageReference Include="RedHat.AspNetCore.Server.Kestrel.Transport.Linux" Version="3.0.0-*" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) != 'netcoreapp5.0'">
+  <ItemGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'netcoreapp5.0'">
     <PackageReference Include="System.IO.Pipelines" Version="4.7.2" />
   </ItemGroup>
   

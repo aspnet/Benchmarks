@@ -114,7 +114,7 @@
           "default": "",
           "examples": [
             "netcoreapp3.1",
-            "netcoreapp5.0"
+            "net5.0"
           ],
           "pattern": "^(.*)$"
         },

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
 <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
     <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == ''">5.0.0-*</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>

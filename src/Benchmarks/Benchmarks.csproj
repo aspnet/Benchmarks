@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <!-- Old way of overriding the dotnet runtime -->
-  <PropertyGroup Condition="$(TargetFramework) != 'netcoreapp5.0'">
+  <PropertyGroup Condition="$(TargetFramework) != 'netcoreapp5.0' and $(TargetFramework) != 'net5.0'">
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
