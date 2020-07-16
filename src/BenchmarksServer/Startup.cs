@@ -2596,10 +2596,6 @@ namespace BenchmarkServer
 
                 await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime, job.Hardware);
 
-                if (job.UseMonoRuntime.Equals("llvm-aot"))
-                {
-                    await AOT4Mono(sdkVersion, runtimeVersion, outputFolder);
-                }
             }
 
             // Copy all output attachments
@@ -2618,6 +2614,15 @@ namespace BenchmarkServer
 
                 File.Copy(attachment.TempFilename, filename);
                 File.Delete(attachment.TempFilename);
+            }
+
+            //AOT binaries from output folder using mono
+            if (!string.IsNullOrEmpty(job.UseMonoRuntime) && !string.Equals(job.UseMonoRuntime, "false", StringComparison.OrdinalIgnoreCase))
+            {
+                if (job.UseMonoRuntime.Equals("llvm-aot"))
+                {
+                    await AOT4Mono(sdkVersion, runtimeVersion, outputFolder);
+                }
             }
 
             return benchmarkedDir;
@@ -4177,12 +4182,7 @@ namespace BenchmarkServer
 
                     Log.WriteLine($"Patching local dotnet with mono runtime and extracting llvm");
 
-                    var strCmdGetVer = "./dotnet --list-runtimes | grep -i \"Microsoft.NETCore.App\"";
-                    var resultGetVer = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdGetVer),
-                                                       workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
-                                                       log: true,
-                                                       captureOutput: true);
-                    var MicrosoftNETCoreAppPackageVersion = resultGetVer.StandardOutput.Split(' ')[1];
+                    
 
                     if (Directory.Exists(llvmExtractDir))
                     {
@@ -4192,12 +4192,6 @@ namespace BenchmarkServer
 
                     using (var archive = ZipFile.OpenRead(runtimePath))
                     {
-                        var systemCoreLib = archive.GetEntry("runtimes/linux-x64/native/System.Private.CoreLib.dll");
-                        systemCoreLib.ExtractToFile(Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "System.Private.CoreLib.dll"), true);
-
-                        var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
-                        libcoreclr.ExtractToFile(Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "libcoreclr.so"), true);
-
                         var llcExe = archive.GetEntry("runtimes/linux-x64/native/llc");
                         llcExe.ExtractToFile(Path.Combine(llvmExtractDir, "llc"), true);
 
@@ -4208,12 +4202,21 @@ namespace BenchmarkServer
                     var resultChmod = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdChmod),
                                                       workingDirectory: llvmExtractDir,
                                                       log: true);
-
                 }
                 else
                 {
                     Log.WriteLine($"Found local dotnet with mono runtime at '{Path.GetDirectoryName(dotnetMonoPath)}'");
                 }
+
+                // Copy over mono runtime
+                var strCmdGetVer = "./dotnet --list-runtimes | grep -i \"Microsoft.NETCore.App\"";
+                var resultGetVer = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdGetVer),
+                                                   workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                   log: true,
+                                                   captureOutput: true);
+                var MicrosoftNETCoreAppPackageVersion = resultGetVer.StandardOutput.Split(' ')[1];
+                File.Copy(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "System.Private.CoreLib.dll"), true);
+                File.Copy(Path.Combine(outputFolder, "libcoreclr.so"), Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "libcoreclr.so"), true);
 
                 Log.WriteLine("Pre-compile assemblies inside publish folder");
 
