@@ -78,12 +78,6 @@
 
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="3.0.0-preview3-19122-02" />
 
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
-    
-    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
-
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1" />
@@ -98,10 +92,6 @@
 
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="3.0.0-preview3-19122-02" />
 
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
-
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion31)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
@@ -115,11 +105,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
     <!-- Pinning version as the feeds don't include this anymore as of 4/25/2020 -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.WindowsDesktop.App" RuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppPackageVersion)" />
+    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" /> -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-preview.6.20303.1" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion50)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />

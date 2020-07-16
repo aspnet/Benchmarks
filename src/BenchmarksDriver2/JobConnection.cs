@@ -119,6 +119,8 @@ namespace BenchmarksDriver
                 {
                     Log.Write($"Job has been selected by the server ...");
 
+                    StartKeepAlive();
+                    
                     // Uploading source code
                     if (!String.IsNullOrEmpty(Job.Source.LocalFolder))
                     {
@@ -708,7 +710,7 @@ namespace BenchmarksDriver
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"An error occured while uploading a file.", e);
+                throw new InvalidOperationException($"An error occurred while uploading a file.", e);
             }
 
             return 0;

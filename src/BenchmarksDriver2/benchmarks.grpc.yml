@@ -2,9 +2,9 @@
 # --config benchmarks.grpc.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-physical-lin --variable scenario=unary --variable streams=70
 
 imports:
-  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcClient/grpc-client.yml
-  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
-  - https://raw.githubusercontent.com/JamesNK/grpc-dotnet/jamesnk/benchmarch-grpcclient/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcClient/grpc-client.yml
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
+  - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/H2LoadClient/h2load.yml

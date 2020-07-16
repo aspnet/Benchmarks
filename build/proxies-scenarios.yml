@@ -22,7 +22,7 @@ parameters:
   - displayName: Baseline
     arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
   - displayName: HttpClient
-    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.runtimeversion 5.0.*
+    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework netcoreapp5.0
   - displayName: NGinx
     arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx
   - displayName: HAProxy
@@ -30,7 +30,7 @@ parameters:
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
   - displayName: YARP
-    arguments: --scenario proxy-yarp        $(yarpJobs)  --property proxy=yarp --application.runtimeversion 5.0.*
+    arguments: --scenario proxy-yarp        $(proxyJobs)  --property proxy=yarp --application.channel edge --application.framework netcoreapp5.0
 
 - name: payloads
   type: object

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
 using Npgsql;
-using MySql.Data.MySqlClient;
 #endif
 
 namespace PlatformBenchmarks
@@ -16,7 +17,7 @@ namespace PlatformBenchmarks
     {
         public static string[] Args;
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Args = args;
 
@@ -35,11 +36,16 @@ namespace PlatformBenchmarks
             var host = BuildWebHost(args);
             var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
             BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
-            host.Run();
+#if DATABASE
+            await BenchmarkApplication.Db.PopulateCache();
+#endif
+            await host.RunAsync();
         }
 
         public static IWebHost BuildWebHost(string[] args)
         {
+            Console.WriteLine($"Args: {string.Join(' ', args)}");
+
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddEnvironmentVariables()
@@ -54,11 +60,11 @@ namespace PlatformBenchmarks
 
             if (appSettings.Database == DatabaseServer.PostgreSql)
             {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), NpgsqlFactory.Instance, appSettings);
+                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), appSettings);
             }
-            else if (appSettings.Database == DatabaseServer.MySql)
+            else
             {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), MySqlClientFactory.Instance, appSettings);
+                throw new NotSupportedException($"{appSettings.Database} is not supported");
             }
 #endif
 

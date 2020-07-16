@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Wrk2Client;
 
@@ -12,6 +13,50 @@ namespace WrkClient
 {
     static class WrkProcess
     {
+        public static async Task MeasureFirstRequest(string[] args)
+        {
+            var url = args.FirstOrDefault(arg => arg.StartsWith("http", StringComparison.OrdinalIgnoreCase));
+
+            if (url == null)
+            {
+                Console.WriteLine("URL not found, skipping first request");
+                return;
+            }
+
+            // Configuring the http client to trust the self-signed certificate
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            httpClientHandler.MaxConnectionsPerServer = 1;
+            using(var httpClient = new HttpClient(httpClientHandler))
+            {
+                var cts = new CancellationTokenSource(5000);
+                var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                try
+                {
+                    using (var response = await httpClient.SendAsync(httpMessage, cts.Token))
+                    {
+                        var elapsed = stopwatch.ElapsedMilliseconds;
+                        Console.WriteLine($"{elapsed} ms");
+
+                        BenchmarksEventSource.Log.Metadata("http/firstrequest", "max", "max", "First request (ms)", "First request (ms)", "n0");
+                        BenchmarksEventSource.Measure("http/firstrequest", elapsed);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("A timeout occurred while measuring the first request");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred while measuring the first request: " + e.ToString());
+                }
+            }
+        }
+
         public static async Task RunAsync(string fileName, string[] args)
         {
             // Do we need to parse latency?
@@ -134,6 +179,9 @@ namespace WrkClient
             Console.WriteLine("> wrk " + process.StartInfo.Arguments);
 
             process.Start();
+
+            BenchmarksEventSource.SetChildProcessId(process.Id);
+
             process.BeginOutputReadLine();
             process.WaitForExit();
 

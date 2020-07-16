@@ -4,9 +4,6 @@ parameters:
 - name: server # the url of the server agent service, e.g. http://asp-perf-lin:5001
   type: string
   default: ''
-- name: client # the url of the client agent service, e.g. http://asp-perf-load:5002
-  type: string
-  default: ''
 - name: connection
   type: string
   default: ''
@@ -61,6 +58,6 @@ steps:
       messageBody: |
         {
           "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --client ${{ parameters.client }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ],
+          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ],
           "timeout": "00:30:00"
         }

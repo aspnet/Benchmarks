@@ -1,0 +1,154 @@
+﻿# Examples:
+# --config benchmarks.compose.yml --scenario plaintext --profile aspnet-physical
+# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/Benchmarks/Benchmarks.csproj
+    readyStateText: Application started.
+    variables:
+      serverPort: 5000
+      protocol: http
+      server: Kestrel
+      transport: Sockets
+      scenario: plaintext
+      database: ''
+    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{serverUri}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+  
+  platformbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: master
+      project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
+    readyStateText: Application started.
+
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  plaintext:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  json:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+  fortunes:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
+
+profiles:
+  aspnet-perf-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      databaseServer: 10.0.0.103
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+      db:
+        endpoints:
+          - http://asp-perf-db:5001
+
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      databaseServer: 10.0.0.103
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+      db:
+        endpoints:
+          - http://asp-perf-db:5001
+
+  aspnet-citrine:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+      databaseServer: 10.0.0.103
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        variables:
+          connections: 512
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  local:
+    variables:
+      serverUri: http://localhost
+      databaseServer: localhost
+      cores: 12
+      localEndpoint: http://localhost:5010
+    jobs:
+      application:
+        endpoints: 
+          - '{{ localEndpoint }}'
+      load:
+        endpoints: 
+          - '{{ localEndpoint }}'
+      db:
+        endpoints:
+          - '{{ localEndpoint }}'

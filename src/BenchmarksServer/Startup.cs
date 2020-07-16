@@ -78,7 +78,6 @@ namespace BenchmarkServer
 
         private static readonly string _latestSdkVersionUrl = "https://aka.ms/dotnet/net5/dev/Sdk/productCommit-win-x64.txt";
         private static readonly string _aspnetSdkVersionUrl = "https://raw.githubusercontent.com/dotnet/aspnetcore/master/global.json";
-        private static readonly string _runtimeMonoPackageUrl = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2/Microsoft.NETCore.App.Runtime.Mono.linux-x64/{0}/Microsoft.NETCore.App.Runtime.Mono.linux-x64.{0}.nupkg";
         private static readonly string[] _runtimeFeedUrls = new string[] {
             "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/flat2",
             "https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer",
@@ -114,7 +113,6 @@ namespace BenchmarkServer
         public static string HardwareVersion { get; private set; }
         public static Dictionary<Database, string> ConnectionStrings = new Dictionary<Database, string>();
         public static TimeSpan DriverTimeout = TimeSpan.FromSeconds(10);
-        public static TimeSpan InitializeTimeout = TimeSpan.FromMinutes(5);
         public static TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
         public static TimeSpan BuildTimeout = TimeSpan.FromHours(3);
         public static TimeSpan DeletedTimeout = TimeSpan.FromHours(18);
@@ -348,7 +346,7 @@ namespace BenchmarkServer
 
         private static async Task ProcessJobs(string hostname, string dockerHostname, CancellationToken cancellationToken)
         {
-            
+
             try
             {
                 await EnsureDotnetInstallExistsAsync();
@@ -389,7 +387,7 @@ namespace BenchmarkServer
 
                     // Select the first job that is not yet Deleted, i.e. 
                     var group = new Dictionary<ServerJob, JobTracker>();
-                    
+
                     while (runId == null)
                     {
                         lock (_jobs)
@@ -488,7 +486,7 @@ namespace BenchmarkServer
                                     job.State = ServerState.Initializing;
                                 }
 
-                                                                lock (job.Metadata)
+                                lock (job.Metadata)
                                 {
                                     if (!job.Metadata.Any(x => x.Name == "benchmarks/cpu"))
                                     {
@@ -543,6 +541,20 @@ namespace BenchmarkServer
                                             Format = "n0",
                                             LongDescription = "How long it took to build the application",
                                             ShortDescription = "Build Time (ms)"
+                                        });
+                                    }
+
+                                    if (!job.Metadata.Any(x => x.Name == "benchmarks/start-time"))
+                                    {
+                                        job.Metadata.Enqueue(new MeasurementMetadata
+                                        {
+                                            Source = "Host Process",
+                                            Name = "benchmarks/start-time",
+                                            Aggregate = Operation.Max,
+                                            Reduce = Operation.Max,
+                                            Format = "n0",
+                                            LongDescription = "How long it took to start the application",
+                                            ShortDescription = "Start Time (ms)"
                                         });
                                     }
 
@@ -616,12 +628,13 @@ namespace BenchmarkServer
                                     workingDirectory = null;
                                     dockerImage = null;
 
+                                    var buildStart = DateTime.UtcNow;
+                                    var cts = new CancellationTokenSource();
+
                                     if (job.Source.IsDocker())
                                     {
                                         try
                                         {
-                                            var buildStart = DateTime.UtcNow;
-                                            var cts = new CancellationTokenSource();
                                             var buildAndRunTask = Task.Run(() => DockerBuildAndRun(tempDir, job, dockerHostname, cancellationToken: cts.Token));
 
                                             while (true)
@@ -635,6 +648,8 @@ namespace BenchmarkServer
                                                 // Cancel the build if the driver timed out
                                                 if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                                                 {
+                                                    workingDirectory = null;
+
                                                     Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
                                                     cts.Cancel();
                                                     await buildAndRunTask;
@@ -647,6 +662,8 @@ namespace BenchmarkServer
                                                 // Cancel the build if it's taking too long
                                                 if (DateTime.UtcNow - buildStart > BuildTimeout)
                                                 {
+                                                    workingDirectory = null;
+
                                                     Log.WriteLine($"Build is taking too long. Halting build.");
                                                     cts.Cancel();
                                                     await buildAndRunTask;
@@ -673,7 +690,48 @@ namespace BenchmarkServer
                                         try
                                         {
                                             // returns the application directory and the dotnet directory to use
-                                            benchmarksDir = await CloneRestoreAndBuild(tempDir, job, _dotnethome);
+                                            var cloneRestoreAndBuildTask = CloneRestoreAndBuild(tempDir, job, _dotnethome, cancellationToken: cts.Token);
+
+                                            while (true)
+                                            {
+                                                if (cloneRestoreAndBuildTask.IsCompleted)
+                                                {
+                                                    benchmarksDir = cloneRestoreAndBuildTask.Result;
+                                                    break;
+                                                }
+
+                                                // Cancel the build if the driver timed out
+                                                if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
+                                                {
+                                                    workingDirectory = null;
+
+                                                    Log.WriteLine($"Driver didn't communicate for {DriverTimeout}. Halting build.");
+                                                    cts.Cancel();
+                                                    await cloneRestoreAndBuildTask;
+
+                                                    Log.WriteLine($"{job.State} -> Failed");
+                                                    job.State = ServerState.Failed;
+                                                    break;
+                                                }
+
+                                                // Cancel the build if it's taking too long
+                                                if (DateTime.UtcNow - buildStart > BuildTimeout)
+                                                {
+                                                    workingDirectory = null;
+
+                                                    Log.WriteLine($"Build is taking too long. Halting build.");
+                                                    cts.Cancel();
+                                                    await cloneRestoreAndBuildTask;
+
+                                                    job.Error = "Build is taking too long. Halting build.";
+                                                    Log.WriteLine($"{job.State} -> Failed");
+                                                    job.State = ServerState.Failed;
+                                                    break;
+                                                }
+
+                                                await Task.Delay(1000);
+                                            }
+
                                         }
                                         finally
                                         {
@@ -712,13 +770,15 @@ namespace BenchmarkServer
                                     var lastMonitorTime = startMonitorTime;
                                     var oldCPUTime = TimeSpan.Zero;
 
-                                    timer = new Timer(_ =>
+                                    if (workingDirectory != null)
                                     {
-                                    // If we couldn't get the lock it means one of 2 things are true:
-                                    // - We're about to dispose so we don't care to run the scan callback anyways.
-                                    // - The previous the computation took long enough that the next scan tried to run in parallel
-                                    // In either case just do nothing and end the timer callback as soon as possible
-                                    if (!Monitor.TryEnter(executionLock))
+                                        timer = new Timer(_ =>
+                                    {
+                                        // If we couldn't get the lock it means one of 2 things are true:
+                                        // - We're about to dispose so we don't care to run the scan callback anyways.
+                                        // - The previous the computation took long enough that the next scan tried to run in parallel
+                                        // In either case just do nothing and end the timer callback as soon as possible
+                                        if (!Monitor.TryEnter(executionLock))
                                         {
                                             return;
                                         }
@@ -730,15 +790,15 @@ namespace BenchmarkServer
                                                 return;
                                             }
 
-                                        // Pause the timer while we're running
-                                        timer.Change(Timeout.Infinite, Timeout.Infinite);
+                                            // Pause the timer while we're running
+                                            timer.Change(Timeout.Infinite, Timeout.Infinite);
 
                                             try
                                             {
                                                 var now = DateTime.UtcNow;
 
-                                            // Stops the job in case the driver is not running
-                                            if (now - job.LastDriverCommunicationUtc > DriverTimeout)
+                                                // Stops the job in case the driver is not running
+                                                if (now - job.LastDriverCommunicationUtc > DriverTimeout)
                                                 {
                                                     Log.WriteLine($"[Heartbeat] Driver didn't communicate for {DriverTimeout}. Halting job.");
                                                     if (job.State == ServerState.Running || job.State == ServerState.TraceCollected)
@@ -750,8 +810,8 @@ namespace BenchmarkServer
 
                                                 if (!String.IsNullOrEmpty(dockerImage))
                                                 {
-                                                // Check the container is still running
-                                                var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
+                                                    // Check the container is still running
+                                                    var inspectResult = ProcessUtil.Run("docker", "inspect -f {{.State.Running}} " + dockerContainerId,
                                                         captureOutput: true,
                                                         log: false, throwOnError: false);
 
@@ -763,9 +823,9 @@ namespace BenchmarkServer
                                                     }
                                                     else
                                                     {
-                                                    // Get docker stats
-                                                    var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
-                                                            log: false, throwOnError: false, captureOutput: true, captureError: true);
+                                                        // Get docker stats
+                                                        var result = ProcessUtil.Run("docker", "container stats --no-stream --format \"{{.CPUPerc}}-{{.MemUsage}}\" " + dockerContainerId,
+                                                                log: false, throwOnError: false, captureOutput: true, captureError: true);
 
                                                         var stats = result.StandardOutput;
 
@@ -773,25 +833,25 @@ namespace BenchmarkServer
                                                         {
                                                             var data = stats.Trim().Split('-');
 
-                                                        // Format is {value}%
-                                                        var cpuPercentRaw = data[0];
+                                                            // Format is {value}%
+                                                            var cpuPercentRaw = data[0];
 
-                                                        // Format is {used}M/GiB/{total}M/GiB
-                                                        var workingSetRaw = data[1];
+                                                            // Format is {used}M/GiB/{total}M/GiB
+                                                            var workingSetRaw = data[1];
                                                             var usedMemoryRaw = workingSetRaw.Split('/')[0].Trim();
                                                             var cpu = double.Parse(cpuPercentRaw.Trim('%'));
                                                             var rawCPU = cpu;
 
-                                                        // On Windows the CPU already takes the number or HT into account
-                                                        if (OperatingSystem == OperatingSystem.Linux)
+                                                            // On Windows the CPU already takes the number or HT into account
+                                                            if (OperatingSystem == OperatingSystem.Linux)
                                                             {
                                                                 cpu = cpu / Environment.ProcessorCount;
                                                             }
 
                                                             cpu = Math.Round(cpu);
 
-                                                        // MiB, GiB, B ?
-                                                        var factor = 1;
+                                                            // MiB, GiB, B ?
+                                                            var factor = 1;
                                                             double memory;
 
                                                             if (usedMemoryRaw.EndsWith("GiB"))
@@ -823,7 +883,7 @@ namespace BenchmarkServer
                                                                 Name = "benchmarks/working-set",
                                                                 Timestamp = now,
                                                                 Value = Math.Ceiling((double)workingSet / 1024 / 1024) // < 1MB still needs to appear as 1MB
-                                                        });
+                                                            });
 
                                                             job.Measurements.Enqueue(new Measurement
                                                             {
@@ -878,8 +938,8 @@ namespace BenchmarkServer
                                                         {
                                                             Log.WriteLine($"Process has exited ({process.ExitCode})");
 
-                                                        // Don't revert a Deleting state by mistake
-                                                        if (job.State != ServerState.Deleting)
+                                                            // Don't revert a Deleting state by mistake
+                                                            if (job.State != ServerState.Deleting)
                                                             {
                                                                 Log.WriteLine($"{job.State} -> Stopped");
                                                                 job.State = ServerState.Stopped;
@@ -888,23 +948,33 @@ namespace BenchmarkServer
                                                     }
                                                     else
                                                     {
-                                                    // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
-                                                    // We need to dig into this
-                                                    var newCPUTime = OperatingSystem == OperatingSystem.OSX ? TimeSpan.Zero : process.TotalProcessorTime;
+
+                                                        // TODO: Accessing the TotalProcessorTime on OSX throws so just leave it as 0 for now
+                                                        // We need to dig into this
+
+                                                        var trackProcess = job.ChildProcessId == 0
+                                                            ? process
+                                                            : Process.GetProcessById(job.ChildProcessId)
+                                                            ;
+
+                                                        var newCPUTime = OperatingSystem == OperatingSystem.OSX
+                                                            ? TimeSpan.Zero
+                                                            : trackProcess.TotalProcessorTime;
+
                                                         var elapsed = now.Subtract(lastMonitorTime).TotalMilliseconds;
                                                         var rawCpu = (newCPUTime - oldCPUTime).TotalMilliseconds / elapsed * 100;
                                                         var cpu = Math.Round(rawCpu / Environment.ProcessorCount);
                                                         lastMonitorTime = now;
 
-                                                        process.Refresh();
+                                                        trackProcess.Refresh();
 
-                                                    // Ignore first measure
-                                                    if (oldCPUTime != TimeSpan.Zero)
+                                                        // Ignore first measure
+                                                        if (oldCPUTime != TimeSpan.Zero && cpu <= 100)
                                                         {
                                                             job.AddServerCounter(new ServerCounter
                                                             {
                                                                 Elapsed = now - startMonitorTime,
-                                                                WorkingSet = process.WorkingSet64,
+                                                                WorkingSet = trackProcess.WorkingSet64,
                                                                 CpuPercentage = cpu
                                                             });
 
@@ -912,8 +982,8 @@ namespace BenchmarkServer
                                                             {
                                                                 Name = "benchmarks/working-set",
                                                                 Timestamp = now,
-                                                                Value = Math.Ceiling((double)process.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
-                                                        });
+                                                                Value = Math.Ceiling((double)trackProcess.WorkingSet64 / 1024 / 1024) // < 1MB still needs to appear as 1MB
+                                                            });
 
                                                             job.Measurements.Enqueue(new Measurement
                                                             {
@@ -953,18 +1023,18 @@ namespace BenchmarkServer
                                             }
                                             finally
                                             {
-                                            // Resume once we finished processing all connections
-                                            timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                                                // Resume once we finished processing all connections
+                                                timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
                                             }
                                         }
                                         finally
                                         {
-                                        // Exit the lock now
-                                        Monitor.Exit(executionLock);
+                                            // Exit the lock now
+                                            Monitor.Exit(executionLock);
                                         }
                                     }, null, TimeSpan.FromTicks(0), TimeSpan.FromSeconds(1));
-
-                                    disposed = false;
+                                        disposed = false;
+                                    }
                                 }
                                 catch (Exception e)
                                 {
@@ -1072,14 +1142,6 @@ namespace BenchmarkServer
                             }
                             else if (job.State == ServerState.Initializing)
                             {
-                                // The driver is supposed to send attachment in the initialize phase
-                                if (DateTime.UtcNow - startMonitorTime > InitializeTimeout)
-                                {
-                                    Log.WriteLine($"Job didn't initialize during the expected delay");
-                                    job.State = ServerState.Failed;
-                                    job.Error = "Job didn't initalize during the expected delay.";
-                                }
-
                                 // Check the driver is still communicating
                                 if (DateTime.UtcNow - job.LastDriverCommunicationUtc > DriverTimeout)
                                 {
@@ -1651,15 +1713,19 @@ namespace BenchmarkServer
                 environmentArguments += $"--env {env.Key}={env.Value} ";
             }
 
+            var containerName = $"{imageName}-{job.Id}";
+
+            // TODO: Clean previous images 
+
             // Stop container in case it failed to stop earlier
-            ProcessUtil.Run("docker", $"stop {imageName}", throwOnError: false);
+            // ProcessUtil.Run("docker", $"stop {containerName}", throwOnError: false);
 
             // Delete container if the same name already exists
-            ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
+            // ProcessUtil.Run("docker", $"rm {containerName}", throwOnError: false);
 
             var command = OperatingSystem == OperatingSystem.Linux
-                ? $"run -d {environmentArguments} {job.Arguments} --mount type=bind,source=/mnt,target=/tmp --name {imageName} --privileged --network host {imageName} {source.DockerCommand}"
-                : $"run -d {environmentArguments} {job.Arguments} --name {imageName} --network SELF --ip {hostname} {imageName} {source.DockerCommand}";
+                ? $"run -d {environmentArguments} {job.Arguments} --label benchmarks --mount type=bind,source=/mnt,target=/tmp --name {containerName} --privileged --network host {imageName} {source.DockerCommand}"
+                : $"run -d {environmentArguments} {job.Arguments} --label benchmarks --name {containerName} --network SELF --ip {hostname} {imageName} {source.DockerCommand}";
 
             if (job.Collect && job.CollectStartup)
             {
@@ -1903,19 +1969,20 @@ namespace BenchmarkServer
             {
                 try
                 {
+                    ProcessUtil.Run("docker", $"rm --force {containerId}", throwOnError: false);
+
                     if (job.NoClean)
                     {
                         ProcessUtil.Run("docker", $"rmi --force --no-prune {imageName}", throwOnError: false);
                     }
                     else
                     {
-                        ProcessUtil.Run("docker", $"rm {imageName}", throwOnError: false);
                         ProcessUtil.Run("docker", $"rmi --force {imageName}", throwOnError: false);
                     }
                 }
                 catch (Exception e)
                 {
-                    Log.WriteLine("An error occured while deleting the docker container: " + e.Message);
+                    Log.WriteLine("An error occurred while deleting the docker container: " + e.Message);
                     finalState = ServerState.Failed;
                 }
                 finally
@@ -1925,7 +1992,7 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome)
+        private static async Task<string> CloneRestoreAndBuild(string path, ServerJob job, string dotnetHome, CancellationToken cancellationToken)
         {
             // Clone
             string benchmarkedDir = null;
@@ -1965,7 +2032,7 @@ namespace BenchmarkServer
                 {
                     var branchAndCommit = source.BranchOrCommit.Split('#', 2);
 
-                    var dir = Git.Clone(path, source.Repository, shallow: branchAndCommit.Length == 1, branch: branchAndCommit[0]);
+                    var dir = Git.Clone(path, source.Repository, shallow: branchAndCommit.Length == 1, branch: branchAndCommit[0], cancellationToken: cancellationToken);
 
                     var srcDir = Path.Combine(path, dir);
 
@@ -1986,8 +2053,12 @@ namespace BenchmarkServer
                 }
             }
 
-            Debug.Assert(benchmarkedDir != null);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
 
+            Debug.Assert(benchmarkedDir != null);
 
             // Computes the location of the benchmarked app
             var benchmarkedApp = Path.Combine(path, benchmarkedDir);
@@ -2039,10 +2110,10 @@ namespace BenchmarkServer
             string channel = DefaultChannel;
 
             string runtimeVersion = job.RuntimeVersion;
-            string desktopVersion = job.RuntimeVersion;
+            string desktopVersion = "";
             string aspNetCoreVersion = job.AspNetCoreVersion;
             string sdkVersion = job.SdkVersion;
-            
+
             ConvertLegacyVersions(ref targetFramework, ref runtimeVersion, ref aspNetCoreVersion);
 
             // If a specific framework is set, use it instead of the detected one
@@ -2126,9 +2197,11 @@ namespace BenchmarkServer
 
                         // Install runtimes required for this scenario
                         ProcessUtil.RetryOnException(3, () => ProcessUtil.Run("powershell", $"-NoProfile -ExecutionPolicy unrestricted [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; .\\dotnet-install.ps1 -Version {runtimeVersion} -Runtime dotnet -NoPath -SkipNonVersionedFiles -InstallDir {dotnetHome}",
-                        log: false,
-                        workingDirectory: _dotnetInstallPath,
-                        environmentVariables: env));
+                            log: false,
+                            workingDirectory: _dotnetInstallPath,
+                            environmentVariables: env,
+                            cancellationToken: cancellationToken
+                        ));
 
                         _installedDotnetRuntimes.Add(runtimeVersion);
                     }
@@ -2155,7 +2228,7 @@ namespace BenchmarkServer
                             }
                             else
                             {
-                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
+                                desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, targetFramework, desktopVersion);
                             }
                         }
                     }
@@ -2169,7 +2242,7 @@ namespace BenchmarkServer
                         // Seeking already installed Desktop runtimes
                         // c.f. https://github.com/dotnet/sdk/issues/4237
 
-                        desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, channel, desktopVersion);
+                        desktopVersion = SeekCompatibleDesktopRuntime(dotnetHome, targetFramework, desktopVersion);
                     }
 
                     // The aspnet core runtime is only available for >= 2.1, in 2.0 the dlls are contained in the runtime store
@@ -2514,14 +2587,19 @@ namespace BenchmarkServer
             }
 
             // Download mono runtime
-            if (job.UseMonoRuntime)
+            if (!string.IsNullOrEmpty(job.UseMonoRuntime) && !string.Equals(job.UseMonoRuntime, "false", StringComparison.OrdinalIgnoreCase))
             {
                 if (!job.SelfContained)
                 {
                     throw new Exception("The job is trying to use the mono runtime but was not configured as self-contained.");
                 }
 
-                await UseMonoRuntimeAsync(runtimeVersion, outputFolder);
+                await UseMonoRuntimeAsync(runtimeVersion, outputFolder, job.UseMonoRuntime, job.Hardware);
+
+                if (job.UseMonoRuntime.Equals("llvm-aot"))
+                {
+                    await AOT4Mono(sdkVersion, runtimeVersion, outputFolder);
+                }
             }
 
             // Copy all output attachments
@@ -2666,8 +2744,10 @@ namespace BenchmarkServer
             }
         }
 
-        private static string SeekCompatibleDesktopRuntime(string dotnetHome, string channel, string desktopVersion)
+        private static string SeekCompatibleDesktopRuntime(string dotnetHome, string targetFramework, string desktopVersion)
         {
+            var versionPrefix = targetFramework.Substring(targetFramework.Length - 3);
+
             foreach (var dir in Directory.GetDirectories(Path.Combine(dotnetHome, "shared", "Microsoft.WindowsDesktop.App")))
             {
                 var version = new DirectoryInfo(dir).Name;
@@ -2675,7 +2755,7 @@ namespace BenchmarkServer
 
                 // At least one matching Desktop runtime should be found as the sdk was installed
                 // before
-                if (version.StartsWith(channel))
+                if (version.StartsWith(versionPrefix))
                 {
                     desktopVersion = version;
                 }
@@ -2798,14 +2878,15 @@ namespace BenchmarkServer
 
             if (!File.Exists(runtimeConfigFilename))
             {
-                throw new Exception("No runtimeconfig.json was found");
+                Log.WriteLine("Ignoring runtimeconfig.json. File not found.");
+                return;
             }
 
             // File found, we need to update it
             Log.WriteLine($"Patching {Path.GetFileName(runtimeConfigFilename)} ");
 
             var runtimeObject = JObject.Parse(File.ReadAllText(runtimeConfigFilename));
-            
+
             var runtimeOptions = runtimeObject["runtimeOptions"] as JObject;
 
             if (runtimeOptions.ContainsKey("includedFrameworks"))
@@ -2816,11 +2897,11 @@ namespace BenchmarkServer
 
             // Remove exising "framework" (singular) node
             runtimeOptions.Remove("framework");
-            
+
             // Create the "frameworks" property instead
             var frameworks = new JArray();
             runtimeOptions.TryAdd("frameworks", frameworks);
-            
+
             frameworks.Add(
                     new JObject(
                         new JProperty("name", "Microsoft.NETCore.App"),
@@ -2893,7 +2974,7 @@ namespace BenchmarkServer
                     catch
                     {
                     }
-                }                
+                }
             }
             else
             {
@@ -2998,6 +3079,7 @@ namespace BenchmarkServer
                     break;
 
                 case "netcoreapp5.0":
+                case "net5.0":
 
                     await DownloadFileAsync(String.Format(_aspNetCoreDependenciesUrl, "master/eng/Versions.props"), aspNetCoreDependenciesPath, maxRetries: 5, timeout: 10);
                     latestRuntimeVersion = XDocument.Load(aspNetCoreDependenciesPath).Root
@@ -3017,7 +3099,7 @@ namespace BenchmarkServer
         /// <summary>
         /// Retrieves the Current runtime and sdk versions for a tfm
         /// </summary>
-        private static async Task<(string Runtime, string Sesktop, string AspNet, string Sdk)> GetCurrentVersions(string targetFramework)
+        private static async Task<(string Runtime, string Desktop, string AspNet, string Sdk)> GetCurrentVersions(string targetFramework)
         {
             var frameworkVersion = targetFramework.Substring(targetFramework.Length - 3); // 3.1
             var metadataUrl = $"https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/{frameworkVersion}/releases.json";
@@ -3454,6 +3536,15 @@ namespace BenchmarkServer
                             }
                         }
                     }
+
+                    // Detect the app is wrapping a child process
+                    var processIdMarker = "##ChildProcessId:";
+                    if (e.Data.StartsWith(processIdMarker) 
+                        && int.TryParse(e.Data.Substring(processIdMarker.Length), out var childProcessId))
+                    {
+                        Log.WriteLine($"Tracking child process id: {childProcessId}");
+                        job.ChildProcessId = childProcessId;
+                    }
                 }
             };
 
@@ -3543,41 +3634,137 @@ namespace BenchmarkServer
             return $"benchmarks-{Process.GetCurrentProcess().Id}-{job.Id}";
         }
 
+        private static readonly Dictionary<string, string> MetadataProviderPrefixes = new Dictionary<string, string>()
+        {
+            ["System.Runtime"] = "runtime-counter",
+            ["Microsoft-AspNetCore-Server-Kestrel"] = "kestrel-counter",
+            ["Microsoft.AspNetCore.Hosting"] = "aspnet-counter",
+            ["Microsoft.AspNetCore.Http.Connections"] = "signalr-counter",
+            ["Grpc.AspNetCore.Server"] = "grpc-server-counter",
+            ["Grpc.Net.client"] = "grpc-client-counter",
+            ["Npgsql"] = "npgsql-counter"
+        };
+
+        private static readonly Dictionary<string, MeasurementMetadata[]> MetadataProviders = new Dictionary<string, MeasurementMetadata[]>
+        {
+            ["System.Runtime"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "System.Runtime", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            },
+            ["Microsoft-AspNetCore-Server-Kestrel"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/connections-per-second", LongDescription = "Connection Rate", ShortDescription = "Connections/s (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/total-connections", LongDescription = "Total Connections", ShortDescription = "Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/tls-handshakes-per-second", LongDescription = "TLS Handshake Rate", ShortDescription = "TLS Handshakes/sec (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/total-tls-handshakes", LongDescription = "Total TLS Handshakes", ShortDescription = "TLS Handshakes", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-tls-handshakes", LongDescription = "Current TLS Handshakes", ShortDescription = "TLS Handshakes (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/failed-tls-handshakes", LongDescription = "Failed TLS Handshakes", ShortDescription = "Failed TLS Handshakes (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-connections", LongDescription = "Current Connections", ShortDescription = "Concurrent Connections (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/connection-queue-length", LongDescription = "Connection Queue Length", ShortDescription = "Connection Queue Length (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/request-queue-length", LongDescription = "Request Queue Length", ShortDescription = "Request Queue Length (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Kestrel", Name = "kestrel-counter/current-upgraded-requests", LongDescription = "Current Upgraded Requests (WebSockets)", ShortDescription = "Upgraded Requests (max)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            },
+            ["Microsoft.AspNetCore.Hosting"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/requests-per-second", LongDescription = "Maximum Requests Per Second", ShortDescription = "Requests/sec (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/total-requests", LongDescription = "Total Requests", ShortDescription = "Requests", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/current-requests", LongDescription = "Maximum Current Requests", ShortDescription = "Concurrent Requests (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "ASP.NET Core", Name = "aspnet-counter/failed-requests", LongDescription = "Failed Requests", ShortDescription = "Failed Requests", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Microsoft.AspNetCore.Http.Connections"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-started", LongDescription = "Total Connections Started", ShortDescription = "Connections Started", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-stopped", LongDescription = "Total Connections Stopped", ShortDescription = "Connections Stopped", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-timed-out", LongDescription = "Total Connections Timed Out", ShortDescription = "Timed Out Connections", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/current-connections", LongDescription = "Maximum of Current Connections", ShortDescription = "Concurrent Connections (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "SignalR", Name = "signalr-counter/connections-duration", LongDescription = "Average Connection Duration (ms)", ShortDescription = "Connection Duration (avg, ms)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Grpc.AspNetCore.Server"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/total-calls", LongDescription = "Total Calls", ShortDescription = "Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/current-calls", LongDescription = "Current Calls", ShortDescription = "Concurrent Calls (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-failed", LongDescription = "Total Calls Failed", ShortDescription = "Failed Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-deadline-exceeded", LongDescription = "Total Calls Deadline Exceeded", ShortDescription = "Deadline Exceeded Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/messages-sent", LongDescription = "Total Messages Sent", ShortDescription = "Messages Sent", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/messages-received", LongDescription = "Total Messages Received", ShortDescription = "Messages Received", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Server", Name = "grpc-server-counter/calls-unimplemented", LongDescription = "Total Calls Unimplemented", ShortDescription = "Unimplemented Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Grpc.Net.Client"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/total-calls", LongDescription = "Total Calls", ShortDescription = "Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/current-calls", LongDescription = "Current Calls", ShortDescription = "Concurrent Calls (max)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/calls-failed", LongDescription = "Total Calls Failed", ShortDescription = "Failed Calls", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/calls-deadline-exceeded", LongDescription = "Total Calls Deadline Exceeded", ShortDescription = "Total Calls Deadline Exceeded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/messages-sent", LongDescription = "Total Messages Sent", ShortDescription = "Messages Sent", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "gRPC Client", Name = "grpc-client-counter/messages-received", LongDescription = "Total Messages Received", ShortDescription = "Messages Received", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+            },
+            ["Npgsql"] = new MeasurementMetadata[]
+            {
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/bytes-written-per-second", LongDescription = "Bytes Written", ShortDescription = "Bytes Written", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/bytes-read-per-second", LongDescription = "Bytes Read", ShortDescription = "Bytes Read", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/commands-per-second", LongDescription = "Command Rate", ShortDescription = "Command Rate", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/total-commands", LongDescription = "Total Commands", ShortDescription = "Total Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/current-commands", LongDescription = "Current Commands", ShortDescription = "Current Commands", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/failed-commands", LongDescription = "Failed Commands", ShortDescription = "Failed Commands", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/prepared-commands-ratio", LongDescription = "Prepared Commands Ratio", ShortDescription = "Prepared Commands Ratio", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/connection-pools", LongDescription = "Connection Pools", ShortDescription = "Connection Pools", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/idle-connections", LongDescription = "Idle Connections", ShortDescription = "Idle Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/busy-connections", LongDescription = "Busy Connections", ShortDescription = "Busy Connections", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-commands-per-batch", LongDescription = "Average commands per multiplexing batch", ShortDescription = "Commands per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-waits-per-batch", LongDescription = "Average waits per multiplexing batch", ShortDescription = "Waits per multiplexing batch", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+                new MeasurementMetadata { Source = "Npgsql", Name = "npgsql-counter/multiplexing-average-write-time-per-batch", LongDescription = "Average write time per multiplexing batch (us)", ShortDescription = "Time per multiplexing batch (us)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max },
+            }
+        };
+
         private static void StartCounters(ServerJob job)
         {
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/cpu-usage", LongDescription = "Amount of time the process has utilized the CPU (ms)", ShortDescription = "CPU Usage (%)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/working-set", LongDescription = "Amount of working set used by the process (MB)", ShortDescription = "Working Set (MB)", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gc-heap-size", LongDescription = "Total heap size reported by the GC (MB)", ShortDescription = "GC Heap Size (MB)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-gc-count", LongDescription = "Number of Gen 0 GCs / sec", ShortDescription = "Gen 0 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-gc-count", LongDescription = "Number of Gen 1 GCs / sec", ShortDescription = "Gen 1 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-gc-count", LongDescription = "Number of Gen 2 GCs / sec", ShortDescription = "Gen 2 GC (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/time-in-gc", LongDescription = "% time in GC since the last GC", ShortDescription = "Time in GC (%)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-0-size", LongDescription = "Gen 0 Heap Size", ShortDescription = "Gen 0 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-1-size", LongDescription = "Gen 1 Heap Size", ShortDescription = "Gen 1 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/gen-2-size", LongDescription = "Gen 2 Heap Size", ShortDescription = "Gen 2 Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/loh-size", LongDescription = "LOH Heap Size", ShortDescription = "LOH Size (B)", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/alloc-rate", LongDescription = "Allocation Rate", ShortDescription = "Allocation Rate (B/sec)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/assembly-count", LongDescription = "Number of Assemblies Loaded", ShortDescription = "# of Assemblies Loaded", Format = "n0", Aggregate = Operation.Max, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/exception-count", LongDescription = "Number of Exceptions / sec", ShortDescription = "Exceptions (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-thread-count", LongDescription = "Number of ThreadPool Threads", ShortDescription = "ThreadPool Threads Count", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/monitor-lock-contention-count", LongDescription = "Monitor Lock Contention Count", ShortDescription = "Lock Contention (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-queue-length", LongDescription = "ThreadPool Work Items Queue Length", ShortDescription = "ThreadPool Queue Length", Format = "n0", Aggregate = Operation.Median, Reduce = Operation.Max });
-            job.Metadata.Enqueue(new MeasurementMetadata { Source = "Counters", Name = "runtime-counter/threadpool-completed-items-count", LongDescription = "ThreadPool Completed Work Items Count", ShortDescription = "ThreadPool Items (#/s)", Format = "n0", Aggregate = Operation.Avg, Reduce = Operation.Max });
-
             eventPipeTerminated = false;
             eventPipeTask = new Task(async () =>
             {
-                Log.WriteLine("Listening to event pipes");
+                // If not specific provider was defined, add System.Runtime
+                if (job.CounterProviders.Count == 0)
+                {
+                    job.CounterProviders.Add("System.Runtime");
+                }
+
+                foreach (var providerName in job.CounterProviders)
+                {
+                    if (MetadataProviders.TryGetValue(providerName, out var providerMetadata))
+                    {
+                        foreach (var metadata in providerMetadata)
+                        {
+                            job.Metadata.Enqueue(metadata);
+                        }
+                    }
+                }
+
+                Log.WriteLine($"Listening to counter event pipes (providers: {string.Join(", ", job.CounterProviders)})");
 
                 try
                 {
-                    var providerList = new List<Provider>()
-                        {
-                            new Provider(
-                                name: "System.Runtime",
-                                eventLevel: EventLevel.Informational,
-                                filterData: "EventCounterIntervalSec=1"),
-                        };
+                    var providerList = job.CounterProviders
+                        .Select(p => new Provider(
+                            name: p,
+                            eventLevel: EventLevel.Informational,
+                            filterData: "EventCounterIntervalSec=1"))
+                        .ToList();
 
                     var configuration = new SessionConfiguration(
                             circularBufferSizeMB: 1000,
@@ -3588,7 +3775,7 @@ namespace BenchmarkServer
                     Stream binaryReader = null;
 
                     var retries = 10;
-                    while (retries-- > 0) 
+                    while (retries-- > 0)
                     {
                         try
                         {
@@ -3624,6 +3811,7 @@ namespace BenchmarkServer
                         var payloadFields = (IDictionary<string, object>)(payloadVal["Payload"]);
 
                         var counterName = payloadFields["Name"].ToString();
+
                         if (!job.Counters.TryGetValue(counterName, out var values))
                         {
                             lock (job.Counters)
@@ -3635,7 +3823,13 @@ namespace BenchmarkServer
                             }
                         }
 
-                        measurement.Name = "runtime-counter/" + counterName;
+                        // Skip value if the provider is unknown
+                        if (!MetadataProviderPrefixes.TryGetValue(eventData.ProviderName, out var prefix))
+                        {
+                            return;
+                        }
+
+                        measurement.Name = $"{prefix}/{counterName}";
 
                         switch (payloadFields["CounterType"])
                         {
@@ -3705,7 +3899,7 @@ namespace BenchmarkServer
                     Stream binaryReader = null;
 
                     var retries = 10;
-                    while (retries-- > 0) 
+                    while (retries-- > 0)
                     {
                         try
                         {
@@ -3858,14 +4052,40 @@ namespace BenchmarkServer
             }
         }
 
-        private static async Task UseMonoRuntimeAsync(string runtimeVersion, string outputFolder)
+        private static async Task UseMonoRuntimeAsync(string runtimeVersion, string outputFolder, string mode, Hardware? hardware)
         {
-            var monoRuntimeUrl = String.Format(_runtimeMonoPackageUrl, runtimeVersion);
+            if (String.IsNullOrEmpty(mode))
+            {
+                return;
+            }
+
+            string pkgNameSuffix = "";
+            if (hardware == Hardware.ARM64)
+            {
+                pkgNameSuffix = "arm64";
+            }
+            else
+            {
+                pkgNameSuffix = "x64";
+            }
 
             try
             {
+                var packageName = "";
 
-                var packageName = "Microsoft.NETCore.App.Runtime.Mono.linux-x64".ToLowerInvariant();
+                switch (mode)
+                {
+                    case "jit":
+                        packageName = $"Microsoft.NETCore.App.Runtime.Mono.linux-{pkgNameSuffix}".ToLowerInvariant();
+                        break;
+                    case "llvm-jit":
+                    case "llvm-aot":
+                        packageName = $"Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-{pkgNameSuffix}".ToLowerInvariant();
+                        break;
+                    default:
+                        throw new Exception("Invalid mono runtime moniker: " + mode);
+                }
+
                 var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
 
                 // Ensure the folder already exists
@@ -3903,13 +4123,10 @@ namespace BenchmarkServer
 
                 using (var archive = ZipFile.OpenRead(runtimePath))
                 {
-                    var systemCoreLib = archive.GetEntry("runtimes/linux-x64/lib/netcoreapp5.0/System.Private.CoreLib.dll");
-                    systemCoreLib?.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
+                    var systemCoreLib = archive.GetEntry($"runtimes/linux-{pkgNameSuffix}/native/System.Private.CoreLib.dll");
+                    systemCoreLib.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
 
-                    systemCoreLib = archive.GetEntry("runtimes/linux-x64/native/System.Private.CoreLib.dll");
-                    systemCoreLib?.ExtractToFile(Path.Combine(outputFolder, "System.Private.CoreLib.dll"), true);
-
-                    var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
+                    var libcoreclr = archive.GetEntry($"runtimes/linux-{pkgNameSuffix}/native/libcoreclr.so");
                     libcoreclr.ExtractToFile(Path.Combine(outputFolder, "libcoreclr.so"), true);
                 }
             }
@@ -3918,6 +4135,108 @@ namespace BenchmarkServer
                 Log.WriteLine("ERROR: Failed to download mono runtime. " + e.ToString());
                 throw;
             }
+        }
+
+        private static async Task AOT4Mono(string dotnetSdkVersion, string runtimeVersion, string outputFolder)
+        {
+            try
+            {
+                var fileName = "/bin/bash";
+
+                //Download dotnet sdk package
+                var dotnetMonoPath = Path.Combine(_rootTempDir, "dotnet-mono", $"dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz");
+                var packageName = "Microsoft.NETCore.App.Runtime.Mono.LLVM.AOT.linux-x64".ToLowerInvariant();
+                var runtimePath = Path.Combine(_rootTempDir, "RuntimePackages", $"{packageName}.{runtimeVersion}.nupkg");
+                var llvmExtractDir = Path.Combine(Path.GetDirectoryName(runtimePath), "mono-llvm");
+
+                if (!Directory.Exists(Path.GetDirectoryName(dotnetMonoPath)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(dotnetMonoPath));
+
+                    Log.WriteLine($"Downloading dotnet skd package for mono AOT");
+
+                    var found = false;
+                    var url = $"https://dotnetcli.azureedge.net/dotnet/Sdk/{dotnetSdkVersion}/dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz";
+
+                    if (await DownloadFileAsync(url, dotnetMonoPath, maxRetries: 3, timeout: 60, throwOnError: false))
+                    {
+                        found = true;
+                    }
+
+                    if (!found)
+                    {
+                        throw new Exception("dotnet sdk package not found");
+                    }
+                    else
+                    {
+                        var strCmdTar = $"tar -xf dotnet-sdk-{dotnetSdkVersion}-linux-x64.tar.gz";
+                        var resultTar = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdTar),
+                                                        workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                        log: true);
+                    }
+
+                    Log.WriteLine($"Patching local dotnet with mono runtime and extracting llvm");
+
+                    var strCmdGetVer = "./dotnet --list-runtimes | grep -i \"Microsoft.NETCore.App\"";
+                    var resultGetVer = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdGetVer),
+                                                       workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                       log: true,
+                                                       captureOutput: true);
+                    var MicrosoftNETCoreAppPackageVersion = resultGetVer.StandardOutput.Split(' ')[1];
+
+                    if (Directory.Exists(llvmExtractDir))
+                    {
+                        Directory.Delete(llvmExtractDir);
+                    }
+                    Directory.CreateDirectory(llvmExtractDir);
+
+                    using (var archive = ZipFile.OpenRead(runtimePath))
+                    {
+                        var systemCoreLib = archive.GetEntry("runtimes/linux-x64/native/System.Private.CoreLib.dll");
+                        systemCoreLib.ExtractToFile(Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "System.Private.CoreLib.dll"), true);
+
+                        var libcoreclr = archive.GetEntry("runtimes/linux-x64/native/libcoreclr.so");
+                        libcoreclr.ExtractToFile(Path.Combine(Path.GetDirectoryName(dotnetMonoPath), "shared", "Microsoft.NETCore.App", MicrosoftNETCoreAppPackageVersion, "libcoreclr.so"), true);
+
+                        var llcExe = archive.GetEntry("runtimes/linux-x64/native/llc");
+                        llcExe.ExtractToFile(Path.Combine(llvmExtractDir, "llc"), true);
+
+                        var optExe = archive.GetEntry("runtimes/linux-x64/native/opt");
+                        optExe.ExtractToFile(Path.Combine(llvmExtractDir, "opt"), true);
+                    }
+                    var strCmdChmod = "chmod +x opt llc";
+                    var resultChmod = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdChmod),
+                                                      workingDirectory: llvmExtractDir,
+                                                      log: true);
+
+                }
+                else
+                {
+                    Log.WriteLine($"Found local dotnet with mono runtime at '{Path.GetDirectoryName(dotnetMonoPath)}'");
+                }
+
+                Log.WriteLine("Pre-compile assemblies inside publish folder");
+
+                var strCmdPreCompile = $@"for assembly in {outputFolder}/*.dll; do
+                                              PATH={llvmExtractDir}:${{PATH}} MONO_ENV_OPTIONS=--aot=llvm,mcpu=native ./dotnet $assembly;
+                                           done";
+                var resultPreCompile = ProcessUtil.Run(fileName, ConvertCmd2Arg(strCmdPreCompile),
+                                                   workingDirectory: Path.GetDirectoryName(dotnetMonoPath),
+                                                   log: true,
+                                                   captureOutput: true);
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine("ERROR: Failed to AOT for mono. " + e.ToString());
+                throw;
+            }
+        }
+
+        private static string ConvertCmd2Arg(string cmd)
+        {
+            cmd.Replace("\"", "\"\"");
+            var result = $"-c \"{cmd}\"";
+            return result;
         }
 
         private static bool MarkAsRunning(string hostname, ServerJob job, Stopwatch stopwatch)
@@ -3931,6 +4250,13 @@ namespace BenchmarkServer
                 }
 
                 job.StartupMainMethod = stopwatch.Elapsed;
+
+                job.Measurements.Enqueue(new Measurement
+                {
+                    Name = "benchmarks/start-time",
+                    Timestamp = DateTime.UtcNow,
+                    Value = stopwatch.ElapsedMilliseconds
+                });
 
                 Log.WriteLine($"Running job '{job.Id}' with scenario '{job.Scenario}'");
                 job.Url = ComputeServerUrl(hostname, job);

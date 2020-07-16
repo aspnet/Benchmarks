@@ -11,9 +11,6 @@ jobs:
       branchOrCommit: master
       project: src/H2LoadClient/H2LoadClient.csproj
     readyStateText: H2Load Client
-    sdkVersion: 3.0.100
-    aspNetCoreVersion: '3.0'
-    runtimeVersion: '3.0'
     waitForExit: true
     variables:
       threads: 1

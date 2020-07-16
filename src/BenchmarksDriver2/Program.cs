@@ -17,6 +17,7 @@ using Fluid.Values;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Serialization;
 using YamlDotNet.Serialization;
 
@@ -57,7 +58,8 @@ namespace BenchmarksDriver
             _excludeMeasurementsOption,
             _autoflushOption,
             _repeatOption,
-            _spanOption
+            _spanOption,
+            _noValidationOption
             ;
 
         // The dynamic arguments that will alter the configurations
@@ -141,6 +143,7 @@ namespace BenchmarksDriver
             _autoflushOption = app.Option("--auto-flush", "Runs a single long-running job and flushes measurements automatically.", CommandOptionType.NoValue);
             _repeatOption = app.Option("--repeat", "The job to repeat using the '--span' argument.", CommandOptionType.SingleValue);
             _spanOption = app.Option("--span", "The duration while the job is repeated.", CommandOptionType.SingleValue);
+            _noValidationOption = app.Option("--no-validation", "Don't validate configuration files schema.", CommandOptionType.NoValue);
 
             // Extract dynamic arguments
             for (var i = 0; i < args.Length; i++)
@@ -538,12 +541,6 @@ namespace BenchmarksDriver
                                 })
                             );
 
-                            // Start threads that will keep the jobs alive
-                            foreach (var job in jobs)
-                            {
-                                job.StartKeepAlive();
-                            }
-
                             if (service.WaitForExit)
                             {
                                 // Wait for all clients to stop
@@ -668,7 +665,7 @@ namespace BenchmarksDriver
                     }
 
                     // Stop all non-blocking jobs in reverse dependency order (clients first)
-                    foreach (var jobName in dependencies)
+                    foreach (var jobName in dependencies.Reverse())
                     {
                         var service = configuration.Jobs[jobName];
 
@@ -872,9 +869,6 @@ namespace BenchmarksDriver
 
             // Start this service on the configured agent endpoint
             await job.StartAsync(jobName, _outputArchiveOption, _buildArchiveOption);
-
-            // Start threads that will keep the jobs alive
-            job.StartKeepAlive();
 
             var start = DateTime.UtcNow;
 
@@ -1193,6 +1187,32 @@ namespace BenchmarksDriver
 
                 var profile = (JObject)configuration["Profiles"][profileName];
 
+                // Copy the profile variables to the jobs in this profile
+                // such that it will override what is in the source job.
+                // Otherwise the variables in the profile would not override
+                // the ones in the source profile as they would be patching
+                // the global variables.
+
+                var profileVariables = profile.GetValue("Variables", StringComparison.OrdinalIgnoreCase);
+                if (profileVariables is JObject variables)
+                {
+                    var profileJobs = profile.GetValue("Jobs", StringComparison.OrdinalIgnoreCase) as JObject ?? new JObject();
+
+                    foreach (var profileJobProperty in profileJobs.Properties())
+                    {
+                        var profileJob = (JObject)profileJobProperty.Value;
+
+                        var profileJobVariables = profileJob.GetValue("Variables", StringComparison.OrdinalIgnoreCase) as JObject;
+
+                        if (profileJobVariables == null)
+                        {
+                            profileJob.Add("Variables", profileJobVariables = new JObject());
+                        }
+
+                        PatchObject(profileJobVariables, variables);
+                    }
+                }
+
                 PatchObject(configuration, profile);
             }
 
@@ -1314,7 +1334,28 @@ namespace BenchmarksDriver
 
                 localconfiguration = null;
 
-                switch (Path.GetExtension(configurationFilenameOrUrl))
+                string configurationExtension = null;
+
+                if (configurationFilenameOrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Remove any query string to detect the correct extension
+                    var questionMarkIndex = configurationFilenameOrUrl.IndexOf("?");
+                    if (questionMarkIndex != -1)
+                    {
+                        var filename = configurationFilenameOrUrl.Substring(0, questionMarkIndex);
+                        configurationExtension = Path.GetExtension(filename);
+                    }
+                    else
+                    {
+                        configurationExtension = Path.GetExtension(configurationFilenameOrUrl);
+                    }
+                }
+                else
+                {
+                   configurationExtension = Path.GetExtension(configurationFilenameOrUrl);
+                }
+
+                switch (configurationExtension)
                 {
                     case ".json":
                         localconfiguration = JObject.Parse(configurationContent);
@@ -1323,7 +1364,10 @@ namespace BenchmarksDriver
                     case ".yml":
                     case ".yaml":
 
-                        var deserializer = new DeserializerBuilder().Build();
+                        var deserializer = new DeserializerBuilder()
+                            .WithNodeTypeResolver(new JsonTypeResolver())
+                            .Build();
+                        
                         var yamlObject = deserializer.Deserialize(new StringReader(configurationContent));
 
                         var serializer = new SerializerBuilder()
@@ -1332,7 +1376,23 @@ namespace BenchmarksDriver
 
                         var json = serializer.Serialize(yamlObject);
                         localconfiguration = JObject.Parse(json);
+
+                        if (!_noValidationOption.HasValue())
+                        {
+                            var schemaJson= File.ReadAllText("benchmarks.schema.json");
+                            var schema = JSchema.Parse(schemaJson);
+                            bool valid = localconfiguration.IsValid(schema, out IList<ValidationError> errorMessages);
+
+                            if (!valid)
+                            {
+                                var error = String.Join("\r\n", errorMessages.Select(m => m.Message));
+                                throw new DriverException($"Invalid configuration file {configurationFilenameOrUrl}\r\n\r\n{error}");
+                            }
+                        }
+
                         break;
+                    default:
+                        throw new DriverException($"Unsupported configuration format: {configurationExtension}");
                 }
                 
                 // Process imports

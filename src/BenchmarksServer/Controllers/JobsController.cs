@@ -285,6 +285,13 @@ namespace BenchmarkServer.Controllers
         public IActionResult Start(int id)
         {
             var job = _jobs.Find(id);
+
+            if (job.State != ServerState.Initializing)
+            {
+                Log($"Start rejected, job is {job.State}");
+                return StatusCode(500, $"The job can't be started as its state is {job.State}");
+            }
+
             job.State = ServerState.Waiting;
             _jobs.Update(job);
 
@@ -296,16 +303,31 @@ namespace BenchmarkServer.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 10_000_000_000)]
         public async Task<IActionResult> UploadAttachment(int id)
         {
+            // Because uploaded files can be big, the client is supposed to keep
+            // pinging the service to keep the job alive during the Initialize state.
+            
             var destinationFilename = Request.Headers["destinationFilename"].ToString();
 
             Log($"Uploading attachment: {destinationFilename}");
 
             var job = _jobs.Find(id);
+
+            if (job == null)
+            {
+                return NotFound("Job doesn't exist anymore");
+            }
+
+            if (job.State != ServerState.Initializing)
+            {
+                Log($"Attachment rejected, job is {job.State}");
+                return StatusCode(500, $"The job can't accept attachment as its state is {job.State}");
+            }
+
             var tempFilename = Path.GetTempFileName();
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await Request.Body.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs, Request.HttpContext.RequestAborted);
             }
 
             job.Attachments.Add(new Attachment
@@ -333,7 +355,7 @@ namespace BenchmarkServer.Controllers
 
             using (var fs = System.IO.File.Create(tempFilename))
             {
-                await Request.Body.CopyToAsync(fs);
+                await Request.Body.CopyToAsync(fs, Request.HttpContext.RequestAborted);
             }
 
             job.Source.SourceCode = new Attachment

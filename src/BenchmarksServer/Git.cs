@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace BenchmarkServer
 {
@@ -12,7 +13,7 @@ namespace BenchmarkServer
         private static readonly TimeSpan CheckoutTimeout = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan SubModuleTimeout = TimeSpan.FromSeconds(30);
 
-        public static string Clone(string path, string repository, bool shallow = true, string branch = null)
+        public static string Clone(string path, string repository, bool shallow = true, string branch = null, CancellationToken cancellationToken = default)
         {
             Log.WriteLine($"Cloning {repository} with branch '{branch}'");
 
@@ -20,7 +21,7 @@ namespace BenchmarkServer
 
             var depth = shallow ? "--depth 1" : "";
 
-            var result = RunGitCommand(path, $"clone -c core.longpaths=true {depth} {branchParam} {repository}", CloneTimeout, retries: 5);
+            var result = RunGitCommand(path, $"clone -c core.longpaths=true {depth} {branchParam} {repository}", CloneTimeout, retries: 5, cancellationToken: cancellationToken);
 
             var match = Regex.Match(result.StandardError, @"'(.*)'");
             if (match.Success && match.Groups.Count == 2)
@@ -43,9 +44,9 @@ namespace BenchmarkServer
             RunGitCommand(path, $"submodule update --init", SubModuleTimeout, retries: 5);
         }
 
-        private static ProcessResult RunGitCommand(string path, string command, TimeSpan? timeout, bool throwOnError = true, int retries = 0)
+        private static ProcessResult RunGitCommand(string path, string command, TimeSpan? timeout, bool throwOnError = true, int retries = 0, CancellationToken cancellationToken = default)
         {
-            return ProcessUtil.RetryOnException(retries, () => ProcessUtil.Run("git", command, timeout, workingDirectory: path, throwOnError: throwOnError, captureOutput: true, captureError: true));
+            return ProcessUtil.RetryOnException(retries, () => ProcessUtil.Run("git", command, timeout, workingDirectory: path, throwOnError: throwOnError, captureOutput: true, captureError: true, cancellationToken: cancellationToken));
         }
     }
 }

@@ -75,7 +75,7 @@ namespace PlatformBenchmarks
         private bool HandleRequests(in ReadOnlySequence<byte> buffer, bool isCompleted)
         {
             var reader = new SequenceReader<byte>(buffer);
-            var writer = GetWriter(Writer);
+            var writer = GetWriter(Writer, sizeHint: 160 * 16); // 160*16 is for Plaintext, for Json 160 would be enough
 
             while (true)
             {
@@ -112,7 +112,7 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0
+#if NETCOREAPP5_0 || NET5_0
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
@@ -197,7 +197,7 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0
+#if NETCOREAPP5_0 || NET5_0
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
@@ -246,7 +246,7 @@ namespace PlatformBenchmarks
         }
 #endif
 
-#if NETCOREAPP5_0
+#if NETCOREAPP5_0 || NET5_0
 
         public void OnStaticIndexedHeader(int index)
         {
@@ -284,8 +284,8 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter)
-            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter));
+        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint)
+            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
 
         private struct WriterAdapter : IBufferWriter<byte>
         {
@@ -311,7 +311,7 @@ namespace PlatformBenchmarks
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
-#if NETCOREAPP5_0
+#if NETCOREAPP5_0 || NET5_0
             public void OnStaticIndexedHeader(int index) 
                 => RequestHandler.OnStaticIndexedHeader(index);
 

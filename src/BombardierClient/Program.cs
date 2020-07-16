@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Benchmarks;
 using Newtonsoft.Json.Linq;
@@ -37,32 +38,23 @@ namespace BombardierClient
             Console.WriteLine("Bombardier Client");
             Console.WriteLine("args: " + String.Join(' ', args));
 
-            // Extracting duration parameters
-            string warmup = "";
-            string duration = "";
+            Console.Write("Measuring first request ... ");
+            await MeasureFirstRequest(args);
 
+            // Extracting parameters
             var argsList = args.ToList();
 
-            var durationIndex = argsList.FindIndex(x => String.Equals(x, "-d", StringComparison.OrdinalIgnoreCase));
-            if (durationIndex >= 0)
+            TryGetArgumentValue("-w", argsList, out int warmup);
+            TryGetArgumentValue("-d", argsList, out int duration);
+            TryGetArgumentValue("-n", argsList, out int requests);
+
+            if (duration == 0 && requests == 0)
             {
-                duration = argsList[durationIndex + 1];
-                argsList.RemoveAt(durationIndex);
-                argsList.RemoveAt(durationIndex);
-            }
-            else
-            {
-                Console.WriteLine("Couldn't find -d argument");
+                Console.WriteLine("Couldn't find valid -d and -n arguments (integers)");
                 return;
             }
 
-            var warmupIndex = argsList.FindIndex(x => String.Equals(x, "-w", StringComparison.OrdinalIgnoreCase));
-            if (warmupIndex >= 0)
-            {
-                warmup = argsList[warmupIndex + 1];
-                argsList.RemoveAt(warmupIndex);
-                argsList.RemoveAt(warmupIndex);
-            }
+            TryGetArgumentValue("-w", argsList, out warmup);
 
             args = argsList.ToArray();
 
@@ -108,9 +100,9 @@ namespace BombardierClient
 
             // Warmup
 
-            if (!String.IsNullOrEmpty(warmup) && warmup != "0s")
+            if (warmup > 0)
             {
-                process.StartInfo.Arguments = $" -d {warmup} {baseArguments}";
+                process.StartInfo.Arguments = $" -d {warmup}s {baseArguments}";
 
                 Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
 
@@ -123,11 +115,17 @@ namespace BombardierClient
                 stringBuilder.Clear();
             }
 
-            process.StartInfo.Arguments = $" -d {duration} {baseArguments}";
+            process.StartInfo.Arguments = 
+                requests > 0
+                    ? $" -n {requests} {baseArguments}"
+                    : $" -d {duration}s {baseArguments}";
 
             Console.WriteLine("> bombardier " + process.StartInfo.Arguments);
 
             process.Start();
+
+            BenchmarksEventSource.SetChildProcessId(process.Id);
+
             process.BeginOutputReadLine();
             process.WaitForExit();
 
@@ -172,7 +170,69 @@ namespace BombardierClient
             BenchmarksEventSource.Measure("bombardier/rps/mean", document["result"]["rps"]["mean"].Value<double>());
 
             BenchmarksEventSource.Measure("bombardier/raw", output);
+        }
 
+        private static bool TryGetArgumentValue(string argName, List<string> argsList, out int value)
+        {
+            var argumentIndex = argsList.FindIndex(arg => string.Equals(arg, argName, StringComparison.OrdinalIgnoreCase));
+            if (argumentIndex >= 0)
+            {
+                string copy = argsList[argumentIndex + 1];
+                argsList.RemoveAt(argumentIndex);
+                argsList.RemoveAt(argumentIndex);
+
+                return int.TryParse(copy, out value) && value > 0;
+            }
+            else
+            {
+                value = default;
+
+                return false;
+            }
+        }
+
+        public static async Task MeasureFirstRequest(string[] args)
+        {
+            var url = args.FirstOrDefault(arg => arg.StartsWith("http", StringComparison.OrdinalIgnoreCase));
+
+            if (url == null)
+            {
+                Console.WriteLine("URL not found, skipping first request");
+                return;
+            }
+
+            // Configuring the http client to trust the self-signed certificate
+            var httpClientHandler = new HttpClientHandler();
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            httpClientHandler.MaxConnectionsPerServer = 1;
+            using(var httpClient = new HttpClient(httpClientHandler))
+            {
+                var cts = new CancellationTokenSource(5000);
+                var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                try
+                {
+                    using (var response = await httpClient.SendAsync(httpMessage, cts.Token))
+                    {
+                        var elapsed = stopwatch.ElapsedMilliseconds;
+                        Console.WriteLine($"{elapsed} ms");
+
+                        BenchmarksEventSource.Log.Metadata("http/firstrequest", "max", "avg", "First request (ms)", "First request (ms)", "n0");
+                        BenchmarksEventSource.Measure("http/firstrequest", elapsed);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("A timeout occurred while measuring the first request");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred while measuring the first request: " + e.ToString());
+                }
+            }
         }
     }
 }

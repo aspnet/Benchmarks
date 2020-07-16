@@ -62,7 +62,7 @@ namespace SignalRClient
 
             app.OnExecuteAsync(cancellationToken =>
             {
-                Console.WriteLine("SignalR Client");
+                Log("SignalR Client starting");
 
                 BenchmarksEventSource.Log.Metadata("signalr/client-version", "all", "all", "Client Version", "Client Version", "object");
                 BenchmarksEventSource.Measure("signalr/client-version", typeof(HubConnection).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.ToString());
@@ -118,6 +118,8 @@ namespace SignalRClient
 
         private static async Task StartScenario()
         {
+            Log($"Starting scenario {Scenario}");
+
             var tasks = new List<Task>(_connections.Count);
             foreach (var connection in _connections)
             {

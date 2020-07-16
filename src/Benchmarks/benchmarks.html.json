@@ -16,7 +16,7 @@
   },
   "DbFortunesRaw-Mono": {
     "Path": "/fortunes/raw",
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
   },
   "DbFortunesRawSync": {
     "Path": "/fortunes/raw-sync"

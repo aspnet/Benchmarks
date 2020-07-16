@@ -51,7 +51,7 @@ Options:
   --[JOB].framework <tfm>                                                  The framework version to use in case it can't be assumed from the .NET runtime version. e.g., netcoreapp3.1
   --[JOB].buildArguments <argument>                                        An argument to pass to msbuild. Can be used multiple times to define multiple values.
   --[JOB].selfContained <true|false>                                       Whether to deploy the app as stand-alone. Default is false. Is is forced to 'true' if either runtimeVersion or aspnetVersion is defined as the SDK versions would be used otherwise.
-  --[JOB].useMonoRuntime <true|false>                                      Whether to use the Mono runtime.
+  --[JOB].useMonoRuntime <jit|llvm-jit|llvm-aot>                           Use a specific mono runtime instead of the dotnet core runtime.
   
   ## Docker options
 
@@ -69,6 +69,7 @@ Options:
   --[JOB].dotnetTraceProviders <profile|flags>                             An optional profile name or list of dotnet-trace providers can be passed. Default is 'cpu-sampling'. See https://github.com/dotnet/diagnostics/blob/master/documentation/dotnet-trace-instructions.md for details. e.g., Microsoft-DotNETCore-SampleProfiler, Microsoft-Windows-DotNETRuntime, gc-verbose.  Can be used multiple times to set multiple providers.
   --[JOB].options.traceOutput <filename>                                   The name of the trace file. Can be a file prefix (app will add *.DATE*.zip) , or a specific name and no DATE* will be added e.g., c:\traces\mytrace
   --[JOB].collectCounters <true|false>                                     Whether to collect dotnet counters.
+  --[JOB].counterProviders <provider>                                      The name of a performance counter provider from which to collect. e.g., System.Runtime (default if none is set), Microsoft-AspNetCore-Server-Kestrel, Microsoft.AspNetCore.Hosting, Microsoft.AspNetCore.Http.Connections, Grpc.AspNetCore.Server, Grpc.Net.client, Npgsql
   --[JOB].collectStartup <true|false>                                      Whether to includes the startup phase in the traces, i.e after the application is launched and before it is marked as ready. For a web application it means before it is ready to accept requests.
 
   ## Environment

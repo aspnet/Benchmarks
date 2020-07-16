@@ -13,10 +13,7 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: master
       project: src/WrkClient/WrkClient.csproj
-    readyStateText: 'Running '
-    sdkVersion: 3.1.102
-    aspNetCoreVersion: '3.1'
-    runtimeVersion: '3.1'
+    isConsoleApp: true
     waitForExit: true
     variables:
       connections: 256  # total number of HTTP connections to keep open with each thread handling N = connections/threads
@@ -24,9 +21,13 @@ jobs:
       warmup: 0 # warmup in seconds
       threads: 32 # total number of threads to use
       pipeline: 1
-      script: null
-      scriptArguments: null
+      script: '' # path or url of a LUA script, e.g., https://raw.githubusercontent.com/wg/wrk/master/scripts/post.lua
+      scriptArguments: '' # arguments passed to the script, e.g., 16
+      serverScheme: http
+      serverAddress: localhost
+      serverPort: 5000
+      serverPath: /
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000
-    arguments: "-c {{connections}} {{serverUri}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {%elsif script %} -s {{script}} -- {{scriptArguments}} {% endif %}"
+    arguments: "-c {{connections}} {% if serverUri == blank or serverUri == empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} --latency -d {{duration}}s -w {{warmup}}s -t {{threads}} {{headers[presetHeaders]}} {% if pipeline > 1 %} -s scripts/pipeline.lua -- {{ pipeline }} {% elsif script.length > 0  %} -s {{script}} -- {{scriptArguments}} {% endif %}"

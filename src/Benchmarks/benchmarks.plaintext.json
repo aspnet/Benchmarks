@@ -20,7 +20,15 @@
   },
   "Plaintext-Mono": {
     "Path": "/plaintext",
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
+  },
+  "Plaintext-Mono-LLVM-JIT": {
+    "Path": "/plaintext",
+    "UseMonoRuntime": "llvm-jit"
+  },
+  "Plaintext-Mono-LLVM-AOT": {
+    "Path": "/plaintext",
+    "UseMonoRuntime": "llvm-aot"
   },
   "PlaintextNonPipelined": {
     "Path": "/plaintext",
@@ -35,7 +43,23 @@
       "ScriptName": "",
       "PipelineDepth": 0
     },
-    "UseMonoRuntime": true
+    "UseMonoRuntime": "jit"
+  },
+  "PlaintextNonPipelined-Mono-LLVM-JIT": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "UseMonoRuntime": "llvm-jit"
+  },
+  "PlaintextNonPipelined-Mono-LLVM-AOT": {
+    "Path": "/plaintext",
+    "ClientProperties": {
+      "ScriptName": "",
+      "PipelineDepth": 0
+    },
+    "UseMonoRuntime": "llvm-aot"
   },
   "CopyToAsync": {
     "Path": "/copytoasync",

@@ -59,7 +59,7 @@ namespace Benchmarks.ServerJob
         public string AspNetCoreVersion { get; set; } = "";
         public string RuntimeVersion { get; set; } = "";
         public string SdkVersion { get; set; } = "";
-        public bool UseMonoRuntime { get; set; } = false;
+        public string UseMonoRuntime { get; set; } = "";
         public bool NoGlobalJson { get; set; }
         public Database Database { get; set; } = Database.None;
 
@@ -143,8 +143,15 @@ namespace Benchmarks.ServerJob
         // Other collection options
         public bool CollectStartup { get; set; }
         public bool CollectCounters { get; set; }
+
+        /// <summary>
+        /// The list of performance counter providers to be collected. Defaults to <c>System.Runtime</c>.
+        /// </summary>
+        public List<string> CounterProviders { get; set; } = new List<string>();
+
         public string BasePath { get; set; }
         public int ProcessId { get; set; }
+        public int ChildProcessId { get; set; }
         public Dictionary<string, string> EnvironmentVariables { get; set; } = new Dictionary<string, string>();
         public List<string> BuildArguments { get; set; } = new List<string>();
         public bool NoClean { get; set; }

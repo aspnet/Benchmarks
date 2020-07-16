@@ -39,7 +39,7 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.grpc.yml
 
 - name: blazorWasmJobs
-  value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-wasm/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
+  value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
 
 - name: efcoreJobs
   value: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
@@ -47,15 +47,28 @@ variables:
 - name: mvcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/benchmarks.mvcjson.yml
 
+# v2
 
 - name: signalRJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.signalr.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/signalr.benchmarks.yml
 
 - name: proxyJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/proxy.benchmarks.yml
 
 - name: yarpJobs
   value: --config https://raw.githubusercontent.com/microsoft/reverse-proxy/master/samples/BenchmarkApp/benchmarks.yml
 
 - name: h2loadConnectionsCount # Default value for h2load. Should be redefined for each job
   value: 28
+
+- name: platformJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/platform.benchmarks.yml
+
+- name: plaintextJobsV2
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/plaintext.benchmarks.yml
+- name: databaseJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/database.benchmarks.yml
+- name: jsonJobsV2
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/json.benchmarks.yml
+- name: frameworksV2
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml

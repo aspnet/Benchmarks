@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
-blazorJobs="--config https://raw.githubusercontent.com/dotnet/aspnetcore/blazor-wasm/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json "
+blazorJobs="--config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json "
 
 jobs=(
   # Blazor

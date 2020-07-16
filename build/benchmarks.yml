@@ -4,8 +4,13 @@ variables:
   - template: job-variables.yml
   - name: session
     value: $(Build.BuildNumber)
+  - name: buildId
+    value: $(Build.BuildId)
+  - name: buildNumber
+    value: $(Build.BuildNumber)
 
 jobs:
+
 - job: Trends
   pool: server
   timeoutInMinutes: 120
@@ -13,20 +18,19 @@ jobs:
     maxParallel: 1
     matrix:
       Intel_Linux:
-        server: http://asp-citrine-lin:5001
+        profile: aspnet-citrine-lin
       Intel_Windows:
-        server: http://asp-citrine-win:5001
+        profile: aspnet-citrine-win
       Arm_Linux:
-        server: http://asp-citrine-arm:5001
+        profile: aspnet-citrine-arm
       Amd_Linux:
-        server: http://asp-citrine-amd:5001
+        profile: aspnet-citrine-amd
   steps:
-  - template: trend-scenarios.yml
+  - template: trend-v2-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
-      server: $(server)
-      client: http://asp-citrine-load:5002
+      profile: $(profile)
       connection: 'ASP.NET Benchmarks Queue'
 
 - job: Baselines
@@ -38,23 +42,22 @@ jobs:
     maxParallel: 1
     matrix:
       Intel_Linux:
-        server: http://asp-citrine-lin:5001
+        profile: aspnet-citrine-lin
         skip: ""
       Intel_Windows:
-        server: http://asp-citrine-win:5001
+        profile: aspnet-citrine-win
         skip: ""
       Arm_Linux:
-        server: http://asp-citrine-arm:5001
-        skip: "2.1"
+        profile: aspnet-citrine-arm
+        skip: ""
       Amd_Linux:
-        server: http://asp-citrine-amd:5001
+        profile: aspnet-citrine-amd
         skip: ""
   steps:
-  - template: baselines-scenarios.yml
+  - template: baselines-v2-scenarios.yml
     parameters:
-      server: $(server)
+      profile: $(profile)
       skip: $(skip)
-      client: http://asp-citrine-load:5002
       warmup: 15
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
@@ -68,43 +71,21 @@ jobs:
     maxParallel: 1
     matrix:
       Intel_Linux:
-        server: http://asp-citrine-lin:5001
+        profile: aspnet-citrine-lin
       Amd_Linux:
-        server: http://asp-citrine-amd:5001
+        profile: aspnet-citrine-amd
   steps:
-  - template: frameworks-scenarios.yml
+  - template: frameworks-v2-scenarios.yml
     parameters:
-      server: $(server)
-      client: http://asp-citrine-load:5002
+      profile: $(profile)
       warmup: 15
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
 
-- job: GRPC
-  pool: server
-  timeoutInMinutes: 60
-  dependsOn: Frameworks
-  condition: succeededOrFailed()
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Linux:
-        server: http://asp-citrine-lin:5001
-      Intel_Windows:
-        server: http://asp-citrine-win:5001
-  steps:
-  - template: grpc-scenarios.yml
-    parameters:
-      server: $(server)
-      client: http://asp-citrine-load:5002
-      warmup: 5
-      duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
-
-- job: gRPCv2
+- job: gRPC
   pool: server
   timeoutInMinutes: 180
-  dependsOn: GRPC
+  dependsOn: Frameworks
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
@@ -142,36 +123,35 @@ jobs:
 #      duration: 15
 #      connection: 'ASP.NET Benchmarks Queue'
 
-#- job: SignalR
-#  pool: server
-#  timeoutInMinutes: 120
-#  dependsOn: MVC
-#  condition: succeededOrFailed()
-#  strategy:
-#    maxParallel: 1
-#    matrix:
-#      Intel_Linux:
-#        profile: aspnet-citrine-lin
-#      Intel_Windows:
-#        profile: aspnet-citrine-win
-#  steps:
-#  - template: signalr-scenarios.yml
-#    parameters:
-#      profile: $(profile)
-#      warmup: 1
-#      duration: 15
-#      connection: 'ASP.NET Benchmarks Queue'
+- job: SignalR
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: gRPC
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: signalr-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 1
+      duration: 15
+      connection: 'ASP.NET Benchmarks Queue'
 
 - job: Proxies
   pool: server
   timeoutInMinutes: 90
-#  dependsOn: SignalR
-  dependsOn: gRPCv2
+  dependsOn: SignalR
   condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
     parameters:
-      profile: aspnet-citrine
+      profile: aspnet-citrine-lin
       warmup: 15
       duration: 15
       connection: 'ASP.NET Benchmarks Queue'
@@ -186,7 +166,6 @@ jobs:
   - template: efcore-scenarios.yml
     parameters:
       server: http://asp-citrine-win:5001
-      client: http://asp-citrine-load:5002
       connection: 'ASP.NET Benchmarks Queue'
 
 - job: Blazor

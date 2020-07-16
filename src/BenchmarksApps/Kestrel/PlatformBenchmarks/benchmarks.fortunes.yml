@@ -12,34 +12,82 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
+    framework: netcoreapp5.0
 
   postgresql:
     source:
-      repository: https://github.com/aspnet/benchmarks.git
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
       branchOrCommit: master
-      dockerFile: docker/postgres-techempower/Dockerfile
-      dockerImageName: postgres
-      dockerContextDirectory: docker/postgres-techempower
-    readyStateText: PostgreSQL init process complete
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
 
 scenarios:
   fortunesplatform:
     db:
       job: postgresql
-
     application:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: html
         path: /fortunes
-        warmup: 5 
-        duration: 10
-        serverPort: 5000
+        
+  single_query:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+
+  multiple_queries:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/20
+  
+  updates:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/20
 
 profiles:
   aspnet-citrine:
@@ -49,16 +97,67 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-amd:5001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
-        environmentVariables:
-          database: PostgreSQL
-          connectionstring: Server=10.0.0.106;Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+        variables:
+          databaseServer: 10.0.0.103
+        options:
+          displayOutput: true
       load:
         variables:
           connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
         endpoints: 
-          - http://asp-citrine-win:5001
+          - http://asp-citrine-load:5001
 
+  aspnet-perf-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+        options:
+          displayOutput: true
+      load:
+        variables:
+          connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.103
+        options:
+          displayOutput: true
+      load:
+        variables:
+          connections: 512
+          warmup: 5 
+          duration: 10
+          serverPort: 5000
+        endpoints: 
+          - http://asp-perf-load:5001

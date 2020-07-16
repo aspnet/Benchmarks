@@ -137,7 +137,7 @@ namespace BenchmarksClient.Workers
                 }
                 catch (OperationCanceledException)
                 {
-                    Log("A timeout occured while measuring the first request: " + FirstRequestTimeout.ToString());
+                    Log("A timeout occurred while measuring the first request: " + FirstRequestTimeout.ToString());
                 }
                 finally
                 {
@@ -170,7 +170,7 @@ namespace BenchmarksClient.Workers
                     }
                     catch (OperationCanceledException)
                     {
-                        Log("A timeout occured while measuring the latency, skipping ...");
+                        Log("A timeout occurred while measuring the latency, skipping ...");
                         break;
                     }
                     finally
@@ -322,7 +322,7 @@ namespace BenchmarksClient.Workers
                     }
                     catch (Exception e)
                     {
-                        Log("An error occured while parsing the results: " + e.ToString());
+                        Log("An error occurred while parsing the results: " + e.ToString());
                     }
                 }
 

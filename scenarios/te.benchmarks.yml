@@ -1,0 +1,366 @@
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+
+jobs:
+  nodejs:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/JavaScript/nodejs/nodejs.dockerfile
+      dockerImageName: nodejs
+      dockerContextDirectory: frameworks/JavaScript/nodejs/
+    readyStateText: NodeJS worker listening
+    variables:
+      serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  actix:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Rust/actix/actix-raw.dockerfile
+      dockerImageName: actix_raw
+      dockerContextDirectory: frameworks/Rust/actix/
+    readyStateText: Started http server
+    variables:
+      serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  fasthttp:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Go/fasthttp/fasthttp-prefork.dockerfile
+      dockerImageName: fasthttp_prefork
+      dockerContextDirectory: frameworks/Go/fasthttp/
+    variables:
+      serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  ulib:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerContextDirectory: frameworks/C++/ulib/
+    # readyStateText: Started http server
+    port: 8080
+    variables:
+      serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  netty:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Java/netty/netty.dockerfile
+      dockerImageName: netty
+      dockerContextDirectory: frameworks/Java/netty/
+    readyStateText: Httpd started
+    variables:
+      serverPort: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+  mysql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/mysql/mysql.dockerfile
+      dockerImageName: mysql_te
+      dockerContextDirectory: toolset/databases/mysql
+    readyStateText: ready for connections
+    noClean: true
+
+scenarios:
+
+  # NodeJS
+  plaintext_nodejs:
+    db:
+      # nodejs image requires mysql to be available
+      job: mysql
+    application:
+      job: nodejs
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json_nodejs:
+    db:
+      # nodejs image requires mysql to be available
+      job: mysql
+    application:
+      job: nodejs
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /json
+
+  fortunes_nodejs:
+    db:
+      job: mysql
+    application:
+      job: nodejs
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: html
+        path: /fortunes
+
+  # Actix (Rust)
+  plaintext_actix:
+    application:
+      job: actix
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json_actix:
+    application:
+      job: actix
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /json
+
+  fortunes_actix:
+    db:
+      job: postgresql
+    application:
+      job: actix
+      source:
+          dockerFile: frameworks/Rust/actix/actix-pg.dockerfile
+          dockerImageName: actix_pg
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: html
+        path: /fortune
+
+  # FastHttp (Go)
+  plaintext_fasthttp:
+    db:
+      job: postgresql
+    application:
+      job: fasthttp
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json_fasthttp:
+    db:
+      job: postgresql
+    application:
+      job: fasthttp
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /json
+
+  fortunes_fasthttp:
+    db:
+      job: postgresql
+    application:
+      job: fasthttp
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: html
+        path: /fortune
+
+  # Ulib (C++)
+  plaintext_ulib:
+    application:
+      job: ulib
+      source:
+          dockerFile: frameworks/C++/ulib/ulib.dockerfile
+          dockerImageName: ulib_plaintext
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json_ulib:
+    application:
+      job: ulib
+      source:
+          dockerFile: frameworks/C++/ulib/ulib-json.dockerfile
+          dockerImageName: ulib_json
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /json
+
+  fortunes_ulib:
+    db:
+      job: postgresql
+    application:
+      job: ulib
+      source:
+          dockerFile: frameworks/C++/ulib/ulib-postgres.dockerfile
+          dockerImageName: ulib_postgres
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: html
+        path: /fortune
+
+  # Netty (Java)
+  plaintext_netty:
+    application:
+      job: netty
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json_netty:
+    application:
+      job: netty
+    load:
+      job: wrk
+      variables:
+        serverPort: 8080
+        presetHeaders: json
+        path: /json
+
+profiles:
+  aspnet-citrine-lin:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-win:
+    variables:
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-arm:
+    variables:
+      serverAddress: 10.0.0.107
+      cores: 32
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-arm:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-citrine-amd:
+    variables:
+      serverAddress: 10.0.0.106
+      cores: 48
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
+  aspnet-perf-lin:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
