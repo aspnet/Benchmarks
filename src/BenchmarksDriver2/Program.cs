@@ -1661,6 +1661,12 @@ namespace BenchmarksDriver
                 var reducedValues = groups.SelectMany(x => x)
                     .Where(x => x.Key == metadata.Name);
 
+                // some values are not emitted, even if metadata is present, causing aggregation to fail
+                if (reducedValues.Count() == 0)
+                {
+                    continue;
+                }
+
                 object reducedValue = null;
 
                 switch (metadata.Reduce)
