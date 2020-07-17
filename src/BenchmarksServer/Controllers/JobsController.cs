@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Benchmarks.ServerJob;
 using Microsoft.AspNetCore.Mvc;
@@ -29,11 +27,30 @@ namespace BenchmarkServer.Controllers
             _jobs = jobs;
         }
 
-        public IEnumerable<ServerJob> GetAll()
+        [HttpGet("all")]
+        public IEnumerable<JobResult> GetAll()
         {
             lock (_jobs)
             {
-                return _jobs.GetAll();
+                return _jobs.GetAll().Select(x => new JobResult(x, this.Url));
+            }
+        }
+
+        [HttpGet("")]
+        public IEnumerable<JobResult> GetQueue()
+        {
+            lock (_jobs)
+            {
+                return _jobs.GetAll().Where(IsActive).Select(x => new JobResult(x, this.Url));
+            }
+
+            bool IsActive(ServerJob job)
+            {
+                return job.State == ServerState.New
+                    || job.State == ServerState.Waiting
+                    || job.State == ServerState.Initializing
+                    || job.State == ServerState.Running
+                    ;
             }
         }
 

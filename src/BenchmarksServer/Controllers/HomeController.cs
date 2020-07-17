@@ -9,6 +9,12 @@ namespace BenchmarkServer.Controllers
     [Route("")]
     public class HomeController : Controller
     {
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return RedirectToAction("GetQueue", "Jobs");
+        }
+
         [HttpGet("info")]
         public IActionResult Info()
         {
