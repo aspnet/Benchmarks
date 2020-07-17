@@ -49,6 +49,7 @@ namespace BenchmarkServer.Controllers
                 return job.State == ServerState.New
                     || job.State == ServerState.Waiting
                     || job.State == ServerState.Initializing
+                    || job.State == ServerState.Starting
                     || job.State == ServerState.Running
                     ;
             }
