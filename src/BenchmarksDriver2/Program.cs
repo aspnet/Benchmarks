@@ -474,127 +474,221 @@ namespace BenchmarksDriver
                         Log.Write($"Job {i} of {iterations}");
                     }
 
-                    foreach (var jobName in dependencies)
+                    while (true)
                     {
-                        var service = configuration.Jobs[jobName];
-                        service.DriverVersion = 2;
+                        var deadlockDetected = false;
 
-                        List<JobConnection> jobs;
-
-                        // Create a new list of JobConnection instances if the service is
-                        // not already running from a previous loop
-
-                        if (jobsByDependency.ContainsKey(jobName) && SpanShouldKeepJobRunning(jobName))
+                        try
                         {
-                            jobs = jobsByDependency[jobName];
-
-                            // Clear measurements, only if the service is not a console app as it
-                            // would already be stopped
-
-                            if (!service.WaitForExit)
+                            foreach (var jobName in dependencies)
                             {
-                                await Task.WhenAll(jobs.Select(job => job.ClearMeasurements()));
-                            }
-                        }
-                        else
-                        {
-                            jobs = service.Endpoints.Select(endpoint => new JobConnection(service, new Uri(endpoint))).ToList();
+                                var service = configuration.Jobs[jobName];
+                                service.DriverVersion = 2;
 
-                            jobsByDependency[jobName] = jobs;
+                                List<JobConnection> jobs;
 
-                            // Check that each configured agent endpoint for this service 
-                            // has a compatible OS
-                            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem)
-                                || !String.IsNullOrEmpty(service.Options.RequiredArchitecture))
-                            {
+                                // Create a new list of JobConnection instances if the service is
+                                // not already running from a previous loop
+
+                                if (jobsByDependency.ContainsKey(jobName) && SpanShouldKeepJobRunning(jobName))
+                                {
+                                    jobs = jobsByDependency[jobName];
+
+                                    // Clear measurements, only if the service is not a console app as it
+                                    // would already be stopped
+
+                                    if (!service.WaitForExit)
+                                    {
+                                        await Task.WhenAll(jobs.Select(job => job.ClearMeasurements()));
+                                    }
+                                }
+                                else
+                                {
+                                    jobs = service.Endpoints.Select(endpoint => new JobConnection(service, new Uri(endpoint))).ToList();
+
+                                    jobsByDependency[jobName] = jobs;
+
+                                    // Check that each configured agent endpoint for this service 
+                                    // has a compatible OS
+                                    if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem)
+                                        || !String.IsNullOrEmpty(service.Options.RequiredArchitecture))
+                                    {
+                                        foreach (var job in jobs)
+                                        {
+                                            var info = await job.GetInfoAsync();
+
+                                            var os = info["os"]?.ToString();
+                                            var arch = info["arch"]?.ToString();
+
+                                            if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem) && !String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                                                return new ExecutionResult();
+                                            }
+
+                                            if (!String.IsNullOrEmpty(service.Options.RequiredArchitecture) && !String.Equals(arch, service.Options.RequiredArchitecture, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                Log.Write($"Scenario skipped as the agent doesn't match the architecture constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
+                                                return new ExecutionResult();
+                                            }
+                                        }
+                                    }
+
+                                    // Check that we are not creating a deadlock by starting this job
+
+                                    // Start this service on all configured agent endpoints
+
+                                    await Task.WhenAll(
+                                        jobs.Select(async job =>
+                                        {
+                                            // Before starting a job, we need to check if it could block another run
+                                            var queue = await job.GetQueueAsync();
+
+                                            var runningJob = queue.FirstOrDefault(x => x.State == "Running" && x.RunId != job.Job.RunId);
+
+                                            // If there is a running job, we check if we are not blocking another one from the same run
+                                            if (runningJob != null)
+                                            {
+                                                foreach (var jobName in dependencies)
+                                                {
+                                                    if (jobsByDependency.ContainsKey(jobName))
+                                                    {
+                                                        foreach (var j in jobsByDependency[jobName])
+                                                        {
+                                                            var otherRunningJobs = await j.GetQueueAsync();
+
+                                                            // Find a job waiting for us on the other endpoint
+                                                            var jobA = otherRunningJobs.FirstOrDefault(x => x.State == "New" && x.RunId == runningJob.RunId);
+                                                            
+                                                            // If the job we are running is waitForExit, we don't need to interrupt it
+                                                            // as it will stop by itself
+
+                                                            var jobB = otherRunningJobs.FirstOrDefault(x => x.State == "Running" && x.RunId == j.Job.RunId && !j.Job.WaitForExit);
+
+                                                            if (jobA != null && jobB != null)
+                                                            {
+                                                                Log.Write($"Found deadlock on {j.ServerJobUri}, interrupting ...");
+
+                                                                foreach (var name in dependencies.Reverse())
+                                                                {
+                                                                    var service = configuration.Jobs[name];
+
+                                                                    // Skip failed jobs
+                                                                    if (!jobsByDependency.ContainsKey(name))
+                                                                    {
+                                                                        continue;
+                                                                    }
+
+                                                                    var jobs = jobsByDependency[name];
+
+                                                                    if (!service.WaitForExit)
+                                                                    {
+                                                                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                                                                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                                                                    }
+                                                                }
+
+                                                                // Wait until another runId has started, or the current runId could still be picked up
+
+                                                                var queueStarted = DateTime.UtcNow;
+
+                                                                while (true) 
+                                                                {
+                                                                    otherRunningJobs = await j.GetQueueAsync();
+
+                                                                    var otherRunningJob = otherRunningJobs.FirstOrDefault(x => x.State == "Running" || x.State == "Initializing" || x.State == "Starting" && x.RunId != job.Job.RunId);
+
+                                                                    if (otherRunningJob != null || (DateTime.UtcNow - queueStarted > TimeSpan.FromSeconds(3)))
+                                                                    {
+                                                                        break;
+                                                                    }
+                                                                } 
+                                                                
+
+                                                                throw new JobDeadlockException();
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Start job on agent
+                                            return await job.StartAsync(
+                                                    jobName,
+                                                    _outputArchiveOption,
+                                                    _buildArchiveOption
+                                                );
+                                        })
+                                    );
+
+                                    if (service.WaitForExit)
+                                    {
+                                        // Wait for all clients to stop
+                                        while (true)
+                                        {
+                                            var stop = true;
+
+                                            foreach (var job in jobs)
+                                            {
+                                                var state = await job.GetStateAsync();
+
+                                                stop = stop && (
+                                                    state == ServerState.Stopped || 
+                                                    state == ServerState.Failed ||
+                                                    state == ServerState.Deleted
+                                                    );
+                                            }
+
+                                            if (stop)
+                                            {
+                                                break;
+                                            }
+
+                                            await Task.Delay(1000);
+                                        }
+
+                                        // Stop a blocking job
+                                        await Task.WhenAll(jobs.Select(job => job.StopAsync()));
+
+                                        await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
+
+                                        await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
+
+                                        await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                                    }
+                                    
+                                }
+
+                                var aJobFailed = false;
+
+                                // Skipped other services if a job has failed
                                 foreach (var job in jobs)
                                 {
-                                    var info = await job.GetInfoAsync();
+                                    var state = await job.GetStateAsync();
 
-                                    var os = info["os"]?.ToString();
-                                    var arch = info["arch"]?.ToString();
-
-                                    if (!String.IsNullOrEmpty(service.Options.RequiredOperatingSystem) && !String.Equals(os, service.Options.RequiredOperatingSystem, StringComparison.OrdinalIgnoreCase))
+                                    if (state == ServerState.Failed)
                                     {
-                                        Log.Write($"Scenario skipped as the agent doesn't match the OS constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
-                                        return new ExecutionResult();
-                                    }
-
-                                    if (!String.IsNullOrEmpty(service.Options.RequiredArchitecture) && !String.Equals(arch, service.Options.RequiredArchitecture, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        Log.Write($"Scenario skipped as the agent doesn't match the architecture constraint ({service.Options.RequiredOperatingSystem}) on service '{jobName}'");
-                                        return new ExecutionResult();
-                                    }
-                                }
-                            }
-
-                            // Start this service on all configured agent endpoints
-                            await Task.WhenAll(
-                                jobs.Select(job =>
-                                {
-                                // Start job on agent
-                                return job.StartAsync(
-                                            jobName,
-                                            _outputArchiveOption,
-                                            _buildArchiveOption
-                                        );
-                                })
-                            );
-
-                            if (service.WaitForExit)
-                            {
-                                // Wait for all clients to stop
-                                while (true)
-                                {
-                                    var stop = true;
-
-                                    foreach (var job in jobs)
-                                    {
-                                        var state = await job.GetStateAsync();
-
-                                        stop = stop && (
-                                            state == ServerState.Stopped || 
-                                            state == ServerState.Failed ||
-                                            state == ServerState.Deleted
-                                            );
-                                    }
-
-                                    if (stop)
-                                    {
+                                        aJobFailed = true;
                                         break;
                                     }
-
-                                    await Task.Delay(1000);
                                 }
 
-                                // Stop a blocking job
-                                await Task.WhenAll(jobs.Select(job => job.StopAsync()));
-
-                                await Task.WhenAll(jobs.Select(job => job.TryUpdateJobAsync()));
-
-                                await Task.WhenAll(jobs.Select(job => job.DownloadAssetsAsync(jobName)));
-
-                                await Task.WhenAll(jobs.Select(job => job.DeleteAsync()));
+                                if (aJobFailed)
+                                {
+                                    Log.Write($"Job has failed, interrupting benchmarks ...");
+                                    break;
+                                }
                             }
                         }
-
-                        var aJobFailed = false;
-
-                        // Skipped other services if a job has failed
-                        foreach (var job in jobs)
+                        catch (JobDeadlockException)
                         {
-                            var state = await job.GetStateAsync();
-
-                            if (state == ServerState.Failed)
-                            {
-                                aJobFailed = true;
-                                break;
-                            }
+                            deadlockDetected = true;
+                            Log.Write("Deadlock detected, restarting scenario ...");
                         }
 
-                        if (aJobFailed)
+                        if (!deadlockDetected)
                         {
-                            Log.Write($"Job has failed, interrupting benchmarks ...");
                             break;
                         }
                     }
