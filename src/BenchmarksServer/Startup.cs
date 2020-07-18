@@ -172,12 +172,6 @@ namespace BenchmarkServer
             {
                 endpoints.MapDefaultControllerRoute();
             });
-
-            // Register a default startup page to ensure the application is up
-            app.Run((context) =>
-            {
-                return context.Response.WriteAsync("OK!");
-            });
         }
 
         public static int Main(string[] args)
@@ -272,49 +266,6 @@ namespace BenchmarkServer
 
         private static async Task<int> Run(string url, string hostname, string dockerHostname)
         {
-            var isDefaultUrl = url == _defaultUrl;
-
-            // if the default url is used, check if the port is already in use
-            if (isDefaultUrl)
-            {
-                while (true)
-                {
-                    try
-                    {
-                        var localCts = new CancellationTokenSource();
-
-                        var localTask = new WebHostBuilder()
-                            .UseUrls(url)
-                            .UseKestrel()
-                            .Configure(_ => { })
-                            .ConfigureLogging((hostingContext, logging) =>
-                            {
-                                logging.ClearProviders();
-                            })
-                            .Build()
-                            .RunAsync(localCts.Token);
-
-                        localCts.Cancel();
-
-                        await localTask;
-
-                        break;
-                    }
-                    catch (IOException e)
-                    {
-                        if (e.InnerException is AddressInUseException)
-                        {
-                            var port = int.Parse(url.Substring(url.LastIndexOf(':') + 1));
-                            url = url.Replace(port.ToString(), (port + 1).ToString());
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-            }
-
             var host = new WebHostBuilder()
                     .UseKestrel()
                     .ConfigureKestrel(o => o.Limits.MaxRequestBodySize = (long)10 * 1024 * 1024 * 1024)
