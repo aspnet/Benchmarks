@@ -67,7 +67,7 @@ steps:
     displayName: "${{ s.displayName }} ${{ parameters.connection }}"
     condition: succeededOrFailed()
     inputs:
-      connectedServiceName: ASP.NET Benchmarks Queue
+      connectedServiceName: "${{ parameters.connection }}"
       waitForCompletion: true
       messageBody: |
         {
