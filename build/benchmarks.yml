@@ -18,6 +18,7 @@ jobs:
     maxParallel: 2
     matrix:
       Intel_Linux:
+        queue: ASP.NET Benchmarks Queue
         profile: aspnet-citrine-lin
 
       # Intel_Windows:
@@ -34,7 +35,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: $(queue)
       profile: $(profile)
 
 - job: Baselines
@@ -61,7 +62,6 @@ jobs:
   - template: baselines-v2-scenarios.yml
     parameters:
       profile: $(profile)
-      skip: $(skip)
       warmup: 15
       duration: 15
       connection: $(connection)
