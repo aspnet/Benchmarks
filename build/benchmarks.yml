@@ -19,7 +19,8 @@ jobs:
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
-        connection: 'ASP.NET Benchmarks Queue'
+        queue: ASP.NET Benchmarks Queue
+
       # Intel_Windows:
       #   profile: aspnet-citrine-win
       #   connection: 'ASP.NET Benchmarks Mono Queue'
@@ -35,7 +36,7 @@ jobs:
       warmup: 15
       duration: 15
       profile: $(profile)
-      connection: $(connection)
+      connection: $(queue)
 
 - job: Baselines
   pool: server
