@@ -16,7 +16,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   strategy:
-    maxParallel: 2
+    maxParallel: 1
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
@@ -35,7 +35,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   strategy:
-    maxParallel: 2
+    maxParallel: 1
     matrix:
       Intel_Windows:
         profile: aspnet-citrine-win
