@@ -20,15 +20,15 @@ jobs:
       Intel_Linux:
         profile: aspnet-citrine-lin
         connection: 'ASP.NET Benchmarks Queue'
-      Intel_Windows:
-        profile: aspnet-citrine-win
-        connection: 'ASP.NET Benchmarks Mono Queue'
-      Arm_Linux:
-        profile: aspnet-citrine-arm
-        connection: 'ASP.NET Benchmarks Queue'
-      Amd_Linux:
-        profile: aspnet-citrine-amd
-        connection: 'ASP.NET Benchmarks Mono Queue'
+      # Intel_Windows:
+      #   profile: aspnet-citrine-win
+      #   connection: 'ASP.NET Benchmarks Mono Queue'
+      # Arm_Linux:
+      #   profile: aspnet-citrine-arm
+      #   connection: 'ASP.NET Benchmarks Queue'
+      # Amd_Linux:
+      #   profile: aspnet-citrine-amd
+      #   connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: trend-v2-scenarios.yml
     parameters:
