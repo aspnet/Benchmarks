@@ -49,3 +49,223 @@ jobs:
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
 
+- job: Baselines_Linux
+  displayName: Baselines Linux Queue
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Trends_Linux
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Arm_Linux:
+        profile: aspnet-citrine-arm
+  steps:
+  - template: baselines-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: Baselines_Windows
+  displayName: Baselines Windows Queue
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Trends_Windows
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-win
+      Arm_Linux:
+        profile: aspnet-citrine-amd
+  steps:
+  - template: baselines-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+
+- job: Frameworks_Linux
+  displayName: Frameworks Linux Queue
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Baselines_Linux
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: frameworks-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: Frameworks_Windows
+  displayName: Frameworks Windows Queue
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Baselines_Windows
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Amd_Linux:
+        profile: aspnet-citrine-amd
+  steps:
+  - template: frameworks-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+
+- job: gRPC_Linux
+  displayName: gRPC Linux Queue
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: Frameworks_Linux
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: grpc-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: gRPC_Windows
+  displayName: gRPC Windows Queue
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: Frameworks_Windows
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: grpc-v2-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+
+- job: SignalR_Linux
+  displayName: SignalR Linux Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: gRPC_Linux
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: signalr-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 1
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: SignalR_Windows
+  displayName: SignalR Windows Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: gRPC_Windows
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: signalr-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 1
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+
+- job: Proxies
+  pool: server
+  timeoutInMinutes: 90
+  dependsOn: SignalR_Linux
+  condition: succeededOrFailed()
+  steps:
+  - template: proxies-scenarios.yml
+    parameters:
+      profile: aspnet-citrine-lin
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: EFCore
+  displayName: EF Core
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: SignalR_Windows
+  condition: succeededOrFailed()
+  steps:
+  - template: efcore-scenarios.yml
+    parameters:
+      server: http://asp-citrine-win:5001
+      connection: ASP.NET Benchmarks Mono Queue
+
+- job: Blazor
+  pool: server
+  timeoutInMinutes: 30
+  dependsOn: Proxies
+  condition: succeededOrFailed()
+  steps:
+  - template: blazor-scenarios.yml
+    parameters:
+      server: http://asp-perf-lin:5001
+      connection: ASP.NET Benchmarks Queue
+
+# CLOUD SCENARIOS
+
+- job: TrendsAzure
+  displayName: Trends Azure
+  pool: server
+  timeoutInMinutes: 180
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      server: http://10.0.0.9:5001
+      client: http://10.0.0.10:5002
+      connection: 'ASP.NET Benchmarks Azure Queue'
+
+# - job: SignalRAzure
+#   displayName: SignalR Azure
+#   pool: server
+#   timeoutInMinutes: 180
+#   dependsOn: TrendsAzure
+#   condition: succeededOrFailed()
+#   steps:
+#   - template: signalr-scenarios.yml
+#     parameters:
+#       profile: $(profile)
+#       warmup: 1
+#       duration: 15
+#       connection: 'ASP.NET Benchmarks Azure Queue'
