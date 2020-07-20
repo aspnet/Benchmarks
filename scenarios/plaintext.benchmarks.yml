@@ -177,17 +177,17 @@ profiles:
   aspnet-perf-win:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.102
+      serverAddress: 10.0.0.110
       cores: 12
     jobs: 
       db:
         endpoints: 
-          - http://asp-perf-db:5001
+          - http://asp-perf-load:5001
       application:
         endpoints: 
           - http://asp-perf-win:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.104
       load:
         endpoints: 
-          - http://asp-perf-load:5001
+          - http://asp-perf-db:5001

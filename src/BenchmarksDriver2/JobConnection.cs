@@ -53,6 +53,8 @@ namespace BenchmarksDriver
             _serverJobsUri = new Uri(_serverUri, "/jobs");
         }
 
+        public string ServerJobUri => _serverJobUri;
+
         public ServerJob Job { get; private set; }
 
         public async Task<string> StartAsync(
@@ -79,7 +81,8 @@ namespace BenchmarksDriver
 
             Log.Write($"Fetching job: {_serverJobUri}");
 
-            // Waiting for the job to be selected, then upload custom files and send the start
+            // When a job is submitted it has the state New
+            // Waiting for the job to be selected (Initializing), then upload custom files and send the start
 
             while (true)
             {
@@ -93,7 +96,7 @@ namespace BenchmarksDriver
 
                 #region Ensure the job is valid
 
-                if (Job.ServerVersion < 3)
+                if (Job.ServerVersion < 4)
                 {
                     throw new Exception($"Invalid server version ({Job.ServerVersion}), please update your server to match this driver version.");
                 }
@@ -115,7 +118,7 @@ namespace BenchmarksDriver
 
                 #endregion
 
-                if (Job?.State == ServerState.Initializing)
+                if (Job.State == ServerState.Initializing)
                 {
                     Log.Write($"Job has been selected by the server ...");
 
@@ -860,6 +863,22 @@ namespace BenchmarksDriver
             var response = await _httpClient.GetStringAsync(uri);
 
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+        }
+
+        /// <summary>
+        /// Returns the list of active jobs.
+        /// </summary>
+        public async Task<IEnumerable<JobView>> GetQueueAsync()
+        {
+            Log.Verbose($"GET {_serverJobsUri} ...");
+            var response = await _httpClient.GetAsync(_serverJobsUri);
+            response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            Log.Verbose($"{(int)response.StatusCode} {response.StatusCode} {responseContent}");
+
+            return JsonConvert.DeserializeObject<JobView[]>(responseContent);
         }
     }
 }

@@ -343,7 +343,7 @@ namespace BenchmarkServer
                     {
                         lock (_jobs)
                         {
-                            // Looking for the new groupd of jobs
+                            // Looking for the new runId of jobs
                             var next = _jobs.GetAll().FirstOrDefault(x => x.State == ServerState.New);
 
                             if (next != null)
@@ -1343,7 +1343,7 @@ namespace BenchmarkServer
             }
             catch (Exception e)
             {
-                Log.WriteLine($"Unnexpected error: {e.ToString()}");
+                Log.WriteLine($"Unexpected error: {e.ToString()}");
             }
         }
 
