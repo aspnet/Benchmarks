@@ -103,7 +103,7 @@ namespace AzDoConsumer
                     }
                 }
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
                 // Ignore if the application is already stopped:
                 //Process error: System.InvalidOperationException: No process is associated with this object.
@@ -134,7 +134,14 @@ namespace AzDoConsumer
 
         public void Dispose()
         {
-            Stop();
+            try
+            {
+                Stop();
+            }
+            catch
+            {
+
+            }
 
             OnStandardOutput = null;
             OnStandardError = null;
@@ -145,6 +152,5 @@ namespace AzDoConsumer
             _process?.Dispose();
             _process = null;
         }
-
     }
 }

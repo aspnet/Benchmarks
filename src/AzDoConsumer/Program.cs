@@ -190,11 +190,17 @@ namespace AzDoConsumer
                     }
                     catch (Exception e)
                     {
-                        await devopsMessage?.SendTaskCompletedEventAsync(succeeded: false);
-
-                        await args.AbandonAsync(message);
-
                         Console.WriteLine("Job failed: " + e.Message);
+
+                        try
+                        {
+                            await devopsMessage?.SendTaskCompletedEventAsync(succeeded: false);
+                            await args.AbandonAsync(message);
+                        }
+                        catch (Exception f)
+                        {
+                            Console.WriteLine("Failed to abandon task: " + f.Message);
+                        }
                     }
                     finally
                     {
