@@ -15,23 +15,27 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+        connection: 'ASP.NET Benchmarks Queue'
       Intel_Windows:
         profile: aspnet-citrine-win
+        connection: 'ASP.NET Benchmarks Mono Queue'
       Arm_Linux:
         profile: aspnet-citrine-arm
+        connection: 'ASP.NET Benchmarks Queue'
       Amd_Linux:
         profile: aspnet-citrine-amd
+        connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: trend-v2-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
       profile: $(profile)
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: $(connection)
 
 - job: Baselines
   pool: server
@@ -39,20 +43,20 @@ jobs:
   dependsOn: Trends
   condition: succeededOrFailed()
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
-        skip: ""
+        connection: 'ASP.NET Benchmarks Queue'
       Intel_Windows:
         profile: aspnet-citrine-win
-        skip: ""
+        connection: 'ASP.NET Benchmarks Mono Queue'
       Arm_Linux:
         profile: aspnet-citrine-arm
-        skip: ""
+        connection: 'ASP.NET Benchmarks Queue'
       Amd_Linux:
         profile: aspnet-citrine-amd
-        skip: ""
+        connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: baselines-v2-scenarios.yml
     parameters:
@@ -60,7 +64,7 @@ jobs:
       skip: $(skip)
       warmup: 15
       duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: $(connection)
 
 - job: Frameworks
   pool: server
@@ -68,19 +72,22 @@ jobs:
   dependsOn: Baselines
   condition: succeededOrFailed()
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+        connection: 'ASP.NET Benchmarks Queue'
+
       Amd_Linux:
         profile: aspnet-citrine-amd
+        connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: frameworks-v2-scenarios.yml
     parameters:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: $(connection)
 
 - job: gRPC
   pool: server
@@ -88,19 +95,21 @@ jobs:
   dependsOn: Frameworks
   condition: succeededOrFailed()
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+        connection: 'ASP.NET Benchmarks Queue'
       Intel_Windows:
         profile: aspnet-citrine-win
+        connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: grpc-v2-scenarios.yml
     parameters:
       profile: $(profile)
       warmup: 5
       duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: $(connection)
 
 #- job: MVC
 #  pool: server
@@ -129,19 +138,21 @@ jobs:
   dependsOn: gRPC
   condition: succeededOrFailed()
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+        connection: 'ASP.NET Benchmarks Queue'
       Intel_Windows:
         profile: aspnet-citrine-win
+        connection: 'ASP.NET Benchmarks Mono Queue'
   steps:
   - template: signalr-scenarios.yml
     parameters:
       profile: $(profile)
       warmup: 1
       duration: 15
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: $(connection)
 
 - job: Proxies
   pool: server
@@ -160,18 +171,18 @@ jobs:
   displayName: EF Core
   pool: server
   timeoutInMinutes: 120
-  dependsOn: Proxies
+  dependsOn: SignalR
   condition: succeededOrFailed()
   steps:
   - template: efcore-scenarios.yml
     parameters:
       server: http://asp-citrine-win:5001
-      connection: 'ASP.NET Benchmarks Queue'
+      connection: 'ASP.NET Benchmarks Mono Queue'
 
 - job: Blazor
   pool: server
   timeoutInMinutes: 30
-  dependsOn: EFCore
+  dependsOn: Proxies
   condition: succeededOrFailed()
   steps:
   - template: blazor-scenarios.yml

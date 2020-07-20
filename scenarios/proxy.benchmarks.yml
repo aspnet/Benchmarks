@@ -183,17 +183,17 @@ profiles:
   aspnet-citrine-win:
     variables:
       serverUri: http://10.0.0.104
-      downstreamUri: http://10.0.0.103:5000
-      downstreamAddress: 10.0.0.103
+      downstreamUri: http://10.0.0.105:5000
+      downstreamAddress: 10.0.0.105
       downstreamPort: 5000
       cores: 28
     jobs: 
       downstream:
         endpoints: 
-          - http://asp-citrine-db:5001
+          - http://asp-citrine-load:5001
       application:
         endpoints: 
           - http://asp-citrine-win:5001
       load:
         endpoints: 
-          - http://asp-citrine-load:5001
+          - http://asp-citrine-db:5001
