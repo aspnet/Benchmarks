@@ -64,10 +64,10 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
-    displayName: "${{ s.displayName }} ${{ parameters.connection }}"
+    displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
     inputs:
-      connectedServiceName: "${{ parameters.connection }}"
+      connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
       messageBody: |
         {
