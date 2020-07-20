@@ -19,7 +19,7 @@ jobs:
     matrix:
       Intel_Linux:
         bar: aspnet-citrine-lin
-        foo: ASP.NET Benchmarks Queue
+        foo: 'ASP.NET Benchmarks Queue'
       # Intel_Windows:
       #   bar: aspnet-citrine-win
       #   foo: ASP.NET Benchmarks Queue
