@@ -36,7 +36,7 @@ jobs:
       duration: 15
       connection: $(foo)
       profile: $(bar)
-bar
+
 - job: Baselines
   pool: server
   timeoutInMinutes: 60
