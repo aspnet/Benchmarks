@@ -18,26 +18,25 @@ jobs:
     maxParallel: 2
     matrix:
       Intel_Linux:
-        queue: ASP.NET Benchmarks Queue
-        profile: aspnet-citrine-lin
-
+        bar: aspnet-citrine-lin
+        foo: ASP.NET Benchmarks Queue
       # Intel_Windows:
-      #   profile: aspnet-citrine-win
-      #   connection: 'ASP.NET Benchmarks Mono Queue'
+      #   bar: aspnet-citrine-win
+      #   foo: ASP.NET Benchmarks Queue
       # Arm_Linux:
-      #   profile: aspnet-citrine-arm
-      #   connection: 'ASP.NET Benchmarks Queue'
+      #   bar: aspnet-citrine-arm
+      #   foo: ASP.NET Benchmarks Queue
       # Amd_Linux:
-      #   profile: aspnet-citrine-amd
-      #   connection: 'ASP.NET Benchmarks Mono Queue'
+      #   bar: aspnet-citrine-amd
+      #   foo: ASP.NET Benchmarks Queue
   steps:
   - template: trend-v2-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
-      connection: $(queue)
-      profile: $(profile)
-
+      connection: $(foo)
+      profile: $(bar)
+bar
 - job: Baselines
   pool: server
   timeoutInMinutes: 60
