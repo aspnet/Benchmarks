@@ -35,7 +35,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: $(queue)
+      connection: $(profile)
       profile: $(profile)
 
 - job: Baselines
