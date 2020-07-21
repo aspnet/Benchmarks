@@ -40,37 +40,18 @@ parameters:
   default: 
 
   # Platform
-  - displayName: Plaintext Platform
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
+  - displayName: Fortunes Platform
+    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
     isPlatform: true
-  - displayName: Json Platform
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
-    isPlatform: true
+  
+  # Database Fortunes
+  - displayName: Database Fortunes Raw
+    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
+    isPlatform: false
+  - displayName: Database Fortunes EF
+    arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF
+    isPlatform: false
 
-  # Plaintext
-  - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext
-    isPlatform: false
-  - displayName: Plaintext endpoint
-    arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint
-    isPlatform: false
-  
-  # JSon
-  - displayName: Json
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json
-    isPlatform: false
-  - displayName: Json Mvc
-    arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc
-    isPlatform: false
-  
-  # Https
-  - displayName: Plaintext Https
-    arguments: --scenario https $(plaintextJobsV2) --property scenario=PlaintextHttps
-    isPlatform: false
-  - displayName: Json Https
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps
-    isPlatform: false
-  
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
