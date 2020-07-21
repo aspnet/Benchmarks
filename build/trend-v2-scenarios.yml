@@ -23,16 +23,6 @@ parameters:
     arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform --property protocol=http
   - displayName: Json Platform
     arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform --property protocol=http
-  - displayName: Fortunes Platform
-    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform --property protocol=http
-  - displayName: Single Query Platform
-    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform --property protocol=http
-  - displayName: Multiple Queries Platform
-    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform --property protocol=http
-  - displayName: Updates Platform
-    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform --property protocol=http
-  - displayName: Caching Platform
-    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform --property protocol=http
 
 # Plaintext
 
@@ -53,13 +43,6 @@ parameters:
     arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps --property protocol=https
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
-
-# Database
-
-  - displayName: Fortunes
-    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes --property protocol=http
-  - displayName: Fortunes EF
-    arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEf --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
