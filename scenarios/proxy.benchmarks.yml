@@ -19,7 +19,6 @@ jobs:
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
     arguments: '--baseUri {{downstreamUri}}'
-    port: 5000
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -42,7 +41,6 @@ jobs:
     environmentVariables:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
         DOWNSTREAM_PORT: '{{downstreamPort}}'
-    port: 8080
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -60,7 +58,6 @@ jobs:
     variables:
       downstreamPort: 5000
     arguments: '--urls http://*:{{downstreamPort}}'
-    port: 5000
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
@@ -68,7 +65,6 @@ jobs:
       project: samples/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverUri}}:{{serverPort}} --clusterUrls {{downstreamUri}}'
-    port: 5000
 
 scenarios:
   proxy-httpclient:
@@ -120,6 +116,8 @@ scenarios:
       job: downstream
     application:
       job: yarp
+      variables:
+        serverPort: 5000
     load:
       job: bombardier
       variables:
