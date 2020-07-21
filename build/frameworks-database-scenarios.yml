@@ -1,0 +1,58 @@
+# Frameworks trend scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+# List of scenarios
+
+  # NodeJS (JavaScript)
+
+  - displayName: NodeJS Fortunes
+    arguments: --scenario fortunes_nodejs $(frameworksV2) --load.connections 64 --property scenario=FortunesNodeJS --property protocol=http
+
+  # Actix (Rust)
+
+  - displayName: Actix fortunes
+    arguments: --scenario fortunes_actix $(frameworksV2) --load.connections 512 --property scenario=FortunesActix --property protocol=http
+
+  # FastHttp (Go)
+
+  - displayName: Go Fortunes
+    arguments: --scenario fortunes_fasthttp $(frameworksV2) --load.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+
+  # ULib (C++)
+
+  - displayName: ULib Fortunes
+    arguments: --scenario fortunes_ulib $(frameworksV2) --load.connections 512 --property scenario=FortunesULib --property protocol=http
+
+  # Netty
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "benchmarksdriver2",
+          "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(profile)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING" ] 
+        }

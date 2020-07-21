@@ -27,8 +27,6 @@ parameters:
     arguments: --scenario plaintext_nodejs $(frameworksV2) --load.connections 4096 --property scenario=PlaintextNodeJS --property protocol=http
   - displayName: NodeJS Json
     arguments: --scenario json_nodejs $(frameworksV2) --load.connections 256 --property scenario=JsonNodeJS --property protocol=http
-  - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs $(frameworksV2) --load.connections 64 --property scenario=FortunesNodeJS --property protocol=http
 
   # Actix (Rust)
 
@@ -36,8 +34,6 @@ parameters:
     arguments: --scenario plaintext_actix $(frameworksV2) --load.connections 256 --property scenario=PlaintextActix --property protocol=http
   - displayName: Actix Json
     arguments: --scenario json_actix $(frameworksV2) --load.connections 512 --property scenario=JsonActix --property protocol=http
-  - displayName: Actix fortunes
-    arguments: --scenario fortunes_actix $(frameworksV2) --load.connections 512 --property scenario=FortunesActix --property protocol=http
 
   # FastHttp (Go)
 
@@ -45,8 +41,6 @@ parameters:
     arguments: --scenario plaintext_fasthttp $(frameworksV2) --load.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
   - displayName: Go Json
     arguments: --scenario json_fasthttp $(frameworksV2) --load.connections 512 --property scenario=JsonFastHttp --property protocol=http
-  - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp $(frameworksV2) --load.connections 512 --property scenario=FortunesFastHttp --property protocol=http
 
   # ULib (C++)
 
@@ -54,8 +48,6 @@ parameters:
     arguments: --scenario plaintext_ulib $(frameworksV2) --load.connections 1024 --property scenario=PlaintextULib --property protocol=http
   - displayName: ULib Json
     arguments: --scenario json_ulib $(frameworksV2) --load.connections 512 --property scenario=JsonULib --property protocol=http
-  - displayName: ULib Fortunes
-    arguments: --scenario fortunes_ulib $(frameworksV2) --load.connections 512 --property scenario=FortunesULib --property protocol=http
 
   # Netty
 
