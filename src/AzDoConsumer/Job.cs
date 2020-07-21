@@ -87,6 +87,8 @@ namespace AzDoConsumer
             {
                 if (_process != null)
                 {
+                    Console.WriteLine($"Stopping process id: {_process.Id}");
+
                     if (!_process.HasExited)
                     {
                         _process.Close();
@@ -101,6 +103,9 @@ namespace AzDoConsumer
                     {
                         _process.Kill();
                     }
+
+                    _process.Dispose();
+                    _process = null;
                 }
             }
             catch (InvalidOperationException)
