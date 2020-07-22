@@ -41,6 +41,17 @@ jobs:
     noClean: true
 
 scenarios:
+  plaintextPlatform-coreclr:
+    application:
+      job: platformbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
   plaintextPlatform-mono-jit:
     application:
       job: platformbenchmarks
@@ -77,6 +88,17 @@ scenarios:
         serverPort: 5000
         pipeline: 16
 
+  jsonPlatform-coreclr:
+    application:
+      job: platformbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        connections: 512
+
   jsonPlatform-mono-jit:
     application:
       job: platformbenchmarks
@@ -87,6 +109,47 @@ scenarios:
         presetHeaders: json
         path: /json
         serverPort: 5000
+        connections: 512
+
+  jsonPlatform-mono-llvm-jit:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        connections: 512
+
+  jsonPlatform-mono-llvm-aot:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        connections: 512
+
+  fortunesPlatform-coreclr:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
         connections: 512
 
   fortunesPlatform-mono-jit:
@@ -107,6 +170,57 @@ scenarios:
         path: /fortunes
         connections: 512
 
+  fortunesPlatform-mono-llvm-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        connections: 512
+  
+  fortunesPlatform-mono-llvm-aot:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        connections: 512
+
+  plaintext-coreclr:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
   plaintext-mono-jit:
     application:
       job: aspnetbenchmarks
@@ -120,6 +234,52 @@ scenarios:
         path: /plaintext
         serverPort: 5000
         pipeline: 16
+        warmup: 5
+        duration: 10
+
+  plaintext-mono-llvm-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: llvm-jit
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  plaintext-mono-llvm-aot:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: llvm-aot
+      variables:
+        scenario: plaintext
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+        warmup: 5
+        duration: 10
+
+  json-coreclr:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
         warmup: 5
         duration: 10
 
@@ -138,6 +298,53 @@ scenarios:
         warmup: 5
         duration: 10
 
+  json-mono-llvm-jit:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: llvm-jit
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+  json-mono-llvm-aot:
+    application:
+      job: aspnetbenchmarks
+      useMonoRuntime: llvm-aot
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 5000
+        warmup: 5
+        duration: 10
+
+  fortunes-coreclr:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
+
   fortunes-mono-jit:
     db:
       job: postgresql
@@ -155,7 +362,59 @@ scenarios:
         presetHeaders: plaintext
         path: /fortunes/raw
         serverPort: 5000
-        
+
+  fortunes-mono-llvm-jit:
+    db:
+      job: postgresql
+      useMonoRuntime: llvm-jit
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
+
+  fortunes-mono-llvm-aot:
+    db:
+      job: postgresql
+      useMonoRuntime: llvm-aot
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: PostgresQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /fortunes/raw
+        serverPort: 5000
+
+  single_query-coreclr:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+
   single_query-mono-jit:
     db:
       job: postgresql
@@ -173,6 +432,56 @@ scenarios:
         presetHeaders: json
         path: /db
 
+  single_query-mono-llvm-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+
+  single_query-mono-llvm-aot:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+
+  multiple_queries-coreclr:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/queries=20
+
   multiple_queries-mono-jit:
     db:
       job: postgresql
@@ -189,13 +498,97 @@ scenarios:
       variables:
         presetHeaders: json
         path: /queries/queries=20
-  
+
+  multiple_queries-mono-llvm-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/queries=20
+
+  multiple_queries-mono-llvm-aot:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/queries=20
+
+  updates-coreclr:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/queries=20
+
   updates-mono-jit:
     db:
       job: postgresql
     application:
       job: platformbenchmarks
       useMonoRuntime: jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/queries=20
+
+  updates-mono-llvm-jit:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-jit
+      buildArguments: 
+        - "/p:IsDatabase=true"
+      environmentVariables:
+        database: PostgreSQL
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/queries=20
+
+  updates-mono-llvm-aot:
+    db:
+      job: postgresql
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
       buildArguments: 
         - "/p:IsDatabase=true"
       environmentVariables:
@@ -293,7 +686,7 @@ profiles:
         endpoints: 
           - http://asp-mono-lin:5001
         variables:
-          databaseServer: 192.168.1.1
+          databaseServer: asp-mono-load
       load:
         endpoints: 
           - http://asp-mono-load:5001
