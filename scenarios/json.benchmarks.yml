@@ -52,7 +52,7 @@ scenarios:
     application:
       job: aspnetbenchmarks
       variables:
-        scenario: jsonmvc
+        scenario: mvcjson
     load:
       job: wrk
       variables:

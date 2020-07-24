@@ -157,7 +157,7 @@ scenarios:
       variables:
         serverPort: 8080
         presetHeaders: html
-        path: /fortune
+        path: /fortunes
 
   # FastHttp (Go)
   plaintext_fasthttp:
@@ -195,7 +195,7 @@ scenarios:
       variables:
         serverPort: 8080
         presetHeaders: html
-        path: /fortune
+        path: /fortunes
 
   # Ulib (C++)
   plaintext_ulib:
