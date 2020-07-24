@@ -44,6 +44,17 @@ parameters:
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
 
+# Mono
+
+  - displayName: Plaintext Platform Mono
+    arguments: --scenario plaintextPlatform-mono-jit $(monoJobs) --property scenario=PlaintextPlatformMono --property protocol=http
+  - displayName: Json Platform Mono
+    arguments: --scenario jsonPlatform-mono-jit $(monoJobs) --property scenario=JsonPlatformMono --property protocol=http
+  - displayName: Plaintext Mono
+    arguments: --scenario plaintext-mono-jit $(monoJobs) --property scenario=PlaintextMono --property protocol=http
+  - displayName: Json Mono
+    arguments: --scenario json-mono-jit $(monoJobs) --property scenario=JsonMono --property protocol=http
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
