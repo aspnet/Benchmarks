@@ -2597,6 +2597,28 @@ namespace BenchmarkServer
             }
         }
 
+        private static string GetAssemblyName(ServerJob job, string benchmarkedApp)
+        {
+            var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
+
+            if (File.Exists(projectFileName))
+            {
+                var project = XDocument.Load(projectFileName);
+                var assemblyNameElement = project.Root
+                    .Elements("PropertyGroup")
+                    .Select(x => x.Element("AssemblyName"))
+                    .FirstOrDefault();
+
+                if (assemblyNameElement != null)
+                {
+                    Log.WriteLine($"Detected custom assembly name: '{assemblyNameElement.Value}'");
+                    return assemblyNameElement.Value;
+                }
+            }
+
+            return Path.GetFileNameWithoutExtension(FormatPathSeparators(job.Source.Project));
+        }
+
         private static string ResolveProjectTFM(ServerJob job, string benchmarkedApp, string targetFramework)
         {
             var projectFileName = Path.Combine(benchmarkedApp, Path.GetFileName(FormatPathSeparators(job.Source.Project)));
@@ -3226,10 +3248,10 @@ namespace BenchmarkServer
             var scheme = (job.Scheme == Scheme.H2 || job.Scheme == Scheme.Https) ? "https" : "http";
             var serverUrl = $"{scheme}://{hostname}:{job.Port}";
             var executable = GetDotNetExecutable(dotnetHome);
-            var projectFilename = Path.GetFileNameWithoutExtension(FormatPathSeparators(job.Source.Project));
+            var assemblyName = GetAssemblyName(job, benchmarksRepo);
 
-            var benchmarksDll = !String.IsNullOrEmpty(projectFilename)
-                ? Path.Combine(workingDirectory, "published", $"{projectFilename}.dll")
+            var benchmarksDll = !String.IsNullOrEmpty(assemblyName)
+                ? Path.Combine(workingDirectory, "published", $"{assemblyName}.dll")
                 : Path.Combine(workingDirectory, "published")
                 ;
 
@@ -3250,11 +3272,11 @@ namespace BenchmarkServer
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    executable = Path.Combine(workingDirectory, $"{projectFilename}.exe");
+                    executable = Path.Combine(workingDirectory, $"{assemblyName}.exe");
                 }
                 else
                 {
-                    executable = Path.Combine(workingDirectory, projectFilename);
+                    executable = Path.Combine(workingDirectory, assemblyName);
                 }
 
                 commandLine = "";
