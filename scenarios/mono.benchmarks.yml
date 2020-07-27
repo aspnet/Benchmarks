@@ -640,7 +640,7 @@ profiles:
   aspnet-citrine-amd:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.103
+      serverAddress: 10.0.0.106
       cores: 48
     jobs: 
       db:
