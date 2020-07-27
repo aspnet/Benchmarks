@@ -54,6 +54,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Trends_Linux", "Trends_Windows"]
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
