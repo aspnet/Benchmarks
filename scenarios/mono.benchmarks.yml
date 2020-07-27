@@ -655,6 +655,24 @@ profiles:
         endpoints: 
           - http://asp-citrine-db:5001
   
+  aspnet-citrine-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+        variables:
+          databaseServer: 10.0.0.105
+      load:
+        endpoints: 
+          - http://asp-citrine-db:5001
+  
   aspnet-perf-lin:
     variables:
       serverPort: 5000
