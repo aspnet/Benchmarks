@@ -4,6 +4,7 @@
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
 
+
 jobs:
   benchmark:
     source:

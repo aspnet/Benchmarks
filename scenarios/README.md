@@ -211,6 +211,33 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
   - Server streaming: `--variable scenario=serverstreaming`
   - Ping ping streaming: `--variable scenario=pingpongstreaming`
 
+## Static file benchmarks
+
+Middleware based application that serve static files of any size.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/staticfiles.benchmarks.yml --scenario static --profile aspnet-perf-lin
+```
+
+### Available scenarios
+
+- `static`
+
+The filename and size can be changed by adapting these variables:
+
+```
+--variable sizeInBytes=1024
+--variable filename=file.txt
+```
+
+This scenario can easily reach the max network bandwidth. To verify that use `--load.options.displayOutput true` which will display the __wrk__ output, including the transfer rate. Example of saturated network for a 40Gb/s NIC (Citrine).
+
+```
+[load] Transfer/sec:      4.37GB
+```
+
 ## FAQ
 
 > The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.
