@@ -43,7 +43,7 @@ namespace StaticFiles
                 filename = Path.GetFileName(_configuration["filename"]);
             }
 
-            if (_configuration["size"] == null)
+            if (_configuration["size"] != null)
             {
                 Int32.TryParse(_configuration["size"], out size);
             }
