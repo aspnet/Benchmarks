@@ -312,6 +312,72 @@ jobs:
       server: http://asp-perf-lin:5001
       connection: ASP.NET Benchmarks Queue
 
+- job: Mono_Linux
+  displayName: Mono Linux Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: Proxies
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Arm_Linux:
+        profile: aspnet-citrine-arm
+  steps:
+  - template: mono-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
+
+- job: Mono_Windows
+  displayName: Mono Windows Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: Proxies  
+  strategy:
+    maxParallel: 1
+    matrix:
+      # Intel_Windows:
+      #   profile: aspnet-citrine-win
+      Amd_Linux:
+        profile: aspnet-citrine-amd
+  steps:
+  - template: trend-v2-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+      profile: $(profile)
+
+- job: Trends_Database
+  displayName: Trends Database
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: ["Mono_Linux", "Mono_Windows"]
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      # Intel_Windows:
+      #   profile: aspnet-citrine-win
+      Amd_Linux:
+        profile: aspnet-citrine-amd
+      Arm_Linux:
+        profile: aspnet-citrine-arm
+  steps:
+  - template: mono-database-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
+
+
 # CLOUD SCENARIOS
 
 - job: TrendsAzure
