@@ -121,7 +121,7 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-load:5001
+          - http://asp-citrine-db:5001
       application:
         endpoints: 
           - http://asp-citrine-amd:5001
@@ -129,7 +129,7 @@ profiles:
           databaseServer: 10.0.0.105
       load:
         endpoints: 
-          - http://asp-citrine-db:5001
+          - http://asp-citrine-load:5001
   
   aspnet-perf-lin:
     variables:
@@ -157,7 +157,7 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-perf-load:5001
+          - http://asp-perf-db:5001
       application:
         endpoints: 
           - http://asp-perf-win:5001
@@ -165,4 +165,4 @@ profiles:
           databaseServer: 10.0.0.104
       load:
         endpoints: 
-          - http://asp-perf-db:5001
+          - http://asp-perf-load:5001
