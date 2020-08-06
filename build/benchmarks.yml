@@ -352,7 +352,7 @@ jobs:
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
 
-- job: Trends_Database
+- job: Mono_Database
   displayName: Trends Database
   pool: server
   timeoutInMinutes: 120
