@@ -34,6 +34,7 @@ scenarios:
         path: /plaintext
         serverPort: 5000
         pipeline: 16
+        connections: 1024
 
   json:
     application:
