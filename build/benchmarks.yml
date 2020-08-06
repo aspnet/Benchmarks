@@ -353,7 +353,7 @@ jobs:
       profile: $(profile)
 
 - job: Mono_Database
-  displayName: Trends Database
+  displayName: Mono Database
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Mono_Linux", "Mono_Windows"]
