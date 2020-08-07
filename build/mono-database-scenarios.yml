@@ -31,9 +31,9 @@ parameters:
     - displayName: "Mono - LLVM JIT"
       arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm
     - displayName: "Mono - LLVM AOT"
-      arguments: --application.useMonoRuntime llvm-aot --property runtime=mono-aot
+      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 00:20:00 --property runtime=mono-aot
     - displayName: "Core CLR"
-      arguments: --application.useMonoRuntime llvm-aot --property runtime=coreclr
+      arguments: --property runtime=coreclr
 
 steps:
 - ${{ each s in parameters.scenarios }}:
