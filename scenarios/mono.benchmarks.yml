@@ -2,7 +2,7 @@
 # --config mono.benchmarks.yml --scenario plaintext-mono-jit --profile aspnet-citrine-lin
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 
 jobs:
   platformbenchmarks:

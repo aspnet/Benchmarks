@@ -5,8 +5,9 @@
 # --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
+  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
 
 variables:
     path: /
