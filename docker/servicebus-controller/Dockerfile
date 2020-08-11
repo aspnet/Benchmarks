@@ -38,4 +38,9 @@ COPY --from=build-job /app/out ./
 COPY --from=build-driver1 /app/out ./driver1
 COPY --from=build-driver2 /app/out ./driver2
 
+# Install crank
+RUN dotnet tool install -g Microsoft.Crank.Controller --version "0.1.0-*" 
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 ENTRYPOINT ["dotnet", "AzDoConsumer.dll", "--connection-string", "SERVICE_BUS_CONNECTION_STRING", "--queue", "SERVICE_BUS_QUEUE", "--jobs", "jobs.json"]

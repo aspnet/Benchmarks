@@ -8,6 +8,10 @@
     "benchmarksdriver2": {
       "executable": "./driver2/BenchmarksDriver",
       "arguments": []
+    },
+    "crank": {
+      "executable": "crank",
+      "arguments": []
     }
   }
 }
