@@ -13,6 +13,9 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: client
+  type: string
+  default: 'crank'
 
 # Scenarios
 - name: scenarios 
@@ -66,6 +69,6 @@ steps:
       waitForCompletion: true
       messageBody: |
         {
-          "name": "benchmarksdriver2",
+          "name": "crank",
           "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(profile)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING" ] 
         }

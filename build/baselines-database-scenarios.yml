@@ -16,6 +16,9 @@ parameters:
 - name: skip
   type: string
   default: ''
+- name: client
+  type: string
+  default: 'crank'
 
 # Baselines
 - name: baselines 
@@ -65,6 +68,6 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
-              "name": "benchmarksdriver2",
+              "name": "crank",
               "args": [ "${{ s.arguments }} ${{ b.arguments }} --profile ${{ parameters.profile }} --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING" ]
             }
