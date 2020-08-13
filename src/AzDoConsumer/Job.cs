@@ -6,12 +6,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace AzDoConsumer
 {
     public class Job : IDisposable
     {
+        [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+        private static extern int sys_kill(int pid, int sig);
+
         private Process _process;
 
         private ConcurrentQueue<string> _standardOutput = new ConcurrentQueue<string>();
@@ -89,23 +94,50 @@ namespace AzDoConsumer
                 {
                     Console.WriteLine($"Stopping process id: {_process.Id}");
 
-                    if (!_process.HasExited)
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        _process.Close();
+                        sys_kill(_process.Id, sig: 2); // SIGINT
+
+                        Thread.Sleep(2000);
                     }
 
                     if (!_process.HasExited)
                     {
-                        _process.CloseMainWindow();
+                        try
+                        {
+                            _process.Close();
+                            Thread.Sleep(2000);
+                        }
+                        catch
+                        {
+                        }
                     }
 
                     if (!_process.HasExited)
                     {
-                        _process.Kill();
+                        try
+                        {
+                            _process.CloseMainWindow();
+                            Thread.Sleep(2000);
+                        }
+                        catch
+                        {
+                        }
+                    }
+
+                    if (!_process.HasExited)
+                    {
+                        try
+                        {
+                            _process.Kill();
+                            Thread.Sleep(2000);
+                        }
+                        catch
+                        {
+                        }
                     }
 
                     _process.Dispose();
-                    _process = null;
                 }
             }
             catch (InvalidOperationException)
@@ -114,6 +146,10 @@ namespace AzDoConsumer
                 //Process error: System.InvalidOperationException: No process is associated with this object.
                 //   at System.Diagnostics.Process.EnsureState(State state)
                 //   at System.Diagnostics.Process.get_HasExited()
+            }
+            finally
+            {
+                _process = null;
             }
         }
 
@@ -139,13 +175,17 @@ namespace AzDoConsumer
 
         public void Dispose()
         {
+            if (_process == null)
+            {
+                return;
+            }
+
             try
             {
                 Stop();
             }
             catch
             {
-
             }
 
             OnStandardOutput = null;
@@ -154,8 +194,6 @@ namespace AzDoConsumer
             _standardOutput = null;
             OutputBuilder = null;
             ErrorBuilder = null;
-            _process?.Dispose();
-            _process = null;
         }
     }
 }
