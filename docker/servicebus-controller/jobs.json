@@ -10,7 +10,7 @@
       "arguments": []
     },
     "crank": {
-      "executable": "crank",
+      "executable": "/root/.dotnet/tools/crank",
       "arguments": []
     }
   }
