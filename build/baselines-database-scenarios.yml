@@ -16,9 +16,6 @@ parameters:
 - name: skip
   type: string
   default: ''
-- name: client
-  type: string
-  default: 'crank'
 
 # Baselines
 - name: baselines 

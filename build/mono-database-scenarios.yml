@@ -11,9 +11,6 @@ parameters:
 - name: connection
   type: string
   default: ''
-- name: client
-  type: string
-  default: 'crank'
 
 # Scenarios
 - name: scenarios

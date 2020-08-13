@@ -394,7 +394,6 @@ jobs:
       server: http://10.0.0.9:5001
       client: http://10.0.0.10:5002
       connection: 'ASP.NET Benchmarks Azure Queue'
-      client: 'benchmarksdriver2'
 
 # - job: SignalRAzure
 #   displayName: SignalR Azure
