@@ -146,7 +146,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'AM')
   strategy:
     maxParallel: 1
     matrix:
@@ -165,7 +165,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -184,7 +184,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: ["Frameworks_Linux", "Frameworks_Windows"]
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -205,7 +205,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'AM')
   strategy:
     maxParallel: 1
     matrix:
@@ -224,7 +224,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -243,7 +243,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Linux
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'AM')
   strategy:
     maxParallel: 1
     matrix:
@@ -262,7 +262,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Windows
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -281,7 +281,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Linux
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'AM')
   strategy:
     maxParallel: 1
     matrix:
@@ -300,7 +300,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Windows
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -318,7 +318,7 @@ jobs:
   pool: server
   timeoutInMinutes: 90
   dependsOn: SingleFile_Linux
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'AM')
   steps:
   - template: proxies-scenarios.yml
     parameters:
@@ -355,7 +355,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -376,7 +376,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies  
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
@@ -397,7 +397,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Mono_Linux", "Mono_Windows"]
-  condition: succeededOrFailed()
+  condition: eq(format('{0:tt}', pipeline.startTime)), 'PM')
   strategy:
     maxParallel: 1
     matrix:
