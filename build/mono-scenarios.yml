@@ -45,6 +45,7 @@ steps:
     - task: PublishToAzureServiceBus@1
       displayName: "${{ s.displayName }} - ${{ runtime.displayName }}"
       condition: succeededOrFailed()
+      timeoutInMinutes: 20
       inputs:
         connectedServiceName: ${{ parameters.connection }}
         waitForCompletion: true
