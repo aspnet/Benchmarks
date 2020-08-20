@@ -276,10 +276,48 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
 
+- job: SingleFile_Linux
+  displayName: Single File Linux Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: SignalR_Linux
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: singlefile-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 10
+      connection: ASP.NET Benchmarks Queue
+
+- job: SingleFile_Windows
+  displayName: Single File Windows Queue
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: SignalR_Windows
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: singlefile-scenarios.yml
+    parameters:
+      profile: $(profile)
+      warmup: 5
+      duration: 10
+      connection: ASP.NET Benchmarks Mono Queue
+
 - job: Proxies
   pool: server
   timeoutInMinutes: 90
-  dependsOn: SignalR_Linux
+  dependsOn: SingleFile_Linux
   condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
@@ -293,7 +331,7 @@ jobs:
   displayName: EF Core
   pool: server
   timeoutInMinutes: 120
-  dependsOn: SignalR_Windows
+  dependsOn: SingleFile_Windows
   condition: succeededOrFailed()
   steps:
   - template: efcore-scenarios.yml
