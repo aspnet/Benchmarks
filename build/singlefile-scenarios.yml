@@ -30,13 +30,13 @@ parameters:
   default:
 
   - displayName: Self-contained
-    arguments: --application.buildArguments "/p:PublishReadyToRun=true /p:PublishSingleFile=false" --property mode=SelfContained
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=false\" --property mode=SelfContained
   - displayName: Single-file
-    arguments: --application.buildArguments "/p:PublishReadyToRun=true /p:PublishSingleFile=true" --property mode=SingleFile
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true\" --property mode=SingleFile
   - displayName: Trimmed
-    arguments: --application.buildArguments "/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true" --property mode=Trimmed
-  - displayName: Trimmed
-    arguments: --application.buildArguments "/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:TrimMode=link" --property mode=Linked
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
+  - displayName: Linked
+    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:TrimMode=link\" --property mode=Linked
 
 steps:
 - ${{ each s in parameters.scenarios }}:
