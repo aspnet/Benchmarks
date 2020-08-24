@@ -34,6 +34,8 @@ parameters:
     arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint --property protocol=http
   - displayName: Plaintext Connection Close
     arguments: --scenario connectionclose $(plaintextJobsV2) --property scenario=ConnectionClose --property protocol=http
+  - displayName: Plaintext Connection Close Https
+    arguments: --scenario connectionclosehttps $(plaintextJobsV2) --property scenario=ConnectionCloseHttps --property protocol=https
 
 # Json
 

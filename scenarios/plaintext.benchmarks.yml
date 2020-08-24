@@ -83,6 +83,21 @@ scenarios:
         pipeline: 0
         presetHeaders: connectionclose
 
+  connectionclosehttps:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: Plaintext
+        serverScheme: https
+        protocol: https
+    load:
+      job: wrk
+      variables:
+        path: /plaintext
+        pipeline: 0
+        presetHeaders: connectionclose
+        serverScheme: https
+
 profiles:
   aspnet-citrine-lin:
     variables:
