@@ -8,6 +8,10 @@ variables:
     value: $(Build.BuildId)
   - name: buildNumber
     value: $(Build.BuildNumber)
+  - name: am
+    value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
+  - name: pm
+    value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
 
 jobs:
 
@@ -146,7 +150,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'am')
+  condition: eq(variables['am'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -165,7 +169,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -184,7 +188,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: ["Frameworks_Linux", "Frameworks_Windows"]
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -205,7 +209,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'am')
+  condition: eq(variables['am'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -224,7 +228,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['am'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -243,7 +247,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Linux
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'am')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -262,7 +266,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Windows
-  condition: eq(format('{0:tt}', pipeline.startTime), 'PM')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -281,7 +285,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Linux
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -300,7 +304,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Windows
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -318,7 +322,7 @@ jobs:
   pool: server
   timeoutInMinutes: 90
   dependsOn: SingleFile_Linux
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'am')
+  condition: eq(variables['am'], true)
   steps:
   - template: proxies-scenarios.yml
     parameters:
@@ -355,7 +359,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -376,7 +380,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies  
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
@@ -397,7 +401,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Mono_Linux", "Mono_Windows"]
-  condition: eq(lower(format('{0:tt}', pipeline.startTime)), 'pm')
+  condition: eq(variables['pm'], true)
   strategy:
     maxParallel: 1
     matrix:
