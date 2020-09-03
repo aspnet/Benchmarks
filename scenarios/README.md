@@ -150,7 +150,7 @@ These scenarios measure the performance of different other frameworks
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml --scenario nodejs_plaintext --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml --scenario plaintext_nodejs --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
