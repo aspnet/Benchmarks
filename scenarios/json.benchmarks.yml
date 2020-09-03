@@ -13,7 +13,6 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
-      presetHeaders: json
       protocol: http
       serverScheme: http
       serverPort: 5000
@@ -33,6 +32,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: json
         path: /json
 
   https:
@@ -45,6 +45,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: json
         path: /json
         serverScheme: https
 
@@ -57,6 +58,7 @@ scenarios:
       job: wrk
       variables:
         path: /mvc/json
+        presetHeaders: json
 
   aspnet-citrine-lin:
     variables:

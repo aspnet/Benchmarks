@@ -13,7 +13,6 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
-      presetHeaders: plaintext
       serverPort: 5000
       protocol: http
       serverScheme: http
@@ -32,6 +31,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
 
@@ -45,6 +45,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
         serverScheme: https
@@ -57,6 +58,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: plaintext
         path: /ep-plaintext
         pipeline: 16
 
@@ -68,6 +70,7 @@ scenarios:
     load:
       job: wrk
       variables:
+        presetHeaders: plaintext
         path: /mvc/plaintext
         pipeline: 16
 

@@ -20,7 +20,6 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
-      presetHeaders: json
       protocol: http
       serverScheme: http
       serverPort: 5000
