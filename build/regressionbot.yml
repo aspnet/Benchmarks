@@ -28,7 +28,6 @@ jobs:
         dotnet run -c release -- `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
-            --table $(sql.table) `
             --repository-id $(github.repositoryId) `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
