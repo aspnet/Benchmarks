@@ -24,6 +24,7 @@ jobs:
         git clone https://github.com/dotnet/crank
         cd ./crank/
         git checkout sebros/bot
+        git pull
         cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
