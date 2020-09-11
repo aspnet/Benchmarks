@@ -26,7 +26,7 @@ jobs:
         git checkout sebros/bot
         cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
-            --source https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
             --table $(sql.table) `
             --repository-id $(github.repositoryId) `
