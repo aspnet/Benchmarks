@@ -8,12 +8,12 @@ variables:
 # Steps are serial
 
 # schedules:
-# - cron: "0 * * * *"
-#   displayName: "every hour"
-#   branches:
-#     include:
-#     - master
-#   always: "true"
+ - cron: "0 * * * *"
+   displayName: "every hour"
+   branches:
+     include:
+     - sebros/bot
+   always: "true"
 
 jobs:
 - job: RegressionBot
