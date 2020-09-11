@@ -22,6 +22,7 @@ jobs:
   - powershell: |
         git clone https://github.com/dotnet/crank
         git checkout sebros/bot
+        ls
         cd ./crank/src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
             --source https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
