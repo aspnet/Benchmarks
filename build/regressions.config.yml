@@ -1,46 +1,57 @@
+templates:
+  rps: "A performance regression has been detected for the following scenarios:
+       | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev |
+       | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | --- 
+       {% for regression in Regressions -%}
+       {% assign r = regression.CurrentResult %}
+       {% assign p = regression.PreviousResult %}
+       {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
+       {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
+       {% assign change = rps | minus: prevRps | divided_by: prevRps | times: 100 | round: 2 %}
+       {% assign deviation = rps | minus: prevRps | divided_by: regression.Deviation | round: 2 %}
+       | {{r.Scenario}} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps}} | {{rps}} | {{change}} % ({{rps | minus: prevRps | round: 2}}) | {{deviation}} σ | {{ regression.Deviation | round: 2 }} |
+       {% endfor %}
+       "
 sources:
-    - name: Trends 
-      table: TrendBenchmarks
-      rules:
-        - include: .
-        - include: Mvc
-          labels: 
-            - area-mvc
-        - exclude: ulib
-
-      daysToLoad: 7
-      daysToAnalyze: 7
-
-      regressions:
-        probes: 
-          - path: jobs.load.results['wrk/rps/mean']
-          - path: jobs.load.results['bombardier/rps/mean']
+  - name: Trends 
+    table: TrendBenchmarks
+    rules:
+      - include: .
+      - include: Mvc
         labels: 
-          - Perf
-          - perf-regression
-        template: "A performance regression has been detected for the following scenarios:
-                  | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation |
-                  | -------- | ----------- | ---- | ------- | ------- | ------ | --------- |
-
-                  {% for regression in Regressions -%}
-                  {% assign r = regression.CurrentResult %}
-                  {% assign p = regression.PreviousResult %}
-                  {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
-                  {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
-                  {% assign change = rps | minus: prevRps | divided_by: prevRps | times: 100 | round: 2 %}
-                  {% assign deviation = rps | minus: prevRps | divided_by: regression.Deviation | round: 2 %}
-                  | {{r.Scenario}} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps}} | {{rps}} | {{change}} % | {{deviation}} σ |
-                  {% endfor %}
-                  "            
-      errors:
-        probes: 
-          - path: jobs.load.results['bombardier/badresponses']
-          - path: jobs.load.results['wrk/errors/badresponses']
-          - path: jobs.load.results['wrk/errors/socketerrors']
-        labels: 
-          - Perf
-          - perf-bad-response
-      notRunning:
-        labels:
-          - Perf
-          - perf-not-running 
+          - area-mvc
+      - exclude: ulib
+    daysToLoad: 7
+    daysToAnalyze: 7
+    regressions:
+      probes: 
+        - path: jobs.load.results['wrk/rps/mean']
+        - path: jobs.load.results['bombardier/rps/mean']
+      labels: 
+        - Perf
+        - perf-regression
+      template: "A performance regression has been detected for the following scenarios:
+                | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation |
+                | -------- | ----------- | ---- | ------- | ------- | ------ | --------- |
+                {% for regression in Regressions -%}
+                {% assign r = regression.CurrentResult %}
+                {% assign p = regression.PreviousResult %}
+                {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
+                {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
+                {% assign change = rps | minus: prevRps | divided_by: prevRps | times: 100 | round: 2 %}
+                {% assign deviation = rps | minus: prevRps | divided_by: regression.Deviation | round: 2 %}
+                | {{r.Scenario}} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps}} | {{rps}} | {{change}} % | {{deviation}} σ |
+                {% endfor %}
+                "            
+    errors:
+      probes: 
+        - path: jobs.load.results['bombardier/badresponses']
+        - path: jobs.load.results['wrk/errors/badresponses']
+        - path: jobs.load.results['wrk/errors/socketerrors']
+      labels: 
+        - Perf
+        - perf-bad-response
+    notRunning:
+      labels:
+        - Perf
+        - perf-not-running 
