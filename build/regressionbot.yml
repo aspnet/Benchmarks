@@ -29,7 +29,7 @@ jobs:
             --source https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
             --table $(sql.table) `
-            --repositoryId $(github.repositoryId) `
+            --repository-id $(github.repositoryId) `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
