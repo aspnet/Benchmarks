@@ -20,12 +20,18 @@ jobs:
   timeoutInMinutes: 10
   steps:
   - powershell: |
-        cd ./src/BenchmarksBot
+        cd ./src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
-            --table $(sql.table) --repositoryId $(github.repositoryId)
+            --source https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/bot/build/regressions.config.yml `
+            --connectionstring BENCHMARKSBOT_ConnectionString `
+            --table $(sql.table) `
+            --repositoryId $(github.repositoryId) `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key BENCHMARKSBOT_GitHubAppKey `
+            --debug `
+            --verbose 
 
     env:
         BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
-        BENCHMARKSBOT_GitHubAppId: $(github.appid)
-        BENCHMARKSBOT_GitHubInstallationId: $(github.installid)
-        BENCHMARKSBOT_GithHubAppKey: $(github.privatekey)
+        BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)
