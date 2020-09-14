@@ -1,15 +1,15 @@
 templates:
   rps: "A performance regression has been detected for the following scenarios:
        | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev |
-       | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | --- 
+       | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | 
        {% for regression in Regressions -%}
        {% assign r = regression.CurrentResult %}
        {% assign p = regression.PreviousResult %}
-       {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
-       {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
+       {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] | round: 0 %}
+       {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] | round: 0 %}
        {% assign change = rps | minus: prevRps | divided_by: prevRps | times: 100 | round: 2 %}
        {% assign deviation = rps | minus: prevRps | divided_by: regression.Deviation | round: 2 %}
-       | {{r.Scenario}} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps}} | {{rps}} | {{change}} % ({{rps | minus: prevRps | round: 2}}) | {{deviation}} σ | {{ regression.Deviation | round: 2 }} |
+       | {{r.Scenario}} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps}} | {{rps}} | {{change}} % ({{rps | minus: prevRps}}) | {{deviation}} σ | {{ regression.Deviation | round: 0 }} |
        {% endfor %}
        "
 sources:
