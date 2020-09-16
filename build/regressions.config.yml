@@ -32,6 +32,8 @@ sources:
       labels: 
         - Perf
         - perf-regression
+      owners:
+        - sebastienros
       template: rps
     errors:
       probes: 
