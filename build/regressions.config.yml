@@ -17,6 +17,11 @@ sources:
     table: TrendBenchmarks
     rules:
       - include: caching
+        labels: 
+          - area-mvc
+        owners:
+          - sebastienros
+
       # - include: Mvc
       #   labels: 
       #     - area-mvc
