@@ -21,7 +21,7 @@ sources:
         labels: 
           - area-mvc
       - exclude: ulib
-    daysToLoad: 7
+    daysToLoad: 14
     daysToAnalyze: 7
     regressions:
       probes: 
