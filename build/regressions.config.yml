@@ -16,18 +16,15 @@ sources:
   - name: Trends 
     table: TrendBenchmarks
     rules:
-      - include: caching
+      - include: .
+      - include: Mvc
         labels: 
           - area-mvc
-        owners:
-          - sebastienros
-
-      # - include: Mvc
-      #   labels: 
-      #     - area-mvc
-      # - exclude: ulib
+      - exclude: ulib
+      - exclude: arm
     daysToLoad: 14
     daysToAnalyze: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
         - path: jobs.load.results['wrk/rps/mean']
