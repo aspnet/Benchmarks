@@ -33,7 +33,6 @@ jobs:
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
-            --debug `
             --verbose 
 
     env:
