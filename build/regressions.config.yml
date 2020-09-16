@@ -16,11 +16,11 @@ sources:
   - name: Trends 
     table: TrendBenchmarks
     rules:
-      - include: .
-      - include: Mvc
-        labels: 
-          - area-mvc
-      - exclude: ulib
+      - include: caching
+      # - include: Mvc
+      #   labels: 
+      #     - area-mvc
+      # - exclude: ulib
     daysToLoad: 14
     daysToAnalyze: 7
     regressions:
