@@ -8,8 +8,8 @@ variables:
 # Steps are serial
 
 schedules:
-- cron: "0 * * * *"
-  displayName: "every hour"
+- cron: "0 */12 * * *"
+  displayName: "Noon and Midnight"
   branches:
     include:
     - sebros/bot
