@@ -8,7 +8,7 @@ variables:
 # Steps are serial
 
 schedules:
-- cron: "0 */12 * * *"
+- cron: "0 */8,20 * * *" # 8am and 8pm UTC
   displayName: "Noon and Midnight"
   branches:
     include:
