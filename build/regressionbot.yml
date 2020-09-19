@@ -32,6 +32,7 @@ jobs:
             --repository-id $(github.repositoryId) `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
+            --username $(github.username) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
             --verbose `
             --read-only
