@@ -33,8 +33,7 @@ jobs:
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
-            --verbose `
-            --read-only
+            --verbose 
 
     env:
         BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
