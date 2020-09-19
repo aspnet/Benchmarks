@@ -9,7 +9,7 @@ templates:
       {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
       {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
       {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
-      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps | round: 0 }} | {{rps | round: 0 }} | {{change}} % ({{regression.Change | round: 0}}) | {{deviation}} σ | {{ regression.StandardDeviation }} | \n
+      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc}} | {{prevRps | round: 0 }} | {{rps | round: 0 }} | {{change}} % ({{regression.Change | round: 0}}) | {{deviation}} σ | {{ regression.StandardDeviation | round: 0 }} | \n
       {% endfor %}
       "
 sources:
