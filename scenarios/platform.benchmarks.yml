@@ -39,6 +39,10 @@ scenarios:
   json:
     application:
       job: platformbenchmarks
+      buildArguments:
+        - "/p:IsJson=true"
+      environmentVariables:
+        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: "{% if isLinux == true %}1{% else %}0{% endif %}"
     load:
       job: wrk
       variables:
@@ -134,6 +138,7 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 28
+      isLinux: true
     jobs: 
       db:
         endpoints: 
@@ -206,6 +211,7 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 12
+      isLinux: true
     jobs: 
       db:
         endpoints: 

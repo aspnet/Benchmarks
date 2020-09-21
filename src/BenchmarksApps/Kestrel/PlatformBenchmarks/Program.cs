@@ -82,15 +82,11 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-Console.WriteLine("test");
-#if JSON
-Console.WriteLine("test1");
+#if JSON && NET5_0
             hostBuilder.UseSockets(options =>
             {
-                Console.WriteLine("test2");
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Console.WriteLine("test3");
                     options.UnsafePreferInlineScheduling = true;
                 }
             });
