@@ -8,7 +8,7 @@ variables:
 # Steps are serial
 
 schedules:
-- cron: "0 */11,23 * * *"
+- cron: "0 */7,19 * * *"
   displayName: "Twice a day"
   branches:
     include:
@@ -23,7 +23,7 @@ jobs:
         cd ..
         git clone https://github.com/dotnet/crank
         cd ./crank/
-        git checkout sebros/bot
+        git checkout master
         git pull
         cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
