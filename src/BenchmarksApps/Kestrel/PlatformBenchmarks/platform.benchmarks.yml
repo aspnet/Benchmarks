@@ -40,6 +40,10 @@ scenarios:
       job: platformbenchmarks
     load:
       job: wrk
+      buildArguments:
+        - "/p:IsJson=true"
+      environmentVariables:
+        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: true
       variables:
         presetHeaders: json
         path: /json

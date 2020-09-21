@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <DefineConstants Condition=" '$(IsDatabase)' == 'true' ">$(DefineConstants);DATABASE</DefineConstants>
+    <DefineConstants Condition=" '$(IsJson)' == 'true' ">$(DefineConstants);REDIS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

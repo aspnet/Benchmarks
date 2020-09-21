@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -68,7 +69,7 @@ namespace PlatformBenchmarks
             }
 #endif
 
-            var host = new WebHostBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .UseBenchmarksConfiguration(config)
                 .UseKestrel((context, options) =>
                 {
@@ -79,8 +80,19 @@ namespace PlatformBenchmarks
                         builder.UseHttpApplication<BenchmarkApplication>();
                     });
                 })
-                .UseStartup<Startup>()
-                .Build();
+                .UseStartup<Startup>();
+
+#if JSON
+            hostBuilder.UseSockets(options =>
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    options.UnsafePreferInlineScheduling = true;
+                }
+            });
+#endif
+
+            var host = hostBuilder.Build();
 
             return host;
         }
