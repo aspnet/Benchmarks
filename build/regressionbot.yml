@@ -7,25 +7,35 @@ variables:
 # Jobs are run in parallel
 # Steps are serial
 
-# schedules:
-# - cron: "0 * * * *"
-#   displayName: "every hour"
-#   branches:
-#     include:
-#     - master
-#   always: "true"
+schedules:
+- cron: "0 */7,19 * * *"
+  displayName: "Twice a day"
+  branches:
+    include:
+    - master
+  always: "true"
 
 jobs:
 - job: RegressionBot
   timeoutInMinutes: 10
   steps:
   - powershell: |
-        cd ./src/BenchmarksBot
+        cd ..
+        git clone https://github.com/dotnet/crank
+        cd ./crank/
+        git checkout master
+        git pull
+        cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
-            --table $(sql.table) --repositoryId $(github.repositoryId)
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/build/regressions.config.yml `
+            --connectionstring BENCHMARKSBOT_ConnectionString `
+            --repository-id $(github.repositoryId) `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --username $(github.username) `
+            --app-key BENCHMARKSBOT_GitHubAppKey `
+            --verbose
 
     env:
         BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
-        BENCHMARKSBOT_GitHubAppId: $(github.appid)
-        BENCHMARKSBOT_GitHubInstallationId: $(github.installid)
-        BENCHMARKSBOT_GithHubAppKey: $(github.privatekey)
+        BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)

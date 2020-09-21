@@ -1,0 +1,39 @@
+sources:
+  - name: Trends 
+    table: TrendBenchmarks
+    rules:
+      - include: .
+      - include: Mvc
+        labels: 
+          - area-mvc
+      - exclude: ulib
+      - exclude: arm
+    daysToLoad: 14
+    daysToAnalyze: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.load.results['wrk/rps/mean']
+          threshold: 2
+        - path: jobs.load.results['bombardier/rps/mean']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+      template: rps
+templates:
+  rps: "A performance regression has been detected for the following scenarios: \n\n
+      | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | \n
+      | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | \n
+      {% for regression in Regressions %}
+      {% assign r = regression.CurrentResult %}
+      {% assign p = regression.PreviousResult %}
+      {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
+      {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
+      {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
+      {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
+      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
+      {% endfor %}
+      "
