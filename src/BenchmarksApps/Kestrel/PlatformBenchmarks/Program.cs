@@ -82,12 +82,12 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-#if JSON && NET5_0
+#if NET5_0
             hostBuilder.UseSockets(options =>
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    options.UnsafePreferInlineScheduling = true;
+                    options.UnsafePreferInlineScheduling = Enviroment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
                 }
             });
 #endif

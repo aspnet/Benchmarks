@@ -39,8 +39,6 @@ scenarios:
   json:
     application:
       job: platformbenchmarks
-      buildArguments:
-        - "/p:IsJson=true"
       environmentVariables:
         DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: "{% if isLinux == true %}1{% else %}0{% endif %}"
     load:
