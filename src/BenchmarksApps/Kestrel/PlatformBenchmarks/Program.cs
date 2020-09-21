@@ -83,7 +83,7 @@ namespace PlatformBenchmarks
                 .UseStartup<Startup>();
 
 Console.WriteLine("test");
-#if JSON && !NETCOREAPP3_1
+#if JSON
 Console.WriteLine("test1");
             hostBuilder.UseSockets(options =>
             {
