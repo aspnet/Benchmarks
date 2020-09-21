@@ -58,7 +58,7 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.runtimeversion 5.0.* --warmup.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table MvcBenchmarks --sql SQL_CONNECTION_STRING --no-measurements --no-metadata --warmup.options.discardResults true" ]
+            "args": [ "${{ s.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.runtimeversion 5.0.* --warmup.runtimeversion 5.0.* --application.runtimeversion 5.0.* --session $(session) --table MvcBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
           }
 
 

@@ -27,5 +27,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--application.endpoints ${{ parameters.server }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING" ]
+          "args": [ "--application.endpoints ${{ parameters.server }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
         }
