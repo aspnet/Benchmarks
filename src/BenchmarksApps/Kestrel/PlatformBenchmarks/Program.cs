@@ -87,7 +87,7 @@ namespace PlatformBenchmarks
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    options.UnsafePreferInlineScheduling = Enviroment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
+                    options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
                 }
             });
 #endif
