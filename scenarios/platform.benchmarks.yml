@@ -40,7 +40,7 @@ scenarios:
     application:
       job: platformbenchmarks
       environmentVariables:
-        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: "{% if isLinux == true %}1{% else %}0{% endif %}"
+        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: 1
     load:
       job: wrk
       variables:
@@ -136,7 +136,6 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 28
-      isLinux: true
     jobs: 
       db:
         endpoints: 
@@ -209,7 +208,6 @@ profiles:
       serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 12
-      isLinux: true
     jobs: 
       db:
         endpoints: 
