@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 
 namespace Downstream
@@ -25,7 +27,18 @@ namespace Downstream
                 .Build();
 
             new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    var httpProtocolsConfig = config["HttpProtocols"];
+
+                    if (Enum.TryParse<HttpProtocols>(httpProtocolsConfig, out var httpProtocols))
+                    {
+                        options.ConfigureEndpointDefaults(options =>
+                        {
+                            options.Protocols = httpProtocols;
+                        });
+                    }
+                })
                 .UseConfiguration(config)
                 .Configure(app => app.Run( async (context) =>
                 {

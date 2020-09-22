@@ -18,7 +18,6 @@ parameters:
 - name: scenarios 
   type: object
   default: 
-
   - displayName: Baseline
     arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
   - displayName: HttpClient
@@ -50,20 +49,23 @@ parameters:
   type: object
   default:
     - displayName: http
-      arguments: --variable protocol=http --property protocol=http
+      arguments: --variable serverScheme=http --variable downstreamScheme=http --property protocol=http
+    - displayName: https
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --property protocol=https
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
-      - task: PublishToAzureServiceBus@1
-        condition: succeededOrFailed()
-        displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-        inputs:
-          connectedServiceName: ${{ parameters.connection }}
-          waitForCompletion: true
-          messageBody: |
-            {
-              "name": "crank",
-              "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
-            }
+      - ${{ if or(eq(protocol.displayName, 'http'), or(eq(s.displayName, 'YARP'), eq(s.displayName, 'HttpClient'))) }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "name": "crank",
+                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
+              }
