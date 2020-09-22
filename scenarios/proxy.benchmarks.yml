@@ -11,6 +11,8 @@ imports:
 
 variables:
     path: /
+    serverScheme: http
+    downstreamScheme: http
 
 jobs:
   httpclientproxy:
@@ -19,7 +21,7 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
-    arguments: '--baseUri {{downstreamUri}}'
+    arguments: '--urls {{serverScheme}}://*:5000 --baseUri {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -58,14 +60,15 @@ jobs:
     readyStateText: Application started.
     variables:
       downstreamPort: 5000
-    arguments: '--urls http://*:{{downstreamPort}}'
+      httpProtocol: Http1
+    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --HttpProtocols {{httpProtocol}}'
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
       branchOrCommit: master
       project: samples/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
-    arguments: '--urls {{serverUri}}:{{serverPort}} --clusterUrls {{downstreamUri}}'
+    arguments: '--urls {{serverScheme}}://*:5000 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
 
 scenarios:
   proxy-httpclient:
@@ -77,7 +80,6 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
-        path: /
   proxy-nginx:
     downstream:
       job: downstream
@@ -123,12 +125,11 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
-              
+
 profiles:
   aspnet-perf-lin:
     variables:
-      serverUri: http://10.0.0.102
-      downstreamUri: http://10.0.0.103:5000
+      serverAddress: 10.0.0.102
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
       cores: 12
@@ -146,8 +147,7 @@ profiles:
           displayOutput: true
   aspnet-perf-win:
     variables:
-      serverUri: http://10.0.0.110
-      downstreamUri: http://10.0.0.104:5000
+      serverAddress: 10.0.0.110
       downstreamAddress: 10.0.0.104
       downstreamPort: 5000
       cores: 12
@@ -164,8 +164,7 @@ profiles:
         options:
   aspnet-citrine-lin:
     variables:
-      serverUri: http://10.0.0.102
-      downstreamUri: http://10.0.0.103:5000
+      serverAddress: 10.0.0.102
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
       cores: 28
@@ -181,8 +180,7 @@ profiles:
           - http://asp-citrine-load:5001
   aspnet-citrine-win:
     variables:
-      serverUri: http://10.0.0.104
-      downstreamUri: http://10.0.0.105:5000
+      serverAddress: 10.0.0.104
       downstreamAddress: 10.0.0.105
       downstreamPort: 5000
       cores: 28
