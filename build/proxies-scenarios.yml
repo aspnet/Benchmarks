@@ -20,6 +20,7 @@ parameters:
   default: 
   - displayName: Baseline
     arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
+    supportsServerHttps: true
   - displayName: HttpClient
     arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net5.0
   - displayName: NGinx
@@ -30,6 +31,7 @@ parameters:
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
   - displayName: YARP
     arguments: --scenario proxy-yarp        $(proxyJobs)  --property proxy=yarp --application.channel edge --application.framework net5.0
+    supportsServerHttps: true
 
 - name: payloads
   type: object
@@ -57,7 +59,7 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
-      - ${{ if or(eq(protocol.displayName, 'http'), or(eq(s.displayName, 'YARP'), eq(s.displayName, 'HttpClient'))) }}:
+      - ${{ if or(eq(protocol.displayName, 'http'), eq(s.supportsServerHttps, true)) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
