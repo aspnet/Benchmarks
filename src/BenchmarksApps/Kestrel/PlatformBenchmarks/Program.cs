@@ -85,10 +85,11 @@ namespace PlatformBenchmarks
 #if NET5_0
             hostBuilder.UseSockets(options =>
             {
+                options.WaitForDataBeforeAllocatingBuffer = false;
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
-                    options.WaitForDataBeforeAllocatingBuffer = false;
                 }
             });
 #endif
