@@ -245,7 +245,7 @@ These scenarios are running various SignalR benchmarks. The transport and serial
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable scenario=echo --variable transport=WebSockets --variable protocol=messagepack
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable scenario=echo --variable transport=websockets --variable protocol=messagepack
 ```
 
 ### Available scenarios
@@ -259,9 +259,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
   - `--variable scenario=echo`
   - `--variable scenario=echoAll`
 - Transport: 
-  - `--variable transport=WebSockets`
-  - `--variable transport=ServerSentEvents`
-  - `--variable transport=LongPolling`
+  - `--variable transport=websockets`
+  - `--variable transport=serversentevents`
+  - `--variable transport=longpolling`
 - Protocol: 
   - `--variable protocol=json`
   - `--variable protocol=messagepack`
