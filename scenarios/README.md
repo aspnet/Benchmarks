@@ -240,7 +240,7 @@ This scenario can easily reach the max network bandwidth. To verify that use `--
 
 ## SignalR benchmarks
 
-These scenarios are running various SignalR scenarios. The transport and serialization methods can be configured.
+These scenarios are running various SignalR benchmarks. The transport and serialization methods can be configured.
 
 ### Sample
 
