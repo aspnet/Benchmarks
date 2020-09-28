@@ -238,6 +238,32 @@ This scenario can easily reach the max network bandwidth. To verify that use `--
 [load] Transfer/sec:      4.37GB
 ```
 
+## SignalR benchmarks
+
+These scenarios are running various SignalR scenarios. The transport and serialization methods can be configured.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable transport=WebSockets --variable protocol=messagepack
+```
+
+### Available scenarios
+
+- `signalr`
+
+#### Arguments
+
+- Transport: 
+  - `--variable transport=WebSockets`
+  - `--variable transport=ServerSentEvents`
+  - `--variable transport=LongPolling`
+- Protocol: 
+  - `--variable protocol=json`
+  - `--variable protocol=messagepack`
+
+> Note: MessagePack is not supported with ServerSentEvents
+
 ## FAQ
 
 > The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.

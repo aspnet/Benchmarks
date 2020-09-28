@@ -26,7 +26,7 @@ jobs:
       serverScheme: http
       serverAddress: localhost
       serverPort: 5000
-      serverPath: /
+      path: /
     requiredVariables:
       serverUri: http://10.0.0.102
       serverPort: 5000

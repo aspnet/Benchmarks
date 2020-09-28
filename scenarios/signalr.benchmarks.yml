@@ -1,5 +1,5 @@
 ﻿# Examples:
-# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-physical-lin
+# --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
@@ -7,6 +7,7 @@ imports:
 
 variables:
     serverPort: 5000
+    serverScheme: http
 
 scenarios:
   signalr:
@@ -22,9 +23,9 @@ scenarios:
         path: /echo
 
 profiles:
-  aspnet-physical-lin:
+  aspnet-perf-lin:
     variables:
-      serverUri: http://10.0.0.102
+      serverAddress: 10.0.0.102
       cores: 12
     jobs:
       application:
@@ -36,9 +37,9 @@ profiles:
       load:
         endpoints: 
           - http://asp-perf-load:5001
-  aspnet-physical-win:
+  aspnet-perf-win:
     variables:
-      serverUri: http://10.0.0.104
+      serverAddress: 10.0.0.104
       cores: 12
     jobs:
       application:
@@ -52,7 +53,7 @@ profiles:
           - http://asp-perf-db:5001
   aspnet-citrine-lin:
     variables:
-      serverUri: http://10.0.0.102
+      serverAddress: 10.0.0.102
       cores: 28
     jobs: 
       application:
@@ -66,7 +67,7 @@ profiles:
           - http://asp-citrine-load:5001
   aspnet-citrine-win:
     variables:
-      serverUri: http://10.0.0.104
+      serverAddress: 10.0.0.104
       cores: 28
     jobs: 
       application:
@@ -80,7 +81,7 @@ profiles:
           - http://asp-citrine-db:5001
   aspnet-cloud-lin:
     varaibles:
-      serverUri: http://10.0.0.104
+      serverAddress: 10.0.0.104
     jobs:
       application:
         endpoints:
