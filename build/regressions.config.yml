@@ -34,6 +34,6 @@ templates:
       {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
       {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
       {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
-      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
+      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
       {% endfor %}
       "
