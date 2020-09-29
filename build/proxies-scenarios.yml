@@ -47,27 +47,36 @@ parameters:
     - displayName: "100 KB"
       arguments: --variable path=/?s=102400 --property payload=102400
 
-- name: protocols
+- name: serverSchemes
   type: object
   default:
     - displayName: http
-      arguments: --variable serverScheme=http --variable downstreamScheme=http --property protocol=http
+      arguments: --variable serverScheme=http --property serverScheme=http
     - displayName: https
-      arguments: --variable serverScheme=https --variable downstreamScheme=https --property protocol=https
+      arguments: --variable serverScheme=https --property serverScheme=https
+
+- name: downstreamSchemes
+  type: object
+  default:
+    - displayName: http
+      arguments: --variable downstreamScheme=http --property downstreamScheme=http
+    - displayName: https
+      arguments: --variable downstreamScheme=https --property downstreamScheme=https
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
-    - ${{ each protocol in parameters.protocols }}:
-      - ${{ if or(eq(protocol.displayName, 'http'), eq(s.supportsServerHttps, true)) }}:
-        - task: PublishToAzureServiceBus@1
-          condition: succeededOrFailed()
-          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-          inputs:
-            connectedServiceName: ${{ parameters.connection }}
-            waitForCompletion: true
-            messageBody: |
-              {
-                "name": "crank",
-                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
-              }
+    - ${{ each serverScheme in parameters.serverSchemes }}:
+      - ${{ each downstreamScheme in parameters.downstreamSchemes }}:
+        - ${{ if and(eq(serverScheme.displayName, downstreamScheme.displayName), or(eq(serverScheme.displayName, 'http'), eq(s.supportsServerHttps, true))) }}:
+          - task: PublishToAzureServiceBus@1
+            condition: succeededOrFailed()
+            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ serverScheme.displayName }}
+            inputs:
+              connectedServiceName: ${{ parameters.connection }}
+              waitForCompletion: true
+              messageBody: |
+                {
+                  "name": "crank",
+                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ serverScheme.arguments }} ${{ downstreamScheme.arguments }}" ]
+                }
