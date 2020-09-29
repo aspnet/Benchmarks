@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Downstream
 {
@@ -19,28 +18,9 @@ namespace Downstream
         private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         private const int MaxDelay = 2_000;
         
-        public static void Main(string[] args)
-        {
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-                .AddCommandLine(args)
-                .Build();
-
-            new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    var httpProtocolsConfig = config["HttpProtocols"];
-
-                    if (Enum.TryParse<HttpProtocols>(httpProtocolsConfig, out var httpProtocols))
-                    {
-                        options.ConfigureEndpointDefaults(options =>
-                        {
-                            options.Protocols = httpProtocols;
-                        });
-                    }
-                })
-                .UseConfiguration(config)
-                .Configure(app => app.Run( async (context) =>
+        public static void Main(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.Configure(app => app.Run(async context =>
                 {
                     int size = 10;
 
@@ -73,9 +53,12 @@ namespace Downstream
                     }
 
                     await context.Response.Body.WriteAsync(payload);
-                }))
+                })))
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.ClearProviders();
+                })
                 .Build()
                 .Run();
-        }
     }
 }
