@@ -61,7 +61,7 @@ jobs:
     variables:
       downstreamPort: 5000
       httpProtocol: Http1
-    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --HttpProtocols {{httpProtocol}}'
+    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {{httpProtocol}}'
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
