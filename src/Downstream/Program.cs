@@ -20,6 +20,7 @@ namespace Downstream
         
         public static void Main(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
                 .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.Configure(app => app.Run(async context =>
                 {
                     int size = 10;
@@ -54,10 +55,6 @@ namespace Downstream
 
                     await context.Response.Body.WriteAsync(payload);
                 })))
-                .ConfigureLogging((_, factory) =>
-                {
-                    factory.ClearProviders();
-                })
                 .Build()
                 .Run();
     }
