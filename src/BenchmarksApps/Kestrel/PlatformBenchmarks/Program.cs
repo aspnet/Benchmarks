@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,16 @@ namespace PlatformBenchmarks
         {
             BenchmarksEventSource.MeasureNetCoreAppVersion();
             BenchmarksEventSource.MeasureAspNetVersion();
+
+            var iWebHostBuilderType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostBuilder");
+
+            Console.WriteLine(iWebHostBuilderType);
+
+            if (iWebHostBuilderType != null)
+            {
+                var aspnetCoreVersion = iWebHostBuilderType.GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+                Console.WriteLine(aspnetCoreVersion);
+            }
 
             Args = args;
 
