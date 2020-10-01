@@ -25,7 +25,7 @@ namespace PlatformBenchmarks
             BenchmarksEventSource.MeasureNetCoreAppVersion();
             BenchmarksEventSource.MeasureAspNetVersion();
 
-            var iWebHostBuilderType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostBuilder");
+            var iWebHostBuilderType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostBuilder, Microsoft.AspNetCore.Hosting.Abstractions");
 
             Console.WriteLine(typeof(Microsoft.AspNetCore.Hosting.IWebHostBuilder).AssemblyQualifiedName);
 
