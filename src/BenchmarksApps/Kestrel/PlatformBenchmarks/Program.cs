@@ -27,12 +27,12 @@ namespace PlatformBenchmarks
 
             var iWebHostBuilderType = Type.GetType("Microsoft.AspNetCore.Hosting.IWebHostBuilder");
 
-            Console.WriteLine(iWebHostBuilderType);
+            Console.WriteLine(typeof(Microsoft.AspNetCore.Hosting.IWebHostBuilder).AssemblyQualifiedName);
 
             if (iWebHostBuilderType != null)
             {
                 var aspnetCoreVersion = iWebHostBuilderType.GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-                Console.WriteLine(aspnetCoreVersion);
+                Console.WriteLine($"AspNetCorVersion: {aspnetCoreVersion}");
             }
 
             Args = args;
