@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Crank.EventSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,9 @@ namespace StaticFiles
     {
         public static void Main(string[] args)
         {
+            BenchmarksEventSource.MeasureAspNetVersion();
+            BenchmarksEventSource.MeasureNetCoreAppVersion();
+
             CreateHostBuilder(args).Build().Run();
         }
 
