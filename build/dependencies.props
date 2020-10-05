@@ -27,7 +27,7 @@
 
     <MongoDbVersion>2.8.0</MongoDbVersion>
     <DapperVersion>2.0.30</DapperVersion>
-    <NpgsqlVersion>4.1.3</NpgsqlVersion>
+    <NpgsqlVersion>4.1.5</NpgsqlVersion>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.4</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
