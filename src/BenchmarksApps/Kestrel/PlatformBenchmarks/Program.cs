@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Crank.EventSources;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
 using Npgsql;
@@ -21,9 +20,6 @@ namespace PlatformBenchmarks
 
         public static async Task Main(string[] args)
         {
-            BenchmarksEventSource.MeasureNetCoreAppVersion();
-            BenchmarksEventSource.MeasureAspNetVersion();
-
             Args = args;
 
             Console.WriteLine(BenchmarkApplication.ApplicationName);

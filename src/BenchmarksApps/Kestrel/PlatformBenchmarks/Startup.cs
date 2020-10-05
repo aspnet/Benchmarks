@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Crank.EventSources;
 
 namespace PlatformBenchmarks
 {
@@ -9,7 +10,8 @@ namespace PlatformBenchmarks
     {
         public void Configure(IApplicationBuilder app)
         {
-
+            BenchmarksEventSource.MeasureNetCoreAppVersion();
+            BenchmarksEventSource.MeasureAspNetVersion();
         }
     }
 }
