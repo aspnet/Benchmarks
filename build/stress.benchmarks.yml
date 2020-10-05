@@ -9,10 +9,13 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
+      serverPort: 5000
+      protocol: http
+      serverScheme: http
       server: Kestrel
       transport: Sockets
-      serverScheme: http
-    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
+      scenario: plaintext
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
     environmentVariables:
       database: PostgresQL
       connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
