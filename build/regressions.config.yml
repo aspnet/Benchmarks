@@ -36,4 +36,16 @@ templates:
       {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
       | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
       {% endfor %}
+
+      ### Changes:
+
+      {% assign currentAspNetCoreVersion = r.Data.jobs.load.results.aspNetCoreVersion | split: '+' %}
+      {% assign previousAspNetCoreVersion = p.Data.jobs.load.results.aspNetCoreVersion | split: '+' %}
+      {% assign currentNetCoreAppVersion = r.Data.jobs.load.results.netCoreAppVersion | split: '+' %}
+      {% assign previousNetCoreAppVersion = p.Data.jobs.load.results.netCoreAppVersion | split: '+' %}
+
+      | Runtime | Previous Version | Current Version | Diff | \n
+      | -------- | ----------- | ---- | ------- | ------- | \n
+      | ASP.NET | {{ previousAspNetCoreVersion[0] }} | {{ currentAspNetCoreVersion[0] }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+      | CLR | {{ previousNetCoreAppVersion[0] }} | {{ currentNetCoreAppVersion[0] }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
       "
