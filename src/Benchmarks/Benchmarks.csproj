@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <!-- Old way of overriding the dotnet runtime -->
-  <PropertyGroup Condition="$(TargetFramework) != 'netcoreapp5.0' and $(TargetFramework) != 'net5.0'">
+  <PropertyGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'net6.0'">
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
@@ -101,7 +101,7 @@
 
   </ItemGroup>
   
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp5.0' or $(TargetFramework) == 'net5.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'net5.0' or $(TargetFramework) == 'net6.0'">
       <!-- Floating versions that matches the ASP.NET one while not stabilized -->
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
