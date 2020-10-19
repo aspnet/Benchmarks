@@ -85,11 +85,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 
 ### Available scenarios
 
-The following scenarios are implemented from a middleware (no MVC) with different database access strategies:
-
-- No suffix: Raw ADO.NET 
-- "ef" suffix: Entity Framework Core
-- "dapper" suffix: Dapper
+The following scenarios are implemented from a middleware (no MVC)
 
 - `fortunes`
 - `fortunes_ef`
@@ -103,6 +99,12 @@ The following scenarios are implemented from a middleware (no MVC) with differen
 - `updates`
 - `updates_ef`
 - `updates_dapper`
+
+The suffixes represent different database access strategies:
+ 
+- No suffix: Raw ADO.NET 
+- "ef" suffix: Entity Framework Core
+- "dapper" suffix: Dapper
 
 ## Platform benchmarks
 
