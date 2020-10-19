@@ -69,17 +69,17 @@ parameters:
   type: object
   default:
     - displayName: HTTP/1.1
-      arguemnts: --variable load.variables.transport http1 --property serverHttpProtocol=HTTP/1.1
+      arguments: --variable load.variables.transport http1 --property serverHttpProtocol=HTTP/1.1
     - displayName: HTTP/2
-      arguemnts: --variable load.variables.transport http2 --property serverHttpProtocol=HTTP/2
+      arguments: --variable load.variables.transport http2 --property serverHttpProtocol=HTTP/2
 
 - name: downstreamHttpProtocols
   type: object
   default:
     - displayName: HTTP/1.1
-      arguemnts: --variable downstream.variables.httpProtocol http1 --property serverHttpProtocol=HTTP/1.1
+      arguments: --variable downstream.variables.httpProtocol http1 --property serverHttpProtocol=HTTP/1.1
     - displayName: HTTP/2
-      arguemnts: --variable downstream.variables.httpProtocol http2 --property serverHttpProtocol=HTTP/2
+      arguments: --variable downstream.variables.httpProtocol http2 --property serverHttpProtocol=HTTP/2
 
 steps:
 - ${{ each s in parameters.scenarios }}:
