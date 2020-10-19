@@ -58,6 +58,136 @@ scenarios:
         presetHeaders: html
         path: /fortunes/ef
 
+  fortunes_dapper:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesDapper
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes/dapper
+
+  single_query:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbSingleQueryRaw
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db/raw
+
+  single_query_ef:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbSingleQueryRaw
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db/ef  
+
+  single_query_dapper:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbSingleQueryDapper
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db/dapper 
+
+  multiple_queries:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiQueryRaw
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/raw?queries=20
+
+  multiple_queries_ef:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiQueryEf
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/ef?queries=20
+
+  multiple_queries_dapper:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiQueryDapper
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/dapper?queries=20
+
+  updates:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiUpdateRaw
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/raw?queries=20
+
+  updates_ef:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiUpdateEf
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/ef?queries=20
+
+  updates_dapper:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbMultiUpdateDapper
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/dapper?queries=20
+
 profiles:
   aspnet-citrine-lin:
     variables:
