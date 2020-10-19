@@ -85,8 +85,26 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 
 ### Available scenarios
 
-- `fortunes`: Middleware implementation using raw ADO.NET.
-- `fortunes_ef`: Middleware implementation, using EF Core.
+The following scenarios are implemented from a middleware (no MVC)
+
+- `fortunes`
+- `fortunes_ef`
+- `fortunes_dapper`
+- `single_query`
+- `single_query_ef`
+- `single_query_dapper`
+- `multiple_queries`
+- `multiple_queries_ef`
+- `multiple_queries_dapper`
+- `updates`
+- `updates_ef`
+- `updates_dapper`
+
+The suffixes represent different database access strategies:
+ 
+- No suffix: Raw ADO.NET 
+- "ef" suffix: Entity Framework Core
+- "dapper" suffix: Dapper
 
 ## Platform benchmarks
 
@@ -109,6 +127,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 - `single_query`
 - `multiple_queries`
 - `updates`
+- `caching`
 
 ## Proxy benchmarks
 

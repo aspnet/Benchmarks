@@ -12,13 +12,14 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Crank.EventSources;
 
 namespace Benchmarks
 {
@@ -45,26 +46,8 @@ namespace Benchmarks
             
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
 
-            Console.WriteLine("#StartJobStatistics"
-                + Environment.NewLine
-                + Newtonsoft.Json.JsonConvert.SerializeObject(new
-                {
-                    Metadata = new object[]
-                      {
-                          new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
-                          new { Source= "Benchmarks", Name= "NetCoreAppVersion", ShortDescription = ".NET Runtime Version", LongDescription = ".NET Runtime Version" },
-                          new { Source= "Benchmarks", Name= "ProcessorCount", ShortDescription = "Processor Count", LongDescription = "Processor Count", Format = "n0" },
-                      },
-                    Measurements = new object[]
-                      {
-                          new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                          new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                          new { Timestamp = DateTime.UtcNow, Name = "ProcessorCount", Value = Environment.ProcessorCount }
-                      }
-                })
-                + Environment.NewLine
-                + "#EndJobStatistics"
-             );
+            BenchmarksEventSource.MeasureAspNetVersion();
+            BenchmarksEventSource.MeasureNetCoreAppVersion();
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)
@@ -94,7 +77,7 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                     .Configure<LoggerFilterOptions>(options =>
                     {
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
                         if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
                             Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
@@ -124,7 +107,7 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
 
                     var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
                     if (kestrelThreadPoolDispatchingValue != null)
@@ -189,7 +172,7 @@ namespace Benchmarks
             {
                 webHostBuilder = webHostBuilder.UseHttpSys();
             }
-#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0
+#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseIIS();

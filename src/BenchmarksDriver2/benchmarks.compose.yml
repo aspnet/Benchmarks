@@ -19,7 +19,7 @@ jobs:
       server: Kestrel
       transport: Sockets
       scenario: plaintext
-    arguments: "--nonInteractive true --scenarios {{scenario}} --server-urls {{protocol}}://[*]:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{protocol}}://[*]:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git

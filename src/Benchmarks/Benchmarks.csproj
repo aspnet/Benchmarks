@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <!-- For local dev specify all supported TFMs they can be easily tested -->
   <PropertyGroup Condition="'$(BenchmarksTargetFramework)' == ''">
-    <TargetFrameworks>netcoreapp2.1;netcoreapp2.2;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <TargetFramework>$(BenchmarksTargetFramework)</TargetFramework>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <!-- Old way of overriding the dotnet runtime -->
-  <PropertyGroup Condition="$(TargetFramework) != 'netcoreapp5.0' and $(TargetFramework) != 'net5.0'">
+  <PropertyGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'net6.0'">
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
@@ -36,6 +36,8 @@
     
     <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
     <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
+
+    <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
@@ -65,7 +67,7 @@
 
     <!--<PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />-->
     <!-- Temporary pinned version until the package is built again -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.2" />
     
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion22)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion22)" />
@@ -99,7 +101,7 @@
 
   </ItemGroup>
   
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp5.0' or $(TargetFramework) == 'net5.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'net5.0' or $(TargetFramework) == 'net6.0'">
       <!-- Floating versions that matches the ASP.NET one while not stabilized -->
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
