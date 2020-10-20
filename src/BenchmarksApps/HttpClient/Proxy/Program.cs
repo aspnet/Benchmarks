@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Security;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Crank.EventSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,7 +53,8 @@ namespace Proxy
 
             Console.WriteLine($"Base URI: {baseUriArg}");
 
-            WriteStatistics();
+            BenchmarksEventSource.MeasureAspNetVersion();
+            BenchmarksEventSource.MeasureNetCoreAppVersion();
 
             var builder = new WebHostBuilder()
                 .ConfigureLogging(loggerFactory =>
@@ -92,6 +95,8 @@ namespace Proxy
             httpHandler.AllowAutoRedirect = false;
             httpHandler.UseProxy = false;
             httpHandler.AutomaticDecompression = System.Net.DecompressionMethods.None;
+            // Accept any SSL certificate
+            httpHandler.SslOptions.RemoteCertificateValidationCallback += (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
             _httpMessageInvoker = new HttpMessageInvoker(httpHandler);
         }
