@@ -49,55 +49,44 @@ parameters:
     - displayName: "100 KB"
       arguments: --variable path=/?s=102400 --property payload=102400
 
-- name: serverSchemes
+- name: protocols
   type: object
   default:
-    - displayName: http
-      arguments: --variable serverScheme=http --property serverScheme=http
-    - displayName: https
-      arguments: --variable serverScheme=https --property serverScheme=https
-
-- name: downstreamSchemes
-  type: object
-  default:
-    - displayName: http
-      arguments: --variable downstreamScheme=http --property downstreamScheme=http
-    - displayName: https
-      arguments: --variable downstreamScheme=https --property downstreamScheme=https
-
-- name: serverHttpProtocols
-  type: object
-  default:
-    - displayName: HTTP/1.1
-      arguments: --variable load.variables.transport http1 --property serverHttpProtocol=HTTP/1.1
-    - displayName: HTTP/2
-      arguments: --variable load.variables.transport http2 --property serverHttpProtocol=HTTP/2
-
-- name: downstreamHttpProtocols
-  type: object
-  default:
-    - displayName: HTTP/1.1
-      arguments: --variable downstream.variables.httpProtocol http1 --property serverHttpProtocol=HTTP/1.1
-    - displayName: HTTP/2
-      arguments: --variable downstream.variables.httpProtocol http2 --property serverHttpProtocol=HTTP/2
+    - displayName: http - http
+      arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=http --property downstreamProtocol=http 
+      requiresServerHttps: false
+      requiresServerHttp2: false
+    - displayName: https - http
+      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=http 
+      requiresServerHttps: true
+      requiresServerHttp2: false
+    - displayName: https - https
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=https 
+      requiresServerHttps: true
+      requiresServerHttp2: false
+    - displayName: h2 - h2
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2 
+      requiresServerHttps: false
+      requiresServerHttp2: true
+    - displayName: h2 - h2c
+      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c 
+      requiresServerHttps: false
+      requiresServerHttp2: true
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
-    - ${{ each serverScheme in parameters.serverSchemes }}:
-      - ${{ each downstreamScheme in parameters.downstreamSchemes }}:
-        - ${{ each serverHttpProtocol in parameters.serverHttpProtocols }}:
-          - ${{ each downstreamHttpProtocol in parameters.downstreamHttpProtocols }}:
-            - ${{ if and(or(not(eq(serverScheme.displayName, 'https')), s.supportsServerHttps), or(not(eq(serverHttpProtocol.displayName, 'HTTP/2')), s.supportsServerHttp2)) }}:
-              - ${{ if and(eq(serverScheme.displayName, downstreamScheme.displayName), eq(serverHttpProtocol.displayName, downstreamHttpProtocol.displayName), or(eq(serverScheme.displayName, 'https'), eq(serverHttpProtocol.displayName, 'HTTP/1.1'))) }}:
-                - task: PublishToAzureServiceBus@1
-                  condition: succeededOrFailed()
-                  displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ serverScheme.displayName }} ${{ serverHttpProtocol.displayName }}
-                  inputs:
-                    connectedServiceName: ${{ parameters.connection }}
-                    waitForCompletion: true
-                    messageBody: |
-                      {
-                        "name": "crank",
-                        "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ serverScheme.arguments }} ${{ downstreamScheme.arguments }} ${{ serverHttpProtocol.arguments }} ${{ downstreamHttpProtocol.arguments }}" ]
-                      }
+    - ${{ each protocol in parameters.protocols }}:
+      # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
+      - ${{ if and( or ( eq(protocol.requiresServerHttps, false), eq(s.supportsServerHttps, true)), or ( eq(protocol.requiresServerHttp2, false), eq(s.supportsServerHttp2, true)) ) }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "name": "crank",
+                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ serverScheme.arguments }} ${{ downstreamScheme.arguments }} ${{ serverHttpProtocol.arguments }} ${{ downstreamHttpProtocol.arguments }}" ]
+              }
