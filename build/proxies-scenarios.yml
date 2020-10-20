@@ -53,23 +53,23 @@ parameters:
   type: object
   default:
     - displayName: http - http
-      arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=http --property downstreamProtocol=http 
+      arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=http --property downstreamProtocol=http
       requiresServerHttps: false
       requiresServerHttp2: false
     - displayName: https - http
-      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=http 
+      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=http
       requiresServerHttps: true
       requiresServerHttp2: false
     - displayName: https - https
-      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=https 
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=https
       requiresServerHttps: true
       requiresServerHttp2: false
     - displayName: h2 - h2
-      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2 
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2
       requiresServerHttps: false
       requiresServerHttp2: true
     - displayName: h2 - h2c
-      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c 
+      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c
       requiresServerHttps: false
       requiresServerHttp2: true
 
