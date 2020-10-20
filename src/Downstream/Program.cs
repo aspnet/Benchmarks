@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,11 +22,11 @@ namespace Downstream
         public static void Main(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder
-                .ConfigureKestrel((_, kestrelOptions) =>
+                .ConfigureKestrel((context, kestrelOptions) =>
                 {
                     kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
                     {
-                        httpsOptions.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
+                        httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
                     });
                 })
                 .Configure(app => app.Run(async context =>

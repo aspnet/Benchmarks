@@ -64,11 +64,11 @@ namespace Proxy
                         loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
                 })
-                .UseKestrel(kestrelOptions =>
+                .UseKestrel((context, kestrelOptions) =>
                 {
                     kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
                     {
-                        httpsOptions.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
+                        httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
                     });
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
