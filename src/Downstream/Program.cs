@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -19,9 +20,17 @@ namespace Downstream
         
         public static void Main(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder.Configure(app => app.Run(async context =>
+                .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder
+                .ConfigureKestrel((_, kestrelOptions) =>
                 {
-                    int size = 10;
+                    kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
+                    });
+                })
+                .Configure(app => app.Run(async context =>
+                {
+                    var size = 10;
 
                     if (!context.Request.Query.ContainsKey("s"))
                     {

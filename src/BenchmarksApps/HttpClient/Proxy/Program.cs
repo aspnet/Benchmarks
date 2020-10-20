@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -63,7 +64,13 @@ namespace Proxy
                         loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
                 })
-                .UseKestrel()
+                .UseKestrel(kestrelOptions =>
+                {
+                    kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
+                    });
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 ;
