@@ -194,3 +194,19 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-db:5001
+  local:
+    variables:
+      serverAddress: localhost
+      serverPort: 5000
+      downstreamAddress: localhost
+      downstreamPort: 5001
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+      load:
+        endpoints: 
+          - http://localhost:5010
