@@ -5,7 +5,6 @@ ROOT=$DIR/..
 SESSION=`date '+%Y%m%d%H%M%S'`
 
 proxyJobs="--config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.proxy.yml"
-yarpJobs="--config https://raw.githubusercontent.com/microsoft/reverse-proxy/master/samples/BenchmarkApp/benchmarks.yml"
 
 jobs=(
   "--scenario proxy-baseline    $proxyJobs --property proxy=none"
@@ -13,7 +12,6 @@ jobs=(
   "--scenario proxy-nginx       $proxyJobs --property proxy=nginx"
   "--scenario proxy-haproxy     $proxyJobs --property proxy=haproxy"
   "--scenario proxy-envoy       $proxyJobs --property proxy=envoy"
-  "--scenario proxy-yarp        $yarpJobs --property proxy=yarp"
 )
 
 payloads=(
