@@ -5,12 +5,11 @@
 # --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
 
 imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
 
 variables:
     path: /
-    serverScheme: http
-    downstreamScheme: http
 
 jobs:
   httpclientproxy:
@@ -19,7 +18,7 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
-    arguments: '--urls {{serverScheme}}://*:5000 --baseUri {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+    arguments: '--baseUri {{downstreamUri}}'
     port: 5000
   nginxproxy:
     source:
@@ -60,8 +59,7 @@ jobs:
     readyStateText: Application started.
     variables:
       downstreamPort: 5000
-      httpProtocol: Http1
-    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --HttpProtocols {{httpProtocol}}'
+    arguments: '--urls http://*:{{downstreamPort}}'
     port: 5000
 
 scenarios:
@@ -74,6 +72,7 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 5000
+        path: /
   proxy-nginx:
     downstream:
       job: downstream
@@ -112,7 +111,8 @@ scenarios:
 profiles:
   aspnet-physical:
     variables:
-      serverAddress: 10.0.0.102
+      serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
       cores: 12
@@ -130,7 +130,8 @@ profiles:
           displayOutput: true
   aspnet-physical-win:
     variables:
-      serverAddress: 10.0.0.110
+      serverUri: http://10.0.0.110
+      downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
       cores: 12
@@ -147,7 +148,8 @@ profiles:
         options:
   aspnet-citrine:
     variables:
-      serverAddress: 10.0.0.102
+      serverUri: http://10.0.0.102
+      downstreamUri: http://10.0.0.103:5000
       downstreamAddress: 10.0.0.103
       downstreamPort: 5000
       cores: 28
