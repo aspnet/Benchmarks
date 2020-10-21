@@ -54,19 +54,15 @@ parameters:
   default:
     - displayName: http - http
       arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=http --property downstreamProtocol=http
-      requiresServerHttps: false
-      requiresServerHttp2: false
     - displayName: https - http
       arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=http
       requiresServerHttps: true
-      requiresServerHttp2: false
     - displayName: https - https
       arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=https
       requiresServerHttps: true
-      requiresServerHttp2: false
     - displayName: h2 - h2
       arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2
-      requiresServerHttps: false
+      requiresServerHttps: true
       requiresServerHttp2: true
 # We need to find a way to tell the proxy that the downstream server is expecting h2c and not http/1.1
 #    - displayName: h2 - h2c
@@ -79,7 +75,7 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
-      - ${{ if and( or ( eq(protocol.requiresServerHttps, false), eq(s.supportsServerHttps, true)), or ( eq(protocol.requiresServerHttp2, false), eq(s.supportsServerHttp2, true)) ) }}:
+      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
