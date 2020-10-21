@@ -68,10 +68,11 @@ parameters:
       arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2
       requiresServerHttps: false
       requiresServerHttp2: true
-    - displayName: h2 - h2c
-      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c
-      requiresServerHttps: false
-      requiresServerHttp2: true
+# We need to find a way to tell the proxy that the downstream server is expecting h2c and not http/1.1
+#    - displayName: h2 - h2c
+#      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c
+#      requiresServerHttps: false
+#      requiresServerHttp2: true
 
 steps:
 - ${{ each s in parameters.scenarios }}:
