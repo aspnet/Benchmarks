@@ -105,6 +105,9 @@ namespace Proxy
             var destinationUri = BuildDestinationUri(context);
 
             using var requestMessage = context.CreateProxyHttpRequest(destinationUri);
+            requestMessage.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            requestMessage.Version = new Version(2, 0);
+
             using var responseMessage = await _httpMessageInvoker.SendAsync(requestMessage, context.RequestAborted);
             await context.CopyProxyHttpResponse(responseMessage);
         }
