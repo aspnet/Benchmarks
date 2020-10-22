@@ -39,10 +39,10 @@ templates:
 
       ### Changes:
 
-      {% assign currentAspNetCoreVersion = r.Data.jobs.load.results.aspNetCoreVersion | split: '+' %}
-      {% assign previousAspNetCoreVersion = p.Data.jobs.load.results.aspNetCoreVersion | split: '+' %}
-      {% assign currentNetCoreAppVersion = r.Data.jobs.load.results.netCoreAppVersion | split: '+' %}
-      {% assign previousNetCoreAppVersion = p.Data.jobs.load.results.netCoreAppVersion | split: '+' %}
+      {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+      {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+      {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+      {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
 
       | Runtime | Previous Version | Current Version | Diff | \n
       | -------- | ----------- | ---- | ------- | ------- | \n
