@@ -22,4 +22,4 @@ jobs:
       requests: 0
       rate: 0
       transport: fasthttp # | http1 | http2
-    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -n {{requests}} --insecure -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}} {{serverUri}}:{{serverPort}}{{path}}"
+    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -n {{requests}} --insecure -l {% if rate != 0 %} --rate {{ rate }} {% endif %} {% if transport %} --{{ transport}} {% endif %} {{headers[presetHeaders]}} {% if serverScheme == blank or serverScheme == empty %} {{serverUri}}:{{serverPort}}{{path}} {% else %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% endif %}"

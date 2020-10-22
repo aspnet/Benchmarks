@@ -4,12 +4,14 @@
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Crank.EventSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,7 +52,8 @@ namespace Proxy
 
             Console.WriteLine($"Base URI: {baseUriArg}");
 
-            WriteStatistics();
+            BenchmarksEventSource.MeasureAspNetVersion();
+            BenchmarksEventSource.MeasureNetCoreAppVersion();
 
             var builder = new WebHostBuilder()
                 .ConfigureLogging(loggerFactory =>
@@ -63,7 +66,13 @@ namespace Proxy
                         loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                     }
                 })
-                .UseKestrel()
+                .UseKestrel((context, kestrelOptions) =>
+                {
+                    kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
+                    });
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseConfiguration(config)
                 ;
@@ -85,6 +94,8 @@ namespace Proxy
             httpHandler.AllowAutoRedirect = false;
             httpHandler.UseProxy = false;
             httpHandler.AutomaticDecompression = System.Net.DecompressionMethods.None;
+            // Accept any SSL certificate
+            httpHandler.SslOptions.RemoteCertificateValidationCallback += (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
             _httpMessageInvoker = new HttpMessageInvoker(httpHandler);
         }
@@ -94,32 +105,13 @@ namespace Proxy
             var destinationUri = BuildDestinationUri(context);
 
             using var requestMessage = context.CreateProxyHttpRequest(destinationUri);
+            requestMessage.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            requestMessage.Version = new Version(2, 0);
+
             using var responseMessage = await _httpMessageInvoker.SendAsync(requestMessage, context.RequestAborted);
             await context.CopyProxyHttpResponse(responseMessage);
         }
 
         private static Uri BuildDestinationUri(HttpContext context) => new Uri(UriHelper.BuildAbsolute(_scheme, _host, _pathBase, context.Request.Path, context.Request.QueryString.Add(_appendQuery)));
-
-        private static void WriteStatistics()
-        {
-            Console.WriteLine("#StartJobStatistics"
-            + Environment.NewLine
-            + System.Text.Json.JsonSerializer.Serialize(new
-            {
-                Metadata = new object[]
-                {
-                    new { Source= "Benchmarks", Name= "AspNetCoreVersion", ShortDescription = "ASP.NET Core Version", LongDescription = "ASP.NET Core Version" },
-                    new { Source= "Benchmarks", Name= "NetCoreAppVersion", ShortDescription = ".NET Runtime Version", LongDescription = ".NET Runtime Version" },
-                },
-                Measurements = new object[]
-                {
-                    new { Timestamp = DateTime.UtcNow, Name = "AspNetCoreVersion", Value = typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                    new { Timestamp = DateTime.UtcNow, Name = "NetCoreAppVersion", Value = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion },
-                }
-            })
-            + Environment.NewLine
-            + "#EndJobStatistics"
-            );
-        }
     }
 }

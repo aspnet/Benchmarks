@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace Downstream
 {
@@ -17,19 +19,19 @@ namespace Downstream
         private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         private const int MaxDelay = 2_000;
         
-        public static void Main(string[] args)
-        {
-            var config = new ConfigurationBuilder()
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-                .AddCommandLine(args)
-                .Build();
-
-            new WebHostBuilder()
-                .UseKestrel()
-                .UseConfiguration(config)
-                .Configure(app => app.Run( async (context) =>
+        public static void Main(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder
+                .ConfigureKestrel((context, kestrelOptions) =>
                 {
-                    int size = 10;
+                    kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
+                    });
+                })
+                .Configure(app => app.Run(async context =>
+                {
+                    var size = 10;
 
                     if (!context.Request.Query.ContainsKey("s"))
                     {
@@ -60,9 +62,8 @@ namespace Downstream
                     }
 
                     await context.Response.Body.WriteAsync(payload);
-                }))
+                })))
                 .Build()
                 .Run();
-        }
     }
 }
