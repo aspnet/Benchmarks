@@ -64,9 +64,9 @@ templates:
 
       | Runtime | Previous Version | Current Version | Diff | \n
       | -------- | ----------- | ---- | ------- | ------- | \n
-      | ASP.NET | {{ previousAspNetCoreVersion[0] }} | {{ currentAspNetCoreVersion[0] }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
-      | CLR | {{ previousNetCoreAppVersion[0] }} | {{ currentNetCoreAppVersion[0] }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
-      | SDK | {{ previousNetCoreSdk }} | {{ currentNetCoreSdk }} | n/a |
+      | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+      | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+      | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk }} | n/a |
       "
   build: "A build regression has been detected for the following scenarios: \n\n
       | Scenario | Environment | Date | Old Build | New Build | Change | Deviation | StDev | \n
@@ -92,7 +92,7 @@ templates:
 
       | Runtime | Previous Version | Current Version | Diff | \n
       | -------- | ----------- | ---- | ------- | ------- | \n
-      | ASP.NET | {{ previousAspNetCoreVersion[0] }} | {{ currentAspNetCoreVersion[0] }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
-      | CLR | {{ previousNetCoreAppVersion[0] }} | {{ currentNetCoreAppVersion[0] }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
-      | SDK | {{ previousNetCoreSdk }} | {{ currentNetCoreSdk }} | n/a |
+      | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+      | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+      | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a |
       "
