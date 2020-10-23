@@ -30,7 +30,7 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
-        - path: jobs.load.results['benchmarks/build-time']
+        - path: jobs.application.results['benchmarks/build-time']
           threshold: 2
       labels: 
         - Perf
