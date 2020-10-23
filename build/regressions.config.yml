@@ -15,14 +15,30 @@ sources:
       probes: 
         - path: jobs.load.results['wrk/rps/mean']
           threshold: 2
-        - path: jobs.load.results['bombardier/rps/mean']
-          threshold: 2
       labels: 
         - Perf
         - perf-regression
       owners:
         - sebastienros
       template: rps
+  - name: SingleFileBuild
+    table: SingleFileBenchmarks
+    rules:
+      - include: .
+    daysToLoad: 14
+    daysToAnalyze: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.load.results['benchmarks/build-time']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+        - agocke
+      template: build
 templates:
   rps: "A performance regression has been detected for the following scenarios: \n\n
       | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | \n
@@ -43,9 +59,40 @@ templates:
       {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
       {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
       {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+      {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+      {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
 
       | Runtime | Previous Version | Current Version | Diff | \n
       | -------- | ----------- | ---- | ------- | ------- | \n
       | ASP.NET | {{ previousAspNetCoreVersion[0] }} | {{ currentAspNetCoreVersion[0] }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
       | CLR | {{ previousNetCoreAppVersion[0] }} | {{ currentNetCoreAppVersion[0] }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+      | SDK | {{ previousNetCoreSdk }} | {{ currentNetCoreSdk }} | n/a |
+      "
+  build: "A build regression has been detected for the following scenarios: \n\n
+      | Scenario | Environment | Date | Old Build | New Build | Change | Deviation | StDev | \n
+      | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | \n
+      {% for regression in Regressions %}
+      {% assign r = regression.CurrentResult %}
+      {% assign p = regression.PreviousResult %}
+      {% assign build = r.Data.jobs.load.results['benchmarks/build-time'] %}
+      {% assign prevBuild = p.Data.jobs.load.results['benchmarks/build-time'] %}
+      {% assign change = regression.Change | divided_by: prevBuild | times: 100 | round: 2 %}
+      {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
+      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
+      {% endfor %}
+
+      ### Changes:
+
+      {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+      {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+      {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+      {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+      {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+      {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+
+      | Runtime | Previous Version | Current Version | Diff | \n
+      | -------- | ----------- | ---- | ------- | ------- | \n
+      | ASP.NET | {{ previousAspNetCoreVersion[0] }} | {{ currentAspNetCoreVersion[0] }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+      | CLR | {{ previousNetCoreAppVersion[0] }} | {{ currentNetCoreAppVersion[0] }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+      | SDK | {{ previousNetCoreSdk }} | {{ currentNetCoreSdk }} | n/a |
       "
