@@ -74,8 +74,8 @@ templates:
       {% for regression in Regressions %}
       {% assign r = regression.CurrentResult %}
       {% assign p = regression.PreviousResult %}
-      {% assign build = r.Data.jobs.load.results['benchmarks/build-time'] %}
-      {% assign prevBuild = p.Data.jobs.load.results['benchmarks/build-time'] %}
+      {% assign build = r.Data.jobs.application.results['benchmarks/build-time'] %}
+      {% assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] %}
       {% assign change = regression.Change | divided_by: prevBuild | times: 100 | round: 2 %}
       {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
       | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
