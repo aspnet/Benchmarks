@@ -25,8 +25,8 @@ sources:
     table: SingleFileBenchmarks
     rules:
       - include: .
-    daysToLoad: 14
-    daysToAnalyze: 7
+    daysToLoad: 28
+    daysToAnalyze: 21
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
