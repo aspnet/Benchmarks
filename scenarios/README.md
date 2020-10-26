@@ -156,6 +156,15 @@ The size of the payload can be changed by adapting the path of the requested url
 --variable path=/?s=100
 ```
 
+The server and downstream protocols can be changed to http (default), https and h2.
+The following example shows how to use "h2 - h2":
+
+```
+--variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2
+```
+
+For 
+
 ## Frameworks benchmarks
 
 These scenarios measure the performance of different other frameworks

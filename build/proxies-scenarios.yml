@@ -55,12 +55,12 @@ parameters:
   type: object
   default:
     - displayName: http - http
-      arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=http --property downstreamProtocol=http
+      arguments: --variable serverScheme=http --variable downstreamScheme=http --load.variables.transport fasthttp --property serverProtocol=http --property downstreamProtocol=http
     - displayName: https - http
-      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=http
+      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport fasthttp --property serverProtocol=https --property downstreamProtocol=http
       requiresServerHttps: true
     - displayName: https - https
-      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http1 --property serverProtocol=https --property downstreamProtocol=https
+      arguments: --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport fasthttp --property serverProtocol=https --property downstreamProtocol=https
       requiresServerHttps: true
     - displayName: h2 - h2
       arguments: --variable connections=28 --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=h2 --property downstreamProtocol=h2
