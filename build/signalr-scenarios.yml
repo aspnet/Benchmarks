@@ -64,6 +64,6 @@ steps:
           messageBody: |
             {
               "name": "crank",
-              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.channel edge --load.framework netcoreapp5.0 --warmup.channel edge --warmup.framework netcoreapp5.0 --application.channel edge --application.framework netcoreapp5.0 --session $(session) --table SignalRBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
+              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.collectCounters true --load.collectCounters true --warmup.variables.duration ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} --profile ${{ parameters.profile }} --load.channel edge --load.framework net5.0 --warmup.channel edge --warmup.framework net5.0 --application.channel edge --application.framework net5.0 --session $(session) --table SignalRBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
             }
 

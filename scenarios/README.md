@@ -303,7 +303,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 ### How to use the latest .NET version?
 
 ```
---application.channel latest --application.framework netcoreapp5.0
+--application.channel latest --application.framework net5.0
 ```
 
 ### How to upload custom files?

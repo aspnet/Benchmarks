@@ -38,7 +38,7 @@ parameters:
 
   - displayName: "5.0.*"
   # Current dev, running close to other baselines, with same repeat parameters
-    arguments: --description Baseline --channel edge --framework netcoreapp5.0
+    arguments: --description Baseline --channel edge --framework net5.0
     supportsPlatform: true
 
 # Scenarios
