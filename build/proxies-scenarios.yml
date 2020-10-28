@@ -72,20 +72,29 @@ parameters:
 #      requiresServerHttps: false
 #      requiresServerHttp2: true
 
+- name: headers
+  type: object
+  default:
+    - displayName: No headers
+      arguments: --property headers=none
+    - displayName: Plaintext headers
+      arguments: --variable presetHeaders=plaintext --property headers=plaintext
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
-      # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
-      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
-        - task: PublishToAzureServiceBus@1
-          condition: succeededOrFailed()
-          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-          inputs:
-            connectedServiceName: ${{ parameters.connection }}
-            waitForCompletion: true
-            messageBody: |
-              {
-                "name": "crank",
-                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }}" ]
-              }
+      - ${{ each header in parameters.headers }}:
+        # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
+        - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
+          - task: PublishToAzureServiceBus@1
+            condition: succeededOrFailed()
+            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ header.displayName }}
+            inputs:
+              connectedServiceName: ${{ parameters.connection }}
+              waitForCompletion: true
+              messageBody: |
+                {
+                  "name": "crank",
+                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ header.arguments }} \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ header.displayName }} $(profile)\"" ]
+                }
