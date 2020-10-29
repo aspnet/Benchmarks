@@ -40,16 +40,24 @@ parameters:
 - name: payloads
   type: object
   default:
-    - displayName: "10 B"
-      arguments: --variable path=/?s=10 --property payload=10
-    - displayName: "100 B"
-      arguments: --variable path=/?s=100 --property payload=100
-    - displayName: "1 KB"
-      arguments: --variable path=/?s=1024 --property payload=1024
-    - displayName: "10 KB"
-      arguments: --variable path=/?s=10240 --property payload=10240
-    - displayName: "100 KB"
-      arguments: --variable path=/?s=102400 --property payload=102400
+    - displayName: "0 B - 10 B"
+      arguments: --variable path=/?s=10 --property payload=10 --property body=0
+    - displayName: "0 B - 100 B"
+      arguments: --variable path=/?s=100 --property payload=100 --property body=0
+    - displayName: "0 B - 1 KB"
+      arguments: --variable path=/?s=1024 --property payload=1024 --property body=0
+    - displayName: "0 B - 10 KB"
+      arguments: --variable path=/?s=10240 --property payload=10240 --property body=0
+    - displayName: "0 B - 100 KB"
+      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0
+    - displayName: "100 B - 10 B"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --property payload=10 --property body=100
+    - displayName: "1 KB - 10 B"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --property payload=10 --property body=1024
+    - displayName: "10 KB - 10 B"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --property payload=10 --property body=10240
+    - displayName: "100 KB - 10 B"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --property payload=10 --property body=102400
 
 - name: protocols
   type: object
