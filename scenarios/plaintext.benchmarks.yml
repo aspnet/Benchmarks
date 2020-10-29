@@ -102,6 +102,23 @@ scenarios:
         serverScheme: https
 
 profiles:
+  local:
+    variables:
+      serverPort: 5000
+      serverAddress: localhost
+    jobs: 
+      db:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+        variables:
+          databaseServer: localhost
+      load:
+        endpoints: 
+          - http://localhost:5010
+          
   aspnet-citrine-lin:
     variables:
       serverPort: 5000

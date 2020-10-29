@@ -263,6 +263,22 @@ scenarios:
         path: /json
 
 profiles:
+  local:
+    variables:
+      serverAddress: localhost
+    jobs: 
+      db:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+        variables:
+          databaseServer: localhost
+      load:
+        endpoints: 
+          - http://localhost:5010
+
   aspnet-citrine-lin:
     variables:
       serverAddress: 10.0.0.102

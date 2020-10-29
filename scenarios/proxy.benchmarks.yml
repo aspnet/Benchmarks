@@ -21,7 +21,7 @@ jobs:
       branchOrCommit: master
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
-    arguments: '--urls {{serverScheme}}://*:5000 --baseUri {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+    arguments: '--urls {{serverScheme}}://*:8080 --baseUri {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -59,7 +59,7 @@ jobs:
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
     variables:
-      downstreamPort: 5000
+      downstreamPort: 8081
       httpProtocol: Http1
     arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {{httpProtocol}}'
   yarp:
@@ -68,7 +68,7 @@ jobs:
       branchOrCommit: master
       project: samples/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
-    arguments: '--urls {{serverScheme}}://*:5000 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+    arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
 
 scenarios:
   proxy-httpclient:
@@ -79,7 +79,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        serverPort: 5000
+        serverPort: 8080
   proxy-nginx:
     downstream:
       job: downstream
@@ -119,19 +119,17 @@ scenarios:
       job: downstream
     application:
       job: yarp
-      variables:
-        serverPort: 5000
     load:
       job: bombardier
       variables:
-        serverPort: 5000
+        serverPort: 8080
 
 profiles:
   aspnet-perf-lin:
     variables:
       serverAddress: 10.0.0.102
       downstreamAddress: 10.0.0.103
-      downstreamPort: 5000
+      downstreamPort: 8081
       cores: 12
     jobs:
       downstream:
@@ -149,7 +147,7 @@ profiles:
     variables:
       serverAddress: 10.0.0.110
       downstreamAddress: 10.0.0.104
-      downstreamPort: 5000
+      downstreamPort: 8081
       cores: 12
     jobs:
       downstream:
@@ -166,7 +164,7 @@ profiles:
     variables:
       serverAddress: 10.0.0.102
       downstreamAddress: 10.0.0.103
-      downstreamPort: 5000
+      downstreamPort: 8081
       cores: 28
     jobs: 
       downstream:
@@ -182,7 +180,7 @@ profiles:
     variables:
       serverAddress: 10.0.0.104
       downstreamAddress: 10.0.0.105
-      downstreamPort: 5000
+      downstreamPort: 8081
       cores: 28
     jobs: 
       downstream:
@@ -197,9 +195,9 @@ profiles:
   local:
     variables:
       serverAddress: localhost
-      serverPort: 5000
+      serverPort: 8080
       downstreamAddress: localhost
-      downstreamPort: 5001
+      downstreamPort: 8081
     jobs: 
       downstream:
         endpoints: 

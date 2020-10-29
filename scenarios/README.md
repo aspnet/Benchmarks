@@ -25,12 +25,22 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 
 | Profile       | Arch     | OS     |
 | :------------- | :----------: | :----------- |
+|  `local` | (local machine) | (local machine) |
 |  `aspnet-perf-lin` | INTEL, 12 cores | Ubuntu 18.04, Kernel 4.x |
 |  `aspnet-perf-win` | INTEL, 12 cores | Windows Server 2016 |
 |  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 18.04, Kernel 4.x |
 |  `aspnet-citrine-win` | INTEL, 28 cores | Windows Server 2016 |
 |  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 18.04, Kernel 4.x |
 |  `aspnet-citrine-amd` | AMD, 48 cores | Ubuntu 18.04, Kernel 4.x |
+
+For testing purpose only, the __local__ profile requires a local agent to run:
+
+
+```
+dotnet tool install Microsoft.Crank.Agent --version "0.1.0-*" --global
+
+crank-agent
+```
 
 ## Plaintext benchmarks
 
@@ -301,6 +311,17 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 > The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.
 
 ### How to use the latest .NET version?
+
+By default the pre-configured scenarios use what is called the __current__ channel of .NET, which
+represents the latest public release, to ensure that these scenarios almost always work.
+
+Other custom channels can be used:
+- __latest__: which will use whatever SDK and runtime versions were used by the latest ASP.NET builds
+- __edge__: which will use the latest available SDK and runtime versions and can potentially contain breaking changes that will make the builds to fail (though very rare).
+
+Example:
+
+Using the daily builds of .NET, and targeting net5.0.
 
 ```
 --application.channel latest --application.framework net5.0

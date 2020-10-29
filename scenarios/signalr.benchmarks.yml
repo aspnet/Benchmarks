@@ -23,6 +23,20 @@ scenarios:
         path: /echo
 
 profiles:
+  local:
+    variables:
+      serverAddress: localhost
+    jobs: 
+      warmup:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+      load:
+        endpoints: 
+          - http://localhost:5010
+
   aspnet-perf-lin:
     variables:
       serverAddress: 10.0.0.102

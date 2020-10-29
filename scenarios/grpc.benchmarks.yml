@@ -94,6 +94,16 @@ scenarios:
         presetHeaders: grpc
 
 profiles:
+  local:
+    variables:
+      serverUri: http://localhost
+    jobs: 
+      application:
+        endpoints: 
+          - http://localhost:5010
+      load:
+        endpoints: 
+          - http://localhost:5010
   aspnet-perf-lin:
     variables:
       serverUri: http://10.0.0.102
@@ -102,9 +112,6 @@ profiles:
       application:
         endpoints: 
           - http://asp-perf-lin:5001
-      warmup:
-        endpoints: 
-          - http://asp-perf-load:5001
       load:
         endpoints: 
           - http://asp-perf-load:5001
@@ -116,9 +123,6 @@ profiles:
       application:
         endpoints: 
           - http://asp-perf-win:5001
-      warmup:
-        endpoints: 
-          - http://asp-perf-db:5001
       load:
         endpoints: 
           - http://asp-perf-db:5001
@@ -130,9 +134,6 @@ profiles:
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
-      warmup:
-        endpoints: 
-          - http://asp-citrine-load:5001
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -144,9 +145,6 @@ profiles:
       application:
         endpoints: 
           - http://asp-citrine-win:5001
-      warmup:
-        endpoints: 
-          - http://asp-citrine-db:5001
       load:
         endpoints: 
           - http://asp-citrine-db:5001
