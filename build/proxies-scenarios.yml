@@ -51,13 +51,13 @@ parameters:
     - displayName: "0 B - 100 KB"
       arguments: --variable path=/?s=102400 --property payload=102400 --property body=0
     - displayName: "100 B - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --property payload=10 --property body=100
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=10 --property body=100
     - displayName: "1 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --property payload=10 --property body=1024
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=10 --property body=1024
     - displayName: "10 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --property payload=10 --property body=10240
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=10 --property body=10240
     - displayName: "100 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --property payload=10 --property body=102400
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=10 --property body=102400
 
 - name: protocols
   type: object
