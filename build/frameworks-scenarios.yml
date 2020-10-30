@@ -60,15 +60,6 @@ parameters:
   - displayName: ULib - Fortunes
     arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.ulib.json -n FortunesPostgreSql-Ulib --connections 512 --no-clean --linux-only
 
-  # RHTX (C#)
-
-  - displayName: RHTX - Plaintext
-    arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n Plaintext-Rhtx --connections 1024 --no-clean --linux-only
-  - displayName: RHTX - Json
-    arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n Json-Rhtx --connections 512 --no-clean --linux-only
-  - displayName: RHTX - Fortunes
-    arguments: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.te.rhtx.json -n FortunesPostgreSql-Rhtx --connections 512 --no-clean --linux-only
-
   # Netty
 
   - displayName: Netty - Plaintext

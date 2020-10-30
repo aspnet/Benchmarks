@@ -16,7 +16,6 @@
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     
     <PackageReference Include="Npgsql" Version="5.0.0-alpha1" />
-    <PackageReference Include="RedHat.AspNetCore.Server.Kestrel.Transport.Linux" Version="3.0.0-*" />
     <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
   </ItemGroup>
 

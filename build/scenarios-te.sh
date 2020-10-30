@@ -23,7 +23,6 @@ ROOT=$DIR/..
 common="--description TechEmpower --webHost Docker -t TechEmpower"
 actixJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.actix.json"
 aspnetcoreJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore.json"
-aspnetcoreRhtxJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore-rhtx.json"
 aspnetcoreMiddlewareJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.aspnetcore-mw.json"
 nettyJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.netty.json"
 nodejsJobs="$common -j $ROOT/src/Benchmarks/benchmarks.te.nodejs.json"
@@ -48,12 +47,6 @@ jobs=(
   "-n PlaintextNonPipelined-AspNetCore $aspnetcoreJobs"
   "-n Json-AspNetCore $aspnetcoreJobs"
   "-n FortunesPostgreSql-AspNetCore $aspnetcoreJobs"
-
-  # AspNetCore-RHTX
-  "-n Plaintext-AspNetCore-Rhtx $aspnetcorerhtxJobs"
-  "-n PlaintextNonPipelined-AspNetCore-Rhtx $aspnetcorerhtxJobs"
-  "-n Json-AspNetCore-Rhtx $aspnetcorerhtxJobs"
-  "-n FortunesPostgreSql-AspNetCore-Rhtx $aspnetcorerhtxJobs"
 
   # AspNetCore Middleware
   "-n Plaintext-AspNetCoreMiddleware $aspnetcoreMiddlewareJobs"
