@@ -21,29 +21,19 @@ namespace PlatformBenchmarks
 
             Console.WriteLine($"Transport: {webHost}");
 
-            if (string.Equals(webHost, "LinuxTransport", StringComparison.OrdinalIgnoreCase))
+            builder.UseSockets(options =>
             {
-                builder.UseLinuxTransport(options =>
+                if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
                 {
-                    options.ApplicationSchedulingMode = PipeScheduler.Inline;
-                });
-            }
-            else
-            {
-                builder.UseSockets(options =>
-                {
-                    if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
-                    {
-                       options.IOQueueCount = threadCount;
-                    }
+                    options.IOQueueCount = threadCount;
+                }
 
 #if NETCOREAPP5_0 || NET5_0 || NET6_0
-                    options.WaitForDataBeforeAllocatingBuffer = false;
+                options.WaitForDataBeforeAllocatingBuffer = false;
 
-                    Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
+                Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
 #endif
-                });
-            }
+            });
 
             return builder;
         }
