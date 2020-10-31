@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build -t azdocontroller -f Dockerfile ../../
+docker build --no-cache -t azdocontroller -f Dockerfile ../../
