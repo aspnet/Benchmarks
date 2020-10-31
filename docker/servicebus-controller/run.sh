@@ -40,5 +40,5 @@ docker run \
     --env SERVICE_BUS_CONNECTION_STRING \
     --env SERVICE_BUS_QUEUE \
     --env SQL_CONNECTION_STRING \
-    azdocontroller \
-    "$@"
+    "$@" \
+    azdocontroller
