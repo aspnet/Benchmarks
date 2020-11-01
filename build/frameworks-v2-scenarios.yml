@@ -67,5 +67,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(profile)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
         }
