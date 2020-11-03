@@ -320,7 +320,7 @@ jobs:
 
 - job: Proxies
   pool: server
-  timeoutInMinutes: 90
+  timeoutInMinutes: 240
   dependsOn: SingleFile_Linux
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   steps:

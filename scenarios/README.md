@@ -160,11 +160,17 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 - `proxy-envoy`
 - `proxy-baseline`: This scenario doesn't go through a proxy
 
+### Custom arguments
+
+#### Response size
+
 The size of the payload can be changed by adapting the path of the requested url:
 
 ```
 --variable path=/?s=100
 ```
+
+#### Protocols
 
 The server and downstream protocols can be changed to http (default), https and h2.
 The following example shows how to use "h2 - h2":
@@ -173,7 +179,29 @@ The following example shows how to use "h2 - h2":
 --variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2
 ```
 
-For 
+#### Body size
+Custom bodies can be used with the `bodyFile` and `verb` variables like this:
+
+```
+--variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST
+```
+
+Local and remote files can be used.
+
+#### Headers
+
+As for many other scenarios, the existing web load clients (wrk, bombardier, ...) are configured to support predefined headers:
+
+- `none` (default)
+- `plaintext`: `"Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"`
+- `json`: `"Accept: application/json,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"`
+- `html`: `"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"`
+
+The variable `presetHeaders` is used to select one of these:
+
+```
+--variable presetHeaders=plaintext
+```
 
 ## Frameworks benchmarks
 

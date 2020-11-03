@@ -104,7 +104,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        serverPort: 5000
+        serverPort: 8081
   proxy-envoy:
     downstream:
       job: downstream
