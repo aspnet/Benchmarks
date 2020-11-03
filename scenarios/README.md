@@ -31,7 +31,7 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 18.04, Kernel 4.x |
 |  `aspnet-citrine-win` | INTEL, 28 cores | Windows Server 2016 |
 |  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 18.04, Kernel 4.x |
-|  `aspnet-citrine-amd` | AMD, 48 cores | Ubuntu 18.04, Kernel 4.x |
+|  ~~`aspnet-citrine-amd`~~ (unavailable) | AMD, 48 cores | Ubuntu 18.04, Kernel 4.x |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
