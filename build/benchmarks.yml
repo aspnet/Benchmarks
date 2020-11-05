@@ -424,18 +424,41 @@ jobs:
 
 # CLOUD SCENARIOS
 
-- job: TrendsAzure
+- job: Trends_Azure
   displayName: Trends Azure
   pool: server
   timeoutInMinutes: 180
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-azure-lin
   steps:
-  - template: trend-scenarios.yml
+  - template: trend-v2-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
-      server: http://10.0.0.9:5001
-      client: http://10.0.0.10:5002
       connection: 'ASP.NET Benchmarks Azure Queue'
+      profile: $(profile)
+
+- job: Trends_Azure_Database
+  displayName: Trends Azure Database
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: ["Trends_Azure"]
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-azure-lin
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Azure Queue'
+      profile: $(profile)
 
 # - job: SignalRAzure
 #   displayName: SignalR Azure

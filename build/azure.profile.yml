@@ -1,0 +1,20 @@
+# IP addresses for the Azure environment
+
+profiles:
+  aspnet-azure-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.9
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.0.11:5001
+      application:
+        endpoints: 
+          - http://10.0.0.9:5001
+        variables:
+          databaseServer: 10.0.0.11
+      load:
+        endpoints: 
+          - http://10.0.0.10:5001
