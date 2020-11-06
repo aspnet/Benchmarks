@@ -40,24 +40,38 @@ parameters:
 - name: payloads
   type: object
   default:
-    - displayName: "0 B - 10 B"
-      arguments: --variable path=/?s=10 --property payload=10 --property body=0
-    - displayName: "0 B - 100 B"
-      arguments: --variable path=/?s=100 --property payload=100 --property body=0
-    - displayName: "0 B - 1 KB"
-      arguments: --variable path=/?s=1024 --property payload=1024 --property body=0
-    - displayName: "0 B - 10 KB"
-      arguments: --variable path=/?s=10240 --property payload=10240 --property body=0
-    - displayName: "0 B - 100 KB"
-      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0
-    - displayName: "100 B - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=10 --property body=100
-    - displayName: "1 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=10 --property body=1024
-    - displayName: "10 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=10 --property body=10240
-    - displayName: "100 KB - 10 B"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=10 --property body=102400
+    # no headers, no body, payload up to 102400
+    - displayName: "0 B - 10 B - No Headers"
+      arguments: --variable path=/?s=10 --property payload=10 --property body=0 --property headers=none
+    - displayName: "0 B - 100 B - No Headers"
+      arguments: --variable path=/?s=100 --property payload=100 --property body=0 --property headers=none
+    - displayName: "0 B - 1 KB - No Headers"
+      arguments: --variable path=/?s=1024 --property payload=1024 --property body=0 --property headers=none
+    - displayName: "0 B - 10 KB - No Headers"
+      arguments: --variable path=/?s=10240 --property payload=10240 --property body=0 --property headers=none
+    - displayName: "0 B - 100 KB - No Headers"
+      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=none
+    - displayName: "100 B - 10 B - No Headers"
+
+    # plaintext headers, no body, payload up to 10240
+        - displayName: "0 B - 10 B - Plaintext Headers"
+      arguments: --variable path=/?s=10 --property payload=10 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
+    - displayName: "0 B - 100 B - Plaintext Headers"
+      arguments: --variable path=/?s=100 --property payload=100 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
+    - displayName: "0 B - 1 KB - Plaintext Headers"
+      arguments: --variable path=/?s=1024 --property payload=1024 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
+    - displayName: "0 B - 10 KB - Plaintext Headers"
+      arguments: --variable path=/?s=10240 --property payload=10240 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
+    - displayName: "0 B - 100 KB - Plaintext Headers"
+
+    # no headers, different body sizes, 10B response
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=10 --property body=100 --property headers=none
+    - displayName: "1 KB - 10 B - No Headers"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=10 --property body=1024 --property headers=none
+    - displayName: "10 KB - 10 B - No Headers"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=10 --property body=10240 --property headers=none
+    - displayName: "100 KB - 10 B - No Headers"
+      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=10 --property body=102400 --property headers=none
 
 - name: protocols
   type: object
@@ -80,29 +94,20 @@ parameters:
 #      requiresServerHttps: false
 #      requiresServerHttp2: true
 
-- name: headers
-  type: object
-  default:
-    - displayName: No headers
-      arguments: --property headers=none
-    - displayName: Plaintext headers
-      arguments: --variable presetHeaders=plaintext --property headers=plaintext
-
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
-      - ${{ each header in parameters.headers }}:
-        # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
-        - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
-          - task: PublishToAzureServiceBus@1
-            condition: succeededOrFailed()
-            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ header.displayName }}
-            inputs:
-              connectedServiceName: ${{ parameters.connection }}
-              waitForCompletion: true
-              messageBody: |
-                {
-                  "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ header.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ header.displayName }} ${{ parameters.profile }}\"" ]
-                }
+      # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
+      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "name": "crank",
+                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+              }
