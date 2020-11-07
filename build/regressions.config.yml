@@ -40,59 +40,63 @@ sources:
         - agocke
       template: build
 templates:
-  rps: "A performance regression has been detected for the following scenarios: \n\n
-      | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | \n
-      | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | \n
-      {% for regression in Regressions %}
-      {% assign r = regression.CurrentResult %}
-      {% assign p = regression.PreviousResult %}
-      {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
-      {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
-      {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
-      {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
-      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
-      {% endfor %}
+  rps: |
+    A performance regression has been detected for the following scenarios:
+    
+    | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev |
+    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- |
+    {% for regression in Regressions %}
+    {% assign r = regression.CurrentResult %}
+    {% assign p = regression.PreviousResult %}
+    {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
+    {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
+    {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} |
+    {% endfor %}
 
-      ### Changes:
+    ### Changes:
 
-      {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
-      {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
-      {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
-      {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
-      {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
-      {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+    {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+    {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
 
-      | Runtime | Previous Version | Current Version | Diff | \n
-      | ------- | ---------------- | --------------- | ---- | \n
-      | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} | \n
-      | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} | \n
-      | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk }} | n/a | \n
-      "
-  build: "A build regression has been detected for the following scenarios: \n\n
-      | Scenario | Environment | Date | Old Build | New Build | Change | Deviation | StDev | \n
-      | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | \n
-      {% for regression in Regressions %}
-      {% assign r = regression.CurrentResult %}
-      {% assign p = regression.PreviousResult %}
-      {% assign build = r.Data.jobs.application.results['benchmarks/build-time'] %}
-      {% assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] %}
-      {% assign change = regression.Change | divided_by: prevBuild | times: 100 | round: 2 %}
-      {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
-      | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | \n
-      {% endfor %}
+    | Runtime | Previous Version | Current Version | Diff |
+    | ------- | ---------------- | --------------- | ---- |
+    | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+    | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+    | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk }} | n/a |
 
-      ### Changes:
+  build: |
+    A build regression has been detected for the following scenarios:
 
-      {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
-      {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
-      {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
-      {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
-      {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
-      {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+    | Scenario | Environment | Date | Old Build (ms) | New Build (ms) | Change | Deviation | StDev |
+    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- |
+    {% for regression in Regressions %}
+    {% assign r = regression.CurrentResult %}
+    {% assign p = regression.PreviousResult %}
+    {% assign build = r.Data.jobs.application.results['benchmarks/build-time'] %}
+    {% assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] %}
+    {% assign change = regression.Change | times: 100 | divided_by: prevBuild %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
+    {% endfor %}
 
-      | Runtime | Previous Version | Current Version | Diff | \n
-      | ------- | ---------------- | --------------- | ---- | \n
-      | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} | \n
-      | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} | \n
-      | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a | \n
-      "
+    ### Changes:
+
+    {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+    {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+
+    | Runtime | Previous Version | Current Version | Diff |
+    | ------- | ---------------- | --------------- | ---- |
+    | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+    | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+    | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a |
+    
