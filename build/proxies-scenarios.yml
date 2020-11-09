@@ -51,10 +51,9 @@ parameters:
       arguments: --variable path=/?s=10240 --property payload=10240 --property body=0 --property headers=none
     - displayName: "0 B - 100 KB - No Headers"
       arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=none
-    - displayName: "100 B - 10 B - No Headers"
 
     # plaintext headers, no body, payload up to 10240
-        - displayName: "0 B - 10 B - Plaintext Headers"
+    - displayName: "0 B - 10 B - Plaintext Headers"
       arguments: --variable path=/?s=10 --property payload=10 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
     - displayName: "0 B - 100 B - Plaintext Headers"
       arguments: --variable path=/?s=100 --property payload=100 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
@@ -62,9 +61,9 @@ parameters:
       arguments: --variable path=/?s=1024 --property payload=1024 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
     - displayName: "0 B - 10 KB - Plaintext Headers"
       arguments: --variable path=/?s=10240 --property payload=10240 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
-    - displayName: "0 B - 100 KB - Plaintext Headers"
 
     # no headers, different body sizes, 10B response
+    - displayName: "100 B - 10 B - No Headers"
       arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=10 --property body=100 --property headers=none
     - displayName: "1 KB - 10 B - No Headers"
       arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=10 --property body=1024 --property headers=none
