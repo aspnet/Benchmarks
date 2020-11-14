@@ -110,6 +110,10 @@ The following scenarios are implemented from a middleware (no MVC)
 - `updates_ef`
 - `updates_dapper`
 
+The following scenarios are using ASP.NET CORE MVC
+
+- `fortunes_ef_mvc_https`
+
 The suffixes represent different database access strategies:
  
 - No suffix: Raw ADO.NET 
