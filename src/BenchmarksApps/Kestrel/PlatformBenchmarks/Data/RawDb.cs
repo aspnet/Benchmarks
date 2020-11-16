@@ -73,11 +73,9 @@ namespace PlatformBenchmarks
             {
                 var id = random.Next(1, 10001);
                 var key = cacheKeys[id];
-                var data = cache.Get<CachedWorld>(key);
-
-                if (data != null)
+                if (cache.TryGetValue(key, out object cached))
                 {
-                    result[i] = data;
+                    result[i] = (CachedWorld)cached;
                 }
                 else
                 {
