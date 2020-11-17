@@ -114,7 +114,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /cached-worlds/100
+        path: /cached-worlds/20
 
   updates:
     db:
