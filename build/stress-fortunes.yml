@@ -13,7 +13,7 @@ pool: ASP.NET-Performance-Controller
 
 jobs:
 - job: Benchmark
-  timeoutInMinutes: 0 # clear default timeout of 60 minutes 
+  timeoutInMinutes: 1440 # clear default timeout of 60 minutes, ensure the job is stopped if it's stuck
   steps:
   - powershell: |
         dotnet tool install -g Microsoft.Crank.Controller --version "0.1.0-*" 
