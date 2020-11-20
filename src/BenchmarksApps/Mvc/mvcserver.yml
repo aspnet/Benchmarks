@@ -2,7 +2,7 @@ jobs:
   mvcServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: 1590ff72eb6fa180dc94cbe7a8050bcd8991dac5
+      branchOrCommit: javiercn/apibenchmarks
       project: src/BenchmarksApps/Mvc/Mvc.csproj
     readyStateText: Application started
     waitForExit: false
