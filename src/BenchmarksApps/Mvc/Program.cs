@@ -24,7 +24,6 @@ namespace Mvc
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureLogging(l => l.SetMinimumLevel(LogLevel.Debug));
+                });
     }
 }

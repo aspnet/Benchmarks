@@ -33,9 +33,15 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
-        public IEnumerable<Product> GetProducts()
+        public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             return _fixedProductList;
+        }
+
+        [HttpGet("/Products/{id}")]
+        public Product GetProduct([FromRoute]int id)
+        {
+            return _fixedProductList[0];
         }
 
         [HttpPost("/Products")]
