@@ -1,0 +1,269 @@
+﻿# Examples:
+# --config benchmarks.mvcjson.yml --scenario MvcJson2k --profile aspnet-perf-lin
+
+imports:
+- https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+- https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
+
+variables:
+    serverPort: 5000
+
+scenarios:
+  # Hello world JSON output
+  MvcJson:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /json-helloworld
+
+  # Hello world JSON output using Newtonsoft.Json
+  MvcJsonNet:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /json-helloworld
+
+  # ~2k Json output
+  MvcJson2k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /json2k
+
+  # ~2k Json output (Newtonsoft.Json)
+  MvcJsonNet2k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /json2k
+
+  # 60k json output.
+  MvcJsonOutput60k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
+
+  # 60k json output.
+  MvcJsonNetOutput60k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/60000
+
+  # 2M json output
+  MvcJsonOutput2M:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
+
+  # 2M json output (Newtonsoft.Json)
+  MvcJsonNetOutput2M:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /jsonNbytes/2097152
+
+  # Sending 2k Json to Mvc
+  MvcJsonInput2k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+
+  # Sending 2k Json to Mvc (Json.NET)
+  MvcJsonNetInput2k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+
+  # Sending 60k Json to Mvc
+  MvcJsonInput60k:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
+
+  # Sending 60k Json to Mvc (Json.NET)
+  MvcJsonNetInput60k:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 60000
+
+  # 2M json output
+  MvcJsonInput2M:
+    application:
+      job: mvcServer
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
+
+  # 2M json output (Json.NET)
+  MvcJsonNetInput2M:
+    application:
+      job: mvcServer
+      variables:
+        useNewtonsoftJson: true
+    load:
+      job: wrk
+      variables:
+        path: /JsonInput
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua
+        scriptArguments: 2097152
+
+profiles:
+  aspnet-citrine-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs:
+      db:
+        endpoints:
+          - http://asp-perf-db:5001
+      application:
+        endpoints:
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints:
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs:
+      db:
+        endpoints:
+          - http://asp-citrine-load:5001
+      application:
+        endpoints:
+          - http://asp-citrine-win:5001
+        variables:
+          databaseServer: 10.0.0.105
+      load:
+        endpoints:
+          - http://asp-citrine-db:5001
+
+  aspnet-citrine-arm:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.107
+      cores: 32
+    jobs:
+      db:
+        endpoints:
+          - http://asp-citrine-db:5001
+      application:
+        endpoints:
+          - http://asp-citrine-arm:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints:
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-amd:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.106
+      cores: 48
+    jobs:
+      db:
+        endpoints:
+          - http://asp-citrine-load:5001
+      application:
+        endpoints:
+          - http://asp-citrine-amd:5001
+        variables:
+          databaseServer: 10.0.0.105
+      load:
+        endpoints:
+          - http://asp-citrine-db:5001
+
+  aspnet-perf-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs:
+      db:
+        endpoints:
+          - http://asp-perf-db:5001
+      application:
+        endpoints:
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints:
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.110
+      cores: 12
+    jobs:
+      db:
+        endpoints:
+          - http://asp-perf-load:5001
+      application:
+        endpoints:
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.104
+      load:
+        endpoints:
+          - http://asp-perf-db:5001
