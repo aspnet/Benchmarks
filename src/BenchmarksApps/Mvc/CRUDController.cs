@@ -33,7 +33,7 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
-        public IEnumerable<Product> GetProducts([FromQuery] Page page)
+        public IEnumerable<Product> GetProducts()
         {
             return _fixedProductList;
         }
