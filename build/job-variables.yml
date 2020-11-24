@@ -47,6 +47,9 @@ variables:
 - name: mvcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/benchmarks.mvcjson.yml
 
+- name: crudApiJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/javiercn/apibenchmarks/src/BenchmarksApps/Mvc/benchmarks.crudapi.yml
+
 # v2
 
 - name: signalRJobs

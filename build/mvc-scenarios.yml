@@ -18,6 +18,7 @@ parameters:
 - name: scenarios
   type: object
   default:
+  # JSON
   - displayName: Json Mvc
     arguments: --scenario MvcJson $(mvcJobs) --property displayname="Json Mvc (Hello world)"
   - displayName: Json Mvc (NewtonSoft)
@@ -46,6 +47,18 @@ parameters:
     arguments: --scenario MvcJsonOutput2M $(mvcJobs) --property displayname="Json Mvc Output (2MB)"
   - displayName: Json Mvc (NewtonSoft, 2M)
     arguments: --scenario MvcJsonNetOutput2M $(mvcJobs) --property displayname="Json Mvc NewtonSoft (2MB)"
+
+  # CRUD API
+  - displayName: API return collection data
+    arguments: --scenario ApiCrudListProducts $(crudApiJobs) --property displayname="API return collection data"
+  - displayName: API return element details
+    arguments: --scenario ApiCrudGetProductDetails $(crudApiJobs) --property displayname="API return element details"
+  - displayName: API add new element
+    arguments: --scenario ApiCrudAddProduct $(crudApiJobs) --property displayname="API add new element"
+  - displayName: API update existing element
+    arguments: --scenario ApiCrudUpdateProduct $(crudApiJobs) --property displayname="API update existing element"
+  - displayName: API remove existing element
+    arguments: --scenario ApiCrudDeleteProduct $(crudApiJobs) --property displayname="API remove existing element"
 
 steps:
   - ${{ each s in parameters.scenarios }}:
