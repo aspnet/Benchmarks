@@ -36,7 +36,7 @@ scenarios:
       variables:
         path: /Products
         verb: POST
-        bodyFile: C:\work\Benchmarks\src\BenchmarksApps\Mvc\crudproductbody.json
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/javiercn/apibenchmarks/src/BenchmarksApps/Mvc/crudproductbody.json
 
     # Update product
   ApiCrudUpdateProduct:
@@ -47,7 +47,7 @@ scenarios:
       variables:
         path: /Products/1
         verb: PUT
-        bodyFile: C:\work\Benchmarks\src\BenchmarksApps\Mvc\crudproductbody.json
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/javiercn/apibenchmarks/src/BenchmarksApps/Mvc/crudproductbody.json
 
     # Remove a product item
   ApiCrudDeleteProduct:
