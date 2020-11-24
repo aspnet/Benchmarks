@@ -18,6 +18,47 @@ scenarios:
       variables:
         path: /Products
 
+    # Get an individual product
+  ApiCrudGetProductDetails:
+    application:
+      job: mvcServer
+    load:
+      job: bombardier
+      variables:
+        path: /Products/1
+
+    # Add product
+  ApiCrudAddProduct:
+    application:
+      job: mvcServer
+    load:
+      job: bombardier
+      variables:
+        path: /Products
+        verb: POST
+        bodyFile: C:\work\Benchmarks\src\BenchmarksApps\Mvc\crudproductbody.json
+
+    # Update product
+  ApiCrudUpdateProduct:
+    application:
+      job: mvcServer
+    load:
+      job: bombardier
+      variables:
+        path: /Products/1
+        verb: PUT
+        bodyFile: C:\work\Benchmarks\src\BenchmarksApps\Mvc\crudproductbody.json
+
+    # Remove a product item
+  ApiCrudDeleteProduct:
+    application:
+      job: mvcServer
+    load:
+      job: bombardier
+      variables:
+        path: /Products/1
+        verb: DELETE
+
 profiles:
   local:
     variables:

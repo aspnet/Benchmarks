@@ -39,7 +39,7 @@ namespace Mvc
         }
 
         [HttpGet("/Products/{id}")]
-        public Product GetProduct([FromRoute]int id)
+        public Product GetProduct([FromRoute] int id)
         {
             return _fixedProductList[0];
         }
@@ -58,7 +58,7 @@ namespace Mvc
         }
 
         [HttpPut("/Products/{id}")]
-        public ActionResult<Product> UpdateProduct(int id)
+        public ActionResult<Product> UpdateProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
@@ -71,7 +71,7 @@ namespace Mvc
         }
 
         [HttpDelete("/Products/{id}")]
-        public ActionResult<Product> DeleteProduct(int id)
+        public ActionResult<Product> DeleteProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
