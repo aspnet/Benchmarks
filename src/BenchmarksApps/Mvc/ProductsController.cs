@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Mvc
 {
-    public class ProductsController : Controller
+    public class ProductsController : ControllerBase
     {
         private static readonly Product[] _fixedProductList = new Product[]
         {
