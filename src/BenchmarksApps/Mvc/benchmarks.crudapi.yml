@@ -16,7 +16,7 @@ scenarios:
     load:
       job: bombardier
       variables:
-        path: /Products
+        path: /Products?pageNumber=1&pageSize=10
 
     # Get an individual product
   ApiCrudGetProductDetails:
