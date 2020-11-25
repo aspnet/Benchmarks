@@ -20,45 +20,45 @@ parameters:
   default:
   # JSON
   - displayName: Json Mvc
-    arguments: --scenario MvcJson $(mvcJobs) --property displayname="Json Mvc (Hello world)"
+    arguments: --scenario MvcJson $(mvcJobs) --property scenario="MvcJson"
   - displayName: Json Mvc (NewtonSoft)
-    arguments: --scenario MvcJsonNet $(mvcJobs) --property displayname="Json Mvc NewtonSoft (Hello world)"
+    arguments: --scenario MvcJsonNet $(mvcJobs) --property scenario="MvcJsonNet"
   - displayName: Json Mvc (2KB)
-    arguments: --scenario MvcJson2k $(mvcJobs) --property displayname="Json Mvc Output (2KB)"
+    arguments: --scenario MvcJson2k $(mvcJobs) --property scenario="MvcJson2k"
   - displayName: Json Mvc (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNet2k $(mvcJobs) --property displayname="Json Mvc Output NewtonSoft (2KB)"
+    arguments: --scenario MvcJsonNet2k $(mvcJobs) --property scenario="MvcJsonNet2k"
   - displayName: Json Mvc Input (2KB)
-    arguments: --scenario MvcJsonInput2k $(mvcJobs) --property displayname="Json Mvc Input (2KB)"
+    arguments: --scenario MvcJsonInput2k $(mvcJobs) --property scenario="MvcJsonInput2k"
   - displayName: Json Mvc Input (NewtonSoft, 2KB)
-    arguments: --scenario MvcJsonNetInput2k $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (2KB)"
+    arguments: --scenario MvcJsonNetInput2k $(mvcJobs) --property scenario="MvcJsonNetInput2k"
   - displayName: Json Mvc (60KB)
-    arguments: --scenario MvcJsonOutput60k $(mvcJobs) --property displayname="Json Mvc Output (60KB)"
+    arguments: --scenario MvcJsonOutput60k $(mvcJobs) --property scenario="MvcJsonOutput60k"
   - displayName: Json Mvc (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetOutput60k $(mvcJobs) --property displayname="Json Mvc Output NewtonSoft (60KB)"
+    arguments: --scenario MvcJsonNetOutput60k $(mvcJobs) --property scenario="MvcJsonNetOutput60k"
   - displayName: Json Mvc Input (60KB)
-    arguments: --scenario MvcJsonInput60k $(mvcJobs) --property displayname="Json Mvc Input (60KB)"
+    arguments: --scenario MvcJsonInput60k $(mvcJobs) --property scenario="MvcJsonInput60k"
   - displayName: Json Mvc Input (NewtonSoft, 60KB)
-    arguments: --scenario MvcJsonNetInput60k $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (60KB)"
+    arguments: --scenario MvcJsonNetInput60k $(mvcJobs) --property scenario="MvcJsonNetInput60k"
   - displayName: Json Mvc Input (2MB)
-    arguments: --scenario MvcJsonInput2M $(mvcJobs) --property displayname="Json Mvc Input (2MB)"
+    arguments: --scenario MvcJsonInput2M $(mvcJobs) --property scenario="MvcJsonInput2M"
   - displayName: Json Mvc Input (NewtonSoft, 2MB)
-    arguments: --scenario MvcJsonNetInput2M $(mvcJobs) --property displayname="Json Mvc Input NewtonSoft (2MB)"
+    arguments: --scenario MvcJsonNetInput2M $(mvcJobs) --property scenario="MvcJsonNetInput2M"
   - displayName: Json Mvc (2MB)
-    arguments: --scenario MvcJsonOutput2M $(mvcJobs) --property displayname="Json Mvc Output (2MB)"
+    arguments: --scenario MvcJsonOutput2M $(mvcJobs) --property scenario="MvcJsonOutput2M"
   - displayName: Json Mvc (NewtonSoft, 2M)
-    arguments: --scenario MvcJsonNetOutput2M $(mvcJobs) --property displayname="Json Mvc NewtonSoft (2MB)"
+    arguments: --scenario MvcJsonNetOutput2M $(mvcJobs) --property scenario="MvcJsonNetOutput2M"
 
   # CRUD API
   - displayName: API return collection data
-    arguments: --scenario ApiCrudListProducts $(crudApiJobs) --property displayname="API return collection data"
+    arguments: --scenario ApiCrudListProducts $(crudApiJobs) --property scenario="ApiCrudListProducts"
   - displayName: API return element details
-    arguments: --scenario ApiCrudGetProductDetails $(crudApiJobs) --property displayname="API return element details"
+    arguments: --scenario ApiCrudGetProductDetails $(crudApiJobs) --property scenario="ApiCrudGetProductDetails"
   - displayName: API add new element
-    arguments: --scenario ApiCrudAddProduct $(crudApiJobs) --property displayname="API add new element"
+    arguments: --scenario ApiCrudAddProduct $(crudApiJobs) --property scenario="ApiCrudAddProduct"
   - displayName: API update existing element
-    arguments: --scenario ApiCrudUpdateProduct $(crudApiJobs) --property displayname="API update existing element"
+    arguments: --scenario ApiCrudUpdateProduct $(crudApiJobs) --property scenario="ApiCrudUpdateProduct"
   - displayName: API remove existing element
-    arguments: --scenario ApiCrudDeleteProduct $(crudApiJobs) --property displayname="API remove existing element"
+    arguments: --scenario ApiCrudDeleteProduct $(crudApiJobs) --property scenario="ApiCrudDeleteProduct"
 
 steps:
   - ${{ each s in parameters.scenarios }}:
