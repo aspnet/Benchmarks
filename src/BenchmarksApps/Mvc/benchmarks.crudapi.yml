@@ -1,5 +1,5 @@
 ﻿# Examples:
-# --config benchmarks.mvcjson.yml --scenario MvcJson2k --profile aspnet-perf-lin
+# --config benchmarks.crudapi.yml --scenario ApiCrudListProducts --profile aspnet-perf-lin
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
