@@ -11,11 +11,6 @@ namespace BenchmarksBot
     {
         public static readonly Dictionary<string, Tags> Scenarios = new Dictionary<string, Tags>(StringComparer.OrdinalIgnoreCase)
         {
-            { "^ApiCrudListProducts$", new Tags { Labels = new [] { "area-mvc" } } },
-            { "^ApiCrudGetProductDetails$", new Tags { Labels = new [] { "area-mvc" } } },
-            { "^ApiCrudAddProduct$", new Tags { Labels = new [] { "area-mvc" } } },
-            { "^ApiCrudUpdateProduct$", new Tags { Labels = new [] { "area-mvc" } } },
-            { "^ApiCrudDeleteProduct$", new Tags { Labels = new [] { "area-mvc" } } },
             {"^BasicViews.GetTagHelpers$", new Tags { Labels = new [] { "area-mvc" } } },
             {"^BasicViews.Post$", new Tags { Labels = new [] { "area-mvc" } } },
             {"^ConnectionClose$", new Tags { Labels = new [] { "area-servers" } } },
