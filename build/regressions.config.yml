@@ -39,6 +39,29 @@ sources:
         - sebastienros
         - agocke
       template: build
+  - name: MVC 
+    table: MvcBenchmarks
+    rules:
+      - include: .
+      - include: Mvc
+        labels: 
+          - area-mvc
+      - exclude: ulib
+      - exclude: arm
+    daysToLoad: 14
+    stdevCount: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.load.results['wrk/rps/mean']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - jacalvar
+        - pranavkm
+      template: rps      
 templates:
   rps: |
     A performance regression has been detected for the following scenarios:
