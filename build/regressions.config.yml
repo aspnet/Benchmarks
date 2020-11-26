@@ -50,6 +50,8 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
+        - path: jobs.load.results['wrk/rps/mean']
+          threshold: 2
         - path: jobs.load.results['bombardier/rps/mean']
           threshold: 2
       labels: 
