@@ -1,0 +1,12 @@
+{
+  "id": 3,
+  "name": "Contoso ultimate keyboard",
+  "supplierId": 1,
+  "categoryId": 1,
+  "quantityPerUnit": 5,
+  "unitPrice": 3.15,
+  "unitsInStock": 10,
+  "unitsOnOrder": 20,
+  "reorderLevel": 40,
+  "discontinued": true
+}
