@@ -42,8 +42,7 @@ sources:
   - name: MVC 
     table: MvcBenchmarks
     rules:
-      - include: .
-      - include: Mvc
+      - include: ApiCrud
         labels: 
           - area-mvc
       - exclude: ulib
