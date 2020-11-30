@@ -63,9 +63,9 @@ namespace PlatformBenchmarks
             return result;
         }
 
-        public Task<World[]> LoadCachedQueries(int count)
+        public Task<CachedWorld[]> LoadCachedQueries(int count)
         {
-            var result = new World[count];
+            var result = new CachedWorld[count];
             var cacheKeys = _cacheKeys;
             var cache = _cache;
             var random = _random;
@@ -85,7 +85,7 @@ namespace PlatformBenchmarks
 
             return Task.FromResult(result);
 
-            static async Task<World[]> LoadUncachedQueries(int id, int i, int count, RawDb rawdb, World[] result)
+            static async Task<CachedWorld[]> LoadUncachedQueries(int id, int i, int count, RawDb rawdb, CachedWorld[] result)
             {
                 using (var db = new NpgsqlConnection(rawdb._connectionString))
                 {
@@ -106,8 +106,7 @@ namespace PlatformBenchmarks
 
                         for (; i < result.Length; i++)
                         {
-                            var data = await rawdb._cache.GetOrCreateAsync<CachedWorld>(key, create);
-                            result[i] = data;
+                            result[i] = await rawdb._cache.GetOrCreateAsync<CachedWorld>(key, create);
 
                             id = rawdb._random.Next(1, 10001);
                             idParameter.TypedValue = id;
