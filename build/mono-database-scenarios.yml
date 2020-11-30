@@ -49,5 +49,5 @@ steps:
           {
             "name": "crank",
             "timeout": "00:20:00",
-            "args": [ "${{ s.arguments }} ${{ runtime.arguments }} --profile ${{ parameters.profile }} --application.channel edge --application.framework net5.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ runtime.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MonoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ runtime.arguments }} --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ runtime.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MonoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

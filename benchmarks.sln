@@ -36,18 +36,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E07EF419
 		build\dependencies.props = build\dependencies.props
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
-		build\scenarios-baselines.sh = build\scenarios-baselines.sh
-		build\scenarios-blazor.sh = build\scenarios-blazor.sh
-		build\scenarios-efcore.sh = build\scenarios-efcore.sh
-		build\scenarios-frameworks.sh = build\scenarios-frameworks.sh
-		build\scenarios-grpc.sh = build\scenarios-grpc.sh
-		build\scenarios-link-a-thon.sh = build\scenarios-link-a-thon.sh
-		build\scenarios-orchard.sh = build\scenarios-orchard.sh
-		build\scenarios-proxy.sh = build\scenarios-proxy.sh
-		build\scenarios-signalr.sh = build\scenarios-signalr.sh
-		build\scenarios-te.sh = build\scenarios-te.sh
-		build\scenarios-tieredcomp.sh = build\scenarios-tieredcomp.sh
-		build\scenarios.sh = build\scenarios.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{EF444B27-3CBA-4581-893A-7F6DB5527371}"
@@ -230,27 +218,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpClient", "HttpClient", "{13D935DC-E6B4-4CE1-AF75-CE82CB245C14}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "src\BenchmarksApps\HttpClient\Proxy\Proxy.csproj", "{B5E3C5E2-121C-4869-8435-8A044EC347B0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{3E9DA42B-F7FB-42A9-8518-1ADA71AEDF12}"
-	ProjectSection(SolutionItems) = preProject
-		build\baselines-scenarios.yml = build\baselines-scenarios.yml
-		build\benchmarks.pipelines.yml = build\benchmarks.pipelines.yml
-		build\benchmarks.yml = build\benchmarks.yml
-		build\blazor-scenarios.yml = build\blazor-scenarios.yml
-		build\efcore-scenarios.yml = build\efcore-scenarios.yml
-		build\frameworks-scenarios.yml = build\frameworks-scenarios.yml
-		build\grpc-scenarios.yml = build\grpc-scenarios.yml
-		build\grpc-v2-scenarios.yml = build\grpc-v2-scenarios.yml
-		build\job-variables.yml = build\job-variables.yml
-		build\mvc-scenarios.yml = build\mvc-scenarios.yml
-		build\prbenchmarks.yml = build\prbenchmarks.yml
-		build\proxies-scenarios.yml = build\proxies-scenarios.yml
-		build\regressionbot.yml = build\regressionbot.yml
-		build\signalr-scenarios.yml = build\signalr-scenarios.yml
-		build\stress-blazorwasm.yml = build\stress-blazorwasm.yml
-		build\stress-fortunes.yml = build\stress-fortunes.yml
-		build\trend-scenarios.yml = build\trend-scenarios.yml
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRClient", "src\SignalRClient\SignalRClient.csproj", "{9C2EE0E6-DD03-4568-8D4A-43FE2371FD0B}"
 EndProject

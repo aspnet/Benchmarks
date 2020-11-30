@@ -17,6 +17,6 @@ jobs:
   steps:
   - powershell: |
         dotnet tool install -g Microsoft.Crank.Controller --version "0.1.0-*" 
-        crank --config ./build/stress.benchmarks.yml --scenario fortunes --description "fortunesdaily" --application.endpoints $(application.endpoints) --db.endpoints $(db.endpoints) --load.endpoints $(load.endpoints) --variable serverAddress=$(serverAddress) --variable databaseServer=$(databaseServer) --variable duration=$(duration) --repeat load --span "$(span)" --no-measurements --no-metadata --sql CONNECTION_STRING --table AspNetReliability  --application.channel edge --application.framework net5.0
+        crank --config ./build/stress.benchmarks.yml --scenario fortunes --description "fortunesdaily" --application.endpoints $(application.endpoints) --db.endpoints $(db.endpoints) --load.endpoints $(load.endpoints) --variable serverAddress=$(serverAddress) --variable databaseServer=$(databaseServer) --variable duration=$(duration) --repeat load --span "$(span)" --no-measurements --no-metadata --sql CONNECTION_STRING --table AspNetReliability  --application.channel edge --application.framework net6.0
     env:
         CONNECTION_STRING: $(sql.connectionstring)
