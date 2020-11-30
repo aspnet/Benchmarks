@@ -330,7 +330,7 @@ jobs:
       Intel_Linux:
         profile: aspnet-citrine-lin
   steps:
-  - template: MVC-scenarios.yml
+  - template: mvc-scenarios.yml
     parameters:
       profile: $(profile)
       warmup: 15
@@ -349,7 +349,7 @@ jobs:
       Intel_Windows:
         profile: aspnet-citrine-win
   steps:
-  - template: MVC-scenarios.yml
+  - template: mvc-scenarios.yml
     parameters:
       profile: $(profile)
       warmup: 15
