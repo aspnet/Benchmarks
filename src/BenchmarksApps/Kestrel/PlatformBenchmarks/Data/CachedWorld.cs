@@ -3,7 +3,7 @@
 
 namespace PlatformBenchmarks
 {
-    public sealed  class CachedWorld
+    public sealed class CachedWorld
     {
         public int Id { get; set; }
 
