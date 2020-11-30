@@ -43,8 +43,8 @@ parameters:
     arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http
   - displayName: Json Https
     arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps --property protocol=https
-  - displayName: Json Crossgen2 Https
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonCrossgen2Https --property protocol=https --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \"
+  - displayName: Json Crossgen2
+    arguments: --scenario json $(jsonJobsV2) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \"
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
 
