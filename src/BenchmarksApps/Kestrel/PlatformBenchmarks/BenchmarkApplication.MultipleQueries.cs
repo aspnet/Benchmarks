@@ -14,7 +14,7 @@ namespace PlatformBenchmarks
             OutputMultipleQueries(pipeWriter, await Db.LoadMultipleQueriesRows(count));
         }
 
-        private static void OutputMultipleQueries(PipeWriter pipeWriter, World[] rows)
+        private static void OutputMultipleQueries<TWord>(PipeWriter pipeWriter, TWord[] rows)
         {
             var writer = GetWriter(pipeWriter, sizeHint: 160 * rows.Length); // in reality it's 152 for one
 
@@ -32,7 +32,7 @@ namespace PlatformBenchmarks
             utf8JsonWriter.Reset(pipeWriter);
 
             // Body
-            JsonSerializer.Serialize<World[]>(utf8JsonWriter, rows, SerializerOptions);
+            JsonSerializer.Serialize<TWord[]>(utf8JsonWriter, rows, SerializerOptions);
 
             // Content-Length
             lengthWriter.WriteNumeric((uint)utf8JsonWriter.BytesCommitted);
