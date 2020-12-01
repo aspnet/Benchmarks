@@ -20,18 +20,18 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
   - displayName: "ASP.NET Core - Client: Grpc.Core"
-    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient --application.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient --application.options.collectCounters true
   - displayName: "ASP.NET Core - Client: Go"
-    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true
 
   - displayName: "Grpc.Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver --property client=grpcnetclient --application.collectCounters true
+    arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver --property client=grpcnetclient --application.options.collectCounters true
   - displayName: "Grpc.Core - Client: Grpc.Core"
-    arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver --property client=grpccoreclient --application.collectCounters true
+    arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver --property client=grpccoreclient --application.options.collectCounters true
   - displayName: "Grpc.Core - Client: Go"
-    arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver --property client=grpcgoclient --application.collectCounters true
+    arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver --property client=grpcgoclient --application.options.collectCounters true
 
   - displayName: "Go - Client: Grpc.Net.Client"
     arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
@@ -46,9 +46,9 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: h2load"
-    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.options.collectCounters true
   - displayName: "Grpc.Core - Client: h2load"
-    arguments: --scenario grpccoreserver-h2loadclient         $(grpcJobs) --property server=grpccoreserver --property client=h2loadclient --application.collectCounters true
+    arguments: --scenario grpccoreserver-h2loadclient         $(grpcJobs) --property server=grpccoreserver --property client=h2loadclient --application.options.collectCounters true
   - displayName: "Go - Client: h2load"
     arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
 

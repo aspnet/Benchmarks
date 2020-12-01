@@ -104,7 +104,7 @@ Options:
     --application.endpoints http://asp-perf-lin:5001
     --application.sdkversion 5.0.100-alpha1-015721 
     --application.dotnetTrace true 
-    --application.collectCounters true 
+    --application.options.collectCounters true 
 
     --load.endpoints http://asp-perf-win:5001 
     --load.source.localFolder ..\..\..\..\PipeliningClient\ 
