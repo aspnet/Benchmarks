@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mvc
@@ -45,6 +46,8 @@ namespace Mvc
         }
 
         [HttpPost("/Products")]
+        [Authorize]
+        [AllowAnonymous]
         public ActionResult<Product> AddProduct([FromBody] Product product)
         {
             if (!ModelState.IsValid)
@@ -58,6 +61,8 @@ namespace Mvc
         }
 
         [HttpPut("/Products/{id}")]
+        [Authorize]
+        [AllowAnonymous]
         public ActionResult<Product> UpdateProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -71,6 +76,8 @@ namespace Mvc
         }
 
         [HttpDelete("/Products/{id}")]
+        [Authorize]
+        [AllowAnonymous]
         public ActionResult<Product> DeleteProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
