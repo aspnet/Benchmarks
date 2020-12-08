@@ -8,4 +8,5 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
-    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
+      useAuthorization: true
+    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %} {%if useAuthorization == true %} --useAuthorization true {% endif %}"
