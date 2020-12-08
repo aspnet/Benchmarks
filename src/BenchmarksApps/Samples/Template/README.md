@@ -1,6 +1,6 @@
 # ASP.NET Template Benchmark App
 
-This folder contains only a template of sample ASP.NET Core app that can be run using the [BenchmarksDriver](../../../BenchmarksDriver/README.md).
+This folder contains only a template of sample ASP.NET Core app that can be run using the [crank](https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md).
 
 The goal is to make it very easy to reuse this template app to quickly modify it and run your own benchmark(s).
 
@@ -8,7 +8,7 @@ The goal is to make it very easy to reuse this template app to quickly modify it
 
 1. Clone this repo.
 2. Modify the template project: replace [existing route](./Startup.cs#L25) with a method that you want to test.
-3. Use [BenchmarksDriver](../../../BenchmarksDriver/README.md) to run the benchmark.
+3. Use [crank](https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md) to run the benchmark.
 
 ## Sample investigation
 
@@ -83,10 +83,10 @@ namespace Template
 }
 ```
 
-Now, if we want to benchmark this method using "RSA" argument we need to specify following argument for the [BenchmarksDriver](../../../BenchmarksDriver/README.md):
+Now, if we want to benchmark this method using "RSA" argument we need to specify following argument for the [crank](https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md):
 
 ```cmd
---path /CryptoConfig/CreateFromName/RSA
+--load.variables.path /CryptoConfig/CreateFromName/RSA
 ```
 
 ### Run the benchmark
@@ -94,28 +94,49 @@ Now, if we want to benchmark this method using "RSA" argument we need to specify
 Now we run the benchmark using following command (assuming that we know the benchmark server and client machine address):
 
 ```cmd
-cd src/BenchmarksDriver
-dotnet run -- `
-    --server $secret1 --client $secret2 `
-    --source ..\BenchmarksApps\Samples\Template\ `
-    --project-file Template.csproj `
-    --path /CryptoConfig/CreateFromName/RSA `
+cd src/BenchmarksApps/Samples/Template
+crank -- `
+    --config ./sample.yml `
+    --scenario sample `
+    --profile aspnet-perf-win `
+    --load.variables.path /CryptoConfig/CreateFromName/RSA `
 ```
 
 Sample output:
 
 ```log
-RequestsPerSecond:           48,948
-Max CPU (%):                 93
-WorkingSet (MB):             161
-Avg. Latency (ms):           5.23
-Startup (ms):                202
-First Request (ms):          59.91
-Latency (ms):                0.4
-Total Requests:              738,567
-Duration: (ms)               15,090
-Socket Errors:               0
-Bad Responses:               0
+| application           |                         |
+| --------------------- | ----------------------- |
+| CPU Usage (%)         | 99                      |
+| Cores usage (%)       | 1,186                   |
+| Working Set (MB)      | 152                     |
+| Build Time (ms)       | 2,889                   |
+| Start Time (ms)       | 252                     |
+| Published Size (KB)   | 84,768                  |
+| .NET Core SDK Version | 6.0.100-alpha.1.20568.5 |
+
+
+| load                   |         |
+| ---------------------- | ------- |
+| CPU Usage (%)          | 20      |
+| Cores usage (%)        | 244     |
+| Working Set (MB)       | 48      |
+| Build Time (ms)        | 4,804   |
+| Start Time (ms)        | 0       |
+| Published Size (KB)    | 76,401  |
+| .NET Core SDK Version  | 3.1.404 |
+| First Request (ms)     | 94      |
+| Requests/sec           | 41,129  |
+| Requests               | 621,031 |
+| Mean latency (ms)      | 12.56   |
+| Max latency (ms)       | 205.56  |
+| Bad responses          | 0       |
+| Socket errors          | 0       |
+| Read throughput (MB/s) | 3.61    |
+| Latency 50th (ms)      | 12.86   |
+| Latency 75th (ms)      | 13.68   |
+| Latency 90th (ms)      | 14.77   |
+| Latency 99th (ms)      | 20.87   |
 ```
 
 ### Collect trace
@@ -123,16 +144,19 @@ Bad Responses:               0
 The next step is to collect the trace and find out where the problem really is. To do that we just extend the previous command with:
 
 ```cmd
---collect-trace
+--application.collect true 
 ```
 
 Sample output:
 
 ```log
-Post-processing profiler trace, this can take 10s of seconds...
-Trace arguments: BufferSizeMB=1024;CircularMB=1024;clrEvents=JITSymbols;kernelEvents=process+thread+ImageLoad+Profile
-Downloading trace: trace.08-13-07-10-08.RPS-227K.etl.zip
+[11:53:47.819] Stopping job 'application' ...
+[11:53:51.172] Collecting trace file 'application.12-08-11-53-51.etl.zip' ...
+[11:56:06.066] Downloading trace file...
+[11:59:34.605] Deleting job 'application' ...
 ```
+
+**Note:** Downloading trace file can take 10s of seconds.
 
 ### Identifying the problem
 
@@ -144,25 +168,11 @@ To identify the problem we can open the trace file with [PerfView](https://githu
 
 ### Validating the fix
 
-To validate the fix, we need to send a new version of given library using the `--output-file` command line argument. The benchmarking infrastructure is going to publish a self-contained version of provided `Template` app and overwrite existing file with the one that we have provided. Example:
+To validate the fix, we need to send a new version of given library using the `--application.options.outputFiles` command line argument. The benchmarking infrastructure is going to publish a self-contained version of provided `Template` app and overwrite existing file with the one that we have provided. Example:
 
 
 ```cmd
---output-file "C:\Projects\corefx\artifacts\bin\System.Security.Cryptography.Algorithms\netcoreapp-Windows_NT-Release\System.Security.Cryptography.Algorithms.dll"
-```
-
-```log
-RequestsPerSecond:           226,818
-Max CPU (%):                 79
-WorkingSet (MB):             159
-Avg. Latency (ms):           2.23
-Startup (ms):                322
-First Request (ms):          62.91
-Latency (ms):                0.41
-Total Requests:              3,424,868
-Duration: (ms)               15,100
-Socket Errors:               0
-Bad Responses:               0
+--application.options.outputFiles "C:\Projects\runtime\artifacts\bin\System.Security.Cryptography.Algorithms\net6.0-windows-Release\System.Security.Cryptography.Algorithms.dll"
 ```
 
 The trace file captured after introducing the change shows that `CryptoConfig.CreateFromName` is not a performance bottleneck anymore:

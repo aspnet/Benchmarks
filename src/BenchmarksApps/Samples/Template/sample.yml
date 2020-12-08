@@ -1,0 +1,114 @@
+﻿# Examples:
+# --config platform.benchmarks.yml --scenario json --profile aspnet-citrine-lin
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+
+jobs:
+  sample:
+    source:
+      localFolder: .
+      project: Template.csproj
+    readyStateText: Application started.
+    framework: net6.0
+
+scenarios:
+  sample:
+    application:
+      job: sample
+    load:
+      job: wrk
+      variables:
+        path: /InvariantCultureIgnoreCase/1234
+        serverPort: 5000
+        connections: 512
+
+profiles:
+  local:
+    variables:
+      serverPort: 5000
+      serverAddress: localhost
+    jobs: 
+      db:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+        variables:
+          databaseServer: localhost
+      load:
+        endpoints: 
+          - http://localhost:5010
+          
+  aspnet-citrine-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  aspnet-citrine-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+        variables:
+          databaseServer: 10.0.0.105
+      load:
+        endpoints: 
+          - http://asp-citrine-db:5001
+  
+  aspnet-perf-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+
+  aspnet-perf-win:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.110
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-perf-load:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+        variables:
+          databaseServer: 10.0.0.104
+      load:
+        endpoints: 
+          - http://asp-perf-db:5001
