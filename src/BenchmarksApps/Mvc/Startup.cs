@@ -14,7 +14,7 @@ namespace Mvc
         {
             Configuration = configuration;
             UseNewtonsoftJson = Configuration["UseNewtonsoftJson"] == "true";
-            UseAuthorization = true;// Configuration["UseAuthorization"] == "true";
+            UseAuthorization = Configuration["UseAuthorization"] == "true";
         }
 
         public IConfiguration Configuration { get; }
