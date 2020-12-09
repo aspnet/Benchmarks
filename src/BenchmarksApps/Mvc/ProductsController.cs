@@ -34,20 +34,25 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             return _fixedProductList;
         }
 
         [HttpGet("/Products/{id}")]
+        [Authorize]
         public Product GetProduct([FromRoute] int id)
         {
             return _fixedProductList[0];
         }
 
         [HttpPost("/Products")]
+#if AUTHORIZE
         [Authorize]
-        [AllowAnonymous]
+#endif
         public ActionResult<Product> AddProduct([FromBody] Product product)
         {
             if (!ModelState.IsValid)
@@ -61,8 +66,9 @@ namespace Mvc
         }
 
         [HttpPut("/Products/{id}")]
+#if AUTHORIZE
         [Authorize]
-        [AllowAnonymous]
+#endif
         public ActionResult<Product> UpdateProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -76,8 +82,9 @@ namespace Mvc
         }
 
         [HttpDelete("/Products/{id}")]
+#if AUTHORIZE
         [Authorize]
-        [AllowAnonymous]
+#endif
         public ActionResult<Product> DeleteProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)

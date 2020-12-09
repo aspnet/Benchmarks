@@ -2,9 +2,12 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mvc
 {
@@ -13,13 +16,9 @@ namespace Mvc
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            UseNewtonsoftJson = Configuration["UseNewtonsoftJson"] == "true";
-            UseAuthorization = true;// Configuration["UseAuthorization"] == "true";
         }
 
         public IConfiguration Configuration { get; }
-
-        bool UseAuthorization { get; }
 
         bool UseNewtonsoftJson { get; }
 
@@ -33,11 +32,25 @@ namespace Mvc
                 mvcBuilder.AddNewtonsoftJson();
             }
 
-            if (UseAuthorization)
+#if JWTAUTH
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
-                services.AddAuthentication().AddJwtBearer();
-                services.AddAuthorization();
-            }
+                o.TokenValidationParameters.ValidateActor = false;
+                o.TokenValidationParameters.ValidateAudience = false;
+                o.TokenValidationParameters.ValidateIssuer = false;
+                o.TokenValidationParameters.ValidateLifetime = false;
+                o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
+            });
+#elif CERTAUTH
+            services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(o =>
+            {
+                o.AllowedCertificateTypes = CertificateTypes.All;
+            });
+#endif
+
+#if AUTHORIZE
+            services.AddAuthorization();
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,12 +63,15 @@ namespace Mvc
 
             app.UseRouting();
 
-            if (UseAuthorization)
-            {
-                logger.LogInformation("MVC is configured to use Authorization.");
-                app.UseAuthentication();
-                app.UseAuthorization();
-            }
+#if JWTAUTH || CERTAUTH
+            logger.LogInformation("MVC is configured to use Authentication.");
+            app.UseAuthentication();
+#endif
+
+#if AUTHORIZE
+            logger.LogInformation("MVC is configured to use Authorization.");
+            app.UseAuthorization();
+#endif
 
             app.UseEndpoints(endpoints =>
             {
