@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver;
 using Npgsql;
 using System.IO;
 using Microsoft.AspNetCore.WebUtilities;
@@ -109,15 +108,6 @@ namespace Benchmarks
 
                     break;
 #endif
-
-                case DatabaseServer.MongoDb:
-                    var mongoClient = new MongoClient(appSettings.ConnectionString);
-                    var mongoDatabase = mongoClient.GetDatabase("hello_world");
-                    services.AddSingleton(mongoClient);
-                    services.AddSingleton(mongoDatabase);
-                    services.AddSingleton(sp => mongoDatabase.GetCollection<Fortune>("fortune"));
-                    services.AddSingleton(sp => mongoDatabase.GetCollection<World>("world"));
-                    break;
             }
 
             if (Scenarios.Any("Ef"))
@@ -133,11 +123,6 @@ namespace Benchmarks
             if (Scenarios.Any("Dapper"))
             {
                 services.AddScoped<DapperDb>();
-            }
-
-            if (Scenarios.Any("Mongo"))
-            {
-                services.AddScoped<MongoDb>();
             }
 
             if (Scenarios.Any("Fortunes"))
@@ -245,11 +230,6 @@ namespace Benchmarks
                 app.UseSingleQueryDapper();
             }
 
-            if (Scenarios.DbSingleQueryMongoDb)
-            {
-                app.UseSingleQueryMongoDb();
-            }
-
             if (Scenarios.DbSingleQueryEf)
             {
                 app.UseSingleQueryEf();
@@ -264,11 +244,6 @@ namespace Benchmarks
             if (Scenarios.DbMultiQueryDapper)
             {
                 app.UseMultipleQueriesDapper();
-            }
-
-            if (Scenarios.DbMultiQueryMongoDb)
-            {
-                app.UseMultipleQueriesMongoDb();
             }
 
             if (Scenarios.DbMultiQueryEf)
@@ -306,11 +281,6 @@ namespace Benchmarks
             if (Scenarios.DbFortunesDapper)
             {
                 app.UseFortunesDapper();
-            }
-
-            if (Scenarios.DbFortunesMongoDb)
-            {
-                app.UseFortunesMongoDb();
             }
 
             if (Scenarios.DbFortunesEf)

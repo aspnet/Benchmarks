@@ -129,6 +129,7 @@ namespace Benchmarks
 
                 if (threadPoolDispatching == false || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
+#if !NET6_0
                     webHostBuilder.UseLibuv(options =>
                     {
                         if (threadCount > 0)
@@ -144,6 +145,7 @@ namespace Benchmarks
 
                         Console.WriteLine($"Using Libuv with {options.ThreadCount} threads");
                     });
+#endif
                 }
                 else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
                 {

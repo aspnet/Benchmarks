@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace Benchmarks.Data
 {
@@ -13,10 +12,8 @@ namespace Benchmarks.Data
     public class Fortune : IComparable<Fortune>, IComparable
     {
         [Column("id")]
-        [BsonElement("id")]
         public int Id { get; set; }
 
-        [BsonId]
         [NotMapped]
         [IgnoreDataMember]
         public int _Id { get; set; }
@@ -24,7 +21,6 @@ namespace Benchmarks.Data
         [Column("message")]
         [StringLength(2048)]
         [IgnoreDataMember]
-        [BsonElement("message")]
         public string Message { get; set; }
         
         public int CompareTo(object obj)

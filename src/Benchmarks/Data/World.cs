@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using MongoDB.Bson.Serialization.Attributes;
 
 namespace Benchmarks.Data
 {
@@ -11,16 +10,13 @@ namespace Benchmarks.Data
     public class World
     {
         [Column("id")]
-        [BsonElement("id")]
         public int Id { get; set; }
 
-        [BsonId]
         [IgnoreDataMember]
         [NotMapped]
         public int _Id { get; set; }
 
         [Column("randomnumber")]
-        [BsonElement("randomNumber")]
         public int RandomNumber { get; set; }
     }
 }
