@@ -37,13 +37,6 @@ parameters:
   - displayName: Fortunes EF
     arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEf --property protocol=http
 
-# Mono
-
-  - displayName: Fortunes Platform Mono
-    arguments: --scenario fortunesPlatform-mono-jit $(monoJobs) --property scenario=FortunesPlatformMono --property protocol=http
-  - displayName: Fortunes Mono
-    arguments: --scenario fortunes-mono-jit $(monoJobs) --property scenario=FortunesPlatformMono --property protocol=http
-
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
