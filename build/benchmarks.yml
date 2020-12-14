@@ -395,7 +395,7 @@ jobs:
 - job: Mono_Linux
   displayName: Mono Linux Queue
   pool: server
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180 # ARM takes 2h
   dependsOn: Proxies
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
