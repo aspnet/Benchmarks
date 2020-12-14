@@ -43,7 +43,9 @@ namespace Mvc
         }
 
         [HttpGet("/Products/{id}")]
+#if AUTHORIZE
         [Authorize]
+#endif
         public Product GetProduct([FromRoute] int id)
         {
             return _fixedProductList[0];
