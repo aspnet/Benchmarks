@@ -16,7 +16,7 @@ variables:
 jobs:
 
 - job: Trends_Linux
-  displayName: Trends Linux Queue
+  displayName: Trends
   pool: server
   timeoutInMinutes: 120
   strategy:
@@ -35,7 +35,7 @@ jobs:
       profile: $(profile)
 
 - job: Trends_Windows
-  displayName: Trends Windows Queue
+  displayName: Trends
   pool: server
   timeoutInMinutes: 120
   strategy:
@@ -79,7 +79,7 @@ jobs:
       profile: $(profile)
 
 - job: Baselines_Linux
-  displayName: Baselines Linux Queue
+  displayName: Baselines
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends_Database
@@ -100,7 +100,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: Baselines_Windows
-  displayName: Baselines Windows Queue
+  displayName: Baselines
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends_Database
@@ -146,7 +146,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: Frameworks_Linux
-  displayName: Frameworks Linux Queue
+  displayName: Frameworks
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
@@ -165,7 +165,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: Frameworks_Windows
-  displayName: Frameworks Windows Queue
+  displayName: Frameworks
   pool: server
   timeoutInMinutes: 60
   dependsOn: Baselines_Database
@@ -205,7 +205,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: gRPC_Linux
-  displayName: gRPC Linux Queue
+  displayName: gRPC
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
@@ -224,7 +224,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: gRPC_Windows
-  displayName: gRPC Windows Queue
+  displayName: gRPC
   pool: server
   timeoutInMinutes: 180
   dependsOn: Frameworks_Database
@@ -243,7 +243,7 @@ jobs:
       connection: ASP.NET Benchmarks Mono Queue
 
 - job: SignalR_Linux
-  displayName: SignalR Linux Queue
+  displayName: SignalR
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Linux
@@ -262,7 +262,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: SignalR_Windows
-  displayName: SignalR Windows Queue
+  displayName: SignalR
   pool: server
   timeoutInMinutes: 120
   dependsOn: gRPC_Windows
@@ -281,7 +281,7 @@ jobs:
       connection: ASP.NET Benchmarks Mono Queue
 
 - job: SingleFile_Linux
-  displayName: Single File Linux Queue
+  displayName: Single File
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Linux
@@ -300,7 +300,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: SingleFile_Windows
-  displayName: Single File Windows Queue
+  displayName: Single File
   pool: server
   timeoutInMinutes: 120
   dependsOn: SignalR_Windows
@@ -319,7 +319,7 @@ jobs:
       connection: ASP.NET Benchmarks Mono Queue
 
 - job: MVC_Linux
-  displayName: MVC Linux Queue
+  displayName: MVC
   pool: server
   timeoutInMinutes: 120
   dependsOn: SingleFile_Linux
@@ -338,7 +338,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: MVC_Windows
-  displayName: MVC Windows Queue
+  displayName: MVC
   pool: server
   timeoutInMinutes: 120
   dependsOn: SingleFile_Windows
@@ -393,7 +393,7 @@ jobs:
       connection: ASP.NET Benchmarks Queue
 
 - job: Mono_Linux
-  displayName: Mono Linux Queue
+  displayName: Mono
   pool: server
   timeoutInMinutes: 180 # ARM takes 2h
   dependsOn: Proxies
@@ -414,7 +414,7 @@ jobs:
       profile: $(profile)
 
 - job: Mono_Windows
-  displayName: Mono Windows Queue
+  displayName: Mono
   pool: server
   timeoutInMinutes: 120
   dependsOn: Proxies  
@@ -427,7 +427,7 @@ jobs:
       Amd_Linux:
         profile: aspnet-citrine-amd
   steps:
-  - template: trend-v2-scenarios.yml
+  - template: mono-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
