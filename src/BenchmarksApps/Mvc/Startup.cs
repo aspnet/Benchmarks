@@ -16,6 +16,7 @@ namespace Mvc
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            UseNewtonsoftJson = Configuration["UseNewtonsoftJson"] == "true";
         }
 
         public IConfiguration Configuration { get; }
