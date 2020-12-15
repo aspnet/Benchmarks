@@ -43,11 +43,19 @@ namespace Mvc
         }
 
         [HttpGet("/Products/{id}")]
-#if AUTHORIZE
-        [Authorize]
-#endif
+//#if AUTHORIZE
+//        [Authorize]
+//#endif
         public Product GetProduct([FromRoute] int id)
         {
+            if (HttpContext.Connection.ClientCertificate != null)
+            {
+                Console.Write("Found client cert");
+            }
+            else
+            {
+                Console.Write("Found NO client cert");
+            }
             return _fixedProductList[0];
         }
 
