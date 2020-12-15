@@ -34,19 +34,10 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
-#if AUTHORIZE
-        [Authorize]
-#endif
-        public IEnumerable<Product> GetProducts([FromQuery] Page page)
-        {
-            return _fixedProductList;
-        }
-
-        [HttpGet("/Products/{id}")]
 //#if AUTHORIZE
 //        [Authorize]
 //#endif
-        public Product GetProduct([FromRoute] int id)
+        public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             if (HttpContext.Connection.ClientCertificate != null)
             {
@@ -56,6 +47,15 @@ namespace Mvc
             {
                 Console.Write("Found NO client cert");
             }
+            return _fixedProductList;
+        }
+
+        [HttpGet("/Products/{id}")]
+#if AUTHORIZE
+        [Authorize]
+#endif
+        public Product GetProduct([FromRoute] int id)
+        {
             return _fixedProductList[0];
         }
 
