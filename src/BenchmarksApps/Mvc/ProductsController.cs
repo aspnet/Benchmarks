@@ -34,7 +34,9 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
+#if AUTHORIZE
         [Authorize]
+#endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             return _fixedProductList;

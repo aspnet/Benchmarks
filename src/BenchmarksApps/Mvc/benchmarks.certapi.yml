@@ -2,7 +2,6 @@
 # --config benchmarks.certapi.yml --scenario ApiCrudListProducts --profile aspnet-perf-lin
 
 imports:
-- https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
 - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
 - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
 
@@ -15,7 +14,7 @@ scenarios:
     application:
       job: mvcServer
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /Products?pageNumber=1&pageSize=10
       buildArguments: 

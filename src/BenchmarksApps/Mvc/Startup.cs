@@ -33,11 +33,21 @@ namespace Mvc
                 mvcBuilder.AddNewtonsoftJson();
             }
 
-            services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-            .AddCertificate(o =>
+#if JWTAUTH
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
-                //o.AllowedCertificateTypes = CertificateTypes.All;
+                o.TokenValidationParameters.ValidateActor = false;
+                o.TokenValidationParameters.ValidateAudience = false;
+                o.TokenValidationParameters.ValidateIssuer = false;
+                o.TokenValidationParameters.ValidateLifetime = false;
+                o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
             });
+#elif CERTAUTH
+            services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(o =>
+            {
+                o.AllowedCertificateTypes = CertificateTypes.All;
+            });
+#endif
 
 #if AUTHORIZE
             services.AddAuthorization();
@@ -54,8 +64,10 @@ namespace Mvc
 
             app.UseRouting();
 
+#if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
             app.UseAuthentication();
+#endif
 
 #if AUTHORIZE
             logger.LogInformation("MVC is configured to use Authorization.");
