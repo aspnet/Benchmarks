@@ -33,13 +33,11 @@ namespace Mvc
                 mvcBuilder.AddNewtonsoftJson();
             }
 
-#if CERTAUTH
             services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
             .AddCertificate(o =>
             {
                 //o.AllowedCertificateTypes = CertificateTypes.All;
             });
-#endif
 
 #if AUTHORIZE
             services.AddAuthorization();
@@ -56,10 +54,8 @@ namespace Mvc
 
             app.UseRouting();
 
-#if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
             app.UseAuthentication();
-#endif
 
 #if AUTHORIZE
             logger.LogInformation("MVC is configured to use Authorization.");
