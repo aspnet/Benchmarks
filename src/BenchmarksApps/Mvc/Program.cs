@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,16 @@ namespace Mvc
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<Startup>()
+                        .UseKestrel(o =>
+                        {
+                            o.Listen(IPAddress.Loopback, 5001,
+                                listenOptions =>
+                                {
+                                    listenOptions.UseHttps("testCert.pfx",
+                                        "testPassword");
+                                });
+                        })
                 });
     }
 }
