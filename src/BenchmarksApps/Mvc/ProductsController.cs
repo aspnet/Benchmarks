@@ -39,7 +39,8 @@ namespace Mvc
 //#endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
-            if (HttpContext.Connection.ClientCertificate != null)
+            var cert = HttpContext.Connection.GetClientCertificateAsync().GetAwaiter().GetResult();
+            if (cert != null)
             {
                 Console.Write("Found client cert");
             }
