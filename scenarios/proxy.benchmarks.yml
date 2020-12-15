@@ -51,6 +51,9 @@ jobs:
       DockerFile: docker/haproxy/haproxy.dockerfile
       DockerImageName: haproxy-reverseproxy
       DockerContextDirectory: docker/haproxy
+    environmentVariables:
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
     port: 8080
   downstream:
     source:
