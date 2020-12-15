@@ -14,61 +14,61 @@ scenarios:
   ApiCrudListProducts:
     application:
       job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: bombardier
       variables:
         path: /Products?pageNumber=1&pageSize=10
-      buildArguments: 
-        - "/p:UseCertAuth=true /p:UseAuthorize=true"
 
     # Get an individual product
   ApiCrudGetProductDetails:
     application:
       job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: bombardier
       variables:
         path: /Products/1
-      buildArguments: 
-        - "/p:UseCertAuth=true /p:UseAuthorize=true"
 
     # Add product
   ApiCrudAddProduct:
     application:
       job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: httpclient
       variables:
         path: /Products
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
-      buildArguments: 
-        - "/p:UseCertAuth=true /p:UseAuthorize=true"
 
     # Update product
   ApiCrudUpdateProduct:
     application:
       job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: httpclient
       variables:
         path: /Products/1
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
-      buildArguments: 
-        - "/p:UseCertAuth=true /p:UseAuthorize=true"
 
     # Remove a product item
   ApiCrudDeleteProduct:
     application:
       job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: httpclient
       variables:
         path: /Products/1
         verb: DELETE
-      buildArguments: 
-        - "/p:UseCertAuth=true /p:UseAuthorize=true"
 
 profiles:
   local:
