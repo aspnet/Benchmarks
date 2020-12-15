@@ -33,7 +33,7 @@ namespace Mvc
                                     listenOptions.UseHttps("testCert.pfx",
                                         "testPassword");
                                 });
-                        })
+                        });
                 });
     }
 }
