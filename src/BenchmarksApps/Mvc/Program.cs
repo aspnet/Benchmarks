@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,14 +26,12 @@ namespace Mvc
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
-                        .UseKestrel(o =>
+                        .ConfigureKestrel(options =>
                         {
-                            o.Listen(IPAddress.Loopback, 5001,
-                                listenOptions =>
-                                {
-                                    listenOptions.UseHttps("testCert.pfx",
-                                        "testPassword");
-                                });
+                            options.ConfigureHttpsDefaults(opt =>
+                            {
+                                opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                            });
                         });
                 });
     }
