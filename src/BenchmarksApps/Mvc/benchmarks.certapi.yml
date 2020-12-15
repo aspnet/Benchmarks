@@ -2,8 +2,7 @@
 # --config benchmarks.certapi.yml --scenario ApiCrudListProducts --profile aspnet-perf-lin
 
 imports:
-- https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
-- https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
+- https://raw.githubusercontent.com/dotnet/crank/haok/crank/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
 - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
@@ -17,7 +16,7 @@ scenarios:
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /Products?pageNumber=1&pageSize=10
 
