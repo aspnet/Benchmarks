@@ -39,16 +39,16 @@ namespace Mvc
 #endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
-            //var cert = HttpContext.Connection.ClientCertificate;
-            //if (cert != null)
-            //{
-            //    Console.Write("Found client cert");
-            //}
-            //else
-            //{
-            //    Console.Write("Found NO client cert");
-            //}
-            //Console.WriteLine("X-ARR-ClientCert Header: " + Request.Headers["X-ARR-ClientCert"]);
+            var cert = HttpContext.Connection.ClientCertificate;
+            if (cert != null)
+            {
+                Console.Write("Found client cert");
+            }
+            else
+            {
+                Console.Write("Found NO client cert");
+            }
+            Console.WriteLine("X-ARR-ClientCert Header: " + Request.Headers["X-ARR-ClientCert"]);
             return _fixedProductList;
         }
 

@@ -61,6 +61,10 @@ namespace Mvc
                         clientCertificate = new X509Certificate2(bytes);
                         Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
                     }
+                    else
+                    {
+                        Console.WriteLine("Empty header");
+                    }
  
                     return clientCertificate;
                 };
@@ -68,7 +72,8 @@ namespace Mvc
 #endif
 
 #if AUTHORIZE
-            services.AddAuthorization();
+            //services.AddAuthorization();
+            services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAssertion(o => true).Build());
 #endif
         }
 
