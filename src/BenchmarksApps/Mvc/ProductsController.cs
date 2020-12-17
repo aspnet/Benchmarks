@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,7 +50,8 @@ namespace Mvc
             {
                 Console.Write("Found NO client cert");
             }
-            Console.WriteLine("X-ARR-ClientCert Header: " + Request.Headers["X-ARR-ClientCert"]);
+            //Console.WriteLine("X-ARR-ClientCert Header: " + Request.Headers["X-ARR-ClientCert"]);
+            Console.WriteLine("IsAuthenticated: " + User.Identity.IsAuthenticated);
             return _fixedProductList;
         }
 

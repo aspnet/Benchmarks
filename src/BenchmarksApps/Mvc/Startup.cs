@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Mvc
 {
@@ -47,7 +49,32 @@ namespace Mvc
             services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(o =>
             {
                 o.AllowedCertificateTypes = CertificateTypes.All;
-            });
+                o.Events = new CertificateAuthenticationEvents
+                {
+                    OnCertificateValidated = context =>
+                    {
+                        var claims = new[]
+                        {
+                            new Claim(
+                                ClaimTypes.NameIdentifier,
+                                context.ClientCertificate.Subject,
+                                ClaimValueTypes.String,
+                                context.Options.ClaimsIssuer),
+                            new Claim(ClaimTypes.Name,
+                                context.ClientCertificate.Subject,
+                                ClaimValueTypes.String,
+                                context.Options.ClaimsIssuer)
+                        };
+
+                        context.Principal = new ClaimsPrincipal(
+                            new ClaimsIdentity(claims, context.Scheme.Name));
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    }
+                };
+
+            }).AddCertificateCache();
 
             services.AddCertificateForwarding(options =>
             {
