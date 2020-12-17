@@ -49,30 +49,35 @@ namespace Mvc
             services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(o =>
             {
                 o.AllowedCertificateTypes = CertificateTypes.All;
-                o.Events = new CertificateAuthenticationEvents
-                {
-                    OnCertificateValidated = context =>
-                    {
-                        var claims = new[]
-                        {
-                            new Claim(
-                                ClaimTypes.NameIdentifier,
-                                context.ClientCertificate.Subject,
-                                ClaimValueTypes.String,
-                                context.Options.ClaimsIssuer),
-                            new Claim(ClaimTypes.Name,
-                                context.ClientCertificate.Subject,
-                                ClaimValueTypes.String,
-                                context.Options.ClaimsIssuer)
-                        };
+                o.RevocationFlag = X509RevocationFlag.EntireChain;
+                o.RevocationMode = X509RevocationMode.NoCheck;
+                o.ValidateCertificateUse = false;
+                o.ValidateValidityPeriod = false;
 
-                        context.Principal = new ClaimsPrincipal(
-                            new ClaimsIdentity(claims, context.Scheme.Name));
-                        context.Success();
+                //o.Events = new CertificateAuthenticationEvents
+                //{
+                //    OnCertificateValidated = context =>
+                //    {
+                //        var claims = new[]
+                //        {
+                //            new Claim(
+                //                ClaimTypes.NameIdentifier,
+                //                context.ClientCertificate.Subject,
+                //                ClaimValueTypes.String,
+                //                context.Options.ClaimsIssuer),
+                //            new Claim(ClaimTypes.Name,
+                //                context.ClientCertificate.Subject,
+                //                ClaimValueTypes.String,
+                //                context.Options.ClaimsIssuer)
+                //        };
 
-                        Console.WriteLine("Cert validated");
-                        return Task.CompletedTask;
-                    }
+                //        context.Principal = new ClaimsPrincipal(
+                //            new ClaimsIdentity(claims, context.Scheme.Name));
+                //        context.Success();
+
+                //        Console.WriteLine("Cert validated");
+                //        return Task.CompletedTask;
+                //    }
                 };
 
             }).AddCertificateCache();
@@ -100,13 +105,13 @@ namespace Mvc
 #endif
 
 #if AUTHORIZE
-            //services.AddAuthorization();
-            services.AddAuthorization(o => o.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAssertion(o => true).Build());
+            services.AddAuthorization();
 #endif
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+            public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (UseNewtonsoftJson)
             {
