@@ -34,9 +34,9 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
-#if AUTHORIZE
-        [Authorize]
-#endif
+//#if AUTHORIZE
+//        [Authorize]
+//#endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             var cert = HttpContext.Connection.ClientCertificate;
