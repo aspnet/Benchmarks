@@ -78,7 +78,7 @@ namespace Mvc
                 //        Console.WriteLine("Cert validated");
                 //        return Task.CompletedTask;
                 //    }
-                };
+                //};
 
             }).AddCertificateCache();
 
