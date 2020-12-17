@@ -78,10 +78,10 @@ profiles:
     jobs:
       application:
         endpoints:
-          - http://localhost:5010
+          - https://localhost:5010
       load:
         endpoints:
-          - http://localhost:5010
+          - https://localhost:5010
 
   aspnet-citrine-lin:
     variables:
@@ -163,15 +163,15 @@ profiles:
     jobs:
       db:
         endpoints:
-          - http://asp-perf-db:5001
+          - https://asp-perf-db:5001
       application:
         endpoints:
-          - http://asp-perf-lin:5001
+          - https://asp-perf-lin:5001
         variables:
           databaseServer: 10.0.0.103
       load:
         endpoints:
-          - http://asp-perf-load:5001
+          - https://asp-perf-load:5001
 
   aspnet-perf-win:
     variables:
