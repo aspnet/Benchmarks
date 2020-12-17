@@ -64,6 +64,10 @@ namespace Mvc
 
             app.UseRouting();
 
+#if CERTAUTH
+            app.UseCertificateForwarding();
+#endif
+
 #if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
             app.UseAuthentication();
