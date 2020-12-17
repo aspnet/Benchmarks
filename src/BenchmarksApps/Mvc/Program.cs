@@ -31,6 +31,7 @@ namespace Mvc
                             options.ConfigureHttpsDefaults(opt =>
                             {
                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                                opt.AllowAnyClientCertificate();
                             });
                         });
                 });
