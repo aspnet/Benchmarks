@@ -57,7 +57,7 @@ namespace Mvc
                     X509Certificate2 clientCertificate = null;
                     if(!string.IsNullOrWhiteSpace(headerValue))
                     {
-                        byte[] bytes = StringToByteArray(headerValue);
+                        byte[] bytes = Convert.FromBase64String(headerValue);
                         clientCertificate = new X509Certificate2(bytes);
                     }
  
