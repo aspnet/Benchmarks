@@ -27,8 +27,6 @@ scenarios:
   plaintext:
     application:
       job: platformbenchmarks
-      environmentVariables:
-        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: 1
     load:
       job: wrk
       variables:
@@ -41,8 +39,6 @@ scenarios:
   json:
     application:
       job: platformbenchmarks
-      environmentVariables:
-        DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: 1
     load:
       job: wrk
       variables:

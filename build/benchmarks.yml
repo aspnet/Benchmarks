@@ -27,7 +27,7 @@ jobs:
       Arm_Linux:
         profile: aspnet-citrine-arm
   steps:
-  - template: trend-v2-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
@@ -46,7 +46,7 @@ jobs:
       Amd_Linux:
         profile: aspnet-citrine-amd
   steps:
-  - template: trend-v2-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       warmup: 15
       duration: 15
@@ -472,7 +472,7 @@ jobs:
       Intel_Linux:
         profile: aspnet-azure-lin
   steps:
-  - template: trend-v2-scenarios.yml
+  - template: trend-scenarios.yml
     parameters:
       warmup: 15
       duration: 15

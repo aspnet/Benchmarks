@@ -23,6 +23,10 @@ parameters:
     arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform --property protocol=http
   - displayName: Json Platform
     arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform --property protocol=http
+  - displayName: Plaintext Platform Inline
+    arguments: --scenario plaintext $(platformJobs) --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=PlaintextPlatformInline --property protocol=http
+  - displayName: Json Platform Inline
+    arguments: --scenario json $(platformJobs) --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=JsonPlatformInline --property protocol=http
 
 # Plaintext
 
