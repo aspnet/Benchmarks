@@ -47,6 +47,22 @@ namespace Mvc
             {
                 o.AllowedCertificateTypes = CertificateTypes.All;
             });
+
+            services.AddCertificateForwarding(options =>
+            {
+                options.CertificateHeader = "X-ARR-ClientCert";
+                options.HeaderConverter = (headerValue) =>
+                {
+                    X509Certificate2 clientCertificate = null;
+                    if(!string.IsNullOrWhiteSpace(headerValue))
+                    {
+                        byte[] bytes = StringToByteArray(headerValue);
+                        clientCertificate = new X509Certificate2(bytes);
+                    }
+ 
+                    return clientCertificate;
+                };
+            });
 #endif
 
 #if AUTHORIZE

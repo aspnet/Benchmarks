@@ -48,6 +48,7 @@ namespace Mvc
             {
                 Console.Write("Found NO client cert");
             }
+            Console.WriteLine("X-ARR-ClientCert Header: " + Request.Headers["X-ARR-ClientCert"]);
             return _fixedProductList;
         }
 
