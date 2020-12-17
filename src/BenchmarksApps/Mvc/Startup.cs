@@ -70,6 +70,7 @@ namespace Mvc
                             new ClaimsIdentity(claims, context.Scheme.Name));
                         context.Success();
 
+                        Console.WriteLine("Cert validated");
                         return Task.CompletedTask;
                     }
                 };
