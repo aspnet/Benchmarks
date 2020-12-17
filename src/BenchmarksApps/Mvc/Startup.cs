@@ -59,6 +59,7 @@ namespace Mvc
                     {
                         byte[] bytes = Convert.FromBase64String(headerValue);
                         clientCertificate = new X509Certificate2(bytes);
+                        logger.LogInformation("Converted header: "+clientCertificate.Thumbprint);
                     }
  
                     return clientCertificate;
