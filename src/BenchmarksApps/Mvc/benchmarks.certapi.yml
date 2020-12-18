@@ -18,7 +18,6 @@ scenarios:
     load:
       job: httpclient
       variables:
-        connections: 24
         path: /Products?pageNumber=1&pageSize=10
         duration: 1
         warmup: 0
@@ -177,7 +176,7 @@ profiles:
           databaseServer: 10.0.0.103
       load:
         endpoints:
-          - http://asp-perf-db:5001
+          - http://asp-perf-load:5001
 
   aspnet-perf-win:
     variables:
