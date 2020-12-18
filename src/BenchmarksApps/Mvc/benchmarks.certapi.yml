@@ -21,6 +21,7 @@ scenarios:
         path: /Products?pageNumber=1&pageSize=10
         duration: 1
         warmup: 0
+        serverScheme: https
 
     # Get an individual product
   ApiCrudGetProductDetails:
@@ -32,8 +33,9 @@ scenarios:
       job: bombardier
       variables:
         path: /Products/1
+        serverScheme: https
 
-    # Add product
+   # Add product
   ApiCrudAddProduct:
     application:
       job: mvcServer
@@ -43,6 +45,7 @@ scenarios:
       job: httpclient
       variables:
         path: /Products
+        serverScheme: https
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
 
@@ -56,6 +59,7 @@ scenarios:
       job: httpclient
       variables:
         path: /Products/1
+        serverScheme: https
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
 
@@ -69,6 +73,7 @@ scenarios:
       job: httpclient
       variables:
         path: /Products/1
+        serverScheme: https
         verb: DELETE
 
 profiles:
