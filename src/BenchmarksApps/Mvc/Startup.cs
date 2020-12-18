@@ -40,9 +40,11 @@ namespace Mvc
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
                 o.TokenValidationParameters.ValidateActor = false;
-                o.TokenValidationParameters.ValidateAudience = false;
-                o.TokenValidationParameters.ValidateIssuer = false;
-                o.TokenValidationParameters.ValidateLifetime = false;
+                o.TokenValidationParameters.ValidateAudience = true;
+                o.TokenValidationParameters.ValidateIssuer = true;
+                o.TokenValidationParameters.ValidateLifetime = true;
+                o.ValidIssuer = "test";
+                o.ValidAudience = "test";
                 o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
             });
 #elif CERTAUTH
