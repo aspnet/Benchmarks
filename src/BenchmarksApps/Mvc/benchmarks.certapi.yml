@@ -30,7 +30,7 @@ scenarios:
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
-      job: bombardier
+      job: httpclient
       variables:
         path: /Products/1
         serverScheme: https
@@ -162,7 +162,7 @@ profiles:
 
   aspnet-perf-lin:
     variables:
-      serverPort: 5000
+      serverPort: 5001
       serverAddress: 10.0.0.102
       cores: 12
     jobs:
