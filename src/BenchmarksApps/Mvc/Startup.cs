@@ -120,12 +120,12 @@ namespace Mvc
                 logger.LogInformation("MVC is configured to use Newtonsoft.Json.");
             }
 
-            app.UseRouting();
-
 #if CERTAUTH
             app.UseHttpsRedirection();
             app.UseCertificateForwarding();
 #endif
+
+            app.UseRouting();
 
 #if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
