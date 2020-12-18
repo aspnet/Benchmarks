@@ -43,8 +43,8 @@ namespace Mvc
                 o.TokenValidationParameters.ValidateAudience = true;
                 o.TokenValidationParameters.ValidateIssuer = true;
                 o.TokenValidationParameters.ValidateLifetime = true;
-                o.ValidIssuer = "test";
-                o.ValidAudience = "test";
+                o.TokenValidationParameters.ValidIssuer = "test";
+                o.TokenValidationParameters.ValidAudience = "test";
                 o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
             });
 #elif CERTAUTH
@@ -113,7 +113,7 @@ namespace Mvc
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-            public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (UseNewtonsoftJson)
             {
