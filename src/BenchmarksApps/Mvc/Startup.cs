@@ -40,9 +40,9 @@ namespace Mvc
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
                 o.TokenValidationParameters.ValidateActor = false;
-                o.TokenValidationParameters.ValidateAudience = true;
-                o.TokenValidationParameters.ValidateIssuer = true;
                 o.TokenValidationParameters.ValidateLifetime = true;
+                o.TokenValidationParameters.ValidateAudience = false;
+                o.TokenValidationParameters.ValidateIssuer = false;
                 o.TokenValidationParameters.ValidIssuer = "test";
                 o.TokenValidationParameters.ValidAudience = "test";
                 o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
