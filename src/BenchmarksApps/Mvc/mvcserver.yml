@@ -6,9 +6,8 @@ jobs:
       project: src/BenchmarksApps/Mvc/Mvc.csproj
     readyStateText: Application started
     waitForExit: false
+    scheme: https
     variables:
       useNewtonsoftJson: false
       serverAddress: localhost
-      serverPort: 5000
-      serverScheme: https
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
+    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"

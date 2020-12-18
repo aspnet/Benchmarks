@@ -55,33 +55,6 @@ namespace Mvc
                 o.RevocationMode = X509RevocationMode.NoCheck;
                 o.ValidateCertificateUse = false;
                 o.ValidateValidityPeriod = false;
-
-                //o.Events = new CertificateAuthenticationEvents
-                //{
-                //    OnCertificateValidated = context =>
-                //    {
-                //        var claims = new[]
-                //        {
-                //            new Claim(
-                //                ClaimTypes.NameIdentifier,
-                //                context.ClientCertificate.Subject,
-                //                ClaimValueTypes.String,
-                //                context.Options.ClaimsIssuer),
-                //            new Claim(ClaimTypes.Name,
-                //                context.ClientCertificate.Subject,
-                //                ClaimValueTypes.String,
-                //                context.Options.ClaimsIssuer)
-                //        };
-
-                //        context.Principal = new ClaimsPrincipal(
-                //            new ClaimsIdentity(claims, context.Scheme.Name));
-                //        context.Success();
-
-                //        Console.WriteLine("Cert validated");
-                //        return Task.CompletedTask;
-                //    }
-                //};
-
             }).AddCertificateCache();
 
             services.AddCertificateForwarding(options =>
@@ -121,7 +94,7 @@ namespace Mvc
             }
 
 #if CERTAUTH
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseCertificateForwarding();
 #endif
 

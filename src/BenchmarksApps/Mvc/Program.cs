@@ -24,27 +24,12 @@ namespace Mvc
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            //var config = new ConfigurationBuilder()
-            //    .AddCommandLine(args)
-            //    .Build();
-
-            return Host.CreateDefaultBuilder(args)
+            => Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
                         .ConfigureKestrel(options =>
                         {
-                            //var urls = config["urls"] ?? config["server.urls"];
-
-                            //if (!string.IsNullOrEmpty(urls))
-                            //{
-                            //    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
-                            //    {
-                            //        Listen(options, config, value);
-                            //    }
-                            //}
-
                             options.ConfigureHttpsDefaults(opt =>
                             {
                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
@@ -52,37 +37,5 @@ namespace Mvc
                             });
                         });
                 });
-        }
-
-        private static void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
-        {
-            var urlPrefix = UrlPrefix.Create(url);
-            var endpoint = CreateIPEndPoint(urlPrefix);
-
-            options.Listen(endpoint, listenOptions =>
-            {
-                if (urlPrefix.IsHttps)
-                {
-                    listenOptions.UseHttps("testCert.pfx", "testPassword");
-                }
-            });
-        }
-
-        private static IPEndPoint CreateIPEndPoint(UrlPrefix urlPrefix)
-        {
-            IPAddress ip;
-
-            if (string.Equals(urlPrefix.Host, "localhost", StringComparison.OrdinalIgnoreCase))
-            {
-                ip = IPAddress.Loopback;
-            }
-            else if (!IPAddress.TryParse(urlPrefix.Host, out ip))
-            {
-                ip = IPAddress.IPv6Any;
-            }
-
-            return new IPEndPoint(ip, urlPrefix.PortValue);
-        }
-
     }
 }

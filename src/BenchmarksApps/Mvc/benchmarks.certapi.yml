@@ -162,7 +162,7 @@ profiles:
 
   aspnet-perf-lin:
     variables:
-      serverPort: 5001
+      serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 12
     jobs:
