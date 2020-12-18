@@ -6,7 +6,6 @@ jobs:
       project: src/BenchmarksApps/Mvc/Mvc.csproj
     readyStateText: Application started
     waitForExit: false
-    scheme: https
     variables:
       useNewtonsoftJson: false
       serverAddress: localhost

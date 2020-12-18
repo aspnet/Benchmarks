@@ -30,11 +30,13 @@ namespace Mvc
                     webBuilder.UseStartup<Startup>()
                         .ConfigureKestrel(options =>
                         {
+#if CERTAUTH
                             options.ConfigureHttpsDefaults(opt =>
                             {
                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                                 opt.AllowAnyClientCertificate();
                             });
+#endif
                         });
                 });
     }

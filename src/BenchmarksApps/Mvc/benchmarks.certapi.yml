@@ -13,15 +13,13 @@ scenarios:
   ApiCrudListProducts:
     application:
       job: mvcServer
+      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: httpclient
       variables:
         path: /Products?pageNumber=1&pageSize=10
-        duration: 1
-        warmup: 0
-        serverScheme: https
 
     # Get an individual product
   ApiCrudGetProductDetails:
@@ -33,7 +31,6 @@ scenarios:
       job: httpclient
       variables:
         path: /Products/1
-        serverScheme: https
 
    # Add product
   ApiCrudAddProduct:
@@ -45,7 +42,6 @@ scenarios:
       job: httpclient
       variables:
         path: /Products
-        serverScheme: https
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
 
@@ -59,7 +55,6 @@ scenarios:
       job: httpclient
       variables:
         path: /Products/1
-        serverScheme: https
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
 
@@ -73,7 +68,6 @@ scenarios:
       job: httpclient
       variables:
         path: /Products/1
-        serverScheme: https
         verb: DELETE
 
 profiles:
@@ -194,4 +188,4 @@ profiles:
           databaseServer: 10.0.0.104
       load:
         endpoints:
-          - http://asp-perf-db:5001
+          - http://asp-perf-load:5001
