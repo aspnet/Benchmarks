@@ -8,4 +8,7 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
-    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
+      serverAddress: localhost
+      serverPort: 5000
+      serverScheme: https
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
