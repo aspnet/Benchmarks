@@ -25,9 +25,9 @@ namespace Mvc
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .Build();
+            //var config = new ConfigurationBuilder()
+            //    .AddCommandLine(args)
+            //    .Build();
 
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
@@ -35,15 +35,15 @@ namespace Mvc
                     webBuilder.UseStartup<Startup>()
                         .ConfigureKestrel(options =>
                         {
-                            var urls = config["urls"] ?? config["server.urls"];
+                            //var urls = config["urls"] ?? config["server.urls"];
 
-                            if (!string.IsNullOrEmpty(urls))
-                            {
-                                foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
-                                {
-                                    Listen(options, config, value);
-                                }
-                            }
+                            //if (!string.IsNullOrEmpty(urls))
+                            //{
+                            //    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                            //    {
+                            //        Listen(options, config, value);
+                            //    }
+                            //}
 
                             options.ConfigureHttpsDefaults(opt =>
                             {
