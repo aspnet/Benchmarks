@@ -121,6 +121,7 @@ namespace Mvc
             app.UseRouting();
 
 #if CERTAUTH
+            app.UseHttpsRedirection();
             app.UseCertificateForwarding();
 #endif
 
