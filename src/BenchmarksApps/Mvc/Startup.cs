@@ -55,7 +55,7 @@ namespace Mvc
                 o.RevocationMode = X509RevocationMode.NoCheck;
                 o.ValidateCertificateUse = false;
                 o.ValidateValidityPeriod = false;
-            });//.AddCertificateCache();
+            }).AddCertificateCache();
 
             //services.AddCertificateForwarding(options =>
             //{
@@ -95,7 +95,7 @@ namespace Mvc
 
 #if CERTAUTH
             //app.UseHttpsRedirection();
-            app.UseCertificateForwarding();
+            //app.UseCertificateForwarding();
 #endif
 
             app.UseRouting();
