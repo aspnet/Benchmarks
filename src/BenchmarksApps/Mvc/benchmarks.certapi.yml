@@ -20,6 +20,12 @@ scenarios:
       job: httpclient
       variables:
         path: /Products?pageNumber=1&pageSize=10
+        serverScheme: https
+        connections: 1
+        warmup: 0
+        duration: 1
+        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certpwd: testPassword
 
     # Get an individual product
   ApiCrudGetProductDetails:
