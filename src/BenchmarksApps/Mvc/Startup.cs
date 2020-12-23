@@ -55,28 +55,28 @@ namespace Mvc
                 o.RevocationMode = X509RevocationMode.NoCheck;
                 o.ValidateCertificateUse = false;
                 o.ValidateValidityPeriod = false;
-            }).AddCertificateCache();
+            });//.AddCertificateCache();
 
-            services.AddCertificateForwarding(options =>
-            {
-                options.CertificateHeader = "X-ARR-ClientCert";
-                options.HeaderConverter = (headerValue) =>
-                {
-                    X509Certificate2 clientCertificate = null;
-                    if(!string.IsNullOrWhiteSpace(headerValue))
-                    {
-                        byte[] bytes = Convert.FromBase64String(headerValue);
-                        clientCertificate = new X509Certificate2(bytes);
-                        Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Empty header");
-                    }
+            //services.AddCertificateForwarding(options =>
+            //{
+            //    options.CertificateHeader = "X-ARR-ClientCert";
+            //    options.HeaderConverter = (headerValue) =>
+            //    {
+            //        X509Certificate2 clientCertificate = null;
+            //        if(!string.IsNullOrWhiteSpace(headerValue))
+            //        {
+            //            byte[] bytes = Convert.FromBase64String(headerValue);
+            //            clientCertificate = new X509Certificate2(bytes);
+            //            Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
+            //        }
+            //        else
+            //        {
+            //            Console.WriteLine("Empty header");
+            //        }
  
-                    return clientCertificate;
-                };
-            });
+            //        return clientCertificate;
+            //    };
+            //});
 #endif
 
 #if AUTHORIZE
