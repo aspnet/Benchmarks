@@ -43,7 +43,7 @@ namespace Mvc
                 o.TokenValidationParameters.ValidateLifetime = true;
                 o.TokenValidationParameters.ValidateAudience = true;
                 o.TokenValidationParameters.ValidateIssuer = true;
-                o.TokenValidationParameters.ValidIssuer = "test";
+                o.TokenValidationParameters.ValidIssuer = "Test";
                 o.TokenValidationParameters.ValidAudience = "test";
                 o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
             });
