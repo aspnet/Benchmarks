@@ -8,5 +8,4 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
-      serverAddress: localhost
     arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
