@@ -57,26 +57,26 @@ namespace Mvc
                 o.ValidateValidityPeriod = false;
             }).AddCertificateCache();
 
-            //services.AddCertificateForwarding(options =>
-            //{
-            //    options.CertificateHeader = "X-ARR-ClientCert";
-            //    options.HeaderConverter = (headerValue) =>
-            //    {
-            //        X509Certificate2 clientCertificate = null;
-            //        if(!string.IsNullOrWhiteSpace(headerValue))
-            //        {
-            //            byte[] bytes = Convert.FromBase64String(headerValue);
-            //            clientCertificate = new X509Certificate2(bytes);
-            //            Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
-            //        }
-            //        else
-            //        {
-            //            Console.WriteLine("Empty header");
-            //        }
+            services.AddCertificateForwarding(options =>
+            {
+                options.CertificateHeader = "X-ARR-ClientCert";
+                options.HeaderConverter = (headerValue) =>
+                {
+                    X509Certificate2 clientCertificate = null;
+                    if(!string.IsNullOrWhiteSpace(headerValue))
+                    {
+                        byte[] bytes = Convert.FromBase64String(headerValue);
+                        clientCertificate = new X509Certificate2(bytes);
+                        Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Empty header");
+                    }
  
-            //        return clientCertificate;
-            //    };
-            //});
+                    return clientCertificate;
+                };
+            });
 #endif
 
 #if AUTHORIZE
@@ -95,7 +95,7 @@ namespace Mvc
 
 #if CERTAUTH
             //app.UseHttpsRedirection();
-            //app.UseCertificateForwarding();
+            app.UseCertificateForwarding();
 #endif
 
             app.UseRouting();
