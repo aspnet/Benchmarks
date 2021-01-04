@@ -28,17 +28,22 @@ scenarios:
   ApiCrudGetProductDetails:
     application:
       job: mvcServer
+      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
       job: httpclient
       variables:
         path: /Products/1
+        serverScheme: https
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
    # Add product
   ApiCrudAddProduct:
     application:
       job: mvcServer
+      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
@@ -47,6 +52,7 @@ scenarios:
         path: /Products
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        serverScheme: https
         certPwd: testPassword
         certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
@@ -54,6 +60,7 @@ scenarios:
   ApiCrudUpdateProduct:
     application:
       job: mvcServer
+      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
@@ -62,6 +69,7 @@ scenarios:
         path: /Products/1
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        serverScheme: https
         certPwd: testPassword
         certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
@@ -69,6 +77,7 @@ scenarios:
   ApiCrudDeleteProduct:
     application:
       job: mvcServer
+      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
     load:
@@ -76,6 +85,7 @@ scenarios:
       variables:
         path: /Products/1
         verb: DELETE
+        serverScheme: https
         certPwd: testPassword
         certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
