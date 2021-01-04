@@ -47,6 +47,8 @@ scenarios:
         path: /Products
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
     # Update product
   ApiCrudUpdateProduct:
@@ -60,6 +62,8 @@ scenarios:
         path: /Products/1
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
     # Remove a product item
   ApiCrudDeleteProduct:
@@ -72,6 +76,8 @@ scenarios:
       variables:
         path: /Products/1
         verb: DELETE
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
 
 profiles:
   local:
