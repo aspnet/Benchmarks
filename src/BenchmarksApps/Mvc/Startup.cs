@@ -56,27 +56,6 @@ namespace Mvc
                 o.ValidateCertificateUse = false;
                 o.ValidateValidityPeriod = false;
             }).AddCertificateCache();
-
-            services.AddCertificateForwarding(options =>
-            {
-                options.CertificateHeader = "X-ARR-ClientCert";
-                options.HeaderConverter = (headerValue) =>
-                {
-                    X509Certificate2 clientCertificate = null;
-                    if(!string.IsNullOrWhiteSpace(headerValue))
-                    {
-                        byte[] bytes = Convert.FromBase64String(headerValue);
-                        clientCertificate = new X509Certificate2(bytes);
-                        Console.WriteLine("Converted header: "+clientCertificate.Thumbprint);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Empty header");
-                    }
- 
-                    return clientCertificate;
-                };
-            });
 #endif
 
 #if AUTHORIZE
@@ -92,11 +71,6 @@ namespace Mvc
             {
                 logger.LogInformation("MVC is configured to use Newtonsoft.Json.");
             }
-
-#if CERTAUTH
-            //app.UseHttpsRedirection();
-            app.UseCertificateForwarding();
-#endif
 
             app.UseRouting();
 
