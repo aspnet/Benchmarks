@@ -166,7 +166,6 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 - `proxy-nginx`
 - `proxy-haproxy`
 - `proxy-envoy`
-- `proxy-baseline`: This scenario doesn't go through a proxy
 
 ### Custom arguments
 

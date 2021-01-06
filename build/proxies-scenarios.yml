@@ -18,8 +18,8 @@ parameters:
 - name: scenarios 
   type: object
   default: 
-  - displayName: Baseline
-    arguments: --scenario proxy-baseline    $(proxyJobs) --property proxy=none
+  - displayName: YARP
+    arguments: --scenario proxy-yarp        $(proxyJobs)  --property proxy=yarp --application.channel edge --application.framework net6.0
     supportsServerHttps: true
     supportsServerHttp2: true
   - displayName: HttpClient
@@ -32,17 +32,11 @@ parameters:
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
-  - displayName: YARP
-    arguments: --scenario proxy-yarp        $(proxyJobs)  --property proxy=yarp --application.channel edge --application.framework net6.0
-    supportsServerHttps: true
-    supportsServerHttp2: true
 
 - name: payloads
   type: object
   default:
-    # no headers, no body, payload up to 102400
-    - displayName: "0 B - 10 B - No Headers"
-      arguments: --variable path=/?s=10 --property payload=10 --property body=0 --property headers=none
+    # no headers, no body, responses up to 102400
     - displayName: "0 B - 100 B - No Headers"
       arguments: --variable path=/?s=100 --property payload=100 --property body=0 --property headers=none
     - displayName: "0 B - 1 KB - No Headers"
@@ -52,25 +46,19 @@ parameters:
     - displayName: "0 B - 100 KB - No Headers"
       arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=none
 
-    # plaintext headers, no body, payload up to 10240
-    - displayName: "0 B - 10 B - Plaintext Headers"
-      arguments: --variable path=/?s=10 --property payload=10 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
+    # plaintext headers, no body, 100 B response
     - displayName: "0 B - 100 B - Plaintext Headers"
       arguments: --variable path=/?s=100 --property payload=100 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
-    - displayName: "0 B - 1 KB - Plaintext Headers"
-      arguments: --variable path=/?s=1024 --property payload=1024 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
-    - displayName: "0 B - 10 KB - Plaintext Headers"
-      arguments: --variable path=/?s=10240 --property payload=10240 --property body=0 --variable presetHeaders=plaintext --property headers=plaintext
 
-    # no headers, different body sizes, 10B response
-    - displayName: "100 B - 10 B - No Headers"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=10 --property body=100 --property headers=none
-    - displayName: "1 KB - 10 B - No Headers"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=10 --property body=1024 --property headers=none
-    - displayName: "10 KB - 10 B - No Headers"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=10 --property body=10240 --property headers=none
-    - displayName: "100 KB - 10 B - No Headers"
-      arguments: --variable path=/?s=10 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=10 --property body=102400 --property headers=none
+    # no headers, different body sizes, 100 B response
+    - displayName: "100 B - 100 B - No Headers"
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=100 --property body=100 --property headers=none
+    - displayName: "1 KB - 100 B - No Headers"
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=100 --property body=1024 --property headers=none
+    - displayName: "10 KB - 100 B - No Headers"
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=100 --property body=10240 --property headers=none
+    - displayName: "100 KB - 100 B - No Headers"
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=100 --property body=102400 --property headers=none
 
 - name: protocols
   type: object
