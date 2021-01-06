@@ -108,5 +108,5 @@ steps:
             messageBody: |
               {
                 "name": "crank",
-                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
               }
