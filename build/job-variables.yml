@@ -26,18 +26,6 @@ variables:
 - name: htmlPlatformJobs
   value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
 
-- name: grpcNativeJobs
-  value: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core.json
-- name: grpcManagedJobs
-  value: -j https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore.json
-- name: grpcGoJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go.json
-- name: grpcHttpApiJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GrpcHttpApiServer/grpc-httpapi.json
-
-- name: grpcJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksDriver2/benchmarks.grpc.yml
-
 - name: blazorWasmJobs
   value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
 
@@ -76,3 +64,7 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/mono.benchmarks.yml --application.options.requiredOperatingSystem linux
 - name: azureProfile
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/build/azure.profile.yml
+- name: grpcJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml
+
+  
