@@ -2,7 +2,7 @@ jobs:
   efcore:
     source:
       repository: https://github.com/dotnet/efcore
-      branchOrCommit: sebros/benchmarks
+      branchOrCommit: main
       project: benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     variables:
       filter: "*"
