@@ -374,7 +374,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: MVC_Windows
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
     maxParallel: 1
     matrix:
