@@ -29,8 +29,6 @@ variables:
 - name: blazorWasmJobs
   value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/master/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
 
-- name: efcoreJobs
-  value: -r https://github.com/dotnet/efcore --description Benchmarks --arg --perflab --server-timeout 00:45:00 --aspnetcoreversion 3.1 --runtimeversion 3.1 --sdk 3.1.102
 
 - name: mvcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/benchmarks.mvcjson.yml
@@ -66,5 +64,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/build/azure.profile.yml
 - name: grpcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml
-
-  
+- name: efcoreJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/efcore.benchmarks.yml

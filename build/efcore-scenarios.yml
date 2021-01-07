@@ -1,7 +1,7 @@
 # EF Core micro benchmarks
 
 parameters:
-- name: server # the url of the server agent service, e.g. http://asp-perf-lin:5001
+- name: profile
   type: string
   default: ''
 - name: connection
@@ -16,35 +16,35 @@ parameters:
 # List of scenarios
 
     - displayName: AddDataVariations
-      arguments: $(efcoreJobs) --benchmarkdotnet:*AddDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario AddDataVariations
     - displayName: ExistingDataVariations
-      arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario ExistingDataVariations
     - displayName: ChildVariations
-      arguments: $(efcoreJobs) --benchmarkdotnet:*ChildVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario ChildVariations
     - displayName: Delete
-      arguments: $(efcoreJobs) --benchmarkdotnet:*Delete* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Delete
     - displayName: ExistingDataVariations
-      arguments: $(efcoreJobs) --benchmarkdotnet:*ExistingDataVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario ExistingDataVariations
     - displayName: Funcletization
-      arguments: $(efcoreJobs) --benchmarkdotnet:*FuncletizationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Funcletization
     - displayName: Initialization
-      arguments: $(efcoreJobs) --benchmarkdotnet:*InitializationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Initialization
     - displayName: Insert
-      arguments: $(efcoreJobs) --benchmarkdotnet:*Insert* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Insert
     - displayName: Mixed
-      arguments: $(efcoreJobs) --benchmarkdotnet:*Mixed* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Mixed
     - displayName: ParentVariations
-      arguments: $(efcoreJobs) --benchmarkdotnet:*ParentVariations* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario ParentVariations
     - displayName: RawSqlQuery
-      arguments: $(efcoreJobs) --benchmarkdotnet:*RawSqlQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario RawSqlQuery
     - displayName: SimpleQuery
-      arguments: $(efcoreJobs) --benchmarkdotnet:*SimpleQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario SimpleQuery
     - displayName: NavigationsQuery
-      arguments: $(efcoreJobs) --benchmarkdotnet:*NavigationsQuerySqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario NavigationsQuery
     - displayName: QueryCompilation
-      arguments: $(efcoreJobs) --benchmarkdotnet:*QueryCompilationSqliteTests* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario QueryCompilation
     - displayName: Update
-      arguments: $(efcoreJobs) --benchmarkdotnet:*Update* -n Sqlite --project-file benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+      arguments: $(efcoreJobs) --scenario Update
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -57,7 +57,7 @@ steps:
       waitForCompletion: true
       messageBody: |
         {
-          "name": "benchmarksdriver",
-          "args": [ "${{ s.arguments }} --server ${{ parameters.server }} --session $(session) --table EFCoreBenchmarks --sql SQL_CONNECTION_STRING" ],
+          "name": "crank",
+          "args": [ "--table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
           "timeout": "00:30:00"
         }

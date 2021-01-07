@@ -358,7 +358,7 @@ jobs:
 
 - job: Proxies
   pool: server
-  timeoutInMinutes: 360
+  timeoutInMinutes: 240
   dependsOn: MVC_Linux
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   steps:
@@ -372,14 +372,21 @@ jobs:
 - job: EFCore
   displayName: EF Core
   pool: server
-  timeoutInMinutes: 120
+  timeoutInMinutes: 60
   dependsOn: MVC_Windows
   condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
   steps:
   - template: efcore-scenarios.yml
     parameters:
-      server: http://asp-citrine-win:5001
-      connection: ASP.NET Benchmarks Mono Queue
+      profile: $(profile)
+      warmup: 5
+      duration: 10
+      connection:  ASP.NET Benchmarks Mono Queue
 
 - job: Blazor
   pool: server

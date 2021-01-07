@@ -1,0 +1,155 @@
+jobs:
+  efcore:
+    source:
+      repository: https://github.com/dotnet/efcore
+      branchOrCommit: sebros/benchmarks
+      project: benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
+    variables:
+      filter: "*"
+      job: short
+    arguments: --job {{job}} --filter {{filter}} --memory
+    framework: net5.0
+    options:
+      benchmarkDotNet: true
+
+scenarios:
+
+  AddDataVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*AddDataVariations*"
+
+  ExistingDataVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*ExistingDataVariations*"
+
+  ChildVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*ChildVariations*"
+
+  ChildVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*ChildVariations*"
+
+  Delete:
+    application:
+      job: efcore
+      variables:
+        filter: "*Delete*"
+
+  ExistingDataVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*ExistingDataVariations*"
+
+  Funcletization:
+    application:
+      job: efcore
+      variables:
+        filter: "*Funcletization*"
+
+  Initialization:
+    application:
+      job: efcore
+      variables:
+        filter: "*Initialization*"
+
+  Insert:
+    application:
+      job: efcore
+      variables:
+        filter: "*Insert*"
+
+  Mixed:
+    application:
+      job: efcore
+      variables:
+        filter: "*Mixed*"
+
+  ParentVariations:
+    application:
+      job: efcore
+      variables:
+        filter: "*ParentVariations*"
+
+  RawSqlQuery:
+    application:
+      job: efcore
+      variables:
+        filter: "*RawSqlQuery*"
+
+  SimpleQuery:
+    application:
+      job: efcore
+      variables:
+        filter: "*SimpleQuery*"
+
+  NavigationsQuery:
+    application:
+      job: efcore
+      variables:
+        filter: "*NavigationsQuery*"
+
+  QueryCompilation:
+    application:
+      job: efcore
+      variables:
+        filter: "*QueryCompilation*"
+
+  Update:
+    application:
+      job: efcore
+      variables:
+        filter: "*Update*"
+
+profiles:
+  local:
+    jobs: 
+      application:
+        endpoints: 
+          - http://localhost:5010
+          
+  aspnet-citrine-lin:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+
+  aspnet-citrine-win:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+
+  aspnet-citrine-arm:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-arm:5001
+
+  
+  aspnet-citrine-amd:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+  
+  aspnet-perf-lin:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+
+  aspnet-perf-win:
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
