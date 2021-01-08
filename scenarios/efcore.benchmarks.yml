@@ -32,12 +32,6 @@ scenarios:
       variables:
         filter: "*ChildVariations*"
 
-  ChildVariations:
-    application:
-      job: efcore
-      variables:
-        filter: "*ChildVariations*"
-
   Delete:
     application:
       job: efcore
