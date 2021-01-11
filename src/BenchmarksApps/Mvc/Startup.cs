@@ -45,6 +45,8 @@ namespace Mvc
                 o.TokenValidationParameters.ValidateIssuer = true;
                 o.TokenValidationParameters.ValidIssuer = "Test";
                 o.TokenValidationParameters.ValidAudience = "test";
+                // Note: this key must match what was used to generate the bearer header in the benchmarks.certapi.yml file, if changed, the header should be regenerated
+                // This can be done with any of the online jwt generators, issuer and audiance are the only things we validate for now (see above for the expected values)
                 o.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
             });
 #elif CERTAUTH
