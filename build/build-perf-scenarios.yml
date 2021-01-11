@@ -1,0 +1,37 @@
+# Build perf
+parameters:
+- name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+
+- name: scenarios
+  type: object
+  default:
+
+  - displayName: "Build perf - BlazorWasm"
+    arguments: --scenario blazorwasm
+  - displayName: "Build perf - BlazorWasm (Hosted)"
+    arguments: --scenario blazorwasm-hosted
+  - displayName: "Build perf - BlazorServer"
+    arguments: --scenario blazorserver
+  - displayName: "Build perf - MVC"
+    arguments: --scenario mvc
+  - displayName: "Build perf - API"
+    arguments: --scenario api
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "crank",
+          "args": [ "--application.endpoints ${{ parameters.server }} --application.selfContained false --session $(session) ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --chart" ]
+        }
