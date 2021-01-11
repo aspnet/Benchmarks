@@ -1,8 +1,8 @@
-﻿FROM mcr.microsoft.com/dotnet/core/sdk:5.0 AS build-job
+﻿FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-job
 
 # Install dotnet tools
-RUN dotnet tool install -g Microsoft.Crank.AzureDevOpsWorker --version "0.1.0-*"
-RUN dotnet tool install -g Microsoft.Crank.Controller --version "0.1.0-*"
+RUN dotnet tool install -g Microsoft.Crank.AzureDevOpsWorker --version "0.2.0-*"
+RUN dotnet tool install -g Microsoft.Crank.Controller --version "0.2.0-*"
 
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
