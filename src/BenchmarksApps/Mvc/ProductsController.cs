@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Certificate;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mvc
@@ -33,18 +36,27 @@ namespace Mvc
         };
 
         [HttpGet("/Products")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public IEnumerable<Product> GetProducts([FromQuery] Page page)
         {
             return _fixedProductList;
         }
 
         [HttpGet("/Products/{id}")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public Product GetProduct([FromRoute] int id)
         {
             return _fixedProductList[0];
         }
 
         [HttpPost("/Products")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public ActionResult<Product> AddProduct([FromBody] Product product)
         {
             if (!ModelState.IsValid)
@@ -58,6 +70,9 @@ namespace Mvc
         }
 
         [HttpPut("/Products/{id}")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public ActionResult<Product> UpdateProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -71,6 +86,9 @@ namespace Mvc
         }
 
         [HttpDelete("/Products/{id}")]
+#if AUTHORIZE
+        [Authorize]
+#endif
         public ActionResult<Product> DeleteProduct([FromRoute] int id)
         {
             if (!ModelState.IsValid)

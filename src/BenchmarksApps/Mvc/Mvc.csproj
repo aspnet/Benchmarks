@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-<PropertyGroup>
+  <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
     <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == ''">5.0.0-*</MicrosoftAspNetCoreAppPackageVersion>
@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 
   <!-- These references are used when running on the Benchmarks Server -->
@@ -20,4 +22,15 @@
     <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(UseJwtAuth)' == 'true' ">$(DefineConstants);JWTAUTH</DefineConstants>
+    <DefineConstants Condition=" '$(UseCertAuth)' == 'true' ">$(DefineConstants);CERTAUTH</DefineConstants>
+    <DefineConstants Condition=" '$(UseAuthorize)' == 'true' ">$(DefineConstants);AUTHORIZE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="testCert.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
