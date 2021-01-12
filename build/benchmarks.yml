@@ -422,7 +422,7 @@ jobs:
   displayName: Mono
   pool: server
   timeoutInMinutes: 120
-  dependsOn: Proxies  
+  dependsOn: [Proxies, MVC_Windows] # depends on both since if Proxies is disabled it would otherwise start while MVC_Windows is still running  
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
