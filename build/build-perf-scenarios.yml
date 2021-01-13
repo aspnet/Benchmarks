@@ -1,6 +1,6 @@
 # Build perf
 parameters:
-- name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
+- name: profile
   type: string
   default: ''
 - name: connection
@@ -33,5 +33,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--application.endpoints ${{ parameters.server }} --application.selfContained false --session $(session) ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }
