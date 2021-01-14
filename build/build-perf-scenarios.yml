@@ -1,0 +1,37 @@
+# Build perf
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+
+- name: scenarios
+  type: object
+  default:
+
+  - displayName: "Build perf - BlazorWasm"
+    arguments: --scenario blazorwasm
+  - displayName: "Build perf - BlazorWasm (Hosted)"
+    arguments: --scenario blazorwasm-hosted
+  - displayName: "Build perf - BlazorServer"
+    arguments: --scenario blazorserver
+  - displayName: "Build perf - MVC"
+    arguments: --scenario mvc
+  - displayName: "Build perf - API"
+    arguments: --scenario api
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "crank",
+          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+        }
