@@ -8,7 +8,7 @@ sources:
           - area-mvc
       - exclude: ulib
       - exclude: arm
-    daysToLoad: 30
+    daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
@@ -25,7 +25,7 @@ sources:
     table: SingleFileBenchmarks
     rules:
       - include: .
-    daysToLoad: 30
+    daysToLoad: 60
     stdevCount: 5
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
@@ -45,7 +45,7 @@ sources:
       - include: ApiCrud.*
         labels: 
           - area-mvc
-    daysToLoad: 30
+    daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
