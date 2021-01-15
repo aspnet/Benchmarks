@@ -62,27 +62,11 @@ parameters:
 
   # CRUD API CERT AUTH
   - displayName: API return collection data
-    arguments: --scenario ApiCrudListProducts $(crudApiCertJobs) --property scenario=ApiCrudListProducts
-  - displayName: API return element details
-    arguments: --scenario ApiCrudGetProductDetails $(crudApiCertJobs) --property scenario=ApiCrudGetProductDetails
-  - displayName: API add new element
-    arguments: --scenario ApiCrudAddProduct $(crudApiCertJobs) --property scenario=ApiCrudAddProduct
-  - displayName: API update existing element
-    arguments: --scenario ApiCrudUpdateProduct $(crudApiCertJobs) --property scenario=ApiCrudUpdateProduct
-  - displayName: API remove existing element
-    arguments: --scenario ApiCrudDeleteProduct $(crudApiCertJobs) --property scenario=ApiCrudDeleteProduct
+    arguments: --scenario ApiCrudListProducts $(crudApiCertJobs) --property scenario=ApiCrudListProductsCertAuth
 
   # CRUD API JWT AUTH
   - displayName: API return collection data
-    arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProducts
-  - displayName: API return element details
-    arguments: --scenario ApiCrudGetProductDetails $(crudApiJwtJobs) --property scenario=ApiCrudGetProductDetails
-  - displayName: API add new element
-    arguments: --scenario ApiCrudAddProduct $(crudApiJwtJobs) --property scenario=ApiCrudAddProduct
-  - displayName: API update existing element
-    arguments: --scenario ApiCrudUpdateProduct $(crudApiJwtJobs) --property scenario=ApiCrudUpdateProduct
-  - displayName: API remove existing element
-    arguments: --scenario ApiCrudDeleteProduct $(crudApiJwtJobs) --property scenario=ApiCrudDeleteProduct
+    arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProductsJwtAuth
 
 steps:
   - ${{ each s in parameters.scenarios }}:
