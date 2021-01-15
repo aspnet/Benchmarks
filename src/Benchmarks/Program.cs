@@ -172,7 +172,10 @@ namespace Benchmarks
             }
             else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
             {
+                // Disable cross-platform warning
+                #pragma warning disable CA1416
                 webHostBuilder = webHostBuilder.UseHttpSys();
+                #pragma warning restore CA1416
             }
 #if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
