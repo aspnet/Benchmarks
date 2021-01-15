@@ -60,6 +60,14 @@ parameters:
   - displayName: API remove existing element
     arguments: --scenario ApiCrudDeleteProduct $(crudApiJobs) --property scenario=ApiCrudDeleteProduct
 
+  # CRUD API CERT AUTH
+  - displayName: API return collection data
+    arguments: --scenario ApiCrudListProducts $(crudApiCertJobs) --property scenario=ApiCrudListProductsCertAuth
+
+  # CRUD API JWT AUTH
+  - displayName: API return collection data
+    arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProductsJwtAuth
+
 steps:
   - ${{ each s in parameters.scenarios }}:
     - task: PublishToAzureServiceBus@1
