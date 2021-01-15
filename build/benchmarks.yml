@@ -318,11 +318,45 @@ jobs:
       duration: 10
       connection: ASP.NET Benchmarks Mono Queue
 
+- job: Build_Linux
+  displayName: Build
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: SingleFile_Linux
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: build-perf-scenarios.yml
+    parameters:
+      profile: $(profile)
+      connection: ASP.NET Benchmarks Queue
+
+- job: Build_Windows
+  displayName: Build
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: SingleFile_Windows
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: build-perf-scenarios.yml
+    parameters:
+      profile: $(profile)
+      connection: ASP.NET Benchmarks Mono Queue
+
 - job: MVC_Linux
   displayName: MVC
   pool: server
   timeoutInMinutes: 120
-  dependsOn: SingleFile_Linux
+  dependsOn: Build_Linux
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
@@ -341,7 +375,7 @@ jobs:
   displayName: MVC
   pool: server
   timeoutInMinutes: 120
-  dependsOn: SingleFile_Windows
+  dependsOn: Build_Windows
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
