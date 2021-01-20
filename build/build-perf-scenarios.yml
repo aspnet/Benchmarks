@@ -10,16 +10,16 @@ parameters:
   type: object
   default:
 
-  - displayName: "Build perf - BlazorWasm"
-    arguments: --scenario blazorwasm $(buildJobs)
-  - displayName: "Build perf - BlazorWasm (Hosted)"
-    arguments: --scenario blazorwasm-hosted $(buildJobs)
-  - displayName: "Build perf - BlazorServer"
-    arguments: --scenario blazorserver $(buildJobs)
-  - displayName: "Build perf - MVC"
-    arguments: --scenario mvc $(buildJobs)
-  - displayName: "Build perf - API"
-    arguments: --scenario api $(buildJobs)
+  - displayName: "Build - BlazorWasm"
+    arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
+  - displayName: "Build - BlazorWasm (Hosted)"
+    arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
+  - displayName: "Build - BlazorServer"
+    arguments: --scenario blazorserver $(buildJobs) --property scenario=BlazorServer
+  - displayName: "Build - MVC"
+    arguments: --scenario mvc $(buildJobs) --property scenario=MVC
+  - displayName: "Build - API"
+    arguments: --scenario api $(buildJobs) --property scenario=API
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -32,5 +32,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }
