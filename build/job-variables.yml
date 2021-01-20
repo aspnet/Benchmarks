@@ -72,3 +72,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml
 - name: efcoreJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/efcore.benchmarks.yml
+- name: buildJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/BuildPerformance/buildperformance.yml

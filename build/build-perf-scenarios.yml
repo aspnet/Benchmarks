@@ -1,4 +1,3 @@
-# Build perf
 parameters:
 - name: profile
   type: string
@@ -12,15 +11,15 @@ parameters:
   default:
 
   - displayName: "Build perf - BlazorWasm"
-    arguments: --scenario blazorwasm
+    arguments: --scenario blazorwasm $(buildJobs)
   - displayName: "Build perf - BlazorWasm (Hosted)"
-    arguments: --scenario blazorwasm-hosted
+    arguments: --scenario blazorwasm-hosted $(buildJobs)
   - displayName: "Build perf - BlazorServer"
-    arguments: --scenario blazorserver
+    arguments: --scenario blazorserver $(buildJobs)
   - displayName: "Build perf - MVC"
-    arguments: --scenario mvc
+    arguments: --scenario mvc $(buildJobs)
   - displayName: "Build perf - API"
-    arguments: --scenario api
+    arguments: --scenario api $(buildJobs)
 
 steps:
 - ${{ each s in parameters.scenarios }}:
