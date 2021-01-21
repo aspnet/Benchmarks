@@ -72,8 +72,8 @@ templates:
     {% assign p = regression.PreviousResult %}
     {% assign rps = r.Data.jobs.load.results['wrk/rps/mean'] %}
     {% assign prevRps = p.Data.jobs.load.results['wrk/rps/mean'] %}
-    {% if prevRps != 0 %}{% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}{% endif %}
-    {% if regression.StandardDeviation != 0 %}{% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}{% endif %}
+    {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} |
     {% endfor %}
 
@@ -102,8 +102,8 @@ templates:
     {% assign p = regression.PreviousResult %}
     {% assign build = r.Data.jobs.application.results['benchmarks/build-time'] %}
     {% assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] %}
-    {% if prevBuild != 0 %}{% assign change = regression.Change | times: 100 | divided_by: prevBuild %}{% endif %}
-    {% if regression.StandardDeviation != 0 %}{% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}{% endif %}
+    {% assign change = regression.Change | times: 100 | divided_by: prevBuild %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
     {% endfor %}
 
