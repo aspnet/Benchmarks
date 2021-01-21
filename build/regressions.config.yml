@@ -58,7 +58,7 @@ sources:
         - Perf
         - perf-regression
       owners:
-        - jacalvar
+        - javiercn
         - pranavkm
       template: rps      
 templates:
