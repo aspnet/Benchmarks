@@ -15,17 +15,20 @@ namespace Build
             {
                 new Option<string>(new[] { "--scenario", "-s" }, "Scenario"),
                 new Option<bool>(new[] { "--verbose", "-v" }, "Verbose msbuild logs"),
+                new Option<bool>("--performanceSummary", "Display MSBuild performance summary."),
             };
 
             Console.WriteLine(string.Join(" ", args));
 
-            rootCommand.Handler = CommandHandler.Create(async (string scenario, bool verbose) =>
+            rootCommand.Handler = CommandHandler.Create(async (string scenario, bool verbose, bool performanceSummary) =>
             {
-                var workingDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                var workingDirectory = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
                 Directory.CreateDirectory(workingDirectory);
                 Console.WriteLine($"Running scenario {scenario}");
 
-                var dotnet = DotNet.Initialize(workingDirectory, verbose);
+                BenchmarksEventSource.MeasureNetCoreAppVersion();
+
+                var dotnet = DotNet.Initialize(workingDirectory, verbose, performanceSummary);
 
                 switch (scenario)
                 {

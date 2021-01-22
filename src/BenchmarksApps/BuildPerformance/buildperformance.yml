@@ -36,7 +36,8 @@ jobs:
     variables:
       build_scenario: blazorwasm
       verboseLogs: false
-    arguments: '-s {{build_scenario}} -v {{verboseLogs}}'
+      performanceSummary: false
+    arguments: '-s {{build_scenario}} -v {{verboseLogs}} --performanceSummary {{performanceSummary}}'
 
 profiles:
   aspnet-citrine-lin:
