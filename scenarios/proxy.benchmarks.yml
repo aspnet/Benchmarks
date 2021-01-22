@@ -92,6 +92,37 @@ scenarios:
       job: bombardier
       variables:
         serverPort: 8080
+  proxy-nginx-https-http:
+    downstream:
+      job: downstream
+    application:
+      job: nginxproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8081
+        serverScheme: https
+  proxy-nginx-https-https:
+    downstream:
+      job: downstream
+    application:
+      job: nginxproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8082
+        serverScheme: https
+  proxy-nginx-http2-http1:
+    downstream:
+      job: downstream
+    application:
+      job: nginxproxy
+    load:
+      job: bombardier
+      variables:
+        serverPort: 8083
+        serverScheme: https
+        httpProtocol: http2
   proxy-haproxy:
     downstream:
       job: downstream
