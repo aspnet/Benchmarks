@@ -498,6 +498,47 @@ jobs:
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
 
+- job: CrossGen_Linux
+  displayName: CrossGen2
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Mono_Database
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+      Arm_Linux:
+        profile: aspnet-citrine-arm
+  steps:
+  - template: crossgen2-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
+
+- job: CrossGen_Windows
+  displayName: CrossGen2
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: Mono_Database
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+      Amd_Linux:
+        profile: aspnet-citrine-amd
+  steps:
+  - template: crossgen2-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+      profile: $(profile)
 
 # CLOUD SCENARIOS
 
