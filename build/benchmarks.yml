@@ -156,6 +156,8 @@ jobs:
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+      Arm_Linux:
+        profile: aspnet-citrine-arm
   steps:
   - template: frameworks-v2-scenarios.yml
     parameters:
