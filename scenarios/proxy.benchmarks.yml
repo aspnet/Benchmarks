@@ -35,7 +35,7 @@ jobs:
       BranchOrCommit: master
       DockerFile: docker/nginx/nginx.dockerfile
       DockerImageName: nginx-reverseproxy
-      DockerContextDirectory: .
+      DockerContextDirectory: docker/nginx
     environmentVariables:
         DOWNSTREAM_SCHEME: '{{downstreamScheme}}'
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
