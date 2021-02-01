@@ -1,8 +1,8 @@
-﻿# Examples:
-# --config benchmarks.proxy.yml --scenario proxy-httpclient --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-nginx --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-haproxy --profile aspnet-physical
-# --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
+﻿# The scenarios in this file accept the following arguments:
+  # --variable serverScheme= [http, https]
+  # --variable downstreamScheme= [http, https]
+  # --variable serverProtocol= [http, http2]
+  # --variable downstreamProtocol= [http, http2]
 
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
@@ -11,10 +11,17 @@ imports:
 
 variables:
     path: /
-    serverScheme: http
-    downstreamScheme: http
+    serverScheme: http # http, https
+    downstreamScheme: http # http, https
+    serverProtocol: http # http, http2
+    downstreamProtocol: http # http, http2
 
 jobs:
+  # override bombardier transport argument based on the serverProtocol variable
+  bombardier:
+    variables:
+      transport: '{% if serverProtocol == "http2" %}http2{% else %}fasthttp{% endif %}'
+
   httpclientproxy:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -28,10 +35,15 @@ jobs:
       BranchOrCommit: master
       DockerFile: docker/nginx/nginx.dockerfile
       DockerImageName: nginx-reverseproxy
-      DockerContextDirectory: docker/nginx
+      DockerContextDirectory: .
     environmentVariables:
-        PROXY_PASS : '{{downstreamAddress}}:{{downstreamPort}}'
+        DOWNSTREAM_SCHEME: '{{downstreamScheme}}'
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
         WORKER_PROCESSES: '{{cores}}'
+    buildArguments: 
+      - SERVER_SCHEME={{serverScheme}}
+      - SERVER_PROTOCOL={{serverProtocol}}
     port: 8080
   envoyproxy:
     source:
@@ -63,8 +75,7 @@ jobs:
     readyStateText: Application started.
     variables:
       downstreamPort: 8081
-      httpProtocol: Http1
-    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {{httpProtocol}}'
+    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {% if downstreamProtocol == "http2" %}http2{% else %}http1{% endif %}'
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
@@ -72,7 +83,6 @@ jobs:
       project: samples/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
-
 scenarios:
   proxy-httpclient:
     downstream:

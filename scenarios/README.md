@@ -180,11 +180,13 @@ The size of the payload can be changed by adapting the path of the requested url
 #### Protocols
 
 The server and downstream protocols can be changed to http (default), https and h2.
-The following example shows how to use "h2 - h2":
+The following example shows how to use "h2 - https":
 
 ```
---variable serverScheme=https --variable downstreamScheme=https --load.variables.transport http2 --downstream.variables.httpProtocol http2
+--variable serverScheme=https --variable serverProtocol=http2 --variable downstreamScheme=https --variable downstreamProtocol=https
 ```
+
+> NOTES: nginx doesn't support http2 on the upstream server c.f. https://www.nginx.com/blog/http2-module-nginx/#QandA
 
 #### Body size
 Custom bodies can be used with the `bodyFile` and `verb` variables like this:
