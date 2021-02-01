@@ -15,7 +15,6 @@ FROM envoyproxy/envoy-dev:latest AS base
 ENV DOWNSTREAM_ADDRESS tfb-database
 ENV DOWNSTREAM_PORT 5000
 
-ADD envoy.yaml /etc/envoy.yaml
 ADD testCert.crt /etc/testCert.crt
 ADD testCert.rsa /etc/testCert.key
 
