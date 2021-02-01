@@ -27,7 +27,7 @@ parameters:
     supportsServerHttps: true
     supportsServerHttp2: true
   - displayName: NGinx
-    arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx
+    arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx --variable warmup=0
     supportsServerHttps: true
     supportsServerHttp2: true
   - displayName: HAProxy
