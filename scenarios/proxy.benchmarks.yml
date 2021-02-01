@@ -56,6 +56,12 @@ jobs:
     environmentVariables:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
         DOWNSTREAM_PORT: '{{downstreamPort}}'
+    buildArguments: 
+      - SERVER_SCHEME={{serverScheme}}
+      - SERVER_PROTOCOL={{serverProtocol}}
+      - DOWNSTREAM_SCHEME={{downstreamScheme}}
+      - DOWNSTREAM_PROTOCOL={{downstreamProtocol}}
+    port: 8080
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
