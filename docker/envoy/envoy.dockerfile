@@ -30,22 +30,22 @@ ADD envoy-http.yaml /etc/envoy.yaml
 # Listening to https connections proxying http
 FROM base AS scheme-https-http-to-http-http
 # ARG SERVER_SCHEME
-ADD envoy-https-http.conf /etc/envoy.yaml
+ADD envoy-https-http.yaml /etc/envoy.yaml
 
 # Listening to https connections proxying https
 FROM base AS scheme-https-http-to-https-http
 # ARG SERVER_SCHEME
-ADD envoy-https-https.conf /etc/envoy.yaml
+ADD envoy-https-https.yaml /etc/envoy.yaml
 
 # Listening to h2 connections proxying h2
 FROM base AS scheme-https-http2-to-https-http2
 # ARG SERVER_SCHEME
-ADD envoy-http2.conf /etc/envoy.yaml
+ADD envoy-http2.yaml /etc/envoy.yaml
 
 # Listening to h2 connections proxying http 1.1
 FROM base AS scheme-https-http2-to-http-http
 # ARG SERVER_SCHEME
-ADD envoy-https-http.conf /etc/envoy.yaml
+ADD envoy-https-http.yaml /etc/envoy.yaml
 
 FROM scheme-${SERVER_SCHEME}-${SERVER_PROTOCOL}-to-${DOWNSTREAM_SCHEME}-${DOWNSTREAM_PROTOCOL} AS final
 
