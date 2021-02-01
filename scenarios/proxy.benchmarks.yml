@@ -51,7 +51,7 @@ jobs:
       BranchOrCommit: master
       DockerFile: docker/envoy/envoy.dockerfile
       DockerImageName: envoy-reverseproxy
-      DockerContextDirectory: .
+      DockerContextDirectory: docker/envoy
     readyStateText: starting workers
     environmentVariables:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
