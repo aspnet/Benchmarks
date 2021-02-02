@@ -42,7 +42,7 @@ namespace Mvc
 #endif
 
 #if JWTAUTH
-            services.AddAuthentication().AddJwtBearer(o =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
             {
                 o.TokenValidationParameters.ValidateActor = false;
                 o.TokenValidationParameters.ValidateLifetime = true;
