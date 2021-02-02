@@ -20,12 +20,6 @@ scenarios:
       variables:
         filter: "*AddDataVariations*"
 
-  ExistingDataVariations:
-    application:
-      job: efcore
-      variables:
-        filter: "*ExistingDataVariations*"
-
   ChildVariations:
     application:
       job: efcore
@@ -36,7 +30,7 @@ scenarios:
     application:
       job: efcore
       variables:
-        filter: "*UpdatePipeline.Delete*"
+        filter: "*UpdatePipeline*Delete*"
 
   ExistingDataVariations:
     application:
@@ -60,13 +54,13 @@ scenarios:
     application:
       job: efcore
       variables:
-        filter: "*UpdatePipeline.Insert*"
+        filter: "*UpdatePipeline*Insert*"
 
   Mixed:
     application:
       job: efcore
       variables:
-        filter: "*UpdatePipeline.Mixed*"
+        filter: "*UpdatePipeline*Mixed*"
 
   ParentVariations:
     application:
@@ -102,7 +96,7 @@ scenarios:
     application:
       job: efcore
       variables:
-        filter: "*UpdatePipeline.Update*"
+        filter: "*UpdatePipeline*Update*"
 
 profiles:
   local:

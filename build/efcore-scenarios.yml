@@ -17,8 +17,6 @@ parameters:
 
     - displayName: AddDataVariations
       arguments: $(efcoreJobs) --scenario AddDataVariations
-    - displayName: ExistingDataVariations
-      arguments: $(efcoreJobs) --scenario ExistingDataVariations
     - displayName: ChildVariations
       arguments: $(efcoreJobs) --scenario ChildVariations
     - displayName: Delete
