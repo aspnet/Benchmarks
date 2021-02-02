@@ -61,11 +61,11 @@ parameters:
     arguments: --scenario ApiCrudDeleteProduct $(crudApiJobs) --property scenario=ApiCrudDeleteProduct
 
   # CRUD API CERT AUTH
-  - displayName: API return collection data
+  - displayName: API return collection data (CERT)
     arguments: --scenario ApiCrudListProducts $(crudApiCertJobs) --property scenario=ApiCrudListProductsCertAuth
 
   # CRUD API JWT AUTH
-  - displayName: API return collection data
+  - displayName: API return collection data (JWT)
     arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProductsJwtAuth
 
 steps:

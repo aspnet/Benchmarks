@@ -22,7 +22,7 @@ scenarios:
         path: /Products?pageNumber=1&pageSize=10
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
 
     # Get an individual product
   ApiCrudGetProductDetails:
@@ -37,7 +37,7 @@ scenarios:
         path: /Products/1
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
 
    # Add product
   ApiCrudAddProduct:
@@ -54,7 +54,7 @@ scenarios:
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
 
     # Update product
   ApiCrudUpdateProduct:
@@ -71,7 +71,7 @@ scenarios:
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
 
     # Remove a product item
   ApiCrudDeleteProduct:
@@ -87,7 +87,7 @@ scenarios:
         verb: DELETE
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/haok/bench/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
 
 profiles:
   local:
