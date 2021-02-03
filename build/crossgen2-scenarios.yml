@@ -18,7 +18,7 @@ parameters:
   default:
 
   - displayName: Json
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http
+    arguments: --scenario json $(jsonJobsV2) --property scenario=Json 
 
 # Profiles
 - name: profiles
@@ -26,13 +26,13 @@ parameters:
   default:
 
   - displayName: Default
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property profile=default
+    arguments: --property profile=default
   - displayName: CG2 composite
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \"
+    arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \"
   - displayName: CG2 non-composite
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
+    arguments: --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
   - displayName: CG2 composite avx2
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--instruction-set:avx2 \"
+    arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--instruction-set:avx2 \"
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -46,5 +46,5 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table CG2Benchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ p.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table CG2Benchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }
