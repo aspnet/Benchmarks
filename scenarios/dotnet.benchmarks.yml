@@ -1,0 +1,44 @@
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/master/scenarios/aspnet.profiles.yml?raw=true
+
+jobs:
+  dotnet:
+    source:
+      repository: https://github.com/dotnet/performance
+      branchOrCommit: master
+      project: src/benchmarks/micro/MicroBenchmarks.csproj
+    variables:
+      filter: "*"
+      job: short
+    arguments: --job {{job}} --filter {{filter}} --memory
+    framework: net5.0
+    options:
+      benchmarkDotNet: true
+    
+scenarios:
+
+  custom:
+    application:
+      job: dotnet
+      variables:
+        # default filter to limit benchmarks if filter is not set
+        filter: "*LinqBenchmarks*"
+
+  linq:
+    application:
+      job: dotnet
+      variables:
+        filter: "*LinqBenchmarks*"
+
+  sockets:
+    application:
+      job: dotnet
+      variables:
+        filter: "*SocketSendReceivePerfTest*"
+
+profiles:
+  local:
+    jobs: 
+      application:
+        endpoints: 
+          - http://localhost:5010

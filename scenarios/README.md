@@ -343,6 +343,27 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 
 > Note: MessagePack is not supported with ServerSentEvents
 
+## Micro benchmarks
+
+These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/performance) from the https://github.com/dotnet/performance repository.
+
+### Sample
+
+```
+crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-lin
+```
+
+### Available scenarios
+
+- `linq`
+- `sockets`
+
+The scenario named `custom` can be used to pass any custom filter variable like so:
+
+```
+crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-lin --variable filter=*LinqBenchmarks*
+```
+
 ## FAQ
 
 > The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.
