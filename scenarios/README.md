@@ -350,7 +350,7 @@ These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/
 ### Sample
 
 ```
-crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-lin
+crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
 ```
 
 ### Available scenarios
@@ -361,7 +361,7 @@ crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet
 The scenario named `custom` can be used to pass any custom filter variable like so:
 
 ```
-crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-lin --variable filter=*LinqBenchmarks*
+crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
 ```
 
 ## FAQ
