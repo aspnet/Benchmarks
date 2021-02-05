@@ -14,13 +14,13 @@ These jobs can be executed using the .NET Crank global tool.
 Install `crank` with the following command:
 
 ```
-dotnet tool install Microsoft.Crank.Controller --version "0.1.0-*" --global
+dotnet tool install Microsoft.Crank.Controller --version "0.2.0-*" --global
 ```
 
 Alternatively, update `crank` with the following command:
 
 ```
-dotnet tool update Microsoft.Crank.Controller --version "0.1.0-*" --global
+dotnet tool update Microsoft.Crank.Controller --version "0.2.0-*" --global
 ```
 
 ## Profiles
@@ -41,7 +41,7 @@ For testing purpose only, the __local__ profile requires a local agent to run:
 
 
 ```
-dotnet tool install Microsoft.Crank.Agent --version "0.1.0-*" --global
+dotnet tool install Microsoft.Crank.Agent --version "0.2.0-*" --global
 
 crank-agent
 ```
