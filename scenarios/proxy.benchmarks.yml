@@ -85,7 +85,7 @@ jobs:
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: samples/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
