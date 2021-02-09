@@ -507,7 +507,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Mono_Database
-  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -528,7 +528,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Mono_Database
-  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
