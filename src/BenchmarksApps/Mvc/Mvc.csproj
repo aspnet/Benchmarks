@@ -25,9 +25,14 @@
 
   <PropertyGroup>
     <DefineConstants Condition=" '$(UseJwtAuth)' == 'true' ">$(DefineConstants);JWTAUTH</DefineConstants>
+    <DefineConstants Condition=" '$(UseCustomJwtAuth)' == 'true' ">$(DefineConstants);CUSTOMJWTAUTH</DefineConstants>
     <DefineConstants Condition=" '$(UseCertAuth)' == 'true' ">$(DefineConstants);CERTAUTH</DefineConstants>
     <DefineConstants Condition=" '$(UseAuthorize)' == 'true' ">$(DefineConstants);AUTHORIZE</DefineConstants>
     <DefineConstants Condition=" '$(UseOnlyAuth)' == 'true' ">$(DefineConstants);ONLYAUTH</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;CUSTOMJWTAUTH;AUTHORIZE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
