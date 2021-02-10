@@ -28,8 +28,8 @@ namespace Mvc
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authorization = Request.Headers[HeaderNames.Authorization];
-            //var authorization = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJUZXN0IiwiaWF0IjoxNjA3NDc1MDcwLCJleHAiOjE2MzkwMTEwNzQsImF1ZCI6InRlc3QiLCJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6InRlc3QiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.6PYYUPlpSa3Qo8JedZyK8gnqEHVs75SQLu3Sga0kJsk";
+            //var authorization = Request.Headers[HeaderNames.Authorization];
+            var authorization = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJUZXN0IiwiaWF0IjoxNjA3NDc1MDcwLCJleHAiOjE2MzkwMTEwNzQsImF1ZCI6InRlc3QiLCJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6InRlc3QiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.6PYYUPlpSa3Qo8JedZyK8gnqEHVs75SQLu3Sga0kJsk";
 
             // If no authorization header found, nothing to process further
             if (string.IsNullOrEmpty(authorization))
