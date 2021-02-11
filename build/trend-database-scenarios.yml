@@ -36,6 +36,8 @@ parameters:
     arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes --property protocol=http
   - displayName: Fortunes EF
     arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEf --property protocol=http
+  - displayName: Fortunes Dapper
+    arguments: --scenario fortunes_dapper $(databaseJobs) --property scenario=FortunesDapper --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
