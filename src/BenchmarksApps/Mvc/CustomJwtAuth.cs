@@ -12,21 +12,25 @@ namespace Mvc
 {
     public class CustomJwtAuth : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly SymmetricJwk _key = new SymmetricJwk(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
+        private readonly static SymmetricJwk _key = new SymmetricJwk(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
         private JwtReader _reader;
-        private TokenValidationPolicy _policy;
+        private static TokenValidationPolicy _policy;
+
+        static CustomJwtAuth()
+        {
+            _policy = new TokenValidationPolicyBuilder()
+                           .RequireSignature(_key, SignatureAlgorithm.HmacSha256)
+                           .RequireAudience("test")
+                           .RequireIssuer("Test")
+                           .Build();
+        }
 
         public CustomJwtAuth(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
         {
-        _policy = new TokenValidationPolicyBuilder()
-                       .RequireSignature(_key, SignatureAlgorithm.HmacSha256)
-                       .RequireAudience("test")
-                       .RequireIssuer("Test")
-                       .Build();
-         _reader = new JwtReader(_key);
-    }
+            _reader = new JwtReader(_key);
+        }
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             string authorization = Request.Headers[HeaderNames.Authorization];
 
