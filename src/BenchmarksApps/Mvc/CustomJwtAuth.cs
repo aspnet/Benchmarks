@@ -28,9 +28,20 @@ namespace Mvc
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authorization = Request.Headers[HeaderNames.Authorization];
+            string authorization = Request.Headers[HeaderNames.Authorization];
 
             // If no authorization header found, nothing to process further
+            if (string.IsNullOrEmpty(authorization))
+            {
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
+
+            if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                authorization = authorization.Substring("Bearer ".Length).Trim();
+            }
+
+            // If no token found, no further work possible
             if (string.IsNullOrEmpty(authorization))
             {
                 return Task.FromResult(AuthenticateResult.NoResult());
