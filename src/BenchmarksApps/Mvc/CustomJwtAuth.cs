@@ -50,7 +50,7 @@ namespace Mvc
             }
             else
             {
-                throw new Exception("Failed");
+                throw new Exception("Failed! header: " + authorization);
             }
         }
     }
