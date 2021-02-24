@@ -86,7 +86,7 @@ jobs:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
       branchOrCommit: main
-      project: samples/BenchmarkApp/BenchmarkApp.csproj
+      project: testassets/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
 scenarios:
