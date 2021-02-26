@@ -63,6 +63,20 @@ scenarios:
         serverPort: 5000
         pipeline: 16
 
+  plaintextPlatform-mono-jit-preemptive:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: jit
+      environmentVariables:
+        MONO_THREADS_SUSPEND : preemptive
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
   plaintextPlatform-mono-llvm-jit:
     application:
       job: platformbenchmarks
@@ -79,6 +93,20 @@ scenarios:
     application:
       job: platformbenchmarks
       useMonoRuntime: llvm-aot
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        serverPort: 5000
+        pipeline: 16
+
+  plaintextPlatform-mono-llvm-aot-preemptive:
+    application:
+      job: platformbenchmarks
+      useMonoRuntime: llvm-aot
+      environmentVariables:
+        MONO_THREADS_SUSPEND : preemptive
     load:
       job: wrk
       variables:
