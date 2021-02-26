@@ -1,6 +1,7 @@
 ﻿variables:
     path: /
     serverScheme: https # http, https
+    serverProtocol: grpc
     downstreamScheme: https # http, https
     serverPort: 8080
     downstreamPort: 5000
@@ -13,7 +14,7 @@
     duration: 5
     logLevel: none
     requestSize: 0
-    responseSize: 0
+    responseSize: 100
     enableCertAuth: false
     latency: false
 
@@ -38,15 +39,38 @@ jobs:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
       branchOrCommit: main
-      project: samples/BenchmarkApp/BenchmarkApp.csproj
+      project: testassets/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+  nginxproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/nginx/nginx.dockerfile
+      DockerImageName: nginx-reverseproxy
+      DockerContextDirectory: docker/nginx
+    environmentVariables:
+        DOWNSTREAM_SCHEME: '{{downstreamScheme}}'
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
+        WORKER_PROCESSES: '{{cores}}'
+    buildArguments: 
+      - SERVER_SCHEME={{serverScheme}}
+      - SERVER_PROTOCOL={{serverProtocol}}
+    port: 8080
 scenarios:
   proxy-yarp-grpc:
     downstream:
       job: grpcAspNetCoreServer
     application:
       job: yarp
+    load:
+      job: grpcDotNetClient
+  proxy-nginx-grpc:
+    downstream:
+      job: grpcAspNetCoreServer
+    application:
+      job: nginxproxy
     load:
       job: grpcDotNetClient
 
