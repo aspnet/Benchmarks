@@ -39,6 +39,11 @@ ADD nginx-http2.conf /etc/nginx/nginx.conf
 # ARG SERVER_SCHEME
 # ADD nginx-http2.conf /etc/nginx/nginx.conf
 
+# Listening to gRPC connections
+FROM base AS scheme-https-grpc
+# ARG SERVER_SCHEME
+ADD nginx-grpc.conf /etc/nginx/nginx.conf
+
 FROM scheme-${SERVER_SCHEME}-${SERVER_PROTOCOL} AS final
 
 ENTRYPOINT ["/run.sh"]

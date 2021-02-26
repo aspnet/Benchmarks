@@ -1,0 +1,154 @@
+﻿variables:
+    path: /
+    serverScheme: https # http, https
+    serverProtocol: grpc
+    downstreamScheme: https # http, https
+    serverPort: 8080
+    downstreamPort: 5000
+    connections: 1
+    streams: 100
+    grpcClientType: GrpcNetClient
+    scenario: serverstreaming
+    protocol: h2
+    warmup: 5
+    duration: 5
+    logLevel: none
+    requestSize: 0
+    responseSize: 100
+    enableCertAuth: false
+    latency: false
+
+jobs:
+  grpcDotNetClient:
+    source:
+      repository: https://github.com/grpc/grpc-dotnet.git
+      branchOrCommit: master
+      project: perf/benchmarkapps/GrpcClient/GrpcClient.csproj
+    readyStateText: gRPC Client
+    waitForExit: true
+    arguments: "-c {{connections}} --streams {{streams}} -d {{duration}} -p {{protocol}} -s {{scenario}} -u {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} -w {{warmup}} --grpcClientType {{grpcClientType}} --requestSize {{requestSize}} --responseSize {{responseSize}} --enableCertAuth {{enableCertAuth}} --latency {{latency}} {% if logLevel != 'none' %} --logLevel {{ logLevel }} {% endif %}"
+  grpcAspNetCoreServer:
+    source:
+      repository: https://github.com/grpc/grpc-dotnet.git
+      branchOrCommit: master
+      project: perf/benchmarkapps/GrpcAspNetCoreServer/GrpcAspNetCoreServer.csproj
+    readyStateText: Application started
+    waitForExit: false
+    arguments: "--LogLevel {{logLevel}} --enableCertAuth {{enableCertAuth}} --protocol {{protocol}}"
+  yarp:
+    source:
+      repository: https://github.com/microsoft/reverse-proxy.git
+      branchOrCommit: main
+      project: testassets/BenchmarkApp/BenchmarkApp.csproj
+    readyStateText: Application started.
+    arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+  nginxproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/nginx/nginx.dockerfile
+      DockerImageName: nginx-reverseproxy
+      DockerContextDirectory: docker/nginx
+    environmentVariables:
+        DOWNSTREAM_SCHEME: '{{downstreamScheme}}'
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
+        WORKER_PROCESSES: '{{cores}}'
+    buildArguments: 
+      - SERVER_SCHEME={{serverScheme}}
+      - SERVER_PROTOCOL={{serverProtocol}}
+    port: 8080
+scenarios:
+  proxy-yarp-grpc:
+    downstream:
+      job: grpcAspNetCoreServer
+    application:
+      job: yarp
+    load:
+      job: grpcDotNetClient
+  proxy-nginx-grpc:
+    downstream:
+      job: grpcAspNetCoreServer
+    application:
+      job: nginxproxy
+    load:
+      job: grpcDotNetClient
+
+profiles:
+  aspnet-perf-lin:
+    variables:
+      serverAddress: 10.0.0.102
+      downstreamAddress: 10.0.0.103
+      cores: 12
+    jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-db:5001
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        options:
+          displayOutput: true
+  aspnet-perf-win:
+    variables:
+      serverAddress: 10.0.0.110
+      downstreamAddress: 10.0.0.104
+      cores: 12
+    jobs:
+      downstream:
+        endpoints: 
+          - http://asp-perf-load:5001
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-db:5001
+        options:
+  aspnet-citrine-lin:
+    variables:
+      serverAddress: 10.0.0.102
+      downstreamAddress: 10.0.0.103
+      cores: 28
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverAddress: 10.0.0.104
+      downstreamAddress: 10.0.0.105
+      cores: 28
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-db:5001
+  local:
+    variables:
+      serverAddress: localhost
+      downstreamAddress: localhost
+    jobs: 
+      downstream:
+        endpoints: 
+          - http://localhost:5010
+      application:
+        endpoints: 
+          - http://localhost:5010
+      load:
+        endpoints: 
+          - http://localhost:5010
