@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Mvc
 {
@@ -94,6 +97,27 @@ namespace Mvc
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+#else
+            app.Run(async context =>
+            {
+                // Setting DefaultAuthenticateScheme causes User to be set
+                var user = context.User;
+
+                // Deny anonymous request beyond this point.
+                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                {
+                    // This is what [Authorize] calls
+                    // The cookie middleware will handle this and redirect to /login
+                    await context.ChallengeAsync();
+
+                    return;
+                }
+
+                var response = context.Response;
+                response.ContentType = "text/html";
+                await response.WriteAsync("<html><body>");
+                await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
             });
 #endif
         }
