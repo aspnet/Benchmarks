@@ -119,6 +119,7 @@ namespace Mvc
                 response.ContentType = "text/html";
                 await response.WriteAsync("<html><body>");
                 await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
+                logger.LogInformation("Done");
             });
 #endif
         }
