@@ -105,16 +105,17 @@ namespace Mvc
                 var user = context.User;
 
                 // Deny anonymous request beyond this point.
-                if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
-                {
-                    // This is what [Authorize] calls
-                    // The cookie middleware will handle this and redirect to /login
-                    await context.ChallengeAsync();
+                //if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                //{
+                //    // This is what [Authorize] calls
+                //    // The cookie middleware will handle this and redirect to /login
+                //    await context.ChallengeAsync();
 
-                    return;
-                }
+                //    return;
+                //}
 
                 var response = context.Response;
+                response.StatusCode = 200;
                 response.ContentType = "text/html";
                 await response.WriteAsync("<html><body>");
                 await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
