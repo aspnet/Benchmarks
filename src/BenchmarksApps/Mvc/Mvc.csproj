@@ -26,6 +26,7 @@
     <DefineConstants Condition=" '$(UseJwtAuth)' == 'true' ">$(DefineConstants);JWTAUTH</DefineConstants>
     <DefineConstants Condition=" '$(UseCertAuth)' == 'true' ">$(DefineConstants);CERTAUTH</DefineConstants>
     <DefineConstants Condition=" '$(UseAuthorize)' == 'true' ">$(DefineConstants);AUTHORIZE</DefineConstants>
+    <DefineConstants Condition=" '$(SkipMvc)' != 'true' ">$(DefineConstants);MVC</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -29,12 +29,14 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+#if MVC
             var mvcBuilder = services.AddControllers();
 
             if (UseNewtonsoftJson)
             {
                 mvcBuilder.AddNewtonsoftJson();
             }
+#endif
 
 #if JWTAUTH
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
@@ -69,12 +71,14 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+#if MVC
             if (UseNewtonsoftJson)
             {
                 logger.LogInformation("MVC is configured to use Newtonsoft.Json.");
             }
 
             app.UseRouting();
+#endif
 
 #if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
@@ -86,10 +90,12 @@ namespace Mvc
             app.UseAuthorization();
 #endif
 
+#if MVC
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+#endif
         }
     }
 }
