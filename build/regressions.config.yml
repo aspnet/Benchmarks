@@ -21,6 +21,28 @@ sources:
       owners:
         - sebastienros
       template: rps
+  - name: Startup 
+    table: TrendBenchmarks
+    rules:
+      - include: .
+      - exclude: ulib
+      - exclude: actix
+      - exclude: nodejs
+      - exclude: fasthttp
+    daysToLoad: 60
+    stdevCount: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/start-time']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+        - mangod9
+      template: start-time
   - name: SingleFileBuild
     table: SingleFileBenchmarks
     rules:
@@ -61,6 +83,24 @@ sources:
         - javiercn
         - pranavkm
       template: rps      
+  - name: PublishedSize
+    table: CG2Benchmarks
+    rules:
+      - include: .
+    daysToLoad: 60
+    stdevCount: 5
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/published-size']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+        - mangod9
+      template: published-size
 templates:
   rps: |
     A performance regression has been detected for the following scenarios:
@@ -102,6 +142,66 @@ templates:
     {% assign p = regression.PreviousResult %}
     {% assign build = r.Data.jobs.application.results['benchmarks/build-time'] %}
     {% assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] %}
+    {% assign change = regression.Change | times: 100 | divided_by: prevBuild %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
+    {% endfor %}
+
+    ### Changes:
+
+    {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+    {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+
+    | Runtime | Previous Version | Current Version | Diff |
+    | ------- | ---------------- | --------------- | ---- |
+    | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+    | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+    | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a |
+    
+  published-size: |
+    A publish size regression has been detected for the following scenarios:
+
+    | Scenario | Environment | Date | Old Build (KB) | New Build (KB) | Change | Deviation | StDev |
+    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- |
+    {% for regression in Regressions %}
+    {% assign r = regression.CurrentResult %}
+    {% assign p = regression.PreviousResult %}
+    {% assign build = r.Data.jobs.application.results['benchmarks/published-size'] %}
+    {% assign prevBuild = p.Data.jobs.application.results['benchmarks/published-size'] %}
+    {% assign change = regression.Change | times: 100 | divided_by: prevBuild %}
+    {% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
+    {% endfor %}
+
+    ### Changes:
+
+    {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign previousAspNetCoreVersion = p.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
+    {% assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' %}
+    {% assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion %}
+    {% assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
+
+    | Runtime | Previous Version | Current Version | Diff |
+    | ------- | ---------------- | --------------- | ---- |
+    | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}..{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
+    | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
+    | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a |
+    
+start-time: |
+    A start time regression has been detected for the following scenarios:
+
+    | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Deviation | StDev |
+    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- |
+    {% for regression in Regressions %}
+    {% assign r = regression.CurrentResult %}
+    {% assign p = regression.PreviousResult %}
+    {% assign build = r.Data.jobs.application.results['benchmarks/start-time'] %}
+    {% assign prevBuild = p.Data.jobs.application.results['benchmarks/start-time'] %}
     {% assign change = regression.Change | times: 100 | divided_by: prevBuild %}
     {% assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
