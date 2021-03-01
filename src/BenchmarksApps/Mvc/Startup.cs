@@ -102,6 +102,7 @@ namespace Mvc
 
                     // Setting DefaultAuthenticateScheme causes User to be set
                     var user = context.User;
+                    var response = context.Response;
 
                     // Deny anonymous request beyond this point.
                     if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
@@ -111,7 +112,6 @@ namespace Mvc
                         return;
                     }
 
-                    var response = context.Response;
                     response.StatusCode = 200;
                     response.ContentType = "text/html";
                     await response.WriteAsync("<html><body>");
