@@ -9,7 +9,8 @@ variables:
     serverPort: 5000
 
 scenarios:
-  NoMvc:
+  # Do cert auth without mvc
+  NoMvcAuth:
     application:
       job: mvcServer
       buildArguments: 
@@ -21,7 +22,6 @@ scenarios:
         serverScheme: https
         certPwd: testPassword
         certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
-
 
     # List products
   ApiCrudListProducts:

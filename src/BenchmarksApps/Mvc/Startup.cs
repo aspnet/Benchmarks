@@ -107,7 +107,7 @@ namespace Mvc
                     if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
                     {
                         // This is what [Authorize] calls
-                        // The cookie middleware will handle this and redirect to /login
+                        // The auth middleware should do something for challenge
                         await context.ChallengeAsync();
 
                         return;
@@ -117,7 +117,7 @@ namespace Mvc
                     response.StatusCode = 200;
                     response.ContentType = "text/html";
                     await response.WriteAsync("<html><body>");
-                    await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
+                    await response.WriteAsync("Hello World!<br>");
                 }
                 catch (Exception e) {
                     logger.LogInformation("Error: "+e);

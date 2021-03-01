@@ -10,7 +10,7 @@ variables:
 
 scenarios:
     # Get with bearer without mvc
-  NoMvc:
+  NoMvcAuth:
     application:
       job: mvcServer
       buildArguments: 
