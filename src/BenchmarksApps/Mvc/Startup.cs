@@ -103,6 +103,7 @@ namespace Mvc
 
             app.Run(async context =>
             {
+                try {
                 logger.LogInformation("Start");
 
                 // Setting DefaultAuthenticateScheme causes User to be set
@@ -124,6 +125,9 @@ namespace Mvc
                 await response.WriteAsync("<html><body>");
                 await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
                 logger.LogInformation("Done");
+                } catch (Exception e) {
+                    logger.LogInformation("Error: "+e);
+                }
             });
 #endif
         }
