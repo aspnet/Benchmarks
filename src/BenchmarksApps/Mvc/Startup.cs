@@ -106,10 +106,8 @@ namespace Mvc
                     // Deny anonymous request beyond this point.
                     if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
                     {
-                        // This is what [Authorize] calls
-                        // The auth middleware should do something for challenge
-                        await context.ChallengeAsync();
-
+                        // Normally this is a call to challenge
+                        response.StatusCode = 401;
                         return;
                     }
 
