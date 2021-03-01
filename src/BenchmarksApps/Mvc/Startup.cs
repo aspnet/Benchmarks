@@ -32,7 +32,7 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-#if MVC
+#if !ONLYAUTH
             var mvcBuilder = services.AddControllers();
 
             if (UseNewtonsoftJson)
@@ -74,7 +74,7 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
-#if MVC
+#if !ONLYAUTH
             if (UseNewtonsoftJson)
             {
                 logger.LogInformation("MVC is configured to use Newtonsoft.Json.");
@@ -93,42 +93,41 @@ namespace Mvc
             app.UseAuthorization();
 #endif
 
-#if MVC
-            logger.LogInformation("MVC is configured to use Endpoints.");
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-#else
+#if ONLYAUTH
             logger.LogInformation("MVC is configured to skip Endpoints.");
 
             app.Run(async context =>
             {
                 try {
-                logger.LogInformation("Start");
 
-                // Setting DefaultAuthenticateScheme causes User to be set
-                var user = context.User;
+                    // Setting DefaultAuthenticateScheme causes User to be set
+                    var user = context.User;
 
-                // Deny anonymous request beyond this point.
-                //if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
-                //{
-                //    // This is what [Authorize] calls
-                //    // The cookie middleware will handle this and redirect to /login
-                //    await context.ChallengeAsync();
+                    // Deny anonymous request beyond this point.
+                    if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                    {
+                        // This is what [Authorize] calls
+                        // The cookie middleware will handle this and redirect to /login
+                        await context.ChallengeAsync();
 
-                //    return;
-                //}
+                        return;
+                    }
 
-                var response = context.Response;
-                response.StatusCode = 200;
-                response.ContentType = "text/html";
-                await response.WriteAsync("<html><body>");
-                await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
-                logger.LogInformation("Done");
-                } catch (Exception e) {
+                    var response = context.Response;
+                    response.StatusCode = 200;
+                    response.ContentType = "text/html";
+                    await response.WriteAsync("<html><body>");
+                    await response.WriteAsync("Hello " + (context.User.Identity.Name ?? "anonymous") + "<br>");
+                }
+                catch (Exception e) {
                     logger.LogInformation("Error: "+e);
                 }
+            });
+#else
+            logger.LogInformation("MVC is configured to use Endpoints.");
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
 #endif
         }
