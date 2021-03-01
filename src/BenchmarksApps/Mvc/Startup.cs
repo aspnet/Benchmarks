@@ -99,8 +99,12 @@ namespace Mvc
                 endpoints.MapControllers();
             });
 #else
+            logger.LogInformation("Added run delegate");
+
             app.Run(async context =>
             {
+                logger.LogInformation("Start");
+
                 // Setting DefaultAuthenticateScheme causes User to be set
                 var user = context.User;
 
