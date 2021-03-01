@@ -94,12 +94,13 @@ namespace Mvc
 #endif
 
 #if MVC
+            logger.LogInformation("MVC is configured to use Endpoints.");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
 #else
-            logger.LogInformation("Added run delegate");
+            logger.LogInformation("MVC is configured to skip Endpoints.");
 
             app.Run(async context =>
             {
