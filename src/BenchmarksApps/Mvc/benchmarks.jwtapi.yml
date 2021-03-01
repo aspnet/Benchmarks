@@ -3,12 +3,26 @@
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
-- https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
+- https://raw.githubusercontent.com/aspnet/Benchmarks/haok/nomvc/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
     serverPort: 5000
 
 scenarios:
+    # Get with bearer without mvc
+  NoMvc:
+    application:
+      job: mvcServer
+      buildArguments: 
+      - "/p:UseJwtAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+    load:
+      job: bombardier
+      variables:
+        path: /Hi
+        headers:
+          authorization: '--header "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJUZXN0IiwiaWF0IjoxNjA3NDc1MDcwLCJleHAiOjE2MzkwMTEwNzQsImF1ZCI6InRlc3QiLCJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6InRlc3QiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.6PYYUPlpSa3Qo8JedZyK8gnqEHVs75SQLu3Sga0kJsk"'
+        presetHeaders: 'authorization'
+
     # List products
   ApiCrudListProducts:
     application:

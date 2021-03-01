@@ -3,12 +3,26 @@
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
-- https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
+- https://raw.githubusercontent.com/aspnet/Benchmarks/haok/nomvc/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
     serverPort: 5000
 
 scenarios:
+  NoMvc:
+    application:
+      job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+    load:
+      job: httpclient
+      variables:
+        path: /
+        serverScheme: https
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+
+
     # List products
   ApiCrudListProducts:
     application:
