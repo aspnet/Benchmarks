@@ -113,9 +113,8 @@ namespace Mvc
                     }
 
                     response.StatusCode = 200;
-                    response.ContentType = "text/html";
-                    await response.WriteAsync("<html><body>");
-                    await response.WriteAsync("Hello World!<br>");
+                    response.ContentType = "text/plain";
+                    await response.WriteAsync("Hello World!");
                 }
                 catch (Exception e) {
                     logger.LogInformation("Error: "+e);
