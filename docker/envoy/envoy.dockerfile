@@ -46,6 +46,11 @@ FROM base AS scheme-https-http2-to-http-http
 # ARG SERVER_SCHEME
 ADD envoy-https-http.yaml /etc/envoy.yaml
 
+# Listening to gRPC connections proxying gRPC
+FROM base AS scheme-https-grpc-to-https-grpc
+# ARG SERVER_SCHEME
+ADD envoy-grpc.yaml /etc/envoy.yaml
+
 FROM scheme-${SERVER_SCHEME}-${SERVER_PROTOCOL}-to-${DOWNSTREAM_SCHEME}-${DOWNSTREAM_PROTOCOL} AS final
 
 ENTRYPOINT ["/run.sh"]

@@ -3,6 +3,7 @@
     serverScheme: https # http, https
     serverProtocol: grpc
     downstreamScheme: https # http, https
+    downstreamProtocol: grpc
     serverPort: 8080
     downstreamPort: 5000
     connections: 1
@@ -58,6 +59,23 @@ jobs:
       - SERVER_SCHEME={{serverScheme}}
       - SERVER_PROTOCOL={{serverProtocol}}
     port: 8080
+  envoyproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: master
+      DockerFile: docker/envoy/envoy.dockerfile
+      DockerImageName: envoy-reverseproxy
+      DockerContextDirectory: docker/envoy
+    readyStateText: starting workers
+    environmentVariables:
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
+    buildArguments: 
+      - SERVER_SCHEME={{serverScheme}}
+      - SERVER_PROTOCOL={{serverProtocol}}
+      - DOWNSTREAM_SCHEME={{downstreamScheme}}
+      - DOWNSTREAM_PROTOCOL={{downstreamProtocol}}
+    port: 8080
 scenarios:
   proxy-yarp-grpc:
     downstream:
@@ -71,6 +89,13 @@ scenarios:
       job: grpcAspNetCoreServer
     application:
       job: nginxproxy
+    load:
+      job: grpcDotNetClient
+  proxy-envoy-grpc:
+    downstream:
+      job: grpcAspNetCoreServer
+    application:
+      job: envoyproxy
     load:
       job: grpcDotNetClient
 
