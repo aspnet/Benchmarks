@@ -42,7 +42,7 @@ sources:
       owners:
         - sebastienros
         - mangod9
-      template: start-time
+      template: starttime
   - name: SingleFileBuild
     table: SingleFileBenchmarks
     rules:
@@ -192,7 +192,7 @@ templates:
     | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}..{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
     | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk  | default: 'n/a' }} | n/a |
     
-start-time: |
+starttime: |
     A start time regression has been detected for the following scenarios:
 
     | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Deviation | StDev |
