@@ -9,6 +9,20 @@ variables:
     serverPort: 5000
 
 scenarios:
+  # Do cert auth without mvc
+  NoMvcAuth:
+    application:
+      job: mvcServer
+      buildArguments: 
+      - "/p:UseCertAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+    load:
+      job: httpclient
+      variables:
+        path: /Products?pageNumber=1&pageSize=10
+        serverScheme: https
+        certPwd: testPassword
+        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+
     # List products
   ApiCrudListProducts:
     application:

@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Mvc
 {
@@ -29,12 +32,14 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+#if !ONLYAUTH
             var mvcBuilder = services.AddControllers();
 
             if (UseNewtonsoftJson)
             {
                 mvcBuilder.AddNewtonsoftJson();
             }
+#endif
 
 #if JWTAUTH
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
@@ -69,12 +74,14 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+#if !ONLYAUTH
             if (UseNewtonsoftJson)
             {
                 logger.LogInformation("MVC is configured to use Newtonsoft.Json.");
             }
 
             app.UseRouting();
+#endif
 
 #if JWTAUTH || CERTAUTH
             logger.LogInformation("MVC is configured to use Authentication.");
@@ -86,10 +93,42 @@ namespace Mvc
             app.UseAuthorization();
 #endif
 
+#if ONLYAUTH
+            logger.LogInformation("MVC is configured to skip Endpoints.");
+
+            app.Run(async context =>
+            {
+                try {
+
+                    // Setting DefaultAuthenticateScheme causes User to be set
+                    var user = context.User;
+                    var response = context.Response;
+
+#if AUTHORIZE
+                    // Deny anonymous request beyond this point.
+                    if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
+                    {
+                        // Normally this is a call to challenge
+                        response.StatusCode = 401;
+                        return;
+                    }
+#endif
+
+                    response.StatusCode = 200;
+                    response.ContentType = "text/plain";
+                    await response.WriteAsync("Hello World!");
+                }
+                catch (Exception e) {
+                    logger.LogInformation("Error: "+e);
+                }
+            });
+#else
+            logger.LogInformation("MVC is configured to use Endpoints.");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+#endif
         }
     }
 }
