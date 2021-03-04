@@ -94,6 +94,9 @@ namespace Proxy
             httpHandler.AllowAutoRedirect = false;
             httpHandler.UseProxy = false;
             httpHandler.AutomaticDecompression = System.Net.DecompressionMethods.None;
+            httpHandler.UseCookies = false;
+            httpHandler.EnableMultipleHttp2Connections = true;
+
             // Accept any SSL certificate
             httpHandler.SslOptions.RemoteCertificateValidationCallback += (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
