@@ -1,0 +1,37 @@
+# Houdini scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 5
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+  - displayName: Houdini EchoTodo
+    arguments: --scenario echotodo $(houdiniJobs) --application.channel edge --application.framework net6.0
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      messageBody: |
+        {
+          "name": "crank",
+          "args": [ "--table Houdini --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements" ]
+        }
