@@ -23,7 +23,7 @@ jobs:
         cd ..
         git clone https://github.com/dotnet/crank
         cd ./crank/
-        git checkout master
+        git checkout main
         git pull
         cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `

@@ -41,4 +41,4 @@ crank --config .\benchmarks.crudapi.yml --scenario ApiCrudListProducts --profile
 crank --config .\benchmarks.crudapi.yml --scenario ApiCrudListProducts --profile aspnet-perf-lin --application.source.branchOrCommit <<BranchOrCommit>> --application.collect true
 ```
 
-See https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md for command-line details
+See https://github.com/dotnet/crank/blob/main/src/Microsoft.Crank.Controller/README.md for command-line details

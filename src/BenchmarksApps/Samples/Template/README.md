@@ -8,7 +8,7 @@ The goal is to make it very easy to reuse this template app to quickly modify it
 
 1. Clone this repo.
 2. Modify the template project: replace [existing route](./Startup.cs#L25) with a method that you want to test.
-3. Use [crank](https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md) to run the benchmark.
+3. Use [crank](https://github.com/dotnet/crank/blob/main/src/Microsoft.Crank.Controller/README.md) to run the benchmark.
 
 ## Sample investigation
 
@@ -83,7 +83,7 @@ namespace Template
 }
 ```
 
-Now, if we want to benchmark this method using "RSA" argument we need to specify following argument for the [crank](https://github.com/dotnet/crank/blob/master/src/Microsoft.Crank.Controller/README.md):
+Now, if we want to benchmark this method using "RSA" argument we need to specify following argument for the [crank](https://github.com/dotnet/crank/blob/main/src/Microsoft.Crank.Controller/README.md):
 
 ```cmd
 --load.variables.path /CryptoConfig/CreateFromName/RSA

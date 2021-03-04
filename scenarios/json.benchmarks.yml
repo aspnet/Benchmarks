@@ -3,7 +3,7 @@
 # --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 
 jobs:
   aspnetbenchmarks:
