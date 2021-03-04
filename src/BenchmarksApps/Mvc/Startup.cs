@@ -104,6 +104,7 @@ namespace Mvc
                     var user = context.User;
                     var response = context.Response;
 
+#if AUTHORIZE
                     // Deny anonymous request beyond this point.
                     if (user == null || !user.Identities.Any(identity => identity.IsAuthenticated))
                     {
@@ -111,6 +112,7 @@ namespace Mvc
                         response.StatusCode = 401;
                         return;
                     }
+#endif
 
                     response.StatusCode = 200;
                     response.ContentType = "text/plain";
