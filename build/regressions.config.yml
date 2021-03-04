@@ -8,6 +8,7 @@ sources:
           - area-mvc
       - exclude: ulib
       - exclude: arm
+      - exclude: azure
     daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
