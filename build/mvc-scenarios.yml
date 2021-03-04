@@ -64,13 +64,16 @@ parameters:
   - displayName: API return collection data (CERT)
     arguments: --scenario ApiCrudListProducts $(crudApiCertJobs) --property scenario=ApiCrudListProductsCertAuth
   - displayName: plaintext (CERT)
-    arguments: --scenario NoMvcAuth $(crudApiCertJobs) --property scenario=PlaintextCertAuth
+    arguments: --scenario NoMvcAuth $(crudApiCertJobs) --property scenario=PlaintextRawCert
 
   # CRUD API JWT AUTH
   - displayName: API return collection data (JWT)
     arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProductsJwtAuth
   - displayName: plaintext (JWT)
-    arguments: --scenario NoMvcAuth $(crudApiJwtJobs) --property scenario=PlaintextJwtAuth
+    arguments: --scenario NoMvcAuth $(crudApiJwtJobs) --property scenario=PlaintextRawJwt
+
+  - displayName: plaintext (JWT)
+    arguments: --scenario NoMvcNoAuth $(crudApiJwtJobs) --property scenario=PlaintextRawNoAuth
 
 steps:
   - ${{ each s in parameters.scenarios }}:
