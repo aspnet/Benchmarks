@@ -64,7 +64,7 @@ namespace SignalRClient
             {
                 Log("SignalR Client starting");
 
-                BenchmarksEventSource.Log.Metadata("signalr/client-version", "all", "all", "Client Version", "Client Version", "object");
+                BenchmarksEventSource.Log.Metadata("signalr/client-version", "first", "first", "Client Version", "Client Version", "object");
                 BenchmarksEventSource.Measure("signalr/client-version", typeof(HubConnection).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.ToString());
 
                 Scenario = optionScenario.Value();
