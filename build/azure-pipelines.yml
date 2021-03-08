@@ -10,7 +10,7 @@ trigger:
   branches:
     include:
     - master
-    - sebros/azdo
+    - main
 
 pr:
   autoCancel: false

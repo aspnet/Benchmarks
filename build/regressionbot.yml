@@ -13,6 +13,7 @@ schedules:
   branches:
     include:
     - master
+    - main
   always: "true"
 
 jobs:
