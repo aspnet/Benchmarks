@@ -12,7 +12,6 @@ schedules:
   displayName: "Twice a day"
   branches:
     include:
-    - master
     - main
   always: "true"
 
@@ -28,7 +27,7 @@ jobs:
         git pull
         cd src/Microsoft.Crank.RegressionBot
         dotnet run -c release -- `
-            --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/build/regressions.config.yml `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
             --repository-id $(github.repositoryId) `
             --app-id $(github.appid) `

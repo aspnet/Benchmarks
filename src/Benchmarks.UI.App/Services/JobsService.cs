@@ -10,11 +10,11 @@ namespace Benchmarks.UI.App.Services
 {
     public class JobsService
     {
-        private const string _plaintextJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.plaintext.json";
-        private const string _htmlJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.html.json";
-        private const string _jsonJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.json.json";
-        private const string _multiQueryJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.multiquery.json";
-        private const string _httpClientJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Benchmarks/benchmarks.httpclient.json";
+        private const string _plaintextJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.plaintext.json";
+        private const string _htmlJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.html.json";
+        private const string _jsonJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.json.json";
+        private const string _multiQueryJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.multiquery.json";
+        private const string _httpClientJobs = "-j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.httpclient.json";
         private const string _signalRJobs = "-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/SignalR/benchmarkapps/BenchmarkServer/signalr.json -t SignalR";
         private const string _plaintextPlatformJobs = "-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Servers/Kestrel/perf/PlatformBenchmarks/benchmarks.plaintext.json";
         private const string _jsonPlatformJobs = "-j https://raw.githubusercontent.com/aspnet/AspNetCore/master/src/Servers/Kestrel/perf/PlatformBenchmarks/benchmarks.json.json";

@@ -9,7 +9,7 @@ jobs:
   benchmark:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/BenchmarksApps/StaticFiles/StaticFiles.csproj
     readyStateText: Application started.
     variables:

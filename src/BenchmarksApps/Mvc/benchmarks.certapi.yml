@@ -3,7 +3,7 @@
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
-- https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/mvcserver.yml
+- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
     serverPort: 5000
@@ -21,7 +21,7 @@ scenarios:
         path: /Products?pageNumber=1&pageSize=10
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # List products
   ApiCrudListProducts:
@@ -36,7 +36,7 @@ scenarios:
         path: /Products?pageNumber=1&pageSize=10
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Get an individual product
   ApiCrudGetProductDetails:
@@ -51,7 +51,7 @@ scenarios:
         path: /Products/1
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
    # Add product
   ApiCrudAddProduct:
@@ -65,10 +65,10 @@ scenarios:
       variables:
         path: /Products
         verb: POST
-        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Update product
   ApiCrudUpdateProduct:
@@ -82,10 +82,10 @@ scenarios:
       variables:
         path: /Products/1
         verb: PUT
-        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Mvc/crudproductbody.json
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Remove a product item
   ApiCrudDeleteProduct:
@@ -101,7 +101,7 @@ scenarios:
         verb: DELETE
         serverScheme: https
         certPwd: testPassword
-        certPath: https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/testCert.pfx?raw=true
+        certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
 profiles:
   local:

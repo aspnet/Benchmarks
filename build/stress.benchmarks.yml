@@ -5,7 +5,7 @@ jobs:
   aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:

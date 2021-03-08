@@ -13,42 +13,36 @@ schedules:
   displayName: "On :00"
   branches:
     include:
-    - master
     - main
   always: "true"
 - cron: "10 * * * *"
   displayName: "On :10"
   branches:
     include:
-    - master
     - main
   always: "true"
 - cron: "20 * * * *"
   displayName: "On :20"
   branches:
     include:
-    - master
     - main
   always: "true"
 - cron: "30 * * * *"
   displayName: "On :30"
   branches:
     include:
-    - master
     - main
   always: "true"
 - cron: "40 * * * *"
   displayName: "On :40"
   branches:
     include:
-    - master
     - main
   always: "true"
 - cron: "50 * * * *"
   displayName: "On :50"
   branches:
     include:
-    - master
     - main
   always: "true"
 

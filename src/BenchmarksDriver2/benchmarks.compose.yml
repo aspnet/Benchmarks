@@ -2,15 +2,15 @@
 # --config benchmarks.compose.yml --scenario plaintext --variable serverUri=http://10.0.0.102
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/PipeliningClient/pipelining.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Wrk2Client/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/PipeliningClient/pipelining.yml
 jobs:
   aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:

@@ -141,7 +141,7 @@ Running the "Plaintext" job defined in the `benchmarks.json` file, targeting the
 dotnet run -c release --server "http://localhost:5001" --client "http://10.0.75.2:5002" -n Plaintext -j "C:\Benchmarks\benchmarks.json" --aspnetCoreVersion Current
 ```
 
-Any path can point to a raw online resource, like `https://github.com/aspnet/Benchmarks/blob/master/src/Benchmarks/benchmarks.plaintext.json`
+Any path can point to a raw online resource, like `https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/benchmarks.plaintext.json`
 
 #### Running a job without any job definition file
 
@@ -185,7 +185,7 @@ Also if no named job is requested on the command line, the _default_ job will be
         },
         "Source": {
             "Repository": "https://github.com/aspnet/benchmarks.git",
-            "BranchOrCommit": "master",
+            "BranchOrCommit": "main",
             "Project": "src/Benchmarks/Benchmarks.csproj"
         },
 

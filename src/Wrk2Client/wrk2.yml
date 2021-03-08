@@ -14,7 +14,7 @@ jobs:
   wrk2:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/Wrk2Client/Wrk2Client.csproj
     isConsoleApp: true
     waitForExit: true

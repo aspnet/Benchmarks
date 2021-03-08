@@ -11,7 +11,7 @@ jobs:
   bombardier:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/BombardierClient/BombardierClient.csproj
     readyStateText: Bombardier Client
     waitForExit: true

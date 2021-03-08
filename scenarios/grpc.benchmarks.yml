@@ -5,9 +5,9 @@ imports:
   - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcClient/grpc-client.yml
   - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcAspNetCoreServer/grpc-aspnetcore-server.yml
   - https://raw.githubusercontent.com/grpc/grpc-dotnet/master/perf/benchmarkapps/GrpcCoreServer/grpc-core-server.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/H2LoadClient/h2load.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/H2LoadClient/h2load.yml
 variables:
     serverPort: 5000
 scenarios:

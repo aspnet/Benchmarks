@@ -6,7 +6,7 @@
 
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/Benchmarks/Benchmarks.csproj"
     },
     "ReadyStateText": "Application started."
@@ -33,25 +33,25 @@
   "MvcJsonInput2k": {
     "Path": "/mvc/jsoninput",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua"
     }
   },
   "MvcJsonNetInput2k": {
     "Path": "/mvc/jsoninput",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua"
     }
   },
   "MvcJsonInput2M": {
     "Path": "/mvc/jsoninput",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.2mb.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.2mb.lua"
     }
   },
   "MvcJsonNetInput2M": {
     "Path": "/mvc/jsoninput",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/mvcjsoninput.2mb.lua"
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.2mb.lua"
     }
   },
   "MvcJsonOutput2M": {

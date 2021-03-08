@@ -2,7 +2,7 @@
   "Default": {
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "DockerFile": "docker/haproxy/haproxy.dockerfile",
       "DockerImageName": "haproxy-reverseproxy",
       "DockerContextDirectory": "docker/haproxy/"

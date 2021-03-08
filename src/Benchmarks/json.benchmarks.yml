@@ -3,13 +3,13 @@
 # --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WrkClient/wrk.yml
 
 jobs:
   aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:

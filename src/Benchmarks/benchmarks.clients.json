@@ -3,7 +3,7 @@
 
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/BombardierClient/BombardierClient.csproj"
     },
     "ReadyStateText": "Bombardier Client",

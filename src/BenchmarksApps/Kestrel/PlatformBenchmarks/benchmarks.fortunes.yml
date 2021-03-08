@@ -2,14 +2,14 @@
 # --config benchmarks.fortunes.yml --scenario fortunesplatform --profile aspnet-citrine
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/WrkClient/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WrkClient/wrk.yml
 
 jobs:
   platformbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
     framework: net5.0

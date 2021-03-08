@@ -48,13 +48,13 @@ crank-agent
 
 ## Plaintext benchmarks
 
-The source code for these benchmarks is located [here](https://github.com/aspnet/Benchmarks/tree/master/src/Benchmarks).
+The source code for these benchmarks is located [here](https://github.com/aspnet/benchmarks/tree/main/src/Benchmarks).
 These scenarios return a "Hello World" string and the client uses HTTP pipelining with 16 requests.
 
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -67,7 +67,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 
 ## Json benchmarks
 
-The source code for these benchmarks is located [here](https://github.com/aspnet/Benchmarks/tree/master/src/Benchmarks).
+The source code for these benchmarks is located [here](https://github.com/aspnet/benchmarks/tree/main/src/Benchmarks).
 These scenarios serialize and return a `{ "message": "Hello World" }` string.
 
 The serialization is done with `System.Text.Json`.
@@ -75,7 +75,7 @@ The serialization is done with `System.Text.Json`.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/json.benchmarks.yml --scenario json --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --scenario json --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -86,7 +86,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenar
 
 ## Database benchmarks
 
-The source code for these benchmarks is located [here](https://github.com/aspnet/Benchmarks/tree/master/src/Benchmarks).
+The source code for these benchmarks is located [here](https://github.com/aspnet/benchmarks/tree/main/src/Benchmarks).
 These scenarios execute some database requests and return either HTML or Json.
 
 The database server is PostgresQL.
@@ -94,7 +94,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/database.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -126,7 +126,7 @@ The suffixes represent different database access strategies:
 
 ## Platform benchmarks
 
-The source code for these benchmarks is located [here](https://github.com/aspnet/Benchmarks/tree/master/src/BenchmarksApps/Kestrel).
+The source code for these benchmarks is located [here](https://github.com/aspnet/benchmarks/tree/main/src/BenchmarksApps/Kestrel).
 These scenarios are highly optimized to provide the best performance, in detriment of extensibility and code complexity.
 
 The database server is PostgresQL.
@@ -134,7 +134,7 @@ The database server is PostgresQL.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -156,7 +156,7 @@ The downstream service returns a variable size content. By default the result is
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-httpclient --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -192,7 +192,7 @@ The following example shows how to use "h2 - https":
 Custom bodies can be used with the `bodyFile` and `verb` variables like this:
 
 ```
---variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST
+--variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/100B.txt --variable verb=POST
 ```
 
 Local and remote files can be used.
@@ -225,7 +225,7 @@ These scenarios measure the performance of different other frameworks
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/te.benchmarks.yml --scenario plaintext_nodejs --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --scenario plaintext_nodejs --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -256,7 +256,7 @@ These scenarios measure the performance of different Grpc  server and clients im
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin --variable streams=70 --variable connections=1
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml --scenario grpcaspnetcoreserver-grpcnetclient --profile aspnet-perf-lin --variable streams=70 --variable connections=1
 ```
 
 ### Available scenarios
@@ -293,7 +293,7 @@ Middleware based application that serve static files of any size.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/staticfiles.benchmarks.yml --scenario static --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/staticfiles.benchmarks.yml --scenario static --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
@@ -320,7 +320,7 @@ These scenarios are running various SignalR benchmarks. The transport and serial
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable scenario=echo --variable transport=websockets --variable protocol=messagepack
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/signalr.benchmarks.yml --scenario signalr --profile aspnet-perf-lin --variable scenario=echo --variable transport=websockets --variable protocol=messagepack
 ```
 
 ### Available scenarios
@@ -350,7 +350,7 @@ These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/
 ### Sample
 
 ```
-crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
+crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
 ```
 
 ### Available scenarios
@@ -361,7 +361,7 @@ crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet
 The scenario named `custom` can be used to pass any custom filter variable like so:
 
 ```
-crank --config https://github.com/aspnet/Benchmarks/blob/master/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
+crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
 ```
 
 ## FAQ

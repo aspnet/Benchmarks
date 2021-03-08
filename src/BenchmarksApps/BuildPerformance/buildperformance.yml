@@ -28,7 +28,7 @@ jobs:
   buildperformance:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/BenchmarksApps/BuildPerformance/BuildPerformance.csproj
     readyStateText: Application started
     waitForExit: true

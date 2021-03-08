@@ -3,7 +3,7 @@
     "Client": "SignalR",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/BenchmarksApps/SignalR/BenchmarkServer.csproj"
     },
     "Connections": 10,

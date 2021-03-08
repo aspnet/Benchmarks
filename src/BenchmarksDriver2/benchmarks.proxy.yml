@@ -5,8 +5,8 @@
 # --config benchmarks.proxy.yml --scenario proxy-envoy --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/Wrk2Client/wrk2.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BombardierClient/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Wrk2Client/wrk2.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BombardierClient/bombardier.yml
 
 variables:
     path: /
@@ -15,7 +15,7 @@ jobs:
   httpclientproxy:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
     arguments: '--baseUri {{downstreamUri}}'
@@ -23,7 +23,7 @@ jobs:
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: master
+      BranchOrCommit: main
       DockerFile: docker/nginx/nginx.dockerfile
       DockerImageName: nginx-reverseproxy
       DockerContextDirectory: docker/nginx
@@ -34,7 +34,7 @@ jobs:
   envoyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: master
+      BranchOrCommit: main
       DockerFile: docker/envoy/envoy.dockerfile
       DockerImageName: envoy-reverseproxy
       DockerContextDirectory: docker/envoy
@@ -46,7 +46,7 @@ jobs:
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: master
+      BranchOrCommit: main
       DockerFile: docker/haproxy/haproxy.dockerfile
       DockerImageName: haproxy-reverseproxy
       DockerContextDirectory: docker/haproxy
@@ -54,7 +54,7 @@ jobs:
   downstream:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
     variables:

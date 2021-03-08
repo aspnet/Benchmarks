@@ -60,13 +60,13 @@ parameters:
 
     # no headers, different body sizes, 100 B response
     - displayName: "100 B - 100 B - No Headers"
-      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100B.txt --variable verb=POST --property payload=100 --property body=100 --property headers=none
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/100B.txt --variable verb=POST --property payload=100 --property body=100 --property headers=none
     - displayName: "1 KB - 100 B - No Headers"
-      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/1KB.txt --variable verb=POST --property payload=100 --property body=1024 --property headers=none
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/1KB.txt --variable verb=POST --property payload=100 --property body=1024 --property headers=none
     - displayName: "10 KB - 100 B - No Headers"
-      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/10KB.txt --variable verb=POST --property payload=100 --property body=10240 --property headers=none
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/10KB.txt --variable verb=POST --property payload=100 --property body=10240 --property headers=none
     - displayName: "100 KB - 100 B - No Headers"
-      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/assets/100KB.txt --variable verb=POST --property payload=100 --property body=102400 --property headers=none
+      arguments: --variable path=/?s=100 --variable bodyFile=https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/100KB.txt --variable verb=POST --property payload=100 --property body=102400 --property headers=none
 
 - name: protocols
   type: object

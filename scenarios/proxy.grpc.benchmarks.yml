@@ -46,7 +46,7 @@ jobs:
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: master
+      BranchOrCommit: main
       DockerFile: docker/nginx/nginx.dockerfile
       DockerImageName: nginx-reverseproxy
       DockerContextDirectory: docker/nginx
@@ -62,7 +62,7 @@ jobs:
   envoyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
-      BranchOrCommit: master
+      BranchOrCommit: main
       DockerFile: docker/envoy/envoy.dockerfile
       DockerImageName: envoy-reverseproxy
       DockerContextDirectory: docker/envoy

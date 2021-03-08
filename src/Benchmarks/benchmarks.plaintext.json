@@ -10,7 +10,7 @@
     "PresetHeaders": "Plaintext",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/Benchmarks/Benchmarks.csproj"
     },
     "ReadyStateText": "Application started."
@@ -64,7 +64,7 @@
   "CopyToAsync": {
     "Path": "/copytoasync",
     "ClientProperties": {
-      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/master/scripts/post.lua",
+      "Scripts": "https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/post.lua",
       "ScriptName": "",
       "PipelineDepth": 0
     }

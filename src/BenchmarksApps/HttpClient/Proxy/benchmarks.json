@@ -6,7 +6,7 @@
     "PresetHeaders": "Plaintext",
     "Source": {
       "Repository": "https://github.com/aspnet/benchmarks.git",
-      "BranchOrCommit": "master",
+      "BranchOrCommit": "main",
       "Project": "src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj"
     },
     "EnvironmentVariables": {

@@ -1,5 +1,5 @@
 imports:
-  - https://github.com/aspnet/Benchmarks/blob/master/scenarios/aspnet.profiles.yml?raw=true
+  - https://github.com/aspnet/benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 jobs:
   dotnet:

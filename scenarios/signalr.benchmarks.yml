@@ -2,8 +2,8 @@
 # --config benchmarks.signalr.yml --scenario signalr --variable scenario=broadcast --variable protocol=messagepack --variable transport=LongPolling --profile asp-perf-lin
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/SignalRClient/signalrclient.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/master/src/BenchmarksApps/SignalR/signalrServer.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/SignalRClient/signalrclient.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/SignalR/signalrServer.yml
 
 variables:
     serverPort: 5000
