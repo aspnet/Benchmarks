@@ -45,6 +45,7 @@ namespace PlatformBenchmarks
 
         public static IWebHost BuildWebHost(string[] args)
         {
+            Console.WriteLine($"BuildWebHost()");
             Console.WriteLine($"Args: {string.Join(' ', args)}");
 
             var config = new ConfigurationBuilder()
