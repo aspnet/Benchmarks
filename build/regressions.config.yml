@@ -119,7 +119,7 @@ sources:
         - perf-regression
       owners:
         - sebastienros
-        - anscoggi
+        - drewscoggins
       template: published-size
 templates:
   rps: |
