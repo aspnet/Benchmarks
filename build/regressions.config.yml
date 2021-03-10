@@ -103,6 +103,24 @@ sources:
         - sebastienros
         - mangod9
       template: published-size
+  - name: SingleFilePublishedSize
+    table: SingleFileBenchmarks
+    rules:
+      - include: trimmed
+    daysToLoad: 60
+    stdevCount: 5
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/published-size']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+        - anscoggi
+      template: published-size
 templates:
   rps: |
     A performance regression has been detected for the following scenarios:
