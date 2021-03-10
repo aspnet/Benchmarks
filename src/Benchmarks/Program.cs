@@ -19,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Crank.EventSources;
 
 namespace Benchmarks
 {
@@ -45,9 +44,6 @@ namespace Benchmarks
             Console.WriteLine($".NET Runtime version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
-
-            BenchmarksEventSource.MeasureAspNetVersion();
-            BenchmarksEventSource.MeasureNetCoreAppVersion();
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("hosting.json", optional: true)

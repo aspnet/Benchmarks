@@ -35,8 +35,6 @@
     
     <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
     <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
-
-    <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">

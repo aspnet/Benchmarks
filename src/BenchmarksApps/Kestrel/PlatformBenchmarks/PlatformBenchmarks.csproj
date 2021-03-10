@@ -16,7 +16,6 @@
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     
     <PackageReference Include="Npgsql" Version="5.0.3" />
-    <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'netcoreapp5.0'">
