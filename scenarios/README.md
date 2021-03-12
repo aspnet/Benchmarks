@@ -390,3 +390,10 @@ Using the daily builds of .NET, and targeting net5.0.
 ```
 --application.options.outputFiles c:\build\System.Private.CoreLib.dll
 ```
+### Running with specific runtime versions to isolate regressions
+
+The list of public builds for ASP.NET and Core CLR are available on these feeds:
+- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
+- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
+
+Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.y.z` to isolate which build, and ultimately which commit introduced a regression.
