@@ -96,7 +96,7 @@ parameters:
       requiresServerHttp2: true
       requiresDownstreamHttp2: true
     - displayName: gRPC (h2 - h2)
-      arguments: --variable connections=1 --variable streams=100 --variable serverScheme=https --variable serverProtocol=grpc --variable downstreamScheme=https --variable downstreamProtocol=grpc
+      arguments: --variable connections=1 --variable streams=100 --variable serverScheme=https --variable serverProtocol=grpc --variable downstreamScheme=https --variable downstreamProtocol=grpc --property serverProtocol=grpc --property downstreamProtocol=grpc
       requiresGRPC: true
 # We need to find a way to tell the proxy that the downstream server is expecting h2c and not http/1.1
 #    - displayName: h2 - h2c
@@ -110,19 +110,20 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
       - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
-        # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
-        - ${{ if and( not(s.requiresServerGRPC), or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) ) }}:
-          - task: PublishToAzureServiceBus@1
-            condition: succeededOrFailed()
-            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-            inputs:
-              connectedServiceName: ${{ parameters.connection }}
-              waitForCompletion: true
-              messageBody: |
-                {
-                  "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
-                }
+        - ${{ if not(s.requiresGRPC) }}:
+          # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
+          - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) }}:
+            - task: PublishToAzureServiceBus@1
+              condition: succeededOrFailed()
+              displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+              inputs:
+                connectedServiceName: ${{ parameters.connection }}
+                waitForCompletion: true
+                messageBody: |
+                  {
+                    "name": "crank",
+                    "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+                  }
         - ${{ if s.requiresGRPC }}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
@@ -133,5 +134,5 @@ steps:
               messageBody: |
                 {
                   "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }}-grpc --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}-grpc\"" ]
+                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }}-grpc --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
                 }
