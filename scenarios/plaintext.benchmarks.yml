@@ -24,7 +24,7 @@ jobs:
   mapaction:
     source:
       repository: https://github.com/aspnet/Benchmarks.git
-      branchOrCommit: halter73/houdini
+      branchOrCommit: main
       project: src/BenchmarksApps/MapAction/MapAction.csproj
     readyStateText: Application started.
 

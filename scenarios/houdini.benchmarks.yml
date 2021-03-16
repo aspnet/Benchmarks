@@ -5,7 +5,7 @@ jobs:
   mapaction:
     source:
       repository: https://github.com/aspnet/Benchmarks.git
-      branchOrCommit: halter73/houdini
+      branchOrCommit: main
       project: src/BenchmarksApps/MapAction/MapAction.csproj
     readyStateText: Application started.
 
@@ -21,7 +21,7 @@ scenarios:
           jsonInput: '--header "content-type: application/json"'
         presetHeaders: 'jsonInput'
         path: /EchoTodo
-        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/halter73/houdini/scenarios/assets/todo.json
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/todo.json
 profiles:
   local:
     variables:
