@@ -34,6 +34,8 @@ parameters:
     arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext --property protocol=http
   - displayName: Plaintext Mvc
     arguments: --scenario mvc $(plaintextJobsV2) --property scenario=PlaintextMvc --property protocol=http
+  - displayName: Plaintext MapAction
+    arguments: --scenario mapaction $(plaintextJobsV2) --property scenario=PlaintextMapAction --property protocol=http
   - displayName: Plaintext Endpoint
     arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint --property protocol=http
   - displayName: Plaintext Connection Close
@@ -53,6 +55,8 @@ parameters:
     arguments: --scenario json $(jsonJobsV2) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
+  - displayName: Json MapAction
+    arguments: --scenario mapaction $(jsonJobsV2) --property scenario=JsonMapAction --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:

@@ -21,7 +21,13 @@ jobs:
       scenario: plaintext
       database: ''
     arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
-  
+  mapaction:
+    source:
+      repository: https://github.com/aspnet/Benchmarks.git
+      branchOrCommit: halter73/houdini
+      project: src/BenchmarksApps/MapAction/MapAction.csproj
+    readyStateText: Application started.
+
 scenarios:
   plaintext:
     application:
@@ -72,6 +78,16 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /mvc/plaintext
+        pipeline: 16
+
+  mapaction:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
         pipeline: 16
 
   connectionclose:
