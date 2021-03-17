@@ -24,6 +24,9 @@ parameters:
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     supportsGRPC: true
+  - displayName: YARP gRPC
+    arguments: --scenario proxy-yarp-grpc        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    supportsGRPC: true
   - displayName: YARP-net50
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
     supportsServerHttps: true
@@ -41,6 +44,9 @@ parameters:
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsGRPC: true
+  - displayName: NGinx gRPC
+    arguments: --scenario proxy-nginx-grpc       $(proxyJobs) --property proxy=nginx --variable warmup=0
+    supportsGRPC: true
   - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
   - displayName: Envoy
@@ -48,6 +54,8 @@ parameters:
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
+  - displayName: Envoy gRPC
+    arguments: --scenario proxy-envoy-grpc       $(proxyJobs) --property proxy=envoy
     supportsGRPC: true
 
 - name: payloads
@@ -110,29 +118,16 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
       - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
-        - ${{ if not(s.requiresGRPC) }}:
-          # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
-          - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) }}:
-            - task: PublishToAzureServiceBus@1
-              condition: succeededOrFailed()
-              displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-              inputs:
-                connectedServiceName: ${{ parameters.connection }}
-                waitForCompletion: true
-                messageBody: |
-                  {
-                    "name": "crank",
-                    "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
-                  }
-        - ${{ if s.requiresGRPC }}:
+        # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
+        - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) }}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
-            displayName: ${{ s.displayName }} ${{ protocol.displayName }}
+            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
             inputs:
               connectedServiceName: ${{ parameters.connection }}
               waitForCompletion: true
               messageBody: |
                 {
                   "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }}-grpc --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
                 }
