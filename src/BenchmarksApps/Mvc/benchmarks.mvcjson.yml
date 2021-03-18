@@ -3,6 +3,7 @@
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+- https://raw.githubusercontent.com/dotnet/crank/master/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
 - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
@@ -158,6 +159,20 @@ scenarios:
         path: /JsonInput
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
         scriptArguments: 2097152
+
+  # MapAction Echo { "Id": 42, "Name": "Write benchmarks!", "IsComplete": false }
+  MapActionEchoTodo:
+    application:
+      job: mapaction
+    load:
+      job: bombardier
+      variables:
+        verb: POST
+        headers:
+          jsonInput: '--header "content-type: application/json"'
+        presetHeaders: 'jsonInput'
+        path: /EchoTodo
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/todo.json
 
 profiles:
   aspnet-citrine-lin:
