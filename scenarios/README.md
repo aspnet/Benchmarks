@@ -63,6 +63,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `https`: Middleware implementation, using HTTPS
 - `endpoint`: Middleware implementation with Endpoint routing
 - `mvc`: Controller implementation
+- `mapaction`: Endpoint routing implementation
 - `connectionclose`: Middleware implementation, the connection is closed after each request. Pipelining is disabled.
 
 ## Json benchmarks
@@ -83,6 +84,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `json`: Middleware implementation 
 - `https`: Middleware implementation, using HTTPS
 - `mvc`: Controller implementation
+- `mapaction`: Endpoint routing implementation
 
 ## Database benchmarks
 
