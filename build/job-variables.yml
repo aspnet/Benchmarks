@@ -44,9 +44,6 @@ variables:
 
 # v2
 
-- name: houdiniJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/houdini.benchmarks.yml
-
 - name: signalRJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/signalr.benchmarks.yml
 

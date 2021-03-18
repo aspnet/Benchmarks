@@ -47,6 +47,8 @@ parameters:
     arguments: --scenario MvcJsonOutput2M $(mvcJobs) --property scenario=MvcJsonOutput2M
   - displayName: Json Mvc (NewtonSoft, 2M)
     arguments: --scenario MvcJsonNetOutput2M $(mvcJobs) --property scenario=MvcJsonNetOutput2M
+  - displayName: MapAction Echo Todo
+    arguments: --scenario MapActionEchoTodo $(mvcJobs) --property scenario=MapActionEchoTodo
 
   # CRUD API
   - displayName: API return collection data
