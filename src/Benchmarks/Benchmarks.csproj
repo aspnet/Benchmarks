@@ -121,7 +121,7 @@
     <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-preview.6.20303.1" /> -->
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion60)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion60)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion60)" />
 
   </ItemGroup>

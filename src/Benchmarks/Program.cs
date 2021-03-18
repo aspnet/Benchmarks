@@ -12,6 +12,7 @@ using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 #if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 #endif
@@ -42,7 +43,9 @@ namespace Benchmarks
 
             Console.WriteLine($".NET Runtime location: {typeof(object).GetTypeInfo().Assembly.Location}");
             Console.WriteLine($".NET Runtime version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-            
+
+            Console.WriteLine($"EFCore version: {typeof(DbContext).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
 
             var config = new ConfigurationBuilder()
