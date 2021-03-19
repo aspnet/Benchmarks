@@ -49,6 +49,8 @@ variables:
 
 - name: proxyJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml
+- name: proxyGRPCJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.grpc.benchmarks.yml
 
 - name: h2loadConnectionsCount # Default value for h2load. Should be redefined for each job
   value: 28

@@ -22,24 +22,41 @@ parameters:
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
     supportsServerHttps: true
     supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+    supportsGRPC: true
+  - displayName: YARP gRPC
+    arguments: --scenario proxy-yarp-grpc        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    supportsGRPC: true
   - displayName: YARP-net50
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
     supportsServerHttps: true
     supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+    supportsGRPC: true
   - displayName: HttpClient
     arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net6.0
     supportsServerHttps: true
     supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+    supportsGRPC: true
   - displayName: NGinx
     arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx --variable warmup=0
     supportsServerHttps: true
     supportsServerHttp2: true
+    supportsGRPC: true
+  - displayName: NGinx gRPC
+    arguments: --scenario proxy-nginx-grpc       $(proxyJobs) --property proxy=nginx --variable warmup=0
+    supportsGRPC: true
   - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
     supportsServerHttps: true
     supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+  - displayName: Envoy gRPC
+    arguments: --scenario proxy-envoy-grpc       $(proxyJobs) --property proxy=envoy
+    supportsGRPC: true
 
 - name: payloads
   type: object
@@ -85,6 +102,10 @@ parameters:
     - displayName: h2 - h2
       arguments: --variable connections=28 --variable serverScheme=https --variable serverProtocol=http2 --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=h2
       requiresServerHttp2: true
+      requiresDownstreamHttp2: true
+    - displayName: gRPC (h2 - h2)
+      arguments: --variable connections=1 --variable streams=100 --variable serverScheme=https --variable serverProtocol=grpc --variable downstreamScheme=https --variable downstreamProtocol=grpc --property serverProtocol=grpc --property downstreamProtocol=grpc
+      requiresGRPC: true
 # We need to find a way to tell the proxy that the downstream server is expecting h2c and not http/1.1
 #    - displayName: h2 - h2c
 #      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c
@@ -96,7 +117,7 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
-      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ) }}:
+      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2) ), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
         # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
         - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) }}:
           - task: PublishToAzureServiceBus@1
