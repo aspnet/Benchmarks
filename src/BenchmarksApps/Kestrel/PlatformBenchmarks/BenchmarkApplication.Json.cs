@@ -9,24 +9,16 @@ namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
-        private static bool _initialized = false;
-        private static AsciiString _jsonPreamble;
+        private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions).Length;
+
+        private readonly static AsciiString _jsonPreamble =
+            _http11OK +
+            _headerServer + _crlf +
+            _headerContentTypeJson + _crlf +
+            _headerContentLength + _jsonPayloadSize.ToString();
 
         private static void Json(ref BufferWriter<WriterAdapter> writer, IBufferWriter<byte> bodyWriter)
         {
-            // TODO: Use static initialization once https://github.com/dotnet/runtime/issues/49826 is fixed
-            if (!_initialized)
-            {
-                // Not locking, ignoring potential thundering hurd
-                _jsonPreamble =
-                    _http11OK +
-                    _headerServer + _crlf +
-                    _headerContentTypeJson + _crlf +
-                    _headerContentLength + JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions).Length.ToString();
-
-                _initialized = true;
-            }
-
             writer.Write(_jsonPreamble);
 
             // Date header
