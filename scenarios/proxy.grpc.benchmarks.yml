@@ -12,7 +12,7 @@
     scenario: serverstreaming
     protocol: h2
     warmup: 5
-    duration: 5
+    duration: 15
     logLevel: none
     requestSize: 0
     responseSize: 100
