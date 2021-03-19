@@ -11,5 +11,6 @@ namespace Benchmarks.Configuration
         SqlServer,
         MySql,
         MongoDb,
+        Sqlite,
     }
 }
