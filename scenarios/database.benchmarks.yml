@@ -205,6 +205,13 @@ scenarios:
         path: /updates/dapper?queries=20
 
 profiles:
+  sqlite:
+    jobs: 
+      application:
+        environmentVariables:
+          database: Sqlite
+          connectionString: Data Source=benchmarks.db;Cache=Shared
+
   local:
     variables:
       serverPort: 5000
