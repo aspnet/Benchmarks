@@ -38,12 +38,13 @@ namespace Benchmarks
             Console.WriteLine("-----------------------");
 
             Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
+#if !PublishSingleFile            
             Console.WriteLine($"AspNetCore location: {typeof(IWebHostBuilder).GetTypeInfo().Assembly.Location}");
-            Console.WriteLine($"AspNetCore version: {typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-
             Console.WriteLine($".NET Runtime location: {typeof(object).GetTypeInfo().Assembly.Location}");
-            Console.WriteLine($".NET Runtime version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+#endif            
 
+            Console.WriteLine($"AspNetCore version: {typeof(IWebHostBuilder).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
+            Console.WriteLine($".NET Runtime version: {typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
             Console.WriteLine($"EFCore version: {typeof(DbContext).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
 
             Console.WriteLine($"Environment.ProcessorCount: {Environment.ProcessorCount}");
