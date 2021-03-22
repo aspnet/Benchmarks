@@ -25,7 +25,7 @@ parameters:
     supportsDownstreamHttp2: true
     supportsGRPC: true
   - displayName: YARP gRPC
-    arguments: --scenario proxy-yarp-grpc        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
     supportsGRPC: true
   - displayName: YARP-net50
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
@@ -45,7 +45,7 @@ parameters:
     supportsServerHttp2: true
     supportsGRPC: true
   - displayName: NGinx gRPC
-    arguments: --scenario proxy-nginx-grpc       $(proxyJobs) --property proxy=nginx --variable warmup=0
+    arguments: --scenario proxy-nginx-grpc       $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
     supportsGRPC: true
   - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
@@ -55,7 +55,7 @@ parameters:
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
   - displayName: Envoy gRPC
-    arguments: --scenario proxy-envoy-grpc       $(proxyJobs) --property proxy=envoy
+    arguments: --scenario proxy-envoy-grpc       $(proxyGRPCJobs) --property proxy=envoy
     supportsGRPC: true
 
 - name: payloads
