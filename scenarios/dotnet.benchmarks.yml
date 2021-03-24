@@ -5,7 +5,7 @@ jobs:
   dotnet:
     source:
       repository: https://github.com/dotnet/performance
-      branchOrCommit: master
+      branchOrCommit: main
       project: src/benchmarks/micro/MicroBenchmarks.csproj
     variables:
       filter: "*"
