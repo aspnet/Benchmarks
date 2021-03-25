@@ -20,37 +20,39 @@ parameters:
   default: 
   - displayName: YARP
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    supportsGRPC: true
   - displayName: YARP gRPC
     arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
     supportsGRPC: true
   - displayName: YARP-net50
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
+    supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    supportsGRPC: true
   - displayName: HttpClient
     arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net6.0
+    supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    supportsGRPC: true
   - displayName: NGinx
     arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx --variable warmup=0
+    supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
-    supportsGRPC: true
   - displayName: NGinx gRPC
     arguments: --scenario proxy-nginx-grpc       $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
     supportsGRPC: true
   - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
+    supportsHttp: true
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
+    supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
@@ -90,6 +92,7 @@ parameters:
   default:
     - displayName: http - http
       arguments: --variable serverScheme=http --property serverProtocol=http --property downstreamProtocol=http
+      requiresHttp: true
     - displayName: https - http
       arguments: --variable serverScheme=https --variable serverScheme=https --property serverProtocol=https --property downstreamProtocol=http
       requiresServerHttps: true
@@ -117,9 +120,10 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't requiresServerHttps or supportsServerHttps AND doesn't requiresServerHttp2 or supportsServerHttp2
-      - ${{ if and( or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
+      - ${{ if and( or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
         # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
-        - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ) }}:
+        # For gRPC, only run one payload "0 B - 100 B - No Headers" because the payload arguments are not applicable here
+        - ${{ if and( or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ), or( not( eq( s.displayName, 'gRPC (h2 - h2)') ), eq( payload.displayName, '0 B - 100 B - No Headers' ) ) )}}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
             displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
