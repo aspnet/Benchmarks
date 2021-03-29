@@ -27,6 +27,9 @@ jobs:
       project: perf/benchmarkapps/GrpcClient/GrpcClient.csproj
     readyStateText: gRPC Client
     waitForExit: true
+    variables:
+      warmup: 0 # for compatibility with load.variables.warmup arguments
+      duration: 0 # for compatibility with load.variables.warmup arguments
     arguments: "-c {{connections}} --streams {{streams}} -d {{duration}} -p {{protocol}} -s {{scenario}} -u {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} -w {{warmup}} --grpcClientType {{grpcClientType}} --requestSize {{requestSize}} --responseSize {{responseSize}} --enableCertAuth {{enableCertAuth}} --latency {{latency}} {% if logLevel != 'none' %} --logLevel {{ logLevel }} {% endif %}"
   grpcAspNetCoreServer:
     source:
