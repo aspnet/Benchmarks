@@ -123,7 +123,7 @@ steps:
       - ${{ if and( or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2), or( not( protocol.requiresServerGRPC), s.supportsGRPC) ) }}:
         # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
         # For gRPC, only run one payload "0 B - 100 B - No Headers" because the payload arguments are not applicable here
-        - ${{ if and( or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ), or( not( eq( s.displayName, 'gRPC (h2 - h2)') ), eq( payload.displayName, '0 B - 100 B - No Headers' ) ) )}}:
+        - ${{ if and( or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') ), or( not( contains( s.displayName, 'gRPC') ), eq( payload.displayName, '0 B - 100 B - No Headers' ) ) )}}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
             displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
