@@ -345,6 +345,20 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 > Note: MessagePack is not supported with ServerSentEvents
 
+## Orchard benchmarks
+
+These scenarios are running various Orchard Core CMS benchmarks. PostgresQL is used as database server.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml --scenario about --profile aspnet-perf-win
+```
+
+### Available scenarios
+
+- `about`: Simple about page
+
 ## Micro benchmarks
 
 These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/performance) from the https://github.com/dotnet/performance repository.
