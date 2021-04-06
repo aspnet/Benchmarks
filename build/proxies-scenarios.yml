@@ -142,7 +142,7 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
-      - ${{ if and( protocol.requiresServerGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) ) }}:
+      - ${{ if and( protocol.requiresServerGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
