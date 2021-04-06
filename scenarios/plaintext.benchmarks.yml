@@ -101,6 +101,7 @@ scenarios:
         path: /plaintext
         pipeline: 0
         presetHeaders: connectionclose
+        connections: 32
 
   connectionclosehttps:
     application:
@@ -116,6 +117,7 @@ scenarios:
         pipeline: 0
         presetHeaders: connectionclose
         serverScheme: https
+        connections: 32
 
 profiles:
   local:
