@@ -65,6 +65,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `mvc`: Controller implementation
 - `mapaction`: Endpoint routing implementation
 - `connectionclose`: Middleware implementation, the connection is closed after each request. Pipelining is disabled.
+- `connectionclosehttps`: Same as `connectionclose` but over https
 
 ## Json benchmarks
 
