@@ -287,10 +287,12 @@ func makeCaller(cc *grpc.ClientConn, connectionID int, streamID int, scenario st
 
 				start := time.Now()
 				if _, err := client.UnaryCall(ctx, request); err != nil {
+					end := time.Now()
+					handleRequest(connectionID, start, end)
 					handleFailure(connectionID, err)
 				} else {
 					end := time.Now()
-					handleSuccess(connectionID, start, end)
+					handleRequest(connectionID, start, end)
 				}
 
 				if stopped {
@@ -317,10 +319,12 @@ func makeCaller(cc *grpc.ClientConn, connectionID int, streamID int, scenario st
 			for {
 				start := time.Now()
 				if _, err := stream.Recv(); err != nil {
+					end := time.Now()
+					handleRequest(connectionID, start, end)
 					handleFailure(connectionID, err)
 				} else {
 					end := time.Now()
-					handleSuccess(connectionID, start, end)
+					handleRequest(connectionID, start, end)
 				}
 
 				if stopped {
@@ -347,13 +351,17 @@ func makeCaller(cc *grpc.ClientConn, connectionID int, streamID int, scenario st
 
 				start := time.Now()
 				if err := stream.Send(request); err != nil {
+					end := time.Now()
+					handleRequest(connectionID, start, end)
 					handleFailure(connectionID, err)
 				} else {
 					if _, err := stream.Recv(); err != nil {
+						end := time.Now()
+						handleRequest(connectionID, start, end)
 						handleFailure(connectionID, err)
 					} else {
 						end := time.Now()
-						handleSuccess(connectionID, start, end)
+						handleRequest(connectionID, start, end)
 					}
 				}
 
@@ -380,7 +388,7 @@ func handleFailure(connectionID int, err error) {
 	connectionLocks[connectionID].Unlock()
 }
 
-func handleSuccess(connectionID int, start time.Time, end time.Time) {
+func handleRequest(connectionID int, start time.Time, end time.Time) {
 	if stopped || warmingUp {
 		return
 	}
