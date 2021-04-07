@@ -39,6 +39,9 @@ scenarios:
   orchard-sqlite:
     application:
       job: orchard
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Sqlite"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: ""
     load:
       job: bombardier
       variables:
@@ -46,15 +49,15 @@ scenarios:
         presetHeaders: plaintext
         path: /about
         connections: 32
-      environmentVariables:
-        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Sqlite"
-        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: ""
 
-orchard-postgresql:
+  orchard-postgresql:
     db:
       job: postgresql
     application:
       job: orchard
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
     load:
       job: bombardier
       variables:
@@ -62,7 +65,3 @@ orchard-postgresql:
         presetHeaders: plaintext
         path: /about
         connections: 32
-      environmentVariables:
-        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
-        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
-       
