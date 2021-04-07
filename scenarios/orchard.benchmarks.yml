@@ -3,26 +3,6 @@
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 jobs:
-  orchard-sqlite:
-    source:
-      repository: https://github.com/orchardcms/orchardcore.git
-      branchOrCommit: sebros/autoauto
-      project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
-    readyStateText: Application started.
-    arguments: "--auto-setup true"
-    framework: net5.0 
-    environmentVariables:
-      OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__ShellName: "Default"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__SiteName: "Benchmark"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__SiteTimeZone: "Europe/Amsterdam"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminUsername: "admin"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminEmail: "info@orchardproject.net"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminPassword: "Password1!"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Sqlite"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: ""
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseTablePrefix: ""
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__RecipeName: "Blog"
 
   orchard:
     source:
@@ -56,7 +36,21 @@ jobs:
     noClean: true
 
 scenarios:
-  about:
+  orchard-sqlite:
+    application:
+      job: orchard
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        presetHeaders: plaintext
+        path: /about
+        connections: 32
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Sqlite"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: ""
+
+orchard-postgresql:
     db:
       job: postgresql
     application:
@@ -68,4 +62,7 @@ scenarios:
         presetHeaders: plaintext
         path: /about
         connections: 32
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
        
