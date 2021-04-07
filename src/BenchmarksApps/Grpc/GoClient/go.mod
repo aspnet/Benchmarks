@@ -1,14 +1,14 @@
 module github.com/grpc/grpc-dotnet
 
-go 1.13
+go 1.16
 
 require (
-	github.com/golang/protobuf v1.3.3
-	github.com/gorilla/mux v1.7.3 // indirect
-	github.com/sirupsen/logrus v1.4.2 // indirect
-	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
-	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 // indirect
-	google.golang.org/grpc v1.27.1
-	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc // indirect
+	github.com/golang/mock v1.5.0 // indirect
+	github.com/golang/protobuf v1.5.2
+	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/stretchr/objx v0.3.0 // indirect
+	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
+	google.golang.org/grpc v1.37.0
 )
