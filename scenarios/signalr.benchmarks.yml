@@ -4,6 +4,7 @@
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/SignalRClient/signalrclient.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/SignalR/signalrServer.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
     serverPort: 5000
@@ -21,88 +22,3 @@ scenarios:
       job: signalrClient
       variables:
         path: /echo
-
-profiles:
-  local:
-    variables:
-      serverAddress: localhost
-    jobs: 
-      warmup:
-        endpoints: 
-          - http://localhost:5010
-      application:
-        endpoints: 
-          - http://localhost:5010
-      load:
-        endpoints: 
-          - http://localhost:5010
-
-  aspnet-perf-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 12
-    jobs:
-      application:
-        endpoints: 
-          - http://asp-perf-lin:5001
-      warmup:
-        endpoints: 
-          - http://asp-perf-load:5001
-      load:
-        endpoints: 
-          - http://asp-perf-load:5001
-  aspnet-perf-win:
-    variables:
-      serverAddress: 10.0.0.110
-      cores: 12
-    jobs:
-      application:
-        endpoints: 
-          - http://asp-perf-win:5001
-      warmup:
-        endpoints: 
-          - http://asp-perf-db:5001
-      load:
-        endpoints: 
-          - http://asp-perf-db:5001
-  aspnet-citrine-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 28
-    jobs: 
-      application:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-      warmup:
-        endpoints: 
-          - http://asp-citrine-load:5001
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001
-  aspnet-citrine-win:
-    variables:
-      serverAddress: 10.0.0.104
-      cores: 28
-    jobs: 
-      application:
-        endpoints: 
-          - http://asp-citrine-win:5001
-      warmup:
-        endpoints: 
-          - http://asp-citrine-db:5001
-      load:
-        endpoints: 
-          - http://asp-citrine-db:5001
-  aspnet-cloud-lin:
-    varaibles:
-      serverAddress: 10.0.0.104
-    jobs:
-      application:
-        endpoints:
-          - http://10.0.0.9:5001
-      warmup:
-        endpoints:
-          - http://10.0.0.10:5002
-      load:
-        endpoints:
-          - http://10.0.0.10:5002
