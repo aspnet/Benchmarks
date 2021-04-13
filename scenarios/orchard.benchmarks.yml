@@ -36,7 +36,7 @@ jobs:
     noClean: true
 
 scenarios:
-  orchard-sqlite:
+  about-sqlite:
     application:
       job: orchard
       environmentVariables:
@@ -50,7 +50,7 @@ scenarios:
         path: /about
         connections: 32
 
-  orchard-postgresql:
+  about-postgresql:
     db:
       job: postgresql
     application:

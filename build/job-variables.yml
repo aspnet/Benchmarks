@@ -76,3 +76,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/efcore.benchmarks.yml
 - name: buildJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/BuildPerformance/buildperformance.yml
+- name: orchardJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml

@@ -348,17 +348,18 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ## Orchard benchmarks
 
-These scenarios are running various Orchard Core CMS benchmarks. PostgresQL is used as database server.
+These scenarios are running various Orchard Core CMS benchmarks with either Sqlite or PostgresQL.
 
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml --scenario about --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml --scenario about-sqlite --profile aspnet-perf-win
 ```
 
 ### Available scenarios
 
-- `about`: Simple about page
+- `about-sqlite`: Simple about page using Sqlite
+- `about-postgresql`: Simple about page using PostgresQL
 
 ## Micro benchmarks
 

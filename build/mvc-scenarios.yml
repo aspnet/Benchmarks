@@ -77,6 +77,11 @@ parameters:
   - displayName: plaintext (JWT)
     arguments: --scenario NoMvcNoAuth $(crudApiJwtJobs) --property scenario=PlaintextRawNoAuth
 
+# Orchard Core
+
+  - displayName: Orchard - About - PostgresQL
+    arguments: --scenario about-postgresql $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
+
 steps:
   - ${{ each s in parameters.scenarios }}:
     - task: PublishToAzureServiceBus@1
