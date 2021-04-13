@@ -15,6 +15,9 @@ profiles:
           - http://localhost:5010
         variables:
           databaseServer: localhost
+      warmup:
+        endpoints: 
+          - http://localhost:5010
       load:
         endpoints: 
           - http://localhost:5010
@@ -33,6 +36,9 @@ profiles:
           - http://asp-citrine-lin:5001
         variables:
           databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - http://asp-citrine-load:5001
       load:
         endpoints: 
           - http://asp-citrine-load:5001
@@ -51,6 +57,9 @@ profiles:
           - http://asp-citrine-win:5001
         variables:
           databaseServer: 10.0.0.105
+      warmup:
+        endpoints: 
+          - http://asp-citrine-db:5001
       load:
         endpoints: 
           - http://asp-citrine-db:5001
@@ -105,6 +114,9 @@ profiles:
           - http://asp-perf-lin:5001
         variables:
           databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - http://asp-perf-load:5001
       load:
         endpoints: 
           - http://asp-perf-load:5001
@@ -123,6 +135,9 @@ profiles:
           - http://asp-perf-win:5001
         variables:
           databaseServer: 10.0.0.104
+      warmup:
+        endpoints: 
+          - http://asp-perf-db:5001
       load:
         endpoints: 
           - http://asp-perf-db:5001
