@@ -5,6 +5,9 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
+variables:
+    serverPort: 5000
+
 jobs:
   platformbenchmarks:
     source:
@@ -23,7 +26,6 @@ jobs:
     variables:
       protocol: http
       serverScheme: http
-      serverPort: 5000
       server: Kestrel
       transport: Sockets
       scenario: plaintext
@@ -49,7 +51,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   plaintextPlatform-mono-jit:
@@ -61,7 +62,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   plaintextPlatform-mono-jit-preemptive:
@@ -75,7 +75,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   plaintextPlatform-mono-llvm-jit:
@@ -87,7 +86,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   plaintextPlatform-mono-llvm-aot:
@@ -99,7 +97,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   plaintextPlatform-mono-llvm-aot-preemptive:
@@ -113,7 +110,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
 
   jsonPlatform-coreclr:
@@ -124,7 +120,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         connections: 512
 
   jsonPlatform-mono-jit:
@@ -136,7 +131,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         connections: 512
 
   jsonPlatform-mono-llvm-jit:
@@ -148,7 +142,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         connections: 512
 
   jsonPlatform-mono-llvm-aot:
@@ -160,7 +153,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         connections: 512
 
   fortunesPlatform-coreclr:
@@ -244,7 +236,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
         warmup: 5
         duration: 10
@@ -260,7 +251,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
         warmup: 5
         duration: 10
@@ -276,7 +266,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
         warmup: 5
         duration: 10
@@ -292,7 +281,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /plaintext
-        serverPort: 5000
         pipeline: 16
         warmup: 5
         duration: 10
@@ -307,7 +295,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         warmup: 5
         duration: 10
 
@@ -322,7 +309,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         warmup: 5
         duration: 10
 
@@ -337,7 +323,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         warmup: 5
         duration: 10
 
@@ -352,7 +337,6 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 5000
         warmup: 5
         duration: 10
 
@@ -371,7 +355,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /fortunes/raw
-        serverPort: 5000
 
   fortunes-mono-jit:
     db:
@@ -389,7 +372,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /fortunes/raw
-        serverPort: 5000
 
   fortunes-mono-llvm-jit:
     db:
@@ -407,7 +389,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /fortunes/raw
-        serverPort: 5000
 
   fortunes-mono-llvm-aot:
     db:
@@ -425,7 +406,6 @@ scenarios:
       variables:
         presetHeaders: plaintext
         path: /fortunes/raw
-        serverPort: 5000
 
   single_query-coreclr:
     db:

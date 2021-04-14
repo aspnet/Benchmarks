@@ -7,6 +7,9 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
+variables:
+    serverPort: 5000
+
 jobs:
   aspnetbenchmarks:
     source:
@@ -17,7 +20,6 @@ jobs:
     variables:
       protocol: http
       serverScheme: http
-      serverPort: 5000
       server: Kestrel
       transport: Sockets
       scenario: plaintext
@@ -76,21 +78,3 @@ scenarios:
       variables:
         path: /json
         presetHeaders: json
-
-  aspnet-citrine-lin:
-    variables:
-      serverPort: 5000
-      serverAddress: 10.0.0.102
-      cores: 28
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-perf-db:5001
-      application:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-        variables:
-          databaseServer: 10.0.0.103
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001

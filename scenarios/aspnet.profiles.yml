@@ -4,7 +4,6 @@ imports:
 profiles:
   local:
     variables:
-      serverPort: 5000
       serverAddress: localhost
     jobs: 
       db:
@@ -24,7 +23,6 @@ profiles:
 
   aspnet-citrine-lin:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 28
     jobs: 
@@ -45,7 +43,6 @@ profiles:
 
   aspnet-citrine-win:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.104
       cores: 28
     jobs: 
@@ -66,7 +63,6 @@ profiles:
   
   aspnet-citrine-arm:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.107
       cores: 32
     jobs: 
@@ -84,7 +80,6 @@ profiles:
   
   aspnet-citrine-amd:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.106
       cores: 48
     jobs: 
@@ -102,7 +97,6 @@ profiles:
   
   aspnet-perf-lin:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.102
       cores: 12
     jobs: 
@@ -123,7 +117,6 @@ profiles:
 
   aspnet-perf-win:
     variables:
-      serverPort: 5000
       serverAddress: 10.0.0.110
       cores: 12
     jobs: 

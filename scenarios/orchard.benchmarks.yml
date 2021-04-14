@@ -2,6 +2,9 @@
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
+variables:
+  serverPort: 5000
+
 jobs:
 
   orchard:
@@ -45,7 +48,6 @@ scenarios:
     load:
       job: bombardier
       variables:
-        serverPort: 5000
         presetHeaders: plaintext
         path: /about
         connections: 32
@@ -61,7 +63,6 @@ scenarios:
     load:
       job: bombardier
       variables:
-        serverPort: 5000
         presetHeaders: plaintext
         path: /about
         connections: 32

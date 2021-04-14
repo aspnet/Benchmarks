@@ -2,6 +2,9 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
+variables:
+  serverPort: 8080
+
 jobs:
   nodejs:
     source:
@@ -11,8 +14,6 @@ jobs:
       dockerImageName: nodejs
       dockerContextDirectory: frameworks/JavaScript/nodejs/
     readyStateText: NodeJS worker listening
-    variables:
-      serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
   actix:
@@ -23,8 +24,6 @@ jobs:
       dockerImageName: actix_raw
       dockerContextDirectory: frameworks/Rust/actix/
     readyStateText: Started http server
-    variables:
-      serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
   fasthttp:
@@ -34,8 +33,6 @@ jobs:
       dockerFile: frameworks/Go/fasthttp/fasthttp-prefork.dockerfile
       dockerImageName: fasthttp_prefork
       dockerContextDirectory: frameworks/Go/fasthttp/
-    variables:
-      serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
   ulib:
@@ -45,8 +42,6 @@ jobs:
       dockerContextDirectory: frameworks/C++/ulib/
     # readyStateText: Started http server
     port: 8080
-    variables:
-      serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
   netty:
@@ -57,8 +52,6 @@ jobs:
       dockerImageName: netty
       dockerContextDirectory: frameworks/Java/netty/
     readyStateText: Httpd started
-    variables:
-      serverPort: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
   postgresql:
@@ -93,7 +86,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
@@ -107,7 +99,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: json
         path: /json
 
@@ -119,7 +110,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: html
         path: /fortunes
 
@@ -130,7 +120,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
@@ -141,7 +130,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: json
         path: /json
 
@@ -156,7 +144,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: html
         path: /fortunes
 
@@ -169,7 +156,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
@@ -182,7 +168,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: json
         path: /json
 
@@ -194,7 +179,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: html
         path: /fortunes
 
@@ -208,7 +192,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
@@ -222,7 +205,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: json
         path: /json
 
@@ -237,7 +219,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: html
         path: /fortune
 
@@ -248,7 +229,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
@@ -259,6 +239,5 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 8080
         presetHeaders: json
         path: /json
