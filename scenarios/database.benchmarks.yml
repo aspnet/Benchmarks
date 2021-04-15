@@ -18,7 +18,7 @@ jobs:
     readyStateText: Application started.
     variables:
       serverPort: 5000
-        server: Kestrel
+      server: Kestrel
       transport: Sockets
       serverScheme: http
     arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
