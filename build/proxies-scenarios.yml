@@ -120,7 +120,7 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't (requiresServerHttps or supportsServerHttps) AND (doesn't requiresServerHttp2 or supportsServerHttp2)
-      - ${{ if and( or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
+      - ${{ if and( not( protocol.requiresServerGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
         # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
         - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') )}}:
           - task: PublishToAzureServiceBus@1
