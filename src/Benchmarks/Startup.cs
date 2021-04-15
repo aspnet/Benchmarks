@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using System.IO;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Benchmarks
 {
@@ -77,7 +78,20 @@ namespace Benchmarks
                     if (settings.Enlist)
                         throw new ArgumentException("Enlist=false must be specified for Npgsql");
 
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString), 1024);
+                    services.AddDbContextPool<ApplicationDbContext>(
+                        options => options
+                            .UseNpgsql(appSettings.ConnectionString
+#if NET5_0_OR_GREATER
+                                , o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d))
+#endif
+                                )
+#if NET6_0_OR_GREATER
+                            .DisableConcurrencyDetection()
+#endif
+                        , 1024);
+
+                    services.AddDbContextPool<ApplicationDbContext>(
+                        options => options.UseNpgsql(appSettings.ConnectionString), 1024);
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
