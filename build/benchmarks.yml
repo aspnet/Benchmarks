@@ -208,6 +208,23 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
 
+- job: EFCore
+  displayName: EF Core
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: Frameworks_Database
+  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: efcore-scenarios.yml
+    parameters:
+      profile: $(profile)
+      connection:  ASP.NET Benchmarks Mono Queue
+
 - job: gRPC_Linux
   displayName: gRPC
   pool: server
@@ -231,7 +248,7 @@ jobs:
   displayName: gRPC
   pool: server
   timeoutInMinutes: 180
-  dependsOn: Frameworks_Database
+  dependsOn: EFCore
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
     maxParallel: 1
@@ -397,7 +414,7 @@ jobs:
 - job: Proxies
   pool: server
   timeoutInMinutes: 360
-  dependsOn: MVC_Linux
+  dependsOn: ["MVC_Linux", "MVC_Windows"]
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   steps:
   - template: proxies-scenarios.yml
@@ -406,23 +423,6 @@ jobs:
       warmup: 15
       duration: 15
       connection: ASP.NET Benchmarks Queue
-
-- job: EFCore
-  displayName: EF Core
-  pool: server
-  timeoutInMinutes: 60
-  dependsOn: MVC_Windows
-  condition: and(succeededOrFailed(), eq(variables['am'], true))
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Windows:
-        profile: aspnet-citrine-win
-  steps:
-  - template: efcore-scenarios.yml
-    parameters:
-      profile: $(profile)
-      connection:  ASP.NET Benchmarks Mono Queue
 
 - job: Blazor
   pool: server
@@ -460,7 +460,7 @@ jobs:
   displayName: Mono
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies, MVC_Windows] # depends on both since if Proxies is disabled it would otherwise start while MVC_Windows is still running  
+  dependsOn: ["Proxies", "MVC_Windows"] # depends on both since if Proxies is disabled it would otherwise start while MVC_Windows is still running  
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
