@@ -10,10 +10,9 @@ jobs:
   orchard:
     source:
       repository: https://github.com/orchardcms/orchardcore.git
-      branchOrCommit: sebros/autoauto
+      branchOrCommit: dev
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
-    arguments: "--auto-setup true"
     framework: net5.0 
     environmentVariables:
       OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
@@ -39,6 +38,22 @@ jobs:
     noClean: true
 
 scenarios:
+  about-sqlite-net6:
+    application:
+      job: orchard
+      source:
+        branchOrCommit: net6
+      framework: net6.0 
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Sqlite"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: ""
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: plaintext
+        path: /about
+        connections: 32
+
   about-sqlite:
     application:
       job: orchard
@@ -66,3 +81,21 @@ scenarios:
         presetHeaders: plaintext
         path: /about
         connections: 32
+
+  about-postgresql-net6:
+    db:
+      job: postgresql
+    application:
+      job: orchard
+      source:
+        branchOrCommit: net6
+      framework: net6.0 
+      environmentVariables:
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: plaintext
+        path: /about
+        connections: 32        
