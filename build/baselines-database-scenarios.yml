@@ -58,6 +58,7 @@ steps:
     - ${{ if or( eq(b.supportsPlatform, true), eq(s.isPlatform, false)) }}:
       - task: PublishToAzureServiceBus@1
         condition: succeededOrFailed()
+        timeoutInMinutes: 5
         displayName: "${{ s.displayName }} - ${{ b.displayName }}"
         enabled: ${{ ne(b.displayName, parameters.skip) }}
         inputs:

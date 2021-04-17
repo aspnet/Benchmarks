@@ -125,6 +125,7 @@ steps:
         - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') )}}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
+            timeoutInMinutes: 5
             displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
             inputs:
               connectedServiceName: ${{ parameters.connection }}
@@ -145,6 +146,7 @@ steps:
       - ${{ if and( protocol.requiresGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
+          timeoutInMinutes: 5
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}

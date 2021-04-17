@@ -108,6 +108,7 @@ steps:
         - ${{ each stream in parameters.connectionStreams }}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
+            timeoutInMinutes: 5
             displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ stream.displayName }}
             inputs:
               connectedServiceName: ${{ parameters.connection }}
