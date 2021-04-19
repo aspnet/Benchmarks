@@ -90,9 +90,6 @@ namespace Benchmarks
 #endif
                         , 1024);
 
-                    services.AddDbContextPool<ApplicationDbContext>(
-                        options => options.UseNpgsql(appSettings.ConnectionString), 1024);
-
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
                     {
                         services.AddSingleton<DbProviderFactory>(NpgsqlFactory.Instance);
