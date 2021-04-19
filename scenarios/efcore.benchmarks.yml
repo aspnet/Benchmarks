@@ -9,8 +9,8 @@ jobs:
       project: benchmark/EFCore.Sqlite.Benchmarks/EFCore.Sqlite.Benchmarks.csproj
     variables:
       filter: "*"
-      job: short
-    arguments: --job {{job}} --filter {{filter}} --memory
+      jobType: short
+    arguments: --job {{jobType}} --filter {{filter}} --memory
     framework: net6.0
     options:
       benchmarkDotNet: true
