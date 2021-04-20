@@ -12,7 +12,8 @@ imports:
 
 variables:
     serverPort: 5000
-
+    serverScheme: https
+        
 scenarios:
   grpcaspnetcoreserver-grpcnetclient:
     application:

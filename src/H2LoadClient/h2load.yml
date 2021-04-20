@@ -22,6 +22,8 @@ jobs:
       protocol: h2c
       body: ''
       presetHeaders: none
-    arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {{serverUri}}:{{serverPort}}{{path}} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != '' %} --body {{ body }} {% endif %}"
+      serverScheme: http
+      serverAddress: localhost      
+    arguments: "-c {{connections}} -t {{threads}} -m {{streams}} -d {{duration}} -w {{warmup}} -u {% if serverUri == blank or serverUri == empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} -p {{ protocol }} {{headers[presetHeaders]}} {% if body != '' %} --body {{ body }} {% endif %}"
     options:
       requiredOperatingSystem: linux
