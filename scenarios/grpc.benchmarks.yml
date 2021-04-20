@@ -8,12 +8,10 @@ imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Grpc/GoServer/grpc-go-server.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Grpc/GoClient/grpc-go-client.yml
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/H2LoadClient/h2load.yml
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
     serverPort: 5000
-    serverScheme: https
-        
+
 scenarios:
   grpcaspnetcoreserver-grpcnetclient:
     application:
@@ -96,3 +94,59 @@ scenarios:
       job: h2LoadClient
       variables:
         presetHeaders: grpc
+
+profiles:
+  local:
+    variables:
+      serverUri: http://localhost
+    jobs: 
+      application:
+        endpoints: 
+          - http://localhost:5010
+      load:
+        endpoints: 
+          - http://localhost:5010
+  aspnet-perf-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+  aspnet-perf-win:
+    variables:
+      serverUri: http://10.0.0.110
+      cores: 12
+    jobs:
+      application:
+        endpoints: 
+          - http://asp-perf-win:5001
+      load:
+        endpoints: 
+          - http://asp-perf-db:5001
+  aspnet-citrine-lin:
+    variables:
+      serverUri: http://10.0.0.102
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  aspnet-citrine-win:
+    variables:
+      serverUri: http://10.0.0.104
+      cores: 28
+    jobs: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-db:5001
