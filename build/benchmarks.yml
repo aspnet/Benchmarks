@@ -83,7 +83,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends_Database
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
     matrix:
@@ -104,7 +104,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: Trends_Database
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
     matrix:
@@ -125,7 +125,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: ["Baselines_Linux", "Baselines_Windows"]
-  condition: succeededOrFailed()
+  condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
     matrix:
@@ -225,11 +225,49 @@ jobs:
       profile: $(profile)
       connection:  ASP.NET Benchmarks Mono Queue
 
+- job: PGO_Linux
+  displayName: PGO
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: ["EFCore"]
+  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: pgo-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
+
+- job: PGO_Windows
+  displayName: PGO
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: ["EFCore"]
+  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Windows:
+        profile: aspnet-citrine-win
+  steps:
+  - template: pgo-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+      profile: $(profile)
+
 - job: gRPC_Linux
   displayName: gRPC
   pool: server
   timeoutInMinutes: 180
-  dependsOn: Frameworks_Database
+  dependsOn: PGO_Linux
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
     maxParallel: 1
@@ -248,7 +286,7 @@ jobs:
   displayName: gRPC
   pool: server
   timeoutInMinutes: 180
-  dependsOn: EFCore
+  dependsOn: PGO_Windows
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
     maxParallel: 1
