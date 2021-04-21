@@ -72,5 +72,5 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --profile latest-extensions-packages --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} {{ m.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} {{ m.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }
