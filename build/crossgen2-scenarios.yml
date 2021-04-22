@@ -29,12 +29,12 @@ parameters:
 
   - displayName: Default
     arguments: --property profile=default
-  - displayName: CG2 composite
-    arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \"
-  - displayName: CG2 non-composite 
+  - displayName: CG2 composite # since 6.0-preview4 CG2 is the default when PublishReadyToRun=true is set 
+    arguments: --property profile=composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true \"
+  - displayName: CG2 non-composite  # /p:PublishReadyToRunComposite=false is the default
     arguments: --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
   - displayName: CG2 composite avx2
-    arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--instruction-set:avx2 \"
+    arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--instruction-set:avx2 \"
 
 steps:
 - ${{ each s in parameters.scenarios }}:
