@@ -68,13 +68,13 @@ scenarios:
           serverPort: 5000
 
   db-fortunes-raw-docker:
+    db:
+      job: postgresql
     application:
       job: aspnetbenchmarks-docker
       variables:
         scenario: dbfortunesraw
         serverPort: 5000
-    db:
-      job: postgresql
     load:
       job: bombardier
       variables:
