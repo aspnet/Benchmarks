@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,7 +19,7 @@ namespace Proxy
 {
     public class Program
     {
-        private static string _responseBody = new string('a', 10240);
+        private static byte[] _responseBody = Encoding.UTF8.GetBytes(new string('a', 100));
 
         private static string _scheme;
         private static HostString _host;

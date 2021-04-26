@@ -127,12 +127,11 @@ namespace Proxy
             }
         }
 
-        public static HttpResponseMessage CreateResponse(HttpRequestMessage request, string responseBody)
+        public static HttpResponseMessage CreateResponse(HttpRequestMessage request, byte[] responseBody)
         {
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             CopyHeaders(response.Headers, request.Headers);
-            response.Content = new StringContent(responseBody);
-            response.Content.Headers.ContentLength = responseBody.Length;
+            response.Content = new ByteArrayContent(responseBody);
             return response;
         }
 
