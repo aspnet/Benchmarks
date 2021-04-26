@@ -78,3 +78,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/BuildPerformance/buildperformance.yml
 - name: orchardJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml
+- name: containerMatrixJobs
+  value: --json https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containermatrix.benchmarks.yml
