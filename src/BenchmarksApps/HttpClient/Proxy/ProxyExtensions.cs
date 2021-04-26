@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -126,6 +127,14 @@ namespace Proxy
             }
         }
 
+        public static HttpResponseMessage CreateResponse(HttpRequestMessage request, string responseBody)
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            CopyHeaders(response.Headers, request.Headers);
+            response.Content = new StringContent(responseBody);
+            return response;
+        }
+
         static void CopyHeaders(IHeaderDictionary responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
         {
             foreach (var replyHeader in replyHeaders)
@@ -146,6 +155,14 @@ namespace Proxy
                 }
 
                 responseHeaders[replyHeader.Key] = headerValue;
+            }
+        }
+
+        static void CopyHeaders(HttpResponseHeaders responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
+        {
+            foreach (var replyHeader in replyHeaders)
+            {
+               responseHeaders.TryAddWithoutValidation(replyHeader.Key, replyHeader.Value);
             }
         }
     }
