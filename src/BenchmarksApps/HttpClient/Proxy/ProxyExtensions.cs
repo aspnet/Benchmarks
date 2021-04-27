@@ -132,6 +132,7 @@ namespace Proxy
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             CopyHeaders(response.Headers, request.Headers);
             response.Content = new ByteArrayContent(responseBody);
+            response.Content.Headers.ContentLength = responseBody.Length;
             return response;
         }
 
