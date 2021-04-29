@@ -54,6 +54,8 @@ parameters:
 
   - displayName: Default
     arguments: --property pgo=default
+  - displayName: Default
+    arguments: --property pgo=disabled --application.environmentVariables COMPlus_JitDisablePGO=1
   - displayName: Dynamic PGO
     arguments: --property pgo=dynamic --application.environmentVariables COMPlus_TieredPGO=1 --application.environmentVariables COMPlus_TC_QuickJitForLoops=1
   - displayName: Full PGO
