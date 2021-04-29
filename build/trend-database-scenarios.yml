@@ -51,5 +51,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }
