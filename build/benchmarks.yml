@@ -588,7 +588,7 @@ jobs:
   displayName: Container Matrix scenarios
   pool: server
   timeoutInMinutes: 60
-  dependsOn: CrossGen_Windows
+  dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
   condition: and(succeededOrFailed(), eq(variables['pm'], true), or(eq(variables['dayofweek'], 'Monday'), eq(variables['dayofweek'], 'Friday')))
   strategy:
     maxParallel: 1
@@ -598,6 +598,7 @@ jobs:
   steps:
   - template: containermatrix-scenarios.yml
     profile: $(profile)
+    connection: ASP.NET Benchmarks Queue
   
 
 

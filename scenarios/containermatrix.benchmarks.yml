@@ -3,14 +3,16 @@
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 jobs:
   aspnetbenchmarks-docker:
+    noClean: true
     variables:
-      connection-header: "--header Connection:keep-alive"
       protocol: http
       server: Kestrel
       transport: Sockets
       scenario: plaintext
+      serverPort: 5000
     source:
-      localFolder: d:\source\aspnetbenchmarks
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       dockerFile: docker/container-matrix/Middleware.dockerfile
       dockerImageName: app
       dockerContextDirectory: .
@@ -36,26 +38,19 @@ scenarios:
       job: aspnetbenchmarks-docker
       variables:
         scenario: plaintext
-        serverPort: 5000
       arguments: --cpus {{cpu}} --memory {{mem}}
-      options:
-        displayOutput: true
-        displayBuild: true
     load:
       job: bombardier
       variables:
           warmup: 5
           presetHeaders: plaintext
           path: /plaintext
-          duration: "{{ duration }}"
-          rate: "{{ rate }}"
-          serverPort: 5000
+
   json-docker:
     application:
       job: aspnetbenchmarks-docker
       variables:
         scenario: json
-        serverPort: 5000
       arguments: --cpus {{cpu}} --memory {{mem}}
     load:
       job: bombardier
@@ -63,9 +58,6 @@ scenarios:
           warmup: 5
           presetHeaders: plaintext
           path: /json
-          duration: "{{duration}}"
-          rate: "{{rate}}"
-          serverPort: 5000
 
   db-fortunes-raw-docker:
     db:
@@ -74,13 +66,9 @@ scenarios:
       job: aspnetbenchmarks-docker
       variables:
         scenario: dbfortunesraw
-        serverPort: 5000
     load:
       job: bombardier
       variables:
           warmup: 5
           presetHeaders: plaintext
           path: /fortunes/raw
-          rate: "{{rate}}"
-          duration: 15
-          serverPort: 5000

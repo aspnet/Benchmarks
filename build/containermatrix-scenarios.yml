@@ -1,4 +1,4 @@
-# Blazor scenarios
+# Container Matrix scenarios
 
 parameters:
 - name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
@@ -16,32 +16,25 @@ parameters:
   type: object
   default:
 
-    Mini:
-      displayName: Mini
+    - displayName: Mini
       cpu: 0.25
       memory: 40mb
-    Small:
-      displayName: Small
+    - displayName: Small
       cpu: 1
       memory: 100mb
-    Medium:
-      displayName: Medium
+    - displayName: Medium
       cpu: 2
       memory: 250mb
-    Large:
-      displayName: Large
+    - displayName: Large
       cpu: 4
       memory: 500mb
-    QuarterMachine:
-      displayName: QuarterMachine
+    - displayName: QuarterMachine
       cpu: 7
       memory: 8gb
-    HalfMachine:
-      displayName: HalfMachine
+    - displayName: HalfMachine
       cpu: 14
       memory: 16gb
-    WholeMachine:
-      displayName: WholeMachine
+    - displayName: WholeMachine
       cpu: 28
       memory: 32gb
 
@@ -62,24 +55,24 @@ parameters:
   default: 
 
   - displayName: Plaintext Middleware Docker
-    arguments: --scenario plaintext $(containerMatrixJobs)
+    arguments: --scenario plaintext $(containerMatrixJobs) --property scenario=Plaintext
   - displayName: Json Middleware Docker
-    arguments: --scenario json $(containerMatrixJobs)
+    arguments: --scenario json $(containerMatrixJobs) --property scenario=Json
   - displayName: Fortunes Raw Middleware Docker
-    arguments: --scenario db-fortunes $(containerMatrixJobs)
+    arguments: --scenario db-fortunes $(containerMatrixJobs) --property scenario=Fortunes
 
 steps:
-- ${{ each s in parameters.scenarios }}:
+- ${{ each scen in parameters.scenarios }}:
   - ${{ each size in parameters.sizes }}:
     - ${{ each rate in parameters.rates }}:
       - task: PublishToAzureServiceBus@1
         condition: succeededOrFailed()
-        displayName: ${{ s.displayName size.displayName rate RPS }}
+        displayName: ${{ scen.displayName }} ${{ size.displayName }} ${{ rate }} RPS
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
           messageBody: |
             {
               "name": "crank",
-              "args": [ "--session $(session) ${{ s.arguments }} --profile ${{ parameters.profile }} --property "cpu=${{ size.cpu }}" --property "mem=${{ size.mem }}" --property "rate=${{ rate }}" --property "duration=30" --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate }} --variable duration=${{ duration }} --table ContainerMatrix --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property "cpu=${{ size.cpu }}" --property "mem=${{ size.mem }}" --property "rate=${{ rate }}" --property "duration=30" --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate }} --variable duration=30 --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
