@@ -598,8 +598,8 @@ jobs:
   steps:
   - template: containermatrix-scenarios.yml
     parameters:
-      warmup: 15
-      duration: 15
+      warmup: 5
+      duration: 30
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
 

@@ -1,13 +1,16 @@
 # Container Matrix scenarios
 
 parameters:
-- name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
-  type: string
-  default: ''
-- name: connection
-  type: string
-  default: ''
 - name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+- name: connection
   type: string
   default: ''
 
@@ -40,13 +43,13 @@ parameters:
 
 # Rates
 - name: rates
-  type: number
+  type: object
   default: 
 
-    - 10
-    - 100
-    - 1000
-    - 10000
+    - value: 10
+    - value: 100
+    - value: 1000
+    - value: 10000
 
 
 # Scenarios
@@ -67,12 +70,12 @@ steps:
     - ${{ each rate in parameters.rates }}:
       - task: PublishToAzureServiceBus@1
         condition: succeededOrFailed()
-        displayName: ${{ scen.displayName }} ${{ size.displayName }} ${{ rate }} RPS
+        displayName: ${{ scen.displayName }} ${{ size.displayName }} ${{ rate.value }} RPS
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
           messageBody: |
             {
               "name": "crank",
-              "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property "cpu=${{ size.cpu }}" --property "mem=${{ size.mem }}" --property "rate=${{ rate }}" --property "duration=30" --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate }} --variable duration=30 --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property "cpu=${{ size.cpu }}" --property "mem=${{ size.mem }}" --property "rate=${{ rate.value }}" --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate.value }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
