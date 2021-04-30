@@ -585,7 +585,7 @@ jobs:
       profile: $(profile)
 
 - job: Container_Matrix
-  displayName: Container Matrix scenarios
+  displayName: Containers
   pool: server
   timeoutInMinutes: 60
   dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
@@ -597,10 +597,11 @@ jobs:
         profile: aspnet-citrine-lin
   steps:
   - template: containermatrix-scenarios.yml
-    profile: $(profile)
-    connection: ASP.NET Benchmarks Queue
-  
-
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
 
 # CLOUD SCENARIOS
 
