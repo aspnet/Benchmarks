@@ -125,8 +125,8 @@ templates:
   rps: |
     A performance regression has been detected for the following scenarios:
     
-    | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev |
-    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- |
+    | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | Dependencies |
+    | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | ------------ |
     {% for regression in Regressions %}
     {% assign r = regression.CurrentResult %}
     {% assign p = regression.PreviousResult %}
@@ -134,9 +134,42 @@ templates:
     {% assign prevRps = 0 | plus: p.Data.jobs.load.results['wrk/rps/mean'] | plus: p.Data.jobs.load.results['bombardier/rps/mean'] %}
     {% assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 %}
     {% assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} |
+    {%- capture changes -%}
+    <details>
+        <summary>Changes</summary> 
+        <table><th>Name</th><th>Version</th><th>Diff</th>
+        {% for diff in regression.Changes %}
+            <tr>
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {% if diff.PreviousVersion != empty and diff.CurrentVersion != empty %}
+                        `{{ diff.PreviousVersion }}` -> `{{diff.CurrentVersion }}`
+                    {% elsif diff.PreviousVersion == empty %}
+                      `{{diff.CurrentVersion }}` (__New__ )
+                    {% else %}
+                        `{{diff.PreviousVersion }}` (__Removed__)
+                    {% endif %}
+                </td>
+                <td>
+                    {% if diff.PreviousCommitHash != diff.CurrentCommitHash %}
+                        {% if diff.RepositoryUrl != empty and diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty %}
+                            {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
+                        {% else %}
+                            n/a
+                        {% endif %}
+                    {% else %}
+                        `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    </details>
+    {%- endcapture -%}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | {{ changes | strip_newlines }} |
     {% endfor %}
 
+    <!--
     ### Changes:
 
     {% assign currentAspNetCoreVersion = r.Data.jobs.application.results.aspNetCoreVersion | split: '+' %}
@@ -151,6 +184,7 @@ templates:
     | ASP.NET | {{ previousAspNetCoreVersion[0] | default: 'n/a' }} | {{ currentAspNetCoreVersion[0] | default: 'n/a' }} | {% if previousAspNetCoreVersion[1] != currentAspNetCoreVersion[1] %} https://github.com/dotnet/aspnetcore/compare/{{previousAspNetCoreVersion[1]}}...{{currentAspNetCoreVersion[1]}} {% else %} n/a  {% endif %} |
     | CLR | {{ previousNetCoreAppVersion[0] | default: 'n/a' }} | {{ currentNetCoreAppVersion[0] | default: 'n/a' }} | {% if previousNetCoreAppVersion[1] != currentNetCoreAppVersion[1] %} https://github.com/dotnet/runtime/compare/{{previousNetCoreAppVersion[1]}}...{{currentNetCoreAppVersion[1]}} {% else %} n/a {% endif %} |
     | SDK | {{ previousNetCoreSdk | default: 'n/a' }} | {{ currentNetCoreSdk }} | n/a |
+    -->
 
   build: |
     A build regression has been detected for the following scenarios:
