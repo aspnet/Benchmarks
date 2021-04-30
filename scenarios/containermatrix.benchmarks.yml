@@ -1,0 +1,74 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+jobs:
+  aspnetbenchmarks-docker:
+    noClean: true
+    variables:
+      protocol: http
+      server: Kestrel
+      transport: Sockets
+      scenario: plaintext
+      serverPort: 5000
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      dockerFile: docker/container-matrix/Middleware.dockerfile
+      dockerImageName: app
+      dockerContextDirectory: .
+      dockerCommand: "--nonInteractive true --scenarios {{scenario}} --urls {{protocol}}://[*]:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {{databaseCmd}}"
+    readyStateText: Application started.
+    environmentVariables:
+      database: "PostgreSQL"
+      connectionString: >
+       "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  plaintext-docker:
+    application:
+      job: aspnetbenchmarks-docker
+      variables:
+        scenario: plaintext
+      arguments: --cpus {{cpu}} --memory {{mem}}
+    load:
+      job: bombardier
+      variables:
+          warmup: 5
+          presetHeaders: plaintext
+          path: /plaintext
+
+  json-docker:
+    application:
+      job: aspnetbenchmarks-docker
+      variables:
+        scenario: json
+      arguments: --cpus {{cpu}} --memory {{mem}}
+    load:
+      job: bombardier
+      variables:
+          warmup: 5
+          presetHeaders: plaintext
+          path: /json
+
+  db-fortunes-raw-docker:
+    db:
+      job: postgresql
+    application:
+      job: aspnetbenchmarks-docker
+      variables:
+        scenario: dbfortunesraw
+    load:
+      job: bombardier
+      variables:
+          warmup: 5
+          presetHeaders: plaintext
+          path: /fortunes/raw

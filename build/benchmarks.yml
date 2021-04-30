@@ -12,6 +12,8 @@ variables:
     value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
   - name: pm
     value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
+  - name: dayofweek
+    value: $[format('{0:dddd}', pipeline.startTime)]
 
 jobs:
 
@@ -581,6 +583,24 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
+
+- job: Container_Matrix
+  displayName: Container Matrix scenarios
+  pool: server
+  timeoutInMinutes: 60
+  dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
+  condition: and(succeededOrFailed(), eq(variables['am'], true)) # , or(eq(variables['dayofweek'], 'Monday'), eq(variables['dayofweek'], 'Friday')))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: containermatrix-scenarios.yml
+    profile: $(profile)
+    connection: ASP.NET Benchmarks Queue
+  
+
 
 # CLOUD SCENARIOS
 
