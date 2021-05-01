@@ -12,10 +12,16 @@ variables:
     value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
   - name: pm
     value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
-  - name: dayofweek
-    value: $[format('{0:f}', pipeline.startTime)]
+  - name: startTime
+    value: $[pipeline.startTime]
 
 jobs:
+- job: Get_Day_Of_Week
+  pool: 
+    vmImage: ubuntu-latest
+  steps:
+    - pwsh: echo "##vso[task.setvariable variable=day;isOutput=true]$(([datetime]$env:STARTTIME).DayOfWeek)"
+      name: getday
 
 - job: Trends_Linux
   displayName: Trends
@@ -588,8 +594,10 @@ jobs:
   displayName: Containers
   pool: server
   timeoutInMinutes: 60
-  dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
-  condition: and(succeededOrFailed(), eq(variables['am'], true)) # , or(contains(variables['dayofweek'], 'Saturday'), contains(variables['dayofweek'], 'Sunday')))
+  dependsOn: ["CrossGen_Windows", "CrossGen_Linux", "Get_Day_Of_Week"]
+  variables:
+      dayOfWeek: $[ dependencies.getday.outputs['getday.day'] ]
+  condition: and(succeededOrFailed(), in(variables['dayOfWeek'], 'Monday', 'Thursday'))
   strategy:
     maxParallel: 1
     matrix:
