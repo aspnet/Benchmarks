@@ -589,7 +589,7 @@ jobs:
   pool: server
   timeoutInMinutes: 60
   dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
-  condition: and(succeededOrFailed(), eq(variables['am'], true)) # , or(eq(variables['dayofweek'], 'Monday'), eq(variables['dayofweek'], 'Friday')))
+  condition: and(succeededOrFailed(), eq(variables['am'], true), or(contains(variables['dayofweek'], 'Saturday'), contains(variables['dayofweek'], 'Sunday')))
   strategy:
     maxParallel: 1
     matrix:
