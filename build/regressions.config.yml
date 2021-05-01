@@ -165,9 +165,9 @@ templates:
         {% endfor %}
         </table>
     </details>
-    {%- endcapture -%}
+    {%- endcapture %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | {{ changes | strip_newlines }} |
-    {%- endfor -%}
+    {%- endfor %}
 
     <!--
     ### Changes:
@@ -197,9 +197,9 @@ templates:
     {%- assign build = r.Data.jobs.application.results['benchmarks/build-time'] -%}
     {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
-    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
+    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
-    {%- endfor -%}
+    {%- endfor %}
 
     ### Changes:
 
@@ -208,7 +208,7 @@ templates:
     {%- assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion -%}
-    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion -%}
+    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
 
     | Runtime | Previous Version | Current Version | Diff |
     | ------- | ---------------- | --------------- | ---- |
@@ -227,9 +227,9 @@ templates:
     {%- assign build = r.Data.jobs.application.results['benchmarks/published-size'] -%}
     {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/published-size'] -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
-    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
+    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
-    {%- endfor -%}
+    {%- endfor %}
 
     ### Changes:
 
@@ -238,7 +238,7 @@ templates:
     {%- assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion -%}
-    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion -%}
+    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
 
     | Runtime | Previous Version | Current Version | Diff |
     | ------- | ---------------- | --------------- | ---- |
@@ -257,9 +257,9 @@ templates:
     {%- assign build = r.Data.jobs.application.results['benchmarks/start-time'] -%}
     {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/start-time'] -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
-    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
+    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} |
-    {%- endfor -%}
+    {%- endfor %}
 
     ### Changes:
 
@@ -268,7 +268,7 @@ templates:
     {%- assign currentNetCoreAppVersion = r.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign previousNetCoreAppVersion = p.Data.jobs.application.results.netCoreAppVersion | split: '+' -%}
     {%- assign currentNetCoreSdk = r.Data.jobs.application.results.netSdkVersion -%}
-    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion -%}
+    {%- assign previousNetCoreSdk = p.Data.jobs.application.results.netSdkVersion %}
 
     | Runtime | Previous Version | Current Version | Diff |
     | ------- | ---------------- | --------------- | ---- |
