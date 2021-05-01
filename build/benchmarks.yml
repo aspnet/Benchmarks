@@ -13,7 +13,7 @@ variables:
   - name: pm
     value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
   - name: dayofweek
-    value: $[format('{0:dddd}', pipeline.startTime)]
+    value: $[format('{0:f}', pipeline.startTime)]
 
 jobs:
 
