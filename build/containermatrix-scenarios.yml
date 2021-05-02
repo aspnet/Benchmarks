@@ -57,11 +57,11 @@ parameters:
   type: object
   default: 
 
-  - displayName: Plaintext Middleware Docker
+  - displayName: Plaintext
     arguments: --scenario plaintext $(containerMatrixJobs) --property scenario=Plaintext
-  - displayName: Json Middleware Docker
+  - displayName: Json
     arguments: --scenario json $(containerMatrixJobs) --property scenario=Json
-  - displayName: Fortunes Raw Middleware Docker
+  - displayName: Fortunes
     arguments: --scenario db-fortunes $(containerMatrixJobs) --property scenario=Fortunes
 
 steps:
@@ -76,6 +76,7 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
+              "condition": "new Date().getDay() <= 3"
               "name": "crank",
-              "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property "cpu=${{ size.cpu }}" --property "mem=${{ size.mem }}" --property "rate=${{ rate.value }}" --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate.value }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property cpu=${{ size.cpu }} --property mem=${{ size.mem }} --property rate=${{ rate.value }} --property duration={{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable cpu=${{ size.cpu }} --variable mem=${{ size.mem }} --variable rate=${{ rate.value }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
