@@ -33,6 +33,7 @@ jobs:
       duration: 30
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
+      condition: new Date().getDay() <= 3 && new Date().getHours() < 12
 
 - job: Trends_Linux
   displayName: Trends
