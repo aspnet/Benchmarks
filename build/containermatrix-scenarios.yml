@@ -76,7 +76,7 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
-              "condition": "new Date().getDay() <= 3",
+              "condition": "new Date().getDay() <= 3 && '${{ scen.displayName }}' == 'Mini' && '${{ rate.value }}' == '100'",
               "name": "crank",
               "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --property cpu=${{ size.cpu }} --property mem=${{ size.memory }} --property rate=${{ rate.value }} --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable cpu=${{ size.cpu }} --variable mem=${{ size.memory }} --variable rate=${{ rate.value }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
