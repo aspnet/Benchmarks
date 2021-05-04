@@ -12,15 +12,33 @@ variables:
     value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
   - name: pm
     value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
-  - name: dayofweek
-    value: $[format('{0:f}', pipeline.startTime)]
 
 jobs:
+
+- job: Container_Matrix
+  displayName: Containers
+  pool: server
+  timeoutInMinutes: 60
+  # dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
+  # condition: and(succeededOrFailed(), eq(variables['am'], true))
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: containermatrix-scenarios.yml
+    parameters:
+      warmup: 5
+      duration: 30
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
 
 - job: Trends_Linux
   displayName: Trends
   pool: server
   timeoutInMinutes: 120
+  dependsOn: Container_Matrix
   strategy:
     maxParallel: 1
     matrix:
@@ -40,6 +58,7 @@ jobs:
   displayName: Trends
   pool: server
   timeoutInMinutes: 120
+  dependsOn: Container_Matrix
   strategy:
     maxParallel: 1
     matrix:
@@ -582,25 +601,6 @@ jobs:
       warmup: 15
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
-      profile: $(profile)
-
-- job: Container_Matrix
-  displayName: Containers
-  pool: server
-  timeoutInMinutes: 60
-  dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
-  condition: and(succeededOrFailed(), eq(variables['am'], true)) # , or(contains(variables['dayofweek'], 'Saturday'), contains(variables['dayofweek'], 'Sunday')))
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Linux:
-        profile: aspnet-citrine-lin
-  steps:
-  - template: containermatrix-scenarios.yml
-    parameters:
-      warmup: 5
-      duration: 30
-      connection: ASP.NET Benchmarks Queue
       profile: $(profile)
 
 # CLOUD SCENARIOS
