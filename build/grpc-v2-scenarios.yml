@@ -13,6 +13,9 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: ''
 
 # Standard scenarios
 - name: scenarios 
@@ -115,6 +118,7 @@ steps:
               waitForCompletion: true
               messageBody: |
                 {
+                  "condition": "${{ parameters.condition }}",
                   "name": "crank",
                   "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }}" ]
                 }

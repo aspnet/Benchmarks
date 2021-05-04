@@ -15,12 +15,13 @@ variables:
 
 jobs:
 
+
 - job: Container_Matrix
   displayName: Containers
   pool: server
-  timeoutInMinutes: 60
+  timeoutInMinutes: 180
   # dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
-  # condition: and(succeededOrFailed(), eq(variables['am'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -33,7 +34,7 @@ jobs:
       duration: 30
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
-      condition: new Date().getDay() <= 3 && new Date().getHours() < 12
+      condition: new Date().getDay() <= 3 # && new Date().getHours() < 12
 
 - job: Trends_Linux
   displayName: Trends
@@ -290,7 +291,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180
   dependsOn: PGO_Linux
-  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -303,13 +304,14 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Queue
+      condition: new Date().getHours() >= 12
 
 - job: gRPC_Windows
   displayName: gRPC
   pool: server
   timeoutInMinutes: 180
   dependsOn: PGO_Windows
-  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -322,6 +324,7 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
+      condition: new Date().getHours() >= 12
 
 - job: SignalR_Linux
   displayName: SignalR
@@ -475,7 +478,7 @@ jobs:
   pool: server
   timeoutInMinutes: 360
   dependsOn: ["MVC_Linux", "MVC_Windows"]
-  condition: and(succeededOrFailed(), eq(variables['am'], true))
+  condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
     parameters:
@@ -483,6 +486,7 @@ jobs:
       warmup: 15
       duration: 15
       connection: ASP.NET Benchmarks Queue
+      condition: new Date().getHours() < 12
 
 - job: Blazor
   pool: server
@@ -500,7 +504,7 @@ jobs:
   pool: server
   timeoutInMinutes: 180 # ARM takes 2h
   dependsOn: Proxies
-  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -515,13 +519,14 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
+      condition: new Date().getHours() >= 12
 
 - job: Mono_Windows
   displayName: Mono
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Proxies", "MVC_Windows"] # depends on both since if Proxies is disabled it would otherwise start while MVC_Windows is still running  
-  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -536,13 +541,14 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
+      condition: new Date().getHours() >= 12
 
 - job: Mono_Database
   displayName: Mono Database
   pool: server
   timeoutInMinutes: 120
   dependsOn: ["Mono_Linux", "Mono_Windows"]
-  condition: and(succeededOrFailed(), eq(variables['pm'], true))
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -561,6 +567,7 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
+      condition: new Date().getHours() >= 12
 
 - job: CrossGen_Linux
   displayName: CrossGen2
@@ -582,6 +589,7 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
+      condition: new Date().getHours() < 12
 
 - job: CrossGen_Windows
   displayName: CrossGen2
@@ -603,44 +611,45 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
+      condition: new Date().getHours() < 12
 
 # CLOUD SCENARIOS
 
-# - job: Trends_Azure
-#   displayName: Trends Azure
-#   pool: server
-#   timeoutInMinutes: 180
-#   strategy:
-#     maxParallel: 1
-#     matrix:
-#       Intel_Linux:
-#         profile: aspnet-azure-lin
-#   steps:
-#   - template: trend-scenarios.yml
-#     parameters:
-#       warmup: 15
-#       duration: 15
-#       connection: 'ASP.NET Benchmarks Azure Queue'
-#       profile: $(profile)
+- job: Trends_Azure
+  displayName: Trends Azure
+  pool: server
+  timeoutInMinutes: 180
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-azure-lin
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Azure Queue'
+      profile: $(profile)
 
-# - job: Trends_Azure_Database
-#   displayName: Trends Azure Database
-#   pool: server
-#   timeoutInMinutes: 180
-#   dependsOn: ["Trends_Azure"]
-#   condition: succeededOrFailed()
-#   strategy:
-#     maxParallel: 1
-#     matrix:
-#       Intel_Linux:
-#         profile: aspnet-azure-lin
-#   steps:
-#   - template: trend-database-scenarios.yml
-#     parameters:
-#       warmup: 15
-#       duration: 15
-#       connection: 'ASP.NET Benchmarks Azure Queue'
-#       profile: $(profile)
+- job: Trends_Azure_Database
+  displayName: Trends Azure Database
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: ["Trends_Azure"]
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-azure-lin
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      warmup: 15
+      duration: 15
+      connection: 'ASP.NET Benchmarks Azure Queue'
+      profile: $(profile)
 
 # - job: SignalRAzure
 #   displayName: SignalR Azure
