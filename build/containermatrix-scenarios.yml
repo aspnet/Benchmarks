@@ -58,11 +58,11 @@ parameters:
   default: 
 
   - displayName: Plaintext
-    arguments: --scenario plaintext $(containerMatrixJobs) --property scenario=Plaintext
+    arguments: --scenario plaintext-docker $(containerMatrixJobs) --property scenario=Plaintext
   - displayName: Json
-    arguments: --scenario json $(containerMatrixJobs) --property scenario=Json
+    arguments: --scenario json-docker $(containerMatrixJobs) --property scenario=Json
   - displayName: Fortunes
-    arguments: --scenario db-fortunes $(containerMatrixJobs) --property scenario=Fortunes
+    arguments: --scenario db-fortunes-raw-docker $(containerMatrixJobs) --property scenario=Fortunes
 
 steps:
 - ${{ each scen in parameters.scenarios }}:
