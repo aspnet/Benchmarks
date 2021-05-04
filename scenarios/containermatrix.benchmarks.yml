@@ -66,6 +66,7 @@ scenarios:
       job: aspnetbenchmarks-docker
       variables:
         scenario: dbfortunesraw
+      arguments: --cpus {{cpu}} --memory {{mem}}
     load:
       job: bombardier
       variables:
