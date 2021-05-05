@@ -16,7 +16,10 @@ jobs:
       project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
     framework: net5.0
-
+    environmentVariables:
+      database: PostgreSQL
+      connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
+  
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -56,9 +59,6 @@ scenarios:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-      environmentVariables:
-        database: PostgreSQL
-        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
       variables:
@@ -73,9 +73,6 @@ scenarios:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-      environmentVariables:
-        database: PostgreSQL
-        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
       variables:
@@ -89,9 +86,6 @@ scenarios:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-      environmentVariables:
-        database: PostgreSQL
-        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
@@ -105,9 +99,6 @@ scenarios:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-      environmentVariables:
-        database: PostgreSQL
-        connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
@@ -121,9 +112,6 @@ scenarios:
       job: platformbenchmarks
       buildArguments: 
         - "/p:IsDatabase=true"
-      environmentVariables:
-        database: PostgreSQL
-        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
