@@ -33,19 +33,6 @@ jobs:
     noClean: true
 
 scenarios:
-  plaintext-docker:
-    application:
-      job: aspnetbenchmarks-docker
-      variables:
-        scenario: plaintext
-      arguments: --cpus {{cpu}} --memory {{mem}}
-    load:
-      job: bombardier
-      variables:
-          warmup: 5
-          presetHeaders: plaintext
-          path: /plaintext
-
   json-docker:
     application:
       job: aspnetbenchmarks-docker

@@ -60,8 +60,6 @@ parameters:
   type: object
   default: 
 
-  - displayName: Plaintext
-    arguments: --scenario plaintext-docker $(containerMatrixJobs) --property scenario=Plaintext
   - displayName: Json
     arguments: --scenario json-docker $(containerMatrixJobs) --property scenario=Json
   - displayName: Fortunes
