@@ -98,14 +98,14 @@ namespace H2LoadClient
 
         private static void ParseOutput()
         {
-            BenchmarksEventSource.Log.Metadata("h2load/requests", "max", "sum", "Requests", "Total number of requests", "n0");
-            BenchmarksEventSource.Log.Metadata("h2load/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
-            BenchmarksEventSource.Log.Metadata("h2load/errors/socketerrors", "max", "sum", "Socket errors", "Socket errors", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/requests;http/requests", "max", "sum", "Requests", "Total number of requests", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/badresponses;http/requests/badresponses", "max", "sum", "Bad responses", "Non-2xx or 3xx responses", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/errors/socketerrors;http/requests/errors", "max", "sum", "Socket errors", "Socket errors", "n0");
 
-            BenchmarksEventSource.Log.Metadata("h2load/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n0");
-            BenchmarksEventSource.Log.Metadata("h2load/latency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/latency/mean;http/latency/mean", "max", "sum", "Mean latency (ms)", "Mean latency (ms)", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/latency/max;httplatency/max", "max", "sum", "Max latency (ms)", "Max latency (ms)", "n0");
 
-            BenchmarksEventSource.Log.Metadata("h2load/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
+            BenchmarksEventSource.Log.Metadata("h2load/rps/max;httprps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
             BenchmarksEventSource.Log.Metadata("h2load/raw", "all", "all", "Raw results", "Raw results", "object");
 
             double rps = 0;
@@ -125,19 +125,19 @@ namespace H2LoadClient
             var socketErrors = CountSocketErrors(socketErrorsMatch);
 
             var badResponsesMatch = Regex.Match(Output, @"status codes: ([\d\.]+) 2xx, ([\d\.]+) 3xx, ([\d\.]+) 4xx, ([\d\.]+) 5xx");
-            var badResponses = ReadBadReponses(badResponsesMatch);
+            var badResponses = ReadBadResponses(badResponsesMatch);
 
             var requestsCountMatch = Regex.Match(Output, @"requests: ([\d\.]+) total");
             var totalRequests = ReadRequests(requestsCountMatch);
 
-            BenchmarksEventSource.Measure("h2load/requests", totalRequests);
-            BenchmarksEventSource.Measure("h2load/badresponses", badResponses);
-            BenchmarksEventSource.Measure("h2load/errors/socketerrors", socketErrors);
+            BenchmarksEventSource.Measure("h2load/requests;http/requests", totalRequests);
+            BenchmarksEventSource.Measure("h2load/badresponses;http/requests/badresponses", badResponses);
+            BenchmarksEventSource.Measure("h2load/errors/socketerrors;http/requests/errors", socketErrors);
 
-            BenchmarksEventSource.Measure("h2load/latency/mean", averageLatency);
-            BenchmarksEventSource.Measure("h2load/latency/max", maxLatency);
+            BenchmarksEventSource.Measure("h2load/latency/mean;http/latency/mean", averageLatency);
+            BenchmarksEventSource.Measure("h2load/latency/max;http/latency/max", maxLatency);
 
-            BenchmarksEventSource.Measure("h2load/rps/max", rps);
+            BenchmarksEventSource.Measure("h2load/rps/max;http/rps/max", rps);
 
             BenchmarksEventSource.Measure("h2load/raw", Output);
         }
@@ -161,7 +161,7 @@ namespace H2LoadClient
             }
         }
 
-        private static int ReadBadReponses(Match badResponsesMatch)
+        private static int ReadBadResponses(Match badResponsesMatch)
         {
             if (!badResponsesMatch.Success)
             {
