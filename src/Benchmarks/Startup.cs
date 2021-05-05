@@ -73,8 +73,8 @@ namespace Benchmarks
                 case DatabaseServer.PostgreSql:
                     services.AddEntityFrameworkNpgsql();
                     var settings = new NpgsqlConnectionStringBuilder(appSettings.ConnectionString);
-                    if (!settings.NoResetOnClose)
-                        throw new ArgumentException("No Reset On Close=true must be specified for Npgsql");
+                    if (!settings.NoResetOnClose && !settings.Multiplexing)
+                        throw new ArgumentException("No Reset On Close=true Or Multiplexing=true implies must be specified for Npgsql");
                     if (settings.Enlist)
                         throw new ArgumentException("Enlist=false must be specified for Npgsql");
 
