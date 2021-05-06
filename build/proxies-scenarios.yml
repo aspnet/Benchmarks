@@ -27,50 +27,50 @@ parameters:
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    condition: true
+    condition: new Date().getHours() >= 12
   - displayName: YARP gRPC
     arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
     supportsGRPC: true
-    condition: true
+    condition: new Date().getHours() >= 12
   - displayName: YARP-net50
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    condition: true
+    condition: new Date().getHours() >= 12
   - displayName: HttpClient
     arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net6.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
   - displayName: NGinx
     arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx --variable warmup=0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
   - displayName: NGinx gRPC
     arguments: --scenario proxy-nginx-grpc       $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
     supportsGRPC: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
   - displayName: HAProxy
     arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
     supportsHttp: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
   - displayName: Envoy
     arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
   - displayName: Envoy gRPC
     arguments: --scenario proxy-envoy-grpc       $(proxyGRPCJobs) --property proxy=envoy
     supportsGRPC: true
-    condition: new Date().getDay() % 3 == 0
+    condition: new Date().getDay() % 3 == 0 && new Date().getHours() >= 12
 
 - name: payloads
   type: object
@@ -144,7 +144,7 @@ steps:
               waitForCompletion: true
               messageBody: |
                 {
-                  "condition": "${{ parameters.condition }} && ('${{ s.runsEveryday }}'.toLowerCase() == 'true' || new Date().getDay() % 3 == 0)",
+                  "condition": "${{ parameters.condition }} && ${{ s.condition }}",
                   "timeout": "00:03:00",
                   "name": "crank",
                   "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
