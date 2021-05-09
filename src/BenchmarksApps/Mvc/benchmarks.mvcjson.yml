@@ -3,7 +3,7 @@
 
 imports:
 - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
-- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/mvcserver.yml
+- https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/src/BenchmarksApps/Mvc/mvcserver.yml
 
 variables:
     serverPort: 5000
@@ -97,7 +97,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
 
   # Sending 2k Json to Mvc (Json.NET)
   MvcJsonNetInput2k:
@@ -109,7 +109,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
 
   # Sending 60k Json to Mvc
   MvcJsonInput60k:
@@ -119,7 +119,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
         scriptArguments: 60000
 
   # Sending 60k Json to Mvc (Json.NET)
@@ -132,7 +132,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
         scriptArguments: 60000
 
   # 2M json output
@@ -143,7 +143,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
         scriptArguments: 2097152
 
   # 2M json output (Json.NET)
@@ -156,7 +156,7 @@ scenarios:
       job: wrk
       variables:
         path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/prkrishn/webapi-hackery/scripts/mvcjsoninput.lua
         scriptArguments: 2097152
 
 profiles:
