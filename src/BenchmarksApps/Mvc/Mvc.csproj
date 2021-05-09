@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
     <PackageReference Include="System.Web.Http.AspNetCore" Version="0.1.0-alpha.21259.1" />
+    <PackageReference Include="System.Text.Json.Formatter" Version="0.1.0-alpha.21259.1" />
   </ItemGroup>
 
   <!-- These references are used when running on the Benchmarks Server -->
