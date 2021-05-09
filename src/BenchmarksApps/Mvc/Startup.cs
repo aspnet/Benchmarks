@@ -30,11 +30,11 @@ namespace Mvc
         {
             HttpConfiguration config = new HttpConfiguration();
             config.Formatters.Clear();
-            config.Formatters.Add(new SystemTextJsonMediaTypeFormatter());
+            config.Formatters.Add(new JsonMediaTypeFormatter());
 
             config.MapHttpAttributeRoutes();
 
-            app.UseWebApi(config, bufferRequests: false);
+            app.UseWebApi(config);
         }
     }
 }
