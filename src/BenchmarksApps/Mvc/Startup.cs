@@ -1,3 +1,6 @@
+using System.Net.Http.Formatting;
+using System.Web.Http;
+using System.Web.Http.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -19,18 +22,19 @@ namespace Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
-            app.UseRouting();
+            HttpConfiguration config = new HttpConfiguration();
+            config.Formatters.Clear();
+            config.Formatters.Add(new JsonMediaTypeFormatter());
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            config.MapHttpAttributeRoutes();
+
+            app.UseWebApi(config);
         }
     }
 }

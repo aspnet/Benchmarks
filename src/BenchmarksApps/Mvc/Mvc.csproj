@@ -4,6 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
     <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == ''">5.0.0-*</MicrosoftAspNetCoreAppPackageVersion>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+
+    <PackageReference Include="System.Web.Http.AspNetCore" Version="0.1.0-alpha.21259.1" />
   </ItemGroup>
 
   <!-- These references are used when running on the Benchmarks Server -->
