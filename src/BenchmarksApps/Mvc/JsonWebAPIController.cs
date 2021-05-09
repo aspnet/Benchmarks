@@ -21,7 +21,11 @@ namespace Benchmarks.Controllers
 
         [HttpGet]
         [Route("json2k")]
-        public List<Entry> Json2k() => _entries2k;
+        public List<Entry> Json2k()
+        {
+            System.Console.WriteLine("Meow");
+            return _entries2k;
+        }
 
         [HttpGet]
         [Route("jsonNbytes/{sizeInBytes}")]
