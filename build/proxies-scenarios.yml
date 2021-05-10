@@ -15,7 +15,7 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: 'new Date().getHours() < 12'
+  default: 'true'
 
 # Scenarios
 - name: scenarios 
