@@ -34,7 +34,6 @@ jobs:
       duration: 30
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
-      condition: new Date().getHours() < 12
 
 - job: Trends_Linux
   displayName: Trends
@@ -304,7 +303,6 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Queue
-      condition: new Date().getHours() >= 12
 
 - job: gRPC_Windows
   displayName: gRPC
@@ -324,7 +322,6 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
-      condition: new Date().getHours() >= 12
 
 - job: SignalR_Linux
   displayName: SignalR
@@ -486,7 +483,6 @@ jobs:
       warmup: 15
       duration: 15
       connection: ASP.NET Benchmarks Queue
-      condition: new Date().getHours() < 12
 
 - job: Blazor
   pool: server
@@ -519,7 +515,6 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
-      condition: new Date().getHours() >= 12
 
 - job: Mono_Windows
   displayName: Mono
@@ -541,7 +536,6 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
-      condition: new Date().getHours() >= 12
 
 - job: Mono_Database
   displayName: Mono Database
@@ -567,7 +561,6 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
-      condition: new Date().getHours() >= 12
 
 - job: CrossGen_Linux
   displayName: CrossGen2
@@ -589,7 +582,6 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
-      condition: new Date().getHours() < 12
 
 - job: CrossGen_Windows
   displayName: CrossGen2
@@ -611,7 +603,6 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
       profile: $(profile)
-      condition: new Date().getHours() < 12
 
 # CLOUD SCENARIOS
 

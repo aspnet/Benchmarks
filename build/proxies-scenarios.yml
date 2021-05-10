@@ -15,7 +15,7 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: ''
+  default: 'true'
 
 # Scenarios
 - name: scenarios 
