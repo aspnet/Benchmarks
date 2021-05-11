@@ -77,7 +77,7 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
-              "condition": "${{ parameters.condition }} && new Date().getHours() < 12",
+              "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 < 13",
               "name": "crank",
               "args": [ "--session $(session) ${{ scen.arguments }} --profile ${{ parameters.profile }} --no-metadata --no-measurements --property cpu=${{ size.cpu }} --property mem=${{ size.memory }} --property rate=${{ rate.value }} --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable cpu=${{ size.cpu }} --variable mem=${{ size.memory }} --variable rate=${{ rate.value }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }

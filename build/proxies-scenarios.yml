@@ -15,7 +15,7 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: 'new Date().getHours() < 12'
+  default: '(new Date().getUTCHours() - 7 + 24) % 24 < 13'
 
 # Scenarios
 - name: scenarios 
