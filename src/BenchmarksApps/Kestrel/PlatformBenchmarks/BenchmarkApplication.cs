@@ -43,7 +43,9 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _fortunesTableEnd = "</table></body></html>";
         private readonly static AsciiString _contentLengthGap = new string(' ', 4);
 
-        public static RawDb Db { get; set; }
+        public static RawDb RawDb { get; set; }
+        public static DapperDb DapperDb { get; set; }
+        public static EfDb EfDb { get; set; }
 
         [ThreadStatic]
         private static Utf8JsonWriter t_writer;
@@ -53,7 +55,9 @@ namespace PlatformBenchmarks
             public readonly static AsciiString Json = "/json";
             public readonly static AsciiString Plaintext = "/plaintext";
             public readonly static AsciiString SingleQuery = "/db";
-            public readonly static AsciiString Fortunes = "/fortunes";
+            public readonly static AsciiString FortunesRaw = "/fortunes";
+            public readonly static AsciiString FortunesDapper = "/fortunes/dapper";
+            public readonly static AsciiString FortunesEf = "/fortunes/ef";
             public readonly static AsciiString Updates = "/updates/";
             public readonly static AsciiString MultipleQueries = "/queries/";
             public readonly static AsciiString Caching = "/cached-worlds/";
@@ -90,21 +94,27 @@ namespace PlatformBenchmarks
             {
                 return RequestType.SingleQuery;
             }
-            else if (path.Length == 9 && path[1] == 'f' && path.SequenceEqual(Paths.Fortunes))
+            if (path[1] == 'f')
             {
-                return RequestType.Fortunes;
+                return path.Length switch
+                {
+                    9 when path.SequenceEqual(Paths.FortunesRaw) => RequestType.FortunesRaw,
+                    16 when path.SequenceEqual(Paths.FortunesDapper) => RequestType.FortunesDapper,
+                    12 when path.SequenceEqual(Paths.FortunesEf) => RequestType.FortunesEf,
+                    _ => RequestType.NotRecognized
+                };
             }
-            else if (path.Length >= 15 && path[1] == 'c' && path.StartsWith(Paths.Caching))
+            if (path.Length >= 15 && path[1] == 'c' && path.StartsWith(Paths.Caching))
             {
                 queries = ParseQueries(path.Slice(15));
                 return RequestType.Caching;
             }
-            else if (path.Length >= 9 && path[1] == 'u' && path.StartsWith(Paths.Updates))
+            if (path.Length >= 9 && path[1] == 'u' && path.StartsWith(Paths.Updates))
             {
                 queries = ParseQueries(path.Slice(9));
                 return RequestType.Updates;
             }
-            else if (path.Length >= 9 && path[1] == 'q' && path.StartsWith(Paths.MultipleQueries))
+            if (path.Length >= 9 && path[1] == 'q' && path.StartsWith(Paths.MultipleQueries))
             {
                 queries = ParseQueries(path.Slice(9));
                 return RequestType.MultipleQueries;
@@ -148,7 +158,9 @@ namespace PlatformBenchmarks
 
         private Task ProcessRequestAsync() => _requestType switch
         {
-            RequestType.Fortunes => Fortunes(Writer),
+            RequestType.FortunesRaw => FortunesRaw(Writer),
+            RequestType.FortunesDapper => FortunesDapper(Writer),
+            RequestType.FortunesEf => FortunesEf(Writer),
             RequestType.SingleQuery => SingleQuery(Writer),
             RequestType.Caching => Caching(Writer, _queries),
             RequestType.Updates => Updates(Writer, _queries),
@@ -183,7 +195,9 @@ namespace PlatformBenchmarks
             NotRecognized,
             PlainText,
             Json,
-            Fortunes,
+            FortunesRaw,
+            FortunesDapper,
+            FortunesEf,
             SingleQuery,
             Caching,
             Updates,

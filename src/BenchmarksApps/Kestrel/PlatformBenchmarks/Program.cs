@@ -27,7 +27,9 @@ namespace PlatformBenchmarks
             Console.WriteLine(BenchmarkApplication.Paths.Plaintext);
             Console.WriteLine(BenchmarkApplication.Paths.Json);
 #else
-            Console.WriteLine(BenchmarkApplication.Paths.Fortunes);
+            Console.WriteLine(BenchmarkApplication.Paths.FortunesRaw);
+            Console.WriteLine(BenchmarkApplication.Paths.FortunesDapper);
+            Console.WriteLine(BenchmarkApplication.Paths.FortunesEf);
             Console.WriteLine(BenchmarkApplication.Paths.SingleQuery);
             Console.WriteLine(BenchmarkApplication.Paths.Updates);
             Console.WriteLine(BenchmarkApplication.Paths.MultipleQueries);
@@ -38,7 +40,7 @@ namespace PlatformBenchmarks
             var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
             BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
 #if DATABASE
-            await BenchmarkApplication.Db.PopulateCache();
+            await BenchmarkApplication.RawDb.PopulateCache();
 #endif
             await host.RunAsync();
         }
@@ -62,11 +64,13 @@ namespace PlatformBenchmarks
 
             if (appSettings.Database == DatabaseServer.PostgreSql)
             {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), appSettings);
+                BenchmarkApplication.RawDb = new RawDb(new ConcurrentRandom(), appSettings);
+                BenchmarkApplication.DapperDb = new DapperDb(appSettings);
+                BenchmarkApplication.EfDb = new EfDb(appSettings);
             }
             else
             {
-                throw new NotSupportedException($"{appSettings.Database} is not supported");
+                throw new NotSupportedException($"Database '{appSettings.Database}' is not supported, check your app settings.");
             }
 #endif
 

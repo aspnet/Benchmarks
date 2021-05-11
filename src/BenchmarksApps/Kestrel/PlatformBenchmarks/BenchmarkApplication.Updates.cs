@@ -11,7 +11,7 @@ namespace PlatformBenchmarks
     {
         private async Task Updates(PipeWriter pipeWriter, int count)
         {
-            OutputUpdates(pipeWriter, await Db.LoadMultipleUpdatesRows(count));
+            OutputUpdates(pipeWriter, await RawDb.LoadMultipleUpdatesRows(count));
         }
 
         private static void OutputUpdates(PipeWriter pipeWriter, World[] rows)

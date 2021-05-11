@@ -11,7 +11,7 @@ namespace PlatformBenchmarks
     {
         private async Task SingleQuery(PipeWriter pipeWriter)
         {
-            OutputSingleQuery(pipeWriter, await Db.LoadSingleQueryRow());
+            OutputSingleQuery(pipeWriter, await RawDb.LoadSingleQueryRow());
         }
 
         private static void OutputSingleQuery(PipeWriter pipeWriter, World row)

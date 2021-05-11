@@ -11,7 +11,7 @@ namespace PlatformBenchmarks
     {
         private async Task MultipleQueries(PipeWriter pipeWriter, int count)
         {
-            OutputMultipleQueries(pipeWriter, await Db.LoadMultipleQueriesRows(count));
+            OutputMultipleQueries(pipeWriter, await RawDb.LoadMultipleQueriesRows(count));
         }
 
         private static void OutputMultipleQueries<TWord>(PipeWriter pipeWriter, TWord[] rows)
