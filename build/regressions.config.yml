@@ -46,7 +46,7 @@ sources:
         - mangod9
       template: start-time
       title: | 
-        Perf {% if Regressions.first.Change > 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+        Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: SingleFileBuild
     table: SingleFileBenchmarks
     rules:
@@ -66,7 +66,7 @@ sources:
         - agocke
       template: build
       title: | 
-        Build {% if Regressions.first.Change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+        Build {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: MVC 
     table: MvcBenchmarks
     rules:
@@ -90,7 +90,7 @@ sources:
         - pranavkm
       template: rps      
       title: | 
-        Perf {% if Regressions.first.Change > 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+        Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: PublishedSize
     table: CG2Benchmarks
     rules:
@@ -110,7 +110,7 @@ sources:
         - mangod9
       template: published-size
       title: | 
-        Publish size {% if Regressions.first.Change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+        Publish size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: SingleFilePublishedSize
     table: SingleFileBenchmarks
     rules:
@@ -130,7 +130,7 @@ sources:
         - drewscoggins
       template: published-size
       title: | 
-        Publish size {% if Regressions.first.change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+        Publish size {% if Regressions.first.change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 templates:
   rps: |
     | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | Dependencies |
