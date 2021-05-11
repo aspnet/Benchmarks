@@ -145,6 +145,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `plaintext`
 - `json`
 - `fortunes`
+- `fortunes_ef`
+- `fortunes_dapper`
 - `single_query`
 - `multiple_queries`
 - `updates`

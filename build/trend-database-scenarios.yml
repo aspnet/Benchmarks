@@ -21,6 +21,10 @@ parameters:
 
   - displayName: Fortunes Platform
     arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform --property protocol=http
+  - displayName: Fortunes Platform EF
+    arguments: --scenario fortunes_ef $(platformJobs) --property scenario=FortunesPlatformEF --property protocol=http
+  - displayName: Fortunes Platform Dapper
+    arguments: --scenario fortunes_dapper $(platformJobs) --property scenario=FortunesPlatformDapper --property protocol=http
   - displayName: Single Query Platform
     arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform --property protocol=http
   - displayName: Multiple Queries Platform
