@@ -45,6 +45,8 @@ sources:
         - sebastienros
         - mangod9
       template: start-time
+      title: | 
+        Perf {% if Regressions.first.Change > 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: SingleFileBuild
     table: SingleFileBenchmarks
     rules:
@@ -63,6 +65,8 @@ sources:
         - sebastienros
         - agocke
       template: build
+      title: | 
+        Build {% if Regressions.first.Change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: MVC 
     table: MvcBenchmarks
     rules:
@@ -85,6 +89,8 @@ sources:
         - javiercn
         - pranavkm
       template: rps      
+      title: | 
+        Perf {% if Regressions.first.Change > 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: PublishedSize
     table: CG2Benchmarks
     rules:
@@ -103,6 +109,8 @@ sources:
         - sebastienros
         - mangod9
       template: published-size
+      title: | 
+        Publish size {% if Regressions.first.Change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: SingleFilePublishedSize
     table: SingleFileBenchmarks
     rules:
@@ -121,10 +129,10 @@ sources:
         - sebastienros
         - drewscoggins
       template: published-size
+      title: | 
+        Publish size {% if Regressions.first.change < 0 %}improvement{% elsif %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 templates:
   rps: |
-    A performance difference has been detected for {% for r in Regressions %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
-    
     | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | Dependencies |
     | -------- | ----------- | ---- | ------- | ------- | ------ | --------- | ----- | ------------ |
     {%- for regression in Regressions -%}
@@ -170,8 +178,6 @@ templates:
     {%- endfor %}
 
   build: |
-    A build regression has been detected for the following scenarios:
-
     | Scenario | Environment | Date | Old Build (ms) | New Build (ms) | Change | Deviation | StDev | Dependencies |
     | -------- | ----------- | ---- | -------------- | -------------- | ------ | --------- | ----- | ------------ |
     {%- for regression in Regressions -%}
@@ -217,8 +223,6 @@ templates:
     {%- endfor %}
 
   published-size: |
-    A publish size regression has been detected for the following scenarios:
-
     | Scenario | Environment | Date | Old Build (KB) | New Build (KB) | Change | Deviation | StDev | Dependencies |
     | -------- | ----------- | ---- | -------------- | -------------- | ------ | --------- | ----- | ------------ |
     {%- for regression in Regressions -%}
@@ -264,8 +268,6 @@ templates:
     {%- endfor %}
 
   start-time: |
-    A start time regression has been detected for the following scenarios:
-
     | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Deviation | StDev | Dependencies |
     | -------- | ----------- | ---- | -------- | -------- | ------ | --------- | ----- | ------------ |
     {%- for regression in Regressions -%}
