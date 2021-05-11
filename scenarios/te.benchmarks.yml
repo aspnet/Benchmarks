@@ -2,9 +2,6 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
-variables:
-  serverPort: 8080
-
 jobs:
   nodejs:
     source:
@@ -89,6 +86,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+        serverPort: 8080
 
   json_nodejs:
     db:
@@ -101,6 +99,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
 
   fortunes_nodejs:
     db:
@@ -112,6 +111,7 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
+        serverPort: 8080
 
   # Actix (Rust)
   plaintext_actix:
@@ -123,6 +123,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+        serverPort: 8080
 
   json_actix:
     application:
@@ -132,6 +133,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
 
   fortunes_actix:
     db:
@@ -146,6 +148,7 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
+        serverPort: 8080
 
   # FastHttp (Go)
   plaintext_fasthttp:
@@ -159,6 +162,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+        serverPort: 8080
 
   json_fasthttp:
     db:
@@ -170,6 +174,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
 
   fortunes_fasthttp:
     db:
@@ -181,6 +186,7 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
+        serverPort: 8080
 
   # Ulib (C++)
   plaintext_ulib:
@@ -195,6 +201,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+        serverPort: 8080
 
   json_ulib:
     application:
@@ -207,6 +214,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
 
   fortunes_ulib:
     db:
@@ -221,6 +229,7 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortune
+        serverPort: 8080
 
   # Netty (Java)
   plaintext_netty:
@@ -232,6 +241,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+        serverPort: 8080
 
   json_netty:
     application:
@@ -241,3 +251,4 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
