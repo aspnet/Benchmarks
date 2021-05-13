@@ -264,7 +264,7 @@ scenarios:
     db:
       job: postgresql
     application:
-      job: aspnetbenchmarks
+      job: aspnet
       source:
           dockerFile: frameworks/CSharp/aspnetcore/aspcore-mw-ado-pg.dockerfile
           dockerImageName: aspcore-mw-ado-pg
