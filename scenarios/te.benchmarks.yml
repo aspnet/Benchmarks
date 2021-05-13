@@ -279,7 +279,7 @@ scenarios:
     db:
       job: mysql
     application:
-      job: aspnetbenchmarks
+      job: aspnet
       source:
           dockerFile: frameworks/CSharp/aspnetcore/aspcore-mw-ado-my.dockerfile
           dockerImageName: aspcore-mw-ado-my
