@@ -146,18 +146,19 @@ templates:
     <details>
         <summary>Changes</summary> 
         <table><th>Name</th><th>Version</th><th>Diff</th>
-        {%- for diff in regression.Changes -%}
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
             <tr>
-                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td><td>
-                    {%- if diff.PreviousVersion != empty and diff.CurrentVersion != empty and diff.PreviousVersion != blank and diff.CurrentVersion != blank -%}
-                        `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
-                    {%- elsif diff.PreviousVersion == empty or diff.PreviousVersion == blank -%}
-                      `{{diff.CurrentVersion }}` (__New__ )
-                    {%- else -%}
-                        `{{diff.PreviousVersion }}` (__Removed__)
-                    {%- endif -%}
-                </td><td>
-                    {%- if diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType = 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
                         {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
@@ -191,18 +192,19 @@ templates:
     <details>
         <summary>Changes</summary> 
         <table><th>Name</th><th>Version</th><th>Diff</th>
-        {%- for diff in regression.Changes -%}
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
             <tr>
-                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td><td>
-                    {%- if diff.PreviousVersion != empty and diff.CurrentVersion != empty and diff.PreviousVersion != blank and diff.CurrentVersion != blank -%}
-                        `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
-                    {%- elsif diff.PreviousVersion == empty or diff.PreviousVersion == blank -%}
-                      `{{diff.CurrentVersion }}` (__New__ )
-                    {%- else -%}
-                        `{{diff.PreviousVersion }}` (__Removed__)
-                    {%- endif -%}
-                </td><td>
-                    {%- if diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType = 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
                         {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
@@ -236,18 +238,19 @@ templates:
     <details>
         <summary>Changes</summary> 
         <table><th>Name</th><th>Version</th><th>Diff</th>
-        {%- for diff in regression.Changes -%}
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
             <tr>
-                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td><td>
-                    {%- if diff.PreviousVersion != empty and diff.CurrentVersion != empty and diff.PreviousVersion != blank and diff.CurrentVersion != blank -%}
-                        `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
-                    {%- elsif diff.PreviousVersion == empty or diff.PreviousVersion == blank -%}
-                      `{{diff.CurrentVersion }}` (__New__ )
-                    {%- else -%}
-                        `{{diff.PreviousVersion }}` (__Removed__)
-                    {%- endif -%}
-                </td><td>
-                    {%- if diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType = 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
                         {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
@@ -281,18 +284,19 @@ templates:
     <details>
         <summary>Changes</summary> 
         <table><th>Name</th><th>Version</th><th>Diff</th>
-        {%- for diff in regression.Changes -%}
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
             <tr>
-                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td><td>
-                    {%- if diff.PreviousVersion != empty and diff.CurrentVersion != empty and diff.PreviousVersion != blank and diff.CurrentVersion != blank -%}
-                        `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
-                    {%- elsif diff.PreviousVersion == empty or diff.PreviousVersion == blank -%}
-                      `{{diff.CurrentVersion }}` (__New__ )
-                    {%- else -%}
-                        `{{diff.PreviousVersion }}` (__Removed__)
-                    {%- endif -%}
-                </td><td>
-                    {%- if diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType = 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
                         {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
                             {%- if diff.RepositoryUrl == empty -%}
                                 `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
