@@ -22,6 +22,8 @@ sources:
       owners:
         - sebastienros
       template: rps
+      title: | 
+        Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: Startup 
     table: TrendBenchmarks
     rules:
