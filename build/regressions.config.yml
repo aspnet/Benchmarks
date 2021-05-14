@@ -37,7 +37,8 @@ sources:
     regressions:
       probes: 
         - path: jobs.application.results['benchmarks/start-time']
-          threshold: 2
+          threshold: 5
+          unit: Percent
       labels: 
         - Perf
         - perf-regression
@@ -57,7 +58,8 @@ sources:
     regressions:
       probes: 
         - path: jobs.application.results['benchmarks/build-time']
-          threshold: 2
+          threshold: 5
+          unit: Percent
       labels: 
         - Perf
         - perf-regression
