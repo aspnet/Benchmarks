@@ -15,30 +15,10 @@ variables:
 
 jobs:
 
-- job: Container_Matrix
-  displayName: Containers
-  pool: server
-  timeoutInMinutes: 180
-  # dependsOn: ["CrossGen_Windows", "CrossGen_Linux"]
-  condition: succeededOrFailed()
-  strategy:
-    maxParallel: 1
-    matrix:
-      Intel_Linux:
-        profile: aspnet-citrine-lin
-  steps:
-  - template: containermatrix-scenarios.yml
-    parameters:
-      warmup: 5
-      duration: 30
-      connection: ASP.NET Benchmarks Queue
-      profile: $(profile)
-
 - job: Trends_Linux
   displayName: Trends
   pool: server
   timeoutInMinutes: 120
-  dependsOn: Container_Matrix
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
@@ -59,7 +39,6 @@ jobs:
   displayName: Trends
   pool: server
   timeoutInMinutes: 120
-  dependsOn: Container_Matrix
   condition: succeededOrFailed()
   strategy:
     maxParallel: 1
@@ -168,11 +147,30 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
 
+- job: Container_Matrix
+  displayName: Containers
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: Baselines_Database
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 1
+    matrix:
+      Intel_Linux:
+        profile: aspnet-citrine-lin
+  steps:
+  - template: containermatrix-scenarios.yml
+    parameters:
+      warmup: 5
+      duration: 30
+      connection: ASP.NET Benchmarks Queue
+      profile: $(profile)
+
 - job: Frameworks_Linux
   displayName: Frameworks
   pool: server
   timeoutInMinutes: 60
-  dependsOn: Baselines_Database
+  dependsOn: Container_Matrix
   condition: and(succeededOrFailed(), eq(variables['pm'], true))
   strategy:
     maxParallel: 1
