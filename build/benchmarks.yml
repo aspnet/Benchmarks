@@ -39,6 +39,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Container_Matrix
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
@@ -59,6 +60,7 @@ jobs:
   pool: server
   timeoutInMinutes: 120
   dependsOn: Container_Matrix
+  condition: succeededOrFailed()
   strategy:
     maxParallel: 1
     matrix:
