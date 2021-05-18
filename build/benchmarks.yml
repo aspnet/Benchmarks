@@ -257,6 +257,8 @@ jobs:
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+      Arm_Linux:
+        profile: aspnet-citrine-arm
   steps:
   - template: pgo-scenarios.yml
     parameters:
