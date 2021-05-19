@@ -43,6 +43,18 @@ parameters:
   - displayName: Fortunes Platform
     arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
     isPlatform: true
+  - displayName: Single Query Platform
+    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform
+    isPlatform: true
+  - displayName: Multiple Queries Platform
+    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform
+    isPlatform: true
+  - displayName: Updates Platform
+    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform
+    isPlatform: true
+  - displayName: Caching Platform
+    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform
+    isPlatform: true
   
   # Database Fortunes
   - displayName: Database Fortunes Raw
