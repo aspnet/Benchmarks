@@ -143,7 +143,7 @@ templates:
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign rps = 0 | plus: r.Data.jobs.load.results['wrk/rps/mean'] | plus: r.Data.jobs.load.results['bombardier/rps/mean'] -%}
-    {%- assign prevRps = 0 | plus: p.Data.jobs.load.results['wrk/rps/mean'] | plus: p.Data.jobs.load.results['bombardier/rps/mean'] -%}
+    {%- assign prevRps = 0 | plus: p.Data.jobs.load.results['wrk/rps/mean'] | plus: p.Data.jobs.load.results['bombardier/rps/mean'] | at_least: 1 -%}
     {%- assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 -%}
     {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 -%}
     {%- capture changes -%}
@@ -189,7 +189,7 @@ templates:
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign build = r.Data.jobs.application.results['benchmarks/build-time'] -%}
-    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] | at_least: 1 -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
     {%- capture changes -%}
     <details>
@@ -224,7 +224,7 @@ templates:
         {%- endfor -%}
         </table></details>
     {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{ changes | strip_newlines }} |
     {%- endfor %}
 
   published-size: |
@@ -234,7 +234,7 @@ templates:
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign build = r.Data.jobs.application.results['benchmarks/published-size'] -%}
-    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/published-size'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/published-size'] | at_least: 1 -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
     {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
     {%- capture changes -%}
@@ -270,7 +270,7 @@ templates:
         {%- endfor -%}
         </table></details>
     {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
     {%- endfor %}
 
   start-time: |
@@ -280,7 +280,7 @@ templates:
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign build = r.Data.jobs.application.results['benchmarks/start-time'] -%}
-    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/start-time'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/start-time'] | at_least: 1 -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
     {%- capture changes -%}
     <details>
@@ -315,5 +315,5 @@ templates:
         {%- endfor -%}
         </table></details>
     {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{ changes | strip_newlines }} |
     {%- endfor %}
