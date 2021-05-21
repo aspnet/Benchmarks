@@ -183,15 +183,14 @@ templates:
     {%- endfor %}
 
   build: |
-    | Scenario | Environment | Date | Old Build (ms) | New Build (ms) | Change | Deviation | StDev | Dependencies |
-    | -------- | ----------- | ---- | -------------- | -------------- | ------ | --------- | ----- | ------------ |
+    | Scenario | Environment | Date | Old Build (ms) | New Build (ms) | Change | Dependencies |
+    | -------- | ----------- | ---- | -------------- | -------------- | ------ | ------------ |
     {%- for regression in Regressions -%}
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign build = r.Data.jobs.application.results['benchmarks/build-time'] -%}
     {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/build-time'] -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
-    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
     {%- capture changes -%}
     <details>
         <summary>Changes</summary> 
@@ -225,7 +224,7 @@ templates:
         {%- endfor -%}
         </table></details>
     {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{ changes | strip_newlines }} |
     {%- endfor %}
 
   published-size: |
@@ -275,15 +274,14 @@ templates:
     {%- endfor %}
 
   start-time: |
-    | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Deviation | StDev | Dependencies |
-    | -------- | ----------- | ---- | -------- | -------- | ------ | --------- | ----- | ------------ |
+    | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Dependencies |
+    | -------- | ----------- | ---- | -------- | -------- | ------ | ------------ |
     {%- for regression in Regressions -%}
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
     {%- assign build = r.Data.jobs.application.results['benchmarks/start-time'] -%}
     {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/start-time'] -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
-    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
     {%- capture changes -%}
     <details>
         <summary>Changes</summary> 
@@ -317,5 +315,5 @@ templates:
         {%- endfor -%}
         </table></details>
     {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N0'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{ changes | strip_newlines }} |
     {%- endfor %}
