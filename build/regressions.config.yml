@@ -107,6 +107,7 @@ sources:
       probes: 
         - path: jobs.application.results['benchmarks/published-size']
           threshold: 2
+          unit: Percent
       labels: 
         - Perf
         - perf-regression
