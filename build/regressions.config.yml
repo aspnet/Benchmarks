@@ -7,6 +7,7 @@ sources:
         labels: 
           - area-mvc
       - exclude: ulib
+      - exclude: fasthttp
       - exclude: arm
       - exclude: azure
     daysToLoad: 60
