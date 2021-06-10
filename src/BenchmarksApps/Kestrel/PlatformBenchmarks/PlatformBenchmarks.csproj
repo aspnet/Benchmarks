@@ -21,14 +21,14 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net5.0'">
-    <PackageReference Include="Npgsql" Version="5.0.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.5" />
+    <PackageReference Include="Npgsql" Version="5.0.5" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.6" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net6.0'">
-    <PackageReference Include="Npgsql" Version="6.0.0-preview3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0-preview3" />
+    <PackageReference Include="Npgsql" Version="6.0.0-preview4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0-preview4" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
