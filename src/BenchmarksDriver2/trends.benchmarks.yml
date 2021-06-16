@@ -35,7 +35,7 @@ jobs:
       dockerFile: toolset/databases/postgres/postgres.dockerfile
       dockerImageName: postgres_te
       dockerContextDirectory: toolset/databases/postgres
-    readyStateText: ready to accept connections
+    readyStateText: Future log output will go to log
     noClean: true
 
 scenarios:
