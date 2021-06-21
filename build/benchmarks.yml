@@ -278,6 +278,8 @@ jobs:
     matrix:
       Intel_Windows:
         profile: aspnet-citrine-win
+      Amd_Linux:
+        profile: aspnet-citrine-amd
   steps:
   - template: pgo-scenarios.yml
     parameters:
