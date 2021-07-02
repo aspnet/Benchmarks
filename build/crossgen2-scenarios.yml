@@ -37,7 +37,7 @@ parameters:
   - displayName: CG2 non-composite  # /p:PublishReadyToRunComposite=false is the default
     arguments: --property profile=non-composite --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunComposite=false\"
   - displayName: CG2 composite avx2
-    arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--inputbubble%3b--instruction-set:avx2\"
+    arguments: --property profile=composite-avx2 --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunComposite=true /p:PublishReadyToRunUseCrossgen2=true /p:PublishReadyToRunCrossgen2ExtraArgs=--inputbubble%3b--instruction-set:avx2,popcnt,lzcnt\"
 
 steps:
 - ${{ each s in parameters.scenarios }}:
