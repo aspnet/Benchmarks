@@ -25,7 +25,6 @@ namespace WebsocketClient
         private static bool _stopped;
         private static SemaphoreSlim _lock = new SemaphoreSlim(1);
         private static int _totalRequests;
-        private static HttpClientHandler _httpClientHandler;
         private static StringBuilder _errorStringBuilder = new StringBuilder();
 
         public static string ServerUrl { get; set; }
@@ -78,12 +77,6 @@ namespace WebsocketClient
 
         private static async Task RunAsync()
         {
-            // Configuring the http client to trust the self-signed certificate
-            _httpClientHandler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
-
             await CreateConnections();
 
             await StartScenario();

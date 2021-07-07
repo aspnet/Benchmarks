@@ -76,7 +76,7 @@ if lscpu | grep -q 'AuthenticAMD'; then
   hardware=AMD64
 fi
 
-mount_dir=/tmp/benchmarks
+mount_dir=/mnt/benchmarks
 mkdir -p $mount_dir
 
 # "--network host" - Better performance than the default "bridge" driver
