@@ -2,8 +2,8 @@
 # --config benchmarks.websocket.yml --scenario websocket --variable scenario=echo --profile asp-physical-lin
 
 imports:
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WebsocketClient/websocketclient.yml
-  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Websocket/websocketServer.yml
+  - https://raw.githubusercontent.com/kondratyev-nv/Benchmarks/main/src/WebsocketClient/websocketclient.yml
+  - https://raw.githubusercontent.com/kondratyev-nv/Benchmarks/main/src/BenchmarksApps/Websocket/websocketServer.yml
 
 variables:
     serverPort: 5000

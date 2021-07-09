@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Net;
-using System.Text;
 
 namespace BenchmarkServer
 {
@@ -57,26 +56,13 @@ namespace BenchmarkServer
 
         private async Task Echo(HttpContext context, WebSocket webSocket)
         {
-            var receivedMessage = "";
             var buffer = new byte[1024 * 4];
             var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (true)
+            while (!result.CloseStatus.HasValue)
             {
-                if (result.CloseStatus.HasValue)
-                {
-                    break;
-                }
-
-                receivedMessage += Encoding.UTF8.GetString(buffer, 0, result.Count);
-                if (result.EndOfMessage)
-                {
-                    await webSocket.SendAsync(Encoding.UTF8.GetBytes(receivedMessage).AsMemory(), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                    receivedMessage = "";
-                }
-
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
-
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
     }

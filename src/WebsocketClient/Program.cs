@@ -20,8 +20,8 @@ namespace WebsocketClient
         private static List<int> _requestsPerConnection;
         private static List<List<double>> _latencyPerConnection;
         private static List<(double sum, int count)> _latencyAverage;
-        private static List<IDisposable> _recvCallbacks;
         private static Stopwatch _workTimer = new Stopwatch();
+        private static List<Stopwatch> _echoTimers;
         private static bool _stopped;
         private static SemaphoreSlim _lock = new SemaphoreSlim(1);
         private static int _totalRequests;
@@ -107,14 +107,17 @@ namespace WebsocketClient
                             // kick off a task per connection so they don't wait for other connections when sending "Echo"
                             _ = Task.Run(async () =>
                             {
+                                var buffer = new byte[1024 * 4];
+                                var message = Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("O"));
                                 while (!cts.IsCancellationRequested)
                                 {
-                                    var stopped = await Echo(id, cts);
+                                    var stopped = await Echo(id, message, buffer, cts);
                                     if (stopped)
                                     {
                                         break;
                                     }
                                 }
+                                await _connections[id].CloseAsync(WebSocketCloseStatus.NormalClosure, "Benchmark complete", cts.Token);
                             });
                         }
                         break;
@@ -133,14 +136,13 @@ namespace WebsocketClient
             await tcs.Task;
         }
 
-        private static async Task<bool> Echo(int id, CancellationTokenSource cts)
+        private static async Task<bool> Echo(int id, byte[] message, byte[] buffer, CancellationTokenSource cts)
         {
-            var message = DateTime.UtcNow.ToString("O");
-            await _connections[id].SendAsync(Encoding.UTF8.GetBytes(message).AsMemory(), WebSocketMessageType.Text, true, cts.Token);
+            _echoTimers[id].Restart();
+            
+            await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Text, true, cts.Token);
 
             var responseMessage = "";
-
-            var buffer = new byte[1024 * 4];
             var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
             while (true)
             {
@@ -167,7 +169,8 @@ namespace WebsocketClient
                 }
             }
 
-            ReceivedDateTime(DateTime.ParseExact(responseMessage, "O", null).ToUniversalTime(), id);
+            _echoTimers[id].Stop();
+            LogLatency(_echoTimers[id].Elapsed, id);
 
             return false;
         }
@@ -201,8 +204,8 @@ namespace WebsocketClient
             _requestsPerConnection = new List<int>(Connections);
             _latencyPerConnection = new List<List<double>>(Connections);
             _latencyAverage = new List<(double sum, int count)>(Connections);
+            _echoTimers = new List<Stopwatch>(Connections);
 
-            _recvCallbacks = new List<IDisposable>(Connections);
             for (var i = 0; i < Connections; i++)
             {
                 var client = new ClientWebSocket();
@@ -213,10 +216,11 @@ namespace WebsocketClient
                 _latencyAverage.Add((0, 0));
 
                 _connections.Add(client);
+                _echoTimers.Add(new Stopwatch());
             }
         }
 
-        private static void ReceivedDateTime(DateTime dateTime, int connectionId)
+        private static void LogLatency(TimeSpan latency, int connectionId)
         {
             if (_stopped)
             {
@@ -225,7 +229,6 @@ namespace WebsocketClient
 
             _requestsPerConnection[connectionId] += 1;
 
-            var latency = DateTime.UtcNow - dateTime;
             if (CollectLatency)
             {
                 _latencyPerConnection[connectionId].Add(latency.TotalMilliseconds);
