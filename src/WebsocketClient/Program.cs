@@ -321,9 +321,6 @@ namespace WebsocketClient
                     allConnections.AddRange(connectionLatency);
                 }
 
-                // Review: Each connection can have different latencies, how do we want to deal with that?
-                // We could just combine them all and ignore the fact that they are different connections
-                // Or we could preserve the results for each one and record them separately
                 allConnections.Sort();
 
                 BenchmarksEventSource.Measure("websocket/latency/50", GetPercentile(50, allConnections));
