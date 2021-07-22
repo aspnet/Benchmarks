@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Text.Json;
 
@@ -8,14 +9,7 @@ namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
-        private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(
-            new JsonMessage { message = "Hello, World!" },
-#if NET6_0_OR_GREATER
-            SerializerContext.JsonMessage
-#else
-            SerializerOptions
-#endif
-            ).Length;
+        private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions).Length;
 
         private readonly static AsciiString _jsonPreamble =
             _http11OK +
@@ -36,15 +30,7 @@ namespace PlatformBenchmarks
             utf8JsonWriter.Reset(bodyWriter);
 
             // Body
-            JsonSerializer.Serialize(
-                utf8JsonWriter,
-                new JsonMessage { message = "Hello, World!" },
-#if NET6_0_OR_GREATER
-                SerializerContext.JsonMessage
-#else
-                SerializerOptions
-#endif
-                );
+            JsonSerializer.Serialize<JsonMessage>(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerOptions);
         }
     }
 }
