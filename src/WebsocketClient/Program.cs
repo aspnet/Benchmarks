@@ -145,7 +145,7 @@ namespace WebsocketClient
         {
             _echoTimers[id].Restart();
             
-            await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Text, true, cts.Token);
+            await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Binary, true, cts.Token);
 
             var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
             while (true)
