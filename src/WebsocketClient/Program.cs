@@ -16,6 +16,8 @@ namespace WebsocketClient
 {
     class Program
     {
+        private const int EchoMessageSize = 1000;
+
         private static List<ClientWebSocket> _connections;
         private static List<int> _requestsPerConnection;
         private static List<List<double>> _latencyPerConnection;
@@ -101,14 +103,17 @@ namespace WebsocketClient
                 switch (Scenario)
                 {
                     case "echo":
+                        var random = new Random();
                         for (var i = 0; i < _connections.Count; i++)
                         {
                             var id = i;
+                            
+                            var message = new byte[EchoMessageSize];
+                            random.NextBytes(message);
                             // kick off a task per connection so they don't wait for other connections when sending "Echo"
                             _ = Task.Run(async () =>
                             {
                                 var buffer = new byte[1024 * 4];
-                                var message = Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("O"));
                                 while (!cts.IsCancellationRequested)
                                 {
                                     var stopped = await Echo(id, message, buffer, cts);
@@ -142,7 +147,6 @@ namespace WebsocketClient
             
             await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Text, true, cts.Token);
 
-            var responseMessage = "";
             var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
             while (true)
             {
@@ -158,7 +162,6 @@ namespace WebsocketClient
                     return true;
                 }
 
-                responseMessage += Encoding.UTF8.GetString(buffer, 0, response.Count);
                 if (response.EndOfMessage)
                 {
                     break;
