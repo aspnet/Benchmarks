@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using System.Net.WebSockets;
+using Microsoft.Crank.EventSources;
 
 namespace WebsocketClient
 {
@@ -20,6 +19,7 @@ namespace WebsocketClient
 
         private static List<ClientWebSocket> _connections;
         private static List<int> _requestsPerConnection;
+        private static List<int> _errorsPerConnection;
         private static List<List<double>> _latencyPerConnection;
         private static List<(double sum, int count)> _latencyAverage;
         private static Stopwatch _workTimer = new Stopwatch();
@@ -27,7 +27,8 @@ namespace WebsocketClient
         private static bool _stopped;
         private static SemaphoreSlim _lock = new SemaphoreSlim(1);
         private static int _totalRequests;
-        private static StringBuilder _errorStringBuilder = new StringBuilder();
+        private static int _totalErrors;
+        private static List<String> _errors = new List<string>();
 
         public static string ServerUrl { get; set; }
         public static string Scenario { get; set; }
@@ -107,7 +108,7 @@ namespace WebsocketClient
                         for (var i = 0; i < _connections.Count; i++)
                         {
                             var id = i;
-                            
+
                             var message = new byte[EchoMessageSize];
                             random.NextBytes(message);
                             // kick off a task per connection so they don't wait for other connections when sending "Echo"
@@ -132,10 +133,7 @@ namespace WebsocketClient
             }
             catch (Exception ex)
             {
-                var text = "Exception from test: " + ex.Message;
-                Log(text);
-                _errorStringBuilder.AppendLine();
-                _errorStringBuilder.Append($"[{DateTime.Now.ToString("hh:mm:ss.fff")}] {text}");
+                Log("Exception from test: " + ex.Message);
             }
 
             await tcs.Task;
@@ -144,32 +142,38 @@ namespace WebsocketClient
         private static async Task<bool> Echo(int id, byte[] message, byte[] buffer, CancellationTokenSource cts)
         {
             _echoTimers[id].Restart();
-            
-            await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Binary, true, cts.Token);
 
-            var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
-            while (true)
+            try
             {
-                if (response.MessageType == WebSocketMessageType.Close)
-                {
-                    if (!_stopped)
-                    {
-                        var error = $"Connection closed early: {response}";
-                        _errorStringBuilder.AppendLine();
-                        _errorStringBuilder.Append($"[{DateTime.Now.ToString("hh:mm:ss.fff")}] {error}");
-                        Log(error);
-                    }
-                    return true;
-                }
+                await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Binary, true, cts.Token);
 
-                if (response.EndOfMessage)
+                var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
+                while (true)
                 {
-                    break;
+                    if (response.MessageType == WebSocketMessageType.Close)
+                    {
+                        if (!_stopped)
+                        {
+                            var error = "Connection closed early.";
+                            _errors.Add($"[{DateTime.Now.ToString("hh:mm:ss.fff")}] {error}");
+                            Log(error);
+                        }
+                        return true;
+                    }
+
+                    if (response.EndOfMessage)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
+                    }
                 }
-                else
-                {
-                    response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
-                }
+            }
+            catch
+            {
+                _errorsPerConnection[id] += 1;
             }
 
             _echoTimers[id].Stop();
@@ -196,15 +200,13 @@ namespace WebsocketClient
             {
                 _lock.Release();
             }
-
-            BenchmarksEventSource.Log.Metadata("websocket/raw-errors", "all", "all", "Raw errors", "Raw errors", "object");
-            BenchmarksEventSource.Measure("websocket/raw-errors", _errorStringBuilder.ToString());
         }
 
         private static async Task CreateConnections()
         {
             _connections = new List<ClientWebSocket>(Connections);
             _requestsPerConnection = new List<int>(Connections);
+            _errorsPerConnection = new List<int>(Connections);
             _latencyPerConnection = new List<List<double>>(Connections);
             _latencyAverage = new List<(double sum, int count)>(Connections);
             _echoTimers = new List<Stopwatch>(Connections);
@@ -215,6 +217,7 @@ namespace WebsocketClient
                 await client.ConnectAsync(new Uri(ServerUrl), CancellationToken.None);
 
                 _requestsPerConnection.Add(0);
+                _errorsPerConnection.Add(0);
                 _latencyPerConnection.Add(new List<double>());
                 _latencyAverage.Add((0, 0));
 
@@ -249,30 +252,49 @@ namespace WebsocketClient
         {
             // RPS
             var requestDelta = 0;
+            int errorDelta = 0;
             var newTotalRequests = 0;
-            var min = int.MaxValue;
-            var max = 0;
-            for (var i = 0; i < _requestsPerConnection.Count; i++)
+            var newTotalErrors = 0;
+            var minRequests = int.MaxValue;
+            var maxRequests = 0;
+            var minErrors = int.MaxValue;
+            var maxErrors = 0;
+            for (var i = 0; i < Connections; i++)
             {
                 newTotalRequests += _requestsPerConnection[i];
+                newTotalErrors += _errorsPerConnection[i];
 
-                if (_requestsPerConnection[i] > max)
+                if (_requestsPerConnection[i] > maxRequests)
                 {
-                    max = _requestsPerConnection[i];
+                    maxRequests = _requestsPerConnection[i];
                 }
-                if (_requestsPerConnection[i] < min)
+                if (_requestsPerConnection[i] < minRequests)
                 {
-                    min = _requestsPerConnection[i];
+                    minRequests = _requestsPerConnection[i];
+                }
+
+                if (_errorsPerConnection[i] > maxErrors)
+                {
+                    maxErrors = _errorsPerConnection[i];
+                }
+                if (_errorsPerConnection[i] < minErrors)
+                {
+                    minErrors = _errorsPerConnection[i];
                 }
             }
 
             requestDelta = newTotalRequests - _totalRequests;
             _totalRequests = newTotalRequests;
+            
+            errorDelta = newTotalErrors - _totalErrors;
+            _totalErrors = newTotalErrors;
 
             // Review: This could be interesting information, see the gap between most active and least active connection
             // Ideally they should be within a couple percent of each other, but if they aren't something could be wrong
-            Log($"Least Requests per Connection: {min}");
-            Log($"Most Requests per Connection: {max}");
+            Log($"Least Requests per Connection: {minRequests}");
+            Log($"Most Requests per Connection: {maxRequests}");
+            Log($"Least Errors per Connection: {minErrors}");
+            Log($"Most Errors per Connection: {maxErrors}");
 
             if (_workTimer.ElapsedMilliseconds <= 0)
             {
@@ -282,12 +304,15 @@ namespace WebsocketClient
 
             var rps = (double)requestDelta / _workTimer.ElapsedMilliseconds * 1000;
             Log($"Total RPS: {rps}");
+            Log($"Total Errors: {_errors.Count}");
 
             BenchmarksEventSource.Log.Metadata("websocket/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
             BenchmarksEventSource.Log.Metadata("websocket/requests", "max", "sum", "Requests", "Total number of requests", "n0");
+            BenchmarksEventSource.Log.Metadata("websocket/errors", "max", "sum", "Errors", "Total number of errors", "n0");
 
             BenchmarksEventSource.Measure("websocket/rps/max", rps);
             BenchmarksEventSource.Measure("websocket/requests", requestDelta);
+            BenchmarksEventSource.Measure("websocket/errors", errorDelta);
 
             // Latency
             CalculateLatency();
