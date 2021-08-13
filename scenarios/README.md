@@ -226,6 +226,7 @@ These scenarios measure the performance of different other frameworks
 - FastHttp (Go)
 - Netty (Java)
 - ULib (C++)
+- Wizzardo (Java)
 
 ### Sample
 
@@ -235,20 +236,12 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
-- `plaintext_nodejs`
-- `json_nodejs`
-- `fortunes_nodejs`
-- `plaintext_actix`
-- `json_actix`
-- `fortunes_actix`
-- `plaintext_fasthttp`
-- `json_fasthttp`
-- `fortunes_fasthttp`
-- `plaintext_ulib`
-- `json_ulib`
-- `fortunes_ulib`
-- `plaintext_netty`
-- `json_netty`
+- `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
+- `plaintext_actix`, `json_actix`, `fortunes_actix`
+- `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
+- `plaintext_ulib`, `json_ulib`, `fortunes_ulib`
+- `plaintext_netty`, `json_netty`
+- `plaintext_wizzardo`, `json_wizzardo`, `single_query_wizzardo`, `multiple_queries_wizzardo`, `updates_wizzardo`, `cached_queries_wizzardo`
 
 ## Grpc benchmarks
 

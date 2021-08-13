@@ -58,6 +58,15 @@ jobs:
     readyStateText: Httpd started
     arguments: --add-host="tfb-database:{{databaseServer}}"
 
+  wizzardo:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Java/wizzardo-http/wizzardo-http.dockerfile
+      dockerImageName: wizzardo
+      dockerContextDirectory: frameworks/Java/wizzardo-http/
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+
   postgresql:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -288,4 +297,94 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes/raw
+        serverPort: 8080
+
+  # Wizzardo (Java)
+  plaintext_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+        serverPort: 8080
+        connections: 1024
+
+  json_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+        connections: 512
+
+  fortunes_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        serverPort: 8080
+        connections: 512
+
+  single_query_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+        serverPort: 8080
+        connections: 512
+  
+  multiple_queries_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries?queries=20
+        serverPort: 8080
+
+  updates_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates?queries=20
+        serverPort: 8080
+
+  cached_queries_wizzardo:
+    db:
+      job: postgresql
+    application:
+      job: wizzardo
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /cached-worlds?count=100
         serverPort: 8080
