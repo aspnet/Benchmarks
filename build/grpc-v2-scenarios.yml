@@ -16,6 +16,9 @@ parameters:
 - name: condition
   type: string
   default: 'true'
+- name: runH3
+  type: string
+  default: 'true'
 
 # Standard scenarios
 - name: scenarios 
@@ -24,24 +27,33 @@ parameters:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
     arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+    supportsH3: true
   - displayName: "ASP.NET Core - Client: Grpc.Core"
     arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient --application.options.collectCounters true
+    supportsH3: false
   - displayName: "ASP.NET Core - Client: Go"
     arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true
+    supportsH3: false
 
   - displayName: "Grpc.Core - Client: Grpc.Net.Client"
     arguments: --scenario grpccoreserver-grpcnetclient        $(grpcJobs) --property server=grpccoreserver --property client=grpcnetclient --application.options.collectCounters true
+    supportsH3: false
   - displayName: "Grpc.Core - Client: Grpc.Core"
     arguments: --scenario grpccoreserver-grpccoreclient       $(grpcJobs) --property server=grpccoreserver --property client=grpccoreclient --application.options.collectCounters true
+    supportsH3: false
   - displayName: "Grpc.Core - Client: Go"
     arguments: --scenario grpccoreserver-grpcgoclient         $(grpcJobs) --property server=grpccoreserver --property client=grpcgoclient --application.options.collectCounters true
+    supportsH3: false
 
   - displayName: "Go - Client: Grpc.Net.Client"
     arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
+    supportsH3: false
   - displayName: "Go - Client: Grpc.Core"
     arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver --property client=grpccoreclient
+    supportsH3: false
   - displayName: "Go - Client: Go"
     arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
+    supportsH3: false
 
 # H2Load scenarios
 - name: h2loadscenarios 
@@ -101,9 +113,28 @@ steps:
           waitForCompletion: true
           messageBody: |
             {
+              "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
               "name": "crank",
               "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }} --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
             }
+- ${{ each s in parameters.scenarios }}:
+  - ${{ if and( eq( parameters.runH3, 'true'), s.supportsH3) }}:
+    - ${{ each callType in parameters.callTypes }}:
+      - ${{ each payload in parameters.payloads }}:
+        - ${{ each stream in parameters.connectionStreams }}:
+          - task: PublishToAzureServiceBus@1
+            condition: succeededOrFailed()
+            timeoutInMinutes: 5
+            displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ stream.displayName }}
+            inputs:
+              connectedServiceName: ${{ parameters.connection }}
+              waitForCompletion: true
+              messageBody: |
+                {
+                  "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+                  "name": "crank",
+                  "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --variable protocol=h3 --property protocol=h3" ]
+                }
 - ${{ each s in parameters.scenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
