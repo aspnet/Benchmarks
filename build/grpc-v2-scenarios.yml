@@ -118,10 +118,10 @@ steps:
               "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }} --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
             }
 - ${{ each s in parameters.scenarios }}:
-  - ${{ if and( eq( parameters.runH3, 'true'), s.supportsH3) }}:
-    - ${{ each callType in parameters.callTypes }}:
-      - ${{ each payload in parameters.payloads }}:
-        - ${{ each stream in parameters.connectionStreams }}:
+  - ${{ each callType in parameters.callTypes }}:
+    - ${{ each payload in parameters.payloads }}:
+      - ${{ each stream in parameters.connectionStreams }}:
+        - ${{ if and( eq( parameters.runH3, 'true'), s.supportsH3) }}:
           - task: PublishToAzureServiceBus@1
             condition: succeededOrFailed()
             timeoutInMinutes: 5
