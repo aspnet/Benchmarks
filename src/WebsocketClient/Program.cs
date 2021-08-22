@@ -1,12 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using System.Net.WebSockets;
 using Microsoft.Crank.EventSources;
@@ -28,7 +24,6 @@ namespace WebsocketClient
         private static SemaphoreSlim _lock = new SemaphoreSlim(1);
         private static int _totalRequests;
         private static int _totalErrors;
-        private static List<String> _errors = new List<string>();
 
         public static string ServerUrl { get; set; }
         public static string Scenario { get; set; }
@@ -82,25 +77,35 @@ namespace WebsocketClient
         {
             await CreateConnections();
 
-            await StartScenario();
+            if (WarmupTimeSeconds > 0)
+            {
+                Log($"Warming up for {WarmupTimeSeconds}s...");
+                await StartScenario(WarmupTimeSeconds);
+            }
+
+            ResetCounters();
+            Log($"Running for {ExecutionTimeSeconds}s...");
+            await StartScenario(ExecutionTimeSeconds);
+
+            await CloseConnections();
 
             await StopJobAsync();
         }
 
-        private static async Task StartScenario()
+        private static async Task StartScenario(int executionTimeSeconds)
         {
             Log($"Starting scenario {Scenario}");
 
-            var tasks = new List<Task>(_connections.Count);
-
-            var cts = new CancellationTokenSource();
-            var tcs = new TaskCompletionSource<object>();
-            cts.Token.Register(() => tcs.SetResult(null));
-            cts.CancelAfter(TimeSpan.FromSeconds(ExecutionTimeSeconds));
-            _workTimer.Restart();
-
             try
             {
+                var tasks = new List<Task>(_connections.Count);
+
+                var cts = new CancellationTokenSource();
+                // var tcs = new TaskCompletionSource<object>();
+                // cts.Token.Register(() => tcs.SetResult(null));
+                cts.CancelAfter(TimeSpan.FromSeconds(executionTimeSeconds));
+                _workTimer.Restart();
+
                 switch (Scenario)
                 {
                     case "echo":
@@ -112,51 +117,54 @@ namespace WebsocketClient
                             var message = new byte[EchoMessageSize];
                             random.NextBytes(message);
                             // kick off a task per connection so they don't wait for other connections when sending "Echo"
-                            _ = Task.Run(async () =>
+                            tasks.Add(Task.Run(async () =>
                             {
                                 var buffer = new byte[1024 * 4];
                                 while (!cts.IsCancellationRequested)
                                 {
-                                    var stopped = await Echo(id, message, buffer, cts);
+                                    var stopped = await Echo(id, message, buffer);
                                     if (stopped)
                                     {
                                         break;
                                     }
                                 }
-                                await _connections[id].CloseAsync(WebSocketCloseStatus.NormalClosure, "Benchmark complete", cts.Token);
-                            });
+                            }));
                         }
                         break;
                     default:
                         throw new Exception($"Scenario '{Scenario}' is not a known scenario.");
                 }
+
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
                 Log("Exception from test: " + ex.Message);
             }
-
-            await tcs.Task;
         }
 
-        private static async Task<bool> Echo(int id, byte[] message, byte[] buffer, CancellationTokenSource cts)
+        private static async Task<bool> Echo(int id, byte[] message, byte[] buffer)
         {
-            _echoTimers[id].Restart();
+            if (_connections[id].State != WebSocketState.Open)
+            {
+                Log($"Connection {id} closed.");
+                return true;
+            }
 
+            _echoTimers[id].Restart();
             try
             {
-                await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Binary, true, cts.Token);
+                await _connections[id].SendAsync(message.AsMemory(), WebSocketMessageType.Text, true, CancellationToken.None);
 
-                var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
+                var response = await _connections[id].ReceiveAsync(buffer.AsMemory(), CancellationToken.None);
                 while (true)
                 {
                     if (response.MessageType == WebSocketMessageType.Close)
                     {
                         if (!_stopped)
                         {
-                            var error = "Connection closed early.";
-                            _errors.Add($"[{DateTime.Now.ToString("hh:mm:ss.fff")}] {error}");
-                            Log(error);
+                            Log($"Connection {id} closed early.");
+                            _errorsPerConnection[id] += 1;
                         }
                         return true;
                     }
@@ -167,7 +175,7 @@ namespace WebsocketClient
                     }
                     else
                     {
-                        response = await _connections[id].ReceiveAsync(buffer.AsMemory(), cts.Token);
+                        response = await _connections[id].ReceiveAsync(buffer.AsMemory(), CancellationToken.None);
                     }
                 }
             }
@@ -223,6 +231,25 @@ namespace WebsocketClient
 
                 _connections.Add(client);
                 _echoTimers.Add(new Stopwatch());
+            }
+        }
+
+        private static async Task CloseConnections()
+        {
+            for (var i = 0; i < Connections; i++)
+            {
+                await _connections[i].CloseAsync(WebSocketCloseStatus.NormalClosure, "Benchmark complete", CancellationToken.None);
+            }
+        }
+
+        private static void ResetCounters()
+        {
+            for (var i = 0; i < Connections; i++)
+            {
+                _requestsPerConnection[i] = 0;
+                _errorsPerConnection[i] = 0;
+                _latencyPerConnection[i] = new List<double>();
+                _latencyAverage[i] = (0, 0);
             }
         }
 
@@ -285,7 +312,7 @@ namespace WebsocketClient
 
             requestDelta = newTotalRequests - _totalRequests;
             _totalRequests = newTotalRequests;
-            
+
             errorDelta = newTotalErrors - _totalErrors;
             _totalErrors = newTotalErrors;
 
@@ -304,7 +331,7 @@ namespace WebsocketClient
 
             var rps = (double)requestDelta / _workTimer.ElapsedMilliseconds * 1000;
             Log($"Total RPS: {rps}");
-            Log($"Total Errors: {_errors.Count}");
+            Log($"Total Errors: {_totalErrors}");
 
             BenchmarksEventSource.Log.Metadata("websocket/rps/max", "max", "sum", "Max RPS", "RPS: max", "n0");
             BenchmarksEventSource.Log.Metadata("websocket/requests", "max", "sum", "Requests", "Total number of requests", "n0");

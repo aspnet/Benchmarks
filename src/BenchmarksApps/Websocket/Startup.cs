@@ -1,14 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net.WebSockets;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using System.Net;
 
 namespace BenchmarkServer
