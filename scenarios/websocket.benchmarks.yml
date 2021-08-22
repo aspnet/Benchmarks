@@ -14,11 +14,8 @@ scenarios:
   websocket:
     application:
       job: websocketServer
-    warmup:
-      job: websocketClient
-      variables:
-        path: /Echo
     load:
       job: websocketClient
       variables:
         path: /Echo
+        warmup: 5
