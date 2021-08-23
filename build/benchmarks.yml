@@ -306,6 +306,7 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Queue
+      runH3: true
 
 - job: gRPC_Windows
   displayName: gRPC
@@ -325,6 +326,7 @@ jobs:
       warmup: 5
       duration: 15
       connection: ASP.NET Benchmarks Mono Queue
+      runH3: false
 
 - job: SignalR_Linux
   displayName: SignalR

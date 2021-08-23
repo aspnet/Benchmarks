@@ -16,6 +16,9 @@ parameters:
 - name: condition
   type: string
   default: 'true'
+- name: runH3
+  type: string
+  default: 'true'
 
 # Standard scenarios
 - name: scenarios 
@@ -55,6 +58,14 @@ parameters:
   - displayName: "Go - Client: h2load"
     arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
 
+# grpc-net only scenarios
+- name: grpcnetscenarios 
+  type: object
+  default:
+
+  - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+
 - name: callTypes
   type: object
   default:
@@ -68,8 +79,10 @@ parameters:
 - name: protocols
   type: object
   default:
-    - displayName: "Protocol: h2c"
-      arguments: --variable protocol=h2c --property protocol=h2c
+    - displayName: "h2"
+      arguments: --variable protocol=h2 --property protocol=h2
+    - displayName: "h3"
+      arguments: --variable protocol=h3 --property protocol=h3
 
 - name: payloads
   type: object
@@ -91,20 +104,20 @@ parameters:
 
 steps:
 - ${{ each s in parameters.h2loadscenarios }}:
-  - ${{ each protocol in parameters.protocols }}:
-    - ${{ each stream in parameters.connectionStreams }}:
-      - task: PublishToAzureServiceBus@1
-        condition: succeededOrFailed()
-        displayName: ${{ s.displayName }} ${{ protocol.displayName }} ${{ stream.displayName }}
-        inputs:
-          connectedServiceName: ${{ parameters.connection }}
-          waitForCompletion: true
-          messageBody: |
-            {
-              "name": "crank",
-              "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }} --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
-            }
-- ${{ each s in parameters.scenarios }}:
+  - ${{ each stream in parameters.connectionStreams }}:
+    - task: PublishToAzureServiceBus@1
+      condition: succeededOrFailed()
+      displayName: ${{ s.displayName }} h2c ${{ stream.displayName }}
+      inputs:
+        connectedServiceName: ${{ parameters.connection }}
+        waitForCompletion: true
+        messageBody: |
+          {
+            "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+            "name": "crank",
+            "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
+          }
+- ${{ each s in parameters.grpcnetscenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
       - ${{ each protocol in parameters.protocols }}:
@@ -120,5 +133,22 @@ steps:
                 {
                   "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
                   "name": "crank",
-                  "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} ${{ stream.arguments }}" ]
+                  "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
                 }
+- ${{ each s in parameters.scenarios }}:
+  - ${{ each callType in parameters.callTypes }}:
+    - ${{ each payload in parameters.payloads }}:
+      - ${{ each stream in parameters.connectionStreams }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          timeoutInMinutes: 5
+          displayName: ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} h2c ${{ stream.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+                "name": "crank",
+                "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c" ]
+              }
