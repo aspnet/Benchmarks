@@ -46,8 +46,6 @@ parameters:
 
   - displayName: "ASP.NET Core - Client: h2load"
     arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.options.collectCounters true
-  - displayName: "Grpc.Core - Client: h2load"
-    arguments: --scenario grpccoreserver-h2loadclient         $(grpcJobs) --property server=grpccoreserver --property client=h2loadclient --application.options.collectCounters true
   - displayName: "Go - Client: h2load"
     arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
 
@@ -96,6 +94,7 @@ parameters:
       arguments: --variable streams=70 --variable connections=1 --variable threads=1 --property streams=70x1
 
 steps:
+# h2c h2load unary to various servers
 - ${{ each s in parameters.h2loadscenarios }}:
   - ${{ each stream in parameters.connectionStreams }}:
     - task: PublishToAzureServiceBus@1
@@ -110,6 +109,9 @@ steps:
             "name": "crank",
             "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
           }
+
+# h2/h3 HttpClient to ASP.NET Core
+# h3 is currently Linux only
 - ${{ each s in parameters.grpcnetscenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
@@ -129,6 +131,8 @@ steps:
                     "name": "crank",
                     "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
                   }
+
+# h2c between various clients and servers
 - ${{ each s in parameters.scenarios }}:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
