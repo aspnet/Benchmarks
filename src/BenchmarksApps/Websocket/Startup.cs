@@ -1,20 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net.WebSockets;
+using System;
 using System.Net;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BenchmarkServer
 {
     public class Startup
     {
-        private readonly IConfiguration _config;
-
-        public Startup(IConfiguration configuration)
-        {
-            _config = configuration;
-        }
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
@@ -32,7 +34,7 @@ namespace BenchmarkServer
                         {
                             using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
                             {
-                                await Echo(context, webSocket);
+                                await Echo(webSocket);
                             }
                         }
                         else
@@ -47,7 +49,7 @@ namespace BenchmarkServer
                 });
         }
 
-        private async Task Echo(HttpContext context, WebSocket webSocket)
+        private async Task Echo(WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
