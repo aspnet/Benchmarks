@@ -8,6 +8,7 @@
     waitForExit: true
     variables:
       connections: 100
+      warmup: 5
       duration: 15
       scenario: echo
       path: /Echo
@@ -15,4 +16,4 @@
       serverAddress: localhost
       serverPort: 5000
       collectLatency: true
-    arguments: "-c {{connections}} -d {{duration}} -s {{scenario}} -u {% if serverUri == blank or serverUri == empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} {% if collectLatency != blank %} --latency {{ collectLatency }} {% endif %}"
+    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -s {{scenario}} -u {% if serverUri == blank or serverUri == empty %} {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}} {% else %} {{serverUri}}:{{serverPort}}{{path}} {% endif %} {% if collectLatency != blank %} --latency {{ collectLatency }} {% endif %}"

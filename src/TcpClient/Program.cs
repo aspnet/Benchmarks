@@ -85,7 +85,7 @@ namespace TcpClient
                 return Task.CompletedTask;
             });
 
-            await app.ExecuteAsync(args);            
+            await app.ExecuteAsync(args);
         }
 
         private static async Task ScheduleAsync()
