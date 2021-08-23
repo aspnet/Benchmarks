@@ -8,7 +8,7 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
-        - path: jobs.application.results['benchmarks/download-size']
+        - path: jobs.application.results['blazorwasm/download-size']
           threshold: 2
           unit: Percent
       labels: 
@@ -28,7 +28,7 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
-        - path: jobs.application.results['benchmarks/time-to-first-ui']
+        - path: jobs.application.results['blazorwasm/time-to-first-ui']
           threshold: 2
       labels: 
         - Perf
@@ -91,8 +91,8 @@ templates:
     {%- for regression in Regressions -%}
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
-    {%- assign build = r.Data.jobs.application.results['benchmarks/time-to-first-ui'] -%}
-    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/time-to-first-ui'] | at_least: 1 -%}
+    {%- assign build = r.Data.jobs.application.results['blazorwasm/time-to-first-ui'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['blazorwasm/time-to-first-ui'] | at_least: 1 -%}
     {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
     {%- capture changes -%}
     <details>
