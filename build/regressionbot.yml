@@ -35,6 +35,16 @@ jobs:
             --username $(github.username) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
             --verbose
+        dotnet run -c release -- `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.blazor.config.yml `
+            --connectionstring BENCHMARKSBOT_ConnectionString `
+            --repository-id $(github.repositoryId) `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --username $(github.username) `
+            --app-key BENCHMARKSBOT_GitHubAppKey `
+            --verbose
+
 
     env:
         BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)

@@ -1,0 +1,131 @@
+sources:
+  - name: DownloadSize
+    table: BlazorWasm
+    rules:
+      - include: .
+    daysToLoad: 60
+    stdevCount: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/download-size']
+          threshold: 2
+          unit: Percent
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - pranavkm
+      template: download-size
+      title: | 
+        Blazor download size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+  - name: Startup 
+    table: BlazorWasm
+    rules:
+      - include: .
+    daysToLoad: 60
+    stdevCount: 7
+    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/time-to-first-ui']
+          threshold: 2
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - pranavkm
+      template: first-ui
+      title: | 
+        Blazor time to first UI {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+templates:
+  download-size: |
+    | Scenario | Environment | Date | Old Build (KB) | New Build (KB) | Change | Deviation | StDev | Dependencies |
+    | -------- | ----------- | ---- | -------------- | -------------- | ------ | --------- | ----- | ------------ |
+    {%- for regression in Regressions -%}
+    {%- assign r = regression.CurrentResult -%}
+    {%- assign p = regression.PreviousResult -%}
+    {%- assign build = r.Data.jobs.application.results['blazorwasm/download-size'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['blazorwasm/download-size'] | at_least: 1 -%}
+    {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
+    {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation -%}
+    {%- capture changes -%}
+    <details>
+        <summary>Changes</summary> 
+        <table><th>Name</th><th>Version</th><th>Diff</th>
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
+            <tr>
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType == 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                        {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
+                            {%- if diff.RepositoryUrl == empty -%}
+                                `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
+                            {%- else -%}
+                                {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
+                            {%- endif -%}
+                        {%- else -%}
+                            `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
+                        {%- endif -%}
+                    {%- else -%}
+                        n/a
+                    {%- endif -%}
+                </td></tr>
+        {%- endfor -%}
+        </table></details>
+    {%- endcapture %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
+    {%- endfor %}
+
+  first-ui: |
+    | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Dependencies |
+    | -------- | ----------- | ---- | -------- | -------- | ------ | ------------ |
+    {%- for regression in Regressions -%}
+    {%- assign r = regression.CurrentResult -%}
+    {%- assign p = regression.PreviousResult -%}
+    {%- assign build = r.Data.jobs.application.results['benchmarks/time-to-first-ui'] -%}
+    {%- assign prevBuild = p.Data.jobs.application.results['benchmarks/time-to-first-ui'] | at_least: 1 -%}
+    {%- assign change = regression.Change | times: 100 | divided_by: prevBuild -%}
+    {%- capture changes -%}
+    <details>
+        <summary>Changes</summary> 
+        <table><th>Name</th><th>Version</th><th>Diff</th>
+        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
+        {%- for diff in application_changes -%}
+            <tr>
+                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
+                <td>
+                    {%- case diff.ChangeType -%}
+                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
+                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
+                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
+                    {%- endcase -%}
+                </td>
+                <td>
+                    {%- if diff.ChangeType == 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
+                        {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
+                            {%- if diff.RepositoryUrl == empty -%}
+                                `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
+                            {%- else -%}
+                                {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
+                            {%- endif -%}
+                        {%- else -%}
+                            `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
+                        {%- endif -%}
+                    {%- else -%}
+                        n/a
+                    {%- endif -%}
+                </td></tr>
+        {%- endfor -%}
+        </table></details>
+    {%- endcapture %}
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{ changes | strip_newlines }} |
+    {%- endfor %}
