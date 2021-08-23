@@ -117,7 +117,7 @@ steps:
     - ${{ each payload in parameters.payloads }}:
       - ${{ each protocol in parameters.protocols }}:
         - ${{ each stream in parameters.connectionStreams }}:
-          - ${{ if or( not( eq(payload.displayName, 'h3')), eq( parameters.runH3, 'true')) }}:
+          - ${{ if or( not( eq(protocol.displayName, 'h3')), eq( parameters.runH3, 'true')) }}:
             - task: PublishToAzureServiceBus@1
               condition: succeededOrFailed()
               timeoutInMinutes: 5
