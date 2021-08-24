@@ -277,7 +277,12 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Number of streams: 
   - `--variable streams=1`
   - `--variable streams=70`
+- Number of connections: 
+  - `--variable connections=1`
+  - `--variable connections=28`
 - Protocol: 
+  - `--variable protocol=h2`
+  - `--variable protocol=h3`
   - `--variable protocol=h2c`
 - Call types:
   - Unary: `--variable scenario=unary`
