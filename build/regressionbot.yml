@@ -21,6 +21,8 @@ jobs:
   steps:
   - powershell: |
         cd ..
+        Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+        ./dotnet-install.ps1
         git clone https://github.com/dotnet/crank
         cd ./crank/
         git checkout main
