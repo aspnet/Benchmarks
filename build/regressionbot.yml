@@ -1,4 +1,4 @@
-pool: ASP.NET-Performance-Controller
+pool: ASP.NET-Performance-Controller-new
 
 variables:
   - group: 'ASP.NET Benchmarks'
