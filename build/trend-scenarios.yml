@@ -42,6 +42,8 @@ parameters:
     arguments: --scenario connectionclose $(plaintextJobsV2) --property scenario=ConnectionClose --property protocol=http --variable connections=32 --property connections=32 
   - displayName: Plaintext Connection Close Https
     arguments: --scenario connectionclosehttps $(plaintextJobsV2) --property scenario=ConnectionCloseHttps --property protocol=https --variable connections=32 --property connections=32
+  - displayName: Plaintext Connection Close Https HttpSys
+    arguments: --scenario connectionclosehttps $(plaintextJobsV2) --property scenario=ConnectionCloseHttpsHttpSys --property protocol=https --variable connections=32 --property connections=32 --variable server=HttpSys --application.options.requiredOperatingSystem windows
 
 # Json
 
@@ -51,6 +53,8 @@ parameters:
     arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
   - displayName: Json Https
     arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps --property protocol=https
+  - displayName: Json Https HttpSys
+    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttpsHttpSys --property protocol=https --variable server=HttpSys --application.options.requiredOperatingSystem windows
   - displayName: Json Crossgen2
     arguments: --scenario json $(jsonJobsV2) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
   - displayName: Json Mvc
