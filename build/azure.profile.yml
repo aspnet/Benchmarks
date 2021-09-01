@@ -9,12 +9,12 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://10.0.0.11:5001
+          - https://aspnetperf.servicebus.windows.net/azuredb
       application:
         endpoints: 
-          - http://10.0.0.9:5001
+          - https://aspnetperf.servicebus.windows.net/azureserver
         variables:
           databaseServer: 10.0.0.11
       load:
         endpoints: 
-          - http://10.0.0.10:5001
+          - https://aspnetperf.servicebus.windows.net/azureclient
