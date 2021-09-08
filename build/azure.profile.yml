@@ -9,6 +9,24 @@ profiles:
     jobs: 
       db:
         endpoints: 
+          - http://10.0.0.11:5001
+      application:
+        endpoints: 
+          - http://10.0.0.9:5001
+        variables:
+          databaseServer: 10.0.0.11
+      load:
+        endpoints: 
+          - http://10.0.0.10:5001
+
+  aspnet-azure-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.9
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
           - https://aspnetperf.servicebus.windows.net/azuredb
       application:
         endpoints: 
