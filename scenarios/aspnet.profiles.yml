@@ -41,6 +41,26 @@ profiles:
         endpoints: 
           - http://asp-citrine-load:5001
 
+  aspnet-citrine-lin-relay:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinelin
+        variables:
+          databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+
   aspnet-citrine-win:
     variables:
       serverAddress: 10.0.0.104
@@ -60,7 +80,27 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-db:5001
-  
+
+  aspnet-citrine-win-relay:
+    variables:
+      serverAddress: 10.0.0.104
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinewin
+        variables:
+          databaseServer: 10.0.0.105
+      warmup:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+          
   aspnet-citrine-arm:
     variables:
       serverAddress: 10.0.0.107
@@ -78,6 +118,23 @@ profiles:
         endpoints: 
           - http://asp-citrine-load:5001
   
+  aspnet-citrine-arm-relay:
+    variables:
+      serverAddress: 10.0.0.107
+      cores: 32
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinearm
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+          
   aspnet-citrine-amd:
     variables:
       serverAddress: 10.0.0.106
@@ -95,6 +152,23 @@ profiles:
         endpoints: 
           - http://asp-citrine-db:5001
   
+  aspnet-citrine-amd-relay:
+    variables:
+      serverAddress: 10.0.0.106
+      cores: 48
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
+        variables:
+          databaseServer: 10.0.0.105
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+
   aspnet-perf-lin:
     variables:
       serverAddress: 10.0.0.102
@@ -115,6 +189,26 @@ profiles:
         endpoints: 
           - http://asp-perf-load:5001
 
+  aspnet-perf-lin-relay:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfdb
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perflin
+        variables:
+          databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfload
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfload
+
   aspnet-perf-win:
     variables:
       serverAddress: 10.0.0.110
@@ -134,3 +228,23 @@ profiles:
       load:
         endpoints: 
           - http://asp-perf-db:5001
+
+  aspnet-perf-win-relay:
+    variables:
+      serverAddress: 10.0.0.110
+      cores: 12
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfload
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfwin
+        variables:
+          databaseServer: 10.0.0.104
+      warmup:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfdb
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfsb
