@@ -1,7 +1,7 @@
 ﻿jobs:
   websocketClient:
     source:
-      repository: https://github.com/kondratyev-nv/benchmarks.git
+      repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/WebsocketClient/WebsocketClient.csproj
     readyStateText: Websocket Client
