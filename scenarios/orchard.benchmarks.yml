@@ -10,7 +10,7 @@ jobs:
   orchard:
     source:
       repository: https://github.com/orchardcms/orchardcore.git
-      branchOrCommit: dev
+      branchOrCommit: main
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
     framework: net5.0 
