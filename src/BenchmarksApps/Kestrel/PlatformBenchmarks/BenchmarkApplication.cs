@@ -60,7 +60,7 @@ namespace PlatformBenchmarks
         {
         }
 #else
-        private static readonly JsonSerializerOptions SerializerOptions = new();
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions();
 #endif
 
         public static class Paths
