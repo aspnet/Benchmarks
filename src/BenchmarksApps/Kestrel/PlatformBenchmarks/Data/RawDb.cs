@@ -211,8 +211,13 @@ namespace PlatformBenchmarks
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {
+#if NET6_0_OR_GREATER
+            var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = $1", connection);
+            var parameter = new NpgsqlParameter<int> { Value = _random.Next(1, 10001) };
+#else
             var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id", connection);
             var parameter = new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001));
+#endif
 
             cmd.Parameters.Add(parameter);
 
