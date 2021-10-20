@@ -86,7 +86,7 @@ namespace Benchmarks
 #endif
                                 )
 #if NET6_0_OR_GREATER
-                            .DisableConcurrencyDetection()
+                            .EnableThreadSafetyChecks(false)
 #endif
                         , 1024);
 
