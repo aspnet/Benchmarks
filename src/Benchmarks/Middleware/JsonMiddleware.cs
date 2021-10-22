@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
 using System.Text.Json;
 using System.Text.Json.Serialization;
 #else
@@ -24,7 +24,7 @@ namespace Benchmarks.Middleware
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
         private const int _bufferSize = 27;
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0_OR_GREATER
         private static readonly JsonSerializer _json = new JsonSerializer();
 #endif
         private readonly RequestDelegate _next;
@@ -39,7 +39,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = _bufferSize;
 
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0_OR_GREATER
                 var syncIOFeature = httpContext.Features.Get<IHttpBodyControlFeature>();
                 if (syncIOFeature != null)
                 {

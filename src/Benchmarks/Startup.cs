@@ -3,7 +3,7 @@
 
 using System;
 using System.Data.Common;
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
 using Microsoft.Data.SqlClient;
 #else
 using System.Data.SqlClient;
@@ -108,7 +108,7 @@ namespace Benchmarks
 
                 case DatabaseServer.MySql:
 
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 ||  NET5_0 || NET6_0_OR_GREATER
                     throw new NotSupportedException("EF/MySQL is unsupported on netcoreapp3.0 until a provider is available");
 #else
                     services.AddEntityFrameworkMySql();
@@ -251,7 +251,7 @@ namespace Benchmarks
                         .AddRazorViewEngine();
                 }
             }
-#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             if (Scenarios.Any("Endpoint"))
             {
                 services.AddRouting();
@@ -391,7 +391,7 @@ namespace Benchmarks
             {
                 app.UseMvc();
             }
-#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             if (Scenarios.Any("EndpointPlaintext"))
             {
                 app.UseRouting();

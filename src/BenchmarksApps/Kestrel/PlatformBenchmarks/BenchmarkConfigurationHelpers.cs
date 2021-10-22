@@ -28,7 +28,7 @@ namespace PlatformBenchmarks
                     options.IOQueueCount = threadCount;
                 }
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 options.WaitForDataBeforeAllocatingBuffer = false;
 
                 Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");

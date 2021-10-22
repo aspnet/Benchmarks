@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 #endif
 using Microsoft.Extensions.Configuration;
@@ -76,7 +76,7 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                     .Configure<LoggerFilterOptions>(options =>
                     {
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                         if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
                             Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
@@ -106,7 +106,7 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0
+#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NET5_0 && !NET6_0_OR_GREATER
 
                     var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
                     if (kestrelThreadPoolDispatchingValue != null)
@@ -128,7 +128,7 @@ namespace Benchmarks
 
                 if (threadPoolDispatching == false || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
                 {
-#if !NET6_0
+#if !NET6_0_OR_GREATER
                     webHostBuilder.UseLibuv(options =>
                     {
                         if (threadCount > 0)
@@ -176,7 +176,7 @@ namespace Benchmarks
                 webHostBuilder = webHostBuilder.UseHttpSys();
                 #pragma warning restore CA1416
             }
-#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseIIS();

@@ -112,7 +112,7 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
@@ -197,7 +197,7 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
@@ -246,7 +246,7 @@ namespace PlatformBenchmarks
         }
 #endif
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
 
         public void OnStaticIndexedHeader(int index)
         {
@@ -311,7 +311,7 @@ namespace PlatformBenchmarks
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             public void OnStaticIndexedHeader(int index) 
                 => RequestHandler.OnStaticIndexedHeader(index);
 
