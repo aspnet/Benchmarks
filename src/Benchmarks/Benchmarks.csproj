@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <!-- Old way of overriding the dotnet runtime -->
-  <PropertyGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'net6.0'">
+  <PropertyGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'net6.0' and $(TargetFramework) != 'net7.0'">
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
@@ -117,7 +117,7 @@
     <!--PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion50)" /-->
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'net6.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'net6.0' or $(TargetFramework) == 'net7.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
     <!-- Pinning version as the feeds don't include this anymore as of 4/25/2020 -->
