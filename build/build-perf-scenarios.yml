@@ -32,5 +32,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }

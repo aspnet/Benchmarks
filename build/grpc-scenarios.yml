@@ -107,7 +107,7 @@ steps:
           {
             "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
             "name": "crank",
-            "args": [ "--application.channel edge --application.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
+            "args": [ "--application.channel edge --application.framework net7.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
           }
 
 # h2/h3 HttpClient to ASP.NET Core
@@ -129,7 +129,7 @@ steps:
                   {
                     "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
                     "name": "crank",
-                    "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
+                    "args": [ "--application.channel edge --load.channel edge --application.framework net7.0 --load.framework net7.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
                   }
 
 # h2c between various clients and servers
@@ -148,5 +148,5 @@ steps:
               {
                 "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
                 "name": "crank",
-                "args": [ "--application.channel edge --load.channel edge --application.framework net6.0 --load.framework net6.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c" ]
+                "args": [ "--application.channel edge --load.channel edge --application.framework net7.0 --load.framework net7.0 --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --load.variables.duration ${{ parameters.duration }} --load.variables.warmup ${{ parameters.warmup }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c" ]
               }

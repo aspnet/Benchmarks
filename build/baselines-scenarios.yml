@@ -22,16 +22,12 @@ parameters:
   type: object
   default: 
   
-  - displayName: "3.1"
-    arguments: --application.channel current --application.framework netcoreapp3.1 --property framework=netcoreapp3.1
-    supportsPlatform: true
-
-  - displayName: "5.0"
-    arguments: --application.channel current --application.framework net5.0 --property framework=net5.0
-    supportsPlatform: true
-
   - displayName: "6.0"
-    arguments: --application.channel edge --application.framework net6.0 --property framework=net6.0
+    arguments: --application.channel current --application.framework net6.0 --property framework=net6.0
+    supportsPlatform: true
+
+  - displayName: "7.0"
+    arguments: --application.channel edge --application.framework net7.0 --property framework=net7.0
     supportsPlatform: true
 
 # Scenarios
@@ -49,26 +45,26 @@ parameters:
 
   # Plaintext
   - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext
+    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext
     isPlatform: false
   - displayName: Plaintext endpoint
-    arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint
+    arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint
     isPlatform: false
   
   # JSon
   - displayName: Json
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json
+    arguments: --scenario json $(jsonJobs) --property scenario=Json
     isPlatform: false
   - displayName: Json Mvc
-    arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc
+    arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc
     isPlatform: false
   
   # Https
   - displayName: Plaintext Https
-    arguments: --scenario https $(plaintextJobsV2) --property scenario=PlaintextHttps
+    arguments: --scenario https $(plaintextJobs) --property scenario=PlaintextHttps
     isPlatform: false
   - displayName: Json Https
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps
+    arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps
     isPlatform: false
   
 steps:

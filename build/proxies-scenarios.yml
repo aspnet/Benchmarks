@@ -22,25 +22,25 @@ parameters:
   type: object
   default: 
   - displayName: YARP
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net7.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: 'true'
   - displayName: YARP gRPC
-    arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net6.0
+    arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net7.0
     supportsGRPC: true
     condition: 'true'
-  - displayName: YARP-net50
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net50 --application.framework net5.0
+  - displayName: YARP-net60
+    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net60 --application.framework net6.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: 'true'
   - displayName: HttpClient
-    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net6.0
+    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net7.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
