@@ -1,0 +1,8 @@
+jobs:
+  kestrel:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
+    readyStateText: Application started # app should write this line to output! 
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
