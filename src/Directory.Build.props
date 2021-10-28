@@ -1,10 +1,10 @@
 <Project>
 
-  <Import Project="build\dependencies.props" />
+  <Import Project="..\build\dependencies.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/Benchmarks</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/Benchmarks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <!-- this repo does not produce NuGet packages -->
