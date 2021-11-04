@@ -17,6 +17,7 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
+        httpVersion: 1.1
 
 jobs:
   kestrel: #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.yml
@@ -36,4 +37,4 @@ jobs:
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true
-    arguments: "--url https://{{serverAddress}}:{{serverPort}} --scenario {{scenario}}"
+    arguments: "--url https://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}}"
