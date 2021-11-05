@@ -13,6 +13,7 @@ jobs:
       project: src/BenchmarksApps/HelloWorldMiddleware/HelloWorldMiddleware.csproj
       readyStateText: Application started
 
+scenarios:
   keepalive:
     application:
       job: HelloWorldMiddleware
