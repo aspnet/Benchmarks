@@ -22,15 +22,15 @@ namespace HttpClientBenchmarks
         public static async Task<int> Main(string[] args)
         {
             var rootCommand = new RootCommand();
-            rootCommand.AddOption(new Option<string>(new string[] { "-u", "--url" }, "The server url to request") { Required = true });
-            rootCommand.AddOption(new Option<Version>(new string[] { "-h", "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-            rootCommand.AddOption(new Option<int>(new string[] { "-n", "--numberOfClients" }, () => 10, "Number of HttpClients"));
-            rootCommand.AddOption(new Option<int>(new string[] { "-nc", "--concurrencyPerClient" }, () => 10, "Number of concurrect requests per one HttpClient"));
-            rootCommand.AddOption(new Option<int>(new string[] { "-h1mc", "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
-            rootCommand.AddOption(new Option<bool>(new string[] { "-h2mc", "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
-            rootCommand.AddOption(new Option<string>(new string[] { "-s", "--scenario" }, "Scenario to run") { Required = true });
-            rootCommand.AddOption(new Option<int>(new string[] { "-w", "--warmup" }, () => 5, "Duration of the warmup in seconds"));
-            rootCommand.AddOption(new Option<int>(new string[] { "-d", "--duration" }, () => 10, "Duration of the test in seconds"));
+            rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to request") { Required = true });
+            rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
+            rootCommand.AddOption(new Option<int>(new string[] { "--numberOfClients" }, () => 10, "Number of HttpClients"));
+            rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerClient" }, () => 10, "Number of concurrect requests per one HttpClient"));
+            rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
+            rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
+            rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run") { Required = true });
+            rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 5, "Duration of the warmup in seconds"));
+            rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 10, "Duration of the test in seconds"));
 
             rootCommand.Handler = CommandHandler.Create<ClientOptions>(async (options) =>
             {
@@ -102,7 +102,7 @@ namespace HttpClientBenchmarks
                                     Interlocked.Increment(ref _badStatusRequests);
                                 }
                             }
-                            catch (OperationCanceledException)
+                            catch (OperationCanceledException oce) when (oce.CancellationToken == cts.Token || cts.Token.IsCancellationRequested)
                             {
                                 // ignore
                             }
@@ -133,14 +133,9 @@ namespace HttpClientBenchmarks
             BenchmarksEventSource.Log.Metadata("http/badstatusrequests", "sum", "sum", "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
             BenchmarksEventSource.Log.Metadata("http/exceptions", "sum", "sum", "Exceptions", "Number of exceptions", "n0");
 
-            BenchmarksEventSource.Log.Metadata("http/headersmax", "max", "max", "Time to headers (ms) - MAX", "Max time to headers (ms)", "n0");
-            BenchmarksEventSource.Log.Metadata("http/headersmin", "min", "min", "Time to headers (ms) - MIN", "Min time to headers (ms)", "n0");
-
-            BenchmarksEventSource.Log.Metadata("http/contentstartmax", "max", "max", "Time to first content byte (ms) - MAX", "Max time to first content byte (ms)", "n0");
-            BenchmarksEventSource.Log.Metadata("http/contentstartmin", "min", "min", "Time to first content byte (ms) - MIN", "Min time to first content byte (ms)", "n0");
-
-            BenchmarksEventSource.Log.Metadata("http/contentendmax", "max", "max", "Time to last content byte (ms) - MAX", "Max time to last content byte (ms)", "n0");
-            BenchmarksEventSource.Log.Metadata("http/contentendmin", "min", "min", "Time to last content byte (ms) - MIN", "Min time to last content byte (ms)", "n0");
+            RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
+            RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
+            RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.Duration));
 
@@ -168,19 +163,9 @@ namespace HttpClientBenchmarks
 
             if (_successRequests > 0)
             {
-                var headersTimes = _headersTimes.ToArray();
-                var contentStartTimes = _contentStartTimes.ToArray();
-                var contentEndTimes = _contentEndTimes.ToArray();
-                Array.Sort(headersTimes);
-                Array.Sort(contentStartTimes);
-                Array.Sort(contentEndTimes);
-                
-                BenchmarksEventSource.Measure("http/headersmin", TicksToMs(headersTimes[0]));
-                BenchmarksEventSource.Measure("http/contentstartmin", TicksToMs(contentStartTimes[0]));
-                BenchmarksEventSource.Measure("http/contentendmin", TicksToMs(headersTimes[0]));
-                BenchmarksEventSource.Measure("http/headersmax", TicksToMs(headersTimes[headersTimes.Length - 1]));
-                BenchmarksEventSource.Measure("http/contentstartmax", TicksToMs(contentStartTimes[contentStartTimes.Length - 1]));
-                BenchmarksEventSource.Measure("http/contentendmax", TicksToMs(contentEndTimes[contentEndTimes.Length - 1]));
+                LogPercentiledMetric("http/headers", _headersTimes, TicksToMs);
+                LogPercentiledMetric("http/contentstart", _contentStartTimes, TicksToMs);
+                LogPercentiledMetric("http/contentend", _contentEndTimes, TicksToMs);
             }
         }
 
@@ -199,11 +184,11 @@ namespace HttpClientBenchmarks
                     if (result.IsSuccessStatusCode)
                     {
                         var content = await result.Content.ReadAsStreamAsync();
-                        var bytesRead = await content.ReadAsync(oneByteArray);
+                        var bytesRead = await content.ReadAsync(oneByteArray, token);
                         var contentStartTime = stopwatch.ElapsedTicks;
                         while (bytesRead != 0)
                         {
-                            bytesRead = await content.ReadAsync(drainArray);
+                            bytesRead = await content.ReadAsync(drainArray, token);
                         }
                         var contentEndTime = stopwatch.ElapsedTicks;
 
@@ -218,7 +203,7 @@ namespace HttpClientBenchmarks
                         Interlocked.Increment(ref _badStatusRequests);
                     }
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException oce) when (oce.CancellationToken == token || token.IsCancellationRequested)
                 {
                     // ignore
                 }
@@ -236,9 +221,50 @@ namespace HttpClientBenchmarks
             Console.WriteLine($"[{time}] {message}");
         }
 
-        private static long TicksToMs(long ticks)
+        private static double TicksToMs(double ticks)
         {
-            return ticks * 1000 / Stopwatch.Frequency;
+            return ticks * 1000.0 / Stopwatch.Frequency;
+        }
+
+        private static double GetPercentile(int percent, long[] sortedArray)
+        {
+            if (percent == 0)
+            {
+                return sortedArray[0];
+            }
+
+            if (percent == 100)
+            {
+                return sortedArray[sortedArray.Length - 1];
+            }
+
+            var i = ((long)percent * sortedArray.Length) / 100.0 + 0.5;
+            var fractionPart = i - Math.Truncate(i);
+
+            return (1.0 - fractionPart) * sortedArray[(int)Math.Truncate(i) - 1] + fractionPart * sortedArray[(int)Math.Ceiling(i) - 1];
+        }
+
+        private static void RegisterPercentiledMetric(string name, string shortDescription, string longDescription)
+        {
+            BenchmarksEventSource.Log.Metadata(name + "/min", "min", "min", shortDescription + " - min", longDescription + " - min", "n2");
+            BenchmarksEventSource.Log.Metadata(name + "/p50", "max", "max", shortDescription + " - p50", longDescription + " - 50th percentile", "n2");
+            BenchmarksEventSource.Log.Metadata(name + "/p75", "max", "max", shortDescription + " - p75", longDescription + " - 75th percentile", "n2");
+            BenchmarksEventSource.Log.Metadata(name + "/p90", "max", "max", shortDescription + " - p90", longDescription + " - 90th percentile", "n2");
+            BenchmarksEventSource.Log.Metadata(name + "/p99", "max", "max", shortDescription + " - p99", longDescription + " - 99th percentile", "n2");
+            BenchmarksEventSource.Log.Metadata(name + "/max", "max", "max", shortDescription + " - max", longDescription + " - max", "n2");
+        }
+
+        private static void LogPercentiledMetric(string name, ConcurrentBag<long> values, Func<double, double> prepareValue)
+        {
+            var sortedArray = values.ToArray();
+            Array.Sort(sortedArray);
+
+            BenchmarksEventSource.Measure(name + "/min", prepareValue(GetPercentile(0, sortedArray)));
+            BenchmarksEventSource.Measure(name + "/p50", prepareValue(GetPercentile(50, sortedArray)));
+            BenchmarksEventSource.Measure(name + "/p75", prepareValue(GetPercentile(75, sortedArray)));
+            BenchmarksEventSource.Measure(name + "/p90", prepareValue(GetPercentile(90, sortedArray)));
+            BenchmarksEventSource.Measure(name + "/p99", prepareValue(GetPercentile(99, sortedArray)));
+            BenchmarksEventSource.Measure(name + "/max", prepareValue(GetPercentile(100, sortedArray)));
         }
     }
 }

@@ -2,12 +2,17 @@
 # crank --config "C:\Users\knatalia\dev\git\Benchmarks\scenarios\httpclient.benchmarks.yml" --scenario get --profile local
 
 imports:
-  #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.yml
-  #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
     serverPort: 1234
+    httpVersion: "1.1"
+    numberOfClients: 10
+    concurrencyPerClient: 10
+    http11MaxConnectionsPerServer: 1
+    http20EnableMultipleConnections: false
+    warmup: 15
+    duration: 60
 
 scenarios:
   get:
@@ -17,10 +22,9 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
-        httpVersion: "3.0"
 
 jobs:
-  kestrel: #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.yml
+  kestrel:
     source:
       #repository: https://github.com/aspnet/benchmarks.git
       localFolder: C:\Users\knatalia\dev\git\Benchmarks
@@ -29,7 +33,7 @@ jobs:
     readyStateText: Application started # app should write this line to output! 
     arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
 
-  httpClient: #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.yml
+  httpClient:
     source:
       #repository: https://github.com/aspnet/benchmarks.git
       localFolder: C:\Users\knatalia\dev\git\Benchmarks
@@ -37,4 +41,4 @@ jobs:
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true
-    arguments: "--url https://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}}"
+    arguments: "--url https://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfClients {{numberOfClients}} --concurrencyPerClient {{concurrencyPerClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} {% if http20EnableMultipleConnections %} --http20EnableMultipleConnections {% endif %} --warmup {{warmup}} --duration {{duration}}"
