@@ -17,7 +17,7 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
-        httpVersion: 1.1
+        httpVersion: "3.0"
 
 jobs:
   kestrel: #- https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.yml

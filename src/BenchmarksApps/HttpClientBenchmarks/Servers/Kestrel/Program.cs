@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -20,6 +21,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
             }
             listenOptions.UseHttps(cert);
         }
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
 });
 var app = builder.Build();

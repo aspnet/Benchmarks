@@ -5,7 +5,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20214.1" />
