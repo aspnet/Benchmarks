@@ -33,7 +33,7 @@ scenarios:
         presetHeaders: none
         path: /
         pipeline: 0
-        scheme: https
+        serverScheme: https
 
   connectionclose:
     application:
@@ -56,4 +56,4 @@ scenarios:
         pipeline: 0
         presetHeaders: connectionclose
         connections: 32
-        scheme: https
+        serverScheme: https
