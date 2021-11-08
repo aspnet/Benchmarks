@@ -15,9 +15,9 @@ namespace HttpClientBenchmarks
         private static ConcurrentBag<long> _headersTimes = new();
         private static ConcurrentBag<long> _contentStartTimes = new();
         private static ConcurrentBag<long> _contentEndTimes = new();
-        private static int _successRequests = 0;
-        private static int _badStatusRequests = 0;
-        private static int _exceptionRequests = 0;
+        private static long _successRequests = 0;
+        private static long _badStatusRequests = 0;
+        private static long _exceptionRequests = 0;
 
         public static async Task<int> Main(string[] args)
         {
@@ -132,12 +132,14 @@ namespace HttpClientBenchmarks
             BenchmarksEventSource.Log.Metadata("http/successrequests", "sum", "sum", "Success Requests", "Number of successful requests", "n0");
             BenchmarksEventSource.Log.Metadata("http/badstatusrequests", "sum", "sum", "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
             BenchmarksEventSource.Log.Metadata("http/exceptions", "sum", "sum", "Exceptions", "Number of exceptions", "n0");
+            BenchmarksEventSource.Log.Metadata("http/rps/mean", "avg", "avg", "Mean RPS", "Requests per second - mean", "n0");
 
             RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
             RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
             RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.Duration));
+            var stopwatch = Stopwatch.StartNew();
 
             var tasks = new List<Task>(_options.NumberOfClients * _options.ConcurrencyPerClient);
             for (int i = 0; i < _options.NumberOfClients; ++i)
@@ -157,9 +159,11 @@ namespace HttpClientBenchmarks
             }
 
             await Task.WhenAll(tasks);
+            var elapsed = stopwatch.Elapsed.TotalSeconds;
             BenchmarksEventSource.Measure("http/successrequests", _successRequests);
             BenchmarksEventSource.Measure("http/badstatusrequests", _badStatusRequests);
             BenchmarksEventSource.Measure("http/exceptions", _exceptionRequests);
+            BenchmarksEventSource.Measure("http/rps/mean", (_successRequests + _badStatusRequests) / elapsed);
 
             if (_successRequests > 0)
             {

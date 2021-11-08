@@ -26,18 +26,18 @@ scenarios:
 jobs:
   kestrel:
     source:
-      #repository: https://github.com/aspnet/benchmarks.git
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
-      branchOrCommit: main
+      repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
+      #localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output! 
     arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
 
   httpClient:
     source:
-      #repository: https://github.com/aspnet/benchmarks.git
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
-      branchOrCommit: main
+      repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
+      #localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true
