@@ -1,6 +1,10 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Diagnostics.Tracing;
+using System.Text;
+
+var listener = new HttpEventListener();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -35,3 +39,25 @@ await app.StartAsync();
 Console.WriteLine("Application started"); // readyStateText
 
 await app.WaitForShutdownAsync();
+
+
+class HttpEventListener : EventListener
+{
+    protected override void OnEventSourceCreated(EventSource eventSource)
+    {
+        if (eventSource.Name == "Private.InternalDiagnostics.System.Net.Http" || eventSource.Name == "Private.InternalDiagnostics.System.Net.Quic")
+            EnableEvents(eventSource, EventLevel.LogAlways);
+    }
+
+    protected override void OnEventWritten(EventWrittenEventArgs eventData)
+    {
+        var sb = new StringBuilder().Append($"{eventData.TimeStamp:HH:mm:ss.fffffff}[{eventData.EventName}] ");
+        for (int i = 0; i < eventData.Payload?.Count; i++)
+        {
+            if (i > 0)
+                sb.Append(", ");
+            sb.Append(eventData.PayloadNames?[i]).Append(": ").Append(eventData.Payload[i]);
+        }
+        Console.WriteLine(sb.ToString());
+    }
+}
