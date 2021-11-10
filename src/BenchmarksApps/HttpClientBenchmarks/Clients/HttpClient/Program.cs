@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Net.Security;
 using System.Runtime;
 using Microsoft.Crank.EventSources;
-using System.Diagnostics.Tracing;
-using System.Text;
 
 namespace HttpClientBenchmarks;
 
@@ -81,7 +79,6 @@ class Program
 
     private static async Task Warmup()
     {
-        using var listener = new HttpEventListener();
         await RunScenario(_options.Warmup, collectMetrics: false);
         if (_successRequests == 0)
         {
@@ -253,26 +250,5 @@ class Program
         BenchmarksEventSource.Measure(name + "/p90", prepareValue(GetPercentile(90, sortedArray)));
         BenchmarksEventSource.Measure(name + "/p99", prepareValue(GetPercentile(99, sortedArray)));
         BenchmarksEventSource.Measure(name + "/max", prepareValue(GetPercentile(100, sortedArray)));
-    }
-
-    internal sealed class HttpEventListener : EventListener
-    {
-        protected override void OnEventSourceCreated(EventSource eventSource)
-        {
-            if (eventSource.Name == "Private.InternalDiagnostics.System.Net.Http" || eventSource.Name == "Private.InternalDiagnostics.System.Net.Quic")
-                EnableEvents(eventSource, EventLevel.LogAlways);
-        }
-
-        protected override void OnEventWritten(EventWrittenEventArgs eventData)
-        {
-            var sb = new StringBuilder().Append($"{eventData.TimeStamp:HH:mm:ss.fffffff}[{eventData.EventName}] ");
-            for (int i = 0; i < eventData.Payload?.Count; i++)
-            {
-                if (i > 0)
-                    sb.Append(", ");
-                sb.Append(eventData.PayloadNames?[i]).Append(": ").Append(eventData.Payload[i]);
-            }
-            Console.WriteLine(sb.ToString());
-        }
     }
 }
