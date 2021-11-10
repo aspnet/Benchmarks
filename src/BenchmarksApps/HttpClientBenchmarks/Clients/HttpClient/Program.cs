@@ -24,13 +24,13 @@ class Program
         var rootCommand = new RootCommand();
         rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to request") { Required = true });
         rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfClients" }, () => 10, "Number of HttpClients"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerClient" }, () => 10, "Number of concurrect requests per one HttpClient"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfClients" }, () => 1, "Number of HttpClients"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerClient" }, () => 12, "Number of concurrect requests per one HttpClient"));
         rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
         rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 5, "Duration of the warmup in seconds"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 10, "Duration of the test in seconds"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 15, "Duration of the warmup in seconds"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 30, "Duration of the test in seconds"));
 
         rootCommand.Handler = CommandHandler.Create<ClientOptions>(async (options) =>
         {

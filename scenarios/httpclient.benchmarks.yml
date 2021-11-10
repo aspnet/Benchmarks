@@ -7,12 +7,12 @@ imports:
 variables:
     serverPort: 5000
     httpVersion: "1.1"
-    numberOfClients: 10
-    concurrencyPerClient: 20
+    numberOfClients: 1
+    concurrencyPerClient: 12
     http11MaxConnectionsPerServer: 1
     http20EnableMultipleConnections: false
-    warmup: 30
-    duration: 120
+    warmup: 15
+    duration: 30
 
 scenarios:
   httpclient-kestrel-get:

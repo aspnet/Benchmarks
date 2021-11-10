@@ -423,18 +423,18 @@ crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-ben
   - `--variable httpVersion="2.0"`
   - `--variable httpVersion="3.0"`
 - Number of clients:
-  - `--variable numberOfClients=<N>` (default: `10`)
+  - `--variable numberOfClients=<N>` (default: `1`)
 - Number of concurrect requests per one client:
-  - `--variable concurrencyPerClient=<N>` (default: `20`)
+  - `--variable concurrencyPerClient=<N>` (default: `12`)
 - Max number of HTTP/1.1 connections per server:
   - `--variable http11MaxConnectionsPerServer=<N>` (default: `1`)
 - Enable multiple HTTP/2.0 connections:
   - `--variable http20EnableMultipleConnections=false` (default)
   - `--variable http20EnableMultipleConnections=true`
 - Duration of the warmup in seconds:
-  - `--variable warmup=<N>` (default: `30`)
+  - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
-  - `--variable duration=<N>` (default: `120`)
+  - `--variable duration=<N>` (default: `30`)
 
 ## FAQ
 
