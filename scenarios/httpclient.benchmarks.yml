@@ -1,5 +1,5 @@
 ﻿# Local run:
-# crank --config "C:\Users\knatalia\dev\git\Benchmarks\scenarios\httpclient.benchmarks.yml" --scenario get --profile local
+# crank --config "C:\Users\knatalia\dev\git\Benchmarks\scenarios\httpclient.benchmarks.yml" --scenario httpclient-kestrel-get --profile local
 
 imports:
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
@@ -15,7 +15,7 @@ variables:
     duration: 120
 
 scenarios:
-  get:
+  httpclient-kestrel-get:
     application:
       job: kestrel
     load:
