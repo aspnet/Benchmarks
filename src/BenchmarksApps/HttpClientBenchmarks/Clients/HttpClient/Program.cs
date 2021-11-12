@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Security;
 using System.Runtime;
 using Microsoft.Crank.EventSources;
@@ -24,8 +25,8 @@ class Program
         var rootCommand = new RootCommand();
         rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to request") { Required = true });
         rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfClients" }, () => 1, "Number of HttpClients"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerClient" }, () => 12, "Number of concurrect requests per one HttpClient"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 12, "Number of concurrect requests per one HttpClient"));
         rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
         rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run") { Required = true });
@@ -51,15 +52,25 @@ class Program
         return await rootCommand.InvokeAsync(args);
     }
 
+    private static void ValidateOptions()
+    {
+        if (!_options.Url!.StartsWith("http"))
+        {
+            throw new ArgumentException("Bad url: " + _options.Url);
+        }
+
+        if (_options.HttpVersion == HttpVersion.Version30 && !_options.Url.StartsWith("https"))
+        {
+            throw new ArgumentException("Cannot use HTTP/3.0 without HTTPS");
+        }
+    }
+
     private static void Setup()
     {
-        BenchmarksEventSource.Register("IsServerGC", Operations.First, Operations.First, "Server GC enabled", "Server GC is enabled", "");
-        BenchmarksEventSource.Measure("IsServerGC", GCSettings.IsServerGC.ToString());
-
         BenchmarksEventSource.Register("ProcessorCount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
         BenchmarksEventSource.Measure("ProcessorCount", Environment.ProcessorCount);
 
-        for (int i = 0; i < _options.NumberOfClients; ++i)
+        for (int i = 0; i < _options.NumberOfHttpClients; ++i)
         {
             var handler = new SocketsHttpHandler() 
             {
@@ -115,11 +126,11 @@ class Program
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(duration));
         var stopwatch = Stopwatch.StartNew();
 
-        var tasks = new List<Task>(_options.NumberOfClients * _options.ConcurrencyPerClient);
-        for (int i = 0; i < _options.NumberOfClients; ++i)
+        var tasks = new List<Task>(_options.NumberOfHttpClients * _options.ConcurrencyPerHttpClient);
+        for (int i = 0; i < _options.NumberOfHttpClients; ++i)
         {
             var client = _httpClients[i];
-            for (int j = 0; j < _options.ConcurrencyPerClient; ++j)
+            for (int j = 0; j < _options.ConcurrencyPerHttpClient; ++j)
             {
                 switch(_options.Scenario)
                 {
