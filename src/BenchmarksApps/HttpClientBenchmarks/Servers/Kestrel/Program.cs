@@ -2,6 +2,10 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
+// required command line arguments:
+// --urls <url starting with http:// or https://>
+// (in case https is not used) --Kestrel:EndpointDefaults:Protocols <http1 or http2>
+
 var builder = WebApplication.CreateBuilder(args);
 var useHttps = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.StartsWith("https://") ?? false;
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -26,10 +30,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
             }
             listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
         }
-        else
-        {
-            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-        }
+        // in case https is not used, specific protocol (http1/http2) should be passed via command line argument (--Kestrel:EndpointDefaults:Protocols) because of h2c limitations
     });
 });
 var app = builder.Build();

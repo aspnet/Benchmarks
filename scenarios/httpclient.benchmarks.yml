@@ -32,7 +32,7 @@ jobs:
       branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--urls http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}}"
+    arguments: "--urls http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}} --Kestrel:EndpointDefaults:Protocols {% if httpVersion == '2.0' %}http2{% else %}http1{% endif %}"
 
   httpClient:
     source:
