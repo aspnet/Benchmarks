@@ -28,12 +28,9 @@ sources:
   - name: Startup 
     table: TrendBenchmarks
     rules:
-      - include: .
-      - exclude: ulib
-      - exclude: actix
-      - exclude: nodejs
-      - exclude: fasthttp
-      - exclude: azure
+      - include: FortunesEF
+      - include: JsonPlatform
+      - include: JsonMapAction
     daysToLoad: 60
     stdevCount: 7
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
@@ -47,7 +44,6 @@ sources:
         - perf-regression
       owners:
         - sebastienros
-        - mangod9
       template: start-time
       title: | 
         Startup {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
@@ -76,9 +72,9 @@ sources:
       title: | 
         Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: PublishedSize
-    table: CG2Benchmarks
+    table: TrendBenchmarks
     rules:
-      - include: .
+      - include: FortunesEF
     daysToLoad: 60
     stdevCount: 5
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
@@ -92,30 +88,10 @@ sources:
         - perf-regression
       owners:
         - sebastienros
-        - mangod9
       template: published-size
       title: | 
         Published size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
-  - name: SingleFilePublishedSize
-    table: SingleFileBenchmarks
-    rules:
-      - include: trimmed
-    daysToLoad: 60
-    stdevCount: 5
-    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
-    regressions:
-      probes: 
-        - path: jobs.application.results['benchmarks/published-size']
-          threshold: 2
-      labels: 
-        - Perf
-        - perf-regression
-      owners:
-        - sebastienros
-        - drewscoggins
-      template: published-size
-      title: | 
-        Single file published size {% if Regressions.first.change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+
 templates:
   rps: |
     | Scenario | Environment | Date | Old RPS | New RPS | Change | Deviation | StDev | Dependencies |
