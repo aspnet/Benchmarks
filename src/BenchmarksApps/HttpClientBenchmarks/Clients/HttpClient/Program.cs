@@ -1,24 +1,18 @@
-﻿using System.Collections.Concurrent;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Security;
-using System.Runtime;
 using Microsoft.Crank.EventSources;
 
 namespace HttpClientBenchmarks;
 
 class Program
 {
-    private static ClientOptions _options = null!;
-    private static List<HttpClient> _httpClients = new();
-    private static ConcurrentBag<long>? _headersTimes;
-    private static ConcurrentBag<long>? _contentStartTimes;
-    private static ConcurrentBag<long>? _contentEndTimes;
-    private static long _successRequests;
-    private static long _badStatusRequests;
-    private static long _exceptionRequests;
+    private static ClientOptions s_options = null!;
+    private static List<HttpClient> s_httpClients = new();
+    private static Metrics s_metrics = new();
+    private static bool s_isWarmup;
+    private static bool s_isRunning;
 
     public static async Task<int> Main(string[] args)
     {
@@ -35,15 +29,12 @@ class Program
 
         rootCommand.Handler = CommandHandler.Create<ClientOptions>(async (options) =>
         {
-            _options = options;
+            s_options = options;
             Log("HttpClient benchmark");
-            Log("Options: " + _options);
+            Log("Options: " + s_options);
 
-            Setup();
+            await Setup();
             Log("Setup done");
-
-            await Warmup();
-            Log("Warmup done");
 
             await RunScenario();
             Log("Scenario done");
@@ -52,163 +43,164 @@ class Program
         return await rootCommand.InvokeAsync(args);
     }
 
-    private static void ValidateOptions()
-    {
-        if (!_options.Url!.StartsWith("http"))
-        {
-            throw new ArgumentException("Bad url: " + _options.Url);
-        }
-
-        if (_options.HttpVersion == HttpVersion.Version30 && !_options.Url.StartsWith("https"))
-        {
-            throw new ArgumentException("Cannot use HTTP/3.0 without HTTPS");
-        }
-    }
-
-    private static void Setup()
+    private static async Task Setup()
     {
         BenchmarksEventSource.Register("ProcessorCount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
-        BenchmarksEventSource.Measure("ProcessorCount", Environment.ProcessorCount);
+        LogMetric("ProcessorCount", Environment.ProcessorCount);
 
-        for (int i = 0; i < _options.NumberOfHttpClients; ++i)
+        for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
         {
             var handler = new SocketsHttpHandler() 
             {
                 // accept all certs
                 SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = delegate { return true; } },
-                MaxConnectionsPerServer = _options.Http11MaxConnectionsPerServer,
-                EnableMultipleHttp2Connections = _options.Http20EnableMultipleConnections
+                MaxConnectionsPerServer = s_options.Http11MaxConnectionsPerServer > 0 ? s_options.Http11MaxConnectionsPerServer : int.MaxValue,
+                EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections
             };
-            _httpClients.Add(new HttpClient(handler)
+            s_httpClients.Add(new HttpClient(handler)
             {
-                BaseAddress = new Uri(_options.Url!),
-                DefaultRequestVersion = _options.HttpVersion!,
+                DefaultRequestVersion = s_options.HttpVersion!,
                 DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
             });
         }
-    }
 
-    private static async Task Warmup()
-    {
-        await RunScenario(_options.Warmup, collectMetrics: false);
-        if (_successRequests == 0)
-        {
-            throw new Exception($"No successful requests during warmup. Bad responses: {_badStatusRequests}, exceptions: {_exceptionRequests}. See logs for details.");
-        }
-    }
-
-    private static Task RunScenario()
-    {
-        return RunScenario(_options.Duration, collectMetrics: true);
-    }
-
-    private static async Task RunScenario(int duration, bool collectMetrics)
-    { 
-        _successRequests = 0;
-        _badStatusRequests = 0;
-        _exceptionRequests = 0;
-        if (collectMetrics)
-        {
-            BenchmarksEventSource.Log.Metadata("http/successrequests", "sum", "sum", "Success Requests", "Number of successful requests", "n0");
-            BenchmarksEventSource.Log.Metadata("http/badstatusrequests", "sum", "sum", "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
-            BenchmarksEventSource.Log.Metadata("http/exceptions", "sum", "sum", "Exceptions", "Number of exceptions", "n0");
-            BenchmarksEventSource.Log.Metadata("http/rps/mean", "avg", "avg", "Mean RPS", "Requests per second - mean", "n0");
-
-            RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
-            RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
-            RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
-
-            _headersTimes = new ConcurrentBag<long>();
-            _contentStartTimes = new ConcurrentBag<long>();
-            _contentEndTimes = new ConcurrentBag<long>();
-        }
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(duration));
         var stopwatch = Stopwatch.StartNew();
+        var response = await s_httpClients[0].GetAsync(new Uri(s_options.Url!));
+        var elapsed = stopwatch.ElapsedMilliseconds;
+        response.EnsureSuccessStatusCode();
+        BenchmarksEventSource.Register("FirstRequest", Operations.Max, Operations.Max, "First request duration (ms)", "Duration of the first request to the server (ms)", "n0");
+        LogMetric("FirstRequest", elapsed);
+    }
 
-        var tasks = new List<Task>(_options.NumberOfHttpClients * _options.ConcurrencyPerHttpClient);
-        for (int i = 0; i < _options.NumberOfHttpClients; ++i)
+    private static async Task RunScenario()
+    {
+        BenchmarksEventSource.Register("http/successrequests", Operations.Sum, Operations.Sum, "Success Requests", "Number of successful requests", "n0");
+        BenchmarksEventSource.Register("http/badstatusrequests", Operations.Sum, Operations.Sum, "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
+        BenchmarksEventSource.Register("http/exceptions", Operations.Sum, Operations.Sum, "Exceptions", "Number of exceptions", "n0");
+        BenchmarksEventSource.Register("http/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "Requests per second - mean", "n0");
+
+        RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
+        RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
+        RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
+
+        s_isWarmup = true;
+        s_isRunning = true;
+
+        var coordinatorTask = Task.Run(async () =>
         {
-            var client = _httpClients[i];
-            for (int j = 0; j < _options.ConcurrencyPerHttpClient; ++j)
+            await Task.Delay(TimeSpan.FromSeconds(s_options.Warmup));
+            s_isWarmup = false;
+            Log("Completing warmup...");
+            await Task.Delay(TimeSpan.FromSeconds(s_options.Duration));
+            s_isRunning = false;
+            Log("Completing scenario...");
+        });
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(s_options.Warmup + s_options.Duration) + TimeSpan.FromMinutes(10));
+        var ctr = cts.Token.Register(() => throw new Exception("Test taking too long"));
+
+        var tasks = new List<Task<Metrics>>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
+        for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
+        {
+            var client = s_httpClients[i];
+            for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
-                switch(_options.Scenario)
+                switch(s_options.Scenario)
                 {
                     case "get":
-                        tasks.Add(Get(client, cts.Token, collectMetrics));
+                        tasks.Add(Get(client));
                         break;
                     default:
-                        throw new ArgumentException($"Unknown scenario: {_options.Scenario}");
+                        throw new ArgumentException($"Unknown scenario: {s_options.Scenario}");
                 }
             }
         }
 
-        await Task.WhenAll(tasks);
-        var elapsed = stopwatch.Elapsed.TotalSeconds;
-
-        if (collectMetrics)
+        var metricsArray = await Task.WhenAll(tasks);
+        ctr.Dispose();
+        foreach (var metrics in metricsArray)
         {
-            BenchmarksEventSource.Measure("http/successrequests", _successRequests);
-            BenchmarksEventSource.Measure("http/badstatusrequests", _badStatusRequests);
-            BenchmarksEventSource.Measure("http/exceptions", _exceptionRequests);
-            BenchmarksEventSource.Measure("http/rps/mean", (_successRequests + _badStatusRequests) / elapsed);
+            s_metrics.Add(metrics);
+        }
 
-            if (_successRequests > 0)
-            {
-                LogPercentiledMetric("http/headers", _headersTimes!, TicksToMs);
-                LogPercentiledMetric("http/contentstart", _contentStartTimes!, TicksToMs);
-                LogPercentiledMetric("http/contentend", _contentEndTimes!, TicksToMs);
-            }
+        LogMetric("http/successrequests", s_metrics.SuccessRequests);
+        LogMetric("http/badstatusrequests", s_metrics.BadStatusRequests);
+        LogMetric("http/exceptions", s_metrics.ExceptionRequests);
+        LogMetric("http/rps/mean", s_metrics.MeanRps);
+
+        if (s_metrics.SuccessRequests > 0)
+        {
+            LogPercentiledMetric("http/headers", s_metrics.HeadersTimes, TicksToMs);
+            LogPercentiledMetric("http/contentstart", s_metrics.ContentStartTimes, TicksToMs);
+            LogPercentiledMetric("http/contentend", s_metrics.ContentEndTimes, TicksToMs);
         }
     }
 
-    private static async Task Get(HttpClient client, CancellationToken token, bool collectMetrics)
+    private static async Task<Metrics> Get(HttpClient client)
     {
-        var oneByteArray = new byte[1];
+        var uri = new Uri(s_options.Url + "/get");
+
         var drainArray = new byte[81920];
         var stopwatch = Stopwatch.StartNew();
-        while (!token.IsCancellationRequested)
+        
+        var metrics = new Metrics();
+        bool isWarmup = true;
+
+        var durationStopwatch = Stopwatch.StartNew();
+        while (s_isRunning)
         {
+            if (isWarmup && !s_isWarmup)
+            {
+                if (metrics.SuccessRequests == 0)
+                {
+                    throw new Exception($"No successful requests during warmup.");
+                }
+                isWarmup = false;
+                metrics.SuccessRequests = 0;
+                metrics.BadStatusRequests = 0;
+                metrics.ExceptionRequests = 0;
+                durationStopwatch.Restart();
+            }
+            
             try
             {
                 stopwatch.Restart();
-                using var result = await client.GetAsync("/get", HttpCompletionOption.ResponseHeadersRead, token);
+                using var result = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
                 var headersTime = stopwatch.ElapsedTicks;
                 if (result.IsSuccessStatusCode)
                 {
                     var content = await result.Content.ReadAsStreamAsync();
-                    var bytesRead = await content.ReadAsync(oneByteArray, token);
+                    var bytesRead = await content.ReadAsync(drainArray);
                     var contentStartTime = stopwatch.ElapsedTicks;
                     while (bytesRead != 0)
                     {
-                        bytesRead = await content.ReadAsync(drainArray, token);
+                        bytesRead = await content.ReadAsync(drainArray);
                     }
                     var contentEndTime = stopwatch.ElapsedTicks;
 
-                    if (collectMetrics)
+                    if (!isWarmup)
                     {
-                        _headersTimes!.Add(headersTime);
-                        _contentStartTimes!.Add(contentStartTime);
-                        _contentEndTimes!.Add(contentEndTime);
+                        metrics.HeadersTimes.Add(headersTime);
+                        metrics.ContentStartTimes.Add(contentStartTime);
+                        metrics.ContentEndTimes.Add(contentEndTime);
                     }
-                    Interlocked.Increment(ref _successRequests);
+                    metrics.SuccessRequests++;
                 }
                 else
                 {
                     Log("Bad status code: " + result.StatusCode);
-                    Interlocked.Increment(ref _badStatusRequests);
+                    metrics.BadStatusRequests++;
                 }
-            }
-            catch (OperationCanceledException oce) when (oce.CancellationToken == token || token.IsCancellationRequested)
-            {
-                // ignore
             }
             catch (Exception ex)
             {
                 Log("Exception: " + ex);
-                Interlocked.Increment(ref _exceptionRequests);
+                metrics.ExceptionRequests++;
             }
         }
+        var elapsed = durationStopwatch.Elapsed.TotalSeconds;
+        metrics.MeanRps = (metrics.SuccessRequests +  metrics.BadStatusRequests) / elapsed;
+        return metrics;
     }
 
     private static void Log(string message)
@@ -222,44 +214,55 @@ class Program
         return ticks * 1000.0 / Stopwatch.Frequency;
     }
 
-    private static double GetPercentile(int percent, long[] sortedArray)
+    private static double GetPercentile(int percent, List<long> sortedValues)
     {
         if (percent == 0)
         {
-            return sortedArray[0];
+            return sortedValues[0];
         }
 
         if (percent == 100)
         {
-            return sortedArray[sortedArray.Length - 1];
+            return sortedValues[sortedValues.Count - 1];
         }
 
-        var i = ((long)percent * sortedArray.Length) / 100.0 + 0.5;
+        var i = ((long)percent * sortedValues.Count) / 100.0 + 0.5;
         var fractionPart = i - Math.Truncate(i);
 
-        return (1.0 - fractionPart) * sortedArray[(int)Math.Truncate(i) - 1] + fractionPart * sortedArray[(int)Math.Ceiling(i) - 1];
+        return (1.0 - fractionPart) * sortedValues[(int)Math.Truncate(i) - 1] + fractionPart * sortedValues[(int)Math.Ceiling(i) - 1];
     }
 
     private static void RegisterPercentiledMetric(string name, string shortDescription, string longDescription)
     {
-        BenchmarksEventSource.Log.Metadata(name + "/min", "min", "min", shortDescription + " - min", longDescription + " - min", "n2");
-        BenchmarksEventSource.Log.Metadata(name + "/p50", "max", "max", shortDescription + " - p50", longDescription + " - 50th percentile", "n2");
-        BenchmarksEventSource.Log.Metadata(name + "/p75", "max", "max", shortDescription + " - p75", longDescription + " - 75th percentile", "n2");
-        BenchmarksEventSource.Log.Metadata(name + "/p90", "max", "max", shortDescription + " - p90", longDescription + " - 90th percentile", "n2");
-        BenchmarksEventSource.Log.Metadata(name + "/p99", "max", "max", shortDescription + " - p99", longDescription + " - 99th percentile", "n2");
-        BenchmarksEventSource.Log.Metadata(name + "/max", "max", "max", shortDescription + " - max", longDescription + " - max", "n2");
+        BenchmarksEventSource.Register(name + "/min", Operations.Min, Operations.Min, shortDescription + " - min", longDescription + " - min", "n2");
+        BenchmarksEventSource.Register(name + "/p75", Operations.Max, Operations.Max, shortDescription + " - p75", longDescription + " - 75th percentile", "n2");
+        BenchmarksEventSource.Register(name + "/p50", Operations.Max, Operations.Max, shortDescription + " - p50", longDescription + " - 50th percentile", "n2");
+        BenchmarksEventSource.Register(name + "/p90", Operations.Max, Operations.Max, shortDescription + " - p90", longDescription + " - 90th percentile", "n2");
+        BenchmarksEventSource.Register(name + "/p99", Operations.Max, Operations.Max, shortDescription + " - p99", longDescription + " - 99th percentile", "n2");
+        BenchmarksEventSource.Register(name + "/max", Operations.Max, Operations.Max, shortDescription + " - max", longDescription + " - max", "n2");
     }
 
-    private static void LogPercentiledMetric(string name, ConcurrentBag<long> values, Func<double, double> prepareValue)
+    private static void LogPercentiledMetric(string name, List<long> values, Func<double, double> prepareValue)
     {
-        var sortedArray = values.ToArray();
-        Array.Sort(sortedArray);
+        values.Sort();
 
-        BenchmarksEventSource.Measure(name + "/min", prepareValue(GetPercentile(0, sortedArray)));
-        BenchmarksEventSource.Measure(name + "/p50", prepareValue(GetPercentile(50, sortedArray)));
-        BenchmarksEventSource.Measure(name + "/p75", prepareValue(GetPercentile(75, sortedArray)));
-        BenchmarksEventSource.Measure(name + "/p90", prepareValue(GetPercentile(90, sortedArray)));
-        BenchmarksEventSource.Measure(name + "/p99", prepareValue(GetPercentile(99, sortedArray)));
-        BenchmarksEventSource.Measure(name + "/max", prepareValue(GetPercentile(100, sortedArray)));
+        LogMetric(name + "/min", prepareValue(GetPercentile(0, values)));
+        LogMetric(name + "/p50", prepareValue(GetPercentile(50, values)));
+        LogMetric(name + "/p75", prepareValue(GetPercentile(75, values)));
+        LogMetric(name + "/p90", prepareValue(GetPercentile(90, values)));
+        LogMetric(name + "/p99", prepareValue(GetPercentile(99, values)));
+        LogMetric(name + "/max", prepareValue(GetPercentile(100, values)));
+    }
+
+    private static void LogMetric(string name, double value)
+    {
+        BenchmarksEventSource.Measure(name, value);
+        Log($"{name}: {value}");
+    }
+
+    private static void LogMetric(string name, long value)
+    {
+        BenchmarksEventSource.Measure(name, value);
+        Log($"{name}: {value}");
     }
 }

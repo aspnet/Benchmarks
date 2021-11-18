@@ -7,10 +7,10 @@ imports:
 variables:
     serverPort: 5000
     httpVersion: "1.1"
-    useHttps: false
+    useHttps: true
     numberOfHttpClients: 1
-    concurrencyPerHttpClient: 12
-    http11MaxConnectionsPerServer: 2147483647
+    concurrencyPerHttpClient: 200
+    http11MaxConnectionsPerServer: "-1"
     http20EnableMultipleConnections: true
     warmup: 15
     duration: 30
@@ -63,7 +63,7 @@ profiles:
     jobs:
       server:
         endpoints: 
-          - http://asp-citrine-client:5001
+          - http://asp-citrine-load:5001
       client:
         endpoints: 
           - http://asp-citrine-lin:5001
@@ -111,7 +111,7 @@ profiles:
     jobs:
       server:
         endpoints: 
-          - http://asp-citrine-client:5001
+          - http://asp-citrine-load:5001
       client:
         endpoints: 
           - http://asp-citrine-arm:5001
@@ -159,7 +159,7 @@ profiles:
     jobs:
       server:
         endpoints: 
-          - http://asp-perf-client:5001
+          - http://asp-perf-load:5001
       client:
         endpoints: 
           - http://asp-perf-lin:5001
