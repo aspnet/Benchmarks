@@ -32,7 +32,7 @@ jobs:
       branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--urls http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}} --Kestrel:EndpointDefaults:Protocols {% if httpVersion == '2.0' %}http2{% else %}http1{% endif %}"
+    arguments: "--urls http{% if useHttps == true %}s{% endif %}://{{serverAddress}}:{{serverPort}} --Kestrel:EndpointDefaults:Protocols {% if httpVersion == '2.0' %}http2{% else %}http1{% endif %}"
 
   httpClient:
     source:
@@ -42,7 +42,7 @@ jobs:
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true
-    arguments: "--url http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} {% if http20EnableMultipleConnections %} --http20EnableMultipleConnections {% endif %} --warmup {{warmup}} --duration {{duration}}"
+    arguments: "--url http{% if useHttps == true %}s{% endif %}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} {% if http20EnableMultipleConnections %} --http20EnableMultipleConnections {% endif %} --warmup {{warmup}} --duration {{duration}}"
 
 profiles:
   local:
@@ -58,8 +58,7 @@ profiles:
 
   aspnet-citrine-lin:
     variables:
-      serverAddress: 10.0.0.102
-      cores: 28
+      serverAddress: #10.0.0.102 -- wrong ip -- TODO: find real asp-citrine-load ip
     jobs:
       server:
         endpoints: 
@@ -70,8 +69,7 @@ profiles:
 
   aspnet-citrine-lin-relay:
     variables:
-      serverAddress: 10.0.0.102
-      cores: 28
+      serverAddress: #10.0.0.102 -- wrong ip -- TODO: find real citrineclient ip
     jobs:
       server:
         endpoints: 
@@ -82,8 +80,7 @@ profiles:
 
   aspnet-citrine-win:
     variables:
-      serverAddress: 10.0.0.104
-      cores: 28
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -94,8 +91,7 @@ profiles:
 
   aspnet-citrine-win-relay:
     variables:
-      serverAddress: 10.0.0.104
-      cores: 28
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -106,8 +102,7 @@ profiles:
           
   aspnet-citrine-arm:
     variables:
-      serverAddress: 10.0.0.107
-      cores: 32
+      serverAddress: #10.0.0.107  -- wrong ip -- TODO: find real asp-citrine-load ip
     jobs:
       server:
         endpoints: 
@@ -118,8 +113,7 @@ profiles:
   
   aspnet-citrine-arm-relay:
     variables:
-      serverAddress: 10.0.0.107
-      cores: 32
+      serverAddress: #10.0.0.107  -- wrong ip -- TODO: find real citrineclient ip
     jobs:
       server:
         endpoints: 
@@ -130,8 +124,7 @@ profiles:
           
   aspnet-citrine-amd:
     variables:
-      serverAddress: 10.0.0.106
-      cores: 48
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -142,8 +135,7 @@ profiles:
   
   aspnet-citrine-amd-relay:
     variables:
-      serverAddress: 10.0.0.106
-      cores: 48
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -154,8 +146,7 @@ profiles:
 
   aspnet-perf-lin:
     variables:
-      serverAddress: 10.0.0.102
-      cores: 12
+      serverAddress: 10.0.0.104
     jobs:
       server:
         endpoints: 
@@ -166,8 +157,7 @@ profiles:
 
   aspnet-perf-lin-relay:
     variables:
-      serverAddress: 10.0.0.102
-      cores: 12
+      serverAddress: 10.0.0.104
     jobs:
       server:
         endpoints: 
@@ -178,8 +168,7 @@ profiles:
 
   aspnet-perf-win:
     variables:
-      serverAddress: 10.0.0.110
-      cores: 12
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
@@ -190,8 +179,7 @@ profiles:
 
   aspnet-perf-win-relay:
     variables:
-      serverAddress: 10.0.0.110
-      cores: 12
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
