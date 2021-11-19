@@ -36,6 +36,16 @@ jobs:
     readyStateText: ready to accept connections
     noClean: true
 
+  mssql:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      dockerFile: docker/mssql-techempower/Dockerfile
+      dockerImageName: mssql_te
+      dockerContextDirectory: docker/mssql-techempower
+    readyStateText: Data imported
+    noClean: true
+
 scenarios:
   fortunes:
     db:
@@ -44,6 +54,23 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: DbFortunesRaw
+    load:
+      job: wrk
+      variables:
+        serverPort: 5000
+        presetHeaders: html
+        path: /fortunes/raw
+
+  fortunes_mssql:
+    db:
+      job: mssql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: SqlServer
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=sa;Password=Benchmarkdbp@55
     load:
       job: wrk
       variables:

@@ -1,14 +1,19 @@
-FROM microsoft/mssql-server-linux:latest
+FROM mcr.microsoft.com/mssql/server:2019-latest
 
-# Create app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+ENV ACCEPT_EULA=Y
+ENV MSSQL_PID=Enterprise
+# The 'sa' password has a minimum complexity requirement (8 characters, uppercase, lowercase, alphanumerical and/or non-alphanumerical)
+ENV SA_PASSWORD=Benchmarkdbp@55
 
-# Bundle app source
-COPY . /usr/src/app
+ADD entrypoint.sh .
+ADD create.sql .
+ADD import-data.sh .
+
+USER root 
 
 # Grant permissions for the import-data script to be executable
-RUN chmod +x /usr/src/app/import-data.sh
-RUN chmod +x /usr/src/app/entrypoint.sh
+RUN chmod +x import-data.sh
 
-CMD /bin/bash ./entrypoint.sh
+USER mssql
+
+CMD /bin/bash entrypoint.sh
