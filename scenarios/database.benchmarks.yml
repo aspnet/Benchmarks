@@ -70,7 +70,7 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: SqlServer
-        connectionString: Server={{databaseServer}};Database=hello_world;User Id=sa;Password=Benchmarkdbp@55
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Encrypt=false
     load:
       job: wrk
       variables:
