@@ -31,6 +31,8 @@
     <NpgsqlVersion50>5.0.5</NpgsqlVersion50>
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
 
+    <MicrosoftDataSqlClientVersion60>4.0.0</MicrosoftDataSqlClientVersion60>
+
     <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.4</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
