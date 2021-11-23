@@ -106,6 +106,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /db
+        connections: 512
 
   multiple_queries:
     db:
@@ -119,6 +120,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /queries/20
+        connections: 512
   
   caching:
     db:
@@ -132,6 +134,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /cached-worlds/100
+        connections: 256
 
   updates:
     db:
@@ -145,3 +148,4 @@ scenarios:
       variables:
         presetHeaders: json
         path: /updates/20
+        connections: 512
