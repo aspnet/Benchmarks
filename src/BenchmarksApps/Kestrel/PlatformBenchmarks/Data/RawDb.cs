@@ -40,36 +40,36 @@ namespace PlatformBenchmarks
                 }
             }
         }
-
-        public async Task<World[]> LoadMultipleQueriesRows(int count)
+      public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var results = new World[count];
-            var readers = new (Task<NpgsqlDataReader>, NpgsqlConnection)[count];
-
+        
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
+        
+            var batch = new NpgsqlBatch(db);
             for (int i = 0; i < results.Length; i++)
             {
-                var db = new NpgsqlConnection(_connectionString);
-                await db.OpenAsync();
-                var (cmd, _) = CreateReadCommand(db);
-                readers[i] = (cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow), db);
+                var cmd = new NpgsqlBatchCommand("SELECT id, randomnumber FROM world WHERE id = $1");
+                var parameter = new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) };
+                cmd.Parameters.Add(parameter);
+                batch.BatchCommands.Add(cmd);
             }
-
-            for (int i = 0; i < readers.Length; i++)
+        
+            var rdr = await batch.ExecuteReaderAsync();
+            for (int i = 0; i < results.Length; i++)
             {
-                var (r, db) = readers[i];
-                using var rdr = await r;
                 await rdr.ReadAsync();
                 results[i] = new World
                 {
                     Id = rdr.GetInt32(0),
                     RandomNumber = rdr.GetInt32(1)
                 };
-                db.Dispose();
+                rdr.NextResult();
             }
-
+            
             return results;
         }
-
         public Task<CachedWorld[]> LoadCachedQueries(int count)
         {
             var result = new CachedWorld[count];
