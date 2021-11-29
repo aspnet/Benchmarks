@@ -3,17 +3,23 @@
 
 imports:
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
 
 variables:
-    serverPort: 5000
+    warmup: 15 #seconds -- default value *copied* to WRK, see notes below
+    duration: 30 #seconds -- default value *copied* to WRK
+    serverPort: 1234 # -- default value *copied* to WRK
     httpVersion: "1.1"
-    useHttps: true
+    useHttps: false
     numberOfHttpClients: 1
-    concurrencyPerHttpClient: 200
-    http11MaxConnectionsPerServer: "-1"
+    concurrencyPerHttpClient: 1 # unsupported by WRK -- will be ignored
+    collectRequestTimings: false # unsupported by WRK -- will be ignored
+
+    # HttpClient-specific parameters:
+    http11MaxConnectionsPerServer: 0 #unlimited
     http20EnableMultipleConnections: true
-    warmup: 15
-    duration: 30
+    useWinHttpHandler: false
+    useHttpMessageInvoker: false
 
 scenarios:
   httpclient-kestrel-get:
@@ -23,26 +29,59 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
+  wrk-kestrel-get:
+    server:
+      job: kestrel
+    client:
+      job: wrk
+      variables:
+        connections: '{{numberOfHttpClients}}'
+        threads: '{{numberOfHttpClients}}'
+        serverScheme: 'http{% if useHttps %}s{% endif %}'
+        path: /get
+        pipeline: 0
+        # TODO: Job's default values seem to take preference over global variables, so if the following is removed, `serverPort: 5000` will be used, etc. 
+        # Also, substitution doesn't seem to recognize global variables of the same name, e.g. serverPort: '{{serverPort}}' doesn't work
+        # Leaving the copied values unless the way to substitute correctly is found (other configs seem to employ copying strategy)
+        # Overriding via console arg (e.g. `--variable serverPort=4321`) will work for *both* global and job's variables
+        serverPort: 1234
+        warmup: 15 #seconds
+        duration: 30 #seconds
+
 
 jobs:
   kestrel:
     source:
-      repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
-      #localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      #repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks
       branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--urls http{% if useHttps == true %}s{% endif %}://{{serverAddress}}:{{serverPort}} --Kestrel:EndpointDefaults:Protocols {% if httpVersion == '2.0' %}http2{% else %}http1{% endif %}"
+    arguments: "--url http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}} --httpVersion {{httpVersion}}"
 
   httpClient:
     source:
-      repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
-      #localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      #repository: https://github.com/CarnaViire/benchmarks.git #https://github.com/aspnet/benchmarks.git
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks
       branchOrCommit: http3-benchmarks #main
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true
-    arguments: "--url http{% if useHttps == true %}s{% endif %}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} {% if http20EnableMultipleConnections %} --http20EnableMultipleConnections {% endif %} --warmup {{warmup}} --duration {{duration}}"
+    timeout: 1200 #seconds
+    arguments: "--url http{% if useHttps %}s{% endif %}://{{serverAddress}}:{{serverPort}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} {% if http20EnableMultipleConnections %} --http20EnableMultipleConnections {% endif %} {% if useWinHttpHandler %} --useWinHttpHandler {% endif %} {% if useHttpMessageInvoker %} --useHttpMessageInvoker {% endif %} {% if collectRequestTimings %} --collectRequestTimings {% endif %} --warmup {{warmup}} --duration {{duration}}"
+
+  wrkCopy:
+    source:
+      repository: https://github.com/dotnet/crank.git
+      branchOrCommit: main
+      project: src/Microsoft.Crank.Jobs.Wrk/Microsoft.Crank.Jobs.Wrk.csproj
+      sourceKey: wrk
+      noBuild: true
+    isConsoleApp: true
+    waitForExit: true
+    arguments: "-c {{concurrencyPerHttpClient}} http{% if useHttps == true %}s{% endif %}://{{serverAddress}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s -t {{concurrencyPerHttpClient}}"
+    options:
+      requiredOperatingSystem: linux
 
 profiles:
   local:

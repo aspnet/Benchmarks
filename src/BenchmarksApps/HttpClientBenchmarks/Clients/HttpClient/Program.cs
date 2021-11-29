@@ -1,7 +1,9 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using Microsoft.Crank.EventSources;
 
 namespace HttpClientBenchmarks;
@@ -9,7 +11,7 @@ namespace HttpClientBenchmarks;
 class Program
 {
     private static ClientOptions s_options = null!;
-    private static List<HttpClient> s_httpClients = new();
+    private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
     private static bool s_isWarmup;
     private static bool s_isRunning;
@@ -20,9 +22,12 @@ class Program
         rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to request") { Required = true });
         rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
         rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 12, "Number of concurrect requests per one HttpClient"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 1, "Number of concurrect requests per one HttpClient"));
         rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
+        rootCommand.AddOption(new Option<bool>(new string[] { "--useWinHttpHandler" }, () => false, "Use WinHttpHandler instead of SocketsHttpHandler"));
+        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttpMessageInvoker" }, () => false, "Use HttpMessageInvoker instead of HttpClient"));
+        rootCommand.AddOption(new Option<bool>(new string[] { "--collectRequestTimings" }, () => false, "Collect percentiled metrics of request timings"));
         rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run") { Required = true });
         rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 15, "Duration of the warmup in seconds"));
         rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 30, "Duration of the test in seconds"));
@@ -32,6 +37,7 @@ class Program
             s_options = options;
             Log("HttpClient benchmark");
             Log("Options: " + s_options);
+            ValidateOptions();
 
             await Setup();
             Log("Setup done");
@@ -43,33 +49,72 @@ class Program
         return await rootCommand.InvokeAsync(args);
     }
 
+    private static void ValidateOptions()
+    {
+        bool isHttp = s_options.Url!.StartsWith("http://");
+        bool isHttps = s_options.Url!.StartsWith("https://");
+
+        if (!isHttp && !isHttps)
+        {
+            throw new ArgumentException("Unsupported URL format: " + s_options.Url);
+        }
+
+        if (!isHttps && s_options.HttpVersion == HttpVersion.Version30)
+        {
+            throw new ArgumentException("HTTP/3.0 only supports HTTPS");
+        }
+
+        if (s_options.UseWinHttpHandler && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new ArgumentException("WinHttpHandler is only supported on Windows");
+        }
+    }
+
     private static async Task Setup()
     {
-        BenchmarksEventSource.Register("ProcessorCount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
-        LogMetric("ProcessorCount", Environment.ProcessorCount);
+        BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
+        LogMetric("env/processorcount", Environment.ProcessorCount);
+        
+        int max11ConnectionsPerServer = s_options.Http11MaxConnectionsPerServer > 0 ? s_options.Http11MaxConnectionsPerServer : int.MaxValue;
 
         for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
         {
-            var handler = new SocketsHttpHandler() 
+            HttpMessageHandler handler;
+            if (s_options.UseWinHttpHandler)
             {
-                // accept all certs
-                SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = delegate { return true; } },
-                MaxConnectionsPerServer = s_options.Http11MaxConnectionsPerServer > 0 ? s_options.Http11MaxConnectionsPerServer : int.MaxValue,
-                EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections
-            };
-            s_httpClients.Add(new HttpClient(handler)
+                // Disable "only supported on: 'windows'" warning -- options are already validated
+#pragma warning disable CA1416
+                handler = new WinHttpHandler()
+                {
+                    // accept all certs
+                    ServerCertificateValidationCallback = delegate { return true; },
+                    MaxConnectionsPerServer = max11ConnectionsPerServer,
+                    EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections
+                };
+#pragma warning restore CA1416
+            }
+            else
             {
-                DefaultRequestVersion = s_options.HttpVersion!,
-                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
-            });
+                handler = new SocketsHttpHandler() 
+                {
+                    // accept all certs
+                    SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = delegate { return true; } },
+                    MaxConnectionsPerServer = max11ConnectionsPerServer,
+                    EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections
+                };
+            }
+
+            s_httpClients.Add(s_options.UseHttpMessageInvoker ? new HttpMessageInvoker(handler) : new HttpClient(handler));
         }
 
+        // First request to the server; to ensure everything started correctly
+        var request = CreateRequest(HttpMethod.Get, new Uri(s_options.Url!));
         var stopwatch = Stopwatch.StartNew();
-        var response = await s_httpClients[0].GetAsync(new Uri(s_options.Url!));
+        var response = await s_httpClients[0].SendAsync(request, CancellationToken.None);
         var elapsed = stopwatch.ElapsedMilliseconds;
         response.EnsureSuccessStatusCode();
-        BenchmarksEventSource.Register("FirstRequest", Operations.Max, Operations.Max, "First request duration (ms)", "Duration of the first request to the server (ms)", "n0");
-        LogMetric("FirstRequest", elapsed);
+        BenchmarksEventSource.Register("http/firstrequest", Operations.Max, Operations.Max, "First request duration (ms)", "Duration of the first request to the server (ms)", "n0");
+        LogMetric("http/firstrequest", elapsed);
     }
 
     private static async Task RunScenario()
@@ -79,9 +124,22 @@ class Program
         BenchmarksEventSource.Register("http/exceptions", Operations.Sum, Operations.Sum, "Exceptions", "Number of exceptions", "n0");
         BenchmarksEventSource.Register("http/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "Requests per second - mean", "n0");
 
-        RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
-        RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
-        RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
+        if (s_options.CollectRequestTimings)
+        {
+            RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
+            RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
+            RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
+        }
+
+        Func<HttpMessageInvoker, Task<Metrics>> scenario;
+        switch(s_options.Scenario)
+        {
+            case "get":
+                scenario = Get;
+                break;
+            default:
+                throw new ArgumentException($"Unknown scenario: {s_options.Scenario}");
+        }
 
         s_isWarmup = true;
         s_isRunning = true;
@@ -96,28 +154,18 @@ class Program
             Log("Completing scenario...");
         });
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(s_options.Warmup + s_options.Duration) + TimeSpan.FromMinutes(10));
-        var ctr = cts.Token.Register(() => throw new Exception("Test taking too long"));
-
         var tasks = new List<Task<Metrics>>(s_options.NumberOfHttpClients * s_options.ConcurrencyPerHttpClient);
         for (int i = 0; i < s_options.NumberOfHttpClients; ++i)
         {
             var client = s_httpClients[i];
             for (int j = 0; j < s_options.ConcurrencyPerHttpClient; ++j)
             {
-                switch(s_options.Scenario)
-                {
-                    case "get":
-                        tasks.Add(Get(client));
-                        break;
-                    default:
-                        throw new ArgumentException($"Unknown scenario: {s_options.Scenario}");
-                }
+                tasks.Add(scenario(client));
             }
         }
 
+        await coordinatorTask;
         var metricsArray = await Task.WhenAll(tasks);
-        ctr.Dispose();
         foreach (var metrics in metricsArray)
         {
             s_metrics.Add(metrics);
@@ -128,7 +176,7 @@ class Program
         LogMetric("http/exceptions", s_metrics.ExceptionRequests);
         LogMetric("http/rps/mean", s_metrics.MeanRps);
 
-        if (s_metrics.SuccessRequests > 0)
+        if (s_options.CollectRequestTimings && s_metrics.SuccessRequests > 0)
         {
             LogPercentiledMetric("http/headers", s_metrics.HeadersTimes, TicksToMs);
             LogPercentiledMetric("http/contentstart", s_metrics.ContentStartTimes, TicksToMs);
@@ -136,14 +184,16 @@ class Program
         }
     }
 
-    private static async Task<Metrics> Get(HttpClient client)
+    private static async Task<Metrics> Get(HttpMessageInvoker client)
     {
         var uri = new Uri(s_options.Url + "/get");
 
         var drainArray = new byte[81920];
         var stopwatch = Stopwatch.StartNew();
-        
-        var metrics = new Metrics();
+
+        var metrics = s_options.CollectRequestTimings 
+            ? new Metrics(s_options.Duration * 3000) 
+            : new Metrics();
         bool isWarmup = true;
 
         var durationStopwatch = Stopwatch.StartNew();
@@ -165,20 +215,23 @@ class Program
             try
             {
                 stopwatch.Restart();
-                using var result = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+                var request = CreateRequest(HttpMethod.Get, uri);
+                using var result = await client.SendAsync(request, CancellationToken.None);
                 var headersTime = stopwatch.ElapsedTicks;
+
                 if (result.IsSuccessStatusCode)
                 {
-                    var content = await result.Content.ReadAsStreamAsync();
+                    using var content = result.Content.ReadAsStream();
                     var bytesRead = await content.ReadAsync(drainArray);
                     var contentStartTime = stopwatch.ElapsedTicks;
+
                     while (bytesRead != 0)
                     {
                         bytesRead = await content.ReadAsync(drainArray);
                     }
                     var contentEndTime = stopwatch.ElapsedTicks;
 
-                    if (!isWarmup)
+                    if (s_options.CollectRequestTimings && !isWarmup)
                     {
                         metrics.HeadersTimes.Add(headersTime);
                         metrics.ContentStartTimes.Add(contentStartTime);
@@ -198,21 +251,21 @@ class Program
                 metrics.ExceptionRequests++;
             }
         }
-        var elapsed = durationStopwatch.Elapsed.TotalSeconds;
+        var elapsed = durationStopwatch.ElapsedTicks * 1.0 / Stopwatch.Frequency;
         metrics.MeanRps = (metrics.SuccessRequests +  metrics.BadStatusRequests) / elapsed;
         return metrics;
     }
 
+    private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
+        new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+
     private static void Log(string message)
     {
-        var time = DateTime.Now.ToString("hh:mm:ss.fff");
+        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
         Console.WriteLine($"[{time}] {message}");
     }
 
-    private static double TicksToMs(double ticks)
-    {
-        return ticks * 1000.0 / Stopwatch.Frequency;
-    }
+    private static double TicksToMs(double ticks) => ticks * 1000.0 / Stopwatch.Frequency;
 
     private static double GetPercentile(int percent, List<long> sortedValues)
     {
@@ -235,8 +288,8 @@ class Program
     private static void RegisterPercentiledMetric(string name, string shortDescription, string longDescription)
     {
         BenchmarksEventSource.Register(name + "/min", Operations.Min, Operations.Min, shortDescription + " - min", longDescription + " - min", "n2");
-        BenchmarksEventSource.Register(name + "/p75", Operations.Max, Operations.Max, shortDescription + " - p75", longDescription + " - 75th percentile", "n2");
         BenchmarksEventSource.Register(name + "/p50", Operations.Max, Operations.Max, shortDescription + " - p50", longDescription + " - 50th percentile", "n2");
+        BenchmarksEventSource.Register(name + "/p75", Operations.Max, Operations.Max, shortDescription + " - p75", longDescription + " - 75th percentile", "n2");
         BenchmarksEventSource.Register(name + "/p90", Operations.Max, Operations.Max, shortDescription + " - p90", longDescription + " - 90th percentile", "n2");
         BenchmarksEventSource.Register(name + "/p99", Operations.Max, Operations.Max, shortDescription + " - p99", longDescription + " - 99th percentile", "n2");
         BenchmarksEventSource.Register(name + "/max", Operations.Max, Operations.Max, shortDescription + " - max", longDescription + " - max", "n2");

@@ -1,42 +1,95 @@
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-// required command line arguments:
-// --urls <url starting with http:// or https://>
-// (in case https is not used) --Kestrel:EndpointDefaults:Protocols <http1 or http2>
+namespace HttpClientBenchmarks;
 
-var builder = WebApplication.CreateBuilder(args);
-var useHttps = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.StartsWith("https://") ?? false;
-builder.WebHost.ConfigureKestrel(serverOptions =>
+class Program
 {
-    serverOptions.ConfigureEndpointDefaults(listenOptions => 
+    private static ServerOptions s_options = null!;
+    public static async Task<int> Main(string[] args)
     {
-        if (useHttps)
+        var rootCommand = new RootCommand();
+        rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to listen on") { Required = true });
+        rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
+
+        rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
         {
-            // Create self-signed cert for server.
-            using (RSA rsa = RSA.Create())
-            {
-                var certReq = new CertificateRequest("CN=contoso.com", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-                certReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
-                certReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false));
-                certReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
-                X509Certificate2 cert = certReq.CreateSelfSigned(DateTimeOffset.UtcNow.AddMonths(-1), DateTimeOffset.UtcNow.AddMonths(1));
-                if (OperatingSystem.IsWindows())
-                {
-                    cert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
-                }
-                listenOptions.UseHttps(cert);
-            }
-            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+            s_options = options;
+            Log("HttpClient benchmark -- server");
+            Log("Options: " + s_options);
+            ValidateOptions();
+
+            RunKestrel();
+        });
+
+        return await rootCommand.InvokeAsync(args);
+    }
+
+    private static void ValidateOptions()
+    {
+        bool isHttp = s_options.Url!.StartsWith("http://");
+        bool isHttps = s_options.Url!.StartsWith("https://");
+
+        if (!isHttp && !isHttps)
+        {
+            throw new ArgumentException("Unsupported URL format: " + s_options.Url);
         }
-        // in case https is not used, specific protocol (http1/http2) should be passed via command line argument (--Kestrel:EndpointDefaults:Protocols) because of h2c limitations
-    });
-});
-var app = builder.Build();
 
-app.MapGet("/", () => Results.Ok());
+        if (!isHttps && s_options.HttpVersion == "3.0")
+        {
+            throw new ArgumentException("HTTP/3.0 only supports HTTPS");
+        }
+    }
 
-app.MapGet("/get", () => "Hello World!");
+    public static void RunKestrel()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                // Create self-signed cert for server.
+                using (RSA rsa = RSA.Create())
+                {
+                    var certReq = new CertificateRequest("CN=contoso.com", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                    certReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
+                    certReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false));
+                    certReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
+                    X509Certificate2 cert = certReq.CreateSelfSigned(DateTimeOffset.UtcNow.AddMonths(-1), DateTimeOffset.UtcNow.AddMonths(1));
+                    if (OperatingSystem.IsWindows())
+                    {
+                        cert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
+                    }
+                    httpsOptions.ServerCertificate = cert;
+                }
+            });
+            serverOptions.ConfigureEndpointDefaults(listenOptions => 
+            {
+                listenOptions.Protocols = s_options.HttpVersion switch
+                {
+                    "1.1" => HttpProtocols.Http1,
+                    "2.0" => HttpProtocols.Http2,
+                    "3.0" => HttpProtocols.Http3,
+                    _ => throw new ArgumentException("Unsupported HTTP version: " + s_options.HttpVersion)
+                };
+            });
+        });
+        var app = builder.Build();
+        app.Urls.Add(s_options.Url!);
 
-app.Run();
+        app.MapGet("/", () => Results.Ok());
+
+        app.MapGet("/get", () => "Hello World!");
+
+        app.Run();
+    }
+
+    private static void Log(string message)
+    {
+        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
+        Console.WriteLine($"[{time}] {message}");
+    }
+}

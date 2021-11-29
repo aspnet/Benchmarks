@@ -408,36 +408,51 @@ These scenarios are running various HTTP client benchmarks.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-benchmarks/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-benchmarks/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
 ```
 *TODO: update to `https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml`*
 
 ### Available scenarios
 
 - `httpclient-kestrel-get`: Execute GET requests to the server. Client is HttpClient, server is Kestrel (minimal API).
+- `wrk-kestrel-get`: Execute GET requests to the server. Client is WRK, server is Kestrel (minimal API).
 
 #### Arguments
 
+- Server port to use:
+  - `--variable serverPort=<N>` (default: `1234`)
 - HTTP Version to use:
   - `--variable httpVersion="1.1"` (default)
   - `--variable httpVersion="2.0"`
-  - `--variable httpVersion="3.0"`
+  - `--variable httpVersion="3.0"` -- *requires HTTPS*
 - Whether to use HTTPS:
-  - `--variable useHttps=true` (default)
-  - `--variable useHttps=false`
-- Number of clients:
+  - `--variable useHttps=false` (default)
+  - `--variable useHttps=true`
+- Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
   - `--variable numberOfHttpClients=<N>` (default: `1`)
-- Number of concurrect requests per one client:
-  - `--variable concurrencyPerHttpClient=<N>` (default: `200`)
-- Max number of HTTP/1.1 connections per server:
-  - `--variable http11MaxConnectionsPerServer=<N>` (default: `"-1"`, meaning no limit)
-- Enable multiple HTTP/2.0 connections:
-  - `--variable http20EnableMultipleConnections=true` (default)
-  - `--variable http20EnableMultipleConnections=false`
+- Number of concurrect requests per one HTTP client -- *unsupported by WRK*:
+  - `--variable concurrencyPerHttpClient=<N>` (default: `1`)
+- Whether to collect request timings (time to headers, to first content byte, to last content byte) -- *unsupported by WRK*:
+  - `--variable collectRequestTimings=false` (default)
+  - `--variable collectRequestTimings=true`
 - Duration of the warmup in seconds:
   - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
   - `--variable duration=<N>` (default: `30`)
+
+*HttpClient-specific arguments:*
+
+- Max number of HTTP/1.1 connections per server:
+  - `--variable http11MaxConnectionsPerServer=<N>` (default: `0`, meaning no limit)
+- Enable multiple HTTP/2.0 connections:
+  - `--variable http20EnableMultipleConnections=true` (default)
+  - `--variable http20EnableMultipleConnections=false`
+- Whether to use WinHttpHandler instead of SocketsHttpHandler:
+  - `--variable useWinHttpHandler=false` (default)
+  - `--variable useWinHttpHandler=true` -- *requires Windows*
+- Whether to use HttpMessageInvoker instead of HttpClient:
+  - `--variable useHttpMessageInvoker=false` (default)
+  - `--variable useHttpMessageInvoker=true`
 
 ## FAQ
 

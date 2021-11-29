@@ -10,6 +10,17 @@ public class Metrics
     public long ExceptionRequests { get; set; }
     public double MeanRps { get; set; }
 
+    public Metrics()
+    {
+    }
+
+    public Metrics(int timingsCapacity)
+    {
+        HeadersTimes.EnsureCapacity(timingsCapacity);
+        ContentStartTimes.EnsureCapacity(timingsCapacity);
+        ContentEndTimes.EnsureCapacity(timingsCapacity);
+    }
+
     public void Add(Metrics m)
     {
         HeadersTimes.AddRange(m.HeadersTimes);
