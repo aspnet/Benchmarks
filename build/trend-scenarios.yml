@@ -50,11 +50,19 @@ parameters:
   - displayName: Json
     arguments: --scenario json $(jsonJobs) --property scenario=Json --property protocol=http
   - displayName: Json HttpSys
-    arguments: --scenario json $(jsonJobs) --property scenario=Json --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
+  - displayName: Json IIS InProc
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonIISInProc --variable server=IISInProcess --application.options.requiredOperatingSystem windows
+  - displayName: Json IIS OutOfProc
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonIISOutOfProc --variable server=IISOutOfProcess --application.options.requiredOperatingSystem windows
   - displayName: Json Https
     arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps --property protocol=https
   - displayName: Json Https HttpSys
     arguments: --scenario https $(jsonJobs) --property scenario=JsonHttpsHttpSys --property protocol=https --variable server=HttpSys --application.options.requiredOperatingSystem windows
+  - displayName: Json Https IIS InProc
+    arguments: --scenario https $(jsonJobs) --property protocol=https --property scenario=JsonHttpsIISInProc --variable server=IISInProcess --application.options.requiredOperatingSystem windows
+  - displayName: Json Https IIS OutOfProc
+    arguments: --scenario https $(jsonJobs) --property protocol=https --property scenario=JsonHttpsIISOutOfProc --variable server=IISOutOfProcess --application.options.requiredOperatingSystem windows
   - displayName: Json Crossgen2
     arguments: --scenario json $(jsonJobs) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
   - displayName: Json Mvc
