@@ -87,18 +87,6 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-#if NET5_0 || NET6_0_OR_GREATER
-            hostBuilder.UseSockets(options =>
-            {
-                options.WaitForDataBeforeAllocatingBuffer = false;
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
-                }
-            });
-#endif
-
             var host = hostBuilder.Build();
 
             return host;

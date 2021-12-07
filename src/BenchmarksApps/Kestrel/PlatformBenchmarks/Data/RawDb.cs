@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -40,32 +41,35 @@ namespace PlatformBenchmarks
                 }
             }
         }
-      public async Task<World[]> LoadMultipleQueriesRows(int count)
+       public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var results = new World[count];
-        
-            using var db = new NpgsqlConnection(_connectionString);
-            await db.OpenAsync();
-        
-            var batch = new NpgsqlBatch(db);
+            var readers = new (Task<NpgsqlDataReader> Result, int idx, NpgsqlConnection db)[count];
+
             for (int i = 0; i < results.Length; i++)
             {
-                var cmd = new NpgsqlBatchCommand("SELECT id, randomnumber FROM world WHERE id = $1");
-                var parameter = new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) };
-                cmd.Parameters.Add(parameter);
-                batch.BatchCommands.Add(cmd);
+                var db = new NpgsqlConnection(_connectionString);
+                await db.OpenAsync();
+                var (cmd, _) = CreateReadCommand(db);
+                var i1 = i;
+                readers[i] = (cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess), i1, db);
             }
-        
-            var rdr = await batch.ExecuteReaderAsync();
-            for (int i = 0; i < results.Length; i++)
+            
+            foreach (var reader in readers)
             {
-                await rdr.ReadAsync();
-                results[i] = new World
+                var (r, i, db) = reader;
+                await using (var rdr = await r)
                 {
-                    Id = rdr.GetInt32(0),
-                    RandomNumber = rdr.GetInt32(1)
-                };
-                rdr.NextResult();
+                    rdr.Read();
+                    results[i] = new World
+                    {
+                        Id = rdr.GetInt32(0),
+                        RandomNumber = rdr.GetInt32(1)
+                    };
+            
+                }
+            
+                db.Dispose();
             }
             
             return results;

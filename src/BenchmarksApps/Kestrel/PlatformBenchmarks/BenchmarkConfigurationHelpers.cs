@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 
 namespace PlatformBenchmarks
 {
@@ -28,10 +29,20 @@ namespace PlatformBenchmarks
                     options.IOQueueCount = threadCount;
                 }
 
+                options.IOQueueCount = 0;
+
+                if (Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") != "1")
+                    throw new Exception(
+                        "Please set exported env vars 'DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS' and 'DOTNET_SYSTEM_NET_SOCKETS_THREAD_COUNT' to 1 ");
+                
 #if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 options.WaitForDataBeforeAllocatingBuffer = false;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    // options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1"; 
+                }
 
-                Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
+                Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, PreferInlineScheduling={options.UnsafePreferInlineScheduling}, IOQueue={options.IOQueueCount}");
 #endif
             });
 
