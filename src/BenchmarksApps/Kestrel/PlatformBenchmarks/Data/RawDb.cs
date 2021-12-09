@@ -45,62 +45,34 @@ namespace PlatformBenchmarks
         public async Task<World[]> LoadMultipleQueriesRowsClassic(int count)
         {
             var results = new World[count];
+
             using var db = new NpgsqlConnection(_connectionString);
             await db.OpenAsync();
-            
-            for (int i = 0; i < count; i++)
+
+            var (cmd, idParameter) = CreateReadCommand(db);
+            for (var i = 0; i < results.Length; i++)
             {
-                var (cmd, _) = CreateReadCommand(db);
-                await using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
+                using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
                 {
-                    rdr.Read();
+                    await rdr.ReadAsync();
                     results[i] = new World
                     {
                         Id = rdr.GetInt32(0),
                         RandomNumber = rdr.GetInt32(1)
                     };
-            
                 }
+                    
+                idParameter.TypedValue = _random.Next(1, 10001);
             }
 
             return results;
         }
         
-       public Task<World[]> LoadMultipleQueriesRows(int count)
-       {
-           return LoadMultipleQueriesRowsClassic(count);
-            
-            // var results = new World[count];
-            // var readers = new (Task<NpgsqlDataReader> Result, int idx, NpgsqlConnection db)[count];
-            //
-            // for (int i = 0; i < results.Length; i++)
-            // {
-            //     var db = new NpgsqlConnection(_connectionString);
-            //     await db.OpenAsync();
-            //     var (cmd, _) = CreateReadCommand(db);
-            //     var i1 = i;
-            //     readers[i] = (cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess), i1, db);
-            // }
-            //
-            // foreach (var reader in readers)
-            // {
-            //     var (r, i, db) = reader;
-            //     await using (var rdr = await r)
-            //     {
-            //         rdr.Read();
-            //         results[i] = new World
-            //         {
-            //             Id = rdr.GetInt32(0),
-            //             RandomNumber = rdr.GetInt32(1)
-            //         };
-            //
-            //     }
-            //
-            //     db.Dispose();
-            // }
-            //
-            // return results;
+        public Task<World[]> LoadMultipleQueriesRows(int count)
+        {
+            return LoadMultipleQueriesRowsClassic(count);
         }
+
         public Task<CachedWorld[]> LoadCachedQueries(int count)
         {
             var result = new CachedWorld[count];
