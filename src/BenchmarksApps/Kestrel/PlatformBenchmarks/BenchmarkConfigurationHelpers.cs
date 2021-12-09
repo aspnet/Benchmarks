@@ -24,12 +24,12 @@ namespace PlatformBenchmarks
 
             builder.UseSockets(options =>
             {
-                if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
-                {
-                    options.IOQueueCount = threadCount;
-                }
+                // if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                // {
+                //     options.IOQueueCount = threadCount;
+                // }
 
-                options.IOQueueCount = 0;
+                // options.IOQueueCount = 0;
 
                 if (Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") != "1")
                     throw new Exception(
