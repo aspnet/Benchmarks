@@ -41,24 +41,17 @@ namespace PlatformBenchmarks
                 }
             }
         }
-       public async Task<World[]> LoadMultipleQueriesRows(int count)
+        
+        public async Task<World[]> LoadMultipleQueriesRowsClassic(int count)
         {
             var results = new World[count];
-            var readers = new (Task<NpgsqlDataReader> Result, int idx, NpgsqlConnection db)[count];
-
-            for (int i = 0; i < results.Length; i++)
-            {
-                var db = new NpgsqlConnection(_connectionString);
-                await db.OpenAsync();
-                var (cmd, _) = CreateReadCommand(db);
-                var i1 = i;
-                readers[i] = (cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess), i1, db);
-            }
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
             
-            foreach (var reader in readers)
+            for (int i = 0; i < count; i++)
             {
-                var (r, i, db) = reader;
-                await using (var rdr = await r)
+                var (cmd, _) = CreateReadCommand(db);
+                await using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
                 {
                     rdr.Read();
                     results[i] = new World
@@ -68,11 +61,45 @@ namespace PlatformBenchmarks
                     };
             
                 }
-            
-                db.Dispose();
             }
-            
+
             return results;
+        }
+        
+       public Task<World[]> LoadMultipleQueriesRows(int count)
+       {
+           return LoadMultipleQueriesRowsClassic(count);
+            
+            // var results = new World[count];
+            // var readers = new (Task<NpgsqlDataReader> Result, int idx, NpgsqlConnection db)[count];
+            //
+            // for (int i = 0; i < results.Length; i++)
+            // {
+            //     var db = new NpgsqlConnection(_connectionString);
+            //     await db.OpenAsync();
+            //     var (cmd, _) = CreateReadCommand(db);
+            //     var i1 = i;
+            //     readers[i] = (cmd.ExecuteReaderAsync(CommandBehavior.SingleRow | CommandBehavior.SequentialAccess), i1, db);
+            // }
+            //
+            // foreach (var reader in readers)
+            // {
+            //     var (r, i, db) = reader;
+            //     await using (var rdr = await r)
+            //     {
+            //         rdr.Read();
+            //         results[i] = new World
+            //         {
+            //             Id = rdr.GetInt32(0),
+            //             RandomNumber = rdr.GetInt32(1)
+            //         };
+            //
+            //     }
+            //
+            //     db.Dispose();
+            // }
+            //
+            // return results;
         }
         public Task<CachedWorld[]> LoadCachedQueries(int count)
         {
