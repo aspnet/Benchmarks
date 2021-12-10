@@ -21,8 +21,8 @@
   </ItemGroup>
   
   <ItemGroup Condition="$(TargetFramework) == 'net6.0' or $(TargetFramework) == 'net7.0'">
-<!--    <PackageReference Include="Npgsql" Version="6.0.0" />-->
-    <Reference Include="$(MSBuildProjectDirectory)/Npgsql.dll" />
+    <PackageReference Include="Npgsql" Version="6.0.0" />
+<!--    <Reference Include="$(MSBuildProjectDirectory)/Npgsql.dll" />-->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0" />
   </ItemGroup>
 
