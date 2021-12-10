@@ -31,14 +31,15 @@ namespace PlatformBenchmarks
 
                 // options.IOQueueCount = 0;
 
-                // if (Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") != "1")
-                //     throw new Exception(
-                //         "Please set exported env vars 'DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS' and 'DOTNET_SYSTEM_NET_SOCKETS_THREAD_COUNT' to 1 ");
-                //
+                if (Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") != "1")
+                    throw new Exception(
+                        "Please set exported env vars 'DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS' and 'DOTNET_SYSTEM_NET_SOCKETS_THREAD_COUNT' to 1 or logical core count ");
+
 #if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 options.WaitForDataBeforeAllocatingBuffer = false;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
+                    options.UnsafePreferInlineScheduling = true;
                     // options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1"; 
                 }
 
