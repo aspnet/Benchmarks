@@ -68,9 +68,44 @@ namespace PlatformBenchmarks
             return results;
         }
         
+        public async Task<World[]> LoadMultipleQueriesRowsPipelined(int count)
+        {
+            var results = new World[count];
+            var readers = new (Task<NpgsqlDataReader> Result, int idx, NpgsqlConnection db)[count];
+
+            for (int i = 0; i < results.Length; i++)
+            {
+                var db = new NpgsqlConnection(_connectionString);
+                await db.OpenAsync();
+                var (cmd, _) = CreateReadCommand(db);
+                var i1 = i;
+                readers[i] = (cmd.ExecuteReaderAsync(CommandBehavior.SingleRow), i1, db);
+            }
+
+            foreach (var reader in readers)
+            {
+                var (r, i, db) = reader;
+                using (var rdr = await r)
+                {
+                    await rdr.ReadAsync();
+                    results[i] = new World
+                    {
+                        Id = rdr.GetInt32(0),
+                        RandomNumber = rdr.GetInt32(1)
+                    };
+            
+                }
+            
+                db.Dispose();
+            }
+               
+            return results;
+        }
+        
         public Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            return LoadMultipleQueriesRowsClassic(count);
+            return LoadMultipleQueriesRowsPipelined(count);
+            // return LoadMultipleQueriesRowsClassic(count);
         }
 
         public Task<CachedWorld[]> LoadCachedQueries(int count)
