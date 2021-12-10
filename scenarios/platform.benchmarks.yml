@@ -18,7 +18,7 @@ jobs:
     framework: net5.0
     environmentVariables:
       DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS: 1
-      DOTNET_SYSTEM_NET_SOCKETS_THREAD_COUNT: 18
+      DOTNET_SYSTEM_NET_SOCKETS_THREAD_COUNT: 40
       database: PostgreSQL
       connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=2000
   
