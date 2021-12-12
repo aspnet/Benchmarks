@@ -39,7 +39,7 @@ namespace PlatformBenchmarks
                 options.WaitForDataBeforeAllocatingBuffer = false;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    // options.UnsafePreferInlineScheduling = true;
+                    options.UnsafePreferInlineScheduling = true;
                     // options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1"; 
                 }
 
