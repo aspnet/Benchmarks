@@ -102,10 +102,43 @@ namespace PlatformBenchmarks
             return results;
         }
         
+        public async Task<World[]> LoadMultipleQueriesRowsBatch(int count, bool independentCommands = false)
+        {
+            var results = new World[count];
+        
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
+        
+            var batch = new NpgsqlBatch(db) { IndependentCommands = independentCommands };
+            for (int i = 0; i < results.Length; i++)
+            {
+                var cmd = new NpgsqlBatchCommand("SELECT id, randomnumber FROM world WHERE id = $1");
+                var parameter = new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) };
+                cmd.Parameters.Add(parameter);
+                batch.BatchCommands.Add(cmd);
+            }
+        
+            await using var rdr = await batch.ExecuteReaderAsync();
+            for (int i = 0; i < results.Length; i++)
+            {
+                await rdr.ReadAsync();
+                results[i] = new World
+                {
+                    Id = rdr.GetInt32(0),
+                    RandomNumber = rdr.GetInt32(1)
+                };
+                await rdr.NextResultAsync();
+            }
+
+            return results;
+        }
+        
         public Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            return LoadMultipleQueriesRowsPipelined(count);
             // return LoadMultipleQueriesRowsClassic(count);
+            // return LoadMultipleQueriesRowsPipelined(count);
+            // return LoadMultipleQueriesRowsBatch(count, independentCommands: false);
+            return LoadMultipleQueriesRowsBatch(count, independentCommands: true);
         }
 
         public Task<CachedWorld[]> LoadCachedQueries(int count)
