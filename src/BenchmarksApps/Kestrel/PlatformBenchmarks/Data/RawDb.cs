@@ -16,6 +16,7 @@ namespace PlatformBenchmarks
     {
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
+        private readonly string _updateConnectionString;
         private readonly MemoryCache _cache = new MemoryCache(
             new MemoryCacheOptions()
             {
@@ -26,6 +27,11 @@ namespace PlatformBenchmarks
         {
             _random = random;
             _connectionString = appSettings.ConnectionString;
+            var builder = new NpgsqlConnectionStringBuilder(_connectionString);
+            builder.MaxPoolSize = builder.MaxPoolSize / 3;
+            builder.WriteCoalescingBufferThresholdBytes = 1000;
+            builder.ApplicationName = "Updates pool";
+            _updateConnectionString = builder.ToString();
         }
 
         public async Task<World> LoadSingleQueryRow()
@@ -223,7 +229,7 @@ namespace PlatformBenchmarks
         {
             var results = await LoadMultipleQueriesRows(count);
             
-            using var db = new NpgsqlConnection(_connectionString);
+            using var db = new NpgsqlConnection(_updateConnectionString);
             await db.OpenAsync();
             using var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db);
             
@@ -235,7 +241,7 @@ namespace PlatformBenchmarks
                 results[i].RandomNumber = randomNumber;
             }
 
-            await updateCmd.ExecuteNonQueryAsync();
+            await using var reader = await updateCmd.ExecuteReaderAsync();
 
             return results;
         }
