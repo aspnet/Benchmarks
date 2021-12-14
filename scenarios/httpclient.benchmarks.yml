@@ -101,7 +101,7 @@ profiles:
 
   aspnet-citrine-lin:
     variables:
-      serverAddress: #10.0.0.102 -- wrong ip -- TODO: find real asp-citrine-load ip
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -112,7 +112,7 @@ profiles:
 
   aspnet-citrine-lin-relay:
     variables:
-      serverAddress: #10.0.0.102 -- wrong ip -- TODO: find real citrineclient ip
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -123,7 +123,7 @@ profiles:
 
   aspnet-citrine-win:
     variables:
-      serverAddress: 10.0.0.105
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
@@ -134,7 +134,7 @@ profiles:
 
   aspnet-citrine-win-relay:
     variables:
-      serverAddress: 10.0.0.105
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
@@ -145,7 +145,7 @@ profiles:
           
   aspnet-citrine-arm:
     variables:
-      serverAddress: #10.0.0.107  -- wrong ip -- TODO: find real asp-citrine-load ip
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -156,7 +156,7 @@ profiles:
   
   aspnet-citrine-arm-relay:
     variables:
-      serverAddress: #10.0.0.107  -- wrong ip -- TODO: find real citrineclient ip
+      serverAddress: 10.0.0.105
     jobs:
       server:
         endpoints: 
@@ -167,7 +167,7 @@ profiles:
           
   aspnet-citrine-amd:
     variables:
-      serverAddress: 10.0.0.105
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
@@ -178,7 +178,7 @@ profiles:
   
   aspnet-citrine-amd-relay:
     variables:
-      serverAddress: 10.0.0.105
+      serverAddress: 10.0.0.103
     jobs:
       server:
         endpoints: 
