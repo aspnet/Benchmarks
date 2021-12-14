@@ -401,6 +401,58 @@ The scenario named `custom` can be used to pass any custom filter variable like 
 crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
 ```
 
+## HTTP client benchmarks
+
+These scenarios are running various HTTP client benchmarks.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+```
+
+### Available scenarios
+
+- `httpclient-kestrel-get`: Execute GET requests to the server. Client is HttpClient, server is Kestrel (minimal API).
+- `wrk-kestrel-get`: Execute GET requests to the server. Client is WRK, server is Kestrel (minimal API).
+
+#### Arguments
+
+- Server port to use:
+  - `--variable serverPort=<N>` (default: `5000`)
+- HTTP Version to use:
+  - `--variable httpVersion="1.1"` (default)
+  - `--variable httpVersion="2.0"`
+  - `--variable httpVersion="3.0"` -- *requires HTTPS*
+- Whether to use HTTPS:
+  - `--variable useHttps=false` (default)
+  - `--variable useHttps=true`
+- Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
+  - `--variable numberOfHttpClients=<N>` (default: `1`)
+- Number of concurrect requests per one HTTP client -- *unsupported by WRK*:
+  - `--variable concurrencyPerHttpClient=<N>` (default: `1`)
+- Whether to collect request timings (time to headers, to first content byte, to last content byte) -- *unsupported by WRK*:
+  - `--variable collectRequestTimings=false` (default)
+  - `--variable collectRequestTimings=true`
+- Duration of the warmup in seconds:
+  - `--variable warmup=<N>` (default: `15`)
+- Duration of the test in seconds:
+  - `--variable duration=<N>` (default: `15`)
+
+*HttpClient-specific arguments:*
+
+- Max number of HTTP/1.1 connections per server:
+  - `--variable http11MaxConnectionsPerServer=<N>` (default: `0`, meaning no limit)
+- Enable multiple HTTP/2.0 connections:
+  - `--variable http20EnableMultipleConnections=true` (default)
+  - `--variable http20EnableMultipleConnections=false`
+- Whether to use WinHttpHandler instead of SocketsHttpHandler:
+  - `--variable useWinHttpHandler=false` (default)
+  - `--variable useWinHttpHandler=true` -- *requires Windows*
+- Whether to use HttpMessageInvoker instead of HttpClient:
+  - `--variable useHttpMessageInvoker=false` (default)
+  - `--variable useHttpMessageInvoker=true`
+
 ## FAQ
 
 > The following command lines assume that the job to configure is named `application` which should be the name used in most of the configuration defined in this document.

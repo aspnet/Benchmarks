@@ -1,0 +1,232 @@
+﻿# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+
+variables:
+    warmup: 15 #seconds -- default value *copied* to WRK, see notes below
+    duration: 15 #seconds -- default value *copied* to WRK
+    serverPort: 5000 # -- default value *copied* to WRK
+    httpVersion: "1.1"
+    useHttps: false
+    numberOfHttpClients: 1
+    concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
+    collectRequestTimings: false # unsupported by WRK --  other values will throw
+
+    # HttpClient-specific parameters:
+    http11MaxConnectionsPerServer: 0 #unlimited
+    http20EnableMultipleConnections: true
+    useWinHttpHandler: false
+    useHttpMessageInvoker: false
+
+scenarios:
+  httpclient-kestrel-get:
+    server:
+      job: kestrel
+    client:
+      job: httpClient
+      variables:
+        scenario: get
+
+  wrk-kestrel-get:
+    server:
+      job: kestrel
+    client:
+      job: wrk
+      variables:
+        connections: '{{numberOfHttpClients}}'
+        threads: '{{numberOfHttpClients}}'
+        # Overriding via console arg will make `useHttps` be a string instead of boolean, and string "false" is truthy in Liquid, so need to check explicitly
+        serverScheme: 'http{% if useHttps and useHttps != "false" %}s{% endif %}'
+        path: /get
+        pipeline: 0
+        # TODO: Job's default values seem to take preference over global variables, so if the following is removed, values from `wrk.yml` will be used. 
+        # Also, substitution doesn't seem to recognize global variables of the same name, e.g. serverPort: '{{serverPort}}' doesn't work
+        # Leaving the copied values unless the way to substitute correctly is found (other configs seem to employ copying strategy)
+        # Overriding via console arg (e.g. `--variable serverPort=4321`) will work for *both* global and job's variables
+        serverPort: 5000
+        warmup: 15 #seconds
+        duration: 15 #seconds
+      onConfigure:
+        - '
+          if (String(job.Variables.concurrencyPerHttpClient) != "1")
+          {
+            throw "concurrencyPerHttpClient is unsupported in WRK. Expected: 1, got: " + job.Variables.concurrencyPerHttpClient;
+          }
+          if (String(job.Variables.collectRequestTimings).toLowerCase() != "false")
+          {
+            throw "collectRequestTimings is unsupported in WRK. Expected: false, got: " + job.Variables.collectRequestTimings;
+          }
+          var useHttps = String(job.Variables.useHttps).toLowerCase();
+          if (useHttps != "true" && useHttps != "false")
+          {
+            throw "Unknown value in useHttps. Expected: true or false, got: " + job.Variables.useHttps;
+          }
+          '
+
+
+jobs:
+  kestrel:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
+    readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}}"
+
+  httpClient:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 1200 #seconds
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --warmup {{warmup}} --duration {{duration}}"
+
+
+profiles:
+  local:
+    variables:
+      serverAddress: localhost
+    jobs:
+      server:
+        endpoints: 
+          - http://localhost:5010
+      client:
+        endpoints: 
+          - http://localhost:5010
+
+  aspnet-citrine-lin:
+    variables:
+      serverAddress: 10.0.0.105
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      client:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+
+  aspnet-citrine-lin-relay:
+    variables:
+      serverAddress: 10.0.0.105
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineclient
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinelin
+
+  aspnet-citrine-win:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      client:
+        endpoints: 
+          - http://asp-citrine-win:5001
+
+  aspnet-citrine-win-relay:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinewin
+          
+  aspnet-citrine-arm:
+    variables:
+      serverAddress: 10.0.0.105
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-citrine-load:5001
+      client:
+        endpoints: 
+          - http://asp-citrine-arm:5001
+  
+  aspnet-citrine-arm-relay:
+    variables:
+      serverAddress: 10.0.0.105
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineclient
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinearm
+          
+  aspnet-citrine-amd:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      client:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+  
+  aspnet-citrine-amd-relay:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
+
+  aspnet-perf-lin:
+    variables:
+      serverAddress: 10.0.0.104
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-perf-load:5001
+      client:
+        endpoints: 
+          - http://asp-perf-lin:5001
+
+  aspnet-perf-lin-relay:
+    variables:
+      serverAddress: 10.0.0.104
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfclient
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perflin
+
+  aspnet-perf-win:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - http://asp-perf-db:5001
+      client:
+        endpoints: 
+          - http://asp-perf-win:5001
+
+  aspnet-perf-win-relay:
+    variables:
+      serverAddress: 10.0.0.103
+    jobs:
+      server:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfdb
+      client:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/perfwin
