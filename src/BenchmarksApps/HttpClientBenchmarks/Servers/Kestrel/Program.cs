@@ -9,10 +9,13 @@ namespace HttpClientBenchmarks;
 class Program
 {
     private static ServerOptions s_options = null!;
+
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
-        rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to listen on") { Required = true });
+        rootCommand.AddOption(new Option<string>(new string[] { "--address" }, "The server address to listen on") { Required = true });
+        rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to listen on") { Required = true });
+        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
 
         rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
@@ -30,15 +33,7 @@ class Program
 
     private static void ValidateOptions()
     {
-        bool isHttp = s_options.Url!.StartsWith("http://");
-        bool isHttps = s_options.Url!.StartsWith("https://");
-
-        if (!isHttp && !isHttps)
-        {
-            throw new ArgumentException("Unsupported URL format: " + s_options.Url);
-        }
-
-        if (!isHttps && s_options.HttpVersion == "3.0")
+        if (!s_options.UseHttps && s_options.HttpVersion == "3.0")
         {
             throw new ArgumentException("HTTP/3.0 only supports HTTPS");
         }
@@ -78,7 +73,10 @@ class Program
             });
         });
         var app = builder.Build();
-        app.Urls.Add(s_options.Url!);
+
+        var url = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
+        Log("Url: " + url);
+        app.Urls.Add(url);
 
         app.MapGet("/", () => Results.Ok());
 

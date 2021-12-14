@@ -10,7 +10,10 @@ namespace HttpClientBenchmarks;
 
 class Program
 {
+    private static readonly double s_msPerTick = 1000.0 / Stopwatch.Frequency;
+
     private static ClientOptions s_options = null!;
+    private static string s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
     private static bool s_isWarmup;
@@ -19,7 +22,9 @@ class Program
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
-        rootCommand.AddOption(new Option<string>(new string[] { "--url" }, "The server url to request") { Required = true });
+        rootCommand.AddOption(new Option<string>(new string[] { "--address" }, "The server address to request") { Required = true });
+        rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to request") { Required = true });
+        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
         rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
         rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 1, "Number of concurrect requests per one HttpClient"));
@@ -51,15 +56,7 @@ class Program
 
     private static void ValidateOptions()
     {
-        bool isHttp = s_options.Url!.StartsWith("http://");
-        bool isHttps = s_options.Url!.StartsWith("https://");
-
-        if (!isHttp && !isHttps)
-        {
-            throw new ArgumentException("Unsupported URL format: " + s_options.Url);
-        }
-
-        if (!isHttps && s_options.HttpVersion == HttpVersion.Version30)
+        if (!s_options.UseHttps && s_options.HttpVersion == HttpVersion.Version30)
         {
             throw new ArgumentException("HTTP/3.0 only supports HTTPS");
         }
@@ -74,6 +71,9 @@ class Program
     {
         BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
+
+        s_url = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
+        Log("Url: " + s_url);
         
         int max11ConnectionsPerServer = s_options.Http11MaxConnectionsPerServer > 0 ? s_options.Http11MaxConnectionsPerServer : int.MaxValue;
 
@@ -108,7 +108,7 @@ class Program
         }
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, new Uri(s_options.Url!));
+        var request = CreateRequest(HttpMethod.Get, new Uri(s_url));
         var stopwatch = Stopwatch.StartNew();
         var response = await s_httpClients[0].SendAsync(request, CancellationToken.None);
         var elapsed = stopwatch.ElapsedMilliseconds;
@@ -119,9 +119,9 @@ class Program
 
     private static async Task RunScenario()
     {
-        BenchmarksEventSource.Register("http/successrequests", Operations.Sum, Operations.Sum, "Success Requests", "Number of successful requests", "n0");
-        BenchmarksEventSource.Register("http/badstatusrequests", Operations.Sum, Operations.Sum, "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
-        BenchmarksEventSource.Register("http/exceptions", Operations.Sum, Operations.Sum, "Exceptions", "Number of exceptions", "n0");
+        BenchmarksEventSource.Register("http/requests", Operations.Sum, Operations.Sum, "Requests", "Number of requests", "n0");
+        BenchmarksEventSource.Register("http/requests/badresponses", Operations.Sum, Operations.Sum, "Bad Status Code Requests", "Number of requests with bad status codes", "n0");
+        BenchmarksEventSource.Register("http/requests/errors", Operations.Sum, Operations.Sum, "Exceptions", "Number of exceptions", "n0");
         BenchmarksEventSource.Register("http/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "Requests per second - mean", "n0");
 
         if (s_options.CollectRequestTimings)
@@ -171,9 +171,9 @@ class Program
             s_metrics.Add(metrics);
         }
 
-        LogMetric("http/successrequests", s_metrics.SuccessRequests);
-        LogMetric("http/badstatusrequests", s_metrics.BadStatusRequests);
-        LogMetric("http/exceptions", s_metrics.ExceptionRequests);
+        LogMetric("http/requests", s_metrics.SuccessRequests + s_metrics.BadStatusRequests);
+        LogMetric("http/requests/badresponses", s_metrics.BadStatusRequests);
+        LogMetric("http/requests/errors", s_metrics.ExceptionRequests);
         LogMetric("http/rps/mean", s_metrics.MeanRps);
 
         if (s_options.CollectRequestTimings && s_metrics.SuccessRequests > 0)
@@ -186,7 +186,7 @@ class Program
 
     private static async Task<Metrics> Get(HttpMessageInvoker client)
     {
-        var uri = new Uri(s_options.Url + "/get");
+        var uri = new Uri(s_url + "/get");
 
         var drainArray = new byte[81920];
         var stopwatch = Stopwatch.StartNew();
@@ -265,7 +265,7 @@ class Program
         Console.WriteLine($"[{time}] {message}");
     }
 
-    private static double TicksToMs(double ticks) => ticks * 1000.0 / Stopwatch.Frequency;
+    private static double TicksToMs(double ticks) => ticks * s_msPerTick;
 
     private static double GetPercentile(int percent, List<long> sortedValues)
     {

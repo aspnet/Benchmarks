@@ -2,7 +2,9 @@ namespace HttpClientBenchmarks;
 
 public class ClientOptions
 {
-    public string? Url { get; set; }
+    public string? Address { get; set; }
+    public string? Port { get; set; }
+    public bool UseHttps { get; set; }
     public Version? HttpVersion { get; set; }
     public int NumberOfHttpClients { get; set; }
     public int ConcurrencyPerHttpClient { get; set; }
@@ -17,9 +19,10 @@ public class ClientOptions
 
     public override string ToString()
     {
-        return $"Url={Url}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; " +
-            $"Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; Http20EnableMultipleConnections={Http20EnableMultipleConnections}; " +
-            $"UseWinHttpHandler={UseWinHttpHandler}; UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; " +
-            $"Scenario={Scenario}; Warmup={Warmup}; Duration={Duration}";
+        return $"Address={Address}; Port={Port}; UseHttps={UseHttps}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; " +
+            $"ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; " +
+            $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
+            $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
+            $"Warmup={Warmup}; Duration={Duration}";
     }
 }

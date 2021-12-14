@@ -420,7 +420,7 @@ crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-ben
 #### Arguments
 
 - Server port to use:
-  - `--variable serverPort=<N>` (default: `1234`)
+  - `--variable serverPort=<N>` (default: `5000`)
 - HTTP Version to use:
   - `--variable httpVersion="1.1"` (default)
   - `--variable httpVersion="2.0"`
@@ -438,7 +438,7 @@ crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-ben
 - Duration of the warmup in seconds:
   - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
-  - `--variable duration=<N>` (default: `30`)
+  - `--variable duration=<N>` (default: `15`)
 
 *HttpClient-specific arguments:*
 
