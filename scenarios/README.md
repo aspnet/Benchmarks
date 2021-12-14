@@ -408,9 +408,8 @@ These scenarios are running various HTTP client benchmarks.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/CarnaViire/Benchmarks/http3-benchmarks/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
 ```
-*TODO: update to `https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml`*
 
 ### Available scenarios
 
