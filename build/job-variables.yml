@@ -42,8 +42,6 @@ variables:
 - name: crudApiJwtJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/benchmarks.jwtapi.yml
 
-# v2
-
 - name: signalRJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/signalr.benchmarks.yml
 
@@ -61,11 +59,11 @@ variables:
 - name: platformJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml
 
-- name: plaintextJobsV2
+- name: plaintextJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml
 - name: databaseJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/database.benchmarks.yml
-- name: jsonJobsV2
+- name: jsonJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml
 - name: frameworksV2
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml

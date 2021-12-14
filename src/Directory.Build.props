@@ -1,0 +1,17 @@
+<Project>
+
+  <Import Project="..\build\dependencies.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryUrl>https://github.com/dotnet/Benchmarks</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <!-- this repo does not produce NuGet packages -->
+    <IsPackable>false</IsPackable>
+
+    <!-- Repo contains only test code -->
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+</Project>

@@ -27,18 +27,18 @@ parameters:
 # Plaintext
 
   - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext --property protocol=http
+    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext --property protocol=http
   - displayName: Plaintext Mvc
-    arguments: --scenario mvc $(plaintextJobsV2) --property scenario=PlaintextMvc --property protocol=http
+    arguments: --scenario mvc $(plaintextJobs) --property scenario=PlaintextMvc --property protocol=http
 
 # Json
 
   - displayName: Json
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http
+    arguments: --scenario json $(jsonJobs) --property scenario=Json --property protocol=http
   - displayName: Json Https
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps --property protocol=https
+    arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps --property protocol=https
   - displayName: Json Mvc
-    arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
+    arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc --property protocol=http
 
 # Fortunes
 
@@ -74,5 +74,5 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ m.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ m.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

@@ -1,2 +1,4 @@
-#start SQL Server, start the script to create the DB and import the data
-/opt/mssql/bin/sqlservr & /usr/src/app/import-data.sh & while true; do sleep 10; done
+/opt/mssql/bin/sqlservr & ./import-data.sh
+while :; do
+  sleep 300
+done

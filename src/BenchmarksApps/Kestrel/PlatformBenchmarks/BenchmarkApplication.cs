@@ -79,7 +79,7 @@ namespace PlatformBenchmarks
         private RequestType _requestType;
         private int _queries;
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0
+#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
             _requestType = versionAndMethod.Method == HttpMethod.Get ? GetRequestType(startLine.Slice(targetPath.Offset, targetPath.Length), ref _queries) : RequestType.NotRecognized;

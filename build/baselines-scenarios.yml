@@ -36,30 +36,37 @@ parameters:
   default: 
 
   # Platform
-  - displayName: Fortunes Platform
-    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
+  - displayName: Plaintext Platform
+    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
     isPlatform: true
-  - displayName: Single Query Platform
-    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform
+  - displayName: Json Platform
+    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
     isPlatform: true
-  - displayName: Multiple Queries Platform
-    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform
-    isPlatform: true
-  - displayName: Updates Platform
-    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform
-    isPlatform: true
-  - displayName: Caching Platform
-    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform
-    isPlatform: true
-  
-  # Database Fortunes
-  - displayName: Database Fortunes Raw
-    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
-    isPlatform: false
-  - displayName: Database Fortunes EF
-    arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF
-    isPlatform: false
 
+  # Plaintext
+  - displayName: Plaintext
+    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext
+    isPlatform: false
+  - displayName: Plaintext endpoint
+    arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint
+    isPlatform: false
+  
+  # JSon
+  - displayName: Json
+    arguments: --scenario json $(jsonJobs) --property scenario=Json
+    isPlatform: false
+  - displayName: Json Mvc
+    arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc
+    isPlatform: false
+  
+  # Https
+  - displayName: Plaintext Https
+    arguments: --scenario https $(plaintextJobs) --property scenario=PlaintextHttps
+    isPlatform: false
+  - displayName: Json Https
+    arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps
+    isPlatform: false
+  
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
@@ -75,5 +82,5 @@ steps:
           messageBody: |
             {
               "name": "crank",
-              "args": [ "${{ s.arguments }} ${{ b.arguments }} --profile ${{ parameters.profile }} --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "${{ s.arguments }} ${{ b.arguments }} --profile ${{ parameters.profile }} --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING  --chart" ]
             }

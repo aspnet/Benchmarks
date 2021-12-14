@@ -9,8 +9,8 @@ jobs:
       project: src/benchmarks/micro/MicroBenchmarks.csproj
     variables:
       filter: "*"
-      job: short
-    arguments: --job {{job}} --filter {{filter}} --memory
+      run: short
+    arguments: --job {{run}} --filter {{filter}} --memory
     framework: netcoreapp3.1
     options:
       benchmarkDotNet: true

@@ -1,0 +1,59 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  HelloWorldMiddleware:
+    source:
+      repository: https://github.com/aspnet/Benchmarks
+      project: src/BenchmarksApps/HelloWorldMiddleware/HelloWorldMiddleware.csproj
+      readyStateText: Application started
+
+scenarios:
+  keepalive:
+    application:
+      job: HelloWorldMiddleware
+    load:
+      job: wrk
+      variables:
+        presetHeaders: none
+        path: /
+        pipeline: 0
+
+  keepalivehttps:
+    application:
+      job: HelloWorldMiddleware
+    load:
+      job: wrk
+      variables:
+        presetHeaders: none
+        path: /
+        pipeline: 0
+        serverScheme: https
+
+  connectionclose:
+    application:
+      job: HelloWorldMiddleware
+    load:
+      job: wrk
+      variables:
+        path: /
+        pipeline: 0
+        presetHeaders: connectionclose
+        connections: 32
+
+  connectionclosehttps:
+    application:
+      job: HelloWorldMiddleware
+    load:
+      job: wrk
+      variables:
+        path: /
+        pipeline: 0
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https

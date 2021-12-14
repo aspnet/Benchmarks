@@ -36,6 +36,16 @@ jobs:
     readyStateText: ready to accept connections
     noClean: true
 
+  mssql:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      dockerFile: docker/mssql-techempower/Dockerfile
+      dockerImageName: mssql_te
+      dockerContextDirectory: docker/mssql-techempower
+    readyStateText: Data imported
+    noClean: true
+
 scenarios:
   fortunes:
     db:
@@ -44,6 +54,23 @@ scenarios:
       job: aspnetbenchmarks
       variables:
         scenario: DbFortunesRaw
+    load:
+      job: wrk
+      variables:
+        serverPort: 5000
+        presetHeaders: html
+        path: /fortunes/raw
+
+  fortunes_mssql:
+    db:
+      job: mssql
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: DbFortunesRaw
+      environmentVariables:
+        database: SqlServer
+        connectionString: Server={{databaseServer}};Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Encrypt=false
     load:
       job: wrk
       variables:
@@ -105,6 +132,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /db/raw
+        connections: 512
 
   single_query_ef:
     db:
@@ -117,7 +145,8 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /db/ef  
+        path: /db/ef
+        connections: 512
 
   single_query_dapper:
     db:
@@ -130,7 +159,8 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /db/dapper 
+        path: /db/dapper
+        connections: 512
 
   multiple_queries:
     db:
@@ -144,6 +174,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /queries/raw?queries=20
+        connections: 512
 
   multiple_queries_ef:
     db:
@@ -157,6 +188,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /queries/ef?queries=20
+        connections: 512
 
   multiple_queries_dapper:
     db:
@@ -170,6 +202,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /queries/dapper?queries=20
+        connections: 512
 
   updates:
     db:
@@ -183,6 +216,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /updates/raw?queries=20
+        connections: 512
 
   updates_ef:
     db:
@@ -196,6 +230,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /updates/ef?queries=20
+        connections: 512
 
   updates_dapper:
     db:
@@ -209,6 +244,7 @@ scenarios:
       variables:
         presetHeaders: json
         path: /updates/dapper?queries=20
+        connections: 512
 
 profiles:
   sqlite:

@@ -6,5 +6,4 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/Websocket/BenchmarkServer.csproj
     readyStateText: Application started
-    runtimeVersion: '6.0.*'
     waitForExit: false

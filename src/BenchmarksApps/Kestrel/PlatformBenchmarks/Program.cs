@@ -87,7 +87,7 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-#if NET5_0 || NET6_0
+#if NET5_0 || NET6_0_OR_GREATER
             hostBuilder.UseSockets(options =>
             {
                 options.WaitForDataBeforeAllocatingBuffer = false;

@@ -13,7 +13,7 @@ jobs:
       branchOrCommit: main
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
-    framework: net5.0 
+    framework: net6.0 
     environmentVariables:
       OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__ShellName: "Default"
@@ -23,7 +23,7 @@ jobs:
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminEmail: "info@orchardproject.net"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminPassword: "Password1!"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
-      OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=10;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000"
+      OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseTablePrefix: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__RecipeName: "Blog"
     buildArguments:
@@ -60,7 +60,7 @@ scenarios:
       job: orchard
       environmentVariables:
         OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
-        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000"
+        OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass"
     load:
       job: bombardier
       variables:

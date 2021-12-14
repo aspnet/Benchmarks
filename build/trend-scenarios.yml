@@ -31,36 +31,44 @@ parameters:
 # Plaintext
 
   - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobsV2) --property scenario=Plaintext --property protocol=http
+    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext --property protocol=http
   - displayName: Plaintext Mvc
-    arguments: --scenario mvc $(plaintextJobsV2) --property scenario=PlaintextMvc --property protocol=http
+    arguments: --scenario mvc $(plaintextJobs) --property scenario=PlaintextMvc --property protocol=http
   - displayName: Plaintext MapAction
-    arguments: --scenario mapaction $(plaintextJobsV2) --property scenario=PlaintextMapAction --property protocol=http
+    arguments: --scenario mapaction $(plaintextJobs) --property scenario=PlaintextMapAction --property protocol=http
   - displayName: Plaintext Endpoint
-    arguments: --scenario endpoint $(plaintextJobsV2) --property scenario=PlaintextEndpoint --property protocol=http
+    arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint --property protocol=http
   - displayName: Plaintext Connection Close
-    arguments: --scenario connectionclose $(plaintextJobsV2) --property scenario=ConnectionClose --property protocol=http --variable connections=32 --property connections=32 
+    arguments: --scenario connectionclose $(plaintextJobs) --property scenario=ConnectionClose --property protocol=http --variable connections=32 --property connections=32 
   - displayName: Plaintext Connection Close Https
-    arguments: --scenario connectionclosehttps $(plaintextJobsV2) --property scenario=ConnectionCloseHttps --property protocol=https --variable connections=32 --property connections=32
+    arguments: --scenario connectionclosehttps $(plaintextJobs) --property scenario=ConnectionCloseHttps --property protocol=https --variable connections=32 --property connections=32
   - displayName: Plaintext Connection Close Https HttpSys
-    arguments: --scenario connectionclosehttps $(plaintextJobsV2) --property scenario=ConnectionCloseHttpsHttpSys --property protocol=https --variable connections=32 --property connections=32 --variable server=HttpSys --application.options.requiredOperatingSystem windows
+    arguments: --scenario connectionclosehttps $(plaintextJobs) --property scenario=ConnectionCloseHttpsHttpSys --property protocol=https --variable connections=32 --property connections=32 --variable server=HttpSys --application.options.requiredOperatingSystem windows
 
 # Json
 
   - displayName: Json
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http
+    arguments: --scenario json $(jsonJobs) --property scenario=Json --property protocol=http
   - displayName: Json HttpSys
-    arguments: --scenario json $(jsonJobsV2) --property scenario=Json --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
+  - displayName: Json IIS InProc
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonIISInProc --variable server=IISInProcess --application.options.requiredOperatingSystem windows
+  - displayName: Json IIS OutOfProc
+    arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonIISOutOfProc --variable server=IISOutOfProcess --application.options.requiredOperatingSystem windows
   - displayName: Json Https
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttps --property protocol=https
+    arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps --property protocol=https
   - displayName: Json Https HttpSys
-    arguments: --scenario https $(jsonJobsV2) --property scenario=JsonHttpsHttpSys --property protocol=https --variable server=HttpSys --application.options.requiredOperatingSystem windows
+    arguments: --scenario https $(jsonJobs) --property scenario=JsonHttpsHttpSys --property protocol=https --variable server=HttpSys --application.options.requiredOperatingSystem windows
+  - displayName: Json Https IIS InProc
+    arguments: --scenario https $(jsonJobs) --property protocol=https --property scenario=JsonHttpsIISInProc --variable server=IISInProcess --application.options.requiredOperatingSystem windows
+  - displayName: Json Https IIS OutOfProc
+    arguments: --scenario https $(jsonJobs) --property protocol=https --property scenario=JsonHttpsIISOutOfProc --variable server=IISOutOfProcess --application.options.requiredOperatingSystem windows
   - displayName: Json Crossgen2
-    arguments: --scenario json $(jsonJobsV2) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
+    arguments: --scenario json $(jsonJobs) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
   - displayName: Json Mvc
-    arguments: --scenario mvc $(jsonJobsV2) --property scenario=JsonMvc --property protocol=http
+    arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc --property protocol=http
   - displayName: Json MapAction
-    arguments: --scenario mapaction $(jsonJobsV2) --property scenario=JsonMapAction --property protocol=http
+    arguments: --scenario mapaction $(jsonJobs) --property scenario=JsonMapAction --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
@@ -74,5 +82,5 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net6.0 --application.collectDependencies true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 --application.collectDependencies true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }
