@@ -25,7 +25,7 @@ namespace Build
             await _dotnet.ExecuteAsync($"new webapi");
 #else
             await _dotnet.ExecuteAsync($"new api");
-#end
+#endif
             await Build();
 
             // Change to a .cs file
