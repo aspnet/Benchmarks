@@ -21,8 +21,11 @@ namespace Build
 
         public async Task RunAsync()
         {
+#if NET7_0_OR_GREATER            
+            await _dotnet.ExecuteAsync($"new webapi");
+#else
             await _dotnet.ExecuteAsync($"new api");
-
+#end
             await Build();
 
             // Change to a .cs file
