@@ -14,6 +14,8 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
+            System.Threading.Thread.Sleep(1000);
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
