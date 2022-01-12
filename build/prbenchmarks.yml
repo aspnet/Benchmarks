@@ -1,0 +1,13 @@
+trigger: none
+
+pool: ASP.NET-Performance-Controller-new
+
+# variables:
+#   - group: 'ASP.NET Benchmarks'
+
+jobs:
+- job: Benchmark
+  timeoutInMinutes: 10
+  steps:
+  - powershell: |
+        echo "Hello"
