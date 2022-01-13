@@ -167,7 +167,7 @@ profiles:
           
   aspnet-citrine-amd:
     variables:
-      serverAddress: 10.0.0.103
+      serverAddress: 10.0.0.106
     jobs:
       server:
         endpoints: 
@@ -178,7 +178,7 @@ profiles:
   
   aspnet-citrine-amd-relay:
     variables:
-      serverAddress: 10.0.0.103
+      serverAddress: 10.0.0.106
     jobs:
       server:
         endpoints: 
