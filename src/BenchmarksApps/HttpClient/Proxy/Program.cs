@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -10,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Crank.EventSources;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,9 +22,7 @@ namespace Proxy
     {
         private static HttpMessageInvoker _httpMessageInvoker;
 
-        private static string _scheme;
-        private static HostString _host;
-        private static string _pathBase;
+        private static string _destinationPrefix;
         private static QueryString _appendQuery;
 
         public static void Main(string[] args)
@@ -44,10 +42,7 @@ namespace Proxy
 
             var baseUri = new Uri(baseUriArg);
 
-            // Cache base URI values
-            _scheme = baseUri.Scheme;
-            _host = new HostString(baseUri.Authority);
-            _pathBase = baseUri.AbsolutePath;
+            _destinationPrefix = $"{baseUri.Scheme}://{baseUri.Authority}{baseUri.AbsolutePath.TrimEnd('/')}/";
             _appendQuery = new QueryString(baseUri.Query);
 
             Console.WriteLine($"Base URI: {baseUriArg}");
@@ -93,7 +88,7 @@ namespace Proxy
 
             httpHandler.AllowAutoRedirect = false;
             httpHandler.UseProxy = false;
-            httpHandler.AutomaticDecompression = System.Net.DecompressionMethods.None;
+            httpHandler.AutomaticDecompression = DecompressionMethods.None;
             httpHandler.UseCookies = false;
             httpHandler.EnableMultipleHttp2Connections = true;
 
@@ -105,16 +100,29 @@ namespace Proxy
 
         private static async Task ProxyRequest(HttpContext context)
         {
-            var destinationUri = BuildDestinationUri(context);
+            var destinationUri = MakeDestinationAddress(context.Request.Path, context.Request.QueryString.Add(_appendQuery));
 
             using var requestMessage = context.CreateProxyHttpRequest(destinationUri);
             requestMessage.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-            requestMessage.Version = new Version(2, 0);
+            requestMessage.Version = HttpVersion.Version20;
 
             using var responseMessage = await _httpMessageInvoker.SendAsync(requestMessage, context.RequestAborted);
             await context.CopyProxyHttpResponse(responseMessage);
         }
 
-        private static Uri BuildDestinationUri(HttpContext context) => new Uri(UriHelper.BuildAbsolute(_scheme, _host, _pathBase, context.Request.Path, context.Request.QueryString.Add(_appendQuery)));
+        private static Uri MakeDestinationAddress(PathString path, QueryString query)
+        {
+            ReadOnlySpan<char> prefixSpan = _destinationPrefix;
+
+            if (path.HasValue)
+            {
+                // When PathString has a value it always starts with a '/'. Avoid double slashes when concatenating.
+                prefixSpan = prefixSpan[0..^1];
+            }
+
+            var targetAddress = string.Concat(prefixSpan, path.ToUriComponent(), query.ToUriComponent());
+
+            return new Uri(targetAddress, UriKind.Absolute);
+        }
     }
 }
