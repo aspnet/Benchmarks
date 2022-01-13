@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -126,26 +126,28 @@ namespace Proxy
             }
         }
 
-        static void CopyHeaders(IHeaderDictionary responseHeaders, IEnumerable<KeyValuePair<string, IEnumerable<string>>> replyHeaders)
+        static void CopyHeaders(IHeaderDictionary responseHeaders, HttpHeaders replyHeaders)
         {
-            foreach (var replyHeader in replyHeaders)
+            foreach (var replyHeader in replyHeaders.NonValidated)
             {
-                var headerValue = default(StringValues);
-                var isFirst = true;
-                foreach (var value in replyHeader.Value)
-                {
-                    if (isFirst)
-                    {
-                        headerValue = value;
-                        isFirst = false;
-                    }
-                    else
-                    {
-                        headerValue = StringValues.Concat(headerValue, value);
-                    }
-                }
+                var replyValue = replyHeader.Value;
+
+                StringValues headerValue = replyValue.Count <= 1
+                    ? replyValue.ToString()
+                    : ToArray(replyValue);
 
                 responseHeaders[replyHeader.Key] = headerValue;
+            }
+
+            static StringValues ToArray(in HeaderStringValues values)
+            {
+                var array = new string[values.Count];
+                var i = 0;
+                foreach (var value in values)
+                {
+                    array[i++] = value;
+                }
+                return array;
             }
         }
     }
