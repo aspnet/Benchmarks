@@ -30,7 +30,7 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/BuildPerformance/BuildPerformance.csproj
-    readyStateText: Application started
+    readyStateText: Running scenario
     waitForExit: true
     selfContained: false
     variables:
