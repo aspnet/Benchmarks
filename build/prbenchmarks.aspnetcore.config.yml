@@ -1,0 +1,38 @@
+# multi-line script used to build the project
+components:
+    kestrel: 
+        script: |
+            call ./src/Servers/Kestrel/build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:BuildIisNativeProjects=false
+            call ./.dotnet/dotnet.exe build-server shutdown 
+            call taskkill /F /IM dotnet.exe # also kills main process in dotnet.exe
+
+        arguments:
+            --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/
+    mvc: 
+        script: |
+            echo FAKE MVC BUILD
+            # ./src/Servers/Kestrel/build.sh -c release
+        arguments: 
+            --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.MVC/release/net7.0/
+
+# default arguments that are always used on crank commands
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+
+# the first value is the default if none is specified
+profiles:
+    aspnet-perf-lin:
+        description: INTEL/Linux 12 Cores
+        arguments: --profile aspnet-perf-lin
+
+    aspnet-perf-win:
+        description: INTEL/Windows 12 Cores
+        arguments: --profile aspnet-perf-win
+
+benchmarks:
+    plaintext:
+      description: TechEmpower Plaintext Scenario - ASP.NET Middleware
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext
+
+    json:
+      description: TechEmpower JSON Scenario - ASP.NET Middleware
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --scenario json

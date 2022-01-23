@@ -2,12 +2,25 @@ trigger: none
 
 pool: ASP.NET-Performance-Controller-new
 
-# variables:
-#   - group: 'ASP.NET Benchmarks'
+variables:
+  - group: 'ASP.NET Benchmarks'
 
 jobs:
 - job: Benchmark
-  timeoutInMinutes: 10
+  timeoutInMinutes: 60
   steps:
   - powershell: |
-        echo "Hello"
+        cd ..
+        Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+        ./dotnet-install.ps1 -channel 5.0
+        dotnet tool install --global Microsoft.Crank.PullRequestBot --version 0.2.0-alpha.22071.1
+        crank-pr `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" 
+
+
+    env:
+        AZURE_RELAY: $(relay.connectionstring)
+        APP_KEY: $(github.privatekey)
