@@ -13,14 +13,20 @@ jobs:
         cd ..
         Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
         ./dotnet-install.ps1 -channel 5.0
-        dotnet tool install --global Microsoft.Crank.PullRequestBot --version 0.2.0-alpha.22071.1
-        crank-pr `
+        
+        git clone https://github.com/dotnet/crank
+        cd ./crank/
+        git checkout main
+        git pull
+        cd src/Microsoft.Crank.PullRequestBot
+        dotnet build -c release -o build
+
+        ./build/crank-pr.exe `
             --repository https://github.com/sebastienros/aspnetcore
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
-            --app-key "env:APP_KEY" 
-
+            --app-key "env:APP_KEY"
 
     env:
         AZURE_RELAY: $(relay.connectionstring)
