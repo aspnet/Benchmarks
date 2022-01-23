@@ -15,6 +15,7 @@ jobs:
         ./dotnet-install.ps1 -channel 5.0
         dotnet tool install --global Microsoft.Crank.PullRequestBot --version 0.2.0-alpha.22071.1
         crank-pr `
+            --repository https://github.com/sebastienros/aspnetcore
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
