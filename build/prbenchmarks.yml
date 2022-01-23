@@ -22,7 +22,7 @@ jobs:
         dotnet build -c release -o build
 
         ./build/crank-pr.exe `
-            --repository https://github.com/sebastienros/aspnetcore
+            --repository https://github.com/sebastienros/aspnetcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
