@@ -14,6 +14,10 @@ public class ClientOptions
     public bool UseHttpMessageInvoker { get; set; }
     public bool CollectRequestTimings { get; set; }
     public string? Scenario { get; set; }
+    public int ContentSize { get; set; }
+    public int ContentWriteSize { get; set; }
+    public bool ContentFlushAfterWrite { get; set; }
+    public bool ContentUnknownLength { get; set; }
     public int Warmup { get; set; }
     public int Duration { get; set; }
 
@@ -23,6 +27,7 @@ public class ClientOptions
             $"ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; " +
             $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
-            $"Warmup={Warmup}; Duration={Duration}";
+            $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
+            $"ContentUnknownLength={ContentUnknownLength}; Warmup={Warmup}; Duration={Duration}";
     }
 }

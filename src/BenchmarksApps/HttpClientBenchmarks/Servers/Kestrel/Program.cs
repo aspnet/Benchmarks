@@ -82,6 +82,12 @@ class Program
 
         app.MapGet("/get", () => "Hello World!");
 
+        app.MapPost("/post", async (HttpRequest request) =>
+        {
+            await request.Body.CopyToAsync(Stream.Null);
+            return Results.Text("Server received the content");
+        });
+
         app.Run();
     }
 
