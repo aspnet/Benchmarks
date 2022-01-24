@@ -4,8 +4,8 @@ components:
         script: |
             cd
             call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:BuildIisNativeProjects=false
-            REM .\.dotnet\dotnet.exe build-server shutdown 
-            REM taskkill /F /IM dotnet.exe 
+            call .\.dotnet\dotnet.exe build-server shutdown 
+            taskkill /F /IM dotnet.exe 
 
         arguments:
             --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/
