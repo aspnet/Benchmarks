@@ -5,13 +5,13 @@ components:
             call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
 
         arguments:
-            --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/
+            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Server.Kestrel\release\net7.0\
     mvc: 
         script: |
             call .\src\Mvc\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
             
         arguments: 
-            --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.MVC/release/net7.0/
+            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Mvc\release\net7.0\
 
 # default arguments that are always used on crank commands
 defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
