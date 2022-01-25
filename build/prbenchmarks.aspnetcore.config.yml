@@ -20,11 +20,11 @@ defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.pr
 profiles:
     aspnet-perf-lin:
         description: INTEL/Linux 12 Cores
-        arguments: --profile aspnet-perf-lin
+        arguments: --profile aspnet-perf-lin-relay
 
     aspnet-perf-win:
         description: INTEL/Windows 12 Cores
-        arguments: --profile aspnet-perf-win
+        arguments: --profile aspnet-perf-win-relay
 
 benchmarks:
     plaintext:
