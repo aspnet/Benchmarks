@@ -5,6 +5,44 @@ pool: ASP.NET-Performance-Controller-new
 variables:
   - group: 'ASP.NET Benchmarks'
 
+schedules:
+- cron: "0 * * * *"
+  displayName: "On :00"
+  branches:
+    include:
+    - main
+  always: "true" # whether to always run the pipeline or only if there have been source code changes since the last successful scheduled run. The default is false.
+- cron: "10 * * * *"
+  displayName: "On :10"
+  branches:
+    include:
+    - main
+  always: "true"
+- cron: "20 * * * *"
+  displayName: "On :20"
+  branches:
+    include:
+    - main
+  always: "true"
+- cron: "30 * * * *"
+  displayName: "On :30"
+  branches:
+    include:
+    - main
+  always: "true"
+- cron: "40 * * * *"
+  displayName: "On :40"
+  branches:
+    include:
+    - main
+  always: "true"
+- cron: "50 * * * *"
+  displayName: "On :50"
+  branches:
+    include:
+    - main
+  always: "true"
+
 jobs:
 - job: Benchmark
   timeoutInMinutes: 60
