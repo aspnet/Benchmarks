@@ -26,11 +26,35 @@ profiles:
         description: INTEL/Windows 12 Cores
         arguments: --profile aspnet-perf-win-relay
 
+    aspnet-citrine-lin:
+        description: INTEL/Linux 28 Cores
+        arguments: --profile aspnet-citrine-lin-relay
+
+    aspnet-citrine-win:
+        description: INTEL/Windows 28 Cores
+        arguments: --profile aspnet-citrine-win-relay
+
+    aspnet-citrine-arm:
+        description: ARM/Linux 32 Cores
+        arguments: --profile aspnet-citrine-arm-relay
+
+    aspnet-citrine-amd:
+        description: AMD/Linux 48 Cores
+        arguments: --profile aspnet-citrine-amd-relay
+
 benchmarks:
     plaintext:
-      description: TechEmpower Plaintext Scenario - ASP.NET Middleware
-      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext
+      description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
 
     json:
-      description: TechEmpower JSON Scenario - ASP.NET Middleware
-      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --scenario json
+      description: TechEmpower JSON Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
+    
+    fortunes:
+      description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+
+    yarp:
+      description: YARP - http-http with 10 bytes
+      argument: -config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp
