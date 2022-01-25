@@ -3,15 +3,13 @@ components:
     kestrel: 
         script: |
             call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
-            call .\.dotnet\dotnet.exe build-server shutdown 
-            taskkill /F /IM dotnet.exe 
 
         arguments:
             --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.Server.Kestrel/release/net7.0/
     mvc: 
         script: |
-            echo FAKE MVC BUILD
-            # ./src/Servers/Kestrel/build.sh -c release
+            call .\src\Mvc\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
+            
         arguments: 
             --application.options.outputFiles ./artifacts/bin/Microsoft.AspNetCore.MVC/release/net7.0/
 
