@@ -13,7 +13,7 @@ jobs:
         Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
         .\dotnet-install.ps1 -version 5.0.404
 
-        git clone https://github.com/dotnet/crank -b sebros/test
+        git clone https://github.com/dotnet/crank -b main
         cd .\crank\src\Microsoft.Crank.PullRequestBot
         dotnet publish -c release -o build -r win-x64 --self-contained true
 
@@ -22,7 +22,8 @@ jobs:
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
-            --app-key "env:APP_KEY"
+            --app-key "env:APP_KEY" `
+            --publish-results true
 
     env:
         AZURE_RELAY: $(relay.connectionstring)
