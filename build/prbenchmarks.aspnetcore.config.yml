@@ -2,8 +2,7 @@
 components:
     kestrel: 
         script: |
-            cd
-            call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:BuildIisNativeProjects=false
+            call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release
             call .\.dotnet\dotnet.exe build-server shutdown 
             taskkill /F /IM dotnet.exe 
 
