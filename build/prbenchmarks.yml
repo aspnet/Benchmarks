@@ -10,16 +10,12 @@ jobs:
   timeoutInMinutes: 60
   steps:
   - powershell: |
-        cd ..
         Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-        ./dotnet-install.ps1 -version 6.0.101
-        
-        git clone https://github.com/dotnet/crank
-        cd ./crank/
-        git checkout main
-        git pull
-        cd src/Microsoft.Crank.PullRequestBot
-        dotnet build -c release -o build -r win-x64 --self-contained true
+        .\dotnet-install.ps1 -version 5.0.404
+
+        git clone https://github.com/dotnet/crank -b sebros/test
+        cd .\crank\src\Microsoft.Crank.PullRequestBot
+        dotnet publish -c release -o build -r win-x64 --self-contained true
 
         ./build/crank-pr.exe `
             --repository https://github.com/dotnet/aspnetcore `
