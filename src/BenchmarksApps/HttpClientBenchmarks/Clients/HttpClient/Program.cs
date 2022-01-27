@@ -32,7 +32,7 @@ class Program
         rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
         rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 1, "Number of concurrect requests per one HttpClient"));
         rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 0, "Max number of HTTP/1.1 connections per server, 0 for unlimited"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
+        rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => true, "Enable multiple HTTP/2.0 connections"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--useWinHttpHandler" }, () => false, "Use WinHttpHandler instead of SocketsHttpHandler"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--useHttpMessageInvoker" }, () => false, "Use HttpMessageInvoker instead of HttpClient"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--collectRequestTimings" }, () => false, "Collect percentiled metrics of request timings"));
@@ -204,79 +204,18 @@ class Program
         }
     }
 
-    private static async Task<Metrics> Get(HttpMessageInvoker client)
+    private static Task<Metrics> Get(HttpMessageInvoker client)
     {
         var uri = new Uri(s_url + "/get");
 
-        var drainArray = new byte[c_DefaultBufferSize];
-        var stopwatch = Stopwatch.StartNew();
-
-        var metrics = s_options.CollectRequestTimings 
-            ? new Metrics(s_options.Duration * c_SingleThreadRpsEstimate) 
-            : new Metrics();
-        bool isWarmup = true;
-
-        var durationStopwatch = Stopwatch.StartNew();
-        while (s_isRunning)
+        return Measure(() => 
         {
-            if (isWarmup && !s_isWarmup)
-            {
-                if (metrics.SuccessRequests == 0)
-                {
-                    throw new Exception($"No successful requests during warmup.");
-                }
-                isWarmup = false;
-                metrics.SuccessRequests = 0;
-                metrics.BadStatusRequests = 0;
-                metrics.ExceptionRequests = 0;
-                durationStopwatch.Restart();
-            }
-            
-            try
-            {
-                stopwatch.Restart();
-                var request = CreateRequest(HttpMethod.Get, uri);
-                using var result = await client.SendAsync(request, CancellationToken.None);
-                var headersTime = stopwatch.ElapsedTicks;
-
-                if (result.IsSuccessStatusCode)
-                {
-                    using var content = result.Content.ReadAsStream();
-                    var bytesRead = await content.ReadAsync(drainArray);
-                    var contentStartTime = stopwatch.ElapsedTicks;
-
-                    while (bytesRead != 0)
-                    {
-                        bytesRead = await content.ReadAsync(drainArray);
-                    }
-                    var contentEndTime = stopwatch.ElapsedTicks;
-
-                    if (s_options.CollectRequestTimings && !isWarmup)
-                    {
-                        metrics.HeadersTimes.Add(headersTime);
-                        metrics.ContentStartTimes.Add(contentStartTime);
-                        metrics.ContentEndTimes.Add(contentEndTime);
-                    }
-                    metrics.SuccessRequests++;
-                }
-                else
-                {
-                    Log("Bad status code: " + result.StatusCode);
-                    metrics.BadStatusRequests++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log("Exception: " + ex);
-                metrics.ExceptionRequests++;
-            }
-        }
-        var elapsed = durationStopwatch.ElapsedTicks * 1.0 / Stopwatch.Frequency;
-        metrics.MeanRps = (metrics.SuccessRequests +  metrics.BadStatusRequests) / elapsed;
-        return metrics;
+            var request = CreateRequest(HttpMethod.Get, uri);
+            return client.SendAsync(request, CancellationToken.None);
+        });
     }
 
-    private static async Task<Metrics> Post(HttpMessageInvoker client)
+    private static Task<Metrics> Post(HttpMessageInvoker client)
     {
         var uri = new Uri(s_url + "/post");
 
@@ -307,6 +246,51 @@ class Program
             }
         }
 
+        return Measure(async () => 
+        {
+            var request = CreateRequest(HttpMethod.Post, uri);
+
+            Task<HttpResponseMessage> responseTask;
+            if (useByteArrayContent)
+            {
+                request.Content = new ByteArrayContent(requestContentData!);
+                responseTask = client.SendAsync(request, CancellationToken.None);
+            }
+            else
+            {
+                var requestContent = new StreamingHttpContent();
+                request.Content = requestContent;
+
+                if (!s_options.ContentUnknownLength)
+                {
+                    request.Content.Headers.ContentLength = s_options.ContentSize;
+                }
+                // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
+
+                responseTask = client.SendAsync(request, CancellationToken.None);
+                var requestContentStream = await requestContent.GetStreamAsync();
+
+                for (int i = 0; i < fullChunkCount; ++i)
+                {
+                    await requestContentStream.WriteAsync(requestContentData);
+                    if (s_options.ContentFlushAfterWrite)
+                    {
+                        await requestContentStream.FlushAsync();
+                    }
+                }
+                if (requestContentLastChunk != null)
+                {
+                    await requestContentStream.WriteAsync(requestContentLastChunk);
+                }
+                requestContent.CompleteStream();
+            }
+
+            return await responseTask;
+        });
+    }
+
+    private static async Task<Metrics> Measure(Func<Task<HttpResponseMessage>> sendAsync)
+    {
         var drainArray = new byte[c_DefaultBufferSize];
         var stopwatch = Stopwatch.StartNew();
 
@@ -334,44 +318,7 @@ class Program
             try
             {
                 stopwatch.Restart();
-                var request = CreateRequest(HttpMethod.Post, uri);
-
-                Task<HttpResponseMessage> responseTask;
-                if (useByteArrayContent)
-                {
-                    request.Content = new ByteArrayContent(requestContentData!);
-                    responseTask = client.SendAsync(request, CancellationToken.None);
-                }
-                else
-                {
-                    var requestContent = new StreamingHttpContent();
-                    request.Content = requestContent;
-
-                    if (!s_options.ContentUnknownLength)
-                    {
-                        request.Content.Headers.ContentLength = s_options.ContentSize;
-                    }
-                    // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
-
-                    responseTask = client.SendAsync(request, CancellationToken.None);
-                    var requestContentStream = await requestContent.GetStreamAsync();
-
-                    for (int i = 0; i < fullChunkCount; ++i)
-                    {
-                        await requestContentStream.WriteAsync(requestContentData);
-                        if (s_options.ContentFlushAfterWrite)
-                        {
-                            await requestContentStream.FlushAsync();
-                        }
-                    }
-                    if (requestContentLastChunk != null)
-                    {
-                        await requestContentStream.WriteAsync(requestContentLastChunk);
-                    }
-                    requestContent.CompleteStream();
-                }
-
-                using var result = await responseTask;
+                using HttpResponseMessage result = await sendAsync();
                 var headersTime = stopwatch.ElapsedTicks;
 
                 if (result.IsSuccessStatusCode)
