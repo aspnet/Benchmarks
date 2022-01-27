@@ -211,7 +211,7 @@ class Program
         return Measure(() => 
         {
             var request = CreateRequest(HttpMethod.Get, uri);
-            return client.SendAsync(request, CancellationToken.None);
+            return SendAsync(client, request);
         });
     }
 
@@ -254,7 +254,7 @@ class Program
             if (useByteArrayContent)
             {
                 request.Content = new ByteArrayContent(requestContentData!);
-                responseTask = client.SendAsync(request, CancellationToken.None);
+                responseTask = SendAsync(client, request);
             }
             else
             {
@@ -267,7 +267,7 @@ class Program
                 }
                 // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
 
-                responseTask = client.SendAsync(request, CancellationToken.None);
+                responseTask = SendAsync(client, request);
                 var requestContentStream = await requestContent.GetStreamAsync();
 
                 for (int i = 0; i < fullChunkCount; ++i)
@@ -360,6 +360,10 @@ class Program
 
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
         new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+
+    private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) => s_options.UseHttpMessageInvoker
+        ? client.SendAsync(request, CancellationToken.None)
+        : ((HttpClient)client).SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
     private static void Log(string message)
     {
