@@ -414,6 +414,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 ### Available scenarios
 
 - `httpclient-kestrel-get`: Execute GET requests to the server. Client is HttpClient, server is Kestrel (minimal API).
+- `httpclient-kestrel-post`: Execute POST requests to the server. Client is HttpClient, server is Kestrel (minimal API).
+- `httpclient-kestrel-post-slow`: Execute POST requests to the server, upload content 1 byte at a time. Similar to `httpclient-kestrel-post`, with pre-defined parameters (`requestContentWriteSize=1`, `requestContentFlushAfterWrite=true`, `requestContentUnknownLength=true`)
 - `wrk-kestrel-get`: Execute GET requests to the server. Client is WRK, server is Kestrel (minimal API).
 
 #### Arguments
@@ -438,6 +440,19 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
   - `--variable duration=<N>` (default: `15`)
+
+*POST-specific arguments:*
+
+- Request content size:
+  - `--variable requestContentSize=<N>` (default: `1024` for POST scenarios, `0` for GET scenarios)
+- How many bytes (at max) will be written per each write of request content (also chunk size if chunked encoding is used):
+  - `--variable requestContentWriteSize=<N>` (default: `81920`)
+- Whether to flush request content stream after each write:
+  - `--variable requestContentFlushAfterWrite=false` (default)
+  - `--variable requestContentFlushAfterWrite=true`
+- Whether request content length should be unknown to server. If `false`, will send `Content-Length` header, if `true`, will use chunked encoding for HTTP/1.1 or unknown content length for HTTP/2.0 and 3.0:
+  - `--variable requestContentUnknownLength=false` (default)
+  - `--variable requestContentUnknownLength=true`
 
 *HttpClient-specific arguments:*
 
