@@ -75,12 +75,12 @@ class Program
 
         if (s_options.Scenario == "get" && s_options.ContentSize != 0)
         {
-            throw new ArgumentException("Expected to have ContentSize=0 for 'get' scenario");
+            throw new ArgumentException("Expected to have ContentSize = 0 for 'get' scenario, got " + s_options.ContentSize);
         }
 
         if (s_options.Scenario == "post" && s_options.ContentSize <= 0)
         {
-            throw new ArgumentException("Expected to have ContentSize for 'post' scenario");
+            throw new ArgumentException("Expected to have ContentSize > 0 for 'post' scenario, got " + s_options.ContentSize);
         }
     }
 
