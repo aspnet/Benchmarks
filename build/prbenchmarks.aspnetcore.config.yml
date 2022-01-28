@@ -57,4 +57,4 @@ benchmarks:
 
     yarp:
       description: YARP - http-http with 10 bytes
-      arguments: -config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp
