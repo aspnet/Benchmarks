@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -14,12 +16,46 @@ namespace Downstream
 {
     public class Program
     {
-        private static readonly byte[] InvalidPayloadMessage = Encoding.UTF8.GetBytes("Invalid payload size. Use ?s=<SIZE>[&d=<DELAY_MS:0>");
         private const int MaxSize = 1_000_000; // ~ 1MB
-        private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         private const int MaxDelay = 2_000;
+
+        private static ImmutableDictionary<int, byte[]> _payloads = ImmutableDictionary<int, byte[]>.Empty;
         
-        public static void Main(string[] args) =>
+        private static Dictionary<string, string> _headers = new Dictionary<string, string>();
+        private static Dictionary<string, string> _cookies = new Dictionary<string, string>();
+        private static int _size = 10;
+        private static int _delay = 0;
+        
+        public static void Main(string[] args)
+        {
+            for (var i = 0; i < args.Length; i++)
+            {
+                var arg = FormatArg(i);
+                var nextArg = FormatArg(i+1);
+
+                switch (arg)
+                {
+                    case "-d" :
+                    case "--delay" : int.TryParse(nextArg, out _delay); i++; break;
+                    case "-s" :
+                    case "--size" : int.TryParse(nextArg, out _size); i++; break;
+                    case "-h":
+                    case "--headers" : var values = nextArg.Split(':', 2); _headers[values[0]] = values[1]; i++; break;
+                    case "-c":
+                    case "--cookies" : values = nextArg.Split(':', 2); _cookies[values[0]] = values[1]; i++; break;
+                }
+
+                string FormatArg(int index)
+                {
+                    if (index >= args.Length)
+                    {
+                        return null;
+                    }
+
+                    return args[index].Trim();
+                }
+            }
+
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webHostBuilder => webHostBuilder
                 .ConfigureKestrel((context, kestrelOptions) =>
@@ -31,23 +67,20 @@ namespace Downstream
                 })
                 .Configure(app => app.Run(async context =>
                 {
-                    var size = 10;
+                    var size = _size;
+                    var delay = _delay;
 
-                    if (!context.Request.Query.ContainsKey("s"))
+                    // These query string parameters are kept for backward compatibility
+                    if (context.Request.Query.ContainsKey("s") && int.TryParse(context.Request.Query["s"], out size))
                     {
-                        // Default payload
-                        size = 10;
-                    }
-                    else if (!int.TryParse(context.Request.Query["s"], out size) || size < 0 || size > MaxSize)
-                    {
-                        context.Response.StatusCode = 500;
-                        await context.Response.Body.WriteAsync(InvalidPayloadMessage);
-                        return;
+                        size = Math.Max(0, size);
+                        size = Math.Min(MaxSize, size);
                     }
 
-                    if (!int.TryParse(context.Request.Query["d"], out var delay) || delay < 0 || delay > MaxDelay)
+                    if (context.Request.Query.ContainsKey("d") && int.TryParse(context.Request.Query["d"], out delay))
                     {
-                        delay = 0;
+                        delay = Math.Max(0, delay);
+                        delay = Math.Min(MaxDelay, delay);
                     }
 
                     if (!_payloads.TryGetValue(size, out var payload))
@@ -61,9 +94,20 @@ namespace Downstream
                         await Task.Delay(delay);
                     }
 
+                    foreach (var header in _headers)
+                    {
+                        context.Response.Headers.Add(header.Key, header.Value);
+                    }
+                    
+                    foreach (var cookie in _cookies)
+                    {
+                        context.Response.Cookies.Append(cookie.Key, cookie.Value);
+                    }
+                    
                     await context.Response.Body.WriteAsync(payload);
                 })))
                 .Build()
                 .Run();
+        }
     }
 }

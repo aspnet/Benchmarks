@@ -80,8 +80,9 @@ jobs:
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
     variables:
+      downstreamArguments:
       downstreamPort: 8081
-    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {% if downstreamProtocol == "http2" %}http2{% else %}http1{% endif %}'
+    arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {% if downstreamProtocol == "http2" %}http2{% else %}http1{% endif %} {{downstreamArguments}}'
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
