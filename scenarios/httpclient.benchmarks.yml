@@ -15,11 +15,23 @@ variables:
     concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
     collectRequestTimings: false # unsupported by WRK --  other values will throw
 
+    # POST-specific parameters:
+    requestContentSize: 0 # 0 for no content
+    requestContentWriteSize: 81920
+    requestContentFlushAfterWrite: false
+    requestContentUnknownLength: false
+
     # HttpClient-specific parameters:
     http11MaxConnectionsPerServer: 0 #unlimited
     http20EnableMultipleConnections: true
     useWinHttpHandler: false
     useHttpMessageInvoker: false
+
+    headersDictionary:
+      none: '' # supported in WRK
+      connectionclose: '--header "Connection: close"' # supported in WRK
+      expectcontinue: '--header "Expect: 100-continue"'
+    requestHeaders: none
 
 scenarios:
   httpclient-kestrel-get:
@@ -29,6 +41,27 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
+  
+  httpclient-kestrel-post:
+    server:
+      job: kestrel
+    client:
+      job: httpClient
+      variables:
+        scenario: post
+        requestContentSize: 1024
+
+  httpclient-kestrel-post-slow:
+    server:
+      job: kestrel
+    client:
+      job: httpClient
+      variables:
+        scenario: post
+        requestContentSize: 1024
+        requestContentWriteSize: 1
+        requestContentFlushAfterWrite: true
+        requestContentUnknownLength: true
 
   wrk-kestrel-get:
     server:
@@ -47,6 +80,7 @@ scenarios:
         # Leaving the copied values unless the way to substitute correctly is found (other configs seem to employ copying strategy)
         # Overriding via console arg (e.g. `--variable serverPort=4321`) will work for *both* global and job's variables
         serverPort: 5000
+        presetHeaders: '{{requestHeaders}}' # TODO: unsupported 'requestHeaders' might be parsed and passed via 'customHeaders' variable
         warmup: 15 #seconds
         duration: 15 #seconds
       onConfigure:
@@ -63,6 +97,14 @@ scenarios:
           if (useHttps != "true" && useHttps != "false")
           {
             throw "Unknown value in useHttps. Expected: true or false, got: " + job.Variables.useHttps;
+          }
+          if (String(job.Variables.requestContentSize) != "0")
+          {
+            throw "Expected to have ContentSize=0 for GET scenario, got: " + job.Variables.requestContentSize;
+          }
+          if (job.Variables.requestHeaders != "none" && job.Variables.requestHeaders != "connectionclose" )
+          {
+            throw "Unsupported requestHeaders value: " + job.Variables.requestHeaders;
           }
           '
 
@@ -84,8 +126,7 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --warmup {{warmup}} --duration {{duration}}"
-
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --warmup {{warmup}} --duration {{duration}}"
 
 profiles:
   local:

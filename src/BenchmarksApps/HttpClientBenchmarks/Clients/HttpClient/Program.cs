@@ -12,44 +12,40 @@ class Program
 {
     private static readonly double s_msPerTick = 1000.0 / Stopwatch.Frequency;
 
+    private const int c_SingleThreadRpsEstimate = 3000;
+
     private static ClientOptions s_options = null!;
     private static string s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
+
+    private static byte[]? s_requestContentData = null;
+    private static byte[]? s_requestContentLastChunk = null;
+    private static int s_fullChunkCount;
+    private static bool s_useByteArrayContent;
+
     private static bool s_isWarmup;
     private static bool s_isRunning;
 
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
-        rootCommand.AddOption(new Option<string>(new string[] { "--address" }, "The server address to request") { Required = true });
-        rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to request") { Required = true });
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
-        rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 1, "Number of concurrect requests per one HttpClient"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 1, "Max number of HTTP/1.1 connections per server"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => false, "Enable multiple HTTP/2.0 connections"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useWinHttpHandler" }, () => false, "Use WinHttpHandler instead of SocketsHttpHandler"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttpMessageInvoker" }, () => false, "Use HttpMessageInvoker instead of HttpClient"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--collectRequestTimings" }, () => false, "Collect percentiled metrics of request timings"));
-        rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 15, "Duration of the warmup in seconds"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 30, "Duration of the test in seconds"));
+        ClientOptionsBinder.AddOptionsToCommand(rootCommand);
 
-        rootCommand.Handler = CommandHandler.Create<ClientOptions>(async (options) =>
-        {
-            s_options = options;
-            Log("HttpClient benchmark");
-            Log("Options: " + s_options);
-            ValidateOptions();
+        rootCommand.SetHandler(async (ClientOptions options) =>
+            {
+                s_options = options;
+                Log("HttpClient benchmark");
+                Log("Options: " + s_options);
+                ValidateOptions();
 
-            await Setup();
-            Log("Setup done");
+                await Setup();
+                Log("Setup done");
 
-            await RunScenario();
-            Log("Scenario done");
-        });
+                await RunScenario();
+                Log("Scenario done");
+            },
+            new ClientOptionsBinder());
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -64,6 +60,16 @@ class Program
         if (s_options.UseWinHttpHandler && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             throw new ArgumentException("WinHttpHandler is only supported on Windows");
+        }
+
+        if (s_options.Scenario == "get" && s_options.ContentSize != 0)
+        {
+            throw new ArgumentException("Expected to have ContentSize = 0 for 'get' scenario, got " + s_options.ContentSize);
+        }
+
+        if (s_options.Scenario == "post" && s_options.ContentSize <= 0)
+        {
+            throw new ArgumentException("Expected to have ContentSize > 0 for 'post' scenario, got " + s_options.ContentSize);
         }
     }
 
@@ -107,10 +113,15 @@ class Program
             s_httpClients.Add(s_options.UseHttpMessageInvoker ? new HttpMessageInvoker(handler) : new HttpClient(handler));
         }
 
+        if (s_options.ContentSize > 0)
+        {
+            CreateRequestContentData();
+        }
+
         // First request to the server; to ensure everything started correctly
         var request = CreateRequest(HttpMethod.Get, new Uri(s_url));
         var stopwatch = Stopwatch.StartNew();
-        var response = await s_httpClients[0].SendAsync(request, CancellationToken.None);
+        var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
         response.EnsureSuccessStatusCode();
         BenchmarksEventSource.Register("http/firstrequest", Operations.Max, Operations.Max, "First request duration (ms)", "Duration of the first request to the server (ms)", "n0");
@@ -126,9 +137,9 @@ class Program
 
         if (s_options.CollectRequestTimings)
         {
-            RegisterPercentiledMetric("http/headers", "Time to headers (ms)", "Time to headers (ms)");
-            RegisterPercentiledMetric("http/contentstart", "Time to first content byte (ms)", "Time to first content byte (ms)");
-            RegisterPercentiledMetric("http/contentend", "Time to last content byte (ms)", "Time to last content byte (ms)");
+            RegisterPercentiledMetric("http/headers", "Time to response headers (ms)", "Time to response headers (ms)");
+            RegisterPercentiledMetric("http/contentstart", "Time to first response content byte (ms)", "Time to first response content byte (ms)");
+            RegisterPercentiledMetric("http/contentend", "Time to last response content byte (ms)", "Time to last response content byte (ms)");
         }
 
         Func<HttpMessageInvoker, Task<Metrics>> scenario;
@@ -136,6 +147,9 @@ class Program
         {
             case "get":
                 scenario = Get;
+                break;
+            case "post":
+                scenario = Post;
                 break;
             default:
                 throw new ArgumentException($"Unknown scenario: {s_options.Scenario}");
@@ -184,15 +198,71 @@ class Program
         }
     }
 
-    private static async Task<Metrics> Get(HttpMessageInvoker client)
+    private static Task<Metrics> Get(HttpMessageInvoker client)
     {
         var uri = new Uri(s_url + "/get");
 
-        var drainArray = new byte[81920];
+        return Measure(() => 
+        {
+            var request = CreateRequest(HttpMethod.Get, uri);
+            return SendAsync(client, request);
+        });
+    }
+
+    private static Task<Metrics> Post(HttpMessageInvoker client)
+    {
+        var uri = new Uri(s_url + "/post");
+
+        return Measure(async () => 
+        {
+            var request = CreateRequest(HttpMethod.Post, uri);
+
+            Task<HttpResponseMessage> responseTask;
+            if (s_useByteArrayContent)
+            {
+                request.Content = new ByteArrayContent(s_requestContentData!);
+                responseTask = SendAsync(client, request);
+            }
+            else
+            {
+                var requestContent = new StreamingHttpContent();
+                request.Content = requestContent;
+
+                if (!s_options.ContentUnknownLength)
+                {
+                    request.Content.Headers.ContentLength = s_options.ContentSize;
+                }
+                // Otherwise, we don't need to set TransferEncodingChunked for HTTP/1.1 manually, it's done automatically if ContentLength is absent
+
+                responseTask = SendAsync(client, request);
+                var requestContentStream = await requestContent.GetStreamAsync();
+
+                for (int i = 0; i < s_fullChunkCount; ++i)
+                {
+                    await requestContentStream.WriteAsync(s_requestContentData);
+                    if (s_options.ContentFlushAfterWrite)
+                    {
+                        await requestContentStream.FlushAsync();
+                    }
+                }
+                if (s_requestContentLastChunk != null)
+                {
+                    await requestContentStream.WriteAsync(s_requestContentLastChunk);
+                }
+                requestContent.CompleteStream();
+            }
+
+            return await responseTask;
+        });
+    }
+
+    private static async Task<Metrics> Measure(Func<Task<HttpResponseMessage>> sendAsync)
+    {
+        var drainArray = new byte[ClientOptions.DefaultBufferSize];
         var stopwatch = Stopwatch.StartNew();
 
         var metrics = s_options.CollectRequestTimings 
-            ? new Metrics(s_options.Duration * 3000) 
+            ? new Metrics(s_options.Duration * c_SingleThreadRpsEstimate) 
             : new Metrics();
         bool isWarmup = true;
 
@@ -215,8 +285,7 @@ class Program
             try
             {
                 stopwatch.Restart();
-                var request = CreateRequest(HttpMethod.Get, uri);
-                using var result = await client.SendAsync(request, CancellationToken.None);
+                using HttpResponseMessage result = await sendAsync();
                 var headersTime = stopwatch.ElapsedTicks;
 
                 if (result.IsSuccessStatusCode)
@@ -256,8 +325,49 @@ class Program
         return metrics;
     }
 
+    private static void CreateRequestContentData()
+    {
+        s_useByteArrayContent = !s_options.ContentUnknownLength && (!s_options.ContentFlushAfterWrite || s_options.ContentWriteSize >= s_options.ContentSize); // no streaming
+        if (s_useByteArrayContent)
+        {
+            s_fullChunkCount = 1;
+            s_requestContentData = new byte[s_options.ContentSize];
+            Array.Fill(s_requestContentData, (byte)'a');
+        }
+        else
+        {
+            s_fullChunkCount = s_options.ContentSize / s_options.ContentWriteSize;
+            if (s_fullChunkCount != 0)
+            {
+                s_requestContentData = new byte[s_options.ContentWriteSize];
+                Array.Fill(s_requestContentData, (byte)'a');
+            }
+            int lastChunkSize = s_options.ContentSize % s_options.ContentWriteSize;
+            if (lastChunkSize != 0)
+            {
+                s_requestContentLastChunk = new byte[lastChunkSize];
+                Array.Fill(s_requestContentLastChunk, (byte)'a');
+            }
+        }
+    }
+
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
         new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+
+    private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) 
+    {
+        foreach (var header in s_options.Headers)
+        {
+            if (!request.Headers.TryAddWithoutValidation(header.Name, header.Value))
+            {
+                throw new Exception($"Unable to add header \"{header.Name}: {header.Value}\" to the request");
+            }
+        }
+
+        return s_options.UseHttpMessageInvoker
+            ? client.SendAsync(request, CancellationToken.None)
+            : ((HttpClient)client).SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+    }
 
     private static void Log(string message)
     {
