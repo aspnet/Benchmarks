@@ -429,6 +429,10 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Whether to use HTTPS:
   - `--variable useHttps=false` (default)
   - `--variable useHttps=true`
+- Pre-defined request headers:
+  - `--variable requestHeaders=none` (default)
+  - `--variable requestHeaders=connectionclose`
+  - `--variable requestHeaders=expectcontinue`
 - Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
   - `--variable numberOfHttpClients=<N>` (default: `1`)
 - Number of concurrect requests per one HTTP client -- *unsupported by WRK*:

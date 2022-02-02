@@ -380,7 +380,7 @@ class Program
     {
         foreach (var header in s_options.Header!)
         {
-            var headerNameValue = header.Split(":", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var headerNameValue = header.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             s_customHeaders.Add((headerNameValue[0], headerNameValue.Length > 1 ? headerNameValue[1] : null));
         }
     }
@@ -392,8 +392,10 @@ class Program
     {
         foreach (var header in s_customHeaders)
         {
-            request.Headers.Remove(header.Name);
-            request.Headers.TryAddWithoutValidation(header.Name, header.Value);
+            if (!request.Headers.TryAddWithoutValidation(header.Name, header.Value))
+            {
+                throw new Exception($"Unable to add header \"{header.Name}: {header.Value}\" to the request");
+            }
         }
 
         return s_options.UseHttpMessageInvoker

@@ -29,7 +29,7 @@ public class ClientOptions
             $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
             $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
-            $"ContentUnknownLength={ContentUnknownLength}; Header={(Header != null && Header.Length > 0 ? $"[\"{string.Join("\", \"", Header)}\"]" : "[]")}; " +
+            $"ContentUnknownLength={ContentUnknownLength}; Header={(Header?.Length > 0 ? $"[\"{string.Join("\", \"", Header)}\"]" : "[]")}; " +
             $"Warmup={Warmup}; Duration={Duration}";
     }
 }
