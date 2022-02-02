@@ -2,6 +2,9 @@ namespace HttpClientBenchmarks;
 
 public class ClientOptions
 {
+    public const int DefaultBufferSize = 81920;
+    public const int DefaultDuration = 15;
+
     public string? Address { get; set; }
     public string? Port { get; set; }
     public bool UseHttps { get; set; }
@@ -18,7 +21,7 @@ public class ClientOptions
     public int ContentWriteSize { get; set; }
     public bool ContentFlushAfterWrite { get; set; }
     public bool ContentUnknownLength { get; set; }
-    public string[]? Header { get; set; }
+    public List<(string Name, string? Value)> Headers { get; set; } = new();
     public int Warmup { get; set; }
     public int Duration { get; set; }
 
@@ -29,7 +32,7 @@ public class ClientOptions
             $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
             $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
-            $"ContentUnknownLength={ContentUnknownLength}; Header={(Header?.Length > 0 ? $"[\"{string.Join("\", \"", Header)}\"]" : "[]")}; " +
+            $"ContentUnknownLength={ContentUnknownLength}; Headers=[{string.Join(", ", Headers.Select(h => $"\"{h.Name}: {h.Value}\""))}]; " +
             $"Warmup={Warmup}; Duration={Duration}";
     }
 }

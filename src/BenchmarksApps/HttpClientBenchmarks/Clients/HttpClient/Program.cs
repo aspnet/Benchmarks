@@ -12,7 +12,6 @@ class Program
 {
     private static readonly double s_msPerTick = 1000.0 / Stopwatch.Frequency;
 
-    private const int c_DefaultBufferSize = 81920;
     private const int c_SingleThreadRpsEstimate = 3000;
 
     private static ClientOptions s_options = null!;
@@ -25,47 +24,28 @@ class Program
     private static int s_fullChunkCount;
     private static bool s_useByteArrayContent;
 
-    private static List<(string Name, string? Value)> s_customHeaders = new();
-
     private static bool s_isWarmup;
     private static bool s_isRunning;
 
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
-        rootCommand.AddOption(new Option<string>(new string[] { "--address" }, "The server address to request") { Required = true });
-        rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to request") { Required = true });
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
-        rootCommand.AddOption(new Option<Version>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--numberOfHttpClients" }, () => 1, "Number of HttpClients"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--concurrencyPerHttpClient" }, () => 1, "Number of concurrect requests per one HttpClient"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--http11MaxConnectionsPerServer" }, () => 0, "Max number of HTTP/1.1 connections per server, 0 for unlimited"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--http20EnableMultipleConnections" }, () => true, "Enable multiple HTTP/2.0 connections"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useWinHttpHandler" }, () => false, "Use WinHttpHandler instead of SocketsHttpHandler"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--useHttpMessageInvoker" }, () => false, "Use HttpMessageInvoker instead of HttpClient"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--collectRequestTimings" }, () => false, "Collect percentiled metrics of request timings"));
-        rootCommand.AddOption(new Option<string>(new string[] { "--scenario" }, "Scenario to run ('get', 'post')") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--contentSize" }, () => 0, "Request Content size, 0 for no Content"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--contentWriteSize" }, () => c_DefaultBufferSize, "Request Content single write size, also chunk size if chunked encoding is used"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--contentFlushAfterWrite" }, () => false, "Flush request content stream after each write"));
-        rootCommand.AddOption(new Option<bool>(new string[] { "--contentUnknownLength" }, () => false, "False to send Content-Length header, true to use chunked encoding for HTTP/1.1 or unknown content length for HTTP/2.0 and 3.0"));
-        rootCommand.AddOption(new Option<string[]>(new string[] { "-H", "--header" }, "Custom headers, multiple values allowed"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 15, "Duration of the warmup in seconds"));
-        rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 15, "Duration of the test in seconds"));
+        ClientOptionsBinder.AddOptionsToCommand(rootCommand);
 
-        rootCommand.Handler = CommandHandler.Create<ClientOptions>(async (options) =>
-        {
-            s_options = options;
-            Log("HttpClient benchmark");
-            Log("Options: " + s_options);
-            ValidateOptions();
+        rootCommand.SetHandler(async (ClientOptions options) =>
+            {
+                s_options = options;
+                Log("HttpClient benchmark");
+                Log("Options: " + s_options);
+                ValidateOptions();
 
-            await Setup();
-            Log("Setup done");
+                await Setup();
+                Log("Setup done");
 
-            await RunScenario();
-            Log("Scenario done");
-        });
+                await RunScenario();
+                Log("Scenario done");
+            },
+            new ClientOptionsBinder());
 
         return await rootCommand.InvokeAsync(args);
     }
@@ -136,11 +116,6 @@ class Program
         if (s_options.ContentSize > 0)
         {
             CreateRequestContentData();
-        }
-
-        if (s_options.Header != null)
-        {
-            PrepareCustomHeaders();
         }
 
         // First request to the server; to ensure everything started correctly
@@ -283,7 +258,7 @@ class Program
 
     private static async Task<Metrics> Measure(Func<Task<HttpResponseMessage>> sendAsync)
     {
-        var drainArray = new byte[c_DefaultBufferSize];
+        var drainArray = new byte[ClientOptions.DefaultBufferSize];
         var stopwatch = Stopwatch.StartNew();
 
         var metrics = s_options.CollectRequestTimings 
@@ -376,21 +351,12 @@ class Program
         }
     }
 
-    private static void PrepareCustomHeaders()
-    {
-        foreach (var header in s_options.Header!)
-        {
-            var headerNameValue = header.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            s_customHeaders.Add((headerNameValue[0], headerNameValue.Length > 1 ? headerNameValue[1] : null));
-        }
-    }
-
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
         new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
     private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) 
     {
-        foreach (var header in s_customHeaders)
+        foreach (var header in s_options.Headers)
         {
             if (!request.Headers.TryAddWithoutValidation(header.Name, header.Value))
             {
