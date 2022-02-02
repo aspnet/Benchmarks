@@ -27,6 +27,12 @@ variables:
     useWinHttpHandler: false
     useHttpMessageInvoker: false
 
+    headersDictionary:
+      none: '' # supported in WRK
+      connectionclose: '--header "Connection: close"' # supported in WRK
+      expectcontinue: '--header "Expect: 100-continue"'
+    requestHeaders: none
+
 scenarios:
   httpclient-kestrel-get:
     server:
@@ -44,7 +50,7 @@ scenarios:
       variables:
         scenario: post
         requestContentSize: 1024
-  
+
   httpclient-kestrel-post-slow:
     server:
       job: kestrel
@@ -74,6 +80,7 @@ scenarios:
         # Leaving the copied values unless the way to substitute correctly is found (other configs seem to employ copying strategy)
         # Overriding via console arg (e.g. `--variable serverPort=4321`) will work for *both* global and job's variables
         serverPort: 5000
+        presetHeaders: '{{requestHeaders}}' # TODO: unsupported 'requestHeaders' might be parsed and passed via 'customHeaders' variable
         warmup: 15 #seconds
         duration: 15 #seconds
       onConfigure:
@@ -95,6 +102,10 @@ scenarios:
           {
             throw "Expected to have ContentSize=0 for GET scenario, got: " + job.Variables.requestContentSize;
           }
+          if (job.Variables.requestHeaders != "none" && job.Variables.requestHeaders != "connectionclose" )
+          {
+            throw "Unsupported requestHeaders value: " + job.Variables.requestHeaders;
+          }
           '
 
 
@@ -115,7 +126,7 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} --warmup {{warmup}} --duration {{duration}}"
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --warmup {{warmup}} --duration {{duration}}"
 
 profiles:
   local:

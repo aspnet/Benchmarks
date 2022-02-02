@@ -19,6 +19,14 @@ class Program
     private static string s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
+
+    private static byte[]? s_requestContentData = null;
+    private static byte[]? s_requestContentLastChunk = null;
+    private static int s_fullChunkCount;
+    private static bool s_useByteArrayContent;
+
+    private static List<(string Name, string? Value)> s_customHeaders = new();
+
     private static bool s_isWarmup;
     private static bool s_isRunning;
 
@@ -41,6 +49,7 @@ class Program
         rootCommand.AddOption(new Option<int>(new string[] { "--contentWriteSize" }, () => c_DefaultBufferSize, "Request Content single write size, also chunk size if chunked encoding is used"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--contentFlushAfterWrite" }, () => false, "Flush request content stream after each write"));
         rootCommand.AddOption(new Option<bool>(new string[] { "--contentUnknownLength" }, () => false, "False to send Content-Length header, true to use chunked encoding for HTTP/1.1 or unknown content length for HTTP/2.0 and 3.0"));
+        rootCommand.AddOption(new Option<string[]>(new string[] { "-H", "--header" }, "Custom headers, multiple values allowed"));
         rootCommand.AddOption(new Option<int>(new string[] { "--warmup" }, () => 15, "Duration of the warmup in seconds"));
         rootCommand.AddOption(new Option<int>(new string[] { "--duration" }, () => 15, "Duration of the test in seconds"));
 
@@ -124,10 +133,20 @@ class Program
             s_httpClients.Add(s_options.UseHttpMessageInvoker ? new HttpMessageInvoker(handler) : new HttpClient(handler));
         }
 
+        if (s_options.ContentSize > 0)
+        {
+            CreateRequestContentData();
+        }
+
+        if (s_options.Header != null)
+        {
+            PrepareCustomHeaders();
+        }
+
         // First request to the server; to ensure everything started correctly
         var request = CreateRequest(HttpMethod.Get, new Uri(s_url));
         var stopwatch = Stopwatch.StartNew();
-        var response = await s_httpClients[0].SendAsync(request, CancellationToken.None);
+        var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
         response.EnsureSuccessStatusCode();
         BenchmarksEventSource.Register("http/firstrequest", Operations.Max, Operations.Max, "First request duration (ms)", "Duration of the first request to the server (ms)", "n0");
@@ -219,41 +238,14 @@ class Program
     {
         var uri = new Uri(s_url + "/post");
 
-        byte[]? requestContentData = null;
-        byte[]? requestContentLastChunk = null;
-        int fullChunkCount;
-
-        bool useByteArrayContent = !s_options.ContentUnknownLength && (!s_options.ContentFlushAfterWrite || s_options.ContentWriteSize >= s_options.ContentSize); // no streaming
-        if (useByteArrayContent)
-        {
-            fullChunkCount = 1;
-            requestContentData = new byte[s_options.ContentSize];
-            Array.Fill(requestContentData, (byte)'a');
-        }
-        else
-        {
-            fullChunkCount = s_options.ContentSize / s_options.ContentWriteSize;
-            if (fullChunkCount != 0)
-            {
-                requestContentData = new byte[s_options.ContentWriteSize];
-                Array.Fill(requestContentData, (byte)'a');
-            }
-            int lastChunkSize = s_options.ContentSize % s_options.ContentWriteSize;
-            if (lastChunkSize != 0)
-            {
-                requestContentLastChunk = new byte[lastChunkSize];
-                Array.Fill(requestContentLastChunk, (byte)'a');
-            }
-        }
-
         return Measure(async () => 
         {
             var request = CreateRequest(HttpMethod.Post, uri);
 
             Task<HttpResponseMessage> responseTask;
-            if (useByteArrayContent)
+            if (s_useByteArrayContent)
             {
-                request.Content = new ByteArrayContent(requestContentData!);
+                request.Content = new ByteArrayContent(s_requestContentData!);
                 responseTask = SendAsync(client, request);
             }
             else
@@ -270,17 +262,17 @@ class Program
                 responseTask = SendAsync(client, request);
                 var requestContentStream = await requestContent.GetStreamAsync();
 
-                for (int i = 0; i < fullChunkCount; ++i)
+                for (int i = 0; i < s_fullChunkCount; ++i)
                 {
-                    await requestContentStream.WriteAsync(requestContentData);
+                    await requestContentStream.WriteAsync(s_requestContentData);
                     if (s_options.ContentFlushAfterWrite)
                     {
                         await requestContentStream.FlushAsync();
                     }
                 }
-                if (requestContentLastChunk != null)
+                if (s_requestContentLastChunk != null)
                 {
-                    await requestContentStream.WriteAsync(requestContentLastChunk);
+                    await requestContentStream.WriteAsync(s_requestContentLastChunk);
                 }
                 requestContent.CompleteStream();
             }
@@ -358,12 +350,56 @@ class Program
         return metrics;
     }
 
+    private static void CreateRequestContentData()
+    {
+        s_useByteArrayContent = !s_options.ContentUnknownLength && (!s_options.ContentFlushAfterWrite || s_options.ContentWriteSize >= s_options.ContentSize); // no streaming
+        if (s_useByteArrayContent)
+        {
+            s_fullChunkCount = 1;
+            s_requestContentData = new byte[s_options.ContentSize];
+            Array.Fill(s_requestContentData, (byte)'a');
+        }
+        else
+        {
+            s_fullChunkCount = s_options.ContentSize / s_options.ContentWriteSize;
+            if (s_fullChunkCount != 0)
+            {
+                s_requestContentData = new byte[s_options.ContentWriteSize];
+                Array.Fill(s_requestContentData, (byte)'a');
+            }
+            int lastChunkSize = s_options.ContentSize % s_options.ContentWriteSize;
+            if (lastChunkSize != 0)
+            {
+                s_requestContentLastChunk = new byte[lastChunkSize];
+                Array.Fill(s_requestContentLastChunk, (byte)'a');
+            }
+        }
+    }
+
+    private static void PrepareCustomHeaders()
+    {
+        foreach (var header in s_options.Header!)
+        {
+            var headerNameValue = header.Split(":", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            s_customHeaders.Add((headerNameValue[0], headerNameValue.Length > 1 ? headerNameValue[1] : null));
+        }
+    }
+
     private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
         new HttpRequestMessage(method, uri) { Version = s_options.HttpVersion!, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
-    private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) => s_options.UseHttpMessageInvoker
-        ? client.SendAsync(request, CancellationToken.None)
-        : ((HttpClient)client).SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+    private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) 
+    {
+        foreach (var header in s_customHeaders)
+        {
+            request.Headers.Remove(header.Name);
+            request.Headers.TryAddWithoutValidation(header.Name, header.Value);
+        }
+
+        return s_options.UseHttpMessageInvoker
+            ? client.SendAsync(request, CancellationToken.None)
+            : ((HttpClient)client).SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+    }
 
     private static void Log(string message)
     {

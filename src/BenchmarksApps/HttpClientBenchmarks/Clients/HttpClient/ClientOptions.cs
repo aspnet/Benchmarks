@@ -18,6 +18,7 @@ public class ClientOptions
     public int ContentWriteSize { get; set; }
     public bool ContentFlushAfterWrite { get; set; }
     public bool ContentUnknownLength { get; set; }
+    public string[]? Header { get; set; }
     public int Warmup { get; set; }
     public int Duration { get; set; }
 
@@ -28,6 +29,7 @@ public class ClientOptions
             $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
             $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
-            $"ContentUnknownLength={ContentUnknownLength}; Warmup={Warmup}; Duration={Duration}";
+            $"ContentUnknownLength={ContentUnknownLength}; Header={(Header != null && Header.Length > 0 ? $"[\"{string.Join("\", \"", Header)}\"]" : "[]")}; " +
+            $"Warmup={Warmup}; Duration={Duration}";
     }
 }
