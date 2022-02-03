@@ -58,3 +58,7 @@ benchmarks:
     yarp:
       description: YARP - http-http with 10 bytes
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp
+      
+    mvcjsoninput2k:
+      description: Sends 2Kb Json Body to an MVC controller
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/benchmarks.mvcjson.yml --scenario MvcJsonInput2k
