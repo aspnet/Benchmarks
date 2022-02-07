@@ -34,7 +34,7 @@ scenarios:
       job: bombardier
       variables:
         presetHeaders: none
-        path: /read
+        path: /
         connections: 64
 
   distributedcache_memory:
@@ -47,6 +47,6 @@ scenarios:
       job: bombardier
       variables:
         presetHeaders: none
-        path: /read
+        path: /
         pipeline: 0
         connections: 64
