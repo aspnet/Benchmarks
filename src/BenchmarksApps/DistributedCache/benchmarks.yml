@@ -9,13 +9,14 @@ jobs:
   distributedcache:
     source:
       repository: https://github.com/aspnet/Benchmarks
+      branchOrCommit: sebros/redis
       project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
       readyStateText: Application started
 
   redis:
     source:
       repository: https://github.com/aspnet/Benchmarks
-      branchOrCommit: main
+      branchOrCommit: sebros/redis
       dockerFile: src/BenchmarkApps/DistributedCache/redis.dockerfile
       dockerImageName: redis
       dockerContextDirectory: src/BenchmarkApps/DistributedCache
@@ -23,7 +24,6 @@ jobs:
     noClean: true
 
 scenarios:
-
   distributedcache_redis:
     database:
       job: redis
