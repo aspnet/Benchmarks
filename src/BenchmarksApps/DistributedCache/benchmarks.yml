@@ -25,7 +25,7 @@ jobs:
 
 scenarios:
   distributedcache_redis:
-    database:
+    db:
       job: redis
     application:
       job: distributedcache
@@ -38,7 +38,7 @@ scenarios:
         connections: 64
 
   distributedcache_memory:
-    database:
+    db:
       job: redis
     application:
       job: distributedcache
