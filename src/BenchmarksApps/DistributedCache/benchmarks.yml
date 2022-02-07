@@ -17,9 +17,9 @@ jobs:
     source:
       repository: https://github.com/aspnet/Benchmarks
       branchOrCommit: sebros/redis
-      dockerFile: src/BenchmarkApps/DistributedCache/redis.dockerfile
+      dockerFile: src/BenchmarksApps/DistributedCache/redis.dockerfile
       dockerImageName: redis
-      dockerContextDirectory: src/BenchmarkApps/DistributedCache
+      dockerContextDirectory: src/BenchmarksApps/DistributedCache
     readyStateText: Ready to accept connections
     noClean: true
 
