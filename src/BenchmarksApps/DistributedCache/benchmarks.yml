@@ -12,7 +12,7 @@ jobs:
       branchOrCommit: sebros/redis
       project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
       readyStateText: Application started
-
+    
   redis:
     source:
       repository: https://github.com/aspnet/Benchmarks
@@ -29,7 +29,7 @@ scenarios:
       job: redis
     application:
       job: distributedcache
-      arguments: --cache StackExchangeRedisCache
+      arguments: --Cache StackExchangeRedisCache --RedisConnectionString "{{ databaseServer }}"
     load:
       job: bombardier
       variables:
