@@ -1,0 +1,26 @@
+# multi-line script used to build the project
+components:
+    sqlite: 
+        script: |
+            call dotnet build -c release .\EFCore.Sqlite.slnf
+
+        arguments:
+            --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Core\Debug\net6.0\
+
+# default arguments that are always used on crank commands
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net6.0 --relay AZURE_RELAY 
+
+# the first value is the default if none is specified
+profiles:
+    aspnet-perf-win:
+        description: INTEL/Windows 12 Cores
+        arguments: --profile aspnet-perf-win-relay
+
+    aspnet-citrine-win:
+        description: INTEL/Windows 28 Cores
+        arguments: --profile aspnet-citrine-win-relay
+
+benchmarks:
+    adddatavariations:
+      description: AddDataVariations
+      arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=rtue --scenario AddDataVariations

@@ -63,6 +63,14 @@ jobs:
             --app-key "env:APP_KEY" `
             --publish-results true
 
+        ./build/crank-pr.exe `
+            --repository https://github.com/sebastienros/efcore `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/efcore/build/prbenchmarks.efcore.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" `
+            --publish-results true
+
     env:
         AZURE_RELAY: $(relay.connectionstring)
         APP_KEY: $(github.privatekey)
