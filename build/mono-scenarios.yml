@@ -36,9 +36,9 @@ parameters:
     - displayName: "Core CLR"
       arguments: --property runtime=coreclr
     - displayName: "Mono - JIT"
-      arguments: --application.useMonoRuntime jit --property runtime=mono-jit
+      arguments: --application.useMonoRuntime jit --property runtime=mono-jit --application.environmentVariables MONO_ENV_OPTIONS="--llvm"
     - displayName: "Mono - JIT preemptive"
-      arguments: --application.useMonoRuntime jit --property runtime=mono-jit-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive
+      arguments: --application.useMonoRuntime jit --property runtime=mono-jit-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive --application.environmentVariables MONO_ENV_OPTIONS="--llvm"
     - displayName: "Mono - LLVM JIT"
       arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm
     - displayName: "Mono - LLVM AOT"
