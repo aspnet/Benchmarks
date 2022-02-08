@@ -2,8 +2,9 @@
 components:
     sqlite: 
         script: |
-            call dotnet build -c release .\EFCore.Sqlite.slnf "/p:NoWarn=%24(NoWarn)%3BSA0001" /p:GenerateDocumentationFile=false
-
+            call dotnet build -c release .\EFCore.Sqlite.slnf 
+            del .\artifacts\bin\EFCore.Sqlite.Core\Release\net6.0\*.xml
+            
         arguments:
             --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Core\Release\net6.0\
 
