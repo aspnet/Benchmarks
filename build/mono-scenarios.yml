@@ -40,7 +40,7 @@ parameters:
     - displayName: "Mono - JIT preemptive"
       arguments: --application.useMonoRuntime jit --property runtime=mono-jit-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive
     - displayName: "Mono - LLVM JIT"
-      arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm
+      arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm --application.environmentVariables MONO_ENV_OPTIONS="--llvm"
     - displayName: "Mono - LLVM AOT"
       arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot
     - displayName: "Mono - LLVM AOT preemptive"
