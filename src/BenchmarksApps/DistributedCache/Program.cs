@@ -59,10 +59,17 @@ namespace Benchmarks
                 endpoints.MapGet("/", async context =>
                 {
                     var cache = context.RequestServices.GetRequiredService<IDistributedCache>();
-
                     var cached = await cache.GetStringAsync(CacheOptions.Key);
 
                     await context.Response.WriteAsync(cached);
+                });
+
+                endpoints.MapGet("/noresult", async context =>
+                {
+                    var cache = context.RequestServices.GetRequiredService<IDistributedCache>();
+                    var cached = await cache.GetStringAsync(CacheOptions.Key);
+
+                    await context.Response.WriteAsync("OK!");
                 });
             });
         }
@@ -70,9 +77,8 @@ namespace Benchmarks
 
     public class InitializationService : IHostedService
     {
-        // We need to inject the IServiceProvider so we can create 
-        // the scoped service, MyDbContext
         private readonly IServiceProvider _serviceProvider;
+
         public InitializationService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
