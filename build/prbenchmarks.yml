@@ -64,8 +64,8 @@ jobs:
             --publish-results true
 
         ./build/crank-pr.exe `
-            --repository https://github.com/sebastienros/efcore `
-            --config https://raw.githubusercontent.com/aspnet/Benchmarks/sebros/efcore/build/prbenchmarks.efcore.config.yml `
+            --repository https://github.com/dotnet/efcore `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key "env:APP_KEY" `
