@@ -22,7 +22,7 @@ profiles:
         arguments: --profile aspnet-citrine-win-relay
 
 benchmarks:
-    adddatavariations:
+    AddDataVariations:
       description: AddDataVariations
       arguments: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/efcore.benchmarks.yml?raw=true --scenario AddDataVariations
 
