@@ -2,11 +2,11 @@
 components:
     sqlite: 
         script: |
-            call dotnet build -c release .\EFCore.Sqlite.slnf 
-            del .\artifacts\bin\EFCore.Sqlite.Core\Release\net6.0\*.xml
+            call dotnet build -c release .\benchmark\EFCore.Sqlite.Benchmarks\EFCore.Sqlite.Benchmarks.csproj
+            del .\artifacts\bin\EFCore.Sqlite.Benchmarks\Release\net6.0\*.xml
 
         arguments:
-            --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Core\Release\net6.0\
+            --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Benchmarks\Release\net6.0\
 
 # default arguments that are always used on crank commands
 defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net6.0 --relay AZURE_RELAY 
