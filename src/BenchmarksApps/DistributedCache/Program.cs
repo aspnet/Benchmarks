@@ -13,8 +13,8 @@ namespace Benchmarks
 {
     public static class CacheOptions
     {
-        public readonly static string Key = "abcdefgh";
-        public readonly static byte[] Content = new byte[1024];
+        public static string Key;
+        public static string Content;
     }
 
     public class Startup
@@ -28,21 +28,29 @@ namespace Benchmarks
         
         public void ConfigureServices(IServiceCollection services)
         {
-            var cache = Configuration["Cache"];
+            var cache = Configuration["Cache"] ?? "DistributedMemoryCache";
+            var keyLength = int.Parse(Configuration["KeyLength"]);
+            var contentSize = int.Parse(Configuration["ContentSize"]);
 
-            Console.WriteLine($"Using {cache}");
+            CacheOptions.Key = new String('x', keyLength);
+            CacheOptions.Content = new String('x', contentSize);
+            
+            Console.WriteLine($"Key length: {keyLength}");
+            Console.WriteLine($"Content size: {contentSize}");
 
             switch (cache)
             {
-                case "StackExchangeRedisCache": services.AddStackExchangeRedisCache(options => 
-                    { 
-                        
+                case "StackExchangeRedisCache": 
+                    Console.WriteLine("Using StackExchangeRedisCache");
+                    services.AddStackExchangeRedisCache(options => 
+                    {                         
                         options.Configuration = Configuration["RedisConnectionString"];
                         options.InstanceName = "default";
                     }); 
                     break;
 
                 default: 
+                    Console.WriteLine("Using DistributedMemoryCache");
                     services.AddDistributedMemoryCache(); 
                     break;
             }
@@ -57,14 +65,6 @@ namespace Benchmarks
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>
-                {
-                    var cache = context.RequestServices.GetRequiredService<IDistributedCache>();
-                    var cached = await cache.GetStringAsync(CacheOptions.Key);
-
-                    await context.Response.WriteAsync(cached);
-                });
-
-                endpoints.MapGet("/noresult", async context =>
                 {
                     var cache = context.RequestServices.GetRequiredService<IDistributedCache>();
                     var cached = await cache.GetStringAsync(CacheOptions.Key);
@@ -90,7 +90,7 @@ namespace Benchmarks
             using (var scope = _serviceProvider.CreateScope())
             {
                 var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
-                await cache.SetAsync(CacheOptions.Key, CacheOptions.Content, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.MaxValue });
+                await cache.SetStringAsync(CacheOptions.Key, CacheOptions.Content, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.MaxValue });
             }
         }
 
