@@ -10,6 +10,10 @@ class Program
 {
     private static ServerOptions s_options = null!;
 
+    private static byte[] s_data10b = new byte[10];
+    private static byte[] s_data10k = new byte[10 * 1024];
+    private static byte[] s_data10m = new byte[10 * 1024 * 1024];
+
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
@@ -17,6 +21,7 @@ class Program
         rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to listen on") { Required = true });
         rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
+        rootCommand.AddOption(new Option<int>(new string[] { "--randomSeed" }, () => 0, "Random seed"));
 
         rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
         {
@@ -24,6 +29,7 @@ class Program
             Log("HttpClient benchmark -- server");
             Log("Options: " + s_options);
             ValidateOptions();
+            PrepareData();
 
             RunKestrel();
         });
@@ -37,6 +43,14 @@ class Program
         {
             throw new ArgumentException("HTTP/3.0 only supports HTTPS");
         }
+    }
+
+    private static void PrepareData()
+    {
+        var random = new Random(s_options.RandomSeed);
+        random.NextBytes(s_data10b);
+        random.NextBytes(s_data10k);
+        random.NextBytes(s_data10m);
     }
 
     public static void RunKestrel()
@@ -80,15 +94,27 @@ class Program
 
         app.MapGet("/", () => Results.Ok());
 
-        app.MapGet("/get", () => "Hello World!");
+        app.MapGet("/get/{responseSize}", GetResponse);
 
-        app.MapPost("/post", async (HttpRequest request) =>
+        app.MapPost("/post/{responseSize}", async (HttpRequest request, string responseSize) =>
         {
             await request.Body.CopyToAsync(Stream.Null);
-            return Results.Text("Server received the content");
+            return GetResponse(responseSize);
         });
 
         app.Run();
+    }
+
+    private static IResult GetResponse(string responseSize)
+    {
+        return responseSize switch
+        {
+            "0" => Results.Ok(),
+            "10b" => Results.Bytes(s_data10b),
+            "10k" => Results.Bytes(s_data10k),
+            "10m" => Results.Bytes(s_data10m),
+            _ => Results.NotFound()
+        };
     }
 
     private static void Log(string message)

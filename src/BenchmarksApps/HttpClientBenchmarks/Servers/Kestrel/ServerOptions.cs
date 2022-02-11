@@ -6,9 +6,10 @@ public class ServerOptions
     public string? Port { get; set; }
     public bool UseHttps { get; set; }
     public string? HttpVersion { get; set; }
+    public int RandomSeed { get; set; }
 
     public override string ToString()
     {
-        return $"Address={Address}; Port={Port}; UseHttps={UseHttps}; HttpVersion={HttpVersion}";
+        return $"Address={Address}; Port={Port}; UseHttps={UseHttps}; HttpVersion={HttpVersion}; RandomSeed={RandomSeed}";
     }
 }
