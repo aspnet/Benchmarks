@@ -10,9 +10,7 @@ class Program
 {
     private static ServerOptions s_options = null!;
 
-    private static byte[] s_data10b = new byte[10];
-    private static byte[] s_data10k = new byte[10 * 1024];
-    private static byte[] s_data10m = new byte[10 * 1024 * 1024];
+    private static byte[]? s_data;
 
     public static async Task<int> Main(string[] args)
     {
@@ -21,7 +19,7 @@ class Program
         rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to listen on") { Required = true });
         rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
-        rootCommand.AddOption(new Option<int>(new string[] { "--randomSeed" }, () => 0, "Random seed"));
+        rootCommand.AddOption(new Option<int>(new string[] { "--responseSize" }, () => 0, "Response content size, 0 for no content"));
 
         rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
         {
@@ -47,10 +45,11 @@ class Program
 
     private static void PrepareData()
     {
-        var random = new Random(s_options.RandomSeed);
-        random.NextBytes(s_data10b);
-        random.NextBytes(s_data10k);
-        random.NextBytes(s_data10m);
+        if (s_options.ResponseSize > 0)
+        {
+            s_data = new byte[s_options.ResponseSize];
+            Array.Fill(s_data, (byte)'a');
+        }
     }
 
     public static void RunKestrel()
@@ -94,28 +93,18 @@ class Program
 
         app.MapGet("/", () => Results.Ok());
 
-        app.MapGet("/get/{responseSize}", GetResponse);
+        app.MapGet("/get", GetResponse);
 
-        app.MapPost("/post/{responseSize}", async (HttpRequest request, string responseSize) =>
+        app.MapPost("/post", async (HttpRequest request) =>
         {
             await request.Body.CopyToAsync(Stream.Null);
-            return GetResponse(responseSize);
+            return GetResponse();
         });
 
         app.Run();
     }
 
-    private static IResult GetResponse(string responseSize)
-    {
-        return responseSize switch
-        {
-            "0" => Results.Ok(),
-            "10b" => Results.Bytes(s_data10b),
-            "10k" => Results.Bytes(s_data10k),
-            "10m" => Results.Bytes(s_data10m),
-            _ => Results.NotFound()
-        };
-    }
+    private static IResult GetResponse() => s_data != null ? Results.Bytes(s_data) : Results.Ok();
 
     private static void Log(string message)
     {

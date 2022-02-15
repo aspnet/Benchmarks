@@ -433,6 +433,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable requestHeaders=none` (default)
   - `--variable requestHeaders=connectionclose`
   - `--variable requestHeaders=expectcontinue`
+- Response content size in bytes:
+  - `--variable responseSize=<N>` (default: `0`, meaning no content)
 - Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
   - `--variable numberOfHttpClients=<N>` (default: `1`)
 - Number of concurrect requests per one HTTP client -- *unsupported by WRK*:
@@ -440,13 +442,6 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Whether to collect request timings (time to headers, to first content byte, to last content byte) -- *unsupported by WRK*:
   - `--variable collectRequestTimings=false` (default)
   - `--variable collectRequestTimings=true`
-- Response content size:
-  - `--variable responseSize=0` -- no content in response (default)
-  - `--variable responseSize=10b` -- 10 B
-  - `--variable responseSize=10k` -- 10 KB
-  - `--variable responseSize=10m` -- 10 MB
-- Seed for generating random data:
-  - `--variable randomSeed=<N>` (default: `0`)
 - Duration of the warmup in seconds:
   - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
@@ -454,7 +449,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 *POST-specific arguments:*
 
-- Request content size:
+- Request content size in bytes:
   - `--variable requestContentSize=<N>` (default: `1024` for POST scenarios, `0` for GET scenarios)
 - How many bytes (at max) will be written per each write of request content (also chunk size if chunked encoding is used):
   - `--variable requestContentWriteSize=<N>` (default: `81920`)
