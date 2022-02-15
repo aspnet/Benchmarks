@@ -114,7 +114,6 @@ scenarios:
 jobs:
   kestrel:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
@@ -123,7 +122,6 @@ jobs:
 
   httpClient:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj

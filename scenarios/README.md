@@ -440,6 +440,13 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Whether to collect request timings (time to headers, to first content byte, to last content byte) -- *unsupported by WRK*:
   - `--variable collectRequestTimings=false` (default)
   - `--variable collectRequestTimings=true`
+- Response content size:
+  - `--variable responseSize=0` -- no content in response (default)
+  - `--variable responseSize=10b` -- 10 B
+  - `--variable responseSize=10k` -- 10 KB
+  - `--variable responseSize=10m` -- 10 MB
+- Seed for generating random data:
+  - `--variable randomSeed=<N>` (default: `0`)
 - Duration of the warmup in seconds:
   - `--variable warmup=<N>` (default: `15`)
 - Duration of the test in seconds:
