@@ -20,6 +20,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-perf
       owners:
         - sebastienros
       template: rps
@@ -42,6 +43,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-perf
       owners:
         - sebastienros
       template: start-time
@@ -65,6 +67,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-perf
       owners:
         - javiercn
         - pranavkm
@@ -86,6 +89,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-perf
       owners:
         - sebastienros
       template: published-size

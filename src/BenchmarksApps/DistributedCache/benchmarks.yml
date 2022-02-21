@@ -1,0 +1,52 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  distributedcache:
+    source:
+      repository: https://github.com/aspnet/Benchmarks
+      branchOrCommit: main
+      project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
+      readyStateText: Application started
+    
+  redis:
+    source:
+      repository: https://github.com/aspnet/Benchmarks
+      branchOrCommit: main
+      dockerFile: src/BenchmarksApps/DistributedCache/redis.dockerfile
+      dockerImageName: redis
+      dockerContextDirectory: src/BenchmarksApps/DistributedCache
+    readyStateText: Ready to accept connections
+    noClean: true
+
+scenarios:
+  distributedcache_redis:
+    db:
+      job: redis
+    application:
+      job: distributedcache
+      arguments: --Cache StackExchangeRedisCache --RedisConnectionString "{{ databaseServer }}"
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: none
+        path: /
+        connections: 64
+
+  distributedcache_memory:
+    db:
+      job: redis
+    application:
+      job: distributedcache
+      arguments: --cache DistributedMemoryCache
+    load:
+      job: bombardier
+      variables:
+        presetHeaders: none
+        path: /
+        pipeline: 0
+        connections: 64

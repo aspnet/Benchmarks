@@ -8,6 +8,7 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
     public static Option<string> AddressOption { get; } = new ("--address", "The server address to request") { IsRequired = true };
     public static Option<string> PortOption { get; } = new ("--port", "The server port to request") { IsRequired = true };
     public static Option<bool> UseHttpsOption { get; } = new ("--useHttps", () => false, "Whether to use HTTPS");
+    public static Option<string> PathOption { get; } = new ("--path", () => "/", "The server path to request");
     public static Option<Version> HttpVersionOption { get; } = new ("--httpVersion", "HTTP Version (1.1 or 2.0 or 3.0)") { IsRequired = true };
     public static Option<int> NumberOfHttpClientsOption { get; } = new ("--numberOfHttpClients", () => 1, "Number of HttpClients");
     public static Option<int> ConcurrencyPerHttpClientOption { get; } = new ("--concurrencyPerHttpClient", () => 1, "Number of concurrect requests per one HttpClient");
@@ -33,6 +34,7 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
         command.AddOption(AddressOption);
         command.AddOption(PortOption);
         command.AddOption(UseHttpsOption);
+        command.AddOption(PathOption);
         command.AddOption(HttpVersionOption);
         command.AddOption(NumberOfHttpClientsOption);
         command.AddOption(ConcurrencyPerHttpClientOption);
@@ -63,6 +65,7 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
             Address = parsed.GetValueForOption(AddressOption),
             Port = parsed.GetValueForOption(PortOption),
             UseHttps = parsed.GetValueForOption(UseHttpsOption),
+            Path = parsed.GetValueForOption(PathOption),
             HttpVersion = parsed.GetValueForOption(HttpVersionOption),
             NumberOfHttpClients = parsed.GetValueForOption(NumberOfHttpClientsOption),
             ConcurrencyPerHttpClient = parsed.GetValueForOption(ConcurrencyPerHttpClientOption),

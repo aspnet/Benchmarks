@@ -49,15 +49,23 @@ jobs:
   steps:
   - powershell: |
         Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-        .\dotnet-install.ps1 -version 5.0.404
+        .\dotnet-install.ps1 -version 6.0.101
 
         git clone https://github.com/dotnet/crank -b main
         cd .\crank\src\Microsoft.Crank.PullRequestBot
-        dotnet publish -c release -o build -r win-x64 --self-contained true
+        dotnet publish -c release -o build -r win-x64 --self-contained true --framework net6.0
 
         ./build/crank-pr.exe `
             --repository https://github.com/dotnet/aspnetcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" `
+            --publish-results true
+
+        ./build/crank-pr.exe `
+            --repository https://github.com/dotnet/efcore `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key "env:APP_KEY" `

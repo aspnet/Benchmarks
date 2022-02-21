@@ -15,7 +15,7 @@ class Program
     private const int c_SingleThreadRpsEstimate = 3000;
 
     private static ClientOptions s_options = null!;
-    private static string s_url = null!;
+    private static Uri s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
 
@@ -86,8 +86,10 @@ class Program
         BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
 
-        s_url = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
-        Log("Url: " + s_url);
+        var baseUrl = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
+        s_url = new Uri(baseUrl + s_options.Path);
+        Log("Base url: " + baseUrl);
+        Log("Full url: " + s_url);
 
         if (s_options.GeneratedStaticHeadersCount > 0 || s_options.GeneratedDynamicHeadersCount > 0)
         {
@@ -144,7 +146,7 @@ class Program
         }
 
         // First request to the server; to ensure everything started correctly
-        var request = CreateRequest(HttpMethod.Get, new Uri(s_url));
+        var request = CreateRequest(HttpMethod.Get, new Uri(baseUrl));
         var stopwatch = Stopwatch.StartNew();
         var response = await SendAsync(s_httpClients[0], request);
         var elapsed = stopwatch.ElapsedMilliseconds;
@@ -225,22 +227,18 @@ class Program
 
     private static Task<Metrics> Get(HttpMessageInvoker client)
     {
-        var uri = new Uri(s_url + "/get");
-
         return Measure(() => 
         {
-            var request = CreateRequest(HttpMethod.Get, uri);
+            var request = CreateRequest(HttpMethod.Get, s_url);
             return SendAsync(client, request);
         });
     }
 
     private static Task<Metrics> Post(HttpMessageInvoker client)
     {
-        var uri = new Uri(s_url + "/post");
-
         return Measure(async () => 
         {
-            var request = CreateRequest(HttpMethod.Post, uri);
+            var request = CreateRequest(HttpMethod.Post, s_url);
 
             Task<HttpResponseMessage> responseTask;
             if (s_useByteArrayContent)

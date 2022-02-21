@@ -14,6 +14,7 @@ variables:
     numberOfHttpClients: 1
     concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
     collectRequestTimings: false # unsupported by WRK --  other values will throw
+    responseSize: 0 # 0 for no content in response
 
     # POST-specific parameters:
     requestContentSize: 0 # 0 for no content
@@ -77,7 +78,7 @@ scenarios:
         threads: '{{numberOfHttpClients}}'
         # Overriding via console arg will make `useHttps` be a string instead of boolean, and string "false" is truthy in Liquid, so need to check explicitly
         serverScheme: 'http{% if useHttps and useHttps != "false" %}s{% endif %}'
-        path: /get
+        path: '/get'
         pipeline: 0
         # TODO: Job's default values seem to take preference over global variables, so if the following is removed, values from `wrk.yml` will be used. 
         # Also, substitution doesn't seem to recognize global variables of the same name, e.g. serverPort: '{{serverPort}}' doesn't work
@@ -104,7 +105,7 @@ scenarios:
           }
           if (String(job.Variables.requestContentSize) != "0")
           {
-            throw "Expected to have ContentSize=0 for GET scenario, got: " + job.Variables.requestContentSize;
+            throw "Expected to have requestContentSize=0 for GET scenario, got: " + job.Variables.requestContentSize;
           }
           if (job.Variables.requestHeaders != "none" && job.Variables.requestHeaders != "connectionclose" )
           {
@@ -128,7 +129,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}}"
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}}"
 
   httpClient:
     source:
@@ -138,7 +139,7 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}"
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}"
 
 profiles:
   local:

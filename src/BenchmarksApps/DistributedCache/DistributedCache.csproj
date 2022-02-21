@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework) != ''">
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(TargetFramework.Substring(3,3)).*" />
+  </ItemGroup>
+</Project>
