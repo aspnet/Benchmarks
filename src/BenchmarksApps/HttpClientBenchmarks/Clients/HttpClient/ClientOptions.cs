@@ -22,6 +22,9 @@ public class ClientOptions
     public bool ContentFlushAfterWrite { get; set; }
     public bool ContentUnknownLength { get; set; }
     public List<(string Name, string? Value)> Headers { get; set; } = new();
+    public int GeneratedStaticHeadersCount { get; set; }
+    public int GeneratedDynamicHeadersCount { get; set; }
+    public bool UseDefaultRequestHeaders { get; set; }
     public int Warmup { get; set; }
     public int Duration { get; set; }
 
@@ -33,6 +36,7 @@ public class ClientOptions
             $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
             $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
             $"ContentUnknownLength={ContentUnknownLength}; Headers=[{string.Join(", ", Headers.Select(h => $"\"{h.Name}: {h.Value}\""))}]; " +
-            $"Warmup={Warmup}; Duration={Duration}";
+            $"GeneratedStaticHeadersCount={GeneratedStaticHeadersCount}; GeneratedDynamicHeadersCount={GeneratedDynamicHeadersCount}; " +
+            $"UseDefaultRequestHeaders={UseDefaultRequestHeaders}; Warmup={Warmup}; Duration={Duration}";
     }
 }

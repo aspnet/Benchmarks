@@ -22,6 +22,9 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
     public static Option<bool> ContentFlushAfterWriteOption { get; } = new ("--contentFlushAfterWrite", () => false, "Flush request content stream after each write");
     public static Option<bool> ContentUnknownLengthOption { get; } = new ("--contentUnknownLength", () => false, "False to send Content-Length header, true to use chunked encoding for HTTP/1.1 or unknown content length for HTTP/2.0 and 3.0");
     public static Option<string[]> HeaderOption { get; } = new (new string[] { "-H", "--header" }, "Custom headers, multiple values allowed");
+    public static Option<int> GeneratedStaticHeadersCountOption { get; } = new ("--generatedStaticHeadersCount", () => 0, "Number of generated request headers with static values");
+    public static Option<int> GeneratedDynamicHeadersCountOption { get; } = new ("--generatedDynamicHeadersCount", () => 0, "Number of generated request headers with values changing per each request");
+    public static Option<bool> UseDefaultRequestHeadersOption { get; } = new ("--useDefaultRequestHeaders", () => false, "Use HttpClient.DefaultRequestHeaders whenever possible");
     public static Option<int> WarmupOption { get; } = new ("--warmup", () => ClientOptions.DefaultDuration, "Duration of the warmup in seconds");
     public static Option<int> DurationOption { get; } = new ("--duration", () => ClientOptions.DefaultDuration, "Duration of the test in seconds");
 
@@ -44,6 +47,9 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
         command.AddOption(ContentFlushAfterWriteOption);
         command.AddOption(ContentUnknownLengthOption);
         command.AddOption(HeaderOption);
+        command.AddOption(GeneratedStaticHeadersCountOption);
+        command.AddOption(GeneratedDynamicHeadersCountOption);
+        command.AddOption(UseDefaultRequestHeadersOption);
         command.AddOption(WarmupOption);
         command.AddOption(DurationOption);
     }
@@ -70,6 +76,9 @@ public class ClientOptionsBinder : BinderBase<ClientOptions>
             ContentWriteSize = parsed.GetValueForOption(ContentWriteSizeOption),
             ContentFlushAfterWrite = parsed.GetValueForOption(ContentFlushAfterWriteOption),
             ContentUnknownLength = parsed.GetValueForOption(ContentUnknownLengthOption),
+            GeneratedStaticHeadersCount = parsed.GetValueForOption(GeneratedStaticHeadersCountOption),
+            GeneratedDynamicHeadersCount = parsed.GetValueForOption(GeneratedDynamicHeadersCountOption),
+            UseDefaultRequestHeaders = parsed.GetValueForOption(UseDefaultRequestHeadersOption),
             Warmup = parsed.GetValueForOption(WarmupOption),
             Duration = parsed.GetValueForOption(DurationOption)
         };
