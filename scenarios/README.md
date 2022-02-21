@@ -433,6 +433,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable requestHeaders=none` (default)
   - `--variable requestHeaders=connectionclose`
   - `--variable requestHeaders=expectcontinue`
+- Response content size in bytes:
+  - `--variable responseSize=<N>` (default: `0`, meaning no content)
 - Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
   - `--variable numberOfHttpClients=<N>` (default: `1`)
 - Number of concurrect requests per one HTTP client -- *unsupported by WRK*:
@@ -447,7 +449,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 *POST-specific arguments:*
 
-- Request content size:
+- Request content size in bytes:
   - `--variable requestContentSize=<N>` (default: `1024` for POST scenarios, `0` for GET scenarios)
 - How many bytes (at max) will be written per each write of request content (also chunk size if chunked encoding is used):
   - `--variable requestContentWriteSize=<N>` (default: `81920`)

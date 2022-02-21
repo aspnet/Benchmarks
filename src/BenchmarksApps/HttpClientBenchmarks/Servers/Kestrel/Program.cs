@@ -10,6 +10,8 @@ class Program
 {
     private static ServerOptions s_options = null!;
 
+    private static byte[]? s_data;
+
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand();
@@ -17,6 +19,7 @@ class Program
         rootCommand.AddOption(new Option<string>(new string[] { "--port" }, "The server port to listen on") { Required = true });
         rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
+        rootCommand.AddOption(new Option<int>(new string[] { "--responseSize" }, () => 0, "Response content size, 0 for no content"));
 
         rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
         {
@@ -24,6 +27,7 @@ class Program
             Log("HttpClient benchmark -- server");
             Log("Options: " + s_options);
             ValidateOptions();
+            PrepareData();
 
             RunKestrel();
         });
@@ -36,6 +40,15 @@ class Program
         if (!s_options.UseHttps && s_options.HttpVersion == "3.0")
         {
             throw new ArgumentException("HTTP/3.0 only supports HTTPS");
+        }
+    }
+
+    private static void PrepareData()
+    {
+        if (s_options.ResponseSize > 0)
+        {
+            s_data = new byte[s_options.ResponseSize];
+            Array.Fill(s_data, (byte)'a');
         }
     }
 
@@ -80,16 +93,18 @@ class Program
 
         app.MapGet("/", () => Results.Ok());
 
-        app.MapGet("/get", () => "Hello World!");
+        app.MapGet("/get", GetResponse);
 
         app.MapPost("/post", async (HttpRequest request) =>
         {
             await request.Body.CopyToAsync(Stream.Null);
-            return Results.Text("Server received the content");
+            return GetResponse();
         });
 
         app.Run();
     }
+
+    private static IResult GetResponse() => s_data != null ? Results.Bytes(s_data) : Results.Ok();
 
     private static void Log(string message)
     {
