@@ -134,7 +134,24 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineload
-          
+
+  aspnet-citrine-ampere:
+    variables:
+      serverAddress: 10.0.0.108
+      cores: 80
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-ampere:5001
+        variables:
+          databaseServer: 10.0.0.103
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+  
   aspnet-citrine-amd:
     variables:
       serverAddress: 10.0.0.106
