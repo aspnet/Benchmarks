@@ -1,7 +1,7 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using Microsoft.Crank.EventSources;
@@ -18,6 +18,9 @@ class Program
     private static Uri s_url = null!;
     private static List<HttpMessageInvoker> s_httpClients = new();
     private static Metrics s_metrics = new();
+
+    private static List<(string Name, string? Value)> s_generatedStaticHeaders = new();
+    private static List<string> s_generatedDynamicHeaderNames = new();
 
     private static byte[]? s_requestContentData = null;
     private static byte[]? s_requestContentLastChunk = null;
@@ -71,6 +74,11 @@ class Program
         {
             throw new ArgumentException("Expected to have ContentSize > 0 for 'post' scenario, got " + s_options.ContentSize);
         }
+
+        if (s_options.UseHttpMessageInvoker && s_options.UseDefaultRequestHeaders)
+        {
+            throw new ArgumentException("HttpMessageInvoker does not support DefaultRequestHeaders");
+        }
     }
 
     private static async Task Setup()
@@ -82,6 +90,11 @@ class Program
         s_url = new Uri(baseUrl + s_options.Path);
         Log("Base url: " + baseUrl);
         Log("Full url: " + s_url);
+
+        if (s_options.GeneratedStaticHeadersCount > 0 || s_options.GeneratedDynamicHeadersCount > 0)
+        {
+            CreateGeneratedHeaders();
+        }
         
         int max11ConnectionsPerServer = s_options.Http11MaxConnectionsPerServer > 0 ? s_options.Http11MaxConnectionsPerServer : int.MaxValue;
 
@@ -112,7 +125,19 @@ class Program
                 };
             }
 
-            s_httpClients.Add(s_options.UseHttpMessageInvoker ? new HttpMessageInvoker(handler) : new HttpClient(handler));
+            if (s_options.UseHttpMessageInvoker)
+            {
+                s_httpClients.Add(new HttpMessageInvoker(handler));
+            }
+            else
+            {
+                var client = new HttpClient(handler);
+                if (s_options.UseDefaultRequestHeaders)
+                {
+                    AddStaticHeaders(client.DefaultRequestHeaders);
+                }
+                s_httpClients.Add(client);
+            }
         }
 
         if (s_options.ContentSize > 0)
@@ -323,6 +348,19 @@ class Program
         return metrics;
     }
 
+    private static void CreateGeneratedHeaders()
+    {
+        for (int i = 0; i < s_options.GeneratedStaticHeadersCount; ++i)
+        {
+            s_generatedStaticHeaders.Add(("X-Generated-Static-Header-" + i, "X-Generated-Value-" + i));
+        }
+        
+        for (int i = 0; i < s_options.GeneratedDynamicHeadersCount; ++i)
+        {
+            s_generatedDynamicHeaderNames.Add("X-Generated-Dynamic-Header-" + i);
+        }
+    }
+
     private static void CreateRequestContentData()
     {
         s_useByteArrayContent = !s_options.ContentUnknownLength && (!s_options.ContentFlushAfterWrite || s_options.ContentWriteSize >= s_options.ContentSize); // no streaming
@@ -354,17 +392,49 @@ class Program
 
     private static Task<HttpResponseMessage> SendAsync(HttpMessageInvoker client, HttpRequestMessage request) 
     {
-        foreach (var header in s_options.Headers)
+        if (!s_options.UseDefaultRequestHeaders)
         {
-            if (!request.Headers.TryAddWithoutValidation(header.Name, header.Value))
-            {
-                throw new Exception($"Unable to add header \"{header.Name}: {header.Value}\" to the request");
-            }
+            AddStaticHeaders(request.Headers);
+        }
+
+        if (s_options.GeneratedDynamicHeadersCount > 0)
+        {
+            AddDynamicHeaders(request.Headers);
         }
 
         return s_options.UseHttpMessageInvoker
             ? client.SendAsync(request, CancellationToken.None)
             : ((HttpClient)client).SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+    }
+
+    private static void AddStaticHeaders(HttpRequestHeaders headers)
+    {
+        foreach (var header in s_options.Headers)
+        {
+            AddHeader(headers, header.Name, header.Value);
+        }
+
+        for (int i = 0; i < s_options.GeneratedStaticHeadersCount; ++i)
+        {
+            AddHeader(headers, s_generatedStaticHeaders[i].Name, s_generatedStaticHeaders[i].Value);
+        }
+    }
+
+    private static void AddDynamicHeaders(HttpRequestHeaders headers)
+    {
+        var value = headers.GetHashCode().ToString();
+        for (int i = 0; i < s_options.GeneratedDynamicHeadersCount; ++i)
+        {
+            AddHeader(headers, s_generatedDynamicHeaderNames[i], value);
+        }
+    }
+
+    private static void AddHeader(HttpRequestHeaders headers, string name, string? value)
+    {
+        if (!headers.TryAddWithoutValidation(name, value))
+        {
+            throw new Exception($"Unable to add header \"{name}: {value}\" to the request");
+        }
     }
 
     private static void Log(string message)

@@ -27,12 +27,16 @@ variables:
     http20EnableMultipleConnections: true
     useWinHttpHandler: false
     useHttpMessageInvoker: false
+    useDefaultRequestHeaders: false
 
+    # Request headers parameters:
     headersDictionary:
       none: '' # supported in WRK
       connectionclose: '--header "Connection: close"' # supported in WRK
       expectcontinue: '--header "Expect: 100-continue"'
     requestHeaders: none
+    generatedStaticRequestHeadersCount: 0
+    generatedDynamicRequestHeadersCount: 0
 
 scenarios:
   httpclient-kestrel-get:
@@ -107,6 +111,14 @@ scenarios:
           {
             throw "Unsupported requestHeaders value: " + job.Variables.requestHeaders;
           }
+          if (String(job.Variables.generatedStaticRequestHeadersCount) != "0")
+          {
+            throw "generatedStaticRequestHeadersCount is unsupported in WRK. Expected: 0, got: " + job.Variables.generatedStaticRequestHeadersCount;
+          }
+          if (String(job.Variables.generatedDynamicRequestHeadersCount) != "0")
+          {
+            throw "generatedDynamicRequestHeadersCount is unsupported in WRK. Expected: 0, got: " + job.Variables.generatedDynamicRequestHeadersCount;
+          }
           '
 
 
@@ -127,7 +139,7 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --warmup {{warmup}} --duration {{duration}}"
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}"
 
 profiles:
   local:

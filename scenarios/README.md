@@ -433,6 +433,10 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable requestHeaders=none` (default)
   - `--variable requestHeaders=connectionclose`
   - `--variable requestHeaders=expectcontinue`
+- Number of generated request headers with static values:
+  - `--variable generatedStaticRequestHeadersCount=<N>` (default: `0`)
+- Number of generated request headers with values changing per each request:
+  - `--variable generatedDynamicRequestHeadersCount=<N>` (default: `0`)
 - Response content size in bytes:
   - `--variable responseSize=<N>` (default: `0`, meaning no content)
 - Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
@@ -473,6 +477,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Whether to use HttpMessageInvoker instead of HttpClient:
   - `--variable useHttpMessageInvoker=false` (default)
   - `--variable useHttpMessageInvoker=true`
+- Whether to use HttpClient.DefaultRequestHeaders for pre-set and static headers:
+  - `--variable useDefaultRequestHeaders=false` (default)
+  - `--variable useDefaultRequestHeaders=true`
 
 ## FAQ
 
