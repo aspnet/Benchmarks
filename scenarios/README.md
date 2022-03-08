@@ -30,12 +30,14 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 | Profile       | Arch     | OS     |
 | :------------- | :----------: | :----------- |
 |  `local` | (local machine) | (local machine) |
-|  `aspnet-perf-lin` | INTEL, 12 cores | Ubuntu 18.04, Kernel 4.x |
-|  `aspnet-perf-win` | INTEL, 12 cores | Windows Server 2016 |
-|  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 18.04, Kernel 4.x |
-|  `aspnet-citrine-win` | INTEL, 28 cores | Windows Server 2016 |
-|  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 18.04, Kernel 4.x |
-|  `aspnet-citrine-amd` | AMD, 48 cores | Ubuntu 18.04, Kernel 4.x |
+|  `aspnet-perf-lin` | INTEL, 12 cores, 32GB | Ubuntu 20.04, Kernel 5.4.0 |
+|  `aspnet-perf-win` | INTEL, 12 cores, 32GB | Windows Server 2022 |
+|  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-win` | INTEL, 28 cores | Windows Server 2022 |
+|  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-amd` | AMD, 48 cores, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-amd2` | AMD, 48 cores, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-ampere` | ARM64, 80 cores, 1 NUMA | Ubuntu 20.04, Kernel 5.x |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
@@ -510,7 +512,7 @@ Using the daily builds of .NET, and targeting net5.0.
 ### Running with specific runtime versions to isolate regressions
 
 The list of public builds for ASP.NET and Core CLR are available on these feeds:
-- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
-- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
+- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
+- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
 
 Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.y.z` to isolate which build, and ultimately which commit introduced a regression.
