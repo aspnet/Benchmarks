@@ -249,7 +249,7 @@ jobs:
 - job: PGO_Linux
   displayName: PGO
   pool: server
-  timeoutInMinutes: 60
+  timeoutInMinutes: 90
   dependsOn: ["EFCore"]
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
@@ -270,7 +270,7 @@ jobs:
 - job: PGO_Windows
   displayName: PGO
   pool: server
-  timeoutInMinutes: 60
+  timeoutInMinutes: 90
   dependsOn: ["EFCore"]
   condition: and(succeededOrFailed(), eq(variables['am'], true))
   strategy:
