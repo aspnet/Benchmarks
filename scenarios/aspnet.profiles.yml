@@ -101,6 +101,46 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinedb
           
+  aspnet-citrine-win2:
+    variables:
+      serverAddress: 10.0.0.101
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-win2:5001
+        variables:
+          databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+      load:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+
+  aspnet-citrine-win-relay:
+    variables:
+      serverAddress: 10.0.0.101
+      cores: 28
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinedb
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinewin2
+        variables:
+          databaseServer: 10.0.0.103
+      warmup:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineload
+          
   aspnet-citrine-arm:
     variables:
       serverAddress: 10.0.0.107
