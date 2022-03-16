@@ -47,9 +47,7 @@ namespace PlatformBenchmarks
 
         public static void SyncDateTimer()
         {
-            Console.Write("Sync timer... ");
             s_timer.Change(1000, 1000);
-            Console.WriteLine("OK");
         }
 
         public static ReadOnlySpan<byte> HeaderBytes => s_headerBytesMaster;
