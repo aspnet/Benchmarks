@@ -19,6 +19,7 @@ jobs:
       dockerContextDirectory: frameworks/JavaScript/nodejs/
     readyStateText: NodeJS worker listening
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   actix_default: # json and plaintext scenarios
     source:
@@ -29,6 +30,7 @@ jobs:
       dockerContextDirectory: frameworks/Rust/actix/
     readyStateText: Started http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   actix_http: # db scenarios are in another image
     source:
@@ -39,6 +41,7 @@ jobs:
       dockerContextDirectory: frameworks/Rust/actix/
     readyStateText: Starting http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   fasthttp:
     source:
@@ -48,15 +51,18 @@ jobs:
       dockerImageName: fasthttp_prefork
       dockerContextDirectory: frameworks/Go/fasthttp/
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   ulib:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
       branchOrCommit: master
       dockerContextDirectory: frameworks/C++/ulib/
+      dockerImageName: ulib
     # readyStateText: Started http server
     port: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   netty:
     source:
@@ -67,6 +73,7 @@ jobs:
       dockerContextDirectory: frameworks/Java/netty/
     readyStateText: Httpd started
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   wizzardo:
     source:
@@ -76,6 +83,7 @@ jobs:
       dockerImageName: wizzardo
       dockerContextDirectory: frameworks/Java/wizzardo-http/
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
 
   postgresql:
     source:
