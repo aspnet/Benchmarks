@@ -23,19 +23,19 @@ parameters:
   default:
 
     - displayName: 0.25 - 128mb
-      arguments: --property cpu=0.25 --property mem=128mb --property size="250m-128mb" --application.cpuLimitRatio 0.25 --application.memoryLimitInBytes 128000000 
+      arguments: --property cpu=0.25 --property mem=128mb --property size=250m-128mb --application.cpuLimitRatio 0.25 --application.memoryLimitInBytes 128000000 
     - displayName: 1 - 512mb
-      arguments: --property cpu=1 --property mem=512mb --property size="1000m-512mb" --application.cpuLimitRatio 1 --application.memoryLimitInBytes 512000000 
+      arguments: --property cpu=1 --property mem=512mb --property size=1000m-512mb --application.cpuLimitRatio 1 --application.memoryLimitInBytes 512000000 
     - displayName: 4 - 1gb
-      arguments: --property cpu=4 --property mem=1gb --property size="4000m-1gb" --application.cpuLimitRatio 4 --application.memoryLimitInBytes 1000000000 
+      arguments: --property cpu=4 --property mem=1gb --property size=4000m-1gb --application.cpuLimitRatio 4 --application.memoryLimitInBytes 1000000000 
     - displayName: 16 - 16gb
-      arguments: --property cpu=16 --property mem=16gb --property size="16000m-16gb" --application.cpuLimitRatio 16 --application.memoryLimitInBytes 16000000000 
+      arguments: --property cpu=16 --property mem=16gb --property size=16000m-16gb --application.cpuLimitRatio 16 --application.memoryLimitInBytes 16000000000 
     - displayName: unlimited
-      arguments: --property cpu=unlimited --property mem=unlimited --property size="Unlimited"
+      arguments: --property cpu=unlimited --property mem=unlimited --property size=Unlimited
     - displayName: 1 core - 512mb
-      arguments: --property cpu=1 --property mem=512mb --property size="1core-512mb" --application.cpuSet 0 --application.memoryLimitInBytes 512000000 
+      arguments: --property cpu=1 --property mem=512mb --property size=1core-512mb --application.cpuSet 0 --application.memoryLimitInBytes 512000000 
     - displayName: 4 cores - 1gb
-      arguments: --property cpu=4 --property mem=1gb --property size="4cores-1gb" --application.cpuSet 0-3 --application.memoryLimitInBytes 1000000000 
+      arguments: --property cpu=4 --property mem=1gb --property size=4cores-1gb --application.cpuSet 0-3 --application.memoryLimitInBytes 1000000000 
     
 # Rates
 - name: rates
