@@ -1,14 +1,9 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 jobs:
-  aspnet:
-    source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
-      dockerContextDirectory: frameworks/CSharp/aspnetcore/
-    readyStateText: Application started.
 
   nodejs:
     source:
@@ -129,7 +124,7 @@ scenarios:
     application:
       job: nodejs
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
@@ -141,7 +136,7 @@ scenarios:
     application:
       job: nodejs
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
@@ -163,7 +158,7 @@ scenarios:
     application:
       job: actix_default
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
@@ -175,7 +170,7 @@ scenarios:
     application:
       job: actix_http
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
@@ -201,7 +196,7 @@ scenarios:
     application:
       job: fasthttp
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
@@ -213,7 +208,7 @@ scenarios:
     application:
       job: fasthttp
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
@@ -241,7 +236,7 @@ scenarios:
           dockerFile: frameworks/C++/ulib/ulib-json.dockerfile
           dockerImageName: ulib_json
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
@@ -256,7 +251,7 @@ scenarios:
           dockerFile: frameworks/C++/ulib/ulib-postgres.dockerfile
           dockerImageName: ulib_postgres
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: html
         path: /fortune
@@ -278,40 +273,10 @@ scenarios:
     application:
       job: netty
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
-        serverPort: 8080
-
-  fortunes_aspnet:
-    db:
-      job: postgresql
-    application:
-      job: aspnet
-      source:
-          dockerFile: frameworks/CSharp/aspnetcore/aspcore-mw-ado-pg.dockerfile
-          dockerImageName: aspcore-mw-ado-pg
-    load:
-      job: wrk
-      variables:
-        presetHeaders: html
-        path: /fortunes/raw
-        serverPort: 8080
-
-  fortunes_mysql_aspnet:
-    db:
-      job: mysql
-    application:
-      job: aspnet
-      source:
-          dockerFile: frameworks/CSharp/aspnetcore/aspcore-mw-ado-my.dockerfile
-          dockerImageName: aspcore-mw-ado-my
-    load:
-      job: wrk
-      variables:
-        presetHeaders: html
-        path: /fortunes/raw
         serverPort: 8080
 
   # Wizzardo (Java)
@@ -335,7 +300,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /json
@@ -348,7 +313,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: html
         path: /fortunes
@@ -361,7 +326,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /db
@@ -374,7 +339,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /queries?queries=20
@@ -386,7 +351,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /updates?queries=20
@@ -398,7 +363,7 @@ scenarios:
     application:
       job: wizzardo
     load:
-      job: wrk
+      job: bombardier
       variables:
         presetHeaders: json
         path: /cached-worlds?count=100

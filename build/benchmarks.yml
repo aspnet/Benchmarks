@@ -147,22 +147,24 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
 
-- job: Container_Matrix
+- job: Containers
   displayName: Containers
   pool: server
   timeoutInMinutes: 180
   dependsOn: Baselines_Database
   condition: succeededOrFailed()
   strategy:
-    maxParallel: 1
+    maxParallel: 2
     matrix:
       Intel_Linux:
         profile: aspnet-citrine-lin
+      Ampere_Linux:
+        profile: aspnet-citrine-ampere
   steps:
-  - template: containermatrix-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       warmup: 5
-      duration: 30
+      duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
 

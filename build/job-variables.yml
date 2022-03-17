@@ -80,4 +80,4 @@ variables:
 - name: orchardJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml
 - name: containerMatrixJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containermatrix.benchmarks.yml
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containers.benchmarks.yml

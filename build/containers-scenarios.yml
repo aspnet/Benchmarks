@@ -1,0 +1,103 @@
+# Container Matrix scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 15
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+
+# Sizes
+- name: sizes
+  type: object
+  default:
+
+    - displayName: 0.25 - 128mb
+      arguments: --property cpu=0.25 --property mem=128mb --property size="250m-128mb" --application.cpuLimitRatio 0.25 --application.memoryLimitInBytes 128000000 
+    - displayName: 1 - 512mb
+      arguments: --property cpu=1 --property mem=512mb --property size="1000m-512mb" --application.cpuLimitRatio 1 --application.memoryLimitInBytes 512000000 
+    - displayName: 4 - 1gb
+      arguments: --property cpu=4 --property mem=1gb --property size="4000m-1gb" --application.cpuLimitRatio 4 --application.memoryLimitInBytes 1000000000 
+    - displayName: 16 - 16gb
+      arguments: --property cpu=16 --property mem=16gb --property size="16000m-16gb" --application.cpuLimitRatio 16 --application.memoryLimitInBytes 16000000000 
+    - displayName: unlimited
+      arguments: --property cpu=unlimited --property mem=unlimited --property size="Unlimited"
+    - displayName: 1 core - 512mb
+      arguments: --property cpu=1 --property mem=512mb --property size="1core-512mb" --application.cpuSet 0 --application.memoryLimitInBytes 512000000 
+    - displayName: 4 cores - 1gb
+      arguments: --property cpu=4 --property mem=1gb --property size="4cores-1gb" --application.cpuSet 0-3 --application.memoryLimitInBytes 1000000000 
+    
+# Rates
+- name: rates
+  type: object
+  default: 
+
+    - displayName: 1000
+      arguments: --variable rate=1000 --property rate=1000
+    - displayName: 10000
+      arguments: --variable rate=10000 --property rate=10000
+    - displayName: unbound
+      arguments: --property rate=unbound
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+  - displayName: Json ASP.NET
+    arguments: --scenario json_aspnet --property scenario=JsonAspNet
+  - displayName: Fortunes ASP.NET
+    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
+
+  - displayName: Json Actix
+    arguments: --scenario json_actix --property scenario=JsonActix
+  - displayName: Fortunes Actix
+    arguments: --scenario fortunes_actix --property scenario=FortunesActix
+
+  - displayName: Json NodeJS
+    arguments: --scenario json_nodejs --property scenario=JsonNodeJs
+  - displayName: Fortunes NodeJS
+    arguments: --scenario fortunes_nodejs --property scenario=FortunesNodeJs
+
+  - displayName: Json FastHttp
+    arguments: --scenario json_fasthttp --property scenario=JsonFastHttp
+  - displayName: Fortunes FastHttp
+    arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
+
+  - displayName: Json Ulib
+    arguments: --scenario json_ulib --property scenario=JsonUlib
+  - displayName: Fortunes Ulib
+    arguments: --scenario fortunes_ulib --property scenario=FortunesUlib
+
+  - displayName: Json Wizzardo
+    arguments: --scenario json_wizzardo --property scenario=JsonWizzardo
+  - displayName: Fortunes Wizzardo
+    arguments: --scenario fortunes_wizzardo --property scenario=FortunesWizzardo
+
+steps:
+- ${{ each scenario in parameters.scenarios }}:
+  - ${{ each size in parameters.sizes }}:
+    - ${{ each rate in parameters.rates }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        displayName: ${{ scenario.displayName }} ${{ size.displayName }} ${{ rate.displayName }} RPS
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          # add this to messageBody "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 < 13",
+          messageBody: |
+            {
+              "name": "crank",
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} --profile ${{ parameters.profile }} --no-metadata --no-measurements --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            }
+            
