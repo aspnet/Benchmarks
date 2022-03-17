@@ -90,6 +90,17 @@ jobs:
       project: testassets/BenchmarkApp/BenchmarkApp.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --clusterUrls {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+
+results:
+
+- name: benchmarks/cpu/raw/90
+  measurement: benchmarks/cpu/raw
+  description: Cores Usage (90th %)
+  format: n0
+  aggregate: percentile90
+  reduce: max
+
+
 scenarios:
   proxy-httpclient:
     downstream:
