@@ -516,10 +516,24 @@ jobs:
 #       duration: 15
 #       connection: ASP.NET Benchmarks Mono Queue
 
-# - job: Proxies
+# - job: Custom_Proxies
+#   displayName: Custom Proxies
 #   pool: server
 #   timeoutInMinutes: 360
 #   dependsOn: ["MVC_Linux", "MVC_Windows"]
+#   condition: succeededOrFailed()
+#   steps:
+#   - template: proxies-custom-scenarios.yml
+#     parameters:
+#       profile: aspnet-citrine-lin
+#       warmup: 15
+#       duration: 15
+#       connection: ASP.NET Benchmarks Queue
+
+# - job: Proxies
+#   pool: server
+#   timeoutInMinutes: 360
+#   dependsOn: ["Custom_Proxies"]
 #   condition: succeededOrFailed()
 #   steps:
 #   - template: proxies-scenarios.yml

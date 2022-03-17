@@ -1,0 +1,62 @@
+# Proxy scenarios
+
+parameters:
+- name: profile
+  type: string
+  default: ''
+- name: warmup
+  type: number
+  default: 5
+- name: duration
+  type: number
+  default: 15
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: '(new Date().getUTCHours() - 7 + 24) % 24 < 13'
+
+- name: proxies 
+  type: object
+  default: 
+  - displayName: Yarp
+    arguments: --scenario proxy-yarp $(proxyJobs) --property proxy=yarp-pgo --application.framework net7.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
+    supportsHttp: true
+    supportsServerHttps: true
+    supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+    condition: 'true'
+  - displayName: Envoy
+    arguments: --scenario proxy-envoy $(proxyJobs) --property proxy=envoy
+    supportsHttp: true
+    supportsServerHttps: true
+    supportsServerHttp2: true
+    supportsDownstreamHttp2: true
+    condition: 'true' # new Date().getDay() % 3 == 0
+
+- name: scenarios
+  type: object
+  default:
+    - displayName: "100KB-https/https-2000rps-4cores"
+      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-3 --property scenario=100KB-https/https-2000rps-4cores
+    - displayName: "100KB-https/https-2000rps-8cores"
+      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-7 --property scenario=100KB-https/https-2000rps-8cores
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - ${{ each p in parameters.proxies }}:
+    - task: PublishToAzureServiceBus@1
+      condition: succeededOrFailed()
+      timeoutInMinutes: 5
+      displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+      inputs:
+        connectedServiceName: ${{ parameters.connection }}
+        waitForCompletion: true
+        messageBody: |
+          {
+            "condition": "${{ parameters.condition }} && ${{ s.condition }}",
+            "timeout": "00:03:00",
+            "name": "crank",
+            "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ p.arguments }} --description \"${{ s.displayName }} ${{ p.displayName }} ${{ parameters.profile }}\" --variable serverScheme=https --variable serverScheme=https --variable downstreamScheme=https --property serverProtocol=https --property downstreamProtocol=https" ]
+          }
