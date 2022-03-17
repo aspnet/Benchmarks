@@ -100,7 +100,6 @@ results:
   aggregate: percentile90
   reduce: max
 
-
 scenarios:
   proxy-httpclient:
     downstream:
