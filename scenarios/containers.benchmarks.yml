@@ -9,6 +9,8 @@ jobs:
       transport: Sockets
       scenario: plaintext
       serverPort: 8080
+      placeholderAccountName: benchmarkdbuser # development passwords, not a secret
+      placeholderPassword: benchmarkdbpass # development passwords, not a secret
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
@@ -20,7 +22,7 @@ jobs:
     environmentVariables:
       database: "PostgreSQL"
       connectionString: >
-       "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"
+       "Server={{databaseServer}};Database=hello_world;User Id={{placeholderAccountName}};Password={{placeholderPassword}};Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"
     noClean: true
 
 scenarios:
