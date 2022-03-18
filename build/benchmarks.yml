@@ -147,17 +147,29 @@ jobs:
 #       duration: 15
 #       connection: ASP.NET Benchmarks Queue
 
-- job: Containers
+- job: Custom_Proxies
+  displayName: Custom Proxies
+  pool: server
+  timeoutInMinutes: 360
+#  dependsOn: ["MVC_Linux", "MVC_Windows"]
+  condition: succeededOrFailed()
+  steps:
+  - template: proxies-custom-scenarios.yml
+    parameters:
+      profile: aspnet-citrine-lin
+      warmup: 15
+      duration: 15
+      connection: ASP.NET Benchmarks Queue
+
+- job: Containers_Intel
   displayName: Containers
   pool: server
   timeoutInMinutes: 180
-# dependsOn: Baselines_Database
+  dependsOn: Custom_Proxies
   condition: succeededOrFailed()
   strategy:
     maxParallel: 2
     matrix:
-      Intel_Linux:
-        profile: aspnet-citrine-lin
       Ampere_Linux:
         profile: aspnet-citrine-ampere
   steps:
@@ -167,6 +179,26 @@ jobs:
       duration: 15
       connection: ASP.NET Benchmarks Queue
       profile: $(profile)
+
+- job: Containers_Ampere
+  displayName: Containers
+  pool: server
+  timeoutInMinutes: 180
+  dependsOn: Custom_Proxies
+  condition: succeededOrFailed()
+  strategy:
+    maxParallel: 2
+    matrix:
+      Ampere_Linux:
+        profile: aspnet-citrine-ampere
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      warmup: 5
+      duration: 15
+      connection: ASP.NET Benchmarks Mono Queue
+      profile: $(profile)
+
 
 # - job: Frameworks_Linux
 #   displayName: Frameworks
@@ -515,21 +547,6 @@ jobs:
 #       warmup: 15
 #       duration: 15
 #       connection: ASP.NET Benchmarks Mono Queue
-
-- job: Custom_Proxies
-  displayName: Custom Proxies
-  pool: server
-  timeoutInMinutes: 360
-  dependsOn: "Containers"
-#  dependsOn: ["MVC_Linux", "MVC_Windows"]
-  condition: succeededOrFailed()
-  steps:
-  - template: proxies-custom-scenarios.yml
-    parameters:
-      profile: aspnet-citrine-lin
-      warmup: 15
-      duration: 15
-      connection: ASP.NET Benchmarks Queue
 
 # - job: Proxies
 #   pool: server
