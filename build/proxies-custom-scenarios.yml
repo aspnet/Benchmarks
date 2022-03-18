@@ -39,9 +39,9 @@ parameters:
   type: object
   default:
     - displayName: "100KB-https/https-2000rps-4cores"
-      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-3 --property scenario=100KB-https/https-2000rps-4cores
+      arguments: --variable rate=1000 --property rate=2000 --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-3 --property cpu=4 --property scenario=100KB-https/https-2000rps-4cores
     - displayName: "100KB-https/https-2000rps-8cores"
-      arguments: --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-7 --property scenario=100KB-https/https-2000rps-8cores
+      arguments: --variable rate=1000 --property rate=2000 --variable path=/?s=102400 --property payload=102400 --property body=0 --property headers=plaintext --application.cpuSet 0-7 --property cpu=8 --property scenario=100KB-https/https-2000rps-8cores
 
 steps:
 - ${{ each s in parameters.scenarios }}:

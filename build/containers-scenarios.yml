@@ -47,7 +47,7 @@ parameters:
     - displayName: 10000
       arguments: --variable rate=10000 --property rate=10000
     - displayName: unbound
-      arguments: --property rate=unbound
+      arguments: --property rate=0
 
 # Scenarios
 - name: scenarios 
