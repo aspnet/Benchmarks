@@ -156,7 +156,7 @@ jobs:
   strategy:
     maxParallel: 2
     matrix:
-      Ampere_Linux:
+      Intel_Linux:
         profile: aspnet-citrine-lin
   steps:
   - template: containers-scenarios.yml

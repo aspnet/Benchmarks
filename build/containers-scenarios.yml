@@ -56,33 +56,45 @@ parameters:
 
   - displayName: Json ASP.NET
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
+    condition: Math.round(Date.now() / 43200000) % 2 == 0 # mornings
   - displayName: Fortunes ASP.NET
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
+    condition: Math.round(Date.now() / 43200000) % 2 == 0 # mornings
 
   - displayName: Json Actix
     arguments: --scenario json_actix --property scenario=JsonActix
+    condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
   - displayName: Fortunes Actix
     arguments: --scenario fortunes_actix --property scenario=FortunesActix
+    condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
 
   - displayName: Json NodeJS
     arguments: --scenario json_nodejs --property scenario=JsonNodeJs
+    condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
   - displayName: Fortunes NodeJS
     arguments: --scenario fortunes_nodejs --property scenario=FortunesNodeJs
+    condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
 
   - displayName: Json FastHttp
     arguments: --scenario json_fasthttp --property scenario=JsonFastHttp
+    condition: Math.round(Date.now() / 43200000) % 5 == 2 # once every 5 half-days
   - displayName: Fortunes FastHttp
     arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
+    condition: Math.round(Date.now() / 43200000) % 5 == 2 # once every 5 half-days
 
   - displayName: Json Ulib
     arguments: --scenario json_ulib --property scenario=JsonUlib
+    condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
   - displayName: Fortunes Ulib
     arguments: --scenario fortunes_ulib --property scenario=FortunesUlib
+    condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
 
   - displayName: Json Wizzardo
     arguments: --scenario json_wizzardo --property scenario=JsonWizzardo
+    condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
   - displayName: Fortunes Wizzardo
     arguments: --scenario fortunes_wizzardo --property scenario=FortunesWizzardo
+    condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
 
 steps:
 - ${{ each scenario in parameters.scenarios }}:
@@ -94,10 +106,10 @@ steps:
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
-          # add this to messageBody "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 < 13",
           messageBody: |
             {
               "name": "crank",
+              "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
               "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} --profile ${{ parameters.profile }} --no-metadata --no-measurements --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
             
