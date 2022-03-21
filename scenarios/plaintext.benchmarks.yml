@@ -100,7 +100,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /hello/TesterName
+        path: /hello/TesterName/42/Internet
         pipeline: 16
 
   plainTextEmptyFilter:
@@ -110,7 +110,17 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /helloEmptyFilter/TesterName
+        path: /helloEmptyFilter/TesterName/42/Internet
+        pipeline: 16
+  
+  plainTextNoParamsEmptyFilter:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintextNoParamsWithFilter
         pipeline: 16
 
   plainTextWithFilter:
@@ -120,7 +130,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: plaintext
-        path: /helloFiltered/TesterName
+        path: /helloFiltered/TesterName/42/Internet
         pipeline: 16
 
   connectionclose:
