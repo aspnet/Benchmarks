@@ -42,14 +42,14 @@ using var host = Host.CreateDefaultBuilder(args)
                         var hasParams = routeHandlerContext.MethodInfo.GetParameters().Length >= 1;
                         var isStringParam = routeHandlerContext.MethodInfo.GetParameters()[0].ParameterType == typeof(string);
 
-                        return (context) =>
+                        return (RouteHandlerFilterDelegate)((context) =>
                         {
                             if (hasParams && isStringParam)
                             {
-                                context.Parameters[0] = context.Parameters[0].ToUpperInvariant();
+                                context.Parameters[0] = ((string)context.Parameters[0]).ToUpperInvariant();
                             }
                             return next(context);
-                        };
+                        });
                     });
             });
 
