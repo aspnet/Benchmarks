@@ -50,6 +50,9 @@ parameters:
     arguments: --scenario connectionclose $(plaintextJobs) --property scenario=ConnectionClose --property protocol=http --variable connections=32 --property connections=32 
   - displayName: Plaintext Connection Close Https
     arguments: --scenario connectionclosehttps $(plaintextJobs) --property scenario=ConnectionCloseHttps --property protocol=https --variable connections=32 --property connections=32
+  - displayName: Plaintext Connection Close HttpSys
+    arguments: --scenario connectionclose $(plaintextJobs) --property scenario=ConnectionCloseHttpSys --property protocol=http --variable connections=32 --property connections=32 --variable server=HttpSys --application.options.requiredOperatingSystem windows
+  - displayName: Plaintext Connection Close Https HttpSys
     arguments: --scenario connectionclosehttps $(plaintextJobs) --property scenario=ConnectionCloseHttpsHttpSys --property protocol=https --variable connections=32 --property connections=32 --variable server=HttpSys --application.options.requiredOperatingSystem windows
 
 # Json
