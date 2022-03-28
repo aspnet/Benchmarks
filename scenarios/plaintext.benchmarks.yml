@@ -92,6 +92,46 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
+  
+  plainTextSansFilter:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /hello/TesterName/42/Internet
+        pipeline: 16
+
+  plainTextEmptyFilter:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /helloEmptyFilter/TesterName/42/Internet
+        pipeline: 16
+  
+  plainTextNoParamsEmptyFilter:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintextNoParamsWithFilter
+        pipeline: 16
+
+  plainTextWithFilter:
+    application:
+      job: mapaction
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /helloFiltered/TesterName/42/Internet
+        pipeline: 16
 
   connectionclose:
     application:
