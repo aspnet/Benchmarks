@@ -32,7 +32,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: Trends_Windows
@@ -52,7 +52,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
       profile: $(profile)
 
 - job: Trends_Database
@@ -77,7 +77,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: Baselines_Linux
@@ -99,7 +99,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Baselines_Windows
   displayName: Baselines
@@ -120,7 +120,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: Baselines_Database
   displayName: Baselines Database
@@ -145,7 +145,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Containers
   displayName: Containers
@@ -163,7 +163,7 @@ jobs:
     parameters:
       warmup: 5
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: Frameworks_Linux
@@ -185,7 +185,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Frameworks_Windows
   displayName: Frameworks
@@ -204,7 +204,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: Frameworks_Database
   displayName: Frameworks Database
@@ -227,7 +227,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: EFCore
   displayName: EF Core
@@ -244,7 +244,7 @@ jobs:
   - template: efcore-scenarios.yml
     parameters:
       profile: $(profile)
-      connection:  ASP.NET Benchmarks Mono Queue
+      connection:  ASP.NET Benchmarks Queue 2
 
 - job: PGO_Linux
   displayName: PGO
@@ -264,7 +264,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: PGO_Windows
@@ -285,7 +285,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
       profile: $(profile)
 
 - job: gRPC_Linux
@@ -305,7 +305,7 @@ jobs:
       profile: $(profile)
       warmup: 5
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       runH3: true
 
 - job: gRPC_Windows
@@ -325,7 +325,7 @@ jobs:
       profile: $(profile)
       warmup: 5
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
       runH3: false
 
 - job: SignalR_Linux
@@ -345,7 +345,7 @@ jobs:
       profile: $(profile)
       warmup: 1
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: SignalR_Windows
   displayName: SignalR
@@ -364,7 +364,7 @@ jobs:
       profile: $(profile)
       warmup: 1
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: Websocket_Linux
   displayName: Websocket
@@ -383,7 +383,7 @@ jobs:
       profile: $(profile)
       warmup: 1
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Websocket_Windows
   displayName: Websocket
@@ -402,7 +402,7 @@ jobs:
       profile: $(profile)
       warmup: 1
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: SingleFile_Linux
   displayName: Single File
@@ -421,7 +421,7 @@ jobs:
       profile: $(profile)
       warmup: 5
       duration: 10
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: SingleFile_Windows
   displayName: Single File
@@ -440,7 +440,7 @@ jobs:
       profile: $(profile)
       warmup: 5
       duration: 10
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: Build_Linux
   displayName: Build
@@ -457,7 +457,7 @@ jobs:
   - template: build-perf-scenarios.yml
     parameters:
       profile: $(profile)
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Build_Windows
   displayName: Build
@@ -474,7 +474,7 @@ jobs:
   - template: build-perf-scenarios.yml
     parameters:
       profile: $(profile)
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: MVC_Linux
   displayName: MVC
@@ -493,7 +493,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: MVC_Windows
   displayName: MVC
@@ -512,7 +512,7 @@ jobs:
       profile: $(profile)
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
 
 - job: Custom_Proxies
   displayName: Custom Proxies
@@ -526,7 +526,7 @@ jobs:
       profile: aspnet-citrine-lin
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Proxies
   pool: server
@@ -539,7 +539,7 @@ jobs:
       profile: aspnet-citrine-lin
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Blazor
   pool: server
@@ -550,7 +550,7 @@ jobs:
   - template: blazor-scenarios.yml
     parameters:
       server: http://asp-perf-lin:5001
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
 
 - job: Mono_Linux
   displayName: Mono
@@ -570,7 +570,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: Mono_Windows
@@ -591,7 +591,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
       profile: $(profile)
 
 - job: Mono_Database
@@ -616,7 +616,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: CrossGen_Linux
@@ -637,7 +637,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Queue
+      connection: ASP.NET Benchmarks Queue 1
       profile: $(profile)
 
 - job: CrossGen_Windows
@@ -658,7 +658,7 @@ jobs:
     parameters:
       warmup: 15
       duration: 15
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASP.NET Benchmarks Queue 2
       profile: $(profile)
 
 # CLOUD SCENARIOS
