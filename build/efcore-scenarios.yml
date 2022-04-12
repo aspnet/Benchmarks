@@ -1,12 +1,15 @@
 # EF Core micro benchmarks
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios 
@@ -56,6 +59,7 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "--table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
           "timeout": "00:30:00"
         }

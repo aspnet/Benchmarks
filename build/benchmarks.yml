@@ -27,7 +27,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "--profile intel-lin-app --profile intel-load-load --profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db"
 
 - job: Trends_Intel_Windows
   displayName: Trends Intel Windows
@@ -39,7 +39,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "--profile intel-win-app --profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load"
 
 - job: Trends_Database_Arm_Linux
   displayName: Trends Database Arm Linux
@@ -51,7 +51,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "--profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db"
 
 # GROUP 2
 
@@ -65,7 +65,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "--profile intel-win-app --profile intel-load-load --profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db"
 
 - job: Trends_Intel_Linux
   displayName: Trends Intel Linux
@@ -77,7 +77,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "--profile intel-lin-app --profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load2-load"
 
 - job: Trends_Database_Arm_Windows
   displayName: Trends Database Arm Windows
@@ -89,7 +89,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "--profile arm-win-28-app --profile amd-lin-load --profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-win-28-app --profile amd-lin-load --profile amd-lin2-db"
 
 # GROUP 3
 
@@ -103,7 +103,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "--profile amd-lin-app --profile intel-load-load --profile intel-db-db"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db"
 
 - job: Trends_Arm_Linux
   displayName: Trends Intel Linux
@@ -115,7 +115,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "--profile arm-lin-28-app --profile intel-load2-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load"
 
 - job: Trends_Arm_Windows
   displayName: Trends Arm Windows
@@ -127,4 +127,42 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "--profile arm-win-28app --profile intel-lin-load"
+      arguments: "$(ciProfile) --profile arm-win-28app --profile intel-lin-load"
+
+# GROUP 4
+
+- job: Trends_Amd_Linux
+  displayName: Trends Amd Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: ["Trends_Database_Amd_Linux", "Trends_Arm_Linux", "Trends_Arm_Windows"]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 1
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load"
+
+- job: Containers_Intel_Linux
+  displayName: Containers Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: ["Trends_Database_Amd_Linux", "Trends_Arm_Linux", "Trends_Arm_Windows"]
+  condition: succeededOrFailed()
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 2
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load"
+
+- job: EF_Core_Intel_Windows
+  displayName: EF Core Intel Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: ["Trends_Database_Amd_Linux", "Trends_Arm_Linux", "Trends_Arm_Windows"]
+  condition: succeededOrFailed()
+  steps:
+  - template: efcore-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-win-app"

@@ -1,15 +1,9 @@
 # Container Matrix scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 15
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
@@ -110,6 +104,6 @@ steps:
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
-              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} --profile ${{ parameters.profile }} --no-metadata --no-measurements --property duration=${{ parameters.duration }} --property warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
             

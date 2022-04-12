@@ -5,6 +5,9 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios
@@ -86,5 +89,6 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "${{ s.arguments }} $(azureProfile) $(ciProfile) --application.framework net7.0 --application.collectDependencies true ${{ parameters.arguments }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ s.arguments }} $(azureProfile) --application.framework net7.0 --application.collectDependencies true ${{ parameters.arguments }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }
