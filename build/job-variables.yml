@@ -71,6 +71,8 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/mono.benchmarks.yml --application.options.requiredOperatingSystem linux
 - name: azureProfile
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/azure.profile.yml
+- name: ciProfile
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/ci.profile.yml
 - name: grpcJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/grpc.benchmarks.yml
 - name: efcoreJobs

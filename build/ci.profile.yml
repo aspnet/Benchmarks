@@ -1,0 +1,150 @@
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/packages.yml?raw=true
+
+profiles:
+  short:
+    variables:
+      warmup: 3
+      duration: 7 
+
+  intel-lin-app:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 28
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-citrine-lin:5001
+
+  intel-lin-load:
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  intel-win-app:
+    variables:
+      serverAddress: 10.0.0.104
+      cores: 28
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-citrine-win:5001
+
+  intel-db-db:
+    variables:
+      databaseServer: 10.0.0.103
+    agents:
+      db:
+        endpoints: 
+          - http://asp-citrine-db:5001
+  
+  intel-db-load:
+    agents:
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  intel-load-db:
+    variables:
+      databaseServer: 10.0.0.105
+    agents:
+      db:
+        endpoints: 
+          - http://asp-citrine-load:5001
+
+  intel-load-load:
+    agents:
+      load:
+        endpoints: 
+          - http://asp-citrine-load:5001
+ 
+  intel-load2-db:
+    variables:
+      databaseServer: 10.0.0.101
+    agents:
+      db:
+        endpoints: 
+          - http://asp-citrine-load2:5001
+
+  intel-load2-load:
+    agents:
+      load:
+        endpoints: 
+          - http://asp-citrine-load2:5001
+
+  amd-lin-app:
+    variables:
+      serverAddress: 10.0.0.106
+      cores: 48
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+
+  amd-lin-load:
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+
+  amd-lin2-app:
+    variables:
+      serverAddress: 10.0.0.109
+      cores: 48
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+
+  amd-lin2-load:
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+
+  amd-lin2-db:
+    variables:
+      databaseServer: 10.0.0.109
+    agents: 
+      db:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+
+  arm-lin-app:
+    variables:
+      serverAddress: 10.0.0.108
+      cores: 80
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-citrine-ampere:5001
+
+  arm-lin-28-app:
+    variables:
+      serverAddress: 10.0.0.108
+      cores: 28
+    agents: 
+      application:
+        cpuSet: 0-27
+        endpoints: 
+          - http://asp-citrine-ampere:5001
+
+  arm-win-app:
+    variables:
+      serverAddress: 10.0.0.110
+      cores: 80
+    agents: 
+      application:
+        endpoints: 
+          - http://10.240.177.200:5001
+
+  arm-win-28-app:
+    variables:
+      serverAddress: 10.0.0.110
+      cores: 28
+    agents: 
+      application:
+        cpuSet: 0-27
+        endpoints: 
+          - http://10.240.177.200:5001
