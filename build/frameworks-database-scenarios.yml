@@ -1,18 +1,15 @@
 # Frameworks trend scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 15
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios 
@@ -54,5 +51,6 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "${{ s.arguments }} --profile ${{ parameters.profile }} --application.noClean true --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
         }

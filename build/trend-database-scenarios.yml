@@ -53,5 +53,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ s.arguments }} $(azureProfile) --application.framework net7.0 ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} $(azureProfile) --application.framework net7.0 ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }

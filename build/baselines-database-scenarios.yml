@@ -1,21 +1,15 @@
 # baseline scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 15
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
-- name: skip
+- name: condition
   type: string
-  default: ''
+  default: 'true'
 
 # Baselines
 - name: baselines 
@@ -68,12 +62,12 @@ steps:
         condition: succeededOrFailed()
         timeoutInMinutes: 5
         displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-        enabled: ${{ ne(b.displayName, parameters.skip) }}
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
           messageBody: |
             {
               "name": "crank",
-              "args": [ "${{ s.arguments }} ${{ b.arguments }} --profile ${{ parameters.profile }} --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "condition": "(${{ parameters.condition }})",
+              "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }

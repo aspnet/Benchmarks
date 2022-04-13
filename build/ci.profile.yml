@@ -16,6 +16,15 @@ profiles:
         endpoints: 
           - http://asp-citrine-lin:5001
 
+  intel-perflin-app:
+    variables:
+      serverAddress: 10.0.0.102
+      cores: 12
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-perf-lin:5001
+
   intel-lin-load:
     agents: 
       load:
@@ -59,6 +68,15 @@ profiles:
         endpoints: 
           - http://asp-citrine-load:5001
  
+  intel-load2-app:
+    variables:
+      serverAddress: 10.0.0.101
+      cores: 28
+    agents:
+      load:
+        endpoints: 
+          - http://asp-citrine-load2:5001
+
   intel-load2-db:
     variables:
       databaseServer: 10.0.0.101

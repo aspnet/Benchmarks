@@ -1,16 +1,13 @@
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 15
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios
@@ -50,5 +47,6 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} ${{ mode.arguments }} --profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table SingleFileBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "condition": "(${{ parameters.condition }})",
+            "args": [ "${{ s.arguments }} ${{ mode.arguments }} ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table SingleFileBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

@@ -1,18 +1,15 @@
 # Proxy scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 5
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios
@@ -96,7 +93,8 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "args": [ "${{ s.arguments }} $(azureProfile) --profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 --variable warmup=${{ parameters.warmup }} --variable duration=${{ parameters.duration }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MvcBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "condition": "(${{ parameters.condition }})",
+            "args": [ "${{ s.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MvcBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }
 
 

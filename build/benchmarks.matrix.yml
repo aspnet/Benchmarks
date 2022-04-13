@@ -1,0 +1,405 @@
+# This file describes all the scenarios which are run continuously on AzDo.
+# It generates the file benchmarks.yml. See this file for instructions.
+
+queues:
+  - ASP.NET Benchmarks Queue 1
+  - ASP.NET Benchmarks Queue 2
+  - ASP.NET Benchmarks Queue 3
+
+groups:
+
+  - jobs:
+
+    - name: Trends Database Intel Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - intel-load-load
+      - intel-db-db
+
+    - name: Trends Intel Windows
+      template: trend-scenarios.yml
+      profiles:
+      - intel-win-app
+      - intel-load2-load
+
+    - name: Trends Database Arm Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - arm-lin-28-app
+      - amd-lin-load
+      - amd-lin2-db
+
+  - jobs:
+
+    - name: Trends Database Intel Windows
+      template: trend-database-scenarios.yml
+      profiles:
+      - intel-win-app
+      - intel-load-load
+      - intel-db-db
+
+    - name: Trends Intel Linux
+      template: trend-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - intel-load2-load
+      
+    - name: Trends Database Arm Windows
+      template: trend-database-scenarios.yml
+      profiles:
+      - arm-win-28-app
+      - amd-lin-load
+      - amd-lin2-db
+
+  - jobs:
+
+    - name: Trends Database Amd Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Trends Arm Linux
+      template: trend-scenarios.yml
+      profiles:
+      - arm-lin-28-app
+      - intel-load2-load
+      
+    - name: Trends Arm Windows
+      template: trend-scenarios.yml
+      profiles:
+      - arm-win-28-app 
+      - intel-lin-load
+
+  - jobs:
+
+    - name: Trends Amd Linux
+      template: trend-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load2-load
+
+    - name: Containers Intel Linux
+      template: containers-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+      
+    - name: EF Core Intel Windows
+      template: efcore-scenarios.yml
+      profiles:
+      - intel-win-app 
+
+  - jobs:
+
+    - name: Baselines Database Intel Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Baselines Intel Windows
+      template: baselines-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load2-load
+      
+    - name: Baselines Database Arm Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - amd-lin-load
+      - amd-lin2-db
+
+  - jobs:
+
+    - name: Baselines Database Intel Windows
+      template: baselines-database-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Baselines Intel Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load2-load
+      
+    - name: Baselines Database Arm Windows
+      template: baselines-database-scenarios.yml
+      profiles:
+      - arm-win-28-app 
+      - amd-lin-load
+      - amd-lin2-db
+
+  - jobs:
+
+    - name: Baselines Database Amd Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Baselines Arm Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+      
+    - name: Baselines Arm Windows
+      template: baselines-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-lin-load
+
+  - jobs:
+
+    - name: Baselines Amd Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load2-load
+
+    - name: Frameworks Intel Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - intel-load-load
+      
+    - name: Grpc Intel Windows
+      template: grpc-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-db-load
+
+  - jobs:
+
+    - name: Frameworks Database Intel Linux
+      template: frameworks-database-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: WebSockets Intel Windows
+      template: websocket-scenarios.yml
+      profiles:
+      - intel-win-app
+      - intel-load2-load
+      
+    - name: Frameworks Database Arm Linux
+      template: frameworks-database-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - amd-lin-load
+      - amd-lin2-db
+
+  - jobs:
+
+    - name: Frameworks Database Amd Linux
+      template: frameworks-database-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: PGO Intel Windows
+      template: pgo-scenarios.yml
+      profiles:
+      - intel-win-app
+      - intel-lin-load
+      - intel-load2-db
+      
+    - name: Frameworks Arm Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - amd-lin2-load
+
+  - jobs:
+
+    - name: Frameworks Amd Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load2-load
+
+    - name: PGO Intel Linux
+      template: pgo-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - intel-load-load
+      - intel-db-db
+
+  - jobs:
+
+    - name: PGO Amd Linux
+      template: pgo-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load2-load
+      - intel-db-db
+
+    - name: Grpc Intel Linux
+      template: grpc-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - intel-load-load
+
+  - jobs:
+
+    - name: SignalR Intel Linux
+      template: signalr-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+
+    - name: SignalR Intel Windows
+      template: signalr-scenarios.yml
+      profiles:
+      - intel-win-app
+      - intel-load-load
+
+    - name: Blazor Intel Linux
+      template: blazor-scenarios.yml
+      profiles:
+      - intel-perflin-app
+
+  - jobs: 
+
+    - name: WebSockets Intel Linux
+      template: websocket-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+
+    - name: Build Intel Linux
+      template: build-perf-scenarios.yml
+      profiles:
+      - intel-load2-app
+      - intel-db-load
+
+  - jobs:
+
+    - name: Single File Intel Linux
+      template: singlefile-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+
+    - name: Mvc Intel Windows
+      template: mvc-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load2-load
+      - intel-db-db
+
+  - jobs:
+
+    - name: Mvc Intel Linux
+      template: mvc-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Single File Intel Windows
+      template: singlefile-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load2-load
+
+  - jobs:
+
+    - name: Custom Proxies Intel Linux
+      template: proxies-custom-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Build Intel Windows	
+      template: build-perf-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load2-load
+
+  - jobs:
+
+    - name: Proxies Intel Linux
+      template: proxies-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+  - jobs:
+
+    - name: Mono Database Intel Linux
+      template: mono-database-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Mono Arm Linux
+      template: mono-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+
+  - jobs:
+
+    - name: Mono Database Arm Linux
+      template: mono-database-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+      - intel-db-db
+
+    - name: Mono Intel Linux
+      template: mono-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+
+  - jobs:
+
+    - name: Crossgen Arm Linux
+      template: crossgen2-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - amd-lin-load
+      - intel-db-db
+
+    - name: Crossgen Arm Windows
+      template: crossgen2-scenarios.yml
+      profiles:
+      - arm-win-28-app 
+      - amd-lin2-load
+
+    - name: Crossgen Intel Linux
+      template: crossgen2-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+
+  - jobs:
+
+    - name: Crossgen Intel Windows
+      template: crossgen2-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - intel-load-load
+
+    - name: Crossgen Amd Linux
+      template: crossgen2-scenarios.yml
+      profiles:
+      - amd-lin-app 
+      - intel-load2-load

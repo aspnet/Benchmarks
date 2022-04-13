@@ -1,12 +1,15 @@
 # Blazor scenarios
 
 parameters:
-- name: server # the url of the agent service, e.g. http://asp-perf-lin:5001
+- name: arguments
   type: string
   default: ''
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 # Scenarios
 - name: scenarios 
@@ -27,5 +30,6 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--application.endpoints ${{ parameters.server }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
         }

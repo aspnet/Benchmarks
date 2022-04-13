@@ -1,11 +1,14 @@
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
 - name: connection
   type: string
   default: ''
-
+- name: condition
+  type: string
+  default: 'true'
+  
 - name: scenarios
   type: object
   default:
@@ -32,5 +35,6 @@ steps:
       messageBody: |
         {
           "name": "crank",
-          "args": [ "--profile ${{ parameters.profile }} --application.channel edge --application.framework net7.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ parameters.profile }}\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ parameters.arguments }} --application.framework net7.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }

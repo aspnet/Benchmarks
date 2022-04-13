@@ -1,15 +1,9 @@
 # Proxy scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 5
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
@@ -161,7 +155,7 @@ steps:
                   "condition": "${{ parameters.condition }} && ${{ s.condition }}",
                   "timeout": "00:03:00",
                   "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
                 }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
@@ -183,5 +177,5 @@ steps:
                 "condition": "${{ parameters.condition }} && ${{ s.condition }}",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} ${{ parameters.profile }}\"" ]
+                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }

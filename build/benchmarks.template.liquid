@@ -1,0 +1,42 @@
+
+# Do not change this file, it is generated using these steps:
+# - The file benchmarks.matrix.yml defines how each job is run in parallel
+# - Convert its content to json using https://jsonformatter.org/yaml-to-json
+# - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
+# - Update this file with the result of the template generation
+
+variables:
+  - template: job-variables.yml
+  - name: session
+    value: $(Build.BuildNumber)
+  - name: buildId
+    value: $(Build.BuildId)
+  - name: buildNumber
+    value: $(Build.BuildNumber)
+  - name: am
+    value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
+  - name: pm
+    value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
+
+jobs:
+
+{% for group in groups -%}
+{% assign n = forloop.index -%}
+# GROUP {{ n }}
+
+{% for job in group.jobs -%}
+- job: {{job.name | replace: ' ', '_'}}
+  displayName: {{ n }}- {{job.name}}
+  pool: server
+  timeoutInMinutes: {%if job.timeout == blank%}120{%else%}{{job.timeout}}{%endif%}
+  dependsOn: [{%for previousJob in previousGroup.jobs%}{{previousJob.name | replace: ' ', '_'}}{%if forloop.last == false%}, {%endif%}{%endfor%}]
+  condition: succeededOrFailed()
+  steps:
+  - template: {{job.template}}
+    parameters:
+      connection: {{queues[forloop.index0]}}
+      arguments: "$(ciProfile) {%for p in job.profiles%}--profile {{p}}{% endfor %}"
+      
+{% endfor %}
+{%-assign previousGroup = group -%}
+{% endfor %}
