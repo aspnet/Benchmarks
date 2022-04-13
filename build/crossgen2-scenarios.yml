@@ -18,7 +18,7 @@ parameters:
 
   - displayName: Json
     arguments: --scenario json $(jsonJobs) --property scenario=Json 
-    
+
 # Profiles
 - name: profiles
   type: object
@@ -45,7 +45,6 @@ steps:
         messageBody: |
           {
             "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 < 13",
-            "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
             "name": "crank",
             "args": [ "${{ s.arguments }} ${{ p.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters false --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table CG2Benchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }
