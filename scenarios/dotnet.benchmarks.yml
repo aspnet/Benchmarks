@@ -11,7 +11,7 @@ jobs:
       filter: "*"
       run: short
     arguments: --job {{run}} --filter {{filter}} --memory
-    framework: netcoreapp3.1
+    framework: net6.0
     options:
       benchmarkDotNet: true
       displayOutput: true
