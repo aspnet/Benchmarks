@@ -32,12 +32,12 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `local` | (local machine) | (local machine) |
 |  `aspnet-perf-lin` | INTEL, 12 cores, 32GB | Ubuntu 20.04, Kernel 5.4.0 |
 |  `aspnet-perf-win` | INTEL, 12 cores, 32GB | Windows Server 2022 |
-|  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 20.04, Kernel 5.4.0 |
 |  `aspnet-citrine-win` | INTEL, 28 cores | Windows Server 2022 |
-|  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 20.04, Kernel 5.x |
-|  `aspnet-citrine-amd` | AMD, 48 cores, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.x |
-|  `aspnet-citrine-amd2` | AMD, 48 cores, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.x |
-|  `aspnet-citrine-ampere` | ARM64, 80 cores, 1 NUMA | Ubuntu 20.04, Kernel 5.x |
+|  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 20.04, Kernel 5.4.0 |
+|  `aspnet-citrine-amd` | AMD, 48 cores, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
+|  `aspnet-citrine-amd2` | AMD, 48 cores, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
+|  `aspnet-citrine-ampere` | ARM64, 80 cores, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
