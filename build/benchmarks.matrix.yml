@@ -235,6 +235,36 @@ groups:
 
   - jobs:
 
+    - name: Mono Database Intel Linux
+      template: mono-database-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      - intel-db-db
+
+    - name: Mono Arm Linux
+      template: mono-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+
+  - jobs:
+
+    - name: Mono Database Arm Linux
+      template: mono-database-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+      - intel-db-db
+
+    - name: Mono Intel Linux
+      template: mono-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - intel-load-load
+      
+  - jobs:
+
     - name: PGO Amd Linux
       template: pgo-scenarios.yml
       profiles:
@@ -341,36 +371,6 @@ groups:
       - arm-lin-28-app 
       - intel-load2-load
       - amd-lin2-db # required by nodejs and tfb-database argument
-
-  - jobs:
-
-    - name: Mono Database Intel Linux
-      template: mono-database-scenarios.yml
-      profiles:
-      - intel-lin-app 
-      - intel-load-load
-      - intel-db-db
-
-    - name: Mono Arm Linux
-      template: mono-scenarios.yml
-      profiles:
-      - arm-lin-28-app 
-      - intel-load2-load
-
-  - jobs:
-
-    - name: Mono Database Arm Linux
-      template: mono-database-scenarios.yml
-      profiles:
-      - arm-lin-28-app 
-      - intel-load2-load
-      - intel-db-db
-
-    - name: Mono Intel Linux
-      template: mono-scenarios.yml
-      profiles:
-      - intel-lin-app 
-      - intel-load-load
 
   - jobs:
 
