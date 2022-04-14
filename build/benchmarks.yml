@@ -310,7 +310,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile amd-lin2-db "
       
 - job: Grpc_Intel_Windows
   displayName: 8- Grpc Intel Windows
@@ -336,7 +336,7 @@ jobs:
   - template: frameworks-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: WebSockets_Intel_Windows
   displayName: 9- WebSockets Intel Windows
@@ -388,37 +388,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-lin-load --profile intel-load2-db "
       
-- job: Frameworks_Arm_Linux
-  displayName: 10- Frameworks Arm Linux
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: frameworks-scenarios.yml
-    parameters:
-      connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin2-load "
-      
 # GROUP 11
 
 - job: Frameworks_Amd_Linux
   displayName: 11- Frameworks Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load --profile amd-lin2-db "
       
 - job: PGO_Intel_Linux
   displayName: 11- PGO Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
@@ -608,13 +596,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 1
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
+- job: Frameworks_Arm_Linux
+  displayName: 18- Frameworks Arm Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 2
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile amd-lin2-db "
+      
 # GROUP 19
 
 - job: Mono_Database_Intel_Linux
   displayName: 19- Mono Database Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux]
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mono-database-scenarios.yml
@@ -626,7 +626,7 @@ jobs:
   displayName: 19- Mono Arm Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux]
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mono-scenarios.yml

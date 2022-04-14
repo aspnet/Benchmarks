@@ -171,6 +171,7 @@ groups:
       profiles:
       - intel-lin-app
       - intel-load-load
+      - amd-lin2-db # required by nodejs and tfb-database argument
       
     - name: Grpc Intel Windows
       template: grpc-scenarios.yml
@@ -183,7 +184,7 @@ groups:
     - name: Frameworks Database Intel Linux
       template: frameworks-database-scenarios.yml
       profiles:
-      - intel-win-app 
+      - intel-lin-app 
       - intel-load-load
       - intel-db-db
 
@@ -216,12 +217,6 @@ groups:
       - intel-lin-load
       - intel-load2-db
       
-    - name: Frameworks Arm Linux
-      template: frameworks-scenarios.yml
-      profiles:
-      - arm-lin-28-app 
-      - amd-lin2-load
-
   - jobs:
 
     - name: Frameworks Amd Linux
@@ -229,6 +224,7 @@ groups:
       profiles:
       - amd-lin-app 
       - intel-load2-load
+      - amd-lin2-db # required by nodejs and tfb-database argument 
 
     - name: PGO Intel Linux
       template: pgo-scenarios.yml
@@ -338,6 +334,13 @@ groups:
       - intel-lin-app 
       - intel-load-load
       - intel-db-db
+
+    - name: Frameworks Arm Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - arm-lin-28-app 
+      - intel-load2-load
+      - amd-lin2-db # required by nodejs and tfb-database argument
 
   - jobs:
 

@@ -26,10 +26,12 @@ profiles:
           - http://asp-perf-lin:5001
 
   intel-lin-load:
-    agents: 
+    agents:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
+      aliases:
+        - warmup
 
   intel-win-app:
     variables:
@@ -47,12 +49,16 @@ profiles:
       db:
         endpoints: 
           - http://asp-citrine-db:5001
-  
+        aliases:
+        - downstream
+
   intel-db-load:
     agents:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
+      aliases:
+        - warmup
 
   intel-load-db:
     variables:
@@ -61,19 +67,23 @@ profiles:
       db:
         endpoints: 
           - http://asp-citrine-load:5001
+        aliases:
+        - downstream
 
   intel-load-load:
     agents:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
+      aliases:
+        - warmup
  
   intel-load2-app:
     variables:
       serverAddress: 10.0.0.101
       cores: 28
     agents:
-      load:
+      application:
         endpoints: 
           - http://asp-citrine-load2:5001
 
@@ -84,12 +94,16 @@ profiles:
       db:
         endpoints: 
           - http://asp-citrine-load2:5001
+        aliases:
+        - downstream
 
   intel-load2-load:
     agents:
       load:
         endpoints: 
           - http://asp-citrine-load2:5001
+      aliases:
+        - warmup
 
   amd-lin-app:
     variables:
@@ -105,6 +119,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd:5001
+      aliases:
+        - warmup
 
   amd-lin2-app:
     variables:
@@ -120,6 +136,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
+      aliases:
+        - warmup
 
   amd-lin2-db:
     variables:
@@ -128,6 +146,8 @@ profiles:
       db:
         endpoints: 
           - http://asp-citrine-amd2:5001
+        aliases:
+        - downstream
 
   arm-lin-app:
     variables:
