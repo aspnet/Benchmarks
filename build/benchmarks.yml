@@ -32,7 +32,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Windows
   displayName: 1- Trends Intel Windows
@@ -44,7 +44,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Trends_Database_Arm_Linux
   displayName: 1- Trends Database Arm Linux
@@ -56,7 +56,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile amd-lin-load--profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 2
 
@@ -70,7 +70,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Linux
   displayName: 2- Trends Intel Linux
@@ -82,7 +82,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load2-load "
       
 - job: Trends_Database_Arm_Windows
   displayName: 2- Trends Database Arm Windows
@@ -94,7 +94,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-win-28-app--profile amd-lin-load--profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-win-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 3
 
@@ -108,7 +108,7 @@ jobs:
   - template: trend-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Arm_Linux
   displayName: 3- Trends Arm Linux
@@ -120,7 +120,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 - job: Trends_Arm_Windows
   displayName: 3- Trends Arm Windows
@@ -132,7 +132,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-win-28-app--profile intel-lin-load"
+      arguments: "$(ciProfile) --profile arm-win-28-app --profile intel-lin-load "
       
 # GROUP 4
 
@@ -146,7 +146,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 - job: Containers_Intel_Linux
   displayName: 4- Containers Intel Linux
@@ -158,7 +158,7 @@ jobs:
   - template: containers-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: EF_Core_Intel_Windows
   displayName: 4- EF Core Intel Windows
@@ -170,7 +170,7 @@ jobs:
   - template: efcore-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-win-app"
+      arguments: "$(ciProfile) --profile intel-win-app "
       
 # GROUP 5
 
@@ -184,7 +184,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Intel_Windows
   displayName: 5- Baselines Intel Windows
@@ -196,7 +196,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Baselines_Database_Arm_Linux
   displayName: 5- Baselines Database Arm Linux
@@ -208,7 +208,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile amd-lin-load--profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 6
 
@@ -222,7 +222,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Intel_Linux
   displayName: 6- Baselines Intel Linux
@@ -234,7 +234,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load2-load "
       
 - job: Baselines_Database_Arm_Windows
   displayName: 6- Baselines Database Arm Windows
@@ -246,7 +246,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-win-28-app--profile amd-lin-load--profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-win-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 7
 
@@ -260,7 +260,7 @@ jobs:
   - template: baselines-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Baselines_Arm_Linux
   displayName: 7- Baselines Arm Linux
@@ -272,7 +272,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 - job: Baselines_Arm_Windows
   displayName: 7- Baselines Arm Windows
@@ -284,7 +284,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile intel-lin-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-lin-load "
       
 # GROUP 8
 
@@ -298,7 +298,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 - job: Frameworks_Intel_Linux
   displayName: 8- Frameworks Intel Linux
@@ -310,7 +310,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Grpc_Intel_Windows
   displayName: 8- Grpc Intel Windows
@@ -322,7 +322,7 @@ jobs:
   - template: grpc-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-db-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-db-load "
       
 # GROUP 9
 
@@ -336,7 +336,7 @@ jobs:
   - template: frameworks-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: WebSockets_Intel_Windows
   displayName: 9- WebSockets Intel Windows
@@ -348,7 +348,7 @@ jobs:
   - template: websocket-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Frameworks_Database_Arm_Linux
   displayName: 9- Frameworks Database Arm Linux
@@ -360,7 +360,7 @@ jobs:
   - template: frameworks-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile amd-lin-load--profile amd-lin2-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 10
 
@@ -374,7 +374,7 @@ jobs:
   - template: frameworks-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: PGO_Intel_Windows
   displayName: 10- PGO Intel Windows
@@ -386,7 +386,7 @@ jobs:
   - template: pgo-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-lin-load--profile intel-load2-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-lin-load --profile intel-load2-db "
       
 - job: Frameworks_Arm_Linux
   displayName: 10- Frameworks Arm Linux
@@ -398,7 +398,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile amd-lin2-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin2-load "
       
 # GROUP 11
 
@@ -412,7 +412,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 - job: PGO_Intel_Linux
   displayName: 11- PGO Intel Linux
@@ -424,7 +424,7 @@ jobs:
   - template: pgo-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 # GROUP 12
 
@@ -438,7 +438,7 @@ jobs:
   - template: pgo-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load2-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Grpc_Intel_Linux
   displayName: 12- Grpc Intel Linux
@@ -450,7 +450,7 @@ jobs:
   - template: grpc-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 # GROUP 13
 
@@ -464,7 +464,7 @@ jobs:
   - template: signalr-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: SignalR_Intel_Windows
   displayName: 13- SignalR Intel Windows
@@ -476,7 +476,7 @@ jobs:
   - template: signalr-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load "
       
 - job: Blazor_Intel_Linux
   displayName: 13- Blazor Intel Linux
@@ -488,7 +488,7 @@ jobs:
   - template: blazor-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-perflin-app"
+      arguments: "$(ciProfile) --profile intel-perflin-app "
       
 # GROUP 14
 
@@ -502,7 +502,7 @@ jobs:
   - template: websocket-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Build_Intel_Linux
   displayName: 14- Build Intel Linux
@@ -514,7 +514,7 @@ jobs:
   - template: build-perf-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-load2-app--profile intel-db-load"
+      arguments: "$(ciProfile) --profile intel-load2-app --profile intel-db-load "
       
 # GROUP 15
 
@@ -528,7 +528,7 @@ jobs:
   - template: singlefile-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Mvc_Intel_Windows
   displayName: 15- Mvc Intel Windows
@@ -540,7 +540,7 @@ jobs:
   - template: mvc-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
 # GROUP 16
 
@@ -554,7 +554,7 @@ jobs:
   - template: mvc-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Single_File_Intel_Windows
   displayName: 16- Single File Intel Windows
@@ -566,7 +566,7 @@ jobs:
   - template: singlefile-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 # GROUP 17
 
@@ -580,7 +580,7 @@ jobs:
   - template: proxies-custom-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Build_Intel_Windows
   displayName: 17- Build Intel Windows
@@ -592,7 +592,7 @@ jobs:
   - template: build-perf-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 # GROUP 18
 
@@ -606,7 +606,7 @@ jobs:
   - template: proxies-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 # GROUP 19
 
@@ -620,7 +620,7 @@ jobs:
   - template: mono-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Mono_Arm_Linux
   displayName: 19- Mono Arm Linux
@@ -632,7 +632,7 @@ jobs:
   - template: mono-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 # GROUP 20
 
@@ -646,7 +646,7 @@ jobs:
   - template: mono-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile intel-load2-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Mono_Intel_Linux
   displayName: 20- Mono Intel Linux
@@ -658,7 +658,7 @@ jobs:
   - template: mono-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 # GROUP 21
 
@@ -672,7 +672,7 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile arm-lin-28-app--profile amd-lin-load--profile intel-db-db"
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile intel-db-db "
       
 - job: Crossgen_Arm_Windows
   displayName: 21- Crossgen Arm Windows
@@ -684,7 +684,7 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile arm-win-28-app--profile amd-lin2-load"
+      arguments: "$(ciProfile) --profile arm-win-28-app --profile amd-lin2-load "
       
 - job: Crossgen_Intel_Linux
   displayName: 21- Crossgen Intel Linux
@@ -696,7 +696,7 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-lin-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 # GROUP 22
 
@@ -710,7 +710,7 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app--profile intel-load-load"
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load "
       
 - job: Crossgen_Amd_Linux
   displayName: 22- Crossgen Amd Linux
@@ -722,6 +722,6 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile amd-lin-app--profile intel-load2-load"
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 

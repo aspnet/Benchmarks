@@ -35,7 +35,7 @@ jobs:
   - template: {{job.template}}
     parameters:
       connection: {{queues[forloop.index0]}}
-      arguments: "$(ciProfile) {%for p in job.profiles%}--profile {{p}}{% endfor %}"
+      arguments: "$(ciProfile) {%for p in job.profiles%}--profile {{p}} {% endfor %}"
       
 {% endfor %}
 {%-assign previousGroup = group -%}
