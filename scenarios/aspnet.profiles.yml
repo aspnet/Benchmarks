@@ -197,6 +197,40 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd2:5001
 
+  aspnet-citrine-arm-lin:
+    variables:
+      serverAddress: 10.0.0.108
+      cores: 80
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+      application:
+        endpoints: 
+          - http://asp-citrine-ampere:5001
+        variables:
+          databaseServer: 10.0.0.109
+      load:
+        endpoints: 
+          - http://asp-citrine-load2:5001
+
+  aspnet-citrine-arm-win:
+    variables:
+      serverAddress: 10.0.0.110
+      cores: 80
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+      application:
+        endpoints: 
+          - http://10.240.177.200:5001
+        variables:
+          databaseServer: 10.0.0.109
+      load:
+        endpoints: 
+          - http://asp-citrine-load2:5001
+
   aspnet-citrine-amd2:
     variables:
       serverAddress: 10.0.0.109

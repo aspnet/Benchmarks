@@ -37,7 +37,7 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-citrine-arm` | ARM64, 32 cores | Ubuntu 20.04, Kernel 5.4.0 |
 |  `aspnet-citrine-amd` | AMD, 48 cores, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
 |  `aspnet-citrine-amd2` | AMD, 48 cores, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
-|  `aspnet-citrine-ampere` | ARM64, 80 cores, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
+|  `aspnet-citrine-arm-lin` | ARM64, 80 cores, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
