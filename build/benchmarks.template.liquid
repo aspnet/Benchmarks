@@ -5,6 +5,8 @@
 # - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
 # - Update this file with the result of the template generation
 
+{%- assign defaultTimeout = 120 %}
+
 variables:
   - template: job-variables.yml
   - name: session
@@ -28,7 +30,7 @@ jobs:
 - job: {{job.name | replace: ' ', '_'}}
   displayName: {{ n }}- {{job.name}}
   pool: server
-  timeoutInMinutes: {%if job.timeout == blank%}120{%else%}{{job.timeout}}{%endif%}
+  timeoutInMinutes: {%if job.timeout == blank%}{{defaultTimeout}}{%else%}{{job.timeout}}{%endif%}
   dependsOn: [{%for previousJob in previousGroup.jobs%}{{previousJob.name | replace: ' ', '_'}}{%if forloop.last == false%}, {%endif%}{%endfor%}]
   condition: succeededOrFailed()
   steps:

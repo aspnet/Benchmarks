@@ -426,39 +426,39 @@ jobs:
   - template: mono-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin-load --profile intel-db-db "
       
-- job: Mono_Arm_Linux
-  displayName: 12- Mono Arm Linux
+- job: Mono_Database_Arm_Linux
+  displayName: 12- Mono Database Arm Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Frameworks_Amd_Linux, PGO_Intel_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: mono-scenarios.yml
+  - template: mono-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin2-load --profile intel-load2-db "
       
 # GROUP 13
 
-- job: Mono_Database_Arm_Linux
-  displayName: 13- Mono Database Arm Linux
+- job: Mono_Arm_Linux
+  displayName: 13- Mono Arm Linux
   pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Mono_Database_Intel_Linux, Mono_Arm_Linux]
+  timeoutInMinutes: 180
+  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: mono-database-scenarios.yml
+  - template: mono-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load "
       
 - job: Mono_Intel_Linux
   displayName: 13- Mono Intel Linux
   pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Mono_Database_Intel_Linux, Mono_Arm_Linux]
+  timeoutInMinutes: 180
+  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mono-scenarios.yml
@@ -472,7 +472,7 @@ jobs:
   displayName: 14- PGO Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mono_Database_Arm_Linux, Mono_Intel_Linux]
+  dependsOn: [Mono_Arm_Linux, Mono_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
@@ -484,7 +484,7 @@ jobs:
   displayName: 14- Grpc Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mono_Database_Arm_Linux, Mono_Intel_Linux]
+  dependsOn: [Mono_Arm_Linux, Mono_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: grpc-scenarios.yml

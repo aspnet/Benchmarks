@@ -239,26 +239,28 @@ groups:
       template: mono-database-scenarios.yml
       profiles:
       - intel-lin-app 
-      - intel-load-load
+      - amd-lin-load
       - intel-db-db
-
-    - name: Mono Arm Linux
-      template: mono-scenarios.yml
-      profiles:
-      - arm-lin-28-app 
-      - intel-load2-load
-
-  - jobs:
 
     - name: Mono Database Arm Linux
       template: mono-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
+      - amd-lin2-load
+      - intel-load2-db
+
+  - jobs:
+
+    - name: Mono Arm Linux
+      template: mono-scenarios.yml
+      timeout: 180
+      profiles:
+      - arm-lin-28-app 
       - intel-load2-load
-      - intel-db-db
 
     - name: Mono Intel Linux
       template: mono-scenarios.yml
+      timeout: 180
       profiles:
       - intel-lin-app 
       - intel-load-load
