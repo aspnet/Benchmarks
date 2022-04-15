@@ -18,6 +18,8 @@ profiles:
       load:
         endpoints: 
           - http://10.0.0.10:5001
+        aliases:
+          - warmup
 
   aspnet-azure-lin-relay:
     variables:
@@ -36,3 +38,5 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureclient
+        aliases:
+          - warmup

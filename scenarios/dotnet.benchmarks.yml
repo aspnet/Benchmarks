@@ -37,9 +37,3 @@ scenarios:
       variables:
         filter: "*SocketSendReceivePerfTest*"
 
-profiles:
-  local:
-    jobs: 
-      application:
-        endpoints: 
-          - http://localhost:5010
