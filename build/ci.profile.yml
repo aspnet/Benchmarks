@@ -30,8 +30,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
 
   intel-win-app:
     variables:
@@ -57,8 +57,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
 
   intel-load-db:
     variables:
@@ -75,8 +75,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-load:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
  
   intel-load2-app:
     variables:
@@ -102,8 +102,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-load2:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
 
   amd-lin-app:
     variables:
@@ -119,8 +119,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
 
   amd-lin2-app:
     variables:
@@ -136,8 +136,8 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
-      aliases:
-        - warmup
+        aliases:
+          - warmup
 
   amd-lin2-db:
     variables:
