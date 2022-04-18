@@ -1,7 +1,6 @@
 # see https://www.envoyproxy.io/docs/envoy/latest/configuration/overview/examples
 
 admin:
-  access_log_path: /tmp/admin_access.log
   address:
     socket_address:
         address: 0.0.0.0
