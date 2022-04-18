@@ -39,7 +39,8 @@ static_resources:
                   cluster: downstream
           http_filters:
           - name: envoy.filters.http.router
-            typed_config: {}
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
   - name: downstream
