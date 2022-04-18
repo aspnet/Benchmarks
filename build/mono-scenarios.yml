@@ -36,9 +36,9 @@ parameters:
     - displayName: "Mono - LLVM JIT"
       arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm --application.environmentVariables MONO_ENV_OPTIONS=--llvm
     - displayName: "Mono - LLVM AOT"
-      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot
+      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot --application.environmentVariables MONO_ENV_OPTIONS=--llvm
     - displayName: "Mono - LLVM AOT preemptive"
-      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive
+      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive --application.environmentVariables MONO_ENV_OPTIONS=--llvm
 
 steps:
 - ${{ each s in parameters.scenarios }}:
