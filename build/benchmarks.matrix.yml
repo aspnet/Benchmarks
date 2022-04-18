@@ -155,7 +155,7 @@ groups:
     - name: Baselines Arm Windows
       template: baselines-scenarios.yml
       profiles:
-      - arm-lin-28-app 
+      - arm-win-28-app 
       - intel-lin-load
 
   - jobs:
