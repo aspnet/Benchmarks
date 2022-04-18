@@ -45,6 +45,7 @@ profiles:
   intel-db-db:
     variables:
       databaseServer: 10.0.0.103
+      downstreamAddress: 10.0.0.103
     agents:
       db:
         endpoints: 
@@ -63,6 +64,7 @@ profiles:
   intel-load-db:
     variables:
       databaseServer: 10.0.0.105
+      downstreamAddress: 10.0.0.105
     agents:
       db:
         endpoints: 
@@ -90,6 +92,7 @@ profiles:
   intel-load2-db:
     variables:
       databaseServer: 10.0.0.101
+      downstreamAddress: 10.0.0.101
     agents:
       db:
         endpoints: 
@@ -142,6 +145,7 @@ profiles:
   amd-lin2-db:
     variables:
       databaseServer: 10.0.0.109
+      downstreamAddress: 10.0.0.109
     agents: 
       db:
         endpoints: 

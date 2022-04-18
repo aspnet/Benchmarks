@@ -15,7 +15,8 @@ variables:
     downstreamScheme: http # http, https
     serverProtocol: http # http, http2
     downstreamProtocol: http # http, http2
-
+    downstreamPort: 8081
+   
 jobs:
   # override bombardier transport argument based on the serverProtocol variable
   bombardier:
