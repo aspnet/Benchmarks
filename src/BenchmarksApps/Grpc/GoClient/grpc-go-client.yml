@@ -18,8 +18,9 @@ jobs:
       requestSize: 0
       responseSize: 0
       streams: 1
+      serverScheme: http
     environmentVariables:
-      SERVER_ADDR: '{{serverUri}}:{{serverPort}}'
+      SERVER_ADDR: '{{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}}'
       PROTOCOL: '{{protocol}}'
       SCENARIO: '{{scenario}}'
       CONNECTIONS: '{{connections}}'
