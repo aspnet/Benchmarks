@@ -21,37 +21,37 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs $(frameworksV2) --load.connections 4096 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs $(frameworksV2) --load.variables.connections 4096 --property scenario=PlaintextNodeJS --property protocol=http
   - displayName: NodeJS Json
-    arguments: --scenario json_nodejs $(frameworksV2) --load.connections 256 --property scenario=JsonNodeJS --property protocol=http
+    arguments: --scenario json_nodejs $(frameworksV2) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
 
   # Actix (Rust)
 
   - displayName: Actix Plaintext
-    arguments: --scenario plaintext_actix $(frameworksV2) --load.connections 256 --property scenario=PlaintextActix --property protocol=http
+    arguments: --scenario plaintext_actix $(frameworksV2) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
   - displayName: Actix Json
-    arguments: --scenario json_actix $(frameworksV2) --load.connections 512 --property scenario=JsonActix --property protocol=http
+    arguments: --scenario json_actix $(frameworksV2) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
 
   # FastHttp (Go)
 
   - displayName: Go Plaintext
-    arguments: --scenario plaintext_fasthttp $(frameworksV2) --load.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
+    arguments: --scenario plaintext_fasthttp $(frameworksV2) --load.variables.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
   - displayName: Go Json
-    arguments: --scenario json_fasthttp $(frameworksV2) --load.connections 512 --property scenario=JsonFastHttp --property protocol=http
+    arguments: --scenario json_fasthttp $(frameworksV2) --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
 
   # ULib (C++)
 
   - displayName: ULib Plaintext
-    arguments: --scenario plaintext_ulib $(frameworksV2) --load.connections 1024 --property scenario=PlaintextULib --property protocol=http
+    arguments: --scenario plaintext_ulib $(frameworksV2) --load.variables.connections 1024 --property scenario=PlaintextULib --property protocol=http
   - displayName: ULib Json
-    arguments: --scenario json_ulib $(frameworksV2) --load.connections 512 --property scenario=JsonULib --property protocol=http
+    arguments: --scenario json_ulib $(frameworksV2) --load.variables.connections 512 --property scenario=JsonULib --property protocol=http
 
   # Netty
 
   - displayName: Netty Plaintext
-    arguments: --scenario plaintext_netty $(frameworksV2) --load.connections 1024 --property scenario=PlaintextNetty --property protocol=http
+    arguments: --scenario plaintext_netty $(frameworksV2) --load.variables.connections 1024 --property scenario=PlaintextNetty --property protocol=http
   - displayName: Netty Json
-    arguments: --scenario json_netty $(frameworksV2) --load.connections 512 --property scenario=JsonNetty --property protocol=http
+    arguments: --scenario json_netty $(frameworksV2) --load.variables.connections 512 --property scenario=JsonNetty --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
