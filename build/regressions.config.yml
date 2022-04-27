@@ -68,8 +68,6 @@ sources:
         - Perf
         - perf-regression
         - area-perf
-      owners:
-        - javiercn
       template: rps      
       title: | 
         Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
@@ -142,6 +140,8 @@ templates:
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevRps | format_number: 'N0' }} | {{rps | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change > 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %} | {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N2'}} | {{ changes | strip_newlines }} |
     {%- endfor %}
 
+    [PowerBI Dashboard](https://aka.ms/aspnet/benchmarks)
+
   published-size: |
     | Scenario | Environment | Date | Old Build (KB) | New Build (KB) | Change | Deviation | StDev | Dependencies |
     | -------- | ----------- | ---- | -------------- | -------------- | ------ | --------- | ----- | ------------ |
@@ -188,6 +188,8 @@ templates:
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{deviation | format_number: 'N2'}} σ | {{ regression.StandardDeviation | format_number: 'N0'}} | {{ changes | strip_newlines }} |
     {%- endfor %}
 
+    [PowerBI Dashboard](https://aka.ms/aspnet/benchmarks)
+
   start-time: |
     | Scenario | Environment | Date | Old (ms) | New (ms) | Change | Dependencies |
     | -------- | ----------- | ---- | -------- | -------- | ------ | ------------ |
@@ -232,3 +234,5 @@ templates:
     {%- endcapture %}
     | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{prevBuild | format_number: 'N0' }} | {{build | format_number: 'N0' }} | {{change | format_number: 'N2'}} % ({{regression.Change | format_number: 'N0'}}) {% if regression.Change < 0 %} :thumbsup: {% else %} :thumbsdown: {% endif %}| {{ changes | strip_newlines }} |
     {%- endfor %}
+
+    [PowerBI Dashboard](https://aka.ms/aspnet/benchmarks)
