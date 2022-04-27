@@ -36,5 +36,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --application.framework net7.0 ${{ s.arguments }} --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+          "args": [ "${{ parameters.arguments }} --application.framework net7.0 ${{ s.arguments }} --command-line-property --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }

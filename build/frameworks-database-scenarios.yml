@@ -52,5 +52,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
         }

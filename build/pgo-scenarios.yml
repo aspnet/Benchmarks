@@ -78,5 +78,5 @@ steps:
           {
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
-            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ m.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ m.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

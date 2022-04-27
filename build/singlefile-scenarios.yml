@@ -48,5 +48,5 @@ steps:
           {
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
-            "args": [ "${{ s.arguments }} ${{ mode.arguments }} ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table SingleFileBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ mode.arguments }} ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table SingleFileBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

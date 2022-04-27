@@ -32,5 +32,5 @@ steps:
           "timeout": "00:5:00",
           "condition": "(${{ parameters.condition }})",
           "name": "crank",
-          "args": [ "${{ s.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net7.0 --application.framework net7.0 --session $(session) --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata " ]
+          "args": [ "${{ s.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net7.0 --application.framework net7.0 --session $(session) --command-line-property --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata " ]
         }

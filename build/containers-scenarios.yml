@@ -104,6 +104,6 @@ steps:
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
-              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }
             

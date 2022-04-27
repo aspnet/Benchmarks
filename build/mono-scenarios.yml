@@ -55,5 +55,5 @@ steps:
             "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
             "name": "crank",
             "timeout": "01:00:00",
-            "args": [ "${{ s.arguments }} ${{ runtime.arguments }} ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ runtime.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table MonoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ runtime.arguments }} ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ runtime.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table MonoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

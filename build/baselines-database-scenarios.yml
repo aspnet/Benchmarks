@@ -69,5 +69,5 @@ steps:
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }})",
-              "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --session $(session) --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
             }

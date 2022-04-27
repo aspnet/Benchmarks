@@ -46,5 +46,5 @@ steps:
           {
             "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 < 13",
             "name": "crank",
-            "args": [ "${{ s.arguments }} ${{ p.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters false --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --table CG2Benchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ p.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net7.0 --application.options.collectCounters false --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table CG2Benchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

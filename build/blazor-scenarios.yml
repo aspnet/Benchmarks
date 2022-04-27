@@ -31,5 +31,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
         }
