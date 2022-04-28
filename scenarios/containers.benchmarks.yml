@@ -30,7 +30,7 @@ scenarios:
       variables:
         scenario: json
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: json
         path: /json
@@ -44,7 +44,7 @@ scenarios:
       variables:
         scenario: dbfortunesraw
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: html
         path: /fortunes/raw

@@ -31,7 +31,7 @@ scenarios:
       job: distributedcache
       arguments: --Cache StackExchangeRedisCache --RedisConnectionString "{{ databaseServer }}"
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: none
         path: /
@@ -44,7 +44,7 @@ scenarios:
       job: distributedcache
       arguments: --cache DistributedMemoryCache
     load:
-      job: bombardier
+      job: wrk
       variables:
         presetHeaders: none
         path: /
