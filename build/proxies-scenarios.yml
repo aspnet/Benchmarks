@@ -155,7 +155,7 @@ steps:
                   "condition": "${{ parameters.condition }} && ${{ s.condition }}",
                   "timeout": "00:03:00",
                   "name": "crank",
-                  "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                  "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
                 }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
@@ -177,5 +177,5 @@ steps:
                 "condition": "${{ parameters.condition }} && ${{ s.condition }}",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }

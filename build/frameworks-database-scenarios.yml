@@ -21,22 +21,22 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs $(frameworksV2) --load.connections 64 --property scenario=FortunesNodeJS --property protocol=http
+    arguments: --scenario fortunes_nodejs $(frameworksV2) --load.variables.connections 64 --property scenario=FortunesNodeJS --property protocol=http
 
   # Actix (Rust)
 
   - displayName: Actix fortunes
-    arguments: --scenario fortunes_actix $(frameworksV2) --load.connections 512 --property scenario=FortunesActix --property protocol=http
+    arguments: --scenario fortunes_actix $(frameworksV2) --load.variables.connections 512 --property scenario=FortunesActix --property protocol=http
 
   # FastHttp (Go)
 
   - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp $(frameworksV2) --load.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+    arguments: --scenario fortunes_fasthttp $(frameworksV2) --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
 
   # ULib (C++)
 
   - displayName: ULib Fortunes
-    arguments: --scenario fortunes_ulib $(frameworksV2) --load.connections 512 --property scenario=FortunesULib --property protocol=http
+    arguments: --scenario fortunes_ulib $(frameworksV2) --load.variables.connections 512 --property scenario=FortunesULib --property protocol=http
 
   # Netty
 

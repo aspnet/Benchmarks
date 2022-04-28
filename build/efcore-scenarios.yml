@@ -60,6 +60,6 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "--table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
+          "args": [ "--command-line-property --table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
           "timeout": "00:30:00"
         }
