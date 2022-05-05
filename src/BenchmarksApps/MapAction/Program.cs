@@ -46,7 +46,7 @@ using var host = Host.CreateDefaultBuilder(args)
                         {
                             if (hasParams && isStringParam)
                             {
-                                context.Parameters[0] = ((string)context.Parameters[0]).ToUpperInvariant();
+                                context.Arguments[0] = (context.GetArgument<string>(0)).ToUpperInvariant();
                             }
                             return next(context);
                         });
