@@ -15,7 +15,7 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
-        - path: jobs.load.results['wrk/rps/mean']
+        - path: jobs.load.results['http/rps/mean']
           threshold: 2
       labels: 
         - Perf
@@ -60,9 +60,7 @@ sources:
     daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
-        - path: jobs.load.results['wrk/rps/mean']
-          threshold: 2
-        - path: jobs.load.results['bombardier/rps/mean']
+        - path: jobs.load.results['http/rps/mean']
           threshold: 2
       labels: 
         - Perf
@@ -100,8 +98,8 @@ templates:
     {%- for regression in Regressions -%}
     {%- assign r = regression.CurrentResult -%}
     {%- assign p = regression.PreviousResult -%}
-    {%- assign rps = 0 | plus: r.Data.jobs.load.results['wrk/rps/mean'] | plus: r.Data.jobs.load.results['bombardier/rps/mean'] -%}
-    {%- assign prevRps = 0 | plus: p.Data.jobs.load.results['wrk/rps/mean'] | plus: p.Data.jobs.load.results['bombardier/rps/mean'] | at_least: 1 -%}
+    {%- assign rps = 0 | plus: r.Data.jobs.load.results['http/rps/mean'] -%}
+    {%- assign prevRps = 0 | plus: p.Data.jobs.load.results['http/rps/mean'] | at_least: 1 -%}
     {%- assign change = regression.Change | divided_by: prevRps | times: 100 | round: 2 -%}
     {%- assign deviation = regression.Change | divided_by: regression.StandardDeviation | round: 2 -%}
     {%- capture changes -%}
