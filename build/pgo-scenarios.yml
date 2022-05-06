@@ -54,15 +54,15 @@ parameters:
   - displayName: No PGO
     arguments: --property pgo=disabled --application.environmentVariables COMPlus_JitDisablePGO=1
   - displayName: OSR
-    arguments: --property pgo=osr --application.environmentVariables COMPlus_TC_QuickJitForLoops=1 --application.environmentVariables COMPlus_TC_OnStackReplacement=1
+    arguments: --property pgo=osr --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_TC_OnStackReplacement=1
   - displayName: Dynamic PGO
-    arguments: --property pgo=dynamic --application.environmentVariables COMPlus_TieredPGO=1 --application.environmentVariables COMPlus_TC_QuickJitForLoops=1
+    arguments: --property pgo=dynamic --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
   - displayName: Dynamic PGO OSR
-    arguments: --property pgo=dynamic-osr --application.environmentVariables COMPlus_TieredPGO=1 --application.environmentVariables COMPlus_TC_QuickJitForLoops=1 --application.environmentVariables COMPlus_TC_OnStackReplacement=1
+    arguments: --property pgo=dynamic-osr --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_TC_OnStackReplacement=1
   - displayName: Full PGO
-    arguments: --property pgo=full --application.environmentVariables COMPlus_TieredPGO=1 --application.environmentVariables COMPlus_TC_QuickJitForLoops=1 --application.environmentVariables COMPlus_ReadyToRun=0
+    arguments: --property pgo=full --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
   - displayName: Full PGO OSR
-    arguments: --property pgo=full-osr --application.environmentVariables COMPlus_TieredPGO=1 --application.environmentVariables COMPlus_TC_QuickJitForLoops=1 --application.environmentVariables COMPlus_ReadyToRun=0 --application.environmentVariables COMPlus_TC_OnStackReplacement=1
+    arguments: --property pgo=full-osr --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_OnStackReplacement=1
 
 steps:
 - ${{ each s in parameters.scenarios }}:

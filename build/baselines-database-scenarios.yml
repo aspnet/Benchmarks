@@ -43,6 +43,22 @@ parameters:
   - displayName: Caching Platform
     arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform
 
+  # PGO Inline
+  - displayName: Fortunes Platform PGO Inline
+    arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
+  - displayName: Single Query Platform PGO Inline
+    arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
+  - displayName: Multiple Queries Platform PGO Inline
+    arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
+  - displayName: Updates Platform PGO Inline
+    arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
+  - displayName: Caching Platform PGO Inline
+    arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
   # Database Fortunes
   - displayName: Database Fortunes Raw
     arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes

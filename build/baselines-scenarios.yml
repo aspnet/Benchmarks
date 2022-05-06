@@ -34,6 +34,13 @@ parameters:
   - displayName: Json Platform
     arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
 
+  # PGO Inline
+  - displayName: Plaintext Platform PGO Inline
+    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
+  - displayName: Json Platform PGO Inline
+    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+
   # Plaintext
   - displayName: Plaintext
     arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext
