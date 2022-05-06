@@ -362,6 +362,7 @@ groups:
 
     - name: Proxies Intel Linux
       template: proxies-scenarios.yml
+      timeout: 180
       profiles:
       - intel-lin-app 
       - intel-load-load

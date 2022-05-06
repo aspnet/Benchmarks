@@ -639,7 +639,7 @@ jobs:
 - job: Proxies_Intel_Linux
   displayName: 20- Proxies Intel Linux
   pool: server
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
   dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows]
   condition: succeededOrFailed()
   steps:
