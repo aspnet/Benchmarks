@@ -18,11 +18,9 @@ parameters:
   
   - displayName: "6.0"
     arguments: --application.channel current --application.framework net6.0 --property framework=net6.0
-    supportsPlatform: true
 
   - displayName: "7.0"
     arguments: --application.channel edge --application.framework net7.0 --property framework=net7.0
-    supportsPlatform: true
 
 # Scenarios
 - name: scenarios 
@@ -32,42 +30,39 @@ parameters:
   # Platform
   - displayName: Fortunes Platform
     arguments: --scenario fortunes $(platformJobs) --property scenario=FortunesPlatform
-    isPlatform: true
+
   - displayName: Single Query Platform
     arguments: --scenario single_query $(platformJobs) --property scenario=SingleQueryPlatform
-    isPlatform: true
+
   - displayName: Multiple Queries Platform
     arguments: --scenario multiple_queries $(platformJobs) --property scenario=MultipleQueriesPlatform
-    isPlatform: true
+
   - displayName: Updates Platform
     arguments: --scenario updates $(platformJobs) --property scenario=UpdatesPlatform
-    isPlatform: true
+
   - displayName: Caching Platform
     arguments: --scenario caching $(platformJobs) --property scenario=CachingPlatform
-    isPlatform: true
-  
+
   # Database Fortunes
   - displayName: Database Fortunes Raw
     arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
-    isPlatform: false
+
   - displayName: Database Fortunes EF
     arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF
-    isPlatform: false
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
-    - ${{ if or( eq(b.supportsPlatform, true), eq(s.isPlatform, false)) }}:
-      - task: PublishToAzureServiceBus@1
-        condition: succeededOrFailed()
-        timeoutInMinutes: 5
-        displayName: "${{ s.displayName }} - ${{ b.displayName }}"
-        inputs:
-          connectedServiceName: ${{ parameters.connection }}
-          waitForCompletion: true
-          messageBody: |
-            {
-              "name": "crank",
-              "condition": "(${{ parameters.condition }})",
-              "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
-            }
+    - task: PublishToAzureServiceBus@1
+      condition: succeededOrFailed()
+      timeoutInMinutes: 5
+      displayName: "${{ s.displayName }} - ${{ b.displayName }}"
+      inputs:
+        connectedServiceName: ${{ parameters.connection }}
+        waitForCompletion: true
+        messageBody: |
+          {
+            "name": "crank",
+            "condition": "(${{ parameters.condition }})",
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          }
