@@ -58,13 +58,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
+- job: Trends_Database_Azure_Linux
+  displayName: 1- Trends Database Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: []
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
 # GROUP 2
 
 - job: Trends_Database_Intel_Windows
   displayName: 2- Trends Database Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux, Trends_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -76,7 +88,7 @@ jobs:
   displayName: 2- Trends Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux, Trends_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -88,7 +100,7 @@ jobs:
   displayName: 2- Trends Database Arm Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux]
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux, Trends_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -96,13 +108,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile arm-win-28-app --profile amd-lin-load --profile amd-lin2-db "
       
+- job: Trends_Azure_Linux
+  displayName: 2- Trends Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Intel_Linux, Trends_Intel_Windows, Trends_Database_Arm_Linux, Trends_Database_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
 # GROUP 3
 
 - job: Trends_Database_Amd_Linux
   displayName: 3- Trends Database Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows, Trends_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -114,7 +138,7 @@ jobs:
   displayName: 3- Trends Arm Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows, Trends_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -126,7 +150,7 @@ jobs:
   displayName: 3- Trends Arm Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows]
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows, Trends_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -134,13 +158,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile arm-win-28-app --profile intel-lin-load "
       
+- job: Baselines_Database_Azure_Linux
+  displayName: 3- Baselines Database Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Intel_Windows, Trends_Intel_Linux, Trends_Database_Arm_Windows, Trends_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
 # GROUP 4
 
 - job: Trends_Amd_Linux
   displayName: 4- Trends Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows, Baselines_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -152,7 +188,7 @@ jobs:
   displayName: 4- Containers Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows, Baselines_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: containers-scenarios.yml
@@ -164,7 +200,7 @@ jobs:
   displayName: 4- EF Core Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows]
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows, Baselines_Database_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: efcore-scenarios.yml
@@ -172,13 +208,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile intel-win-app "
       
+- job: Baselines_Azure_Linux
+  displayName: 4- Baselines Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Amd_Linux, Trends_Arm_Linux, Trends_Arm_Windows, Baselines_Database_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
 # GROUP 5
 
 - job: Baselines_Database_Intel_Linux
   displayName: 5- Baselines Database Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Baselines_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
@@ -190,7 +238,7 @@ jobs:
   displayName: 5- Baselines Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Baselines_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
@@ -202,7 +250,7 @@ jobs:
   displayName: 5- Baselines Database Arm Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows]
+  dependsOn: [Trends_Amd_Linux, Containers_Intel_Linux, EF_Core_Intel_Windows, Baselines_Azure_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-database-scenarios.yml
@@ -724,4 +772,3 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
-

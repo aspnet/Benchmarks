@@ -5,6 +5,7 @@ queues:
   - ASP.NET Benchmarks Queue 1
   - ASP.NET Benchmarks Queue 2
   - ASP.NET Benchmarks Queue 3
+  - ASP.NET Benchmarks Azure Queue
 
 groups:
 
@@ -30,6 +31,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Trends Database Azure Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
   - jobs:
 
     - name: Trends Database Intel Windows
@@ -52,6 +58,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Trends Azure Linux
+      template: trend-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
   - jobs:
 
     - name: Trends Database Amd Linux
@@ -73,6 +84,11 @@ groups:
       - arm-win-28-app 
       - intel-lin-load
 
+    - name: Baselines Database Azure Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
   - jobs:
 
     - name: Trends Amd Linux
@@ -92,6 +108,11 @@ groups:
       template: efcore-scenarios.yml
       profiles:
       - intel-win-app 
+
+    - name: Baselines Azure Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
 
   - jobs:
 
