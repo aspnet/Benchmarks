@@ -5,7 +5,13 @@ profiles:
   short:
     variables:
       warmup: 3
-      duration: 7 
+      duration: 7
+
+  pgo:
+    environmentVariables:
+    - DOTNET_TieredPGO: 1
+    - DOTNET_TC_QuickJitForLoops: 1
+    - DOTNET_ReadyToRun: 0
 
   local:
     variables:
