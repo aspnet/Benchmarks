@@ -4,28 +4,28 @@ profiles:
   aspnet-azure-lin:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.9
-      cores: 4
+      serverAddress: 10.3.0.4
+      cores: 2
     jobs: 
       db:
         endpoints: 
-          - http://10.0.0.11:5001
+          - http://10.3.0.6:5001
       application:
         endpoints: 
-          - http://10.0.0.9:5001
+          - http://10.3.0.4:5001
         variables:
-          databaseServer: 10.0.0.11
+          databaseServer: 10.3.0.5
       load:
         endpoints: 
-          - http://10.0.0.10:5001
+          - http://10.3.0.5:5001
         aliases:
           - warmup
 
   aspnet-azure-lin-relay:
     variables:
       serverPort: 5000
-      serverAddress: 10.0.0.9
-      cores: 4
+      serverAddress: 10.3.0.4
+      cores: 2
     jobs: 
       db:
         endpoints: 
@@ -34,7 +34,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureserver
         variables:
-          databaseServer: 10.0.0.11
+          databaseServer: 10.3.0.6
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureclient
