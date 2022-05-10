@@ -14,7 +14,7 @@ profiles:
         endpoints: 
           - http://10.3.0.4:5001
         variables:
-          databaseServer: 10.3.0.5
+          databaseServer: 10.3.0.6
       load:
         endpoints: 
           - http://10.3.0.5:5001
