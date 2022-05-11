@@ -4,27 +4,15 @@
 using System;
 using System.Net;
 using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace BenchmarkServer
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRouting();
-        }
-
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting();
             app.UseWebSockets();
             app.Use(async (context, next) =>
                 {
@@ -52,13 +40,13 @@ namespace BenchmarkServer
         private async Task Echo(WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
+            var result = await webSocket.ReceiveAsync(buffer.AsMemory(), default);
+            while (result.MessageType != WebSocketMessageType.Close)
             {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                await webSocket.SendAsync(buffer.AsMemory(..result.Count), result.MessageType, result.EndOfMessage, default);
+                result = await webSocket.ReceiveAsync(buffer.AsMemory(), default);
             }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", default);
         }
     }
 }
