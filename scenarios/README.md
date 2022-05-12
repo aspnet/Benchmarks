@@ -9,7 +9,7 @@ Continuous benchmarking results are available on [this PowerBI dashboard](https:
 ## Requirements
 
 These jobs can be executed using the .NET Crank global tool. 
-[.NET Core 3.1](<http://dot.net>) is required to install the global tool.
+[.NET Core](<http://dot.net>) is required to install the global tool.
 
 Install `crank` with the following command:
 
@@ -506,9 +506,20 @@ Using the daily builds of .NET, and targeting net5.0.
 
 ### How to upload custom files?
 
+Local files or complete folders can be sent to the running agents to path runtime and aspnet core files:
+
 ```
 --application.options.outputFiles c:\build\System.Private.CoreLib.dll
 ```
+
+or for a folder:
+
+```
+--application.options.outputFiles c:\build\kestrel
+```
+
+This argument can be repeated in case there are multiple sources.
+
 ### Running with specific runtime versions to isolate regressions
 
 The list of public builds for ASP.NET and Core CLR are available on these feeds:
@@ -516,3 +527,9 @@ The list of public builds for ASP.NET and Core CLR are available on these feeds:
 - Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
 
 Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.y.z` to isolate which build, and ultimately which commit introduced a regression.
+
+### Getting the command line from Power BI
+
+Most pages in the Power BI dashboard list the crank command lines that were used. Select a benchmark and an environment to filter the table:
+
+![image](https://user-images.githubusercontent.com/1165805/168184269-70732746-8490-4e6e-abe8-cf161ea421d6.png)
