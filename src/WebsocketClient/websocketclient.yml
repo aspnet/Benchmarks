@@ -18,4 +18,4 @@
       collectLatency: true
       compress: false
       size: 1000
-    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -s {{scenario}} -u {% if serverUri == blank or serverUri == empty %}{{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}}{% else %}{{serverUri}}:{{serverPort}}{{path}}{% endif %}{% if collectLatency != blank %} --latency {{ collectLatency }}{% endif %} --size {{size}} --compress {{compress}}"
+    arguments: "-c {{connections}} -w {{warmup}} -d {{duration}} -s {{scenario}} -u {{serverScheme}}://{{serverAddress}}:{{serverPort}}{{path}}{% if collectLatency != blank %} --latency {{ collectLatency }}{% endif %} --size {{size}} --compress {{compress}}"

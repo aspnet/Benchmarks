@@ -11,32 +11,48 @@ parameters:
   type: string
   default: 'true'
 
+- name: sizes
+  type: object
+  default:
+    - displayName: 10 bytes
+      arguments: --variable size=10 --property size=10
+    - displayName: 100 bytes
+      arguments: --variable size=100 --property size=100
+    - displayName: 1000 bytes
+      arguments: --variable size=1000 --property size=1000
+    - displayName: 10000 bytes
+      arguments: --variable size=10000 --property size=10000
+
+- name: compress
+  type: object
+  default:
+    - displayName: with-compression
+      arguments: --variable compress=true --application.buildArguments /p:UseCompression=true --property compress=true
+    - displayName: without-compression
+      arguments: --variable compress=false --property compress=false
+
 # Scenarios
 - name: scenarios 
   type: object
   default: 
 
-  - displayName: Echo-10000
-    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=10000--property scenario=echo
-  - displayName: Echo-100
-    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=100 --property scenario=echo
-  - displayName: Echo-Compression-100
-    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=100 --variable compress=true --property scenario=echo --application.buildArguments \"/p:UseCompression=true\"
-  - displayName: Echo-Compression-10000
-    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=10000 --variable compress=true --property scenario=echo --application.buildArguments \"/p:UseCompression=true\"
+  - displayName: Echo
+    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --property scenario=echo
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
-    condition: succeededOrFailed()
-    displayName: ${{ s.displayName }}
-    inputs:
-      connectedServiceName: ${{ parameters.connection }}
-      waitForCompletion: true
-      messageBody: |
-        {
-          "timeout": "00:5:00",
-          "condition": "(${{ parameters.condition }})",
-          "name": "crank",
-          "args": [ "${{ s.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net7.0 --application.framework net7.0 --session $(session) --command-line-property --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata " ]
-        }
+  - ${{ each size in parameters.sizes }}:
+    - ${{ each compress in parameters.compress }}:
+      - task: PublishToAzureServiceBus@1
+        condition: succeededOrFailed()
+        displayName: ${{ s.displayName }} ${{ size.displayName }} ${{ compress.displayName }}
+        inputs:
+          connectedServiceName: ${{ parameters.connection }}
+          waitForCompletion: true
+          messageBody: |
+            {
+              "timeout": "00:5:00",
+              "condition": "(${{ parameters.condition }})",
+              "name": "crank",
+              "args": [ "${{ s.arguments }} ${{ size.arguments }} ${{ compress.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net7.0 --application.framework net7.0 --session $(session) --command-line-property --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata " ]
+            }
