@@ -4,6 +4,10 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(UseCompression)' == 'true' ">$(DefineConstants);USECOMPRESSION</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="websocketServer.yml" />
   </ItemGroup>

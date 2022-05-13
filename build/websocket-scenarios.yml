@@ -16,8 +16,14 @@ parameters:
   type: object
   default: 
 
-  - displayName: Echo
-    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --property scenario=echo
+  - displayName: Echo-10000
+    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=10000--property scenario=echo
+  - displayName: Echo-100
+    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=100 --property scenario=echo
+  - displayName: Echo-Compression-100
+    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=100 --variable compress=true --property scenario=echo --application.buildArguments \"/p:UseCompression=true\"
+  - displayName: Echo-Compression-10000
+    arguments: --scenario websocket $(websocketJobs) --variable scenario=echo --variable size=10000 --variable compress=true --property scenario=echo --application.buildArguments \"/p:UseCompression=true\"
 
 steps:
 - ${{ each s in parameters.scenarios }}:

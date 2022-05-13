@@ -1,5 +1,5 @@
 ﻿# Examples:
-# --config benchmarks.websocket.yml --scenario websocket --variable scenario=echo --profile asp-perf-lin
+# --config websocket.benchmarks.yml --scenario websocket --variable scenario=echo --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/WebsocketClient/websocketclient.yml
@@ -19,3 +19,5 @@ scenarios:
       variables:
         path: /Echo
         warmup: 5
+        size: 1000
+        compress: false

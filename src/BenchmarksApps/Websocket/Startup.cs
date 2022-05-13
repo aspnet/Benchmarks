@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace BenchmarkServer
 {
@@ -20,7 +21,13 @@ namespace BenchmarkServer
                     {
                         if (context.WebSockets.IsWebSocketRequest)
                         {
-                            using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync())
+                            using (WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync(
+                                new WebSocketAcceptContext()
+                                {
+#if USECOMPRESSION
+                                    DangerousEnableCompression = true,
+#endif
+                                }))
                             {
                                 await Echo(webSocket);
                             }
