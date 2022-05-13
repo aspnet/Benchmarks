@@ -16,7 +16,7 @@ namespace WebsocketClient
 {
     class Program
     {
-        private const int EchoMessageSize = 1000;
+        private static int EchoMessageSize = 1000;
 
         private static List<ClientWebSocket> _connections;
         private static List<int> _requestsPerConnection;
@@ -32,6 +32,7 @@ namespace WebsocketClient
         public static int ExecutionTimeSeconds { get; set; }
         public static int Connections { get; set; }
         public static bool CollectLatency { get; set; }
+        public static bool Compression { get; set; }
 
         static async Task Main(string[] args)
         {
@@ -44,6 +45,8 @@ namespace WebsocketClient
             var optionDuration = app.Option<int>("-d|--duration <N>", "Duration of the test in seconds", CommandOptionType.SingleValue);
             var optionScenario = app.Option("-s|--scenario <S>", "Scenario to run", CommandOptionType.SingleValue);
             var optionLatency = app.Option<bool>("-l|--latency <B>", "Whether to collect detailed latency", CommandOptionType.SingleValue);
+            var optionPayloadSize = app.Option<int>("--size <N>", "Size of randomly generated payload", CommandOptionType.SingleValue);
+            var optionCompression = app.Option<bool>("--compress <B>", "Whether to enable compression", CommandOptionType.SingleValue);
 
             app.OnExecuteAsync(cancellationToken =>
             {
@@ -68,6 +71,15 @@ namespace WebsocketClient
                     ? bool.Parse(optionLatency.Value())
                     : false;
 
+                Compression = optionCompression.HasValue()
+                    ? bool.Parse(optionCompression.Value())
+                    : false;
+
+                if (optionPayloadSize.HasValue())
+                {
+                    EchoMessageSize = int.Parse(optionPayloadSize.Value());
+                }
+
                 return RunAsync();
             });
 
@@ -78,7 +90,7 @@ namespace WebsocketClient
         {
             await CreateConnections();
 
-            Log($"Starting scenario {Scenario}");
+            Log($"Starting scenario {Scenario}. With message size {EchoMessageSize} and compression {(Compression ? "on" : "off")}");
 
             if (WarmupTimeSeconds > 0)
             {
@@ -201,6 +213,10 @@ namespace WebsocketClient
             for (var i = 0; i < Connections; i++)
             {
                 var client = new ClientWebSocket();
+                if (Compression)
+                {
+                    client.Options.DangerousDeflateOptions = new WebSocketDeflateOptions();
+                }
                 await client.ConnectAsync(new Uri(ServerUrl), CancellationToken.None);
                 _connections.Add(client);
 
