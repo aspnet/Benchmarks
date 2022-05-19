@@ -80,6 +80,12 @@ jobs:
       branchOrCommit: main
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
+    framework: net7.0
+    channel: edge
+    environmentVariables:
+      DOTNET_TieredPGO: 1
+      DOTNET_ReadyToRun: 0
+      DOTNET_TC_QuickJitForLoops: 1
     variables:
       downstreamArguments:
       downstreamPort: 8081
