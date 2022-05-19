@@ -24,7 +24,7 @@ sources:
       owners:
         - sebastienros
       template: rps
-      title: | 
+      title: >-
         Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: Startup 
     table: TrendBenchmarks
@@ -47,7 +47,7 @@ sources:
       owners:
         - sebastienros
       template: start-time
-      title: | 
+      title: >-
         Startup {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: MVC 
     table: MvcBenchmarks
@@ -67,7 +67,7 @@ sources:
         - perf-regression
         - area-perf
       template: rps      
-      title: | 
+      title: >-
         Perf {% if Regressions.first.Change > 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: PublishedSize
     table: TrendBenchmarks
@@ -88,7 +88,7 @@ sources:
       owners:
         - sebastienros
       template: published-size
-      title: | 
+      title: >-
         Published size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 
 templates:
