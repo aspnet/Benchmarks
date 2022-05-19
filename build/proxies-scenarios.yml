@@ -119,6 +119,9 @@ parameters:
     - displayName: https - https
       arguments: --variable serverScheme=https --variable serverScheme=https --variable downstreamScheme=https --property serverProtocol=https --property downstreamProtocol=https
       requiresServerHttps: true
+    - displayName: http - h2
+      arguments: --variable serverScheme=http --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=http --property downstreamProtocol=h2
+      requiresServerHttp2: true
     - displayName: h2 - http
       arguments: --variable connections=28 --variable serverScheme=https --variable serverProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=http
       requiresServerHttp2: true
