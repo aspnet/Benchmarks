@@ -121,7 +121,8 @@ class Program
                     // accept all certs
                     SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = delegate { return true; } },
                     MaxConnectionsPerServer = max11ConnectionsPerServer,
-                    EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections
+                    EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections,
+                    ConnectTimeout = Timeout.InfiniteTimeSpan,
                 };
             }
 
