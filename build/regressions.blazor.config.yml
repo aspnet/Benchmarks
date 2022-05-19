@@ -15,7 +15,7 @@ sources:
         - Perf
         - perf-regression
       template: download-size
-      title: | 
+      title: >-
         Blazor download size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: Startup 
     table: BlazorWasm
@@ -32,7 +32,7 @@ sources:
         - Perf
         - perf-regression
       template: first-ui
-      title: | 
+      title: >-
         Blazor time to first UI {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 templates:
   download-size: |
