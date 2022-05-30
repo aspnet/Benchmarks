@@ -121,7 +121,7 @@ parameters:
       requiresServerHttps: true
     - displayName: http - h2
       arguments: --variable serverScheme=http --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=http --property downstreamProtocol=h2
-      requiresServerHttp2: true
+      requiresDownstreamHttp2: true
     - displayName: h2 - http
       arguments: --variable connections=28 --variable serverScheme=https --variable serverProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=http
       requiresServerHttp2: true
@@ -144,22 +144,20 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't (requiresServerHttps or supportsServerHttps) AND (doesn't requiresServerHttp2 or supportsServerHttp2)
       - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
-        # For .NET 5.0, only run HTTP-HTTP and H2-H2 benchmarks
-        - ${{ if or( not( eq( s.displayName, 'YARP-net50')), in( protocol.displayName, 'http - http', 'h2 - h2') )}}:
-          - task: PublishToAzureServiceBus@1
-            condition: succeededOrFailed()
-            timeoutInMinutes: 5
-            displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
-            inputs:
-              connectedServiceName: ${{ parameters.connection }}
-              waitForCompletion: true
-              messageBody: |
-                {
-                  "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
-                  "timeout": "00:03:00",
-                  "name": "crank",
-                  "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
-                }
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          timeoutInMinutes: 5
+          displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
+                "timeout": "00:03:00",
+                "name": "crank",
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --load.variables.warmup ${{ parameters.warmup }} --load.variables.duration ${{ parameters.duration }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+              }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
 # For gRPC, only run one payload "0 B - 100 B - No Headers" because the payload arguments are not applicable here
