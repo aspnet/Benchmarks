@@ -1,34 +1,40 @@
-namespace HttpClientBenchmarks;
+using System.Collections.Generic;
 
-public class Metrics
+namespace HttpClientBenchmarks
 {
-    public List<long> HeadersTimes { get; set; } = new();
-    public List<long> ContentStartTimes { get; set; } = new();
-    public List<long> ContentEndTimes { get; set; } = new();
-    public long SuccessRequests { get; set; }
-    public long BadStatusRequests { get; set; }
-    public long ExceptionRequests { get; set; }
-    public double MeanRps { get; set; }
-
-    public Metrics()
+    public class Metrics
     {
-    }
+        public List<long> HeadersTimes { get; set; }
+        public List<long> ContentStartTimes { get; set; }
+        public List<long> ContentEndTimes { get; set; }
+        public long SuccessRequests { get; set; }
+        public long BadStatusRequests { get; set; }
+        public long ExceptionRequests { get; set; }
+        public double MeanRps { get; set; }
 
-    public Metrics(int timingsCapacity)
-    {
-        HeadersTimes.EnsureCapacity(timingsCapacity);
-        ContentStartTimes.EnsureCapacity(timingsCapacity);
-        ContentEndTimes.EnsureCapacity(timingsCapacity);
-    }
+        public Metrics()
+        {
+            HeadersTimes = new List<long>();
+            ContentStartTimes = new List<long>();
+            ContentEndTimes = new List<long>();
+        }
 
-    public void Add(Metrics m)
-    {
-        HeadersTimes.AddRange(m.HeadersTimes);
-        ContentStartTimes.AddRange(m.ContentStartTimes);
-        ContentEndTimes.AddRange(m.ContentEndTimes);
-        SuccessRequests += m.SuccessRequests;
-        BadStatusRequests += m.BadStatusRequests;
-        ExceptionRequests += m.ExceptionRequests;
-        MeanRps += m.MeanRps;
+        public Metrics(int timingsCapacity)
+        {
+            HeadersTimes = new List<long>(timingsCapacity);
+            ContentStartTimes = new List<long>(timingsCapacity);
+            ContentEndTimes = new List<long>(timingsCapacity);
+        }
+
+        public void Add(Metrics m)
+        {
+            HeadersTimes.AddRange(m.HeadersTimes);
+            ContentStartTimes.AddRange(m.ContentStartTimes);
+            ContentEndTimes.AddRange(m.ContentEndTimes);
+            SuccessRequests += m.SuccessRequests;
+            BadStatusRequests += m.BadStatusRequests;
+            ExceptionRequests += m.ExceptionRequests;
+            MeanRps += m.MeanRps;
+        }
     }
 }
