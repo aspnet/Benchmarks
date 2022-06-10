@@ -26,6 +26,9 @@ namespace Benchmarks.Middleware
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
+                // Parse the query string if it exists to benchmark query parsing
+                var _ = httpContext.Request.Query;
+
                 return WriteResponse(httpContext.Response);
             }
 
