@@ -87,7 +87,7 @@ jobs:
       dockerFile: frameworks/Rust/faf/faf.dockerfile
       dockerImageName: faf
       dockerContextDirectory: frameworks/Rust/faf/
-    readyStateText: Starting http server
+    #readyStateText: Starting http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
@@ -197,7 +197,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
-        serverPort: 8080
+        serverPort: 8089
 
   # FastHttp (Go)
   plaintext_fasthttp:
