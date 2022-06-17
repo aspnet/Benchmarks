@@ -241,7 +241,7 @@ profiles:
           databaseServer: 10.0.0.109
       load:
         endpoints: 
-          - http://asp-citrine-load2:5001
+          - http://asp-citrine-amd2:5001
         aliases:
           - warmup
 
@@ -262,7 +262,7 @@ profiles:
           databaseServer: 10.0.0.109
       load:
         endpoints: 
-          - http://asp-citrine-load2:5001
+          - http://asp-citrine-amd:5001
         aliases:
           - warmup
 
