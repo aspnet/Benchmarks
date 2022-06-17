@@ -15,6 +15,7 @@ variables:
     concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
     collectRequestTimings: false # unsupported by WRK --  other values will throw
     responseSize: 0 # 0 for no content in response
+    http3StreamLimit: 0 # 0 for server default. Max value is 65535
 
     # POST-specific parameters:
     requestContentSize: 0 # 0 for no content
@@ -129,7 +130,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}}"
+    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}} --http3StreamLimit {{http3StreamLimit}}"
 
   httpClient:
     source:
