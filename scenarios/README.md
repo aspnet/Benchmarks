@@ -441,6 +441,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable generatedDynamicRequestHeadersCount=<N>` (default: `0`)
 - Response content size in bytes:
   - `--variable responseSize=<N>` (default: `0`, meaning no content)
+- Server's HTTP/3 stream limit:
+  - `--variable http3StreamLimit=<N>` (default: `0`, meaning server's default. Max value is 65535)
 - Number of HTTP clients (HttpClient in `httpClient` job, connection in WRK):
   - `--variable numberOfHttpClients=<N>` (default: `1`)
 - Number of concurrect requests per one HTTP client -- *unsupported by WRK*:

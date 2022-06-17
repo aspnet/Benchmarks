@@ -20,6 +20,7 @@ class Program
         rootCommand.AddOption(new Option<bool>(new string[] { "--useHttps" }, () => false, "Whether to use HTTPS"));
         rootCommand.AddOption(new Option<string>(new string[] { "--httpVersion" }, "HTTP Version (1.1 or 2.0 or 3.0)") { Required = true });
         rootCommand.AddOption(new Option<int>(new string[] { "--responseSize" }, () => 0, "Response content size, 0 for no content"));
+        rootCommand.AddOption(new Option<ushort>(new string[] { "--http3StreamLimit" }, () => 0, "HTTP/3 stream limit, 0 for unset (Kestrel default), max value is " + ushort.MaxValue));
 
         rootCommand.Handler = CommandHandler.Create<ServerOptions>(options =>
         {
@@ -85,6 +86,14 @@ class Program
                 };
             });
         });
+        if (s_options.Http3StreamLimit != 0)
+        {
+            builder.WebHost.UseQuic(options =>
+            {
+                options.MaxBidirectionalStreamCount = s_options.Http3StreamLimit;
+                options.MaxUnidirectionalStreamCount = s_options.Http3StreamLimit;
+            });
+        }
         var app = builder.Build();
 
         var url = $"http{(s_options.UseHttps ? "s" : "")}://{s_options.Address}:{s_options.Port}";
