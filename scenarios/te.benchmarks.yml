@@ -82,8 +82,8 @@ jobs:
 
   faf:
     source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
+      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
+      branchOrCommit: sebros/8080
       dockerFile: frameworks/Rust/faf/faf.dockerfile
       dockerImageName: faf
       dockerContextDirectory: frameworks/Rust/faf/
@@ -197,7 +197,7 @@ scenarios:
         presetHeaders: plaintext
         path: /plaintext
         pipeline: 16
-        serverPort: 8089
+        serverPort: 8080
 
   # FastHttp (Go)
   plaintext_fasthttp:
