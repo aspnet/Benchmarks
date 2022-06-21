@@ -24,7 +24,7 @@ groups:
       - intel-win-app
       - intel-load2-load
 
-    - name: Trends Database Arm Linux
+    - name: Trends Database Arm (28) Linux
       template: trend-database-scenarios.yml
       profiles:
       - arm-lin-28-app
@@ -51,7 +51,7 @@ groups:
       - intel-lin-app
       - intel-load2-load
       
-    - name: Trends Database Arm Windows
+    - name: Trends Database Arm (28) Windows
       template: trend-database-scenarios.yml
       profiles:
       - arm-win-28-app
@@ -72,13 +72,13 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Trends Arm Linux
+    - name: Trends Arm (28) Linux
       template: trend-scenarios.yml
       profiles:
       - arm-lin-28-app
       - intel-load2-load
       
-    - name: Trends Arm Windows
+    - name: Trends Arm (28) Windows
       template: trend-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -129,7 +129,7 @@ groups:
       - intel-win-app 
       - intel-load2-load
       
-    - name: Baselines Database Arm Linux
+    - name: Baselines Database Arm (28) Linux
       template: baselines-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -151,7 +151,7 @@ groups:
       - intel-lin-app 
       - intel-load2-load
       
-    - name: Baselines Database Arm Windows
+    - name: Baselines Database Arm (28) Windows
       template: baselines-database-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -167,13 +167,13 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Baselines Arm Linux
+    - name: Baselines Arm (28) Linux
       template: baselines-scenarios.yml
       profiles:
       - arm-lin-28-app 
       - intel-load2-load
       
-    - name: Baselines Arm Windows
+    - name: Baselines Arm (28) Windows
       template: baselines-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -215,7 +215,7 @@ groups:
       - intel-win-app
       - intel-load2-load
       
-    - name: Frameworks Database Arm Linux
+    - name: Frameworks Database Arm (28) Linux
       template: frameworks-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -237,7 +237,14 @@ groups:
       - intel-win-app
       - intel-lin-load
       - intel-load2-db
-      
+
+    - name: Frameworks Arm (80) Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - arm-lin-app 
+      - amd-lin-load
+      - amd-lin2-db # required by nodejs and tfb-database argument
+
   - jobs:
 
     - name: Frameworks Amd Linux
@@ -263,7 +270,7 @@ groups:
       - amd-lin-load
       - intel-db-db
 
-    - name: Mono Database Arm Linux
+    - name: Mono Database Arm (28) Linux
       template: mono-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -272,7 +279,7 @@ groups:
 
   - jobs:
 
-    - name: Mono Arm Linux
+    - name: Mono Arm (28) Linux
       template: mono-scenarios.yml
       timeout: 180
       profiles:
@@ -300,6 +307,12 @@ groups:
       profiles:
       - intel-lin-app
       - intel-load-load
+
+    - name: Trends Arm (80) Windows
+      template: trend-scenarios.yml
+      profiles:
+      - arm-win-app 
+      - amd-lin2-load
 
   - jobs:
 
@@ -334,6 +347,13 @@ groups:
       - intel-load2-app
       - intel-db-load
 
+    - name: Trends Database Arm (80) Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - arm-lin-app
+      - amd-lin-load
+      - amd-lin2-db
+
   - jobs:
 
     - name: Single File Intel Linux
@@ -348,6 +368,13 @@ groups:
       - intel-win-app 
       - intel-load2-load
       - intel-db-db
+
+    - name: Frameworks Database Arm (80) Linux
+      template: frameworks-database-scenarios.yml
+      profiles:
+      - arm-lin-app 
+      - amd-lin-load
+      - amd-lin2-db
 
   - jobs:
 
@@ -364,6 +391,13 @@ groups:
       - intel-win-app 
       - intel-load2-load
 
+    - name: Trends Database Arm (80) Windows
+      template: trend-database-scenarios.yml
+      profiles:
+      - arm-win-app
+      - amd-lin-load
+      - amd-lin2-db
+
   - jobs:
 
     - name: Custom Proxies Intel Linux
@@ -379,6 +413,12 @@ groups:
       - intel-win-app 
       - intel-load2-load
 
+    - name: Trends Arm (80) Linux
+      template: trend-scenarios.yml
+      profiles:
+      - arm-lin-app
+      - amd-lin-load
+
   - jobs:
 
     - name: Proxies Intel Linux
@@ -389,7 +429,7 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Frameworks Arm Linux
+    - name: Frameworks Arm (28) Linux
       template: frameworks-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -398,14 +438,14 @@ groups:
 
   - jobs:
 
-    - name: Crossgen Arm Linux
+    - name: Crossgen Arm (28) Linux
       template: crossgen2-scenarios.yml
       profiles:
       - arm-lin-28-app 
       - amd-lin-load
       - intel-db-db
 
-    - name: Crossgen Arm Windows
+    - name: Crossgen Arm (28) Windows
       template: crossgen2-scenarios.yml
       profiles:
       - arm-win-28-app 
