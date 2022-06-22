@@ -24,7 +24,7 @@ groups:
       - intel-win-app
       - intel-load2-load
 
-    - name: Trends Database Arm (28) Linux
+    - name: Trends Database Arm 28 Linux
       template: trend-database-scenarios.yml
       profiles:
       - arm-lin-28-app
@@ -51,7 +51,7 @@ groups:
       - intel-lin-app
       - intel-load2-load
       
-    - name: Trends Database Arm (28) Windows
+    - name: Trends Database Arm 28 Windows
       template: trend-database-scenarios.yml
       profiles:
       - arm-win-28-app
@@ -72,13 +72,13 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Trends Arm (28) Linux
+    - name: Trends Arm 28 Linux
       template: trend-scenarios.yml
       profiles:
       - arm-lin-28-app
       - intel-load2-load
       
-    - name: Trends Arm (28) Windows
+    - name: Trends Arm 28 Windows
       template: trend-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -129,7 +129,7 @@ groups:
       - intel-win-app 
       - intel-load2-load
       
-    - name: Baselines Database Arm (28) Linux
+    - name: Baselines Database Arm 28 Linux
       template: baselines-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -151,7 +151,7 @@ groups:
       - intel-lin-app 
       - intel-load2-load
       
-    - name: Baselines Database Arm (28) Windows
+    - name: Baselines Database Arm 28 Windows
       template: baselines-database-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -167,13 +167,13 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Baselines Arm (28) Linux
+    - name: Baselines Arm 28 Linux
       template: baselines-scenarios.yml
       profiles:
       - arm-lin-28-app 
       - intel-load2-load
       
-    - name: Baselines Arm (28) Windows
+    - name: Baselines Arm 28 Windows
       template: baselines-scenarios.yml
       profiles:
       - arm-win-28-app 
@@ -215,7 +215,7 @@ groups:
       - intel-win-app
       - intel-load2-load
       
-    - name: Frameworks Database Arm (28) Linux
+    - name: Frameworks Database Arm 28 Linux
       template: frameworks-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -270,7 +270,7 @@ groups:
       - amd-lin-load
       - intel-db-db
 
-    - name: Mono Database Arm (28) Linux
+    - name: Mono Database Arm 28 Linux
       template: mono-database-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -279,7 +279,7 @@ groups:
 
   - jobs:
 
-    - name: Mono Arm (28) Linux
+    - name: Mono Arm 28 Linux
       template: mono-scenarios.yml
       timeout: 180
       profiles:
@@ -429,7 +429,7 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Frameworks Arm (28) Linux
+    - name: Frameworks Arm 28 Linux
       template: frameworks-scenarios.yml
       profiles:
       - arm-lin-28-app 
@@ -438,14 +438,14 @@ groups:
 
   - jobs:
 
-    - name: Crossgen Arm (28) Linux
+    - name: Crossgen Arm 28 Linux
       template: crossgen2-scenarios.yml
       profiles:
       - arm-lin-28-app 
       - amd-lin-load
       - intel-db-db
 
-    - name: Crossgen Arm (28) Windows
+    - name: Crossgen Arm 28 Windows
       template: crossgen2-scenarios.yml
       profiles:
       - arm-win-28-app 
