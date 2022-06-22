@@ -436,8 +436,8 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-lin-load --profile intel-load2-db "
       
-- job: Frameworks_Arm_(80)_Linux
-  displayName: 10- Frameworks Arm (80) Linux
+- job: Frameworks_Arm_80_Linux
+  displayName: 10- Frameworks Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
@@ -454,7 +454,7 @@ jobs:
   displayName: 11- Frameworks Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_(80)_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -466,7 +466,7 @@ jobs:
   displayName: 11- PGO Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_(80)_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, PGO_Intel_Windows, Frameworks_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
@@ -552,8 +552,8 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
-- job: Trends_Arm_(80)_Windows
-  displayName: 14- Trends Arm (80) Windows
+- job: Trends_Arm_80_Windows
+  displayName: 14- Trends Arm 80 Windows
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Mono_Arm_28_Linux, Mono_Intel_Linux]
@@ -570,7 +570,7 @@ jobs:
   displayName: 15- SignalR Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_(80)_Windows]
+  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -582,7 +582,7 @@ jobs:
   displayName: 15- SignalR Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_(80)_Windows]
+  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -594,7 +594,7 @@ jobs:
   displayName: 15- Blazor Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_(80)_Windows]
+  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: blazor-scenarios.yml
@@ -628,8 +628,8 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-load2-app --profile intel-db-load "
       
-- job: Trends_Database_Arm_(80)_Linux
-  displayName: 16- Trends Database Arm (80) Linux
+- job: Trends_Database_Arm_80_Linux
+  displayName: 16- Trends Database Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [SignalR_Intel_Linux, SignalR_Intel_Windows, Blazor_Intel_Linux]
@@ -646,7 +646,7 @@ jobs:
   displayName: 17- Single File Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_(80)_Linux]
+  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: singlefile-scenarios.yml
@@ -658,7 +658,7 @@ jobs:
   displayName: 17- Mvc Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_(80)_Linux]
+  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mvc-scenarios.yml
@@ -666,11 +666,11 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
-- job: Frameworks_Database_Arm_(80)_Linux
-  displayName: 17- Frameworks Database Arm (80) Linux
+- job: Frameworks_Database_Arm_80_Linux
+  displayName: 17- Frameworks Database Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_(80)_Linux]
+  dependsOn: [WebSockets_Intel_Linux, Build_Intel_Linux, Trends_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-database-scenarios.yml
@@ -684,7 +684,7 @@ jobs:
   displayName: 18- Mvc Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_(80)_Linux]
+  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mvc-scenarios.yml
@@ -696,7 +696,7 @@ jobs:
   displayName: 18- Single File Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_(80)_Linux]
+  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: singlefile-scenarios.yml
@@ -704,11 +704,11 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
-- job: Trends_Database_Arm_(80)_Windows
-  displayName: 18- Trends Database Arm (80) Windows
+- job: Trends_Database_Arm_80_Windows
+  displayName: 18- Trends Database Arm 80 Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_(80)_Linux]
+  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml
@@ -722,7 +722,7 @@ jobs:
   displayName: 19- Custom Proxies Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_(80)_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: proxies-custom-scenarios.yml
@@ -734,7 +734,7 @@ jobs:
   displayName: 19- Build Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_(80)_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: build-perf-scenarios.yml
@@ -742,11 +742,11 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
-- job: Trends_Arm_(80)_Linux
-  displayName: 19- Trends Arm (80) Linux
+- job: Trends_Arm_80_Linux
+  displayName: 19- Trends Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_(80)_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, Trends_Database_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -760,7 +760,7 @@ jobs:
   displayName: 20- Proxies Intel Linux
   pool: server
   timeoutInMinutes: 180
-  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_(80)_Linux]
+  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: proxies-scenarios.yml
@@ -772,7 +772,7 @@ jobs:
   displayName: 20- Frameworks Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_(80)_Linux]
+  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_80_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml

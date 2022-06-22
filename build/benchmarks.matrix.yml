@@ -238,7 +238,7 @@ groups:
       - intel-lin-load
       - intel-load2-db
 
-    - name: Frameworks Arm (80) Linux
+    - name: Frameworks Arm 80 Linux
       template: frameworks-scenarios.yml
       profiles:
       - arm-lin-app 
@@ -308,7 +308,7 @@ groups:
       - intel-lin-app
       - intel-load-load
 
-    - name: Trends Arm (80) Windows
+    - name: Trends Arm 80 Windows
       template: trend-scenarios.yml
       profiles:
       - arm-win-app 
@@ -347,7 +347,7 @@ groups:
       - intel-load2-app
       - intel-db-load
 
-    - name: Trends Database Arm (80) Linux
+    - name: Trends Database Arm 80 Linux
       template: trend-database-scenarios.yml
       profiles:
       - arm-lin-app
@@ -369,7 +369,7 @@ groups:
       - intel-load2-load
       - intel-db-db
 
-    - name: Frameworks Database Arm (80) Linux
+    - name: Frameworks Database Arm 80 Linux
       template: frameworks-database-scenarios.yml
       profiles:
       - arm-lin-app 
@@ -391,7 +391,7 @@ groups:
       - intel-win-app 
       - intel-load2-load
 
-    - name: Trends Database Arm (80) Windows
+    - name: Trends Database Arm 80 Windows
       template: trend-database-scenarios.yml
       profiles:
       - arm-win-app
@@ -413,7 +413,7 @@ groups:
       - intel-win-app 
       - intel-load2-load
 
-    - name: Trends Arm (80) Linux
+    - name: Trends Arm 80 Linux
       template: trend-scenarios.yml
       profiles:
       - arm-lin-app
