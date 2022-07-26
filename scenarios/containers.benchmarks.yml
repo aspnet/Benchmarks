@@ -50,6 +50,20 @@ scenarios:
         path: /fortunes/raw
         serverPort: 8080
 
+    json_aspnet_composite:
+    application:
+      job: aspnet
+      source:
+        dockerFile: docker/container-matrix/Middleware-composite.dockerfile
+      variables:
+        scenario: json
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+
   json_aspnet_net6:
     application:
       job: aspnet
