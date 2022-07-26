@@ -50,6 +50,18 @@ scenarios:
         path: /fortunes/raw
         serverPort: 8080
 
+  mvcjson_aspnet:
+    application:
+      job: aspnet
+      variables:
+        scenario: mvcjson
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /mvc/json
+        serverPort: 8080
+
   json_aspnet_composite:
     application:
       job: aspnet
@@ -62,6 +74,20 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
+        serverPort: 8080
+
+  mvcjson_aspnet_composite:
+    application:
+      job: aspnet
+      source:
+        dockerFile: docker/container-matrix/Middleware-composite.dockerfile
+      variables:
+        scenario: mvcjson
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /mvc/json
         serverPort: 8080
 
   json_aspnet_net6:
