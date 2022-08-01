@@ -32,13 +32,13 @@ using var host = Host.CreateDefaultBuilder(args)
                 endpoints.MapGet("/hello/{name}/{age}/{location}", SayHello);
                 // With a filter that no-ops
                 endpoints.MapGet("/helloEmptyFilter/{name}/{age}/{location}", SayHello)
-                    .AddFilter((context, next) => next(context));
+                    .AddEndpointFilter((context, next) => next(context));
                 // With filter on endpoint with no parameters
                 endpoints.MapGet("/plaintextNoParamsWithFilter", Plaintext)
-                    .AddFilter((context, next) => next(context));
+                    .AddEndpointFilter((context, next) => next(context));
                 endpoints
                     .MapGet("/helloFiltered/{name}/{age}/{location}", SayHello)
-                    .AddFilter((routeHandlerContext, next) => {
+                    .AddEndpointFilterFactory((routeHandlerContext, next) => {
                         var hasParams = routeHandlerContext.MethodInfo.GetParameters().Length >= 1;
                         var isStringParam = routeHandlerContext.MethodInfo.GetParameters()[0].ParameterType == typeof(string);
 
