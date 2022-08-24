@@ -152,7 +152,7 @@ profiles:
           - downstream
       application:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinewin2
+          - https://aspnetperf.servicebus.windows.net/citrinewin
         variables:
           databaseServer: 10.0.0.103
       load:
@@ -409,6 +409,6 @@ profiles:
           databaseServer: 10.0.0.104
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/perfsb
+          - https://aspnetperf.servicebus.windows.net/perfdb
         aliases:
           - warmup
