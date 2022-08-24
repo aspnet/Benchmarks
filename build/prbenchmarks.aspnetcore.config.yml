@@ -53,7 +53,7 @@ benchmarks:
     
     fortunes:
       description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
-      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
 
     yarp:
       description: YARP - http-http with 10 bytes
