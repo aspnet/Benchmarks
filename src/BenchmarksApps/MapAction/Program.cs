@@ -42,7 +42,7 @@ using var host = Host.CreateDefaultBuilder(args)
                         var hasParams = routeHandlerContext.MethodInfo.GetParameters().Length >= 1;
                         var isStringParam = routeHandlerContext.MethodInfo.GetParameters()[0].ParameterType == typeof(string);
 
-                        return (RouteHandlerFilterDelegate)((context) =>
+                        return (EndpointFilterDelegate)((context) =>
                         {
                             if (hasParams && isStringParam)
                             {
