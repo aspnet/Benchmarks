@@ -36,9 +36,9 @@ using var host = Host.CreateDefaultBuilder(args)
             {
                 options.SegmentsPerWindow = 10;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.PermitLimit = 40000;
+                options.PermitLimit = 500;
                 options.Window = TimeSpan.FromMilliseconds(1000);
-                options.QueueLimit = 1000;
+                options.QueueLimit = 100;
             });
         });
     })
