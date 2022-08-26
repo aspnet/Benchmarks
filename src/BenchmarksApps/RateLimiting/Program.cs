@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
     .ConfigureServices(services =>
+    {
         services.AddRateLimiter(options =>
         {
             // Define endpoint limiter
@@ -21,8 +22,8 @@ using var host = Host.CreateDefaultBuilder(args)
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
             });
-        }));
-    )
+        });
+    })
     .ConfigureWebHostDefaults(webBuilder =>
     {
         webBuilder.Configure(app =>
