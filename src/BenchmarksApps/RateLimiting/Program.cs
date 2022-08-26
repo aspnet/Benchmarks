@@ -20,7 +20,7 @@ using var host = Host.CreateDefaultBuilder(args)
                 options.PermitLimit  = 20000;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
-            })
+            });
         });
 
         webBuilder.Configure(app =>
