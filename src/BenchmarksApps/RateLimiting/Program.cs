@@ -12,6 +12,14 @@ using Microsoft.Extensions.Logging;
 
 using var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
+    .ConfigureLogging(loggerFactory =>
+    {
+        if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
+        {
+            Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
+            loggerFactory.AddConsole().SetMinimumLevel(logLevel);
+        }
+    })
     .ConfigureServices(services =>
     {
         services.AddRateLimiter(options =>
