@@ -17,13 +17,13 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddRateLimiter(options =>
         {
             // Define endpoint limiter
-            options.AddTokenBucketLimiter("helloWorld", options =>
+            options.AddSlidingWindowLimiter("helloWorld", options =>
             {
-                options.TokenLimit = 20000;
+                options.SegmentsPerWindow = 10;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                options.PermitLimit = 40000;
+                options.Window = TimeSpan.FromMilliseconds(1000);
                 options.QueueLimit = 1000;
-                options.ReplenishmentPeriod = TimeSpan.FromMilliseconds(1);
-                options.TokensPerPeriod = 20;
             });
         });
     })
