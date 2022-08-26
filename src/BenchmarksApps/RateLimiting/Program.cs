@@ -44,5 +44,3 @@ await host.StartAsync();
 Console.WriteLine("Application started.");
 
 await host.WaitForShutdownAsync();
-
-record Todo(int Id, string Name, bool IsComplete);
