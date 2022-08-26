@@ -17,11 +17,13 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddRateLimiter(options =>
         {
             // Define endpoint limiter
-            options.AddConcurrencyLimiter("helloWorld", options =>
+            options.AddTokenBucketLimiter(todoName, options =>
             {
-                options.PermitLimit = 20000;
+                options.TokenLimit = 20000;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
+                options.ReplenishmentPeriod = TimeSpan.FromSeconds(1);
+                options.TokensPerPeriod = 20000;
             });
         });
     })
