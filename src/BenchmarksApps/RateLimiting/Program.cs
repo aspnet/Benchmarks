@@ -7,8 +7,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+var config = new ConfigurationBuilder()
+    .AddJsonFile("hosting.json", optional: true)
+    .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+    .AddCommandLine(args)
+    .Build();
 
 using var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
