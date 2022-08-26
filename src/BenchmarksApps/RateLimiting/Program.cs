@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,19 +11,20 @@ using Microsoft.Extensions.Logging;
 
 using var host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
-    .ConfigureWebHostDefaults(webBuilder =>
-    {
-        webBuilder.Services.AddRateLimiter(options =>
+    .ConfigureServices(services =>
+        services.AddRateLimiter(options =>
         {
             // Define endpoint limiter
             options.AddConcurrencyLimiter("helloWorld", options =>
             {
-                options.PermitLimit  = 20000;
+                options.PermitLimit = 20000;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
             });
         });
-
+    )
+    .ConfigureWebHostDefaults(webBuilder =>
+    {
         webBuilder.Configure(app =>
         {
             app.UseRouting();
