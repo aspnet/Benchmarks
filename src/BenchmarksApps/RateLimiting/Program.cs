@@ -22,8 +22,8 @@ using var host = Host.CreateDefaultBuilder(args)
                 options.TokenLimit = 20000;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
-                options.ReplenishmentPeriod = TimeSpan.FromSeconds(1);
-                options.TokensPerPeriod = 20000;
+                options.ReplenishmentPeriod = TimeSpan.FromMilliseconds(1);
+                options.TokensPerPeriod = 20;
             });
         });
     })
