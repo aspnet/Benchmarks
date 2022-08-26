@@ -17,7 +17,7 @@ using var host = Host.CreateDefaultBuilder(args)
         services.AddRateLimiter(options =>
         {
             // Define endpoint limiter
-            options.AddTokenBucketLimiter(todoName, options =>
+            options.AddTokenBucketLimiter("helloWorld", options =>
             {
                 options.TokenLimit = 20000;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
