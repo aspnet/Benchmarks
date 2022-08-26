@@ -21,7 +21,7 @@ using var host = Host.CreateDefaultBuilder(args)
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
                 options.QueueLimit = 1000;
             });
-        });
+        }));
     )
     .ConfigureWebHostDefaults(webBuilder =>
     {
