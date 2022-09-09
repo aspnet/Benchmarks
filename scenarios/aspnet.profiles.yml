@@ -189,7 +189,7 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-amd2:5001
+          - http://asp-citrine-amd:5001
         aliases:
           - downstream
       application:
@@ -200,6 +200,27 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
+        aliases:
+          - warmup
+
+  aspnet-citrine-arm-lin-relay:
+    variables:
+      serverAddress: 10.0.0.108
+      cores: 80
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
+        aliases:
+          - downstream
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinearmlin
+        variables:
+          databaseServer: 10.0.0.109
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd2
         aliases:
           - warmup
 
@@ -221,6 +242,27 @@ profiles:
       load:
         endpoints: 
           - http://asp-citrine-amd:5001
+        aliases:
+          - warmup
+
+  aspnet-citrine-arm-win-relay:
+    variables:
+      serverAddress: 10.0.0.110
+      cores: 80
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd2
+        aliases:
+          - downstream
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrinearmwin
+        variables:
+          databaseServer: 10.0.0.109
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
         aliases:
           - warmup
 
