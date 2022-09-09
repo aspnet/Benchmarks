@@ -3,7 +3,6 @@ components:
     runtime-win-x64: 
         script: |
             call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch x64
-            call .\build.cmd libs -c Release -runtimeconfiguration Release -arch x64
             call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
 
         arguments:
@@ -12,7 +11,6 @@ components:
     runtime-win-arm64: 
         script: |
             call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch arm64
-            call .\build.cmd libs -c Release -runtimeconfiguration Release -arch arm64
             call .\src\tests\build.cmd Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
 
         arguments:
