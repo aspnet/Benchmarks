@@ -1,0 +1,58 @@
+# multi-line script used to build the project
+components:
+    runtime-win-x64: 
+        script: |
+            call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch x64
+            call .\build.cmd libs -c Release -runtimeconfiguration Release -arch x64
+            call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
+
+        arguments:
+            --application.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Checked\tests\Core_Root\
+
+    runtime-win-arm64: 
+        script: |
+            call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch arm64
+            call .\build.cmd libs -c Release -runtimeconfiguration Release -arch arm64
+            call .\src\tests\build.cmd Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
+
+        arguments:
+            --application.options.outputFiles .\artifacts\tests\coreclr\windows.arm64.Checked\tests\Core_Root\
+
+# default arguments that are always used on crank commands
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+
+# the first value is the default if none is specified
+profiles:
+
+    aspnet-perf-win:
+        description: INTEL/Windows 12 Cores
+        arguments: --profile aspnet-perf-win-relay
+
+    aspnet-citrine-win:
+        description: INTEL/Windows 28 Cores
+        arguments: --profile aspnet-citrine-win-relay
+
+    aspnet-citrine-win-ampere:
+        description: Ampere/Windows 80 Cores
+        arguments: --profile aspnet-citrine-arm-win-relay
+
+benchmarks:
+    plaintext:
+      description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+
+    json:
+      description: TechEmpower JSON Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
+    
+    fortunes:
+      description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
+
+    yarp:
+      description: YARP - http-http with 10 bytes
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/proxy.benchmarks.yml --scenario proxy-yarp
+      
+    mvcjsoninput2k:
+      description: Sends 2Kb Json Body to an MVC controller
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/benchmarks.mvcjson.yml --scenario MvcJsonInput2k
