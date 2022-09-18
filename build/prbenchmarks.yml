@@ -73,7 +73,31 @@ jobs:
 
         ./build/crank-pr.exe `
             --repository https://github.com/dotnet/runtime `
-            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows.config.yml `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" `
+            --publish-results true
+
+        ./build/crank-pr.exe `
+            --repository https://github.com/dotnet/runtime `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" `
+            --publish-results true
+
+        ./build/crank-pr.exe `
+            --repository https://github.com/dotnet/runtime `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --app-key "env:APP_KEY" `
+            --publish-results true
+
+        ./build/crank-pr.exe `
+            --repository https://github.com/dotnet/runtime `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
             --app-id $(github.appid) `
             --install-id $(github.installid) `
             --app-key "env:APP_KEY" `

@@ -1,0 +1,31 @@
+# multi-line script used to build the project
+components:
+    runtime:
+        script: |
+            call ./build.sh clr+libs -c Release -runtimeconfiguration Release -arch arm64
+            call ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
+
+        arguments:
+            --application.options.outputFiles ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/
+
+# default arguments that are always used on crank commands
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+
+# the first value is the default if none is specified
+profiles:
+    aspnet-citrine-ampere:
+        description: Ampere/Linux 80 Cores
+        arguments: --profile aspnet-citrine-arm-win-relay
+
+benchmarks:
+    plaintext:
+      description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+
+    json:
+      description: TechEmpower JSON Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
+    
+    fortunes:
+      description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
