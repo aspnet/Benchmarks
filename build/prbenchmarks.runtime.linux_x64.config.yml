@@ -1,0 +1,40 @@
+# multi-line script used to build the project
+components:
+    runtime: 
+        script: |
+            call ./build.sh clr+libs -c Release -runtimeconfiguration Release -arch x64
+            call ./src/tests/build.sh Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
+
+        arguments:
+            --application.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/
+
+# default arguments that are always used on crank commands
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+
+# the first value is the default if none is specified
+profiles:
+
+    aspnet-citrine-lin:
+        description: Intel/Linux 28 Cores
+        arguments: --profile aspnet-citrine-lin-relay
+
+    aspnet-perf-lin:
+        description: Intel/Linux 12 Cores
+        arguments: --profile aspnet-perf-lin-relay
+
+    aspnet-citrine-amd:
+        description: Amd/Linux 48 Cores
+        arguments: --profile aspnet-citrine-amd-relay
+
+benchmarks:
+    plaintext:
+      description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+
+    json:
+      description: TechEmpower JSON Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
+    
+    fortunes:
+      description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes

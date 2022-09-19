@@ -1,38 +1,21 @@
 # multi-line script used to build the project
 components:
-    runtime-win-x64: 
+    runtime:
         script: |
-            call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch x64
-            call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
+            call ./build.sh clr+libs -c Release -runtimeconfiguration Release -arch arm64
+            call ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
 
         arguments:
-            --application.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\
-
-    runtime-win-arm64:
-        script: |
-            call .\build.cmd clr+libs -c Release -runtimeconfiguration Release -arch arm64
-            call .\src\tests\build.cmd Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
-
-        arguments:
-            --application.options.outputFiles .\artifacts\tests\coreclr\windows.arm64.Release\tests\Core_Root\
+            --application.options.outputFiles ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/
 
 # default arguments that are always used on crank commands
 defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
 
 # the first value is the default if none is specified
 profiles:
-
-    aspnet-perf-win:
-        description: INTEL/Windows 12 Cores
-        arguments: --profile aspnet-perf-win-relay
-
-    aspnet-citrine-win:
-        description: INTEL/Windows 28 Cores
-        arguments: --profile aspnet-citrine-win-relay
-
-    aspnet-citrine-win-ampere:
-        description: Ampere/Windows 80 Cores
-        arguments: --profile aspnet-citrine-arm-win-relay
+    aspnet-citrine-ampere:
+        description: Ampere/Linux 80 Cores
+        arguments: --profile aspnet-citrine-arm-lin-relay
 
 benchmarks:
     plaintext:
