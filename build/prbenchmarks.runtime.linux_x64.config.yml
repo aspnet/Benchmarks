@@ -15,8 +15,16 @@ defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.pr
 profiles:
 
     aspnet-citrine-lin:
-        description: Linux 28 Cores
-        arguments: --profile aspnet-citrine-win-relay
+        description: Intel/Linux 28 Cores
+        arguments: --profile aspnet-citrine-lin-relay
+
+    aspnet-perf-lin:
+        description: Intel/Linux 12 Cores
+        arguments: --profile aspnet-perf-lin-relay
+
+    aspnet-citrine-amd:
+        description: Amd/Linux 48 Cores
+        arguments: --profile aspnet-citrine-amd-relay
 
 benchmarks:
     plaintext:

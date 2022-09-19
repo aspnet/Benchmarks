@@ -15,7 +15,7 @@ defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.pr
 profiles:
     aspnet-citrine-ampere:
         description: Ampere/Linux 80 Cores
-        arguments: --profile aspnet-citrine-arm-win-relay
+        arguments: --profile aspnet-citrine-arm-lin-relay
 
 benchmarks:
     plaintext:

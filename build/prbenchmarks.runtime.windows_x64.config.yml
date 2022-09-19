@@ -15,11 +15,11 @@ defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.pr
 profiles:
 
     aspnet-perf-win:
-        description: INTEL/Windows 12 Cores
+        description: Intel/Windows 12 Cores
         arguments: --profile aspnet-perf-win-relay
 
     aspnet-citrine-win:
-        description: INTEL/Windows 28 Cores
+        description: Intel/Windows 28 Cores
         arguments: --profile aspnet-citrine-win-relay
 
 benchmarks:
