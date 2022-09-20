@@ -45,7 +45,7 @@ schedules:
 
 jobs:
 - job: Benchmark
-  timeoutInMinutes: 60
+  timeoutInMinutes: 120
   steps:
   - powershell: |
         Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
