@@ -4,6 +4,7 @@ components:
         script: |
             call ./build.sh clr+libs -c Release -runtimeconfiguration Release -arch x64
             call ./src/tests/build.sh Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
+            rm -rf ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/*.pdb
 
         arguments:
             --application.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/
