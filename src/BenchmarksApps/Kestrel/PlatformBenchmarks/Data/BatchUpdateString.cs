@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. 
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
+using System;
 using System.Linq;
 
 namespace PlatformBenchmarks
@@ -11,33 +12,41 @@ namespace PlatformBenchmarks
 
         public static DatabaseServer DatabaseServer;
 
-        internal static readonly string[] Ids = Enumerable.Range(0, MaxBatch).Select(i => $"@I{i}").ToArray();
-        internal static readonly string[] Randoms = Enumerable.Range(0, MaxBatch).Select(i => $"@R{i}").ToArray();
+        internal static readonly string[] ParamNames = Enumerable.Range(0, MaxBatch * 2).Select(i => $"@p{i}").ToArray();
 
         private static string[] _queries = new string[MaxBatch + 1];
 
         public static string Query(int batchSize)
-        {
-            if (_queries[batchSize] != null)
-            {
-                return _queries[batchSize];
-            }
-
-            return CreateBatch(batchSize);
-        }
+            => _queries[batchSize] is null
+                ? CreateBatch(batchSize)
+                : _queries[batchSize];
 
         private static string CreateBatch(int batchSize)
         {
-            var lastIndex = batchSize - 1;
-
             var sb = StringBuilderCache.Acquire();
 
+#if NET6_0_OR_GREATER
+            Func<int, string> paramNameGenerator = i => "$" + i;
+#else
+            Func<int, string> paramNameGenerator = i => "@p" + i;
+#endif
+
             sb.AppendLine("UPDATE world SET randomNumber = CASE id");
-            Enumerable.Range(0, batchSize).ToList().ForEach(i => sb.AppendLine($"when @I{i} then @R{i}"));
+            for (var i = 0; i < batchSize * 2;)
+            {
+                sb.AppendLine($"when {paramNameGenerator(++i)} then {paramNameGenerator(++i)}");
+            }
             sb.AppendLine("else randomnumber");
             sb.AppendLine("end");
             sb.Append("where id in (");
-            Enumerable.Range(0, batchSize).ToList().ForEach(i => sb.AppendLine($"@I{i}{(lastIndex == i ? "" : ",")} "));
+            for (var i = 1; i < batchSize * 2; i += 2)
+            {
+                sb.Append(paramNameGenerator(i));
+                if (i < batchSize * 2 - 1)
+                {
+                    sb.AppendLine(", ");
+                }
+            }
             sb.Append(")");
 
             return _queries[batchSize] = StringBuilderCache.GetStringAndRelease(sb);
