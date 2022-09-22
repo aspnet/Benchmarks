@@ -161,15 +161,18 @@ namespace PlatformBenchmarks
 
                 using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
                 {
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
-
                     for (int i = 0; i < results.Length; i++)
                     {
                         var randomNumber = _random.Next(1, 10001);
 
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id));
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber));
+#if NET6_0_OR_GREATER
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
+#else
+                        var paramIndex = i * 2 + 1;
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex], value: results[i].Id));
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex + 1], value: randomNumber));
+#endif
 
                         results[i].RandomNumber = randomNumber;
                     }
