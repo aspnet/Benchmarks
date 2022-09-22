@@ -14,19 +14,28 @@ namespace PlatformBenchmarks
     public class RawDb
     {
         private readonly ConcurrentRandom _random;
-        private readonly string _connectionString;
         private readonly MemoryCache _cache
             = new(new MemoryCacheOptions { ExpirationScanFrequency = TimeSpan.FromMinutes(60) });
+
+#if NET7_0_OR_GREATER
+        private readonly NpgsqlDataSource _dataSource;
+#else
+        private readonly string _connectionString;
+#endif
 
         public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
             _random = random;
+#if NET7_0_OR_GREATER
+            _dataSource = NpgsqlDataSource.Create(appSettings.ConnectionString);
+#else
             _connectionString = appSettings.ConnectionString;
+#endif
         }
 
         public async Task<World> LoadSingleQueryRow()
         {
-            using var db = new NpgsqlConnection(_connectionString);
+            using var db = CreateConnection();
             await db.OpenAsync();
 
             var (cmd, _) = CreateReadCommand(db);
@@ -39,7 +48,7 @@ namespace PlatformBenchmarks
         {
             var result = new World[count];
 
-            using var db = new NpgsqlConnection(_connectionString);
+            using var db = CreateConnection();
             await db.OpenAsync();
 
             var (cmd, idParameter) = CreateReadCommand(db);
@@ -78,7 +87,7 @@ namespace PlatformBenchmarks
 
             static async Task<CachedWorld[]> LoadUncachedQueries(int id, int i, int count, RawDb rawdb, CachedWorld[] result)
             {
-                using var db = new NpgsqlConnection(rawdb._connectionString);
+                using var db = rawdb.CreateConnection();
                 await db.OpenAsync();
 
                 var (cmd, idParameter) = rawdb.CreateReadCommand(db);
@@ -105,7 +114,7 @@ namespace PlatformBenchmarks
 
         public async Task PopulateCache()
         {
-            using var db = new NpgsqlConnection(_connectionString);
+            using var db = CreateConnection();
             await db.OpenAsync();
 
             var (cmd, idParameter) = CreateReadCommand(db);
@@ -126,7 +135,7 @@ namespace PlatformBenchmarks
         {
             var results = new World[count];
 
-            using var db = new NpgsqlConnection(_connectionString);
+            using var db = CreateConnection();
             await db.OpenAsync();
 
             var (queryCmd, queryParameter) = CreateReadCommand(db);
@@ -162,18 +171,18 @@ namespace PlatformBenchmarks
 
             return results;
         }
-
+        
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>(20);
 
-            using (var db = new NpgsqlConnection(_connectionString))
+            using (var db = CreateConnection())
             {
                 await db.OpenAsync();
 
                 using var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db);
                 using var rdr = await cmd.ExecuteReaderAsync();
-                
+
                 while (await rdr.ReadAsync())
                 {
                     result.Add(new Fortune
@@ -217,6 +226,13 @@ namespace PlatformBenchmarks
                 RandomNumber = rdr.GetInt32(1)
             };
         }
+
+        private NpgsqlConnection CreateConnection()
+#if NET7_0_OR_GREATER
+            => _dataSource.CreateConnection();
+#else
+            => new NpgsqlConnection(_connectionString);
+#endif
 
         private static readonly object[] _cacheKeys = Enumerable.Range(0, 10001).Select((i) => new CacheKey(i)).ToArray();
 
