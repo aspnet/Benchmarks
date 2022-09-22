@@ -17,14 +17,9 @@ namespace PlatformBenchmarks
         private static string[] _queries = new string[MaxBatch + 1];
 
         public static string Query(int batchSize)
-        {
-            if (_queries[batchSize] != null)
-            {
-                return _queries[batchSize];
-            }
-
-            return CreateBatch(batchSize);
-        }
+            => _queries[batchSize] is null
+                ? CreateBatch(batchSize)
+                : _queries[batchSize];
 
         private static string CreateBatch(int batchSize)
         {

@@ -11,6 +11,7 @@ indent_style = space
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 4
+trim_trailing_whitespace = true
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj,xml}]

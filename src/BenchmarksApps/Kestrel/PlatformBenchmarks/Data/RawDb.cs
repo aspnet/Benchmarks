@@ -15,11 +15,8 @@ namespace PlatformBenchmarks
     {
         private readonly ConcurrentRandom _random;
         private readonly string _connectionString;
-        private readonly MemoryCache _cache = new MemoryCache(
-            new MemoryCacheOptions()
-            {
-                ExpirationScanFrequency = TimeSpan.FromMinutes(60)
-            });
+        private readonly MemoryCache _cache
+            = new(new MemoryCacheOptions { ExpirationScanFrequency = TimeSpan.FromMinutes(60) });
 
         public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
@@ -29,35 +26,29 @@ namespace PlatformBenchmarks
 
         public async Task<World> LoadSingleQueryRow()
         {
-            using (var db = new NpgsqlConnection(_connectionString))
-            {
-                await db.OpenAsync();
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
 
-                var (cmd, _) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    return await ReadSingleRow(cmd);
-                }
-            }
+            var (cmd, _) = CreateReadCommand(db);
+            using var command = cmd;
+
+            return await ReadSingleRow(cmd);
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
 
-            using (var db = new NpgsqlConnection(_connectionString))
-            {
-                await db.OpenAsync();
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
 
-                var (cmd, idParameter) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    for (int i = 0; i < result.Length; i++)
-                    {
-                        result[i] = await ReadSingleRow(cmd);
-                        idParameter.TypedValue = _random.Next(1, 10001);
-                    }
-                }
+            var (cmd, idParameter) = CreateReadCommand(db);
+            using var command = cmd;
+
+            for (var i = 0; i < result.Length; i++)
+            {
+                result[i] = await ReadSingleRow(cmd);
+                idParameter.TypedValue = _random.Next(1, 10001);
             }
 
             return result;
@@ -87,32 +78,25 @@ namespace PlatformBenchmarks
 
             static async Task<CachedWorld[]> LoadUncachedQueries(int id, int i, int count, RawDb rawdb, CachedWorld[] result)
             {
-                using (var db = new NpgsqlConnection(rawdb._connectionString))
+                using var db = new NpgsqlConnection(rawdb._connectionString);
+                await db.OpenAsync();
+
+                var (cmd, idParameter) = rawdb.CreateReadCommand(db);
+                using var command = cmd;
+                Func<ICacheEntry, Task<CachedWorld>> create = async _ => await rawdb.ReadSingleRow(cmd);
+
+                var cacheKeys = _cacheKeys;
+                var key = cacheKeys[id];
+
+                idParameter.TypedValue = id;
+
+                for (; i < result.Length; i++)
                 {
-                    await db.OpenAsync();
+                    result[i] = await rawdb._cache.GetOrCreateAsync(key, create);
 
-                    var (cmd, idParameter) = rawdb.CreateReadCommand(db);
-                    using (cmd)
-                    {
-                        Func<ICacheEntry, Task<CachedWorld>> create = async (entry) => 
-                        {
-                            return await rawdb.ReadSingleRow(cmd);
-                        };
-
-                        var cacheKeys = _cacheKeys;
-                        var key = cacheKeys[id];
-
-                        idParameter.TypedValue = id;
-
-                        for (; i < result.Length; i++)
-                        {
-                            result[i] = await rawdb._cache.GetOrCreateAsync<CachedWorld>(key, create);
-
-                            id = rawdb._random.Next(1, 10001);
-                            idParameter.TypedValue = id;
-                            key = cacheKeys[id];
-                        }
-                    }
+                    id = rawdb._random.Next(1, 10001);
+                    idParameter.TypedValue = id;
+                    key = cacheKeys[id];
                 }
 
                 return result;
@@ -121,21 +105,18 @@ namespace PlatformBenchmarks
 
         public async Task PopulateCache()
         {
-            using (var db = new NpgsqlConnection(_connectionString))
-            {
-                await db.OpenAsync();
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
 
-                var (cmd, idParameter) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    var cacheKeys = _cacheKeys;
-                    var cache = _cache;
-                    for (var i = 1; i < 10001; i++)
-                    {
-                        idParameter.TypedValue = i;
-                        cache.Set<CachedWorld>(cacheKeys[i], await ReadSingleRow(cmd));
-                    }
-                }
+            var (cmd, idParameter) = CreateReadCommand(db);
+            using var command = cmd;
+
+            var cacheKeys = _cacheKeys;
+            var cache = _cache;
+            for (var i = 1; i < 10001; i++)
+            {
+                idParameter.TypedValue = i;
+                cache.Set<CachedWorld>(cacheKeys[i], await ReadSingleRow(cmd));
             }
 
             Console.WriteLine("Caching Populated");
@@ -145,40 +126,38 @@ namespace PlatformBenchmarks
         {
             var results = new World[count];
 
-            using (var db = new NpgsqlConnection(_connectionString))
+            using var db = new NpgsqlConnection(_connectionString);
+            await db.OpenAsync();
+
+            var (queryCmd, queryParameter) = CreateReadCommand(db);
+            using (queryCmd)
             {
-                await db.OpenAsync();
-
-                var (queryCmd, queryParameter) = CreateReadCommand(db);
-                using (queryCmd)
+                for (var i = 0; i < results.Length; i++)
                 {
-                    for (int i = 0; i < results.Length; i++)
-                    {
-                        results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.TypedValue = _random.Next(1, 10001);
-                    }
+                    results[i] = await ReadSingleRow(queryCmd);
+                    queryParameter.TypedValue = _random.Next(1, 10001);
                 }
+            }
 
-                using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
+            using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
+            {
+                for (var i = 0; i < results.Length; i++)
                 {
-                    for (int i = 0; i < results.Length; i++)
-                    {
-                        var randomNumber = _random.Next(1, 10001);
+                    var randomNumber = _random.Next(1, 10001);
 
 #if NET6_0_OR_GREATER
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
 #else
-                        var paramIndex = i * 2 + 1;
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex], value: results[i].Id));
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex + 1], value: randomNumber));
+                    var paramIndex = i * 2 + 1;
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex], value: results[i].Id));
+                    updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex + 1], value: randomNumber));
 #endif
 
-                        results[i].RandomNumber = randomNumber;
-                    }
-
-                    await updateCmd.ExecuteNonQueryAsync();
+                    results[i].RandomNumber = randomNumber;
                 }
+
+                await updateCmd.ExecuteNonQueryAsync();
             }
 
             return results;
@@ -192,17 +171,16 @@ namespace PlatformBenchmarks
             {
                 await db.OpenAsync();
 
-                using (var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db))
-                using (var rdr = await cmd.ExecuteReaderAsync())
+                using var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db);
+                using var rdr = await cmd.ExecuteReaderAsync();
+                
+                while (await rdr.ReadAsync())
                 {
-                    while (await rdr.ReadAsync())
-                    {
-                        result.Add(new Fortune
-                        (
-                            id:rdr.GetInt32(0),
-                            message: rdr.GetString(1)
-                        ));
-                    }
+                    result.Add(new Fortune
+                    (
+                        id: rdr.GetInt32(0),
+                        message: rdr.GetString(1)
+                    ));
                 }
             }
 
@@ -230,16 +208,14 @@ namespace PlatformBenchmarks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
-            using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
-            {
-                await rdr.ReadAsync();
+            using var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow);
+            await rdr.ReadAsync();
 
-                return new World
-                {
-                    Id = rdr.GetInt32(0),
-                    RandomNumber = rdr.GetInt32(1)
-                };
-            }
+            return new World
+            {
+                Id = rdr.GetInt32(0),
+                RandomNumber = rdr.GetInt32(1)
+            };
         }
 
         private static readonly object[] _cacheKeys = Enumerable.Range(0, 10001).Select((i) => new CacheKey(i)).ToArray();
@@ -254,7 +230,7 @@ namespace PlatformBenchmarks
             public bool Equals(CacheKey key)
                 => key._value == _value;
 
-            public override bool Equals(object obj) 
+            public override bool Equals(object obj)
                 => ReferenceEquals(obj, this);
 
             public override int GetHashCode()
