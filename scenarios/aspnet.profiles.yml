@@ -273,7 +273,7 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://asp-citrine-ampere:5001
+          - http://asp-citrine-load:5001
         aliases:
           - downstream
       application:
@@ -283,7 +283,7 @@ profiles:
           databaseServer: 10.0.0.108
       load:
         endpoints: 
-          - http://asp-citrine-ampere:5001
+          - http://asp-citrine-db:5001
         aliases:
           - warmup
 
