@@ -6,11 +6,15 @@ components:
             call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
             del /F /S /Q .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\*.pdb
 
-        arguments:
-            --application.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\
+        arguments: '--{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\'
+
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+defaults: '--{{job}}.framework net7.0 --relay AZURE_RELAY'
+
+variables:
+    job: client
+    httpclientcommon: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net7.0 --variable useHttps=true --variable concurrencyPerHttpClient=100
 
 # the first value is the default if none is specified
 profiles:
@@ -27,11 +31,41 @@ benchmarks:
     plaintext:
       description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
+      variables:
+          job: application
 
     json:
       description: TechEmpower JSON Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
+      variables:
+          job: application
     
     fortunes:
       description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
+      variables:
+          job: application
+
+    httpclient-h1-get:
+      description: HttpClient HTTP/1.1 GET
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="1.1" --variable responseSize=8192'
+
+    httpclient-h2-get:
+      description: HttpClient HTTP/2.0 GET
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="2.0" --variable responseSize=8192'
+
+    httpclient-h3-get:
+      description: HttpClient HTTP/3.0 GET
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="3.0" --variable responseSize=8192'
+
+    httpclient-h1-post:
+      description: HttpClient HTTP/1.1 POST
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="1.1" --variable requestContentSize=8192'
+
+    httpclient-h2-post:
+      description: HttpClient HTTP/2.0 POST
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="2.0" --variable requestContentSize=8192'
+
+    httpclient-h3-post:
+      description: HttpClient HTTP/3.0 POST
+      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="3.0" --variable requestContentSize=8192'
