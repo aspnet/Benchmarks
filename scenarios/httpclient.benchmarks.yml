@@ -47,7 +47,7 @@ scenarios:
       job: httpClient
       variables:
         scenario: get
-  
+
   httpclient-kestrel-post:
     server:
       job: kestrel
@@ -68,6 +68,24 @@ scenarios:
         requestContentWriteSize: 1
         requestContentFlushAfterWrite: true
         requestContentUnknownLength: true
+
+  httpclient-kestrel-configured:
+    server:
+      job: kestrel
+      variables:
+        httpVersion: "1.1"
+        useHttps: true
+        responseSize: 8192
+    client:
+      job: httpClient
+      variables:
+        scenario: get
+        httpVersion: "1.1"
+        useHttps: true
+        numberOfHttpClients: 1
+        concurrencyPerHttpClient: '{% if cores > 0 %}{{cores}}{% else %}1{% endif %}'
+        http20EnableMultipleConnections: false
+        useHttpMessageInvoker: true
 
   wrk-kestrel-get:
     server:
@@ -157,6 +175,7 @@ profiles:
   aspnet-citrine-lin:
     variables:
       serverAddress: 10.0.0.105
+      cores: 28
     jobs:
       server:
         endpoints: 
@@ -168,6 +187,7 @@ profiles:
   aspnet-citrine-lin-relay:
     variables:
       serverAddress: 10.0.0.105
+      cores: 28
     jobs:
       server:
         endpoints: 
@@ -179,6 +199,7 @@ profiles:
   aspnet-citrine-win:
     variables:
       serverAddress: 10.0.0.103
+      cores: 28
     jobs:
       server:
         endpoints: 
@@ -190,6 +211,7 @@ profiles:
   aspnet-citrine-win-relay:
     variables:
       serverAddress: 10.0.0.103
+      cores: 28
     jobs:
       server:
         endpoints: 
@@ -201,6 +223,7 @@ profiles:
   aspnet-citrine-arm:
     variables:
       serverAddress: 10.0.0.105
+      cores: 32
     jobs:
       server:
         endpoints: 
@@ -212,6 +235,7 @@ profiles:
   aspnet-citrine-arm-relay:
     variables:
       serverAddress: 10.0.0.105
+      cores: 32
     jobs:
       server:
         endpoints: 
@@ -223,6 +247,7 @@ profiles:
   aspnet-citrine-amd:
     variables:
       serverAddress: 10.0.0.103
+      cores: 48
     jobs:
       server:
         endpoints: 
@@ -234,6 +259,7 @@ profiles:
   aspnet-citrine-amd-relay:
     variables:
       serverAddress: 10.0.0.103
+      cores: 48
     jobs:
       server:
         endpoints: 
@@ -245,6 +271,7 @@ profiles:
   aspnet-perf-lin:
     variables:
       serverAddress: 10.0.0.104
+      cores: 12
     jobs:
       server:
         endpoints: 
@@ -256,6 +283,7 @@ profiles:
   aspnet-perf-lin-relay:
     variables:
       serverAddress: 10.0.0.104
+      cores: 12
     jobs:
       server:
         endpoints: 
@@ -267,6 +295,7 @@ profiles:
   aspnet-perf-win:
     variables:
       serverAddress: 10.0.0.103
+      cores: 12
     jobs:
       server:
         endpoints: 
@@ -278,6 +307,7 @@ profiles:
   aspnet-perf-win-relay:
     variables:
       serverAddress: 10.0.0.103
+      cores: 12
     jobs:
       server:
         endpoints: 

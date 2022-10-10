@@ -13,8 +13,7 @@ components:
 defaults: '--{{job}}.framework net7.0 --relay AZURE_RELAY'
 
 variables:
-    job: client
-    httpclientcommon: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net7.0 --variable useHttps=true --variable concurrencyPerHttpClient=100
+    job: application
 
 # the first value is the default if none is specified
 profiles:
@@ -31,41 +30,17 @@ benchmarks:
     plaintext:
       description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
-      variables:
-          job: application
 
     json:
       description: TechEmpower JSON Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
-      variables:
-          job: application
-    
+
     fortunes:
       description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
+
+    httpclient-kestrel-configured:
+      description: 'HttpClient Benchmark (default: HTTP/1.1 GET 8K)'
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net7.0 --scenario httpclient-kestrel-configured
       variables:
-          job: application
-
-    httpclient-h1-get:
-      description: HttpClient HTTP/1.1 GET
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="1.1" --variable responseSize=8192'
-
-    httpclient-h2-get:
-      description: HttpClient HTTP/2.0 GET
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="2.0" --variable responseSize=8192'
-
-    httpclient-h3-get:
-      description: HttpClient HTTP/3.0 GET
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-get --variable httpVersion="3.0" --variable responseSize=8192'
-
-    httpclient-h1-post:
-      description: HttpClient HTTP/1.1 POST
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="1.1" --variable requestContentSize=8192'
-
-    httpclient-h2-post:
-      description: HttpClient HTTP/2.0 POST
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="2.0" --variable requestContentSize=8192'
-
-    httpclient-h3-post:
-      description: HttpClient HTTP/3.0 POST
-      arguments: '{{httpclientcommon}} --scenario httpclient-kestrel-post --variable httpVersion="3.0" --variable requestContentSize=8192'
+          job: client
