@@ -28,6 +28,10 @@ profiles:
         arguments: --profile aspnet-citrine-amd-relay
 
 benchmarks:
+    microbenchmarks:
+      description: '.NET Performance micro benchmarks (default filter: "*LinqBenchmarks*", change by adding "--variable filter=...")'
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom
+
     plaintext:
       description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
