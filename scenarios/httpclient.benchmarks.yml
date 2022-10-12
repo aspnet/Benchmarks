@@ -2,18 +2,17 @@
 # crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
 
 imports:
-  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
 
 variables:
-    warmup: 15 #seconds -- default value *copied* to WRK, see notes below
-    duration: 15 #seconds -- default value *copied* to WRK
-    serverPort: 5000 # -- default value *copied* to WRK
+    warmup: 15 #seconds
+    duration: 15 #seconds
+    serverPort: 5000
     httpVersion: "1.1"
     useHttps: false
     numberOfHttpClients: 1
     concurrencyPerHttpClient: 1 # unsupported by WRK -- other values will throw
-    collectRequestTimings: false # unsupported by WRK --  other values will throw
+    collectRequestTimings: false # unsupported by WRK -- other values will throw
     responseSize: 0 # 0 for no content in response
     http3StreamLimit: 0 # 0 for server default. Max value is 65535
 
@@ -32,9 +31,9 @@ variables:
 
     # Request headers parameters:
     headersDictionary:
-      none: '' # supported in WRK
-      connectionclose: '--header "Connection: close"' # supported in WRK
-      expectcontinue: '--header "Expect: 100-continue"'
+      none: ''
+      connectionclose: '--header "Connection: close"'
+      expectcontinue: '--header "Expect: 100-continue"' # unsupported by WRK -- will throw
     requestHeaders: none
     generatedStaticRequestHeadersCount: 0
     generatedDynamicRequestHeadersCount: 0
@@ -43,52 +42,59 @@ scenarios:
   httpclient-kestrel-get:
     server:
       job: kestrel
+      agent: secondary
+      variables:
+        host: '{{secondaryAddress}}'
     client:
       job: httpClient
+      agent: main
       variables:
         scenario: get
+        host: '{{secondaryAddress}}'
   
   httpclient-kestrel-post:
     server:
       job: kestrel
+      agent: secondary
+      variables:
+        host: '{{secondaryAddress}}'
     client:
       job: httpClient
+      agent: main
       variables:
         scenario: post
         requestContentSize: 1024
+        host: '{{secondaryAddress}}'
 
   httpclient-kestrel-post-slow:
     server:
       job: kestrel
+      agent: secondary
+      variables:
+        host: '{{secondaryAddress}}'
     client:
       job: httpClient
+      agent: main
       variables:
         scenario: post
         requestContentSize: 1024
         requestContentWriteSize: 1
         requestContentFlushAfterWrite: true
         requestContentUnknownLength: true
+        host: '{{secondaryAddress}}'
 
   wrk-kestrel-get:
     server:
       job: kestrel
+      agent: secondary
+      variables:
+        host: '{{secondaryAddress}}'
     client:
       job: wrk
+      agent: main
       variables:
-        connections: '{{numberOfHttpClients}}'
-        threads: '{{numberOfHttpClients}}'
-        # Overriding via console arg will make `useHttps` be a string instead of boolean, and string "false" is truthy in Liquid, so need to check explicitly
-        serverScheme: 'http{% if useHttps and useHttps != "false" %}s{% endif %}'
         path: '/get'
-        pipeline: 0
-        # TODO: Job's default values seem to take preference over global variables, so if the following is removed, values from `wrk.yml` will be used. 
-        # Also, substitution doesn't seem to recognize global variables of the same name, e.g. serverPort: '{{serverPort}}' doesn't work
-        # Leaving the copied values unless the way to substitute correctly is found (other configs seem to employ copying strategy)
-        # Overriding via console arg (e.g. `--variable serverPort=4321`) will work for *both* global and job's variables
-        serverPort: 5000
-        presetHeaders: '{{requestHeaders}}' # TODO: unsupported 'requestHeaders' might be parsed and passed via 'customHeaders' variable
-        warmup: 15 #seconds
-        duration: 15 #seconds
+        host: '{{secondaryAddress}}'
       onConfigure:
         - '
           if (String(job.Variables.concurrencyPerHttpClient) != "1")
@@ -130,7 +136,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}} --http3StreamLimit {{http3StreamLimit}}"
+    arguments: '--address {{host}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}} --http3StreamLimit {{http3StreamLimit}}'
 
   httpClient:
     source:
@@ -140,148 +146,17 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 1200 #seconds
-    arguments: "--address {{serverAddress}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}"
+    arguments: '--address {{host}} --port {{serverPort}} --useHttps {{useHttps}} --path /{{scenario}} --scenario {{scenario}} --httpVersion {{httpVersion}} --numberOfHttpClients {{numberOfHttpClients}} --concurrencyPerHttpClient {{concurrencyPerHttpClient}} --http11MaxConnectionsPerServer {{http11MaxConnectionsPerServer}} --http20EnableMultipleConnections {{http20EnableMultipleConnections}} --useWinHttpHandler {{useWinHttpHandler}} --useHttpMessageInvoker {{useHttpMessageInvoker}} --collectRequestTimings {{collectRequestTimings}} --contentSize {{requestContentSize}} --contentWriteSize {{requestContentWriteSize}} --contentFlushAfterWrite {{requestContentFlushAfterWrite}} --contentUnknownLength {{requestContentUnknownLength}} {{headersDictionary[requestHeaders]}} --generatedStaticHeadersCount {{generatedStaticRequestHeadersCount}} --generatedDynamicHeadersCount {{generatedDynamicRequestHeadersCount}} --useDefaultRequestHeaders {{useDefaultRequestHeaders}} --warmup {{warmup}} --duration {{duration}}'
 
-profiles:
-  local:
-    variables:
-      serverAddress: localhost
-    jobs:
-      server:
-        endpoints: 
-          - http://localhost:5010
-      client:
-        endpoints: 
-          - http://localhost:5010
-
-  aspnet-citrine-lin:
-    variables:
-      serverAddress: 10.0.0.105
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-citrine-load:5001
-      client:
-        endpoints: 
-          - http://asp-citrine-lin:5001
-
-  aspnet-citrine-lin-relay:
-    variables:
-      serverAddress: 10.0.0.105
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineclient
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinelin
-
-  aspnet-citrine-win:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-citrine-db:5001
-      client:
-        endpoints: 
-          - http://asp-citrine-win:5001
-
-  aspnet-citrine-win-relay:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinedb
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinewin
-          
-  aspnet-citrine-arm:
-    variables:
-      serverAddress: 10.0.0.105
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-citrine-load:5001
-      client:
-        endpoints: 
-          - http://asp-citrine-arm:5001
-  
-  aspnet-citrine-arm-relay:
-    variables:
-      serverAddress: 10.0.0.105
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineclient
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinearm
-          
-  aspnet-citrine-amd:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-citrine-db:5001
-      client:
-        endpoints: 
-          - http://asp-citrine-amd:5001
-  
-  aspnet-citrine-amd-relay:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinedb
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineamd
-
-  aspnet-perf-lin:
-    variables:
-      serverAddress: 10.0.0.104
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-perf-load:5001
-      client:
-        endpoints: 
-          - http://asp-perf-lin:5001
-
-  aspnet-perf-lin-relay:
-    variables:
-      serverAddress: 10.0.0.104
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/perfclient
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/perflin
-
-  aspnet-perf-win:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - http://asp-perf-db:5001
-      client:
-        endpoints: 
-          - http://asp-perf-win:5001
-
-  aspnet-perf-win-relay:
-    variables:
-      serverAddress: 10.0.0.103
-    jobs:
-      server:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/perfdb
-      client:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/perfwin
+  wrk:
+    source:
+      repository: https://github.com/dotnet/crank.git
+      branchOrCommit: main
+      project: src/Microsoft.Crank.Jobs.Wrk/Microsoft.Crank.Jobs.Wrk.csproj
+      sourceKey: wrk
+      noBuild: true
+    isConsoleApp: true
+    waitForExit: true
+    arguments: '-c {{numberOfHttpClients}} http{% if useHttps and useHttps != "false" %}s{% endif %}://{{host}}:{{serverPort}}{{path}} --latency -d {{duration}}s -w {{warmup}}s {% if timeout != blank and timeout != empty %} --timeout {{timeout}}s {% endif %} -t {{numberOfHttpClients}} {{headersDictionary[requestHeaders]}}'
+    options:
+      requiredOperatingSystem: linux
