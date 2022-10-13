@@ -196,7 +196,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-ampere:5001
         variables:
-          databaseServer: 10.0.0.109
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
@@ -217,7 +217,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinearmlin
         variables:
-          databaseServer: 10.0.0.109
+          databaseServer: 10.0.0.106
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineamd2
@@ -280,7 +280,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd2:5001
         variables:
-          databaseServer: 10.0.0.108
+          databaseServer: 10.0.0.105
       load:
         endpoints: 
           - http://asp-citrine-db:5001
