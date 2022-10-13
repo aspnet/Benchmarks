@@ -60,7 +60,8 @@ profiles:
         endpoints: 
           - http://asp-citrine-db:5001
         aliases:
-        - downstream
+          - downstream
+          - extra
 
   intel-db-load:
     variables:
@@ -82,7 +83,8 @@ profiles:
         endpoints: 
           - http://asp-citrine-load:5001
         aliases:
-        - downstream
+          - downstream
+          - extra
 
   intel-load-load:
     variables:
@@ -115,7 +117,8 @@ profiles:
         endpoints: 
           - http://asp-citrine-load2:5001
         aliases:
-        - downstream
+          - downstream
+          - extra
 
   intel-load2-load:
     variables:
@@ -181,7 +184,8 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd2:5001
         aliases:
-        - downstream
+          - downstream
+          - extra
 
   arm-lin-app:
     variables:
