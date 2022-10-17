@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Npgsql;
 
+// ReSharper disable UseAwaitUsing
+
 namespace PlatformBenchmarks
 {
     public class RawDb
@@ -42,25 +44,6 @@ namespace PlatformBenchmarks
             using var command = cmd;
 
             return await ReadSingleRow(cmd);
-        }
-
-        public async Task<World[]> LoadMultipleQueriesRows(int count)
-        {
-            var result = new World[count];
-
-            using var db = CreateConnection();
-            await db.OpenAsync();
-
-            var (cmd, idParameter) = CreateReadCommand(db);
-            using var command = cmd;
-
-            for (var i = 0; i < result.Length; i++)
-            {
-                result[i] = await ReadSingleRow(cmd);
-                idParameter.TypedValue = _random.Next(1, 10001);
-            }
-
-            return result;
         }
 
         public Task<CachedWorld[]> LoadCachedQueries(int count)
@@ -131,14 +114,97 @@ namespace PlatformBenchmarks
             Console.WriteLine("Caching Populated");
         }
 
-        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+#if NET7_0_OR_GREATER
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
+        {
+            var results = new World[count];
+
+            using var connection = await _dataSource.OpenConnectionAsync();
+
+            using var batch = new NpgsqlBatch(connection)
+            {
+                // Inserts a PG Sync message between each statement in the batch, required for compliance with
+                // TechEmpower general test requirement 7
+                // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
+                EnableErrorBarriers = true
+            };
+
+            for (var i = 0; i < count; i++)
+            {
+                batch.BatchCommands.Add(new()
+                {
+                    CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
+                    Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                });
+            }
+
+            using var reader = await batch.ExecuteReaderAsync();
+
+            for (var i = 0; i < count; i++)
+            {
+                await reader.ReadAsync();
+                results[i] = new World { Id = reader.GetInt32(0), RandomNumber = reader.GetInt32(1) };
+                await reader.NextResultAsync();
+            }
+
+            return results;
+        }
+#else
+        public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var results = new World[count];
 
             using var db = CreateConnection();
             await db.OpenAsync();
 
-            var (queryCmd, queryParameter) = CreateReadCommand(db);
+            var (cmd, idParameter) = CreateReadCommand(db);
+            using var command = cmd;
+
+            for (var i = 0; i < results.Length; i++)
+            {
+                results[i] = await ReadSingleRow(cmd);
+                idParameter.TypedValue = _random.Next(1, 10001);
+            }
+
+            return results;
+        }
+#endif
+
+        public async Task<World[]> LoadMultipleUpdatesRows(int count)
+        {
+            var results = new World[count];
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+#if NET7_0_OR_GREATER
+            using (var batch = new NpgsqlBatch(connection))
+            {
+                // Inserts a PG Sync message between each statement in the batch, required for compliance with
+                // TechEmpower general test requirement 7
+                // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview
+                batch.EnableErrorBarriers = true;
+
+                for (var i = 0; i < count; i++)
+                {
+                    batch.BatchCommands.Add(new()
+                    {
+                        CommandText = "SELECT id, randomnumber FROM world WHERE id = $1",
+                        Parameters = { new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) } }
+                    });
+                }
+
+                using var reader = await batch.ExecuteReaderAsync();
+
+                for (var i = 0; i < count; i++)
+                {
+                    await reader.ReadAsync();
+                    results[i] = new World { Id = reader.GetInt32(0), RandomNumber = reader.GetInt32(1) };
+                    await reader.NextResultAsync();
+                }
+            }
+#else
+            var (queryCmd, queryParameter) = CreateReadCommand(connection);
             using (queryCmd)
             {
                 for (var i = 0; i < results.Length; i++)
@@ -147,8 +213,9 @@ namespace PlatformBenchmarks
                     queryParameter.TypedValue = _random.Next(1, 10001);
                 }
             }
+#endif
 
-            using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
+            using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), connection))
             {
                 for (var i = 0; i < results.Length; i++)
                 {
@@ -171,7 +238,7 @@ namespace PlatformBenchmarks
 
             return results;
         }
-        
+
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>(20);
