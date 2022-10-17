@@ -54,13 +54,13 @@ parameters:
   - displayName: No PGO
     arguments: --property pgo=disabled --application.environmentVariables COMPlus_JitDisablePGO=1
   - displayName: Dynamic PGO
-    arguments: --property pgo=dynamic --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
+    arguments: --property pgo=dynamic --application.environmentVariables DOTNET_TieredPGO=1 
   - displayName: Full PGO
-    arguments: --property pgo=full --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+    arguments: --property pgo=full --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0
   - displayName: Tier0 Instrumented
-    arguments: --property pgo=tier0-instrumented --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_CallCounting=0
-  - displayName: Tier0 Instrumented
-    arguments: --property pgo=instrumented --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TieredPGO=0 --application.environmentVariables DOTNET_TC_CallCounting=0
+    arguments: --property pgo=tier0-instrumented --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_CallCounting=0
+  - displayName: Tier0 Uninstrumented
+    arguments: --property pgo=tier0-uninstrumented --application.environmentVariables DOTNET_TieredPGO=0 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_CallCounting=0
 
 steps:
 - ${{ each s in parameters.scenarios }}:
