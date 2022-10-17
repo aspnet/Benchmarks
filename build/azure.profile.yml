@@ -10,16 +10,21 @@ profiles:
       db:
         endpoints: 
           - http://10.3.0.6:5001
+        aliases:
+          - extra
       application:
         endpoints: 
           - http://10.3.0.4:5001
         variables:
           databaseServer: 10.3.0.6
+        aliases:
+          - main
       load:
         endpoints: 
           - http://10.3.0.5:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-azure-lin-relay:
     variables:
@@ -30,13 +35,18 @@ profiles:
       db:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureserver
         variables:
           databaseServer: 10.3.0.6
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azureclient
         aliases:
           - warmup
+          - secondary
