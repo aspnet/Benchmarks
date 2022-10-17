@@ -280,7 +280,7 @@ profiles:
         endpoints: 
           - http://asp-citrine-amd2:5001
         variables:
-          databaseServer: 10.0.0.108
+          databaseServer: 10.0.0.105
       load:
         endpoints: 
           - http://asp-citrine-db:5001
