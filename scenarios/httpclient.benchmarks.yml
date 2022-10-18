@@ -51,7 +51,7 @@ scenarios:
       variables:
         scenario: get
         host: '{{secondaryAddress}}'
-  
+
   httpclient-kestrel-post:
     server:
       job: kestrel
@@ -81,6 +81,28 @@ scenarios:
         requestContentWriteSize: 1
         requestContentFlushAfterWrite: true
         requestContentUnknownLength: true
+        host: '{{secondaryAddress}}'
+
+  httpclient-kestrel-configured:
+    server:
+      job: kestrel
+      agent: secondary
+      variables:
+        httpVersion: "1.1"
+        useHttps: true
+        responseSize: 8192
+        host: '{{secondaryAddress}}'
+    client:
+      job: httpClient
+      agent: main
+      variables:
+        scenario: get
+        httpVersion: "1.1"
+        useHttps: true
+        numberOfHttpClients: 1
+        concurrencyPerHttpClient: '{% if cores > 0 %}{{cores}}{% else %}1{% endif %}'
+        http20EnableMultipleConnections: false
+        useHttpMessageInvoker: true
         host: '{{secondaryAddress}}'
 
   wrk-kestrel-get:

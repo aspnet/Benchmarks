@@ -6,11 +6,14 @@ components:
             call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
             del /F /S /Q .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\*.pdb
 
-        arguments:
-            --application.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\
+        arguments: '--{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\'
+
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net7.0 --relay AZURE_RELAY 
+defaults: '--{{job}}.framework net7.0 --relay AZURE_RELAY'
+
+variables:
+    job: application
 
 # the first value is the default if none is specified
 profiles:
@@ -35,7 +38,13 @@ benchmarks:
     json:
       description: TechEmpower JSON Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
-    
+
     fortunes:
       description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
+
+    httpclient-kestrel-configured:
+      description: 'HttpClient Benchmark (default: HTTP/1.1 GET 8K)'
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net7.0 --scenario httpclient-kestrel-configured
+      variables:
+          job: client
