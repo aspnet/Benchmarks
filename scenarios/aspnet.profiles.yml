@@ -24,16 +24,20 @@ profiles:
           - http://localhost:5010
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://localhost:5010
         variables:
           databaseServer: localhost
+        aliases:
+          - main
       load:
         endpoints: 
           - http://localhost:5010
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-lin:
     variables:
@@ -45,16 +49,20 @@ profiles:
           - http://asp-citrine-db:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-lin:5001
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-load:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-lin-relay:
     variables:
@@ -66,16 +74,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinelin
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineload
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-win:
     variables:
@@ -87,16 +99,20 @@ profiles:
           - http://asp-citrine-load:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-win:5001
         variables:
           databaseServer: 10.0.0.105
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-db:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-win-relay:
     variables:
@@ -108,16 +124,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrineload
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinewin
         variables:
           databaseServer: 10.0.0.105
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - warmup
+          - secondary
           
   aspnet-citrine-arm:
     variables:
@@ -129,16 +149,20 @@ profiles:
           - http://asp-citrine-db:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-arm:5001
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-load:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-arm-relay:
     variables:
@@ -150,16 +174,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinearm
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineload
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-ampere:
     variables:
@@ -171,16 +199,20 @@ profiles:
           - http://asp-citrine-amd2:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-ampere:5001
         variables:
           databaseServer: 10.0.0.109
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-arm-lin:
     variables:
@@ -192,16 +224,20 @@ profiles:
           - http://asp-citrine-amd:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-ampere:5001
         variables:
-          databaseServer: 10.0.0.109
+          databaseServer: 10.0.0.106
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-amd2:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-arm-lin-relay:
     variables:
@@ -213,16 +249,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrineamd
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinearmlin
         variables:
-          databaseServer: 10.0.0.109
+          databaseServer: 10.0.0.106
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineamd2
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-arm-win:
     variables:
@@ -234,16 +274,20 @@ profiles:
           - http://asp-citrine-amd2:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://10.240.177.200:5001
         variables:
           databaseServer: 10.0.0.109
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-amd:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-arm-win-relay:
     variables:
@@ -255,16 +299,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrineamd2
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinearmwin
         variables:
           databaseServer: 10.0.0.109
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineamd
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-amd2:
     variables:
@@ -276,16 +324,20 @@ profiles:
           - http://asp-citrine-load:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-amd2:5001
         variables:
-          databaseServer: 10.0.0.108
+          databaseServer: 10.0.0.105
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-db:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-amd:
     variables:
@@ -297,16 +349,20 @@ profiles:
           - http://asp-citrine-load:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-citrine-amd:5001
         variables:
           databaseServer: 10.0.0.105
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-citrine-db:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-citrine-amd-relay:
     variables:
@@ -318,16 +374,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/citrineload
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrineamd
         variables:
           databaseServer: 10.0.0.105
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/citrinedb
         aliases:
           - warmup
+          - secondary
 
   aspnet-perf-lin:
     variables:
@@ -339,16 +399,20 @@ profiles:
           - http://asp-perf-db:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-perf-lin:5001
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-perf-load:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-perf-lin-relay:
     variables:
@@ -360,16 +424,20 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/perfdb
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perflin
         variables:
           databaseServer: 10.0.0.103
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perfload
         aliases:
           - warmup
+          - secondary
 
   aspnet-perf-win:
     variables:
@@ -381,16 +449,20 @@ profiles:
           - http://asp-perf-load:5001
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - http://asp-perf-win:5001
         variables:
           databaseServer: 10.0.0.104
+        aliases:
+          - main
       load:
         endpoints: 
           - http://asp-perf-db:5001
         aliases:
           - warmup
+          - secondary
 
   aspnet-perf-win-relay:
     variables:
@@ -402,13 +474,17 @@ profiles:
           - https://aspnetperf.servicebus.windows.net/perfload
         aliases:
           - downstream
+          - extra
       application:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perfwin
         variables:
           databaseServer: 10.0.0.104
+        aliases:
+          - main
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perfdb
         aliases:
           - warmup
+          - secondary
