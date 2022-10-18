@@ -298,6 +298,14 @@ namespace Benchmarks
                 app.UseDeveloperExceptionPage();
             }
 
+            app.Run(context =>
+            { 
+                context.Response.Headers.Add("vary", "Origin, Access-Control-Request-Headers, Access-Control-Request-Method, Accept-Encoding");
+                context.Response.Headers.Add("referrer-policy", "origin-when-cross-origin, strict-origin-when-cross-origin");
+                context.Response.Headers.Add("access-control-expose-headers", "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset");
+                return Task.CompletedTask;
+            });
+
             if (Scenarios.StaticFiles)
             {
                 app.UseStaticFiles();
@@ -456,14 +464,6 @@ namespace Benchmarks
                 app.UseResponseCachingPlaintextVaryByCached();
             }
             
-            app.Run(context =>
-            { 
-                context.Response.Headers.Add("vary", "Origin, Access-Control-Request-Headers, Access-Control-Request-Method, Accept-Encoding");
-                context.Response.Headers.Add("referrer-policy", "origin-when-cross-origin, strict-origin-when-cross-origin");
-                context.Response.Headers.Add("access-control-expose-headers", "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset");
-                return Task.CompletedTask;
-            });
-
             app.UseAutoShutdown();
         }
     }
