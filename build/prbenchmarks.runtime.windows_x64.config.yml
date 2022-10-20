@@ -10,7 +10,7 @@ components:
 
 
 # default arguments that are always used on crank commands
-defaults: '--{{job}}.framework net7.0 --relay AZURE_RELAY'
+defaults: '--{{job}}.framework net8.0 --relay AZURE_RELAY'
 
 variables:
     job: application
@@ -45,6 +45,6 @@ benchmarks:
 
     httpclient-kestrel-configured:
       description: 'HttpClient Benchmark (default: HTTP/1.1 GET 8K)'
-      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net7.0 --scenario httpclient-kestrel-configured
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net8.0 --scenario httpclient-kestrel-configured
       variables:
           job: client
