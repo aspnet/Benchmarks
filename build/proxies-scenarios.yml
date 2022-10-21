@@ -26,13 +26,6 @@ parameters:
     arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net8.0
     supportsGRPC: true
     condition: 'true'
-  - displayName: YARP-net60
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net60 --application.framework net6.0
-    supportsHttp: true
-    supportsServerHttps: true
-    supportsServerHttp2: true
-    supportsDownstreamHttp2: true
-    condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: YARP-net70
     arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net70 --application.framework net7.0
     supportsHttp: true
