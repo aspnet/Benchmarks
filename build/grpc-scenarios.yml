@@ -21,15 +21,11 @@ parameters:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
     arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
-  - displayName: "ASP.NET Core - Client: Grpc.Core"
-    arguments: --scenario grpcaspnetcoreserver-grpccoreclient $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpccoreclient --application.options.collectCounters true
   - displayName: "ASP.NET Core - Client: Go"
     arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true
 
   - displayName: "Go - Client: Grpc.Net.Client"
     arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
-  - displayName: "Go - Client: Grpc.Core"
-    arguments: --scenario grpcgoserver-grpccoreclient         $(grpcJobs) --property server=grpcgoserver --property client=grpccoreclient
   - displayName: "Go - Client: Go"
     arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
 
