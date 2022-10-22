@@ -20,14 +20,19 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --property aot=false --application.options.collectCounters true
   - displayName: "ASP.NET Core - Client: Go"
-    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --application.options.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --property aot=false --application.options.collectCounters true
+
+  - displayName: "ASP.NET Core AOT - Client: Grpc.Net.Client AOT"
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --property aot=true --application.options.collectCounters true --application.buildArguments \"/p:PublishAot=true\" --load.buildArguments \"/p:PublishAot=true\"
+  - displayName: "ASP.NET Core AOT - Client: Go"
+    arguments: --scenario grpcaspnetcoreserver-grpcgoclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcgoclient --property aot=true --application.options.collectCounters true --application.buildArguments \"/p:PublishAot=true\" --load.buildArguments \"/p:PublishAot=true\"
 
   - displayName: "Go - Client: Grpc.Net.Client"
-    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient
+    arguments: --scenario grpcgoserver-grpcnetclient          $(grpcJobs) --property server=grpcgoserver --property client=grpcnetclient --property aot=false
   - displayName: "Go - Client: Go"
-    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient
+    arguments: --scenario grpcgoserver-grpcgoclient           $(grpcJobs) --property server=grpcgoserver --property client=grpcgoclient --property aot=false
 
 # H2Load scenarios
 - name: h2loadscenarios 
@@ -35,9 +40,11 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: h2load"
-    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --application.options.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --property aot=false --application.options.collectCounters true
+  - displayName: "ASP.NET Core AOT - Client: h2load"
+    arguments: --scenario grpcaspnetcoreserver-h2loadclient   $(grpcJobs) --property server=grpcaspnetcoreserver --property client=h2loadclient --property aot=true --application.options.collectCounters true --application.buildArguments \"/p:PublishAot=true\"
   - displayName: "Go - Client: h2load"
-    arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient
+    arguments: --scenario grpcgoserver-h2loadclient           $(grpcJobs) --property server=grpcgoserver --property client=h2loadclient --property aot=false
 
 # grpc-net only scenarios
 - name: grpcnetscenarios 
@@ -45,7 +52,9 @@ parameters:
   default:
 
   - displayName: "ASP.NET Core - Client: Grpc.Net.Client"
-    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --application.options.collectCounters true
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --property aot=false --application.options.collectCounters true
+  - displayName: "ASP.NET Core AOT - Client: Grpc.Net.Client AOT"
+    arguments: --scenario grpcaspnetcoreserver-grpcnetclient  $(grpcJobs) --property server=grpcaspnetcoreserver --property client=grpcnetclient --property aot=true --application.options.collectCounters true --application.buildArguments \"/p:PublishAot=true\" --load.buildArguments \"/p:PublishAot=true\"
 
 - name: callTypes
   type: object
@@ -74,14 +83,12 @@ parameters:
 - name: connectionStreams
   type: object
   default:
-    - displayName: "Streams: 1"
-      arguments: --variable streams=1 --variable connections=$(h2loadConnectionsCount) --variable threads=$(h2loadConnectionsCount) --property streams=1
     - displayName: "Streams: 1x1"
       arguments: --variable streams=1 --variable connections=1 --variable threads=1 --property streams=1x1
-    - displayName: "Streams: 70"
-      arguments: --variable streams=70 --variable connections=$(h2loadConnectionsCount) --variable threads=$(h2loadConnectionsCount) --property streams=70
     - displayName: "Streams: 70x1"
       arguments: --variable streams=70 --variable connections=1 --variable threads=1 --property streams=70x1
+    - displayName: "Streams: 70"
+      arguments: --variable streams=70 --variable connections=$(h2loadConnectionsCount) --variable threads=$(h2loadConnectionsCount) --property streams=70
 
 steps:
 # h2c h2load unary to various servers
