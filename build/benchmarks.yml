@@ -528,8 +528,8 @@ jobs:
       
 # GROUP 14
 
-- job: PGO_Amd_Linux
-  displayName: 14- PGO Amd Linux
+- job: PGO_Arm_28_Linux
+  displayName: 14- PGO Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Mono_Arm_28_Linux, Mono_Intel_Linux]
@@ -538,7 +538,7 @@ jobs:
   - template: pgo-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Grpc_Intel_Linux
   displayName: 14- Grpc Intel Linux
@@ -570,7 +570,7 @@ jobs:
   displayName: 15- SignalR Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
+  dependsOn: [PGO_Arm_28_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -582,7 +582,7 @@ jobs:
   displayName: 15- SignalR Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
+  dependsOn: [PGO_Arm_28_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -594,7 +594,7 @@ jobs:
   displayName: 15- Blazor Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Amd_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
+  dependsOn: [PGO_Arm_28_Linux, Grpc_Intel_Linux, Trends_Arm_80_Windows]
   condition: succeededOrFailed()
   steps:
   - template: blazor-scenarios.yml

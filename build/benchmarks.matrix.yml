@@ -283,7 +283,7 @@ groups:
       template: mono-scenarios.yml
       timeout: 180
       profiles:
-      - arm-lin-28-app 
+      - arm-lin-28-app
       - intel-load2-load
 
     - name: Mono Intel Linux
@@ -295,10 +295,10 @@ groups:
       
   - jobs:
 
-    - name: PGO Amd Linux
+    - name: PGO Arm 28 Linux
       template: pgo-scenarios.yml
       profiles:
-      - amd-lin-app 
+      - arm-lin-28-app
       - intel-load2-load
       - intel-db-db
 
