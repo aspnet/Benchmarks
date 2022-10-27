@@ -16,6 +16,8 @@ scenarios:
       job: mvcServer
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:

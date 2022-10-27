@@ -8,7 +8,7 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
-    arguments: "{%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
   mapaction:
     source:
       repository: https://github.com/aspnet/Benchmarks.git
