@@ -16,6 +16,8 @@ scenarios:
       job: mvcServer
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
@@ -28,9 +30,10 @@ scenarios:
   ApiCrudListProducts:
     application:
       job: mvcServer
-      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
@@ -43,9 +46,10 @@ scenarios:
   ApiCrudGetProductDetails:
     application:
       job: mvcServer
-      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
@@ -58,9 +62,10 @@ scenarios:
   ApiCrudAddProduct:
     application:
       job: mvcServer
-      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
@@ -75,9 +80,10 @@ scenarios:
   ApiCrudUpdateProduct:
     application:
       job: mvcServer
-      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
@@ -92,9 +98,10 @@ scenarios:
   ApiCrudDeleteProduct:
     application:
       job: mvcServer
-      scheme: https
       buildArguments: 
       - "/p:UseCertAuth=true /p:UseAuthorize=true"
+      variables:
+        serverScheme: https
     load:
       job: httpclient
       variables:
