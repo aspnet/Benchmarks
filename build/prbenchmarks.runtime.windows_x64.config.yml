@@ -8,7 +8,7 @@ components:
 
         arguments: '--{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\'
 
-    runtime-libs:
+    libs:
         script: |
             call .\build.cmd libs -c Release -arch x64
             call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release

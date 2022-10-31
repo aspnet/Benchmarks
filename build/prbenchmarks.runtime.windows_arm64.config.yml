@@ -9,7 +9,7 @@ components:
         arguments:
             --application.options.outputFiles .\artifacts\tests\coreclr\windows.arm64.Release\tests\Core_Root\
 
-    runtime-libs:
+    libs:
         script: |
             call .\build.cmd libs -c Release -runtimeconfiguration Release -arch arm64
             call .\src\tests\build.cmd Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
