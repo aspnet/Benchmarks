@@ -10,7 +10,7 @@ components:
 
     libs:
         script: |
-            call .\build.cmd libs -c Release -arch x64
+            call .\build.cmd libs -c Release -runtimeconfiguration Release -arch x64
             call .\src\tests\build.cmd Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
             del /F /S /Q .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\*.pdb
 
