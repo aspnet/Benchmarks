@@ -8,6 +8,14 @@ components:
 
         arguments: '--{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/'
 
+    libs: 
+        script: |
+            call ./build.sh libs -c Release -runtimeconfiguration Release -arch x64
+            call ./src/tests/build.sh Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
+            rm -rf ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/*.pdb
+
+        arguments: '--{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/'
+
 # default arguments that are always used on crank commands
 defaults: '--{{job}}.framework net8.0 --relay AZURE_RELAY'
 
