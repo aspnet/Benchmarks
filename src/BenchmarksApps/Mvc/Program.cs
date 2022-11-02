@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,7 @@ namespace Mvc
                             {
                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                                 opt.AllowAnyClientCertificate();
+                                opt.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
                             });
 #endif
                         });
