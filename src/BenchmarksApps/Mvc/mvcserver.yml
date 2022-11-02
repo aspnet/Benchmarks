@@ -8,6 +8,8 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
+      serverScheme: http
+      serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
   mapaction:
     source:
