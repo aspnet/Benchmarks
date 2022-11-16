@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-job
+﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build-job
 
 # Install dotnet tools
 RUN dotnet tool install -g Microsoft.Crank.AzureDevOpsWorker --version "0.2.0-*"
