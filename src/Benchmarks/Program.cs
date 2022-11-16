@@ -282,7 +282,7 @@ namespace Benchmarks
 
                 if (urlPrefix.IsHttps)
                 {
-                    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
+                    // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
             });
