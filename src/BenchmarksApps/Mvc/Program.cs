@@ -36,7 +36,7 @@ namespace Mvc
                             {
                                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                                 opt.AllowAnyClientCertificate();
-                                // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Benchmark code, not a secret")]
+                                // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
                                 opt.ServerCertificate = new X509Certificate2("testCert.pfx", "testPassword");
                             });
 #endif
