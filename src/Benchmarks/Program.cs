@@ -282,6 +282,7 @@ namespace Benchmarks
 
                 if (urlPrefix.IsHttps)
                 {
+                    // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Benchmark code, not a secret")]
                     listenOptions.UseHttps("testCert.pfx", "testPassword");
                 }
             });

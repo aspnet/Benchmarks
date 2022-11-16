@@ -62,6 +62,7 @@ namespace Downstream
                 {
                     kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
                     {
+                        // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Benchmark code, not a secret")]
                         httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
                     });
                 })

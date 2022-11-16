@@ -23,7 +23,7 @@ scenarios:
       variables:
         path: /Products?pageNumber=1&pageSize=10
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # List products
@@ -39,7 +39,7 @@ scenarios:
       variables:
         path: /Products?pageNumber=1&pageSize=10
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Get an individual product
@@ -55,7 +55,7 @@ scenarios:
       variables:
         path: /Products/1
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
    # Add product
@@ -73,7 +73,7 @@ scenarios:
         verb: POST
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Update product
@@ -91,7 +91,7 @@ scenarios:
         verb: PUT
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Mvc/crudproductbody.json
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true
 
     # Remove a product item
@@ -108,5 +108,5 @@ scenarios:
         path: /Products/1
         verb: DELETE
         serverScheme: https
-        certPwd: testPassword
+        certPwd: testPassword # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Benchmark code, not a secret")]
         certPath: https://github.com/aspnet/benchmarks/blob/main/src/Benchmarks/testCert.pfx?raw=true

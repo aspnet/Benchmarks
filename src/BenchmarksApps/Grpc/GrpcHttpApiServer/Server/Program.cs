@@ -50,6 +50,7 @@ namespace Server
                                     var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                                     var certPath = Path.Combine(basePath!, "Certs/testCert.pfx");
                                     Console.WriteLine("Loading certificate from " + certPath);
+                                    // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Benchmark code, not a secret")]
                                     listenOptions.UseHttps(certPath, "testPassword");
                                 }
                                 else if (protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
@@ -65,6 +66,7 @@ namespace Server
                                     var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
                                     var certPath = Path.Combine(basePath!, "Certs/testCert.pfx");
                                     Console.WriteLine("Loading certificate from " + certPath);
+                                    // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="Benchmark code, not a secret")]
                                     listenOptions.UseHttps(certPath, "testPassword");
                                 }
                                 else
