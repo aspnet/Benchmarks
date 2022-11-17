@@ -5,6 +5,13 @@
 # - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
 # - Update this file with the result of the template generation
 
+schedules:
+- cron: "0 1/12 * * *" # At 0 minutes past the hour, every 12 hours, starting at 01:00 AM
+  displayName: 01:00 AM, 01:00 PM
+  branches:
+    include:
+    - main
+    
 variables:
   - template: job-variables.yml
   - name: session
