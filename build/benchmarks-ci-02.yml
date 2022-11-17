@@ -5,6 +5,15 @@
 # - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
 # - Update this file with the result of the template generation
 
+# We are setting up a pipeline resource that references the benchmarks-ci-01
+# pipeline and setting up a pipeline completion trigger so that our benchmarks-ci-02
+# pipeline runs when a run of the benchmarks-ci-01 pipeline completes
+resources:
+  pipelines:
+  - pipeline: benchmarksci01 # Name of the pipeline resource.
+    source: benchmarks-ci-02 # The name of the pipeline referenced by this pipeline resource.
+    trigger: true # Run benchmarks-ci-02 pipeline when any run of benchmarks-ci-01 completes
+    
 variables:
   - template: job-variables.yml
   - name: session
@@ -38,7 +47,7 @@ jobs:
   displayName: 12- Mono Database Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Amd_Linux, PGO_Intel_Linux]
+  dependsOn: []
   condition: succeededOrFailed()
   steps:
   - template: mono-database-scenarios.yml
