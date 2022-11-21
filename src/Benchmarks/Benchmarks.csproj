@@ -19,6 +19,11 @@
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
     <NoWarn>0618;NU1605</NoWarn>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+
+    <!-- langver needs to be at least 9 for extended partial methods, for DapperAOT's generator work -->
+    <LangVersion>10</LangVersion>
+    <!-- 'unsafe' allows DapperAOT to use [SkipLocalsInit] -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Old way of overriding the dotnet runtime -->
@@ -32,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+    <PackageReference Include="Dapper.AOT" Version="$(DapperAOTVersion)" />
     
     <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
     <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />

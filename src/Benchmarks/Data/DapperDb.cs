@@ -4,59 +4,49 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Dynamic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Benchmarks.Configuration;
 using Dapper;
-using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class DapperDb : IDb
+    public partial class DapperDb : IDb
     {
-        private static readonly Comparison<World> WorldSortComparison = (a, b) => a.Id.CompareTo(b.Id);
-
         private readonly IRandom _random;
+        [Connection] // when a database is not provided (or turns out to be null), a contextual db/provider can be used
         private readonly DbProviderFactory _dbProviderFactory;
+        [ConnectionString] // used by DapperAOT in conjuction with a discovered DbProviderFactory
         private readonly string _connectionString;
 
-        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
+        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, string connectionString)
         {
             _random = random;
             _dbProviderFactory = dbProviderFactory;
-            _connectionString = appSettings.Value.ConnectionString;
+            _connectionString = connectionString;
         }
 
-        public async Task<World> LoadSingleQueryRow()
-        {
-            using (var db = _dbProviderFactory.CreateConnection())
-            {
-                db.ConnectionString = _connectionString;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int NextRandom() => _random.Next(1, 10001);
 
-                // Note: Don't need to open connection if only doing one thing; let dapper do it
-                return await ReadSingleRow(db);
-            }
-        }
-
-        Task<World> ReadSingleRow(DbConnection db)
+        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
         {
-            return db.QueryFirstOrDefaultAsync<World>(
-                    "SELECT id, randomnumber FROM world WHERE id = @Id",
-                    new { Id = _random.Next(1, 10001) });
+            List<Fortune> result = await ReadFortunesRows();
+            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Sort();
+
+            return result;
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var results = new World[count];
-            using (var db = _dbProviderFactory.CreateConnection())
-            {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
+            using var db = _dbProviderFactory.CreateConnection()!;
+            db.ConnectionString = _connectionString;
+            await db.OpenAsync();
 
-                for (int i = 0; i < count; i++)
-                {
-                    results[i] = await ReadSingleRow(db);
-                }
+            for (int i = 0; i < count; i++)
+            {
+                results[i] = await ReadSingleRow(NextRandom(), db);
             }
 
             return results;
@@ -64,50 +54,40 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            IDictionary<string, object> parameters = new ExpandoObject();
+            var parameters = new Dictionary<string, int>(2 * count);
 
-            using (var db = _dbProviderFactory.CreateConnection())
+            using var db = _dbProviderFactory.CreateConnection()!;
+            db.ConnectionString = _connectionString;
+            await db.OpenAsync();
+
+            var results = new World[count];
+            for (int i = 0; i < count; i++)
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
-
-                var results = new World[count];
-                for (int i = 0; i < count; i++)
-                {
-                    results[i] = await ReadSingleRow(db);
-                }
-
-                for (int i = 0; i < count; i++)
-                {
-                    var randomNumber = _random.Next(1, 10001);
-                    parameters[$"@Random_{i}"] = randomNumber;
-                    parameters[$"@Id_{i}"] = results[i].Id;
-
-                    results[i].RandomNumber = randomNumber;
-                }
-
-                await db.ExecuteAsync(BatchUpdateString.Query(count), parameters);
-                return results;
+                results[i] = await ReadSingleRow(NextRandom(), db);
             }
 
-        }
-
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
-        {
-            List<Fortune> result;
-
-            using (var db = _dbProviderFactory.CreateConnection())
+            for (int i = 0; i < count; i++)
             {
-                db.ConnectionString = _connectionString;
+                var randomNumber = NextRandom();
+                parameters[$"@Random_{i}"] = randomNumber;
+                parameters[$"@Id_{i}"] = results[i].Id;
 
-                // Note: don't need to open connection if only doing one thing; let dapper do it
-                result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
+                results[i].RandomNumber = randomNumber;
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
-            result.Sort();
-
-            return result;
+            await ExecuteBatch(BatchUpdateString.Query(count), parameters, db);
+            return results;
         }
+
+        public Task<World> LoadSingleQueryRow() => ReadSingleRow(NextRandom());
+
+        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false)] // Annotate is a "where this query comes from" hint, for DB debugging
+        private partial Task<World> ReadSingleRow(int id, DbConnection? db = null);
+
+        [Command("SELECT id, message FROM fortune", Annotate = false)]
+        private partial Task<List<Fortune>> ReadFortunesRows();
+
+        [Command]
+        private partial Task ExecuteBatch([Command] string command, Dictionary<string, int> parameters, DbConnection? db);
     }
 }
