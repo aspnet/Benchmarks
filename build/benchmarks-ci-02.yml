@@ -11,7 +11,7 @@
 resources:
   pipelines:
   - pipeline: benchmarksci01 # Name of the pipeline resource.
-    source: benchmarks-ci-02 # The name of the pipeline referenced by this pipeline resource.
+    source: benchmarks-ci-01 # The name of the pipeline referenced by this pipeline resource.
     trigger: true # Run benchmarks-ci-02 pipeline when any run of benchmarks-ci-01 completes
     
 variables:
