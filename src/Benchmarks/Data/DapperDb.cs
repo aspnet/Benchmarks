@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Benchmarks.Configuration;
 using Dapper;
+using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
@@ -18,11 +20,11 @@ namespace Benchmarks.Data
         [ConnectionString] // used by DapperAOT in conjuction with a discovered DbProviderFactory
         private readonly string _connectionString;
 
-        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, string connectionString)
+        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
             _random = random;
             _dbProviderFactory = dbProviderFactory;
-            _connectionString = connectionString;
+            _connectionString = appSettings.Value.ConnectionString;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,10 +85,10 @@ namespace Benchmarks.Data
 
         // Annotate is a "where this query comes from" hint, for DB debugging
         // ReuseCommand allows DbCommand objects to be reused; this doesn't currently work well if the provider might change at runtime!
-        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false, ReuseCommand = false)]
+        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false /*, ReuseCommand = false */)]
         private partial Task<World> ReadSingleRow(int id, DbConnection? db = null);
 
-        [Command("SELECT id, message FROM fortune", Annotate = false, ReuseCommand = false)]
+        [Command("SELECT id, message FROM fortune", Annotate = false /*, ReuseCommand = false */)]
         private partial Task<List<Fortune>> ReadFortunesRows();
 
         [Command]
