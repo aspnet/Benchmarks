@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
@@ -81,10 +81,12 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow() => ReadSingleRow(NextRandom());
 
-        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false)] // Annotate is a "where this query comes from" hint, for DB debugging
+        // Annotate is a "where this query comes from" hint, for DB debugging
+        // ReuseCommand allows DbCommand objects to be reused; this doesn't currently work well if the provider might change at runtime!
+        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false, ReuseCommand = false)]
         private partial Task<World> ReadSingleRow(int id, DbConnection? db = null);
 
-        [Command("SELECT id, message FROM fortune", Annotate = false)]
+        [Command("SELECT id, message FROM fortune", Annotate = false, ReuseCommand = false)]
         private partial Task<List<Fortune>> ReadFortunesRows();
 
         [Command]
