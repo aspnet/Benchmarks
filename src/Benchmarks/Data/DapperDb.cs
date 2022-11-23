@@ -12,6 +12,10 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
+    // Annotate is a "where this query comes from" hint, for DB debugging
+    // [Annotate(false)] (not needed: default)
+    // ReuseCommand allows DbCommand objects to be reused; this doesn't currently work well if the provider might change at runtime!
+    // [ReuseCommand(true)] (not needed: default)
     public partial class DapperDb : IDb
     {
         private readonly IRandom _random;
@@ -83,12 +87,10 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow() => ReadSingleRow(NextRandom());
 
-        // Annotate is a "where this query comes from" hint, for DB debugging
-        // ReuseCommand allows DbCommand objects to be reused; this doesn't currently work well if the provider might change at runtime!
-        [Command("SELECT id, randomnumber FROM world WHERE id = @id", Annotate = false /*, ReuseCommand = false */)]
+        [Command("SELECT id, randomnumber FROM world WHERE id = @id")]
         private partial Task<World> ReadSingleRow(int id, DbConnection? db = null);
 
-        [Command("SELECT id, message FROM fortune", Annotate = false /*, ReuseCommand = false */)]
+        [Command("SELECT id, message FROM fortune")]
         private partial Task<List<Fortune>> ReadFortunesRows();
 
         [Command]
