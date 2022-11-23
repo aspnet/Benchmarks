@@ -9,6 +9,9 @@ schedules:
 - cron: "0 3/12 * * *" # At 0 minutes past 3:00 AM UTC, every 12 hours, starting at 03:00 AM
   displayName: 07:00 AM, 07:00 PM
   always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.
+  branches:
+    include:
+    - main
     
 variables:
   - template: job-variables.yml
