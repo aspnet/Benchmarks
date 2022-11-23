@@ -5,14 +5,10 @@
 # - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
 # - Update this file with the result of the template generation
 
-# We are setting up a pipeline resource that references the benchmarks-ci-01
-# pipeline and setting up a pipeline completion trigger so that our benchmarks-ci-02
-# pipeline runs when a run of the benchmarks-ci-01 pipeline completes
-resources:
-  pipelines:
-  - pipeline: benchmarksci01 # Name of the pipeline resource.
-    source: benchmarks-ci-01 # The name of the pipeline referenced by this pipeline resource.
-    trigger: true # Run benchmarks-ci-02 pipeline when any run of benchmarks-ci-01 completes
+schedules:
+- cron: "0 3/12 * * *" # At 0 minutes past 3:00 AM UTC, every 12 hours, starting at 03:00 AM
+  displayName: 07:00 AM, 07:00 PM
+  always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.
     
 variables:
   - template: job-variables.yml
