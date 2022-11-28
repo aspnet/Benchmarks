@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime;
 using System.Text.RegularExpressions;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -78,6 +79,11 @@ namespace Benchmarks
                             Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
                             options.CaptureScopes = false;
                         }
+                    })
+                    .ConfigureHttpJsonOptions(jsonOptions =>
+                    {
+                        jsonOptions.SerializerOptions.Encoder = null;
+                        jsonOptions.SerializerOptions.AddContext<Middleware.CustomJsonContext>();
                     })
                 )
                 .UseDefaultServiceProvider(
