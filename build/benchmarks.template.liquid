@@ -1,4 +1,3 @@
-
 # Do not change this file, it is generated using these steps:
 # - The file benchmarks.matrix.yml defines how each job is run in parallel
 # - Convert its content to json using https://jsonformatter.org/yaml-to-json
@@ -6,6 +5,13 @@
 # - Update this file with the result of the template generation
 
 {%- assign defaultTimeout = 120 %}
+
+schedules:
+- cron: "{{ schedule }}"
+  always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.
+  branches:
+    include:
+    - main
 
 variables:
   - template: job-variables.yml

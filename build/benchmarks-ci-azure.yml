@@ -1,0 +1,85 @@
+# Do not change this file, it is generated using these steps:
+# - The file benchmarks.matrix.yml defines how each job is run in parallel
+# - Convert its content to json using https://jsonformatter.org/yaml-to-json
+# - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
+# - Update this file with the result of the template generation
+
+schedules:
+- cron: "0 9/12 * * *"
+  always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.
+  branches:
+    include:
+    - main
+
+variables:
+  - template: job-variables.yml
+  - name: session
+    value: $(Build.BuildNumber)
+  - name: buildId
+    value: $(Build.BuildId)
+  - name: buildNumber
+    value: $(Build.BuildNumber)
+  - name: am
+    value: $[lt(format('{0:HH}', pipeline.startTime), 12)]
+  - name: pm
+    value: $[ge(format('{0:HH}', pipeline.startTime), 12)]
+
+jobs:
+
+# GROUP 1
+
+- job: Trends_Database_Azure_Linux
+  displayName: 1- Trends Database Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: []
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
+# GROUP 2
+
+- job: Trends_Azure_Linux
+  displayName: 2- Trends Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Database_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
+# GROUP 3
+
+- job: Baselines_Database_Azure_Linux
+  displayName: 3- Baselines Database Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Trends_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
+# GROUP 4
+
+- job: Baselines_Azure_Linux
+  displayName: 4- Baselines Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Database_Azure_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
+

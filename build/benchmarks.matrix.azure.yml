@@ -1,0 +1,38 @@
+# This file describes all the scenarios which are run continuously on AzDo.
+# It generates the file benchmarks.yml. See this file for instructions.
+
+queues:
+  - ASP.NET Benchmarks Azure Queue
+
+schedule: "0 9/12 * * *"
+
+groups:
+
+  - jobs:
+
+    - name: Trends Database Azure Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
+  - jobs:
+
+    - name: Trends Azure Linux
+      template: trend-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
+  - jobs:
+
+    - name: Baselines Database Azure Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
+  - jobs:
+
+    - name: Baselines Azure Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - aspnet-azure-lin
+
