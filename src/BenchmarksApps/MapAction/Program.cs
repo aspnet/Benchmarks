@@ -65,6 +65,22 @@ await host.WaitForShutdownAsync();
 
 record Todo(int Id, string Name, bool IsComplete);
 
+internal partial class JsonMessageConverter : JsonConverter<JsonMessage>
+{
+    public override JsonMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Write(Utf8JsonWriter writer, JsonMessage value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("message", value.message);
+        writer.WriteEndObject();
+    }
+}
+
+[JsonConverter(typeof(JsonMessageConverter))]
 public struct JsonMessage
 {
     public string message { get; set; }
