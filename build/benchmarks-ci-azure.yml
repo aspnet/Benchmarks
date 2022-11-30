@@ -4,6 +4,9 @@
 # - Use the template in benchmarks.template.liquid and the converted json using https://liquidjs.com/playground.html
 # - Update this file with the result of the template generation
 
+trigger: none
+pr: none
+
 schedules:
 - cron: "0 9/12 * * *"
   always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.
