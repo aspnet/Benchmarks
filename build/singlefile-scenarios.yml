@@ -32,8 +32,8 @@ parameters:
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true\" --property mode=SingleFile
   - displayName: Trimmed
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
-  - displayName: Linked
-    arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:TrimMode=link\" --property mode=Linked
+  - displayName: AOT
+    arguments: --application.buildArguments \"/p:PublishAot=true\" --property mode=Aot
 
 steps:
 - ${{ each s in parameters.scenarios }}:
