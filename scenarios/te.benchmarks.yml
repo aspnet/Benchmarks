@@ -16,6 +16,40 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
+  express:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/JavaScript/express/express.dockerfile
+      dockerImageName: express
+      dockerContextDirectory: frameworks/JavaScript/express/
+    readyStateText: is running
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
+
+  express_postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/JavaScript/express/express-postgres.dockerfile
+      dockerImageName: express_postgres
+      dockerContextDirectory: frameworks/JavaScript/express/
+    readyStateText: listening
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
+
+  gin:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Go/gin/gin.dockerfile
+      dockerImageName: gin
+      dockerContextDirectory: frameworks/Go/gin/
+    # readyStateText: 
+    port: 8080 # used to poll the application to detect startup
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
+
   actix_default: # json and plaintext scenarios
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -46,6 +80,8 @@ jobs:
       dockerImageName: fasthttp_prefork
       dockerContextDirectory: frameworks/Go/fasthttp/
     arguments: --add-host="tfb-database:{{databaseServer}}"
+    # readyStateText:
+    port: 8080 # used to poll the application to detect startup
     noClean: true
 
   ulib:
@@ -135,6 +171,78 @@ scenarios:
       job: mysql
     application:
       job: nodejs
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        serverPort: 8080
+
+  # Express (NodeJS)
+  plaintext_express:
+    application:
+      job: express
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+        serverPort: 8080
+
+  json_express:
+    application:
+      job: express
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+
+  fortunes_express:
+    db:
+      job: postgresql
+    application:
+      job: express_postgresql
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        serverPort: 8080
+
+# Gin (Go)
+  plaintext_gin:
+    db:
+      job: mysql # all gin scenarios require mysql 
+    application:
+      job: gin
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+        serverPort: 8080
+
+  json_gin:
+    db:
+      job: mysql # all gin scenarios require mysql
+    application:
+      job: gin
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+
+  fortunes_gin:
+    db:
+      job: mysql
+    application:
+      job: gin
     load:
       job: wrk
       variables:
