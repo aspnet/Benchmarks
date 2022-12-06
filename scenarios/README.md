@@ -27,9 +27,9 @@ dotnet tool update Microsoft.Crank.Controller --version "0.2.0-*" --global
 
 Each profile defines a set of machines, private IPs and ports that are used to run a benchmark.
 
-| Profile       | Arch     | OS     | Proc |
-| :------------- | :----------: | :----------- |
-|  `local` | (local machine) | (local machine) | n/a |
+| Profile        | Arch         | OS           | Proc |
+| :------------- | :----------: | :----------- | :----------- |
+|  `local` | (local machine) | (local machine) | (local machine) |
 |  `aspnet-perf-lin` | INTEL, 12 cores, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-perf-win` | INTEL, 12 cores, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-citrine-lin` | INTEL, 28 cores | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
