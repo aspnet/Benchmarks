@@ -34,10 +34,10 @@ profiles:
         description: INTEL/Windows 28 Cores
         arguments: --profile aspnet-citrine-win-relay
 
-    aspnet-citrine-arm:
-        description: ARM/Linux 32 Cores
-        arguments: --profile aspnet-citrine-arm-relay
-
+    aspnet-citrine-ampere:
+        description: Ampere/Linux 80 Cores
+        arguments: --profile aspnet-citrine-arm-lin-relay
+        
     aspnet-citrine-amd:
         description: AMD/Linux 48 Cores
         arguments: --profile aspnet-citrine-amd-relay
