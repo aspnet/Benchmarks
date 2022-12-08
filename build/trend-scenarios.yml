@@ -79,6 +79,12 @@ parameters:
   - displayName: Json MapAction
     arguments: --scenario mapaction $(jsonJobs) --property scenario=JsonMapAction --property protocol=http
 
+# AoT
+
+  - displayName: AoT Stage 1
+    arguments: --scenario aotstage1 $(jsonJobs) --property scenario=AoT --property protocol=http
+
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1

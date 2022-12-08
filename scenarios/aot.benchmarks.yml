@@ -1,0 +1,39 @@
+﻿# Examples:
+# --config plaintext.benchmarks.yml --scenario plaintext --profile aspnet-physical
+# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+    serverPort: 5000
+
+jobs:
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/mitchdenny/benchmarks.git
+      branchOrCommit: aotstage1
+      project: src/AoTStage1/AoTStage1.csproj
+    readyStateText: Application started.
+    variables:
+      protocol: http
+      serverScheme: http
+      server: Kestrel
+      transport: Sockets
+      scenario: aotstage1
+      database: ''
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+
+scenarios:
+
+  aotstage1:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: aotstage1
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /weatherforecast
