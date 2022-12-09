@@ -27,6 +27,8 @@ scenarios:
   aotstage1:
     application:
       job: aspnetbenchmarks
+      buildArguments: 
+        - "/p:NativeAot=true"
       variables:
         scenario: aotstage1
     load:
