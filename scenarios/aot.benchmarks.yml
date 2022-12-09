@@ -17,13 +17,10 @@ jobs:
       project: src/AoTStage1/AoTStage1.csproj
     readyStateText: Application started.
     variables:
-      protocol: http
       serverScheme: http
-      server: Kestrel
-      transport: Sockets
       scenario: aotstage1
       database: ''
-    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
