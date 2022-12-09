@@ -12,8 +12,8 @@ variables:
 jobs:
   aspnetbenchmarks:
     source:
-      repository: https://github.com/mitchdenny/benchmarks.git
-      branchOrCommit: aotstage1
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/AoTStage1/AoTStage1.csproj
     readyStateText: Application started.
     variables:
