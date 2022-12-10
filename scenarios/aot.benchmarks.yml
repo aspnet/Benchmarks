@@ -26,7 +26,6 @@ scenarios:
   aotstage1:
     application:
       job: aspnetbenchmarks
-      selfContained: true
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
