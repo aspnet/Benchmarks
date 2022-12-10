@@ -29,8 +29,6 @@ scenarios:
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
-      variables:
-        scenario: aotstage1
     load:
       job: wrk
       variables:
