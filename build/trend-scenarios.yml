@@ -82,7 +82,7 @@ parameters:
 # AoT
 
   - displayName: AoT Stage 1
-    arguments: --scenario aotstage1 $(aotJobs) --property scenario=Stage1AOT --property protocol=http
+    arguments: --scenario aotstage1 $(aotJobs) --property scenario=Stage1AOT --property protocol=http --property publish=nativeaot
 
 
 steps:
