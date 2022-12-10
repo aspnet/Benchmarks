@@ -18,9 +18,8 @@ jobs:
     readyStateText: Application started.
     variables:
       serverScheme: http
-      scenario: aotstage1
-      database: ''
-    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+      serverPort: 5000
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
