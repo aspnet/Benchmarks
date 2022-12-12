@@ -1,0 +1,45 @@
+﻿# Examples:
+# --config plaintext.benchmarks.yml --scenario plaintext --profile aspnet-physical
+# --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
+
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+    serverPort: 5000
+
+jobs:
+  aspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/Goldilocks/Goldilocks.csproj
+    readyStateText: Application started.
+    variables:
+      serverScheme: http
+      serverPort: 5000
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+
+scenarios:
+
+  stage1publishaot:
+    application:
+      job: aspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=true"
+        - "/p:StripSymbols=true"
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /weatherforecast
+
+  stage1vanilla:
+    application:
+      job: aspnetbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /weatherforecast
