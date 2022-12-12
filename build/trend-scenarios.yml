@@ -81,8 +81,11 @@ parameters:
 
 # AoT
 
-  - displayName: AoT Stage 1
-    arguments: --scenario aotstage1 $(aotJobs) --property scenario=Stage1AOT --property protocol=http --property publish=nativeaot
+  - displayName: Goldilocks Stage 1 (Vanilla)
+    arguments: --scenario stage1vanilla $(goldilocksJobs) --property protocol=http
+
+  - displayName: Goldilocks Stage 1 (PublishAOT)
+    arguments: --scenario stage1publishaot $(goldilocksJobs) --property protocol=http --property publish=nativeaot
 
 
 steps:

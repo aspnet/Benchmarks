@@ -14,7 +14,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/AoTStage1/AoTStage1.csproj
+      project: src/Goldilocks/Goldilocks.csproj
     readyStateText: Application started.
     variables:
       serverScheme: http
@@ -23,12 +23,21 @@ jobs:
 
 scenarios:
 
-  aotstage1:
+  stage1publishaot:
     application:
       job: aspnetbenchmarks
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /weatherforecast
+
+  stage1vanilla:
+    application:
+      job: aspnetbenchmarks
     load:
       job: wrk
       variables:
