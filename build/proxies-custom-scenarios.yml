@@ -49,7 +49,7 @@ steps:
         waitForCompletion: true
         messageBody: |
           {
-            "condition": "${{ parameters.condition }} && ${{ s.condition }}",
+            "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
             "timeout": "00:03:00",
             "name": "crank",
             "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ p.arguments }} --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --variable serverScheme=https --variable serverScheme=https --variable downstreamScheme=https --property serverProtocol=https --property downstreamProtocol=https" ]
