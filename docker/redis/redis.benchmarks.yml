@@ -2,7 +2,7 @@
   redis:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: sebros/redis
       dockerFile: docker/redis/redis.dockerfile
       dockerImageName: redis
       dockerContextDirectory: docker/redis
