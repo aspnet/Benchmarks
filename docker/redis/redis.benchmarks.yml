@@ -6,4 +6,4 @@
       dockerFile: docker/redis/redis.dockerfile
       dockerImageName: redis
       dockerContextDirectory: docker/redis
-    readyStateText: starting workers
+    readyStateText: Ready to accept connections
