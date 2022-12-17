@@ -1,0 +1,34 @@
+﻿imports:
+  - https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/aspnet.profiles.standard.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+
+variables:
+   
+jobs:
+  distributedcache:
+    source:
+      repository: https://github.com/aspnet/Benchmarks
+      branchOrCommit: main
+      project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
+      readyStateText: Application started
+
+scenarios:
+  redis:
+    extra:
+      job: redis
+    main:
+      job: distributedcache
+      arguments: --Cache StackExchangeRedisCache --RedisConnectionString "{{ databaseServer }}"
+    seconday:
+      job: bombardier
+
+  memory:
+    extra:
+      job: redis
+    main:
+      job: distributedcache
+      arguments: --cache DistributedMemoryCache
+    seconday:
+      job: bombardier
