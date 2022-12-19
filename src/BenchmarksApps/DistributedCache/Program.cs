@@ -18,7 +18,7 @@ if (cacheOptions == null)
 
 switch (cacheOptions.Cache.ToLowerInvariant())
 {
-    case "distributed":
+    case "memory":
         Console.WriteLine("Using DistributedMemoryCache");
         builder.Services.AddDistributedMemoryCache();
         break;

@@ -3,9 +3,8 @@
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/benchmarks/sebros/redis/docker/redis/redis.yml
 
-variables:
-   
 jobs:
   distributedcache:
     source:
@@ -20,8 +19,8 @@ scenarios:
       job: redis
     main:
       job: distributedcache
-      arguments: --Cache StackExchangeRedisCache --RedisConnectionString "{{ databaseServer }}"
-    seconday:
+      arguments: --cache redis --RedisConnectionString "{{ databaseServer }}"
+    secondary:
       job: bombardier
 
   memory:
@@ -29,6 +28,6 @@ scenarios:
       job: redis
     main:
       job: distributedcache
-      arguments: --cache DistributedMemoryCache
-    seconday:
+      arguments: --cache memory
+    secondary:
       job: bombardier

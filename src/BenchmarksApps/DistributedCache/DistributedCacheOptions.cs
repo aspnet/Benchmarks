@@ -12,7 +12,7 @@ public class DistributedCacheOptions
     public int CacheCount { get; set; } = 256;
 
     // Type of cache implementation
-    public string Cache { get; set; } = "distributed";
+    public string Cache { get; set; } = "memory";
 
     // Write cache ratio. E.g., 0.01 means 1 operation
     // out of 100 is a write. 0 means no writes, and 100 means only writes.
