@@ -17,4 +17,7 @@ public class DistributedCacheOptions
     // Write cache ratio. E.g., 0.01 means 1 operation
     // out of 100 is a write. 0 means no writes, and 100 means only writes.
     public double WriteRatio { get; set; } = 0;
+
+    // The Redis endpoint
+    public string RedisEndpoint { get; set; }
 }
