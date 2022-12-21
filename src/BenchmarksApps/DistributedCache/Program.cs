@@ -6,8 +6,6 @@
 using DistributedCacheBenchmarks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +26,7 @@ switch (cacheOptions.Cache.ToLowerInvariant())
     case "redis":
         Console.WriteLine("Using StackExchangeRedisCache");
         builder.Services.AddStackExchangeRedisCache(setup => {
-            setup.ConfigurationOptions = new ConfigurationOptions();
-            setup.ConfigurationOptions.EndPoints.Add(cacheOptions.RedisEndpoint);
+            setup.Configuration = cacheOptions.RedisEndpoint;
         });
         break;
 

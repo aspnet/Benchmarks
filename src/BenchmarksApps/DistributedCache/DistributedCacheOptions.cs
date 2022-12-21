@@ -19,5 +19,5 @@ public class DistributedCacheOptions
     public double WriteRatio { get; set; } = 0;
 
     // The Redis endpoint
-    public string RedisEndpoint { get; set; }
+    public string RedisEndpoint { get; set; } = "";
 }
