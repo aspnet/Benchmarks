@@ -1,113 +1,90 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Http;
+// The single '/' endpoint randomly executes a GetAsync or SetAsync operation on
+// the configured IDistributedCache implementation (Redis, Distributed memory cache, ...).
+// There is no latency added since the goal is to measure the raw performance of the cache
+// implementation.
+
+using DistributedCacheBenchmarks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Benchmarks
+var builder = WebApplication.CreateBuilder(args);
+
+var cacheOptions = builder.Configuration.Get<DistributedCacheOptions>();
+
+if (cacheOptions == null)
 {
-    public static class CacheOptions
-    {
-        public static string Key;
-        public static string Content;
-    }
-
-    public class Startup
-    {
-        private readonly IConfiguration Configuration;
-
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-        
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var cache = Configuration["Cache"] ?? "DistributedMemoryCache";
-            var keyLength = int.Parse(Configuration["KeyLength"]);
-            var contentSize = int.Parse(Configuration["ContentSize"]);
-
-            CacheOptions.Key = new String('x', keyLength);
-            CacheOptions.Content = new String('x', contentSize);
-            
-            Console.WriteLine($"Key length: {keyLength}");
-            Console.WriteLine($"Content size: {contentSize}");
-
-            switch (cache)
-            {
-                case "StackExchangeRedisCache": 
-                    Console.WriteLine("Using StackExchangeRedisCache");
-                    services.AddStackExchangeRedisCache(options => 
-                    {                         
-                        options.Configuration = Configuration["RedisConnectionString"];
-                        options.InstanceName = "default";
-                    }); 
-                    break;
-
-                default: 
-                    Console.WriteLine("Using DistributedMemoryCache");
-                    services.AddDistributedMemoryCache(); 
-                    break;
-            }
-
-            services.AddHostedService<InitializationService>();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGet("/", async context =>
-                {
-                    var cache = context.RequestServices.GetRequiredService<IDistributedCache>();
-                    var cached = await cache.GetStringAsync(CacheOptions.Key);
-
-                    await context.Response.WriteAsync("OK!");
-                });
-            });
-        }
-    }
-
-    public class InitializationService : IHostedService
-    {
-        private readonly IServiceProvider _serviceProvider;
-
-        public InitializationService(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            // Create a new scope to retrieve scoped services
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
-                await cache.SetStringAsync(CacheOptions.Key, CacheOptions.Content, new DistributedCacheEntryOptions { AbsoluteExpiration = DateTimeOffset.MaxValue });
-            }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-    }
-
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                    webBuilder.UseStartup<Startup>()
-                );
-    }
+    throw new NotSupportedException("Invalid configuration");
 }
+
+Console.WriteLine("redis connection: " + cacheOptions.RedisEndpoint);
+
+switch (cacheOptions.Cache.ToLowerInvariant())
+{
+    case "memory":
+        Console.WriteLine("Using DistributedMemoryCache");
+        builder.Services.AddDistributedMemoryCache();
+        break;
+
+    case "redis":
+        Console.WriteLine("Using StackExchangeRedisCache");
+        builder.Services.AddStackExchangeRedisCache(setup => {
+            setup.Configuration = cacheOptions.RedisEndpoint;
+        });
+        break;
+
+    case "null":
+        Console.WriteLine("Using Null provider");
+        builder.Services.AddSingleton<IDistributedCache, NullDistributedCache>();
+        break;
+
+    default:
+        throw new NotSupportedException($"Invalid value for option [Cache]: '{cacheOptions.Cache}'. Supported values: redis, distributed");
+}
+
+// Create a random buffer of the requested size
+var content = new byte[cacheOptions.ContentLength];
+Random.Shared.NextBytes(content);
+
+var app = builder.Build();
+
+// Create an array of random keys made of the chars 'a'..'z';
+
+var keys = Enumerable.Range(1, cacheOptions.CacheCount).Select(x => new String(Enumerable.Range(1, cacheOptions.KeyLength).Select(k => (char)(Random.Shared.Next(26) + 'a')).ToArray())).ToArray();
+
+var cache = app.Services.GetRequiredService<IDistributedCache>();
+
+// Initializes the cache
+foreach (var key in keys)
+{
+    await cache.SetAsync(key, content);
+}
+
+var writes = 0;
+var reads = 0;
+
+app.MapGet("/", async ([FromServices] IDistributedCache cache) =>
+{
+    // Pick a random key
+    var keyIndex = Random.Shared.Next(cacheOptions.CacheCount);
+    var key = keys[keyIndex];
+
+    // Determines if the operation is a get or set (random decision)
+    var isWrite = Random.Shared.Next(100) < (int)(cacheOptions.WriteRatio * 100);
+
+    if (isWrite)
+    {
+        Interlocked.Increment(ref writes);
+        await cache.SetAsync(key, content);
+    }
+    else
+    {
+        Interlocked.Increment(ref reads);
+        var result = await cache.GetAsync(key);
+    }
+
+    return Results.Ok();
+});
+
+app.Run();
+
+Console.WriteLine($"reads: {reads} / writes: {writes}");

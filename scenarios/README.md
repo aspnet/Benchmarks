@@ -347,9 +347,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 > Note: MessagePack is not supported with ServerSentEvents
 
-## Websockets benchmarks
+## WebSockets benchmarks
 
-These scenarios are running various Websockets benchmarks.
+These scenarios are running various WebSockets benchmarks.
 
 ### Sample
 
@@ -380,6 +380,36 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 - `about-sqlite`: Simple about page using Sqlite
 - `about-postgresql`: Simple about page using PostgresQL
+
+## Distributed cache benchmarks
+
+These scenarios are running various distributed cache benchmarks.
+
+For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio` 
+argument choosing a key randomly. The HTTP response won't contain the cache entry data so that it doesn't impact the raw store perf measurement.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-perf-win
+```
+
+### Available scenarios
+
+- `redis`: Read/Write cache entries using StackExchangeRedisCache distributed cache provider.
+- `memory`: Read/Write cache entries using MemoryCache distributed cache provider.
+- `null`: Uses a fake implementation of `IDistributedCache` that does nothing when invoked.
+
+#### Arguments
+
+- CacheCount (256): The number or cache entries created in the store.
+  - `--variable cacheCount=256`
+- KeyLength (16): The size or the keys. They are generated using random alphanumeric characters.
+  - `--variable keyLength=16`
+- ContentLength (64): The size of the cache entries.
+  - `--variable contentLength=64`
+- WriteRatio (0): The ratio between reads and writes. Set to 100 to writes only.
+  - `--variable writeRatio=0`
 
 ## Micro benchmarks
 
