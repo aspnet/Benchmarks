@@ -391,14 +391,15 @@ argument choosing a key randomly. The HTTP response won't contain the cache entr
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-perf-lin
 ```
 
 ### Available scenarios
 
 - `redis`: Read/Write cache entries using StackExchangeRedisCache distributed cache provider.
+- `redis_local`: same as `redis`, with the Redis server on the same machine as the application.
 - `memory`: Read/Write cache entries using MemoryCache distributed cache provider.
-- `null`: Uses a fake implementation of `IDistributedCache` that does nothing when invoked.
+- `nullcache`: Uses a fake implementation of `IDistributedCache` that does nothing when invoked.
 
 #### Arguments
 

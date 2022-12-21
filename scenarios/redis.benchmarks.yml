@@ -3,7 +3,7 @@
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
-  - https://raw.githubusercontent.com/aspnet/benchmarks/main/redis/docker/redis/redis.yml
+  - https://raw.githubusercontent.com/aspnet/benchmarks/main/docker/redis/redis.yml
 
 jobs:
   distributedcache:
@@ -23,6 +23,15 @@ scenarios:
     load:
       job: bombardier
 
+  redis_local:
+    main:
+      job: redis
+    application:
+      job: distributedcache
+      arguments: --cache redis --redisEndpoint 127.0.0.1
+    load:
+      job: bombardier
+
   memory:
     application:
       job: distributedcache
@@ -30,7 +39,7 @@ scenarios:
     load:
       job: bombardier
 
-  null:
+  nullcache:
     application:
       job: distributedcache
       arguments: --cache null
