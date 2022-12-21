@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <!-- Use the latest version based on the requested TFM -->
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-alpha.1.22621.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-alpha.1.22621.2" />
   </ItemGroup>
 </Project>
