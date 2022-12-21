@@ -16,6 +16,8 @@ if (cacheOptions == null)
     throw new NotSupportedException("Invalid configuration");
 }
 
+Console.WriteLine("redis connection: " + cacheOptions.RedisEndpoint);
+
 switch (cacheOptions.Cache.ToLowerInvariant())
 {
     case "memory":
