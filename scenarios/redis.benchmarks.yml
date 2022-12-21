@@ -24,8 +24,6 @@ scenarios:
       job: bombardier
 
   memory:
-    extra:
-      job: redis
     main:
       job: distributedcache
       arguments: --cache memory
