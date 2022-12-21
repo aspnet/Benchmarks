@@ -19,7 +19,7 @@ scenarios:
       job: redis
     main:
       job: distributedcache
-      arguments: --cache redis --RedisConnectionString "{{ databaseServer }}"
+      arguments: --cache redis 
     secondary:
       job: bombardier
 
@@ -28,6 +28,7 @@ scenarios:
       job: redis
     main:
       job: distributedcache
-      arguments: --cache memory
+      arguments: --cache memory --redisEndpoint "{{ databaseServer }}"
+
     secondary:
       job: bombardier
