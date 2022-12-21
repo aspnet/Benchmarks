@@ -15,18 +15,24 @@ jobs:
 
 scenarios:
   redis:
-    extra:
+    db:
       job: redis
-    main:
+    application:
       job: distributedcache
       arguments: --cache redis --redisEndpoint "{{ databaseServer }}"
-    secondary:
+    load:
       job: bombardier
 
   memory:
-    main:
+    application:
       job: distributedcache
       arguments: --cache memory
+    load:
+      job: bombardier
 
-    secondary:
+  null:
+    application:
+      job: distributedcache
+      arguments: --cache null
+    load:
       job: bombardier

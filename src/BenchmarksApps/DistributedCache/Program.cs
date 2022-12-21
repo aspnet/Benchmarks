@@ -32,6 +32,11 @@ switch (cacheOptions.Cache.ToLowerInvariant())
         });
         break;
 
+    case "null":
+        Console.WriteLine("Using Null provider");
+        builder.Services.AddSingleton<IDistributedCache, NullDistributedCache>();
+        break;
+
     default:
         throw new NotSupportedException($"Invalid value for option [Cache]: '{cacheOptions.Cache}'. Supported values: redis, distributed");
 }
