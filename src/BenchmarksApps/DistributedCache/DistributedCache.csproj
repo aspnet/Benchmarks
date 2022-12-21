@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <!-- Use the latest version based on the requested TFM -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-*" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.0-*" />
   </ItemGroup>
 </Project>
