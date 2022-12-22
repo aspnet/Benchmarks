@@ -20,7 +20,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
       readyStateText: Application started
-      arguments: --Cache "{{ cache }}" --RedisEndpoint "{{ }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
+    arguments: --Cache "{{ cache }}" --RedisEndpoint "{{ }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
 
 scenarios:
   redis:
