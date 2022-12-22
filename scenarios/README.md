@@ -403,13 +403,13 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 #### Arguments
 
-- CacheCount (256): The number or cache entries created in the store.
+- cacheCount (256): The number or cache entries created in the store.
   - `--variable cacheCount=256`
-- KeyLength (16): The size or the keys. They are generated using random alphanumeric characters.
+- keyLength (16): The size or the keys. They are generated using random alphanumeric characters.
   - `--variable keyLength=16`
-- ContentLength (64): The size of the cache entries.
+- contentLength (64): The size of the cache entries.
   - `--variable contentLength=64`
-- WriteRatio (0): The ratio between reads and writes. Set to 100 to writes only.
+- writeRatio (0): The ratio between reads and writes. Set to 100 for only writes.
   - `--variable writeRatio=0`
 
 ## Micro benchmarks
