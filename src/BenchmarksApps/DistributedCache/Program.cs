@@ -32,7 +32,7 @@ switch (cacheOptions.Cache.ToLowerInvariant())
         });
         break;
 
-    case "null":
+    case "nullcache":
         Console.WriteLine("Using Null provider");
         builder.Services.AddSingleton<IDistributedCache, NullDistributedCache>();
         break;
@@ -69,7 +69,7 @@ app.MapGet("/", async ([FromServices] IDistributedCache cache) =>
     var key = keys[keyIndex];
 
     // Determines if the operation is a get or set (random decision)
-    var isWrite = Random.Shared.Next(100) < (int)(cacheOptions.WriteRatio * 100);
+    var isWrite = Random.Shared.Next(100) < (int)(cacheOptions.WriteRatio);
 
     if (isWrite)
     {

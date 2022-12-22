@@ -5,6 +5,12 @@
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/aspnet/benchmarks/main/docker/redis/redis.yml
 
+variables:
+  writeRatio: 0
+  contentLength: 64
+  keyLength: 16
+  cacheCount: 256
+
 jobs:
   distributedcache:
     source:
@@ -12,6 +18,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
       readyStateText: Application started
+      arguments: --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
 
 scenarios:
   redis:
@@ -19,7 +26,7 @@ scenarios:
       job: redis
     application:
       job: distributedcache
-      arguments: --cache redis --redisEndpoint "{{ databaseServer }}"
+      arguments: --Cache redis --redisEndpoint "{{ databaseServer }}"
     load:
       job: bombardier
 
@@ -28,20 +35,20 @@ scenarios:
       job: redis
     application:
       job: distributedcache
-      arguments: --cache redis --redisEndpoint 127.0.0.1
+      arguments: --Cache redis --redisEndpoint 127.0.0.1
     load:
       job: bombardier
 
   memory:
     application:
       job: distributedcache
-      arguments: --cache memory
+      arguments: --Cache memory
     load:
       job: bombardier
 
   nullcache:
     application:
       job: distributedcache
-      arguments: --cache null
+      arguments: --Cache null
     load:
       job: bombardier
