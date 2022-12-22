@@ -10,6 +10,8 @@ variables:
   contentLength: 64
   keyLength: 16
   cacheCount: 256
+  redisEndpoint: ''
+  cache: ''
 
 jobs:
   distributedcache:
@@ -18,7 +20,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
       readyStateText: Application started
-      arguments: --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
+      arguments: --Cache "{{ cache }}" --RedisEndpoint "{{ }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
 
 scenarios:
   redis:
@@ -26,7 +28,9 @@ scenarios:
       job: redis
     application:
       job: distributedcache
-      arguments: --Cache redis --redisEndpoint "{{ databaseServer }}"
+      variables: 
+        cache: redis 
+        redisEndpoint: "{{ databaseServer }}"
     load:
       job: bombardier
 
@@ -35,20 +39,24 @@ scenarios:
       job: redis
     application:
       job: distributedcache
-      arguments: --Cache redis --redisEndpoint 127.0.0.1
+      variables: 
+        cache: redis 
+        redisEndpoint: "127.0.0.1"      
     load:
       job: bombardier
 
   memory:
     application:
       job: distributedcache
-      arguments: --Cache memory
+      variables: 
+        cache: memory 
     load:
       job: bombardier
 
   nullcache:
     application:
       job: distributedcache
-      arguments: --Cache null
+      variables: 
+        cache: nullcache 
     load:
       job: bombardier
