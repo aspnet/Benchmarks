@@ -13,9 +13,9 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/Kestrel/PlatformBenchmarks/PlatformBenchmarks.csproj
+      project: src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
-    framework: net5.0
+    framework: net7.0
 
   aspnetbenchmarks:
     source:
