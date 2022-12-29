@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
 // Load custom configuration
-var appSettings = builder.Configuration.Get<AppSettings>();
+var appSettings = new AppSettings();
+builder.Configuration.Bind(appSettings);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

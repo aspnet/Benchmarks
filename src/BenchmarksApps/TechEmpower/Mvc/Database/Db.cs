@@ -12,10 +12,8 @@ public class Db
 {
     private readonly PooledDbContextFactory<ApplicationDbContext> _dbContextFactory;
 
-    public Db(AppSettings? appSettings)
+    public Db(AppSettings appSettings)
     {
-        ArgumentNullException.ThrowIfNull(appSettings);
-
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
         optionsBuilder
