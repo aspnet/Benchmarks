@@ -51,5 +51,5 @@ public class Db
     }
 
     private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
-        = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
+        = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortunes);
 }

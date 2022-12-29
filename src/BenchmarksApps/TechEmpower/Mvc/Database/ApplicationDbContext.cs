@@ -12,5 +12,5 @@ public sealed class ApplicationDbContext : DbContext
         ChangeTracker.AutoDetectChangesEnabled = false;
     }
 
-    public DbSet<Fortune>? Fortune { get; set; }
+    public required DbSet<Fortune> Fortunes { get; set; }
 }
