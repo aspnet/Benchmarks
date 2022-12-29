@@ -1,10 +1,17 @@
+using Mvc;
+using Mvc.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Remove logging since they are not required for the benchmark
+// Remove logging as this is not required for the benchmark
 builder.Logging.ClearProviders();
+
+// Load custom configuration
+var appSettings = builder.Configuration.Get<AppSettings>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton(new Db(appSettings));
 
 var app = builder.Build();
 

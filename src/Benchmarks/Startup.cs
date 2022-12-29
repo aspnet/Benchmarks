@@ -233,25 +233,6 @@ namespace Benchmarks
                 });
             }
 
-#if NETCOREAPP2_1 || NETCOREAPP2_2
-            if (Scenarios.Any("Mvc"))
-            {
-                var mvcBuilder = services
-                    .AddMvcCore()
-                    .SetCompatibilityVersion(CompatibilityVersion.Latest);
-
-                if (Scenarios.MvcJson || Scenarios.Any("MvcDbSingle") || Scenarios.Any("MvcDbMulti"))
-                {
-                    mvcBuilder.AddJsonFormatters();
-                }
-                if (Scenarios.MvcViews || Scenarios.Any("MvcDbFortunes"))
-                {
-                    mvcBuilder
-                        .AddViews()
-                        .AddRazorViewEngine();
-                }
-            }
-#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             if (Scenarios.Any("Endpoint"))
             {
                 services.AddRouting();
@@ -275,9 +256,6 @@ namespace Benchmarks
                     builder.AddNewtonsoftJson();
                 }
             }
-#else
-#error "Unsupported TFM"
-#endif
 
             if (Scenarios.Any("MemoryCache"))
             {
@@ -417,7 +395,7 @@ namespace Benchmarks
             if (Scenarios.Any("Mvc"))
             {
                 app.UseRouting();
-            
+
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
