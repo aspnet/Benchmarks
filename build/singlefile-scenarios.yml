@@ -33,7 +33,7 @@ parameters:
   - displayName: Trimmed
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
   - displayName: AOT
-    arguments: --application.buildArguments \"/p:PublishAot=true\" --property mode=Aot
+    arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot
 
 steps:
 - ${{ each s in parameters.scenarios }}:
