@@ -241,3 +241,11 @@ groups:
       - intel-lin-app
       - intel-load-load
       - intel-db-db
+
+  - jobs:
+      
+    - name: HttpClient Intel Windows
+      template: httpclient-scenarios.yml
+      profiles:
+      - intel-win-app 
+      - amd-lin-load

@@ -387,4 +387,18 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
+# GROUP 12
+
+- job: HttpClient_Intel_Windows
+  displayName: 12- HttpClient Intel Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Amd_Linux, PGO_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: httpclient-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 1
+      arguments: "$(ciProfile) --profile intel-win-app --profile amd-lin-load "
+      
 
