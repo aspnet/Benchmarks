@@ -15,13 +15,13 @@ parameters:
   type: object
   default:
   - displayName: "GET"
-    arguments: --scenario httpclient-kestrel-get $(httpClientJobs) --variable useHttpMessageInvoker=true --variable collectRequestTimings=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
+    arguments: --scenario httpclient-kestrel-get $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
 
 - name: postScenarios 
   type: object
   default:
   - displayName: "POST"
-    arguments: --scenario httpclient-kestrel-post $(httpClientJobs) --variable useHttpMessageInvoker=true --variable collectRequestTimings=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
+    arguments: --scenario httpclient-kestrel-post $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
 
 - name: httpVersion
   type: object
