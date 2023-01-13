@@ -1,0 +1,98 @@
+# HttpClient scenarios
+
+parameters:
+- name: arguments
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+
+- name: getScenarios 
+  type: object
+  default:
+  - displayName: "GET"
+    arguments: --scenario httpclient-kestrel-get $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
+
+- name: postScenarios 
+  type: object
+  default:
+  - displayName: "POST"
+    arguments: --scenario httpclient-kestrel-post $(httpClientJobs) --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
+
+- name: httpVersion
+  type: object
+  default:
+    - displayName: "HTTP/1.1"
+      arguments: --variable httpVersion="1.1" --variable useHttps=true --property httpversion=h1
+    - displayName: "HTTP/2.0"
+      arguments: --variable httpVersion="2.0" --variable useHttps=true --variable http20EnableMultipleConnections=false --property httpversion=h2
+    - displayName: "HTTP/2.0 (mult conn)"
+      arguments: --variable httpVersion="2.0" --variable useHttps=true --variable http20EnableMultipleConnections=true --property httpversion=h2multconn
+    - displayName: "HTTP/3.0"
+      arguments: --variable httpVersion="3.0" --variable useHttps=true --property httpversion=h3
+
+- name: clientsxThreads
+  type: object
+  default:
+    - displayName: "Concurrency: 1x10"
+      arguments: --variable numberOfHttpClients=1 --variable concurrencyPerHttpClient=10 --property clientsxthreads=1x10
+    - displayName: "Concurrency: 1x100"
+      arguments: --variable numberOfHttpClients=1 --variable concurrencyPerHttpClient=100 --property clientsxthreads=1x100
+
+- name: response
+  type: object
+  default:
+    - displayName: "Response: 256 B"
+      arguments: --variable responseSize=256 --property response=256b
+    - displayName: "Response: 8 KB"
+      arguments: --variable responseSize=8192 --property response=8kb
+
+- name: requestContent
+  type: object
+  default:
+    - displayName: "Request Content: 8 KB"
+      arguments: --variable requestContentSize=8192 --property requestcontent=8kb
+
+steps:
+
+# GET scenarios
+- ${{ each s in parameters.getScenarios }}:
+  - ${{ each version in parameters.httpVersion }}:
+    - ${{ each ct in parameters.clientsxThreads }}:
+      - ${{ each response in parameters.response }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          timeoutInMinutes: 5
+          displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                "name": "crank",
+                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
+              }
+
+# POST scenarios
+- ${{ each s in parameters.postScenarios }}:
+  - ${{ each version in parameters.httpVersion }}:
+    - ${{ each ct in parameters.clientsxThreads }}:
+      - ${{ each content in parameters.requestContent }}:
+        - task: PublishToAzureServiceBus@1
+          condition: succeededOrFailed()
+          timeoutInMinutes: 5
+          displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }}
+          inputs:
+            connectedServiceName: ${{ parameters.connection }}
+            waitForCompletion: true
+            messageBody: |
+              {
+                "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                "name": "crank",
+                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+              }

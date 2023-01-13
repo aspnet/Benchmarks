@@ -363,4 +363,16 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
+- job: HttpClient_Intel_Linux
+  displayName: 11- HttpClient Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: httpclient-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
+      
 
