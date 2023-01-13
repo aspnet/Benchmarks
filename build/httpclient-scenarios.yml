@@ -1,37 +1,31 @@
 # HttpClient scenarios
 
 parameters:
-- name: profile
+- name: arguments
   type: string
   default: ''
-- name: warmup
-  type: number
-  default: 15
-- name: duration
-  type: number
-  default: 15
 - name: connection
   type: string
   default: ''
+- name: condition
+  type: string
+  default: 'true'
 
 - name: getScenarios 
   type: object
   default:
-
   - displayName: "GET"
     arguments: --scenario httpclient-kestrel-get $(httpClientJobs) --variable useHttpMessageInvoker=true --variable collectRequestTimings=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
 
 - name: postScenarios 
   type: object
   default:
-
   - displayName: "POST"
     arguments: --scenario httpclient-kestrel-post $(httpClientJobs) --variable useHttpMessageInvoker=true --variable collectRequestTimings=true --property server=kestrel --property client=dotnetinvoker --property method=post --client.options.collectCounters true
 
 - name: httpVersion
   type: object
   default:
-
     - displayName: "HTTP/1.1"
       arguments: --variable httpVersion="1.1" --variable useHttps=true --property httpversion=h1
     - displayName: "HTTP/2.0"
@@ -44,7 +38,6 @@ parameters:
 - name: clientsxThreads
   type: object
   default:
-
     - displayName: "Concurrency: 1x10"
       arguments: --variable numberOfHttpClients=1 --variable concurrencyPerHttpClient=10 --property clientsxthreads=1x10
     - displayName: "Concurrency: 1x100"
@@ -53,7 +46,6 @@ parameters:
 - name: response
   type: object
   default:
-
     - displayName: "Response: 256 B"
       arguments: --variable responseSize=256 --property response=256b
     - displayName: "Response: 8 KB"
@@ -62,7 +54,6 @@ parameters:
 - name: requestContent
   type: object
   default:
-
     - displayName: "Request Content: 8 KB"
       arguments: --variable requestContentSize=8192 --property requestcontent=8kb
 
@@ -84,7 +75,7 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
+                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
               }
 
 # POST scenarios
@@ -103,5 +94,5 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --profile ${{ parameters.profile }} --no-metadata --no-measurements --variable duration=${{ parameters.duration }} --variable warmup=${{ parameters.warmup }} ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+                "args": [ "--client.framework net8.0 --server.framework net8.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
               }
