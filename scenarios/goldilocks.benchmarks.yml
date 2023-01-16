@@ -33,7 +33,7 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /weatherforecast
+        path: /todos
 
   stage1vanilla:
     application:
@@ -42,4 +42,4 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /weatherforecast
+        path: /todos
