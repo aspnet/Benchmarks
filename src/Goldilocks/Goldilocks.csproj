@@ -4,6 +4,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">true</NoDefaultLaunchSettingsFile>
+    <RootNamespace>Goldilocks</RootNamespace>
+    <ServerGarbageCollection>False</ServerGarbageCollection>
+    <TrimMode>full</TrimMode>
+    <PublishIISAssets>false</PublishIISAssets>
   </PropertyGroup>
 
   <ItemGroup>
