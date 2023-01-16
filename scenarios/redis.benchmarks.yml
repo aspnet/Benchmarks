@@ -1,0 +1,61 @@
+﻿imports:
+  - https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/aspnet.profiles.standard.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/aspnet/benchmarks/main/docker/redis/redis.yml
+
+jobs:
+  distributedcache:
+    source:
+      repository: https://github.com/aspnet/Benchmarks
+      branchOrCommit: main
+      project: src/BenchmarksApps/DistributedCache/DistributedCache.csproj
+      readyStateText: Application started
+    variables:
+      writeRatio: 0
+      contentLength: 64
+      keyLength: 16
+      cacheCount: 256
+      redisEndpoint: ''
+      cache: ''
+    arguments: --Cache "{{ cache }}" --RedisEndpoint "{{ redisEndpoint }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
+
+scenarios:
+  redis:
+    db:
+      job: redis
+    application:
+      job: distributedcache
+      variables: 
+        cache: redis 
+        redisEndpoint: "{{ databaseServer }}"
+    load:
+      job: bombardier
+
+  redis_local:
+    main:
+      job: redis
+    application:
+      job: distributedcache
+      variables: 
+        cache: redis 
+        redisEndpoint: "127.0.0.1"      
+    load:
+      job: bombardier
+
+  memory:
+    application:
+      job: distributedcache
+      variables: 
+        cache: memory 
+    load:
+      job: bombardier
+
+  nullcache:
+    application:
+      job: distributedcache
+      variables: 
+        cache: nullcache 
+    load:
+      job: bombardier

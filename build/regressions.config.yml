@@ -3,12 +3,10 @@ sources:
     table: TrendBenchmarks
     rules:
       - include: .
-      - include: Mvc
+      - include: Mvc # custom include for the extra-label
         labels: 
           - area-mvc
-      - exclude: ulib
-      - exclude: fasthttp
-      - exclude: arm
+      - exclude: ulib|fasthttp|actix|gin|express|node
       - exclude: azure
     daysToLoad: 60
     stdevCount: 7

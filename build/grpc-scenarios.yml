@@ -95,7 +95,7 @@ steps:
         waitForCompletion: true
         messageBody: |
           {
-            "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+            "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
             "name": "crank",
             "args": [ "--application.framework net8.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c --property scenario=unary --property payload=0 --variable body=AAAAAAcKBVdvcmxk --variable path=/grpc.testing.BenchmarkService/UnaryCall" ]	
           }
@@ -117,7 +117,7 @@ steps:
                 waitForCompletion: true
                 messageBody: |
                   {
-                    "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+                    "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                     "name": "crank",
                     "args": [ "--application.framework net8.0 --load.framework net8.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --no-metadata --no-measurements ${{ parameters.arguments }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
                   }
@@ -136,7 +136,7 @@ steps:
             waitForCompletion: true
             messageBody: |
               {
-                "condition": "${{ parameters.condition }} && (new Date().getUTCHours() - 7 + 24) % 24 >= 13",
+                "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
                 "args": [ "--application.framework net8.0 --load.framework net8.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} --variable protocol=h2c --property protocol=h2c" ]
               }

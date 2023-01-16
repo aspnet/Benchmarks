@@ -51,6 +51,17 @@ profiles:
         aliases:
           - main
 
+  intel-win-load:
+    variables:
+      secondaryAddress: 10.0.0.104
+    agents:
+      load:
+        endpoints: 
+          - http://asp-citrine-win:5001
+        aliases:
+          - warmup
+          - secondary
+
   intel-db-db:
     variables:
       databaseServer: 10.0.0.103

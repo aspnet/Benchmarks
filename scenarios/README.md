@@ -347,9 +347,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 > Note: MessagePack is not supported with ServerSentEvents
 
-## Websockets benchmarks
+## WebSockets benchmarks
 
-These scenarios are running various Websockets benchmarks.
+These scenarios are running various WebSockets benchmarks.
 
 ### Sample
 
@@ -380,6 +380,37 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 - `about-sqlite`: Simple about page using Sqlite
 - `about-postgresql`: Simple about page using PostgresQL
+
+## Distributed cache benchmarks
+
+These scenarios are running various distributed cache benchmarks.
+
+For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio` 
+argument choosing a key randomly. The HTTP response won't contain the cache entry data so that it doesn't impact the raw store perf measurement.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/redis.benchmarks.yml --scenario redis --profile aspnet-perf-lin
+```
+
+### Available scenarios
+
+- `redis`: Read/Write cache entries using StackExchangeRedisCache distributed cache provider.
+- `redis_local`: same as `redis`, with the Redis server on the same machine as the application.
+- `memory`: Read/Write cache entries using MemoryCache distributed cache provider.
+- `nullcache`: Uses a fake implementation of `IDistributedCache` that does nothing when invoked.
+
+#### Arguments
+
+- cacheCount (256): The number or cache entries created in the store.
+  - `--variable cacheCount=256`
+- keyLength (16): The size or the keys. They are generated using random alphanumeric characters.
+  - `--variable keyLength=16`
+- contentLength (64): The size of the cache entries.
+  - `--variable contentLength=64`
+- writeRatio (0): The ratio between reads and writes. Set to 100 for only writes.
+  - `--variable writeRatio=0`
 
 ## Micro benchmarks
 
@@ -524,8 +555,8 @@ This argument can be repeated in case there are multiple sources.
 ### Running with specific runtime versions to isolate regressions
 
 The list of public builds for ASP.NET and Core CLR are available on these feeds:
-- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
-- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
+- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
+- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
 
 Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.y.z` to isolate which build, and ultimately which commit introduced a regression.
 

@@ -219,3 +219,9 @@ groups:
       profiles:
       - amd-lin-app 
       - intel-load2-load
+
+    - name: HttpClient Intel Linux
+      template: httpclient-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - amd-lin2-load

@@ -20,11 +20,11 @@ variables:
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.blazor.json
 
 - name: plaintextPlatformJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.plaintext.json
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.plaintext.json
 - name: jsonPlatformJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.json.json
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.json.json
 - name: htmlPlatformJobs
-  value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Kestrel/PlatformBenchmarks/benchmarks.html.json
+  value: -j  https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.html.json
 
 - name: blazorWasmJobs
   value: --config https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/Components/benchmarkapps/Wasm.Performance/benchmarks.compose.json
@@ -85,3 +85,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml
 - name: containerMatrixJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containers.benchmarks.yml
+- name: httpClientJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml
