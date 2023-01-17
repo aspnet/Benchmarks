@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using Goldilocks;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.AddConsole();
+builder.Logging.ClearProviders();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
