@@ -11,11 +11,9 @@ public class Todo
     public bool IsComplete { get; set; }
 }
 
-static class TodoGenerator
+static class Todos
 {
-    internal static IEnumerable<Todo> GenerateTodos(int count = 5)
-    {
-        return new Todo[]
+    internal readonly static Todo[] AllTodos = new Todo[]
         {
             new Todo() { Id = 0, Title = "Wash the dishes.", DueBy = DateOnly.FromDateTime(DateTime.Now), IsComplete = true },
             new Todo() { Id = 1, Title = "Dry the dishes.", DueBy = DateOnly.FromDateTime(DateTime.Now), IsComplete = true },
@@ -23,5 +21,4 @@ static class TodoGenerator
             new Todo() { Id = 3, Title = "Walk the kangaroo.", DueBy = DateOnly.FromDateTime(DateTime.Now.AddDays(1)), IsComplete = false },
             new Todo() { Id = 4, Title = "Call Grandma.", DueBy = DateOnly.FromDateTime(DateTime.Now.AddDays(1)), IsComplete = false },
         };
-    }
 }

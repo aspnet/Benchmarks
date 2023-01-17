@@ -11,15 +11,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
-var sampleTodos = TodoGenerator.GenerateTodos().ToArray();
-
 var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos);
+todosApi.MapGet("/", () => Todos.AllTodos);
 todosApi.MapGet("/{id}", (int id) =>
-    sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
+    Todos.AllTodos.FirstOrDefault(a => a.Id == id) is { } todo
         ? Results.Ok(todo)
         : Results.NotFound());
 
+app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Run();
 
 [JsonSerializable(typeof(Todo[]))]
