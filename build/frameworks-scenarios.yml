@@ -21,14 +21,14 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs $(frameworksJobs) --load.variables.connections 4096 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
   - displayName: NodeJS Json
     arguments: --scenario json_nodejs $(frameworksJobs) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
 
   # Express (JavaScript)
 
   - displayName: Express Plaintext
-    arguments: --scenario plaintext_express $(frameworksJobs) --load.variables.connections 4096 --property scenario=PlaintextExpress --property protocol=http
+    arguments: --scenario plaintext_express $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextExpress --property protocol=http
   - displayName: Express Json
     arguments: --scenario json_express $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
 
