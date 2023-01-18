@@ -1,0 +1,216 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+    serverPort: 5000
+    
+jobs:
+  minimal:
+    source:
+      localFolder: .
+      project: Minimal.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    variables:
+      serverScheme: http
+    environmentVariables:
+      database: PostgresQL
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
+
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  fortunes:
+    db:
+      job: postgresql
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+
+  plaintext:
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+
+  json:
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+
+  # fortunes_ef_mvc_https:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: MvcDbFortunesEf
+  #       protocol: https
+  #       serverScheme: https        
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: html
+  #       path: /mvc/fortunes/ef
+  #       serverScheme: https
+
+  # fortunes_dapper:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbFortunesDapper
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: html
+  #       path: /fortunes/dapper
+
+  # single_query:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbSingleQueryRaw
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /db/raw
+  #       connections: 512
+
+  # single_query_ef:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbSingleQueryRaw
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /db/ef
+  #       connections: 512
+
+  # single_query_dapper:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbSingleQueryDapper
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /db/dapper
+  #       connections: 512
+
+  # multiple_queries:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiQueryRaw
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /queries/raw?queries=20
+  #       connections: 512
+
+  # multiple_queries_ef:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiQueryEf
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /queries/ef?queries=20
+  #       connections: 512
+
+  # multiple_queries_dapper:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiQueryDapper
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /queries/dapper?queries=20
+  #       connections: 512
+
+  # updates:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiUpdateRaw
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /updates/raw?queries=20
+  #       connections: 512
+
+  # updates_ef:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiUpdateEf
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /updates/ef?queries=20
+  #       connections: 512
+
+  # updates_dapper:
+  #   db:
+  #     job: postgresql
+  #   application:
+  #     job: aspnetbenchmarks
+  #     variables:
+  #       scenario: DbMultiUpdateDapper
+  #   load:
+  #     job: wrk
+  #     variables:
+  #       presetHeaders: json
+  #       path: /updates/dapper?queries=20
+  #       connections: 512
+
