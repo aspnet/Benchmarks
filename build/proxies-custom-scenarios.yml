@@ -47,6 +47,7 @@ steps:
       inputs:
         connectedServiceName: ${{ parameters.connection }}
         waitForCompletion: true
+        useDataContractSerializer: "false"
         messageBody: |
           {
             "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",

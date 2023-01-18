@@ -27,6 +27,7 @@ steps:
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
+      useDataContractSerializer: "false"
       messageBody: |
         {
           "name": "crank",

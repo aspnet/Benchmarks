@@ -50,6 +50,7 @@ steps:
       inputs:
         connectedServiceName: ${{ parameters.connection }}
         waitForCompletion: true
+        useDataContractSerializer: "false"
         messageBody: |
           {
             "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",

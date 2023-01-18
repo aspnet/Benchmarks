@@ -58,6 +58,7 @@ steps:
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
+          useDataContractSerializer: "false"
           messageBody: |
             {
               "timeout": "00:5:00",
