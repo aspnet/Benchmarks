@@ -14,6 +14,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-blazor
       template: download-size
       title: >-
         Blazor download size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
@@ -31,6 +32,7 @@ sources:
       labels: 
         - Perf
         - perf-regression
+        - area-blazor
       template: first-ui
       title: >-
         Blazor time to first UI {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
