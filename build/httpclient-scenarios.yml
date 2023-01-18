@@ -27,13 +27,13 @@ parameters:
   type: object
   default:
     - displayName: "HTTP/1.1"
-      arguments: --variable httpVersion="1.1" --variable useHttps=true --property httpversion=h1
+      arguments: --variable httpVersion=1.1 --variable useHttps=true --property httpversion=h1
     - displayName: "HTTP/2.0"
-      arguments: --variable httpVersion="2.0" --variable useHttps=true --variable http20EnableMultipleConnections=false --property httpversion=h2
+      arguments: --variable httpVersion=2.0 --variable useHttps=true --variable http20EnableMultipleConnections=false --property httpversion=h2
     - displayName: "HTTP/2.0 (mult conn)"
-      arguments: --variable httpVersion="2.0" --variable useHttps=true --variable http20EnableMultipleConnections=true --property httpversion=h2multconn
+      arguments: --variable httpVersion=2.0 --variable useHttps=true --variable http20EnableMultipleConnections=true --property httpversion=h2multconn
     - displayName: "HTTP/3.0"
-      arguments: --variable httpVersion="3.0" --variable useHttps=true --property httpversion=h3
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --property httpversion=h3
 
 - name: clientsxThreads
   type: object
