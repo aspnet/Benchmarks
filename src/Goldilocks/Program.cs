@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using Goldilocks;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+builder.Logging.ClearProviders(); // Clearing for benchmark scenario, template has AddConsole();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -13,6 +13,8 @@ var app = builder.Build();
 
 var todosApi = app.MapGroup("/todos");
 todosApi.MapGet("/", () => Todos.AllTodos);
+
+// Keeping because it is in the template but not actually benchmarked.
 todosApi.MapGet("/{id}", (int id) =>
     Todos.AllTodos.FirstOrDefault(a => a.Id == id) is { } todo
         ? Results.Ok(todo)
