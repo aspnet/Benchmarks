@@ -29,11 +29,12 @@ scenarios:
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
+        - "/p:TrimMode=full"
     load:
       job: wrk
       variables:
         presetHeaders: json
-        path: /weatherforecast
+        path: /todos
 
   stage1vanilla:
     application:
@@ -42,4 +43,4 @@ scenarios:
       job: wrk
       variables:
         presetHeaders: json
-        path: /weatherforecast
+        path: /todos

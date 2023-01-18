@@ -1,43 +1,30 @@
 using System.Text.Json.Serialization;
+using Goldilocks;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders(); // Clearing for benchmark scenario, template has AddConsole();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.AddContext<GoldilocksSerializer>();
+    options.SerializerOptions.AddContext<AppJsonSerializerContext>();
 });
 
 var app = builder.Build();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+var todosApi = app.MapGroup("/todos");
+todosApi.MapGet("/", () => Todos.AllTodos);
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+// Keeping because it is in the template but not actually benchmarked.
+todosApi.MapGet("/{id}", (int id) =>
+    Todos.AllTodos.FirstOrDefault(a => a.Id == id) is { } todo
+        ? Results.Ok(todo)
+        : Results.NotFound());
 
+app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-[JsonSerializable(typeof(object))]
-[JsonSerializable(typeof(WeatherForecast))]
-[JsonSerializable(typeof(WeatherForecast[]))]
-partial class GoldilocksSerializer : JsonSerializerContext
+[JsonSerializable(typeof(Todo[]))]
+internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
 
 }
