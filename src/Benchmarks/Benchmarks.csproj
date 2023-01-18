@@ -13,7 +13,6 @@
   </Target>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <LangVersion>8.0</LangVersion>
     <NETCoreAppImplicitPackageVersion>$(BenchmarksNETCoreAppImplicitPackageVersion)</NETCoreAppImplicitPackageVersion>
     <!-- Prevent the SDK from validating the supported TFM. -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
