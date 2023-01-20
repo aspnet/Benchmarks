@@ -337,13 +337,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
+- job: Native_Aot_Intel_Linux
+  displayName: 10- Native Aot Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: nativeaot-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
+      
 # GROUP 11
 
 - job: Crossgen_Intel_Windows
   displayName: 11- Crossgen Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Native_Aot_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -355,7 +367,7 @@ jobs:
   displayName: 11- Crossgen Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Native_Aot_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -367,7 +379,7 @@ jobs:
   displayName: 11- HttpClient Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Native_Aot_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: httpclient-scenarios.yml

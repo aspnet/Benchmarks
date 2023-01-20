@@ -1,0 +1,40 @@
+parameters:
+- name: arguments
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+
+# Scenarios
+- name: scenarios
+  type: object
+  default:
+
+  - displayName: Goldilocks Stage 1 (CoreCLR)
+    arguments: --scenario stage1vanilla $(goldilocksJobs) --property scenario=Stage1 --property publish=coreclr
+
+  - displayName: Goldilocks Stage 1 (NativeAOT)
+    arguments: --scenario stage1publishaot $(goldilocksJobs) --property scenario=Stage1Aot --property publish=nativeaot
+
+  - displayName: Gin Json
+    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property publish=default
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    displayName: "${{ s.displayName }} - ${{ mode.displayName }}"
+    condition: succeededOrFailed()
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+        }

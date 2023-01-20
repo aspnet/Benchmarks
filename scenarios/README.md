@@ -412,26 +412,19 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - writeRatio (0): The ratio between reads and writes. Set to 100 for only writes.
   - `--variable writeRatio=0`
 
-## Micro benchmarks
+## Goldilocks benchmarks
 
-These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/performance) from the https://github.com/dotnet/performance repository.
+These scenarios provide benchmarks to help improve the Native AOT performance.
 
 ### Sample
 
 ```
-crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml --scenario stage1publishaot
 ```
-
 ### Available scenarios
 
-- `linq`
-- `sockets`
-
-The scenario named `custom` can be used to pass any custom filter variable like so:
-
-```
-crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
-```
+- `stage1vanilla`
+- `stage1publishaot`
 
 ## HTTP client benchmarks
 
@@ -514,6 +507,27 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Whether to use HttpClient.DefaultRequestHeaders for pre-set and static headers:
   - `--variable useDefaultRequestHeaders=false` (default)
   - `--variable useDefaultRequestHeaders=true`
+
+## Micro benchmarks
+
+These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/performance) from the https://github.com/dotnet/performance repository.
+
+### Sample
+
+```
+crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario linq --profile aspnet-perf-win
+```
+
+### Available scenarios
+
+- `linq`
+- `sockets`
+
+The scenario named `custom` can be used to pass any custom filter variable like so:
+
+```
+crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.benchmarks.yml?raw=true --scenario custom --profile aspnet-perf-win --variable filter=*LinqBenchmarks*
+```
 
 ## FAQ
 

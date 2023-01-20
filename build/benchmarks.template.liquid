@@ -6,6 +6,9 @@
 
 {%- assign defaultTimeout = 120 %}
 
+trigger: none
+pr: none
+
 schedules:
 - cron: "{{ schedule }}"
   always: true # always run the pipeline even if there have not been source code changes since the last successful scheduled run.

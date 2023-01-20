@@ -47,12 +47,11 @@ groups:
       - intel-lin-app
       - intel-load2-load
       
-    # - name: Trends Database Arm 28 Windows
-    #   template: trend-database-scenarios.yml
-    #   profiles:
-    #   - arm-win-28-app
-    #   - amd-lin-load
-    #   - amd-lin2-db
+    - name: Native Aot Arm 28 Linux
+      template: nativeaot-scenarios.yml
+      profiles:
+      - arm-lin-28-app
+      - amd-lin-load
 
   - jobs:
 
@@ -154,19 +153,19 @@ groups:
       - arm-lin-28-app 
       - intel-load2-load
       
-    # - name: Baselines Arm 28 Windows
-    #   template: baselines-scenarios.yml
-    #   profiles:
-    #   - arm-win-28-app 
-    #   - intel-lin-load
+    - name: Native Aot Intel Windows
+      template: nativeaot-scenarios.yml
+      profiles:
+      - arm-win-28-app 
+      - intel-lin-load
 
   - jobs:
 
     - name: Baselines Amd Linux
       template: baselines-scenarios.yml
       profiles:
-      - amd-lin-app 
-      - intel-load2-load
+      - intel-win-app 
+      - intel-lin-load
 
     - name: Frameworks Intel Linux
       template: frameworks-scenarios.yml

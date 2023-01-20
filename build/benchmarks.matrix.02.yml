@@ -194,17 +194,17 @@ groups:
       - amd-lin-load
       - intel-db-db
 
-    # - name: Crossgen Arm 28 Windows
-    #   template: crossgen2-scenarios.yml
-    #   profiles:
-    #   - arm-win-28-app 
-    #   - amd-lin2-load
-
     - name: Crossgen Intel Linux
       template: crossgen2-scenarios.yml
       profiles:
       - intel-lin-app 
       - intel-load-load
+
+    - name: Native Aot Intel Linux
+      template: nativeaot-scenarios.yml
+      profiles:
+      - intel-lin-app 
+      - amd-lin2-load
 
   - jobs:
 
