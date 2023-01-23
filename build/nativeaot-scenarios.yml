@@ -26,7 +26,7 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
-    displayName: "${{ s.displayName }} - ${{ mode.displayName }}"
+    displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
     inputs:
       connectedServiceName: ${{ parameters.connection }}
@@ -36,5 +36,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ mode.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }
