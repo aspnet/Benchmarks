@@ -203,8 +203,9 @@ groups:
     - name: Native Aot Intel Linux
       template: nativeaot-scenarios.yml
       profiles:
-      - intel-lin-app 
+      - intel-load2-app
       - amd-lin2-load
+      - amd-lin2-db
 
   - jobs:
 

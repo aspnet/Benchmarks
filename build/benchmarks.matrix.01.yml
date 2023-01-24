@@ -52,6 +52,7 @@ groups:
       profiles:
       - arm-lin-28-app
       - amd-lin-load
+      - amd-lin2-db
 
   - jobs:
 

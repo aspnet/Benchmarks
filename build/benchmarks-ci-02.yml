@@ -347,7 +347,7 @@ jobs:
   - template: nativeaot-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
+      arguments: "$(ciProfile) --profile intel-load2-app --profile amd-lin2-load --profile amd-lin2-db "
       
 # GROUP 11
 
