@@ -157,7 +157,7 @@ groups:
     - name: Native Aot Intel Windows
       template: nativeaot-scenarios.yml
       profiles:
-      - arm-win-28-app 
+      - intel-win-app 
       - intel-lin-load
 
   - jobs:
