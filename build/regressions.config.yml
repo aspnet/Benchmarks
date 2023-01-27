@@ -71,9 +71,9 @@ sources:
     table: TrendBenchmarks
     rules:
       - include: FortunesEF
+      - include: Stage1Aot
     daysToLoad: 60
     stdevCount: 5
-    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
         - path: jobs.application.results['benchmarks/published-size']
@@ -85,6 +85,7 @@ sources:
         - area-perf
       owners:
         - sebastienros
+        - eerhardt
       template: published-size
       title: >-
         Published size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
