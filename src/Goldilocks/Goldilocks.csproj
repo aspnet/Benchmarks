@@ -6,11 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Goldilocks</RootNamespace>
     <ServerGarbageCollection>False</ServerGarbageCollection>
-    <PublishIISAssets>false</PublishIISAssets>
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
-
 
 </Project>

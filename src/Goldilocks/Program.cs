@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Goldilocks;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.ClearProviders(); // Clearing for benchmark scenario, template has AddConsole();
 
 builder.Services.ConfigureHttpJsonOptions(options =>

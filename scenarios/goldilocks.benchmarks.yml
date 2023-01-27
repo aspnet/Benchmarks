@@ -29,7 +29,6 @@ scenarios:
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
-        - "/p:TrimMode=full"
     load:
       job: wrk
       variables:
