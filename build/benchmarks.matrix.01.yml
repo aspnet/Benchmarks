@@ -165,7 +165,7 @@ groups:
     - name: Baselines Amd Linux
       template: baselines-scenarios.yml
       profiles:
-      - intel-win-app 
+      - amd-lin-app
       - intel-lin-load
 
     - name: Frameworks Intel Linux

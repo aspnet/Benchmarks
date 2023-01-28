@@ -283,7 +283,7 @@ jobs:
   - template: baselines-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-lin-load "
+      arguments: "$(ciProfile) --profile amd-lin-app --profile intel-lin-load "
       
 - job: Frameworks_Intel_Linux
   displayName: 8- Frameworks Intel Linux
