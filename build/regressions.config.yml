@@ -72,6 +72,8 @@ sources:
     rules:
       - include: FortunesEF
       - include: Stage1Aot
+        owners:
+          - eerhardt
     daysToLoad: 60
     stdevCount: 5
     regressions:
@@ -85,7 +87,6 @@ sources:
         - area-perf
       owners:
         - sebastienros
-        - eerhardt
       template: published-size
       title: >-
         Published size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
