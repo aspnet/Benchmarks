@@ -71,9 +71,11 @@ sources:
     table: TrendBenchmarks
     rules:
       - include: FortunesEF
+      - include: Stage1Aot
+        owners:
+          - eerhardt
     daysToLoad: 60
     stdevCount: 5
-    daysToSkip: 1 # allow one day of benchmarks before filing an issue, to detect false positives
     regressions:
       probes: 
         - path: jobs.application.results['benchmarks/published-size']
