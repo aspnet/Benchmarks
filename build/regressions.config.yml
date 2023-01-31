@@ -6,7 +6,7 @@ sources:
       - include: Mvc # custom include for the extra-label
         labels: 
           - area-mvc
-      - exclude: ulib|fasthttp|actix|gin|express|node
+      - exclude: ulib|fasthttp|actix|gin|express|node|netty
       - exclude: azure
     daysToLoad: 60
     stdevCount: 7
