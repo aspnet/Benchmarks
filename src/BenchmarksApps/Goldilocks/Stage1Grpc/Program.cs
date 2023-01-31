@@ -16,14 +16,6 @@ builder.WebHost.ConfigureKestrel(options =>
 var app = builder.Build();
 
 app.MapGrpcService<TodoServiceImpl>();
-app.Use(async (context, next) =>
-{
-    var ms = new MemoryStream();
-    await context.Request.Body.CopyToAsync(ms);
-
-    var s = Convert.ToBase64String(ms.ToArray());
-    await next(context);
-});
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Run();
