@@ -3,18 +3,29 @@
 # --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.H2Load/h2load.yml
 
 variables:
     serverPort: 5000
 
 jobs:
-  aspnetbenchmarks:
+  stage1aspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/Goldilocks/Goldilocks.csproj
+      project: src/BenchmarksApps/Goldilocks/Stage1/Goldilocks.csproj
+    readyStateText: Application started.
+    variables:
+      serverScheme: http
+      serverPort: 5000
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  stage1grpcaspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/Goldilocks/Stage1Grpc/Goldilocks.csproj
     readyStateText: Application started.
     variables:
       serverScheme: http
@@ -25,7 +36,7 @@ scenarios:
 
   stage1publishaot:
     application:
-      job: aspnetbenchmarks
+      job: stage1aspnetbenchmarks
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
@@ -37,9 +48,38 @@ scenarios:
 
   stage1vanilla:
     application:
-      job: aspnetbenchmarks
+      job: stage1aspnetbenchmarks
     load:
       job: wrk
       variables:
         presetHeaders: json
         path: /todos
+
+  stage1grpcpublishaot:
+    application:
+      job: stage1grpcaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=true"
+        - "/p:StripSymbols=true"
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /goldilocks.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70
+
+  stage1grpcvanilla:
+    application:
+      job: stage1grpcaspnetbenchmarks
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /goldilocks.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70

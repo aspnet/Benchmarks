@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package goldilocks;
+
+import "google/protobuf/timestamp.proto";
+
+service TodoService {
+  rpc GetAllTodos (GetAllTodosRequest) returns (GetAllTodosResponse);
+  rpc GetTodo (GetTodoRequest) returns (GetTodoResponse);
+}
+
+message GetAllTodosRequest {
+}
+message GetAllTodosResponse {
+  repeated Todo all_todos = 1;
+}
+
+message GetTodoRequest {
+  int32 id = 1;
+}
+message GetTodoResponse {
+  Todo todo = 1;
+}
+
+message Todo {
+  int32 id = 1;
+  string title = 2;
+  google.protobuf.Timestamp due_by = 3;
+  bool is_complete = 4;
+}
