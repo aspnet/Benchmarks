@@ -1,5 +1,5 @@
 using System.Text;
-using Goldilocks.Services;
+using BasicGrpc.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateSlimBuilder(args);

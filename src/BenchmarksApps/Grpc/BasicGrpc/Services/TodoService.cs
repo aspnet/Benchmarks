@@ -1,7 +1,8 @@
+using Basic;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
-namespace Goldilocks.Services;
+namespace BasicGrpc.Services;
 
 public class TodoServiceImpl : TodoService.TodoServiceBase
 {

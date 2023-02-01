@@ -15,7 +15,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/Goldilocks/Stage1/Goldilocks.csproj
+      project: src/BenchmarksApps/BasicMinimalApi/BasicMinimalApi.csproj
     readyStateText: Application started.
     variables:
       serverScheme: http
@@ -25,7 +25,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/Goldilocks/Stage1Grpc/Goldilocks.csproj
+      project: src/BenchmarksApps/Grpc/BasicGrpc/BasicGrpc.csproj
     readyStateText: Application started.
     variables:
       serverScheme: http
@@ -65,7 +65,7 @@ scenarios:
       job: h2LoadClient
       variables:
         presetHeaders: grpc
-        path: /goldilocks.TodoService/GetAllTodos
+        path: /basic.TodoService/GetAllTodos
         body: AAAAAAA=
         connections: 28
         threads: 28
@@ -78,7 +78,7 @@ scenarios:
       job: h2LoadClient
       variables:
         presetHeaders: grpc
-        path: /goldilocks.TodoService/GetAllTodos
+        path: /basic.TodoService/GetAllTodos
         body: AAAAAAA=
         connections: 28
         threads: 28

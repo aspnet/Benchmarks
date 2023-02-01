@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package goldilocks;
+package basic;
 
 import "google/protobuf/timestamp.proto";
 
