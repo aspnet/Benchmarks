@@ -20,11 +20,6 @@ jobs:
   timeoutInMinutes: 10
   steps:
   - powershell: |
-        cd ..
-        Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-        ./dotnet-install.ps1 -channel 6.0
-        ./dotnet-install.ps1 -channel 7.0
-
         git clone https://github.com/dotnet/crank
         cd ./crank/
         git checkout main
