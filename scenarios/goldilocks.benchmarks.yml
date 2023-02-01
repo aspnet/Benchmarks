@@ -3,18 +3,29 @@
 # --config benchmarks.compose.yml --scenario fortunes --profile aspnet-physical
 
 imports:
-  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.H2Load/h2load.yml
 
 variables:
     serverPort: 5000
 
 jobs:
-  aspnetbenchmarks:
+  basicminimalapiaspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/Goldilocks/Goldilocks.csproj
+      project: src/BenchmarksApps/BasicMinimalApi/BasicMinimalApi.csproj
+    readyStateText: Application started.
+    variables:
+      serverScheme: http
+      serverPort: 5000
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  basicgrpcaspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/Grpc/BasicGrpc/BasicGrpc.csproj
     readyStateText: Application started.
     variables:
       serverScheme: http
@@ -23,9 +34,9 @@ jobs:
 
 scenarios:
 
-  stage1publishaot:
+  basicminimalapipublishaot:
     application:
-      job: aspnetbenchmarks
+      job: basicminimalapiaspnetbenchmarks
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
@@ -35,11 +46,40 @@ scenarios:
         presetHeaders: json
         path: /todos
 
-  stage1vanilla:
+  basicminimalapivanilla:
     application:
-      job: aspnetbenchmarks
+      job: basicminimalapiaspnetbenchmarks
     load:
       job: wrk
       variables:
         presetHeaders: json
         path: /todos
+
+  basicgrpcpublishaot:
+    application:
+      job: basicgrpcaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=true"
+        - "/p:StripSymbols=true"
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /basic.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70
+
+  basicgrpcvanilla:
+    application:
+      job: basicgrpcaspnetbenchmarks
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /basic.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70

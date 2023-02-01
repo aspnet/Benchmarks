@@ -1,4 +1,4 @@
-﻿namespace Goldilocks;
+﻿namespace BasicMinimalApi;
 
 public class Todo
 {
