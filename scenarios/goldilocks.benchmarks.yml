@@ -11,7 +11,7 @@ variables:
     serverPort: 5000
 
 jobs:
-  stage1aspnetbenchmarks:
+  basicminimalapiaspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
@@ -21,7 +21,7 @@ jobs:
       serverScheme: http
       serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
-  stage1grpcaspnetbenchmarks:
+  basicgrpcaspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
@@ -34,9 +34,9 @@ jobs:
 
 scenarios:
 
-  stage1publishaot:
+  basicminimalapipublishaot:
     application:
-      job: stage1aspnetbenchmarks
+      job: basicminimalapiaspnetbenchmarks
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
@@ -46,18 +46,18 @@ scenarios:
         presetHeaders: json
         path: /todos
 
-  stage1vanilla:
+  basicminimalapivanilla:
     application:
-      job: stage1aspnetbenchmarks
+      job: basicminimalapiaspnetbenchmarks
     load:
       job: wrk
       variables:
         presetHeaders: json
         path: /todos
 
-  stage1grpcpublishaot:
+  basicgrpcpublishaot:
     application:
-      job: stage1grpcaspnetbenchmarks
+      job: basicgrpcaspnetbenchmarks
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
@@ -71,9 +71,9 @@ scenarios:
         threads: 28
         streams: 70
 
-  stage1grpcvanilla:
+  basicgrpcvanilla:
     application:
-      job: stage1grpcaspnetbenchmarks
+      job: basicgrpcaspnetbenchmarks
     load:
       job: h2LoadClient
       variables:
