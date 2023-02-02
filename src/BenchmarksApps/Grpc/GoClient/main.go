@@ -160,7 +160,7 @@ func calculateRequestStatistics() {
 	metadata := []jobMetadata{
 		{
 			Source:           "Benchmarks",
-			Name:             "grpc/rps/mean",
+			Name:             "http/rps/mean",
 			Reduce:           "Sum",
 			Aggregate:        "Max",
 			ShortDescription: "Requests/sec",
@@ -188,7 +188,7 @@ func calculateRequestStatistics() {
 	}
 	measurements := []jobMeasurement{
 		{
-			Name:      "grpc/rps/mean",
+			Name:      "http/rps/mean",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(rps),
 		},
