@@ -48,16 +48,13 @@ jobs:
   timeoutInMinutes: 120
   steps:
   - powershell: |
-        Invoke-WebRequest -Uri "https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-        .\dotnet-install.ps1 -version 7.0.100
-
         git clone https://github.com/dotnet/crank -b main
         cd .\crank\src\Microsoft.Crank.PullRequestBot
-        dotnet publish -c release -o build -r win-x64 --self-contained true --framework net7.0
+        dotnet build -c release --framework net7.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/aspnetcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
@@ -66,7 +63,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/efcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
             --app-id $(github.appid) `
@@ -75,7 +72,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
             --app-id $(github.appid) `
@@ -84,7 +81,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
             --app-id $(github.appid) `
@@ -93,7 +90,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
             --app-id $(github.appid) `
@@ -102,7 +99,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        ./build/crank-pr.exe `
+        dotnet run --no-build -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
             --app-id $(github.appid) `
