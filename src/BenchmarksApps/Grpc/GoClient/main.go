@@ -160,7 +160,7 @@ func calculateRequestStatistics() {
 	metadata := []jobMetadata{
 		{
 			Source:           "Benchmarks",
-			Name:             "grpc/rps/mean;http/rps/mean",
+			Name:             "grpc/rps/max;http/rps/mean",
 			Reduce:           "Sum",
 			Aggregate:        "Max",
 			ShortDescription: "Requests/sec",
@@ -188,7 +188,7 @@ func calculateRequestStatistics() {
 	}
 	measurements := []jobMeasurement{
 		{
-			Name:      "grpc/rps/mean;http/rps/mean",
+			Name:      "grpc/rps/max;http/rps/mean",
 			Timestamp: time.Now().UTC(),
 			Value:     float64(rps),
 		},
@@ -225,7 +225,7 @@ func calculateLatencyStatistics() {
 	metadata := []jobMetadata{
 		{
 			Source:           "Benchmarks",
-			Name:             "grpc/latency/mean",
+			Name:             "grpc/latency/mean;http/latency/mean",
 			Reduce:           "Sum",
 			Aggregate:        "Max",
 			ShortDescription: "Mean latency (ms)",
@@ -234,7 +234,7 @@ func calculateLatencyStatistics() {
 		},
 		{
 			Source:           "Benchmarks",
-			Name:             "grpc/latency/max",
+			Name:             "grpc/latency/max;http/latency/max",
 			Reduce:           "Sum",
 			Aggregate:        "Max",
 			ShortDescription: "Max latency (ms)",
@@ -244,12 +244,12 @@ func calculateLatencyStatistics() {
 	}
 	measurements := []jobMeasurement{
 		{
-			Name:      "grpc/latency/mean",
+			Name:      "grpc/latency/mean;http/latency/mean",
 			Timestamp: time.Now().UTC(),
 			Value:     totalSum,
 		},
 		{
-			Name:      "grpc/latency/max",
+			Name:      "grpc/latency/max;http/latency/max",
 			Timestamp: time.Now().UTC(),
 			Value:     maxLatency,
 		},
