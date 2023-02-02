@@ -25,7 +25,9 @@ jobs:
         git checkout main
         git pull
         cd src/Microsoft.Crank.RegressionBot
-        dotnet run -c release -- `
+        dotnet build -c release`
+        
+        dotnet run --no-restore --no-build -c release -- `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
             --repository-id $(github.repositoryId) `
@@ -34,7 +36,8 @@ jobs:
             --username $(github.username) `
             --app-key BENCHMARKSBOT_GitHubAppKey `
             --verbose
-        dotnet run -c release -- `
+        
+        dotnet run --no-restore --no-build -c release -- `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.blazor.config.yml `
             --connectionstring BENCHMARKSBOT_ConnectionString `
             --repository-id $(github.repositoryId) `
