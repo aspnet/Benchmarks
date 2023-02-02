@@ -163,8 +163,8 @@ func calculateRequestStatistics() {
 			Name:             "grpc/rps/mean",
 			Reduce:           "Sum",
 			Aggregate:        "Max",
-			ShortDescription: "Max RPS",
-			LongDescription:  "RPS: max",
+			ShortDescription: "Requests/sec",
+			LongDescription:  "Requests per second",
 			Format:           "n0",
 		},
 		{
