@@ -537,19 +537,28 @@ crank --config https://github.com/aspnet/benchmarks/blob/main/scenarios/dotnet.b
 
 ### How to use the latest .NET version?
 
-By default the pre-configured scenarios use what is called the __current__ channel of .NET, which
-represents the latest public release, to ensure that these scenarios almost always work.
-
-Other custom channels can be used:
-- __latest__: which will use whatever SDK and runtime versions were used by the latest ASP.NET builds
-- __edge__: which will use the latest available SDK and runtime versions and can potentially contain breaking changes that will make the builds to fail (though very rare).
+By default the pre-configured scenarios are using the latest official release of .NET. The `framework` argument of a service can change which TFM to target.
 
 Example:
 
-Using the daily builds of .NET, and targeting net5.0.
+Using the daily builds of .NET by targeting net8.0 for the `application` service.
 
 ```
---application.channel latest --application.framework net5.0
+--application.framework net8.0
+```
+
+### How to benchmark a custom fork and/or branch?
+
+If you can create a local branch to this repository, then the argument to add is:
+
+```
+--application.source.branchOrCommit mybranch
+```
+
+If your branch is in another fork then you also need to change the `repository` value:
+
+```
+--application.source.respository https://github.com/myorg/myrepo
 ```
 
 ### How to upload custom files?
