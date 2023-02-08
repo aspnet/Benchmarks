@@ -26,6 +26,8 @@ public class Db
 
     public async Task<World[]> LoadMultipleQueriesRows(int count)
     {
+        count = count < 1 ? 1 : count > 500 ? 500 : count;
+
         var result = new World[count];
 
         for (var i = 0; i < count; i++)
@@ -44,6 +46,8 @@ public class Db
 
     public async Task<World[]> LoadMultipleUpdatesRows(int count)
     {
+        count = count < 1 ? 1 : count > 500 ? 500 : count;
+
         var results = new World[count];
 
         for (var i = 0; i < count; i++)
