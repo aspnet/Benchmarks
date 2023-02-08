@@ -111,9 +111,6 @@ sources:
       healthCheck: true
   - name: Native AOT Reliability
     table: NativeAotBenchmarks
-    daysToLoad: 20
-    stdevCount: 7
-    daysToSkip: 0
     rules:
       - include: Stage1Aot
     regressions:
