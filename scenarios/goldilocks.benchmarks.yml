@@ -69,7 +69,7 @@ scenarios:
         body: AAAAAAA=
         connections: 28
         threads: 28
-        streams: 70
+        streams: 15
 
   basicgrpcvanilla:
     application:
@@ -82,4 +82,4 @@ scenarios:
         body: AAAAAAA=
         connections: 28
         threads: 28
-        streams: 70
+        streams: 15
