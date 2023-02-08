@@ -1,6 +1,6 @@
 namespace Minimal.Models;
 
-public class World
+public struct World
 {
     public int Id { get; set; }
 

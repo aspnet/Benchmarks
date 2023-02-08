@@ -13,4 +13,6 @@ public sealed class ApplicationDbContext : DbContext
     }
 
     public required DbSet<Fortune> Fortunes { get; set; }
+
+    public required DbSet<World> Worlds { get; set; }
 }

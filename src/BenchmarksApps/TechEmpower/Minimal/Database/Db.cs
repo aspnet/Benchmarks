@@ -6,7 +6,7 @@ namespace Minimal.Database
 {
     public class Db
     {
-        private static readonly Comparison<Fortune> FortuneSortComparison = (a, b) => a.Message.CompareTo(b.Message);
+        private static readonly Comparison<Fortune> FortuneSortComparison = (a, b) => string.CompareOrdinal(a.Message, b.Message);
 
         private static readonly Random _random = Random.Shared;
 
@@ -39,6 +39,15 @@ namespace Minimal.Database
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
+            if (count <= 0)
+            {
+                count = 1;
+            }
+            else if (count > 500)
+            {
+                count = 500;
+            }
+
             var results = new World[count];
             using var db = _dbProviderFactory.CreateConnection();
 
@@ -55,6 +64,15 @@ namespace Minimal.Database
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
+            if (count <= 0)
+            {
+                count = 1;
+            }
+            else if (count > 500)
+            {
+                count = 500;
+            }
+
             var parameters = new Dictionary<string, object>();
 
             using var db = _dbProviderFactory.CreateConnection();
@@ -92,7 +110,7 @@ namespace Minimal.Database
             // Note: don't need to open connection if only doing one thing; let dapper do it
             result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune(0, "Additional fortune added at request time."));
             result.Sort(FortuneSortComparison);
 
             return result;

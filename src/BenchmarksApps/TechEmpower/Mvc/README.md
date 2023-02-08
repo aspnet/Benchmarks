@@ -2,6 +2,5 @@ This folder contains a canonical version of an ASP.NET MVC implementation of Tec
 
 ### Implementation details
 
-- Logging is disabled to improve performance
-- Routes are defined as attributes on the actions
-
+- Logging is disabled
+- Database access uses Entity Framework

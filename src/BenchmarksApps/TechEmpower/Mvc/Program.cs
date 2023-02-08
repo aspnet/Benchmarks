@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Mvc;
 using Mvc.Database;
 
@@ -12,7 +14,12 @@ builder.Configuration.Bind(appSettings);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton(new Db(appSettings));
+builder.Services.AddTransient<Db>();
+builder.Services.AddDbContextPool<ApplicationDbContext>(
+    options => options
+        .UseNpgsql(appSettings.ConnectionString, o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
+        .EnableThreadSafetyChecks(false)
+        );
 
 var app = builder.Build();
 
