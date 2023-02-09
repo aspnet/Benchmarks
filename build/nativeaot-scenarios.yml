@@ -19,7 +19,7 @@ parameters:
     condition: true
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr --application.environmentVariables DOTNET_gcServer=1
+    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr --application.buildArguments \"/p:ServerGarbageCollection=true\"
     condition: true
 
   - displayName: Goldilocks Stage 1 (CoreCLR - No PGO)
@@ -33,7 +33,7 @@ parameters:
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_gcServer=1
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=true\"
     condition: true
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR)
@@ -41,7 +41,7 @@ parameters:
     condition: true
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr --application.buildArguments \"/p:ServerGarbageCollection=true\"
     condition: true
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - No PGO)
@@ -55,7 +55,7 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_gcServer=1
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=true\"
     condition: true
 
   - displayName: Gin Json
