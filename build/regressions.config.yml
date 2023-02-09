@@ -109,6 +109,18 @@ sources:
         - sebastienros
       template: reliability
       healthCheck: true
+  - name: Native AOT Reliability
+    table: NativeAotBenchmarks
+    rules:
+      - include: Stage1Aot
+    regressions:
+      labels: 
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+      template: reliability
+      healthCheck: true
 
 templates:
   rps: |
