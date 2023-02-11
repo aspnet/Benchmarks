@@ -54,7 +54,7 @@ jobs:
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/aspnetcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
@@ -63,7 +63,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/efcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
             --app-id $(github.appid) `
@@ -72,7 +72,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
             --app-id $(github.appid) `
@@ -81,7 +81,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
             --app-id $(github.appid) `
@@ -90,7 +90,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
             --app-id $(github.appid) `
@@ -99,7 +99,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build -c release `
+        dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
             --app-id $(github.appid) `
