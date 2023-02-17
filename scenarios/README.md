@@ -419,7 +419,7 @@ These scenarios provide benchmarks to help improve the Native AOT performance.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml --scenario basicminimalapipublishaot
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml --scenario basicminimalapipublishaot --profile aspnet-perf-lin
 ```
 ### Available scenarios
 
