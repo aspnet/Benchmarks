@@ -412,7 +412,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - writeRatio (0): The ratio between reads and writes. Set to 100 for only writes.
   - `--variable writeRatio=0`
 
-## Goldilocks benchmarks
+## Native AOT benchmarks
 
 These scenarios provide benchmarks to help improve the Native AOT performance.
 
