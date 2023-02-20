@@ -31,6 +31,17 @@ jobs:
       serverScheme: http
       serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  basicgrpcgobenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      dockerImageName: basic-go-grpc-server
+      dockerContextDirectory: src/BenchmarksApps/Grpc/BasicGoServer/
+      dockerFile: src/BenchmarksApps/Grpc/BasicGoServer/Dockerfile
+    readyStateText: Application started
+    waitForExit: false
+    options:
+      requiredOperatingSystem: linux
 
 scenarios:
 
@@ -74,6 +85,19 @@ scenarios:
   basicgrpcvanilla:
     application:
       job: basicgrpcaspnetbenchmarks
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /basic.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70
+
+  basicgrpcgo:
+    application:
+      job: basicgrpcgobenchmarks
     load:
       job: h2LoadClient
       variables:
