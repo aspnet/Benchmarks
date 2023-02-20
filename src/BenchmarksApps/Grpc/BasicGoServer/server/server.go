@@ -42,13 +42,7 @@ func (s *testServer) GetAllTodos(ctx context.Context, in *pb.GetAllTodosRequest)
 	return &allTodosResponse, nil
 }
 
-// ServerInfo contains the information to create a gRPC benchmark server.
 type ServerInfo struct {
-	// Metadata is an optional configuration.
-	// For "protobuf", it's ignored.
-	// For "bytebuf", it should be an int representing response size.
-	Metadata interface{}
-
 	// Flag indicating whether to use TLS
 	TLS bool
 
@@ -56,8 +50,6 @@ type ServerInfo struct {
 	Listener net.Listener
 }
 
-// StartServer starts a gRPC server serving a benchmark service according to info.
-// It returns a function to stop the server.
 func StartServer(info ServerInfo, opts ...grpc.ServerOption) func() {
 
 	if info.TLS {
