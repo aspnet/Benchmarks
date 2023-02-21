@@ -216,6 +216,8 @@ namespace SignalRClient
             {
                 _stopped = true;
                 _workTimer.Stop();
+                // Wait for any in-progress ReceivedDateTime calls to complete so we can iterate over the latency list, they check _stopped but they could be running before _stopped was set
+                await Task.Delay(1000);
                 CalculateStatistics();
             }
             finally
