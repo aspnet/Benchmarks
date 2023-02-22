@@ -42,10 +42,11 @@ static_resources:
             tls_certificates:
               - certificate_chain: { filename: "etc/testCert.crt" }
                 private_key: { filename: "etc/testCert.key" }
+            alpn_protocols: [ "h2,http/1.1" ]
 
   clusters:
   - name: downstream
-    connect_timeout: 1s
+    connect_timeout: 5s
     type: static # don't resolve the domain name, expect and IP
     lb_policy: round_robin
     load_assignment:

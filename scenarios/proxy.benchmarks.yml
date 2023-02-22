@@ -8,6 +8,8 @@ imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.H2Load/h2load.yml
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml
 
 variables:
     path: /
@@ -16,12 +18,30 @@ variables:
     serverProtocol: http # http, http2
     downstreamProtocol: http # http, http2
     downstreamPort: 8081
-   
+
 jobs:
   # override bombardier transport argument based on the serverProtocol variable
   bombardier:
     variables:
       transport: '{% if serverProtocol == "http2" %}http2{% else %}fasthttp{% endif %}'
+      serverPort: 8080
+
+  h2LoadClient:
+    variables:
+      connections: '{{cores}}'
+      threads: '{{cores}}'
+      streams: 100
+      serverPort: 8080
+
+  httpClient: # Useful for manual debugging
+    variables:
+      numberOfHttpClients: '{{cores}}'
+      concurrencyPerHttpClient: 100
+      httpVersion: '{% if serverProtocol == "http2" %}2.0{% else %}1.1{% endif %}'
+      serverPort: 8080
+      scenario: 'get'
+      host: '{{serverAddress}}'
+      useHttps: '{{ serverScheme == "https" }}'
 
   httpclientproxy:
     source:
@@ -30,6 +50,7 @@ jobs:
       project: src/BenchmarksApps/HttpClient/Proxy/Proxy.csproj
     readyStateText: Application started.
     arguments: '--urls {{serverScheme}}://*:8080 --baseUri {{downstreamScheme}}://{{downstreamAddress}}:{{downstreamPort}}'
+
   nginxproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -46,6 +67,7 @@ jobs:
       - SERVER_SCHEME={{serverScheme}}
       - SERVER_PROTOCOL={{serverProtocol}}
     port: 8080
+
   envoyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -63,6 +85,7 @@ jobs:
       - DOWNSTREAM_SCHEME={{downstreamScheme}}
       - DOWNSTREAM_PROTOCOL={{downstreamProtocol}}
     port: 8080
+
   haproxyproxy:
     source:
       Repository: https://github.com/aspnet/benchmarks.git
@@ -74,6 +97,7 @@ jobs:
         DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
         DOWNSTREAM_PORT: '{{downstreamPort}}'
     port: 8080
+
   downstream:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -81,7 +105,6 @@ jobs:
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
     framework: net7.0
-    channel: edge
     environmentVariables:
       DOTNET_TieredPGO: 1
       DOTNET_ReadyToRun: 0
@@ -90,6 +113,7 @@ jobs:
       downstreamArguments:
       downstreamPort: 8081
     arguments: '--urls {{downstreamScheme}}://*:{{downstreamPort}} --Kestrel:EndpointDefaults:Protocols {% if downstreamProtocol == "http2" %}http2{% else %}http1{% endif %} {{downstreamArguments}}'
+
   yarp:
     source:
       repository: https://github.com/microsoft/reverse-proxy.git
@@ -111,12 +135,19 @@ scenarios:
   proxy-httpclient:
     downstream:
       job: downstream
-    application: # custom name for a service to deploy
+    application:
       job: httpclientproxy
     load:
       job: bombardier
-      variables:
-        serverPort: 8080
+
+  proxy-httpclient-h2load:
+    downstream:
+      job: downstream
+    application:
+      job: httpclientproxy
+    load:
+      job: h2LoadClient
+
   proxy-nginx:
     downstream:
       job: downstream
@@ -124,8 +155,15 @@ scenarios:
       job: nginxproxy
     load:
       job: bombardier
-      variables:
-        serverPort: 8080
+
+  proxy-nginx-h2load:
+    downstream:
+      job: downstream
+    application:
+      job: nginxproxy
+    load:
+      job: h2LoadClient
+
   proxy-haproxy:
     downstream:
       job: downstream
@@ -133,8 +171,7 @@ scenarios:
       job: haproxyproxy
     load:
       job: bombardier
-      variables:
-        serverPort: 8080
+
   proxy-envoy:
     downstream:
       job: downstream
@@ -142,8 +179,15 @@ scenarios:
       job: envoyproxy
     load:
       job: bombardier
-      variables:
-        serverPort: 8080
+
+  proxy-envoy-h2load:
+    downstream:
+      job: downstream
+    application:
+      job: envoyproxy
+    load:
+      job: h2LoadClient
+
   proxy-yarp:
     downstream:
       job: downstream
@@ -151,8 +195,14 @@ scenarios:
       job: yarp
     load:
       job: bombardier
-      variables:
-        serverPort: 8080
+
+  proxy-yarp-h2load:
+    downstream:
+      job: downstream
+    application:
+      job: yarp
+    load:
+      job: h2LoadClient
 
 profiles:
   aspnet-perf-lin:
