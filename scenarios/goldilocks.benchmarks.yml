@@ -57,6 +57,20 @@ scenarios:
         presetHeaders: json
         path: /todos
 
+  basicminimalapipublishtrimr2rsinglefile:
+    application:
+      job: basicminimalapiaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishTrimmed=true"
+        - "/p:PublishReadyToRun=true"
+        - "/p:PublishSingleFile=true"
+        - "/p:TrimMode=full"
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /todos
+
   basicminimalapivanilla:
     application:
       job: basicminimalapiaspnetbenchmarks
@@ -72,6 +86,24 @@ scenarios:
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
+    load:
+      job: h2LoadClient
+      variables:
+        presetHeaders: grpc
+        path: /basic.TodoService/GetAllTodos
+        body: AAAAAAA=
+        connections: 28
+        threads: 28
+        streams: 70
+
+  basicgrpcpublishtrimr2rsinglefile:
+    application:
+      job: basicgrpcaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishTrimmed=true"
+        - "/p:PublishReadyToRun=true"
+        - "/p:PublishSingleFile=true"
+        - "/p:TrimMode=full"
     load:
       job: h2LoadClient
       variables:
