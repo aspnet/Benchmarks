@@ -3,7 +3,8 @@ using BasicGrpc.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.Logging.ClearProviders(); // Clearing for benchmark scenario, template has AddConsole();
+// No logging for benchmark scenario, template has AddConsole();
+
 builder.Services.AddGrpc();
 builder.WebHost.ConfigureKestrel(options =>
 {
