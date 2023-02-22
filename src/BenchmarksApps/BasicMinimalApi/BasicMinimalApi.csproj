@@ -5,6 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>false</ServerGarbageCollection>
+    <!--
+      Work around https://github.com/dotnet/linker/issues/3061.
+      This is needed even with EnableRequestDelegateGenerator because not all MapGet methods are supported yet.
+      Once https://github.com/dotnet/aspnetcore/issues/46275 is fixed, this can be removed.
+    -->
+    <_ExtraTrimmerArgs Condition="'$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true'">$(_ExtraTrimmerArgs) --keep-metadata parametername</_ExtraTrimmerArgs>
   </PropertyGroup>
 
 </Project>
