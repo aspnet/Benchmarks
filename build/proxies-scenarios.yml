@@ -16,67 +16,78 @@ parameters:
   type: object
   default: 
   - displayName: YARP
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp --application.channel edge --application.framework net8.0
+    scenario: proxy-yarp
+    arguments: $(proxyJobs) --property proxy=yarp --application.framework net8.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: 'true'
   - displayName: YARP gRPC
-    arguments: --scenario proxy-yarp-grpc        $(proxyGRPCJobs) --property proxy=yarp --application.channel edge --application.framework net8.0
+    scenario: proxy-yarp-grpc
+    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net8.0
     supportsGRPC: true
     condition: 'true'
   - displayName: YARP-net70
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-net70 --application.framework net7.0
+    scenario: proxy-yarp
+    arguments: $(proxyJobs) --property proxy=yarp-net70 --application.framework net7.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: YARP-PGO
-    arguments: --scenario proxy-yarp        $(proxyJobs) --property proxy=yarp-pgo --application.channel edge --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
+    scenario: proxy-yarp
+    arguments: $(proxyJobs) --property proxy=yarp-pgo --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
   - displayName: HttpClient
-    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient --application.channel edge --application.framework net8.0
+    scenario: proxy-httpclient
+    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net8.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 4 half-days
   - displayName: HttpClient-PGO
-    arguments: --scenario proxy-httpclient  $(proxyJobs) --property proxy=httpclient-pgo --application.channel edge --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
+    scenario: proxy-httpclient
+    arguments: $(proxyJobs) --property proxy=httpclient-pgo --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
   - displayName: NGinx
-    arguments: --scenario proxy-nginx       $(proxyJobs) --property proxy=nginx --variable warmup=0
+    scenario: proxy-nginx
+    arguments: $(proxyJobs) --property proxy=nginx --variable warmup=0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
   - displayName: NGinx gRPC
-    arguments: --scenario proxy-nginx-grpc       $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
+    scenario: proxy-nginx-grpc
+    arguments: $(proxyGRPCJobs) --property proxy=nginx --variable warmup=0
     supportsGRPC: true
     condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
   - displayName: HAProxy
-    arguments: --scenario proxy-haproxy     $(proxyJobs) --property proxy=haproxy
+    scenario: proxy-haproxy
+    arguments: $(proxyJobs) --property proxy=haproxy
     supportsHttp: true
     condition: Math.round(Date.now() / 43200000) % 5 == 2 # once every 5 half-days
   - displayName: Envoy
-    arguments: --scenario proxy-envoy       $(proxyJobs) --property proxy=envoy
+    scenario: proxy-envoy
+    arguments: $(proxyJobs) --property proxy=envoy
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
   - displayName: Envoy gRPC
-    arguments: --scenario proxy-envoy-grpc       $(proxyGRPCJobs) --property proxy=envoy
+    scenario: proxy-envoy-grpc
+    arguments: $(proxyGRPCJobs) --property proxy=envoy
     supportsGRPC: true
     condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
 
@@ -123,12 +134,12 @@ parameters:
       arguments: --variable serverScheme=http --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=http --property downstreamProtocol=h2
       requiresDownstreamHttp2: true
     - displayName: h2 - http
-      arguments: --variable connections=28 --variable serverScheme=https --variable serverProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=http
-      requiresServerHttp2: true
+      arguments: --variable serverScheme=https --variable serverProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=http
+      scenarioSuffix: -h2load
     - displayName: h2 - h2
-      arguments: --variable connections=28 --variable serverScheme=https --variable serverProtocol=http2 --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=h2
+      arguments: --variable serverScheme=https --variable serverProtocol=http2 --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=h2
       requiresServerHttp2: true
-      requiresDownstreamHttp2: true
+      scenarioSuffix: -h2load
     - displayName: gRPC (h2 - h2)
       arguments: --variable connections=1 --variable streams=100 --variable serverScheme=https --variable serverProtocol=grpc --variable downstreamScheme=https --variable downstreamProtocol=grpc --property serverProtocol=grpc --property downstreamProtocol=grpc
       requiresGRPC: true
@@ -136,14 +147,14 @@ parameters:
 #    - displayName: h2 - h2c
 #      arguments: --variable serverScheme=https --variable downstreamScheme=http --load.variables.transport http2 --downstream.variables.httpProtocol http2 --property serverProtocol=http --property downstreamProtocol=h2c
 #      requiresServerHttps: false
-#      requiresServerHttp2: true
+#      scenarioSuffix: -h2load
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't (requiresServerHttps or supportsServerHttps) AND (doesn't requiresServerHttp2 or supportsServerHttp2)
-      - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( not( protocol.requiresServerHttp2), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
+      - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( ne( protocol.scenarioSuffix, '-h2load'), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
           timeoutInMinutes: 5
@@ -157,7 +168,7 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
@@ -180,5 +191,5 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }
