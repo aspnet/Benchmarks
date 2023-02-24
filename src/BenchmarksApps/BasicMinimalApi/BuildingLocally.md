@@ -27,7 +27,7 @@ In a prompt with `PATH` and `DOTNET_ROOT` set appropriately, run the following c
 ```
 dotnet publish /p:PublishAot=true /p:StripSymbols=true /p:EnableRequestDelegateGenerator=true
 ```
-The properties and their values come from [goldilocks.benchmarks.yml](../../../scenarios/goldilocks.benchmarks.yml).
+The properties and their values come from the `basicminimalapipublishaot` scenario in [goldilocks.benchmarks.yml](../../../scenarios/goldilocks.benchmarks.yml).
 
 The build should complete without errors.
 
