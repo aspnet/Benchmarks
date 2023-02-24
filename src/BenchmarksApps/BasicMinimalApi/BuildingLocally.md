@@ -23,7 +23,7 @@ Tools like `which` and `where` can also help confirm that you're running the ver
 
 ## Building
 
-In a prompt with `PATH` and `DOTNET_ROOT` set appropriately, run the following ocmmand
+In a prompt with `PATH` and `DOTNET_ROOT` set appropriately, run the following command
 ```
 dotnet publish /p:PublishAot=true /p:StripSymbols=true /p:EnableRequestDelegateGenerator=true
 ```
