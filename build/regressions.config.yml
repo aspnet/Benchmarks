@@ -109,6 +109,8 @@ sources:
         - sebastienros
       template: reliability
       healthCheck: true
+      title: >-
+        Benchmark stopped running: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
   - name: Native AOT Reliability
     table: NativeAotBenchmarks
     rules:
@@ -121,6 +123,8 @@ sources:
         - sebastienros
       template: reliability
       healthCheck: true
+      title: >-
+        Benchmark stopped running: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 
 templates:
   rps: |
@@ -267,43 +271,10 @@ templates:
     [PowerBI Dashboard](https://aka.ms/aspnet/benchmarks)
 
   reliability: |
-    | Scenario | Environment | Date | Dependencies |
-    | -------- | ----------- | ---- | ------------ |
+    | Scenario | Environment | Date |
+    | -------- | ----------- | ---- |
     {%- for regression in Regressions -%}
-    {%- capture changes -%}
-    <details>
-        <summary>Changes</summary> 
-        <table><th>Name</th><th>Version</th><th>Diff</th>
-        {%- assign application_changes = regression.Changes | where: "Job", "application" -%}
-        {%- for diff in application_changes -%}
-            <tr>
-                <td>{{diff.Names.first}}{% if diff.Names.length > 1 %} and {{diff.Names.length | minus: 1}} others{% endif %}</td>
-                <td>
-                    {%- case diff.ChangeType -%}
-                      {%- when 0 -%} `{{ diff.PreviousVersion }}` -> `{{ diff.CurrentVersion }}`
-                      {%- when 1 -%} `{{diff.CurrentVersion }}` (__New__ )
-                      {%- when 2 -%} `{{diff.PreviousVersion }}` (__Removed__)
-                    {%- endcase -%}
-                </td>
-                <td>
-                    {%- if diff.ChangeType == 0 and diff.PreviousCommitHash != diff.CurrentCommitHash -%}
-                        {%- if diff.PreviousCommitHash != empty and diff.CurrentCommitHash != empty -%}
-                            {%- if diff.RepositoryUrl == empty -%}
-                                `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
-                            {%- else -%}
-                                {{ diff.RepositoryUrl }}/compare/{{ diff.PreviousCommitHash }}...{{ diff.CurrentCommitHash }}
-                            {%- endif -%}
-                        {%- else -%}
-                            `{{ diff.PreviousCommitHash | slice: 0, 7 }}...{{ diff.CurrentCommitHash | slice: 0, 7 }}`
-                        {%- endif -%}
-                    {%- else -%}
-                        n/a
-                    {%- endif -%}
-                </td></tr>
-        {%- endfor -%}
-        </table></details>
-    {%- endcapture %}
-    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} | {{ changes | strip_newlines }} |
+    | {{r.Scenario}} {% if regression.HasRecovered %}[Fixed]{% endif %} | {{r.Description}} | {{r.DateTimeUtc | format_date: 'G'}} |
     {%- endfor %}
 
     [PowerBI Dashboard](https://aka.ms/aspnet/benchmarks)
