@@ -29,7 +29,7 @@ dotnet publish /p:PublishAot=true /p:StripSymbols=true /p:EnableRequestDelegateG
 ```
 The properties and their values come from [goldilocks.benchmarks.yml](../../../scenarios/goldilocks.benchmarks.yml).
 
-The build should complete without warnings or errors.
+The build should complete without errors.
 
 ## Validating
 
