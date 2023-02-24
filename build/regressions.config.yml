@@ -96,7 +96,7 @@ sources:
     stdevCount: 7
     daysToSkip: 0
     rules:
-      - include: AddDataVariations.Add
+      - include: QueryCompilationSqliteTests.FilterOrderProject
         labels: 
           - area-efcore
         owners:
