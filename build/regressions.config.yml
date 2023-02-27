@@ -71,6 +71,25 @@ sources:
     table: TrendBenchmarks
     rules:
       - include: FortunesEF
+    daysToLoad: 60
+    stdevCount: 5
+    regressions:
+      probes: 
+        - path: jobs.application.results['benchmarks/published-size']
+          threshold: 2
+          unit: Percent
+      labels: 
+        - Perf
+        - perf-regression
+        - area-perf
+      owners:
+        - sebastienros
+      template: published-size
+      title: >-
+        Published size {% if Regressions.first.Change < 0 %}improvement{% else %}regression{% endif %}: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+  - name: PublishedSizeAot
+    table: NativeAotBenchmarks
+    rules:
       - include: Stage1Aot
         owners:
           - eerhardt
