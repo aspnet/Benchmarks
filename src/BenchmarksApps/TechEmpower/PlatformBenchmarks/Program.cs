@@ -40,7 +40,14 @@ namespace PlatformBenchmarks
             var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
             BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
 #if DATABASE
-            await BenchmarkApplication.RawDb.PopulateCache();
+            try
+            {
+                await BenchmarkApplication.RawDb.PopulateCache();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error trying to populate database cache: {ex}");
+            }
 #endif
             await host.RunAsync();
         }
@@ -52,6 +59,9 @@ namespace PlatformBenchmarks
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+#if DEBUG
+                .AddUserSecrets<Program>()
+#endif
                 .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)

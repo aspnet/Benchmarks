@@ -3,11 +3,14 @@
 
 using System;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.Extensions.ObjectPool;
+using RazorSlices;
 
 namespace PlatformBenchmarks
 {
@@ -25,7 +28,6 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
         private readonly static AsciiString _headerContentTypeText = "Content-Type: text/plain";
         private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json";
-        private readonly static AsciiString _headerContentTypeHtml = "Content-Type: text/html; charset=UTF-8";
 
         private readonly static AsciiString _dbPreamble =
             _http11OK +
@@ -34,17 +36,29 @@ namespace PlatformBenchmarks
             _headerContentLength;
 
         private readonly static AsciiString _plainTextBody = "Hello, World!";
-
-        private readonly static AsciiString _fortunesTableStart = "<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>";
-        private readonly static AsciiString _fortunesRowStart = "<tr><td>";
-        private readonly static AsciiString _fortunesColumn = "</td><td>";
-        private readonly static AsciiString _fortunesRowEnd = "</td></tr>";
-        private readonly static AsciiString _fortunesTableEnd = "</table></body></html>";
         private readonly static AsciiString _contentLengthGap = new string(' ', 4);
 
         public static RawDb RawDb { get; set; }
         public static DapperDb DapperDb { get; set; }
         public static EfDb EfDb { get; set; }
+
+        private static readonly DefaultObjectPool<ChunkedBufferWriter<WriterAdapter>> ChunkedWriterPool
+            = new(new ChunkedWriterObjectPolicy());
+
+        private sealed class ChunkedWriterObjectPolicy : IPooledObjectPolicy<ChunkedBufferWriter<WriterAdapter>>
+        {
+            public ChunkedBufferWriter<WriterAdapter> Create() => new();
+
+            public bool Return(ChunkedBufferWriter<WriterAdapter> writer)
+            {
+                writer.Reset();
+                return true;
+            }
+        }
+
+        private readonly static SliceFactory FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
+        private readonly static SliceFactory FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneDapper>>("/Templates/FortunesDapper.cshtml");
+        private readonly static SliceFactory FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
 
         [ThreadStatic]
         private static Utf8JsonWriter t_writer;

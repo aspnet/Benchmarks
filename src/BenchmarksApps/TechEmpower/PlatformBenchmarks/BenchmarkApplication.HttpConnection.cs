@@ -287,6 +287,17 @@ namespace PlatformBenchmarks
         private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint)
             => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSize)
+        {
+            var writer = ChunkedWriterPool.Get();
+            writer.SetOutput(new WriterAdapter(pipeWriter), chunkSize);
+            return writer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ReturnChunkedWriter(ChunkedBufferWriter<WriterAdapter> writer) => ChunkedWriterPool.Return(writer);
+
         private struct WriterAdapter : IBufferWriter<byte>
         {
             public PipeWriter Writer;

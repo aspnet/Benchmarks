@@ -241,7 +241,8 @@ namespace PlatformBenchmarks
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
-            var result = new List<Fortune>(20);
+            // Benchmark requirements explicitly prohibit pre-initializing the list size
+            var result = new List<Fortune>();
 
             using (var db = CreateConnection())
             {

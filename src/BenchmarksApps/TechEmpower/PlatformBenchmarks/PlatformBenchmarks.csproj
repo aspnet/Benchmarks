@@ -5,6 +5,8 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <IsDatabase>true</IsDatabase>
+    <UserSecretsId>38063504-d08c-495a-89c9-daaad2f60f31</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,24 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
-    <PackageReference Include="System.IO.Pipelines" Version="4.7.2" />
-    <PackageReference Include="Npgsql" Version="5.0.15" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.17" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'net5.0'">
-    <PackageReference Include="Npgsql" Version="5.0.15" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.17" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'net6.0'">
-    <PackageReference Include="Npgsql" Version="6.0.8" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8" />
+    <PackageReference Include="RazorSlices" Version="0.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net7.0'">

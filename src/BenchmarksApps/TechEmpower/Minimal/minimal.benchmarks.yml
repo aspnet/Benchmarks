@@ -10,7 +10,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/TechEmpower/Minimal.csproj
+      project: src/BenchmarksApps/TechEmpower/Minimal/Minimal.csproj
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     variables:
