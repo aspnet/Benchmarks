@@ -510,6 +510,19 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
   - `--variable useDefaultRequestHeaders=false` (default)
   - `--variable useDefaultRequestHeaders=true`
 
+## Blazor benchmarks
+
+These scenarios provide benchmarks for Blazor.
+
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml --scenario ssr --profile aspnet-perf-lin
+```
+### Available scenarios
+
+- `ssr`: Server-side rendering
+
 ## Micro benchmarks
 
 These scenarios are running [dotnet micro benchmarks](https://github.com/dotnet/performance) from the https://github.com/dotnet/performance repository.
