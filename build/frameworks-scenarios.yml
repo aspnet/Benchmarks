@@ -53,13 +53,6 @@ parameters:
   - displayName: Go Json
     arguments: --scenario json_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
 
-  # ULib (C++)
-
-  - displayName: ULib Plaintext
-    arguments: --scenario plaintext_ulib $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextULib --property protocol=http
-  - displayName: ULib Json
-    arguments: --scenario json_ulib $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonULib --property protocol=http
-
   # Netty
 
   - displayName: Netty Plaintext
