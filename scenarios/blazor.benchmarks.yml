@@ -1,0 +1,21 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+jobs:
+  server:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/BlazorBlazingPizza/BlazingPizza.Server.csproj
+
+scenarios:
+  ssr:
+    application:
+      job: server
+      framework: net8.0
+    load:
+      job: bombardier
+      variables:
+        serverPort: 5000
+        path: /
