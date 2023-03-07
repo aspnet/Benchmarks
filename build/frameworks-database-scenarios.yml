@@ -43,11 +43,6 @@ parameters:
   - displayName: Go Fortunes
     arguments: --scenario fortunes_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
 
-  # ULib (C++)
-
-  - displayName: ULib Fortunes
-    arguments: --scenario fortunes_ulib $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesULib --property protocol=http
-
   # Netty
 
 steps:
