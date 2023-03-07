@@ -22,6 +22,6 @@ This sample app is currently for testing Blazor server-side rendering (SSR) perf
 If you're working on ASP.NET Core itself (i.e., in the `dotnet/aspnetcore` repo), you may want to observe the effects of your framework code changes on the app performance. To do so:
 
 1. In the `dotnet/aspnetcore` repo, build `src\Components\benchmarkapps\BlazingPizza.Server` using `dotnet build -c Release`
-2. In this repo, submit the job along with instructions to use your locally-built binaries:
+2. In that same directory, submit the Crank job along with instructions to use your locally-built binaries:
 
-    crank --config blazor.benchmarks.yml --scenario ssr --application.options.outputFiles c:\path\to\aspnetcore\artifacts\bin\BlazingPizza.Server\Release\net8.0\*.dll --profile aspnet-perf-lin
+    crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml --scenario ssr --application.options.outputFiles ../../../../artifacts/bin/BlazingPizza.Server/Release/net8.0/**; --profile aspnet-perf-lin

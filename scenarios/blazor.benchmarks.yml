@@ -5,8 +5,9 @@ imports:
 jobs:
   server:
     source:
-      localFolder: ../src/BenchmarksApps/BlazorBlazingPizza
-      project: BlazingPizza.Server.csproj
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/BlazorBlazingPizza/BlazingPizza.Server.csproj
 
 scenarios:
   ssr:
