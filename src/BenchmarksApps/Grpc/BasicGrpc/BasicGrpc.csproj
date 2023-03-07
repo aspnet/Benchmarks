@@ -5,8 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>false</ServerGarbageCollection>
-    <!-- Remove when Grpc.Tools updated to non-preview -->
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +14,6 @@
   <ItemGroup>
     <!-- Update to non-preview when available -->
     <PackageReference Include="Grpc.AspNetCore" Version="2.52.0-pre1" />
-    <PackageReference Include="Grpc.Tools" Version="2.52.0-pre1" />
   </ItemGroup>
 
 </Project>
