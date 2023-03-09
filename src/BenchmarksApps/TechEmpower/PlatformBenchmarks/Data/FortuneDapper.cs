@@ -5,9 +5,9 @@ using System;
 
 namespace PlatformBenchmarks
 {
-    public readonly struct Fortune : IComparable<Fortune>, IComparable
+    public readonly struct FortuneDapper : IComparable<FortuneDapper>, IComparable
     {
-        public Fortune(int id, Memory<byte> message)
+        public FortuneDapper(int id, string message)
         {
             Id = id;
             Message = message;
@@ -15,11 +15,11 @@ namespace PlatformBenchmarks
 
         public int Id { get; }
 
-        public Memory<byte> Message { get; }
+        public string Message { get; }
 
         public int CompareTo(object obj) => throw new InvalidOperationException("The non-generic CompareTo should not be used");
 
         // Performance critical, using culture insensitive comparison
-        public int CompareTo(Fortune other) => Message.Span.SequenceCompareTo(other.Message.Span);
+        public int CompareTo(FortuneDapper other) => string.CompareOrdinal(Message, other.Message);
     }
 }
