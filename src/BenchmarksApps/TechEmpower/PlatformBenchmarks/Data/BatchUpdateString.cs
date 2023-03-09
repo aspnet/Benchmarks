@@ -1,18 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 
 namespace PlatformBenchmarks
 {
     internal class BatchUpdateString
     {
         private const int MaxBatch = 500;
-
-        public static DatabaseServer DatabaseServer;
-
-        internal static readonly string[] ParamNames = Enumerable.Range(0, MaxBatch * 2).Select(i => $"@p{i}").ToArray();
 
         private static string[] _queries = new string[MaxBatch + 1];
 
@@ -31,23 +26,15 @@ namespace PlatformBenchmarks
             Func<int, string> paramNameGenerator = i => "@p" + i;
 #endif
 
-            sb.AppendLine("UPDATE world SET randomNumber = CASE id");
-            for (var i = 0; i < batchSize * 2;)
+            sb.Append("UPDATE world SET randomNumber = temp.randomNumber FROM (VALUES ");
+            var c = 1;
+            for (var i = 0; i < batchSize; i++)
             {
-                sb.AppendLine($"when {paramNameGenerator(++i)} then {paramNameGenerator(++i)}");
+                if (i > 0)
+                    sb.Append(", ");
+                sb.Append($"({paramNameGenerator(c++)}, {paramNameGenerator(c++)})");
             }
-            sb.AppendLine("else randomnumber");
-            sb.AppendLine("end");
-            sb.Append("where id in (");
-            for (var i = 1; i < batchSize * 2; i += 2)
-            {
-                sb.Append(paramNameGenerator(i));
-                if (i < batchSize * 2 - 1)
-                {
-                    sb.AppendLine(", ");
-                }
-            }
-            sb.Append(")");
+            sb.Append(" ORDER BY 1) AS temp(id, randomNumber) WHERE temp.id = world.id");
 
             return _queries[batchSize] = StringBuilderCache.GetStringAndRelease(sb);
         }

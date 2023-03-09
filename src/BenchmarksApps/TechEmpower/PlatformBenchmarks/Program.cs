@@ -37,8 +37,6 @@ namespace PlatformBenchmarks
             DateHeader.SyncDateTimer();
 
             var host = BuildWebHost(args);
-            var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
-            BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
 #if DATABASE
             await BenchmarkApplication.RawDb.PopulateCache();
 #endif
