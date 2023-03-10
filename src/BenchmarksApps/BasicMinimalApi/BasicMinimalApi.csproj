@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>false</ServerGarbageCollection>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!--
       Work around https://github.com/dotnet/linker/issues/3061.
       This is needed even with EnableRequestDelegateGenerator because not all MapGet methods are supported yet.
