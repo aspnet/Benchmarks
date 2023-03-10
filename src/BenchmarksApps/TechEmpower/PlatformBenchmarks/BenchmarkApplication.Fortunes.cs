@@ -53,7 +53,7 @@ namespace PlatformBenchmarks
                 writer.Write(_fortunesRowStart);
                 writer.WriteNumeric((uint)item.Id);
                 writer.Write(_fortunesColumn);
-                HtmlEncoder.EncodeUtf8(item.Message.Span, writer.Span, out var bytesConsumed, out var bytesWritten, isFinalBlock: true);
+                HtmlEncoder.EncodeUtf8(item.Message.AsSpan(), writer.Span, out var bytesConsumed, out var bytesWritten, isFinalBlock: true);
                 Debug.Assert(bytesConsumed == item.Message.Length, "Not enough remaining space in the buffer");
                 writer.Advance(bytesWritten);
                 writer.Write(_fortunesRowEnd);

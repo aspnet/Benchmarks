@@ -266,7 +266,7 @@ namespace PlatformBenchmarks
             return result;
         }
 
-        private readonly Memory<byte> AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
+        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {

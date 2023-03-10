@@ -7,7 +7,7 @@ namespace PlatformBenchmarks
 {
     public readonly struct Fortune : IComparable<Fortune>, IComparable
     {
-        public Fortune(int id, Memory<byte> message)
+        public Fortune(int id, byte[] message)
         {
             Id = id;
             Message = message;
@@ -15,11 +15,11 @@ namespace PlatformBenchmarks
 
         public int Id { get; }
 
-        public Memory<byte> Message { get; }
+        public byte[] Message { get; }
 
         public int CompareTo(object obj) => throw new InvalidOperationException("The non-generic CompareTo should not be used");
 
         // Performance critical, using culture insensitive comparison
-        public int CompareTo(Fortune other) => Message.Span.SequenceCompareTo(other.Message.Span);
+        public int CompareTo(Fortune other) => Message.AsSpan().SequenceCompareTo(other.Message.AsSpan());
     }
 }
