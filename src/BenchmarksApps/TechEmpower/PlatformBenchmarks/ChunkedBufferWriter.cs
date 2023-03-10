@@ -74,12 +74,6 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
 
         CommitCurrentChunk(isFinal: true);
 
-        // Write out chunking terminator
-        var terminator = "0\r\n\r\n"u8;
-        var span = _output.GetSpan(terminator.Length);
-        terminator.CopyTo(span);
-        _output.Advance(terminator.Length);
-
         _ended = true;
     }
 
@@ -132,6 +126,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
         ThrowIfEnded();
 
         var contentLength = _buffered;
+        
         if (contentLength > 0)
         {
             // Update the chunk header
@@ -145,19 +140,37 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
             var headerLength = maxLength + 2;
 
             // Total chunk length: content length as HEX string + \r\n + content + \r\n
-            var offset = headerLength + contentLength;
-            var chunkTotalLength = offset + 2;
+            var spanOffset = headerLength + contentLength;
+            var chunkTotalLength = spanOffset + 2;
 
             // Write out the chunk terminator
-            "\r\n"u8.CopyTo(span[offset..]);
-
-            _output.Advance(chunkTotalLength);
-            _buffered = 0;
-
+            "\r\n"u8.CopyTo(span[spanOffset..]);
+            spanOffset = chunkTotalLength;
+            
             if (!isFinal)
             {
+                _output.Advance(chunkTotalLength);
                 StartNewChunk(sizeHint);
             }
+            else
+            {
+                // Write out final chunk (zero-length chunk)
+                var terminator = "0\r\n\r\n"u8;
+                if ((spanOffset + terminator.Length) <= span.Length)
+                {
+                    // There's space for the final chunk in the current span
+                    terminator.CopyTo(span[spanOffset..]);
+                    _output.Advance(chunkTotalLength + terminator.Length);
+                }
+                else
+                {
+                    // Final chunk doesn't fit in current span so just write it directly after advancing the writer
+                    _output.Advance(chunkTotalLength);
+                    _output.Write(terminator);
+                }
+            }
+            
+            _buffered = 0;
         }
     }
 

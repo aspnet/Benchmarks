@@ -48,7 +48,7 @@ namespace PlatformBenchmarks
             // Kestrel PipeWriter span size is 4K, headers above already written to first span & template output is ~1350 bytes,
             // so 2K chunk size should result in only a single span and chunk being used.
             var chunkedWriter = GetChunkedWriter(pipeWriter, chunkSize: 2048);
-            var renderTask = template.RenderAsync(chunkedWriter, GetFlushWrapper(pipeWriter), HtmlEncoder);
+            var renderTask = template.RenderAsync(chunkedWriter, null, HtmlEncoder);
 
             if (renderTask.IsCompletedSuccessfully)
             {
@@ -58,9 +58,6 @@ namespace PlatformBenchmarks
 
             return AwaitTemplateRenderTask(renderTask, chunkedWriter, template);
         }
-
-        private static Func<CancellationToken, ValueTask> GetFlushWrapper(PipeWriter pipeWriter) =>
-            ct => AsValueTask(pipeWriter.FlushAsync(ct));
 
         private static ValueTask AsValueTask<T>(ValueTask<T> valueTask)
         {
