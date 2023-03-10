@@ -255,16 +255,18 @@ namespace PlatformBenchmarks
                     result.Add(new Fortune
                     (
                         id: rdr.GetInt32(0),
-                        message: rdr.GetString(1)
+                        message: rdr.GetFieldValue<byte[]>(1)
                     ));
                 }
             }
 
-            result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
+            result.Add(new Fortune(id: 0, AdditionalFortune));
             result.Sort();
 
             return result;
         }
+
+        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {

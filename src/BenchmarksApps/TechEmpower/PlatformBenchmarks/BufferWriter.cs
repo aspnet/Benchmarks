@@ -45,7 +45,7 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write(ReadOnlySpan<byte> source)
+        public void Write(scoped ReadOnlySpan<byte> source)
         {
             if (_span.Length >= source.Length)
             {
@@ -78,7 +78,7 @@ namespace PlatformBenchmarks
             _span = _output.GetSpan(count);
         }
 
-        private void WriteMultiBuffer(ReadOnlySpan<byte> source)
+        private void WriteMultiBuffer(scoped ReadOnlySpan<byte> source)
         {
             while (source.Length > 0)
             {

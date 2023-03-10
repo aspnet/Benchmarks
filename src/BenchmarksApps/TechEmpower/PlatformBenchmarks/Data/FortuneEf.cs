@@ -17,14 +17,7 @@ namespace PlatformBenchmarks
         [Required]
         public string Message { get; set; }
 
-        public int CompareTo(object obj)
-        {
-            return CompareTo((FortuneEf)obj);
-        }
-
-        public int CompareTo(FortuneEf other)
-        {
-            return String.CompareOrdinal(Message, other.Message);
-        }
+        public int CompareTo(object obj) => CompareTo((FortuneEf)obj);
+        public int CompareTo(FortuneEf other) => String.CompareOrdinal(Message, other.Message);
     }
 }

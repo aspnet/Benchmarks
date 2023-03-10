@@ -13,17 +13,17 @@ namespace PlatformBenchmarks
         public DapperDb(AppSettings appSettings)
             => _connectionString = appSettings.ConnectionString;
 
-        public async Task<List<Fortune>> LoadFortunesRows()
+        public async Task<List<FortuneDapper>> LoadFortunesRows()
         {
-            List<Fortune> result;
+            List<FortuneDapper> result;
 
             using (var db = new NpgsqlConnection(_connectionString))
             {
                 // Note: don't need to open connection if only doing one thing; let dapper do it
-                result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
+                result = (await db.QueryAsync<FortuneDapper>("SELECT id, message FROM fortune")).AsList();
             }
 
-            result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
+            result.Add(new FortuneDapper(id: 0, message: "Additional fortune added at request time." ));
             result.Sort();
 
             return result;
