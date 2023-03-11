@@ -288,10 +288,10 @@ namespace PlatformBenchmarks
             => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSize)
+        private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSizeHint)
         {
             var writer = ChunkedWriterPool.Get();
-            writer.SetOutput(new WriterAdapter(pipeWriter), chunkSize);
+            writer.SetOutput(new WriterAdapter(pipeWriter), chunkSizeHint);
             return writer;
         }
 
