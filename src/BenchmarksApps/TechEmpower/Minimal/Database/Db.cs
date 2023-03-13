@@ -8,8 +8,6 @@ public class Db
 {
     private static readonly Comparison<Fortune> FortuneSortComparison = (a, b) => string.CompareOrdinal(a.Message, b.Message);
 
-    private static readonly Random _random = Random.Shared;
-
     private readonly DbProviderFactory _dbProviderFactory;
     private readonly string _connectionString;
 
@@ -34,7 +32,7 @@ public class Db
     {
         return db.QueryFirstOrDefaultAsync<World>(
                 "SELECT id, randomnumber FROM world WHERE id = @Id",
-                new { Id = _random.Next(1, 10001) });
+                new { Id = Random.Shared.Next(1, 10001) });
     }
 
     public async Task<World[]> LoadMultipleQueriesRows(int count)
@@ -74,7 +72,7 @@ public class Db
 
         for (var i = 0; i < count; i++)
         {
-            var randomNumber = _random.Next(1, 10001);
+            var randomNumber = Random.Shared.Next(1, 10001);
             parameters[$"@Rn_{i}"] = randomNumber;
             parameters[$"@Id_{i}"] = results[i].Id;
 

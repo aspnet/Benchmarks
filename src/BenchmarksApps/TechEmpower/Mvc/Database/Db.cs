@@ -5,7 +5,6 @@ namespace Mvc.Database;
 
 public class Db
 {
-    private static readonly Random _random = Random.Shared;
     private readonly ApplicationDbContext _dbContext;
 
     public Db(ApplicationDbContext dbContext)
@@ -19,7 +18,7 @@ public class Db
 
     public Task<World> LoadSingleQueryRow()
     {
-        var id = _random.Next(1, 10001);
+        var id = Random.Shared.Next(1, 10001);
 
         return _firstWorldQuery(_dbContext, id);
     }
@@ -32,7 +31,7 @@ public class Db
 
         for (var i = 0; i < count; i++)
         {
-            var id = _random.Next(1, 10001);
+            var id = Random.Shared.Next(1, 10001);
 
             result[i] = await _firstWorldQuery(_dbContext, id);
         }
@@ -52,10 +51,10 @@ public class Db
 
         for (var i = 0; i < count; i++)
         {
-            var id = _random.Next(1, 10001);
+            var id = Random.Shared.Next(1, 10001);
             var result = await _firstWorldTrackedQuery(_dbContext, id);
 
-            _dbContext.Entry(result).Property("RandomNumber").CurrentValue = _random.Next(1, 10001);
+            _dbContext.Entry(result).Property("RandomNumber").CurrentValue = Random.Shared.Next(1, 10001);
             results[i] = result;
         }
 
