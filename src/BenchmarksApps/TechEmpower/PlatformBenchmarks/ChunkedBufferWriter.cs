@@ -11,7 +11,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
 {
     private const int DefaultChunkSizeHint = 2048;
     private static readonly StandardFormat DefaultHexFormat = GetHexFormat(DefaultChunkSizeHint);
-    private static readonly byte[] ChunkTerminator = "\r\n"u8.ToArray();
+    private static ReadOnlySpan<byte> ChunkTerminator => "\r\n"u8;
 
     private TWriter _output;
     private int _chunkSizeHint;
@@ -150,7 +150,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
             Debug.Assert(span.Length >= chunkTotalLength, "Bad chunk size calculation.");
 
             // Write out the chunk terminator
-            ChunkTerminator.AsSpan().CopyTo(span[spanOffset..]);
+            ChunkTerminator.CopyTo(span[spanOffset..]);
             spanOffset = chunkTotalLength;
             
             if (!isFinal)
