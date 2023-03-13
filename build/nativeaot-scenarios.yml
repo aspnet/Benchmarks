@@ -49,7 +49,7 @@ parameters:
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - PGO)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcNoPgo --property publish=coreclr --application.environmentVariables DOTNET_TieredPGO=1
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcPgo --property publish=coreclr --application.environmentVariables DOTNET_TieredPGO=1
     condition: Math.round(Date.now() / 43200000) % 6 == 1 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Trim R2R SingleFile)
