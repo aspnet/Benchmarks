@@ -1,10 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using RazorSlices;
 
@@ -27,7 +25,7 @@ namespace PlatformBenchmarks
             await OutputFortunes(pipeWriter, await EfDb.LoadFortunesRows(), FortunesEfTemplateFactory);
         }
 
-        private ValueTask OutputFortunes<TModel>(PipeWriter pipeWriter, TModel model, SliceFactory templateFactory)
+        private ValueTask OutputFortunes<TModel>(PipeWriter pipeWriter, TModel model, SliceFactory<TModel> templateFactory)
         {
             // Render headers
             var preamble = """
@@ -43,8 +41,7 @@ namespace PlatformBenchmarks
             pipeWriter.Advance(headersLength);
 
             // Render body
-            var template = (RazorSlice<TModel>)templateFactory();
-            template.Model = model;
+            var template = templateFactory(model);
             // Kestrel PipeWriter span size is 4K, headers above already written to first span & template output is ~1350 bytes,
             // so 2K chunk size should result in only a single span and chunk being used.
             var chunkedWriter = GetChunkedWriter(pipeWriter, chunkSizeHint: 2048);

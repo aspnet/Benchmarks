@@ -31,12 +31,11 @@ app.MapGet("/json", () => new { message = "Hello, World!" });
 
 app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
-var createFortunesTemplate = RazorSlice.ResolveSliceFactory("/Templates/Fortunes.cshtml");
+var createFortunesTemplate = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
 var htmlEncoder = CreateHtmlEncoder();
 app.MapGet("/fortunes", async (HttpContext context, Db db) => {
     var fortunes = await db.LoadFortunesRows();
-    var template = (RazorSliceHttpResult<List<Fortune>>)createFortunesTemplate();
-    template.Model = fortunes;
+    var template = (RazorSliceHttpResult<List<Fortune>>)createFortunesTemplate(fortunes);
     template.HtmlEncoder = htmlEncoder;
     return template;
 });

@@ -20,7 +20,6 @@ namespace PlatformBenchmarks
         public static AsciiString ApplicationName => _applicationName;
 
         private readonly static AsciiString _crlf = "\r\n";
-        private readonly static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
         private readonly static AsciiString _http11NotFound = "HTTP/1.1 404 Not Found\r\n";
         private readonly static AsciiString _headerServer = "Server: K";
@@ -56,14 +55,13 @@ namespace PlatformBenchmarks
             }
         }
 
-        private readonly static SliceFactory FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
-        private readonly static SliceFactory FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneDapper>>("/Templates/FortunesDapper.cshtml");
-        private readonly static SliceFactory FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
+        private readonly static SliceFactory<List<Fortune>> FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
+        private readonly static SliceFactory<List<FortuneDapper>> FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneDapper>>("/Templates/FortunesDapper.cshtml");
+        private readonly static SliceFactory<List<FortuneEf>> FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
 
         [ThreadStatic]
         private static Utf8JsonWriter t_writer;
 
-#if NET6_0_OR_GREATER
         private static readonly JsonContext SerializerContext = JsonContext.Default;
 
         [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
@@ -73,9 +71,6 @@ namespace PlatformBenchmarks
         private partial class JsonContext : JsonSerializerContext
         {
         }
-#else
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions();
-#endif
 
         public static class Paths
         {
@@ -93,19 +88,12 @@ namespace PlatformBenchmarks
         private RequestType _requestType;
         private int _queries;
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
             _requestType = versionAndMethod.Method == HttpMethod.Get ? GetRequestType(startLine.Slice(targetPath.Offset, targetPath.Length), ref _queries) : RequestType.NotRecognized;
         }
-#else
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-        {
-            _requestType = method == HttpMethod.Get ? GetRequestType(path, ref _queries) : RequestType.NotRecognized;
-        }
-#endif
 
-        private RequestType GetRequestType(ReadOnlySpan<byte> path, ref int queries)
+        private static RequestType GetRequestType(ReadOnlySpan<byte> path, ref int queries)
         {
 #if !DATABASE
             if (path.Length == 10 && path.SequenceEqual(Paths.Plaintext))

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -97,7 +95,6 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-#if NET5_0 || NET6_0_OR_GREATER
             hostBuilder.UseSockets(options =>
             {
                 options.WaitForDataBeforeAllocatingBuffer = false;
@@ -107,7 +104,6 @@ namespace PlatformBenchmarks
                     options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
                 }
             });
-#endif
 
             var host = hostBuilder.Build();
 

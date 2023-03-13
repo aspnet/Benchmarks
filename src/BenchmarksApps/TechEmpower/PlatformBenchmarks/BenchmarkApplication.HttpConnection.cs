@@ -112,21 +112,10 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
                 }
-#else
-                var unconsumedSequence = reader.Sequence.Slice(reader.Position);
-                if (Parser.ParseRequestLine(new ParsingAdapter(this), unconsumedSequence, out var consumed, out _))
-                {
-                    state = State.Headers;
-
-                    var parsedLength = unconsumedSequence.Slice(reader.Position, consumed).Length;
-                    reader.Advance(parsedLength);
-                }
-#endif
             }
 
             if (state == State.Headers)
@@ -197,21 +186,10 @@ namespace PlatformBenchmarks
 
             if (state == State.StartLine)
             {
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                 {
                     state = State.Headers;
                 }
-#else
-                var unconsumedSequence = reader.Sequence.Slice(reader.Position);
-                if (Parser.ParseRequestLine(new ParsingAdapter(this), unconsumedSequence, out var consumed, out _))
-                {
-                    state = State.Headers;
-
-                    var parsedLength = unconsumedSequence.Slice(reader.Position, consumed).Length;
-                    reader.Advance(parsedLength);
-                }
-#endif
             }
 
             if (state == State.Headers)
@@ -246,8 +224,6 @@ namespace PlatformBenchmarks
         }
 #endif
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
-
         public void OnStaticIndexedHeader(int index)
         {
         }
@@ -262,14 +238,6 @@ namespace PlatformBenchmarks
         public void OnHeadersComplete(bool endStream)
         {
         }
-#else
-        public void OnHeader(Span<byte> name, Span<byte> value)
-        {
-        }
-        public void OnHeadersComplete()
-        {
-        }
-#endif
 
         private static void ThrowUnexpectedEndOfData()
         {
@@ -284,8 +252,7 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint)
-            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter), sizeHint);
+        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint) => new(new(pipeWriter), sizeHint);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSizeHint)
@@ -322,9 +289,8 @@ namespace PlatformBenchmarks
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
-            public void OnStaticIndexedHeader(int index) 
-                => RequestHandler.OnStaticIndexedHeader(index);
+            public void OnStaticIndexedHeader(int index)
+                            => RequestHandler.OnStaticIndexedHeader(index);
 
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
                 => RequestHandler.OnStaticIndexedHeader(index, value);
@@ -337,14 +303,6 @@ namespace PlatformBenchmarks
 
             public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
                 => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
-#else
-            public void OnHeader(Span<byte> name, Span<byte> value)
-                => RequestHandler.OnHeader(name, value);
-            public void OnHeadersComplete()
-                => RequestHandler.OnHeadersComplete();
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-                => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
-#endif
         }
     }
 }

@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
-
-#pragma warning disable EF1001 // Using internal EF pooling APIs, can be cleaned up after 6.0.0-preview4
 
 namespace PlatformBenchmarks
 {
@@ -19,15 +16,8 @@ namespace PlatformBenchmarks
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
             optionsBuilder
-                .UseNpgsql(appSettings.ConnectionString
-#if NET5_0_OR_GREATER
-                    , o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d))
-#endif
-                )
-#if NET6_0_OR_GREATER
-                            .EnableThreadSafetyChecks(false)
-#endif
-                ;
+                .UseNpgsql(appSettings.ConnectionString, o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
+                .EnableThreadSafetyChecks(false);
 
             var extension = (optionsBuilder.Options.FindExtension<CoreOptionsExtension>() ?? new CoreOptionsExtension())
                 .WithMaxPoolSize(1024);
@@ -35,8 +25,7 @@ namespace PlatformBenchmarks
             ((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
 
             var options = optionsBuilder.Options;
-            _dbContextFactory = new PooledDbContextFactory<ApplicationDbContext>(
-                new DbContextPool<ApplicationDbContext>(options));
+            _dbContextFactory = new PooledDbContextFactory<ApplicationDbContext>(options);
         }
 
         public async Task<List<FortuneEf>> LoadFortunesRows()

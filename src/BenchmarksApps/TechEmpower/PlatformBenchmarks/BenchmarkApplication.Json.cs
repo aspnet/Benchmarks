@@ -8,13 +8,10 @@ namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
+#if !DATABASE
         private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(
             new JsonMessage { message = "Hello, World!" },
-#if NET6_0_OR_GREATER
             SerializerContext.JsonMessage
-#else
-            SerializerOptions
-#endif
             ).Length;
 
         private readonly static AsciiString _jsonPreamble =
@@ -22,6 +19,7 @@ namespace PlatformBenchmarks
             _headerServer + _crlf +
             _headerContentTypeJson + _crlf +
             _headerContentLength + _jsonPayloadSize.ToString();
+
 
         private static void Json(ref BufferWriter<WriterAdapter> writer, IBufferWriter<byte> bodyWriter)
         {
@@ -32,19 +30,12 @@ namespace PlatformBenchmarks
 
             writer.Commit();
 
-            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(bodyWriter, new JsonWriterOptions { SkipValidation = true });
+            var utf8JsonWriter = t_writer ??= new Utf8JsonWriter(bodyWriter, new JsonWriterOptions { SkipValidation = true });
             utf8JsonWriter.Reset(bodyWriter);
 
             // Body
-            JsonSerializer.Serialize(
-                utf8JsonWriter,
-                new JsonMessage { message = "Hello, World!" },
-#if NET6_0_OR_GREATER
-                SerializerContext.JsonMessage
-#else
-                SerializerOptions
-#endif
-                );
+            JsonSerializer.Serialize(utf8JsonWriter, new JsonMessage { message = "Hello, World!" }, SerializerContext.JsonMessage);
         }
+#endif
     }
 }
