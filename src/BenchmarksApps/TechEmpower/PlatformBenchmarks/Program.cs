@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -40,7 +38,14 @@ namespace PlatformBenchmarks
             var config = (IConfiguration)host.Services.GetService(typeof(IConfiguration));
             BatchUpdateString.DatabaseServer = config.Get<AppSettings>().Database;
 #if DATABASE
-            await BenchmarkApplication.RawDb.PopulateCache();
+            try
+            {
+                await BenchmarkApplication.RawDb.PopulateCache();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error trying to populate database cache: {ex}");
+            }
 #endif
             await host.RunAsync();
         }
@@ -52,6 +57,9 @@ namespace PlatformBenchmarks
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+#if DEBUG
+                .AddUserSecrets<Program>()
+#endif
                 .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)
@@ -87,7 +95,6 @@ namespace PlatformBenchmarks
                 })
                 .UseStartup<Startup>();
 
-#if NET5_0 || NET6_0_OR_GREATER
             hostBuilder.UseSockets(options =>
             {
                 options.WaitForDataBeforeAllocatingBuffer = false;
@@ -97,7 +104,6 @@ namespace PlatformBenchmarks
                     options.UnsafePreferInlineScheduling = Environment.GetEnvironmentVariable("DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS") == "1";
                 }
             });
-#endif
 
             var host = hostBuilder.Build();
 

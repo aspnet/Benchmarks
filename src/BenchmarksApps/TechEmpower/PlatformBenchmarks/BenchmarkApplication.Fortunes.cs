@@ -1,125 +1,74 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Text.Encodings.Web;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using RazorSlices;
 
 namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
-        private readonly static AsciiString _fortunesPreamble =
-            _http11OK +
-            _headerServer + _crlf +
-            _headerContentTypeHtml + _crlf +
-            _headerContentLength;
-
         private async Task FortunesRaw(PipeWriter pipeWriter)
         {
-            OutputFortunes(pipeWriter, await RawDb.LoadFortunesRows());
+            await OutputFortunes(pipeWriter, await RawDb.LoadFortunesRows(), FortunesTemplateFactory);
         }
 
         private async Task FortunesDapper(PipeWriter pipeWriter)
         {
-            OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows());
+            await OutputFortunes(pipeWriter, await DapperDb.LoadFortunesRows(), FortunesDapperTemplateFactory);
         }
 
         private async Task FortunesEf(PipeWriter pipeWriter)
         {
-            OutputFortunes(pipeWriter, await EfDb.LoadFortunesRows());
+            await OutputFortunes(pipeWriter, await EfDb.LoadFortunesRows(), FortunesEfTemplateFactory);
         }
 
-        private void OutputFortunes(PipeWriter pipeWriter, List<Fortune> model)
+        private ValueTask OutputFortunes<TModel>(PipeWriter pipeWriter, TModel model, SliceFactory<TModel> templateFactory)
         {
-            var writer = GetWriter(pipeWriter, sizeHint: 1600); // in reality it's 1361
+            // Render headers
+            var preamble = """
+                HTTP/1.1 200 OK
+                Server: K
+                Content-Type: text/html; charset=utf-8
+                Transfer-Encoding: chunked
+                """u8;
+            var headersLength = preamble.Length + DateHeader.HeaderBytes.Length;
+            var headersSpan = pipeWriter.GetSpan(headersLength);
+            preamble.CopyTo(headersSpan);
+            DateHeader.HeaderBytes.CopyTo(headersSpan[preamble.Length..]);
+            pipeWriter.Advance(headersLength);
 
-            writer.Write(_fortunesPreamble);
+            // Render body
+            var template = templateFactory(model);
+            // Kestrel PipeWriter span size is 4K, headers above already written to first span & template output is ~1350 bytes,
+            // so 2K chunk size should result in only a single span and chunk being used.
+            var chunkedWriter = GetChunkedWriter(pipeWriter, chunkSizeHint: 2048);
+            var renderTask = template.RenderAsync(chunkedWriter, null, HtmlEncoder);
 
-            var lengthWriter = writer;
-            writer.Write(_contentLengthGap);
-
-            // Date header
-            writer.Write(DateHeader.HeaderBytes);
-
-            var bodyStart = writer.Buffered;
-            // Body
-            writer.Write(_fortunesTableStart);
-            foreach (var item in model)
+            if (renderTask.IsCompletedSuccessfully)
             {
-                writer.Write(_fortunesRowStart);
-                writer.WriteNumeric((uint)item.Id);
-                writer.Write(_fortunesColumn);
-                HtmlEncoder.EncodeUtf8(item.Message.AsSpan(), writer.Span, out var bytesConsumed, out var bytesWritten, isFinalBlock: true);
-                Debug.Assert(bytesConsumed == item.Message.Length, "Not enough remaining space in the buffer");
-                writer.Advance(bytesWritten);
-                writer.Write(_fortunesRowEnd);
+                renderTask.GetAwaiter().GetResult();
+                EndTemplateRendering(chunkedWriter, template);
+                return ValueTask.CompletedTask;
             }
-            writer.Write(_fortunesTableEnd);
-            lengthWriter.WriteNumeric((uint)(writer.Buffered - bodyStart));
 
-            writer.Commit();
+            return AwaitTemplateRenderTask(renderTask, chunkedWriter, template);
         }
 
-        private void OutputFortunes(PipeWriter pipeWriter, List<FortuneDapper> model)
+        private static async ValueTask AwaitTemplateRenderTask(ValueTask renderTask, ChunkedBufferWriter<WriterAdapter> chunkedWriter, RazorSlice template)
         {
-            var writer = GetWriter(pipeWriter, sizeHint: 1600); // in reality it's 1361
-
-            writer.Write(_fortunesPreamble);
-
-            var lengthWriter = writer;
-            writer.Write(_contentLengthGap);
-
-            // Date header
-            writer.Write(DateHeader.HeaderBytes);
-
-            var bodyStart = writer.Buffered;
-            // Body
-            writer.Write(_fortunesTableStart);
-            foreach (var item in model)
-            {
-                writer.Write(_fortunesRowStart);
-                writer.WriteNumeric((uint)item.Id);
-                writer.Write(_fortunesColumn);
-                writer.WriteUtf8String(HtmlEncoder.Encode(item.Message));
-                writer.Write(_fortunesRowEnd);
-            }
-            writer.Write(_fortunesTableEnd);
-            lengthWriter.WriteNumeric((uint)(writer.Buffered - bodyStart));
-
-            writer.Commit();
+            await renderTask;
+            EndTemplateRendering(chunkedWriter, template);
         }
 
-        private void OutputFortunes(PipeWriter pipeWriter, List<FortuneEf> model)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EndTemplateRendering(ChunkedBufferWriter<WriterAdapter> chunkedWriter, RazorSlice template)
         {
-            var writer = GetWriter(pipeWriter, sizeHint: 1600); // in reality it's 1361
-
-            writer.Write(_fortunesPreamble);
-
-            var lengthWriter = writer;
-            writer.Write(_contentLengthGap);
-
-            // Date header
-            writer.Write(DateHeader.HeaderBytes);
-
-            var bodyStart = writer.Buffered;
-            // Body
-            writer.Write(_fortunesTableStart);
-            foreach (var item in model)
-            {
-                writer.Write(_fortunesRowStart);
-                writer.WriteNumeric((uint)item.Id);
-                writer.Write(_fortunesColumn);
-                writer.WriteUtf8String(HtmlEncoder.Encode(item.Message));
-                writer.Write(_fortunesRowEnd);
-            }
-            writer.Write(_fortunesTableEnd);
-            lengthWriter.WriteNumeric((uint)(writer.Buffered - bodyStart));
-
-            writer.Commit();
+            chunkedWriter.End();
+            ReturnChunkedWriter(chunkedWriter);
+            template.Dispose();
         }
     }
 }

@@ -6,7 +6,6 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System.IO.Pipelines;
 
 namespace PlatformBenchmarks
 {
@@ -23,16 +22,14 @@ namespace PlatformBenchmarks
 
             builder.UseSockets(options =>
             {
-                if (int.TryParse(builder.GetSetting("threadCount"), out int threadCount))
+                if (int.TryParse(builder.GetSetting("threadCount"), out var threadCount))
                 {
                     options.IOQueueCount = threadCount;
                 }
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                 options.WaitForDataBeforeAllocatingBuffer = false;
 
                 Console.WriteLine($"Options: WaitForData={options.WaitForDataBeforeAllocatingBuffer}, IOQueue={options.IOQueueCount}");
-#endif
             });
 
             return builder;

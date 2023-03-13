@@ -1,6 +1,10 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using Microsoft.AspNetCore.Http.HttpResults;
+using RazorSlices;
 using Minimal;
 using Minimal.Database;
-using Minimal.Templates;
+using Minimal.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +31,13 @@ app.MapGet("/json", () => new { message = "Hello, World!" });
 
 app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
+var createFortunesTemplate = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
+var htmlEncoder = CreateHtmlEncoder();
 app.MapGet("/fortunes", async (HttpContext context, Db db) => {
     var fortunes = await db.LoadFortunesRows();
-    await FortunesTemplate.Render(fortunes, context.Response);
+    var template = (RazorSliceHttpResult<List<Fortune>>)createFortunesTemplate(fortunes);
+    template.HtmlEncoder = htmlEncoder;
+    return template;
 });
 
 app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));
@@ -40,3 +48,10 @@ app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application st
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
 
 app.Run();
+
+static HtmlEncoder CreateHtmlEncoder()
+{
+    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+    settings.AllowCharacter('\u2014'); // allow EM DASH through
+    return HtmlEncoder.Create(settings);
+}

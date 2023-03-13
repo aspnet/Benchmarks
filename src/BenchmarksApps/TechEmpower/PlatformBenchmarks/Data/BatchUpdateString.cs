@@ -25,11 +25,7 @@ namespace PlatformBenchmarks
         {
             var sb = StringBuilderCache.Acquire();
 
-#if NET6_0_OR_GREATER
             Func<int, string> paramNameGenerator = i => "$" + i;
-#else
-            Func<int, string> paramNameGenerator = i => "@p" + i;
-#endif
 
             sb.AppendLine("UPDATE world SET randomNumber = CASE id");
             for (var i = 0; i < batchSize * 2;)

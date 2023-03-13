@@ -10,16 +10,16 @@ namespace PlatformBenchmarks
         public Fortune(int id, byte[] message)
         {
             Id = id;
-            Message = message;
+            MessageUtf8 = message;
         }
 
         public int Id { get; }
 
-        public byte[] Message { get; }
+        public byte[] MessageUtf8 { get; }
 
         public int CompareTo(object obj) => throw new InvalidOperationException("The non-generic CompareTo should not be used");
 
         // Performance critical, using culture insensitive comparison
-        public int CompareTo(Fortune other) => Message.AsSpan().SequenceCompareTo(other.Message.AsSpan());
+        public int CompareTo(Fortune other) => MessageUtf8.AsSpan().SequenceCompareTo(other.MessageUtf8.AsSpan());
     }
 }

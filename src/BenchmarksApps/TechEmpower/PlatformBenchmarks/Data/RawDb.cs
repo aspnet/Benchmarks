@@ -56,7 +56,7 @@ namespace PlatformBenchmarks
             {
                 var id = random.Next(1, 10001);
                 var key = cacheKeys[id];
-                if (cache.TryGetValue(key, out object cached))
+                if (cache.TryGetValue(key, out var cached))
                 {
                     result[i] = (CachedWorld)cached;
                 }
@@ -75,7 +75,7 @@ namespace PlatformBenchmarks
 
                 var (cmd, idParameter) = rawdb.CreateReadCommand(db);
                 using var command = cmd;
-                Func<ICacheEntry, Task<CachedWorld>> create = async _ => await rawdb.ReadSingleRow(cmd);
+                async Task<CachedWorld> create(ICacheEntry _) => await ReadSingleRow(cmd);
 
                 var cacheKeys = _cacheKeys;
                 var key = cacheKeys[id];
@@ -221,14 +221,8 @@ namespace PlatformBenchmarks
                 {
                     var randomNumber = _random.Next(1, 10001);
 
-#if NET6_0_OR_GREATER
                     updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = results[i].Id });
                     updateCmd.Parameters.Add(new NpgsqlParameter<int> { TypedValue = randomNumber });
-#else
-                    var paramIndex = i * 2 + 1;
-                    updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex], value: results[i].Id));
-                    updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: BatchUpdateString.ParamNames[paramIndex + 1], value: randomNumber));
-#endif
 
                     results[i].RandomNumber = randomNumber;
                 }
@@ -241,7 +235,8 @@ namespace PlatformBenchmarks
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
-            var result = new List<Fortune>(20);
+            // Benchmark requirements explicitly prohibit pre-initializing the list size
+            var result = new List<Fortune>();
 
             using (var db = CreateConnection())
             {
@@ -270,13 +265,8 @@ namespace PlatformBenchmarks
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {
-#if NET6_0_OR_GREATER
             var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = $1", connection);
             var parameter = new NpgsqlParameter<int> { TypedValue = _random.Next(1, 10001) };
-#else
-            var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id", connection);
-            var parameter = new NpgsqlParameter<int>(parameterName: "@Id", value: _random.Next(1, 10001));
-#endif
 
             cmd.Parameters.Add(parameter);
 
@@ -284,7 +274,7 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
+        private static async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
             using var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow);
             await rdr.ReadAsync();
@@ -300,7 +290,7 @@ namespace PlatformBenchmarks
 #if NET7_0_OR_GREATER
             => _dataSource.CreateConnection();
 #else
-            => new NpgsqlConnection(_connectionString);
+            => new(_connectionString);
 #endif
 
         private static readonly object[] _cacheKeys = Enumerable.Range(0, 10001).Select((i) => new CacheKey(i)).ToArray();

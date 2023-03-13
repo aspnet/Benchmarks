@@ -9,7 +9,7 @@ namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
-        private async Task Updates(PipeWriter pipeWriter, int count)
+        private static async Task Updates(PipeWriter pipeWriter, int count)
         {
             OutputUpdates(pipeWriter, await RawDb.LoadMultipleUpdatesRows(count));
         }
@@ -25,22 +25,14 @@ namespace PlatformBenchmarks
 
             // Date header
             writer.Write(DateHeader.HeaderBytes);
-
+            
             writer.Commit();
 
-            Utf8JsonWriter utf8JsonWriter = t_writer ??= new Utf8JsonWriter(pipeWriter, new JsonWriterOptions { SkipValidation = true });
+            var utf8JsonWriter = t_writer ??= new Utf8JsonWriter(pipeWriter, new JsonWriterOptions { SkipValidation = true });
             utf8JsonWriter.Reset(pipeWriter);
 
             // Body
-            JsonSerializer.Serialize(
-                utf8JsonWriter,
-                rows,
-#if NET6_0_OR_GREATER
-                SerializerContext.WorldArray
-#else
-                SerializerOptions
-#endif
-                );
+            JsonSerializer.Serialize(utf8JsonWriter, rows, SerializerContext.WorldArray);
 
             // Content-Length
             lengthWriter.WriteNumeric((uint)utf8JsonWriter.BytesCommitted);

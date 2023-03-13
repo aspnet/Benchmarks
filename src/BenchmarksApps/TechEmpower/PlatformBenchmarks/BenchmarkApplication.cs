@@ -3,11 +3,14 @@
 
 using System;
 using System.Buffers.Text;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.Extensions.ObjectPool;
+using RazorSlices;
 
 namespace PlatformBenchmarks
 {
@@ -17,7 +20,6 @@ namespace PlatformBenchmarks
         public static AsciiString ApplicationName => _applicationName;
 
         private readonly static AsciiString _crlf = "\r\n";
-        private readonly static AsciiString _eoh = "\r\n\r\n"; // End Of Headers
         private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
         private readonly static AsciiString _http11NotFound = "HTTP/1.1 404 Not Found\r\n";
         private readonly static AsciiString _headerServer = "Server: K";
@@ -25,7 +27,6 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
         private readonly static AsciiString _headerContentTypeText = "Content-Type: text/plain";
         private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json";
-        private readonly static AsciiString _headerContentTypeHtml = "Content-Type: text/html; charset=UTF-8";
 
         private readonly static AsciiString _dbPreamble =
             _http11OK +
@@ -34,22 +35,33 @@ namespace PlatformBenchmarks
             _headerContentLength;
 
         private readonly static AsciiString _plainTextBody = "Hello, World!";
-
-        private readonly static AsciiString _fortunesTableStart = "<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>";
-        private readonly static AsciiString _fortunesRowStart = "<tr><td>";
-        private readonly static AsciiString _fortunesColumn = "</td><td>";
-        private readonly static AsciiString _fortunesRowEnd = "</td></tr>";
-        private readonly static AsciiString _fortunesTableEnd = "</table></body></html>";
         private readonly static AsciiString _contentLengthGap = new string(' ', 4);
 
         public static RawDb RawDb { get; set; }
         public static DapperDb DapperDb { get; set; }
         public static EfDb EfDb { get; set; }
 
+        private static readonly DefaultObjectPool<ChunkedBufferWriter<WriterAdapter>> ChunkedWriterPool
+            = new(new ChunkedWriterObjectPolicy());
+
+        private sealed class ChunkedWriterObjectPolicy : IPooledObjectPolicy<ChunkedBufferWriter<WriterAdapter>>
+        {
+            public ChunkedBufferWriter<WriterAdapter> Create() => new();
+
+            public bool Return(ChunkedBufferWriter<WriterAdapter> writer)
+            {
+                writer.Reset();
+                return true;
+            }
+        }
+
+        private readonly static SliceFactory<List<Fortune>> FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
+        private readonly static SliceFactory<List<FortuneDapper>> FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneDapper>>("/Templates/FortunesDapper.cshtml");
+        private readonly static SliceFactory<List<FortuneEf>> FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
+
         [ThreadStatic]
         private static Utf8JsonWriter t_writer;
 
-#if NET6_0_OR_GREATER
         private static readonly JsonContext SerializerContext = JsonContext.Default;
 
         [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
@@ -59,9 +71,6 @@ namespace PlatformBenchmarks
         private partial class JsonContext : JsonSerializerContext
         {
         }
-#else
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions();
-#endif
 
         public static class Paths
         {
@@ -79,19 +88,12 @@ namespace PlatformBenchmarks
         private RequestType _requestType;
         private int _queries;
 
-#if NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
             _requestType = versionAndMethod.Method == HttpMethod.Get ? GetRequestType(startLine.Slice(targetPath.Offset, targetPath.Length), ref _queries) : RequestType.NotRecognized;
         }
-#else
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-        {
-            _requestType = method == HttpMethod.Get ? GetRequestType(path, ref _queries) : RequestType.NotRecognized;
-        }
-#endif
 
-        private RequestType GetRequestType(ReadOnlySpan<byte> path, ref int queries)
+        private static RequestType GetRequestType(ReadOnlySpan<byte> path, ref int queries)
         {
 #if !DATABASE
             if (path.Length == 10 && path.SequenceEqual(Paths.Plaintext))
@@ -157,13 +159,13 @@ namespace PlatformBenchmarks
 
         private static int ParseQueries(ReadOnlySpan<byte> parameter)
         {
-            if (!Utf8Parser.TryParse(parameter, out int queries, out _) || queries < 1)
+            if (!Utf8Parser.TryParse(parameter, out int queries, out _))
             {
                 queries = 1;
             }
-            else if (queries > 500)
+            else
             {
-                queries = 500;
+                queries = Math.Clamp(queries, 1, 500);
             }
 
             return queries;

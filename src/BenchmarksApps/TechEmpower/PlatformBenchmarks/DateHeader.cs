@@ -19,7 +19,7 @@ namespace PlatformBenchmarks
         const int suffixLength = 2; // crlf
         const int suffixIndex = dateTimeRLength + prefixLength;
 
-        private static readonly Timer s_timer = new Timer((s) => {
+        private static readonly Timer s_timer = new((s) => {
             SetDateValues(DateTimeOffset.UtcNow);
         }, null, 1000, 1000);
 
