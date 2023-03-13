@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace PlatformBenchmarks
 {
-    public class EfDb
+    public sealed class EfDb
     {
         private static PooledDbContextFactory<ApplicationDbContext> _dbContextFactory;
 

@@ -14,7 +14,7 @@ namespace PlatformBenchmarks
         }
     }
 
-    public class HttpApplication<TConnection> where TConnection : IHttpConnection, new()
+    public sealed class HttpApplication<TConnection> where TConnection : IHttpConnection, new()
     {
         public Task ExecuteAsync(ConnectionContext connection)
         {
