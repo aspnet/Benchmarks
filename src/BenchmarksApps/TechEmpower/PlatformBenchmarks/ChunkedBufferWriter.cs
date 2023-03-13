@@ -2,13 +2,14 @@
 using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace PlatformBenchmarks;
 
 internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where TWriter : IBufferWriter<byte>
 {
-    private const int DefaultChunkSizeHint = 4096;
+    private const int DefaultChunkSizeHint = 2048;
     private static readonly StandardFormat DefaultHexFormat = GetHexFormat(DefaultChunkSizeHint);
 
     private TWriter _output;
@@ -86,7 +87,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int CountHexDigits(int n) => n <= 16 ? 1 : (int)Math.Ceiling(Math.Log(n, 16));
+    private static int CountHexDigits(int n) => n <= 16 ? 1 : (BitOperations.Log2((uint)n) >> 2) + 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void StartNewChunk(int sizeHint, bool isFirst = false)
@@ -113,7 +114,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
         var chunkHeaderLength = newFullChunkHexLength + terminator.Length;
         _currentChunk = _currentFullChunk[chunkHeaderLength..];
 
-        if (!isFirst && oldFullChunkHexLength != newFullChunkHexLength)
+        if ((!isFirst && oldFullChunkHexLength != newFullChunkHexLength) || (isFirst && DefaultChunkSizeHint != _chunkSizeHint))
         {
             // Update HEX format if changed
             _hexFormat = GetHexFormat(_currentFullChunk.Length);
@@ -130,18 +131,20 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
         if (contentLength > 0)
         {
             // Update the chunk header
-            var maxLength = CountHexDigits(contentLength);
+            var chunkLengthHexDigitsLength = CountHexDigits(contentLength);
             var span = _currentFullChunk.Span;
             if (!Utf8Formatter.TryFormat(contentLength, span, out var bytesWritten, _hexFormat))
             {
                 throw new NotSupportedException("Chunk size too large");
             }
-            Debug.Assert(maxLength == bytesWritten, "HEX formatting math problem.");
-            var headerLength = maxLength + 2;
+            Debug.Assert(chunkLengthHexDigitsLength == bytesWritten, "HEX formatting math problem.");
+            var headerLength = chunkLengthHexDigitsLength + 2;
 
             // Total chunk length: content length as HEX string + \r\n + content + \r\n
             var spanOffset = headerLength + contentLength;
             var chunkTotalLength = spanOffset + 2;
+
+            Debug.Assert(span.Length >= chunkTotalLength, "Bad chunk size calculation.");
 
             // Write out the chunk terminator
             "\r\n"u8.CopyTo(span[spanOffset..]);
@@ -193,7 +196,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void EnsureMore(int count = 0)
     {
-        if ((_buffered + count) > _currentChunk.Length)
+        if (count > (_currentChunk.Length - _buffered))
         {
             if (_buffered > 0)
             {

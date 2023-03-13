@@ -39,14 +39,7 @@ public class Db
 
     public async Task<World[]> LoadMultipleQueriesRows(int count)
     {
-        if (count <= 0)
-        {
-            count = 1;
-        }
-        else if (count > 500)
-        {
-            count = 500;
-        }
+        count = Math.Clamp(count, 1, 500);
 
         var results = new World[count];
         using var db = _dbProviderFactory.CreateConnection();
@@ -64,14 +57,7 @@ public class Db
 
     public async Task<World[]> LoadMultipleUpdatesRows(int count)
     {
-        if (count <= 0)
-        {
-            count = 1;
-        }
-        else if (count > 500)
-        {
-            count = 500;
-        }
+        count = Math.Clamp(count, 1, 500);
 
         var parameters = new Dictionary<string, object>();
 

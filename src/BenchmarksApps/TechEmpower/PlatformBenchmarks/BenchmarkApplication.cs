@@ -171,13 +171,13 @@ namespace PlatformBenchmarks
 
         private static int ParseQueries(ReadOnlySpan<byte> parameter)
         {
-            if (!Utf8Parser.TryParse(parameter, out int queries, out _) || queries < 1)
+            if (!Utf8Parser.TryParse(parameter, out int queries, out _))
             {
                 queries = 1;
             }
-            else if (queries > 500)
+            else
             {
-                queries = 500;
+                queries = Math.Clamp(queries, 1, 500);
             }
 
             return queries;
