@@ -11,6 +11,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
 {
     private const int DefaultChunkSizeHint = 2048;
     private static readonly StandardFormat DefaultHexFormat = GetHexFormat(DefaultChunkSizeHint);
+    private static readonly byte[] ChunkTerminator = "\r\n"u8.ToArray();
 
     private TWriter _output;
     private int _chunkSizeHint;
@@ -92,6 +93,8 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void StartNewChunk(int sizeHint, bool isFirst = false)
     {
+        ThrowIfEnded();
+
         // Header is like:
         // 520\r\n
 
@@ -142,12 +145,12 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
 
             // Total chunk length: content length as HEX string + \r\n + content + \r\n
             var spanOffset = headerLength + contentLength;
-            var chunkTotalLength = spanOffset + 2;
+            var chunkTotalLength = spanOffset + ChunkTerminator.Length;
 
             Debug.Assert(span.Length >= chunkTotalLength, "Bad chunk size calculation.");
 
             // Write out the chunk terminator
-            "\r\n"u8.CopyTo(span[spanOffset..]);
+            ChunkTerminator.AsSpan().CopyTo(span[spanOffset..]);
             spanOffset = chunkTotalLength;
             
             if (!isFinal)
@@ -182,7 +185,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     {
         ThrowIfEnded();
 
-        if (_currentChunk.Length >= source.Length)
+        if (_currentChunk.Length >= (source.Length + ChunkTerminator.Length))
         {
             source.CopyTo(_currentChunk.Span);
             Advance(source.Length);
@@ -196,7 +199,7 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void EnsureMore(int count = 0)
     {
-        if (count > (_currentChunk.Length - _buffered))
+        if (count > (_currentChunk.Length - _buffered - ChunkTerminator.Length))
         {
             if (_buffered > 0)
             {
@@ -213,12 +216,12 @@ internal sealed class ChunkedBufferWriter<TWriter> : IBufferWriter<byte> where T
     {
         while (source.Length > 0)
         {
-            if (_currentChunk.Length == 0)
+            if ((_currentChunk.Length - ChunkTerminator.Length) == 0)
             {
                 EnsureMore();
             }
 
-            var writable = Math.Min(source.Length, _currentChunk.Length);
+            var writable = Math.Min(source.Length, _currentChunk.Length - ChunkTerminator.Length);
             source[..writable].CopyTo(_currentChunk.Span);
             source = source[writable..];
             Advance(writable);
