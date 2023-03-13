@@ -52,22 +52,12 @@ namespace PlatformBenchmarks
 
             if (renderTask.IsCompletedSuccessfully)
             {
+                renderTask.GetAwaiter().GetResult();
                 EndTemplateRendering(chunkedWriter, template);
                 return ValueTask.CompletedTask;
             }
 
             return AwaitTemplateRenderTask(renderTask, chunkedWriter, template);
-        }
-
-        private static ValueTask AsValueTask<T>(ValueTask<T> valueTask)
-        {
-            if (valueTask.IsCompletedSuccessfully)
-            {
-                var _ = valueTask.GetAwaiter().GetResult();
-                return default;
-            }
-
-            return new ValueTask(valueTask.AsTask());
         }
 
         private static async ValueTask AwaitTemplateRenderTask(ValueTask renderTask, ChunkedBufferWriter<WriterAdapter> chunkedWriter, RazorSlice template)
