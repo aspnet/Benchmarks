@@ -5,7 +5,6 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <IsDatabase>true</IsDatabase>
     <LangVersion>preview</LangVersion>
     <UserSecretsId>38063504-d08c-495a-89c9-daaad2f60f31</UserSecretsId>
   </PropertyGroup>
