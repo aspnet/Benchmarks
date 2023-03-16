@@ -13,8 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Update to non-preview when available -->
-    <PackageReference Include="Grpc.AspNetCore" Version="2.52.0-pre1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
   </ItemGroup>
 
 </Project>
