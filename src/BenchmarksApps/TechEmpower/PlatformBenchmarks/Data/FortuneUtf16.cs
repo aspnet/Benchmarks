@@ -5,21 +5,21 @@ using System;
 
 namespace PlatformBenchmarks
 {
-    public readonly struct Fortune : IComparable<Fortune>, IComparable
+    public readonly struct FortuneUtf16 : IComparable<FortuneUtf16>, IComparable
     {
-        public Fortune(int id, byte[] message)
+        public FortuneUtf16(int id, string message)
         {
             Id = id;
-            MessageUtf8 = message;
+            Message = message;
         }
 
         public int Id { get; }
 
-        public byte[] MessageUtf8 { get; }
+        public string Message { get; }
 
         public int CompareTo(object obj) => throw new InvalidOperationException("The non-generic CompareTo should not be used");
 
         // Performance critical, using culture insensitive comparison
-        public int CompareTo(Fortune other) => MessageUtf8.AsSpan().SequenceCompareTo(other.MessageUtf8.AsSpan());
+        public int CompareTo(FortuneUtf16 other) => string.CompareOrdinal(Message, other.Message);
     }
 }

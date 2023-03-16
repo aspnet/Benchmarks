@@ -55,8 +55,8 @@ namespace PlatformBenchmarks
             }
         }
 
-        private readonly static SliceFactory<List<Fortune>> FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
-        private readonly static SliceFactory<List<FortuneDapper>> FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneDapper>>("/Templates/FortunesDapper.cshtml");
+        private readonly static SliceFactory<List<FortuneUtf8>> FortunesTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneUtf8>>("/Templates/FortunesUtf8.cshtml");
+        private readonly static SliceFactory<List<FortuneUtf16>> FortunesDapperTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneUtf16>>("/Templates/FortunesUtf16.cshtml");
         private readonly static SliceFactory<List<FortuneEf>> FortunesEfTemplateFactory = RazorSlice.ResolveSliceFactory<List<FortuneEf>>("/Templates/FortunesEf.cshtml");
 
         [ThreadStatic]

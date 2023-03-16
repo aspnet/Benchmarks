@@ -233,10 +233,10 @@ namespace PlatformBenchmarks
             return results;
         }
 
-        public async Task<List<Fortune>> LoadFortunesRows()
+        public async Task<List<FortuneUtf8>> LoadFortunesRows()
         {
             // Benchmark requirements explicitly prohibit pre-initializing the list size
-            var result = new List<Fortune>();
+            var result = new List<FortuneUtf8>();
 
             using (var db = CreateConnection())
             {
@@ -247,7 +247,7 @@ namespace PlatformBenchmarks
 
                 while (await rdr.ReadAsync())
                 {
-                    result.Add(new Fortune
+                    result.Add(new FortuneUtf8
                     (
                         id: rdr.GetInt32(0),
                         message: rdr.GetFieldValue<byte[]>(1)
@@ -255,7 +255,7 @@ namespace PlatformBenchmarks
                 }
             }
 
-            result.Add(new Fortune(id: 0, AdditionalFortune));
+            result.Add(new FortuneUtf8(id: 0, AdditionalFortune));
             result.Sort();
 
             return result;
