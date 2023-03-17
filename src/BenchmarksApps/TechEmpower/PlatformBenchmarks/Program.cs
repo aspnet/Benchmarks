@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,17 +21,17 @@ namespace PlatformBenchmarks
         {
             Args = args;
 
-            Console.WriteLine(BenchmarkApplication.ApplicationName);
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.ApplicationName));
 #if !DATABASE
-            Console.WriteLine(BenchmarkApplication.Paths.Plaintext);
-            Console.WriteLine(BenchmarkApplication.Paths.Json);
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.Plaintext));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.Json));
 #else
-            Console.WriteLine(BenchmarkApplication.Paths.FortunesRaw);
-            Console.WriteLine(BenchmarkApplication.Paths.FortunesDapper);
-            Console.WriteLine(BenchmarkApplication.Paths.FortunesEf);
-            Console.WriteLine(BenchmarkApplication.Paths.SingleQuery);
-            Console.WriteLine(BenchmarkApplication.Paths.Updates);
-            Console.WriteLine(BenchmarkApplication.Paths.MultipleQueries);
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesRaw));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesDapper));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesEf));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.SingleQuery));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.Updates));
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.MultipleQueries));
 #endif
             DateHeader.SyncDateTimer();
 

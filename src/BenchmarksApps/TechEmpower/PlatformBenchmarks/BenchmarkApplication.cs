@@ -14,28 +14,29 @@ using RazorSlices;
 
 namespace PlatformBenchmarks
 {
-    public partial class BenchmarkApplication
+    public sealed partial class BenchmarkApplication
     {
-        private readonly static AsciiString _applicationName = "Kestrel Platform-Level Application";
-        public static AsciiString ApplicationName => _applicationName;
+        public static ReadOnlySpan<byte> ApplicationName => "Kestrel Platform-Level Application"u8;
 
-        private readonly static AsciiString _crlf = "\r\n";
-        private readonly static AsciiString _http11OK = "HTTP/1.1 200 OK\r\n";
-        private readonly static AsciiString _http11NotFound = "HTTP/1.1 404 Not Found\r\n";
-        private readonly static AsciiString _headerServer = "Server: K";
-        private readonly static AsciiString _headerContentLength = "Content-Length: ";
-        private readonly static AsciiString _headerContentLengthZero = "Content-Length: 0";
-        private readonly static AsciiString _headerContentTypeText = "Content-Type: text/plain";
-        private readonly static AsciiString _headerContentTypeJson = "Content-Type: application/json";
+        private static ReadOnlySpan<byte> _crlf => "\r\n"u8;
+        private static ReadOnlySpan<byte> _eoh => "\r\n\r\n"u8; // End Of Headers
+        private static ReadOnlySpan<byte> _http11OK => "HTTP/1.1 200 OK\r\n"u8;
+        private static ReadOnlySpan<byte> _http11NotFound => "HTTP/1.1 404 Not Found\r\n"u8;
+        private static ReadOnlySpan<byte> _headerServer => "Server: K"u8;
+        private static ReadOnlySpan<byte> _headerContentLength => "Content-Length: "u8;
+        private static ReadOnlySpan<byte> _headerContentLengthZero => "Content-Length: 0"u8;
+        private static ReadOnlySpan<byte> _headerContentTypeText => "Content-Type: text/plain"u8;
+        private static ReadOnlySpan<byte> _headerContentTypeJson => "Content-Type: application/json"u8;
+        private static ReadOnlySpan<byte> _headerContentTypeHtml => "Content-Type: text/html; charset=UTF-8"u8;
 
-        private readonly static AsciiString _dbPreamble =
-            _http11OK +
-            _headerServer + _crlf +
-            _headerContentTypeJson + _crlf +
-            _headerContentLength;
+        private static ReadOnlySpan<byte> _dbPreamble => 
+            "HTTP/1.1 200 OK\r\n"u8 +
+            "Server: K\r\n"u8 +
+            "Content-Type: application/json\r\n"u8 +
+            "Content-Length: "u8;
 
-        private readonly static AsciiString _plainTextBody = "Hello, World!";
-        private readonly static AsciiString _contentLengthGap = new string(' ', 4);
+        private static ReadOnlySpan<byte> _plainTextBody => "Hello, World!"u8;
+        private static ReadOnlySpan<byte> _contentLengthGap => "    "u8;
 
         public static RawDb RawDb { get; set; }
         public static DapperDb DapperDb { get; set; }
@@ -74,15 +75,15 @@ namespace PlatformBenchmarks
 
         public static class Paths
         {
-            public readonly static AsciiString Json = "/json";
-            public readonly static AsciiString Plaintext = "/plaintext";
-            public readonly static AsciiString SingleQuery = "/db";
-            public readonly static AsciiString FortunesRaw = "/fortunes";
-            public readonly static AsciiString FortunesDapper = "/fortunes/dapper";
-            public readonly static AsciiString FortunesEf = "/fortunes/ef";
-            public readonly static AsciiString Updates = "/updates/";
-            public readonly static AsciiString MultipleQueries = "/queries/";
-            public readonly static AsciiString Caching = "/cached-worlds/";
+            public static ReadOnlySpan<byte> Json => "/json"u8;
+            public static ReadOnlySpan<byte> Plaintext => "/plaintext"u8;
+            public static ReadOnlySpan<byte> SingleQuery => "/db"u8;
+            public static ReadOnlySpan<byte> FortunesRaw => "/fortunes"u8;
+            public static ReadOnlySpan<byte> FortunesDapper => "/fortunes/dapper"u8;
+            public static ReadOnlySpan<byte> FortunesEf => "/fortunes/ef"u8;
+            public static ReadOnlySpan<byte> Updates => "/updates/"u8;
+            public static ReadOnlySpan<byte> MultipleQueries => "/queries/"u8;
+            public static ReadOnlySpan<byte> Caching => "/cached-worlds/"u8;
         }
 
         private RequestType _requestType;
@@ -191,11 +192,11 @@ namespace PlatformBenchmarks
             return Task.CompletedTask;
         }
 #endif
-        private readonly static AsciiString _defaultPreamble =
-            _http11NotFound +
-            _headerServer + _crlf +
-            _headerContentTypeText + _crlf +
-            _headerContentLengthZero;
+        private static ReadOnlySpan<byte> _defaultPreamble =>
+            "HTTP/1.1 200 OK\r\n"u8 +
+            "Server: K"u8 + "\r\n"u8 +
+            "Content-Type: text/plain"u8 +
+            "Content-Length: 0"u8;
 
         private static void Default(ref BufferWriter<WriterAdapter> writer)
         {

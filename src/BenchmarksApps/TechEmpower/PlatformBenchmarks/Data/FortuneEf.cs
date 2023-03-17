@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace PlatformBenchmarks
 {
     [Table("fortune")]
-    public class FortuneEf : IComparable<FortuneEf>, IComparable
+    public sealed class FortuneEf : IComparable<FortuneEf>, IComparable
     {
         [Column("id")]
         public int Id { get; set; }

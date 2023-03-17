@@ -13,7 +13,7 @@ using Npgsql;
 
 namespace PlatformBenchmarks
 {
-    public class RawDb
+    public sealed class RawDb
     {
         private readonly ConcurrentRandom _random;
         private readonly MemoryCache _cache

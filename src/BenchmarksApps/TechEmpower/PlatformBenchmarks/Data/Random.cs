@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace PlatformBenchmarks
 {
-    public class ConcurrentRandom
+    public sealed class ConcurrentRandom
     {
         private static int nextSeed = 0;
 

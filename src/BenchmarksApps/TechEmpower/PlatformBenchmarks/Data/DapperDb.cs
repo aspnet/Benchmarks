@@ -6,7 +6,7 @@ using Npgsql;
 
 namespace PlatformBenchmarks
 {
-    public class DapperDb
+    public sealed class DapperDb
     {
         private readonly string _connectionString;
 
