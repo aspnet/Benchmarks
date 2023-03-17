@@ -252,7 +252,8 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint) => new(new(pipeWriter), sizeHint);
+        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter, int sizeHint)
+            => new(new(pipeWriter), sizeHint);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ChunkedBufferWriter<WriterAdapter> GetChunkedWriter(PipeWriter pipeWriter, int chunkSizeHint)
@@ -290,7 +291,7 @@ namespace PlatformBenchmarks
                 => RequestHandler = requestHandler;
 
             public void OnStaticIndexedHeader(int index)
-                            => RequestHandler.OnStaticIndexedHeader(index);
+                => RequestHandler.OnStaticIndexedHeader(index);
 
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
                 => RequestHandler.OnStaticIndexedHeader(index, value);
