@@ -261,6 +261,31 @@ namespace PlatformBenchmarks
             return result;
         }
 
+        public Task<List<FortuneUtf8>> LoadFortunesRowsNoDb()
+        {
+            // Benchmark requirements explicitly prohibit pre-initializing the list size
+            var result = new List<FortuneUtf8>
+            {
+                new(1, "fortune: No such file or directory"u8.ToArray()),
+                new(2, "A computer scientist is someone who fixes things that aren't broken."u8.ToArray()),
+                new(3, "After enough decimal places, nobody gives a damn."u8.ToArray()),
+                new(4, "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"u8.ToArray()),
+                new(5, "A computer program does what you tell it to do, not what you want it to do."u8.ToArray()),
+                new(6, "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen"u8.ToArray()),
+                new(7, "Any program that runs right is obsolete."u8.ToArray()),
+                new(8, "A list is only as strong as its weakest link. — Donald Knuth"u8.ToArray()),
+                new(9, "Feature: A bug with seniority."u8.ToArray()),
+                new(10, "Computers make very fast, very accurate mistakes."u8.ToArray()),
+                new(11, "<script>alert(\"This should not be displayed in a browser alert box.\");</script>"u8.ToArray()),
+                new(12, "フレームワークのベンチマーク"u8.ToArray()),
+                new(0, AdditionalFortune)
+            };
+
+            result.Sort();
+
+            return Task.FromResult(result);
+        }
+
         private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)

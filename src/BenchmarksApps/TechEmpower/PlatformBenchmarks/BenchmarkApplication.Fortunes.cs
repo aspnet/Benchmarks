@@ -12,7 +12,12 @@ namespace PlatformBenchmarks
     {
         private async Task FortunesRaw(PipeWriter pipeWriter)
         {
-            await OutputFortunes(pipeWriter, await RawDb.LoadFortunesRows(), FortunesTemplateFactory);
+            await OutputFortunes(
+                pipeWriter,
+                await RawDb.LoadFortunesRows(),
+                // To isolate template rendering from DB access, comment out the line above and uncomment the line below
+                //await RawDb.LoadFortunesRowsNoDb(),
+                FortunesTemplateFactory);
         }
 
         private async Task FortunesDapper(PipeWriter pipeWriter)
