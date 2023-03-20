@@ -242,21 +242,19 @@ namespace PlatformBenchmarks
             var result = new List<FortuneUtf8>();
 
 #if NET7_0_OR_GREATER
-            NpgsqlCommand cmd;
-            using (cmd = _cachedCommand ?? _dataSource.CreateCommand("SELECT id, message FROM fortune"))
+            // We don't dispose the command as we're caching it on ThreadStatic
+            var cmd = _cachedCommand ?? _dataSource.CreateCommand("SELECT id, message FROM fortune");
+            _cachedCommand = null;
+
+            using var rdr = await cmd.ExecuteReaderAsync();
+
+            while (await rdr.ReadAsync())
             {
-                _cachedCommand = null;
-
-                using var rdr = await cmd.ExecuteReaderAsync();
-
-                while (await rdr.ReadAsync())
-                {
-                    result.Add(new FortuneUtf8
-                    (
-                        id: rdr.GetInt32(0),
-                        message: rdr.GetFieldValue<byte[]>(1)
-                    ));
-                }
+                result.Add(new FortuneUtf8
+                (
+                    id: rdr.GetInt32(0),
+                    message: rdr.GetFieldValue<byte[]>(1)
+                ));
             }
 
             _cachedCommand = cmd;
