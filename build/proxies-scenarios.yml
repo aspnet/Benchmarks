@@ -139,6 +139,7 @@ parameters:
     - displayName: h2 - h2
       arguments: --variable serverScheme=https --variable serverProtocol=http2 --variable downstreamScheme=https --variable downstreamProtocol=http2 --property serverProtocol=h2 --property downstreamProtocol=h2
       requiresServerHttp2: true
+      requiresDownstreamHttp2: true
       scenarioSuffix: -h2load
     - displayName: gRPC (h2 - h2)
       arguments: --variable connections=1 --variable streams=100 --variable serverScheme=https --variable serverProtocol=grpc --variable downstreamScheme=https --variable downstreamProtocol=grpc --property serverProtocol=grpc --property downstreamProtocol=grpc
