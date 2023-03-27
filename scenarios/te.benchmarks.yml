@@ -45,7 +45,7 @@ jobs:
       dockerFile: frameworks/Go/gin/gin.dockerfile
       dockerImageName: gin
       dockerContextDirectory: frameworks/Go/gin/
-    # readyStateText: Listening
+    readyStateText: Listening
     port: 8080 # used to poll the application to detect startup
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
