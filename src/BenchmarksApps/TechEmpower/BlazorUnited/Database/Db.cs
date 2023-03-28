@@ -1,4 +1,6 @@
 ﻿using BlazorUnited.Models;
+using Dapper;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace BlazorUnited.Database;
@@ -28,6 +30,32 @@ public sealed class Db : IAsyncDisposable
             {
                 result.Add(new Fortune { Id = rdr.GetInt32(0), Message = rdr.GetString(1) });
             }
+        }
+
+        result.Add(new Fortune { Id = 0, Message = "Additional fortune added at request time." });
+        result.Sort(FortuneSortComparison);
+
+        return result;
+    }
+
+    public async Task<List<Fortune>> LoadFortunesRowsDapper()
+    {
+        await using var connection = _dataSource.CreateConnection();
+        var result = (await connection.QueryAsync<Fortune>($"SELECT id, message FROM fortune")).ToList();
+
+        result.Add(new Fortune { Id = 0, Message = "Additional fortune added at request time." });
+        result.Sort(FortuneSortComparison);
+
+        return result;
+    }
+
+    public async Task<List<Fortune>> LoadFortunesRowsEf(AppDbContext dbContext)
+    {
+        var result = new List<Fortune>();
+
+        await foreach (var fortune in AppDbContext.FortunesQuery(dbContext))
+        {
+            result.Add(fortune);
         }
 
         result.Add(new Fortune { Id = 0, Message = "Additional fortune added at request time." });

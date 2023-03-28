@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="8.0.0-preview.2" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-preview.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational " Version="8.0.0-preview.3.23174.2" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using BlazorUnited;
 using BlazorUnited.Components;
 using BlazorUnited.Database;
-using Microsoft.AspNetCore.Components.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,10 @@ var appSettings = new AppSettings();
 builder.Configuration.Bind(appSettings);
 
 // Add services to the container.
+builder.Services.AddDbContextPool<AppDbContext>(options => options
+    .UseNpgsql(appSettings.ConnectionString, npgsql => npgsql.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
+    .EnableThreadSafetyChecks(false));
+
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
 
@@ -25,7 +31,7 @@ app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application i
 
 app.Run();
 
-// TODO: Blazor doesn't let you set the HtmlEncoder instance today, need to fix that.
+// TODO: Use this custom configured HtmlEncoder when Blazor supports it: https://github.com/dotnet/aspnetcore/issues/47477
 //static HtmlEncoder CreateHtmlEncoder()
 //{
 //    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
