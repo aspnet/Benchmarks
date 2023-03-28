@@ -1,0 +1,27 @@
+﻿@inject Db Db
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fortunes</title>
+</head>
+<body>
+    @if (Rows is not null)
+    {
+        <table>
+            <tr><th>id</th><th>message</th></tr>
+            @foreach (var item in Rows)
+            {
+                <tr><td>@item.Id</td><td>@item.Message</td></tr>
+            }
+        </table>
+    }
+</body>
+</html>
+@code {
+    List<Fortune>? Rows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Rows = await Db.LoadFortunesRows();
+    }
+}
