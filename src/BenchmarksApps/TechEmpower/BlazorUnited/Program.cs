@@ -6,9 +6,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 // Disable logging as this is not required for the benchmark
-#if RELEASE
 builder.Logging.ClearProviders();
-#endif
 
 // Load custom configuration
 var appSettings = new AppSettings();
