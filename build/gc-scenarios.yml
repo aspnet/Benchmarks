@@ -1,0 +1,43 @@
+parameters:
+- name: arguments
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+
+variables:
+- name: configuration
+  value: https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml 
+
+# Scenarios
+- name: scenarios
+  type: object
+  default:
+
+  - displayName: GC - GcPerfSim
+    arguments: --scenario gcperfsim ${{ variables.configuration }} --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --application.variables.tc 52 --application.variables.tagb 540 --application.variables.tlgb 0 --application.variables.lohar 0 --application.variables.pohar 0 --application.variables.sohsr 100-4000 --application.variables.lohsr 102400-204800 --application.variables.pohsr 100-204800 --application.variables.sohsi 0 --application.variables.lohsi 0 --application.variables.pohsi 0 --application.variables.sohpi 0 --application.variables.lohpi 0 --application.variables.sohfi 0 --application.variables.lohfi 0 --application.variables.pohfi 0 --application.variables.allocType reference --application.variables.testKind time --property scenario=gcperfsim --property pohfi=0
+    condition: 'true'
+
+  # - displayName: GC - GcPerfSim
+  #   arguments: --scenario gcperfsim ${{ variables.configuration }} --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --application.variables.tc 52 --application.variables.tagb 540 --application.variables.tlgb 0 --application.variables.lohar 0 --application.variables.pohar 0 --application.variables.sohsr 100-4000 --application.variables.lohsr 102400-204800 --application.variables.pohsr 100-204800 --application.variables.sohsi 0 --application.variables.lohsi 0 --application.variables.pohsi 0 --application.variables.sohpi 0 --application.variables.lohpi 0 --application.variables.sohfi 0 --application.variables.lohfi 0 --application.variables.pohfi 0 --application.variables.allocType reference --application.variables.testKind time --property scenario=gcperfsim --property pohfi=0
+  #   condition: 'true'
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    displayName: "${{ s.displayName }}"
+    condition: succeededOrFailed()
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table GcBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+        }

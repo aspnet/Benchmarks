@@ -55,13 +55,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin2-load --profile intel-load2-db "
       
+- job: GC_Intel_Linux
+  displayName: 1- GC Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: []
+  condition: succeededOrFailed()
+  steps:
+  - template: gc-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-lin-app "
+      
 # GROUP 2
 
 - job: Mono_Arm_28_Linux
   displayName: 2- Mono Arm 28 Linux
   pool: server
   timeoutInMinutes: 180
-  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_28_Linux]
+  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_28_Linux, GC_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mono-scenarios.yml
@@ -73,7 +85,7 @@ jobs:
   displayName: 2- Mono Intel Linux
   pool: server
   timeoutInMinutes: 180
-  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_28_Linux]
+  dependsOn: [Mono_Database_Intel_Linux, Mono_Database_Arm_28_Linux, GC_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: mono-scenarios.yml
@@ -247,13 +259,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
+- job: GC_Arm_28_Linux
+  displayName: 7- GC Arm 28 Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Single_File_Intel_Linux, Mvc_Intel_Windows, Frameworks_Database_Arm_80_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: gc-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile arm-lin-28-app "
+      
 # GROUP 8
 
 - job: Custom_Proxies_Intel_Linux
   displayName: 8- Custom Proxies Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, GC_Arm_28_Linux]
   condition: succeededOrFailed()
   steps:
   - template: proxies-custom-scenarios.yml
@@ -265,7 +289,7 @@ jobs:
   displayName: 8- Build Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, GC_Arm_28_Linux]
   condition: succeededOrFailed()
   steps:
   - template: build-perf-scenarios.yml
@@ -277,7 +301,7 @@ jobs:
   displayName: 8- Trends Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows]
+  dependsOn: [Mvc_Intel_Linux, Single_File_Intel_Windows, GC_Arm_28_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -311,13 +335,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile amd-lin2-db "
       
+- job: GC_Intel_Windows
+  displayName: 9- GC Intel Windows
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_80_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: gc-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-win-app "
+      
 # GROUP 10
 
 - job: Crossgen_Arm_28_Linux
   displayName: 10- Crossgen Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux]
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux, GC_Intel_Windows]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -329,7 +365,7 @@ jobs:
   displayName: 10- Crossgen Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux]
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux, GC_Intel_Windows]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -341,7 +377,7 @@ jobs:
   displayName: 10- Native Aot Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux]
+  dependsOn: [Proxies_Intel_Linux, Frameworks_Arm_28_Linux, GC_Intel_Windows]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml

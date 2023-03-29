@@ -26,6 +26,11 @@ groups:
       - amd-lin2-load
       - intel-load2-db
 
+    - name: GC Intel Linux
+      template: gc-scenarios.yml
+      profiles:
+      - intel-lin-app 
+
   - jobs:
 
     - name: Mono Arm 28 Linux
@@ -140,12 +145,10 @@ groups:
       - intel-win-app 
       - intel-load2-load
 
-    # - name: Trends Database Arm 80 Windows
-    #   template: trend-database-scenarios.yml
-    #   profiles:
-    #   - arm-win-app
-    #   - amd-lin-load
-    #   - amd-lin2-db
+    - name: GC Arm 28 Linux
+      template: gc-scenarios.yml
+      profiles:
+      - arm-lin-28-app
 
   - jobs:
 
@@ -184,6 +187,11 @@ groups:
       - arm-lin-28-app 
       - intel-load2-load
       - amd-lin2-db # required by nodejs and tfb-database argument
+
+    - name: GC Intel Windows
+      template: gc-scenarios.yml
+      profiles:
+      - intel-win-app 
 
   - jobs:
 
