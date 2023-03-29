@@ -30,7 +30,7 @@
 
     <NpgsqlVersion50>5.0.5</NpgsqlVersion50>
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
-    <NpgsqlVersion80>8.0.0-preview.1</NpgsqlVersion80>
+    <NpgsqlVersion80>8.0.0-preview.2</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.0.0</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion80>5.1.0</MicrosoftDataSqlClientVersion80>
@@ -42,7 +42,7 @@
     <NpgsqlEntityFrameworkCorePostgreSQLVersion31>3.1.18</NpgsqlEntityFrameworkCorePostgreSQLVersion31>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion50>5.0.10</NpgsqlEntityFrameworkCorePostgreSQLVersion50>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.1</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.2</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
 
     <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
     <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
