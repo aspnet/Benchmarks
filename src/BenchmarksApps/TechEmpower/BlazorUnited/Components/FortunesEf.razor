@@ -1,4 +1,6 @@
-﻿@inject Db Db
+﻿@using Microsoft.EntityFrameworkCore;
+@inject Db Db
+@inject AppDbContext DbContext
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,6 +24,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        rows = await Db.LoadFortunesRowsDapper();
+        rows = await Db.LoadFortunesRowsEf(DbContext);
     }
 }

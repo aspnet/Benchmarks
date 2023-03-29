@@ -25,6 +25,7 @@ builder.Services.AddRazorComponents();
 var app = builder.Build();
 
 app.MapGet("/fortunes", () => new RazorComponentResult<Fortunes>());
+app.MapGet("/fortunes-ef", () => new RazorComponentResult<FortunesEf>());
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
