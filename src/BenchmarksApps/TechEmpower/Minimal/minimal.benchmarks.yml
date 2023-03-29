@@ -104,4 +104,4 @@ profiles:
         source:
           localFolder: .
           respository: ''
-          project: Mvc.csproj
+          project: Minimal.csproj
