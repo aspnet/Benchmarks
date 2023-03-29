@@ -1,0 +1,63 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.standard.yml?raw=true
+
+variables:
+    serverPort: 5000
+    
+jobs:
+  blazorunited:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TechEmpower/BlazorUnited/BlazorUnited.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    variables:
+      serverScheme: http
+    environmentVariables:
+      connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
+
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
+scenarios:
+  fortunes:
+    db:
+      job: postgresql
+    application:
+      job: blazorunited
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+
+  fortunes-ef:
+    db:
+      job: postgresql
+    application:
+      job: blazorunited
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes-ef
+
+profiles:
+  # this profile uses the local folder as the source 
+  # instead of the public repository
+  source:
+    agents:
+      main:
+        source:
+          localFolder: .
+          respository: ''
+          project: BlazorUnited.csproj
