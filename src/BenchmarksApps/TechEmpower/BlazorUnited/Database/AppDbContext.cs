@@ -16,12 +16,12 @@ public class AppDbContext : DbContext
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        var fortune = modelBuilder.Entity<Fortune>()
-            .ToTable("fortune");
-        fortune.Property(f => f.Id).HasColumnName("id");
-        fortune.Property(f => f.Message).HasColumnName("message");
-    }
+        => modelBuilder.Entity<Fortune>(b =>
+        {
+            b.ToTable("fortune");
+            b.Property(f => f.Id).HasColumnName("id");
+            b.Property(f => f.Message).HasColumnName("message");
+        });
 
     public required DbSet<Fortune> Fortunes { get; set; }
 }
