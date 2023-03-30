@@ -30,7 +30,6 @@ builder.Services.AddAuthorization();
 
 // Configure data access
 var connectionString = builder.Configuration.GetConnectionString("TodoDb")
-    ?? builder.Configuration["CONNECTION_STRING"]
     ?? throw new InvalidOperationException("""
         Connection string not found.
         If running locally, set the connection string in user secrets for key 'ConnectionStrings:TodoDb'.

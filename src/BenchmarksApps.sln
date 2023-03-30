@@ -34,9 +34,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "BenchmarksApps\TechEmpower\PlatformBenchmarks\PlatformBenchmarks.csproj", "{ACA43671-AD28-4F72-AAAB-6C32B388C2F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{689C58F6-8DF0-4565-887F-C9A9BDA757D8}"
-	ProjectSection(SolutionItems) = preProject
-		BenchmarksApps\Directory.Build.props = BenchmarksApps\Directory.Build.props
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildPerformance", "BenchmarksApps\BuildPerformance\BuildPerformance.csproj", "{2E953AFB-4900-4B5D-9E78-819E950CD365}"
 EndProject
@@ -52,7 +49,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcpEcho", "BenchmarksApps\T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnited", "BenchmarksApps\TechEmpower\BlazorUnited\BlazorUnited.csproj", "{FE3606FF-CBC9-421A-A0B5-836E312E7719}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodosApi", "BenchmarksApps\TodosApi\TodosApi.csproj", "{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodosApi", "BenchmarksApps\TodosApi\TodosApi.csproj", "{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
