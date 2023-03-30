@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace TodosApi;
 
-sealed class Todo : IDataReaderMapper<Todo>
+internal sealed class Todo : IDataReaderMapper<Todo>
 {
     public int Id { get; set; }
 

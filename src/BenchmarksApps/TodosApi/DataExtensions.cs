@@ -1,9 +1,8 @@
 ﻿using System.Data;
-using System.Runtime.CompilerServices;
 
 namespace Npgsql;
 
-public static class DataExtensions
+internal static class DataExtensions
 {
     public static async ValueTask OpenIfClosedAsync(this NpgsqlConnection connection)
     {
@@ -254,62 +253,20 @@ public static class DataExtensions
         return parameter;
     }
 
-    public static (string Name, object? Value) AsNamedDbParameter(this string? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this DateTime? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this DateTimeOffset? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this bool value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this bool? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this int value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this int? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this long value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this long? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this double value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object)value, name);
-
-    public static (string Name, object? Value) AsNamedDbParameter(this double? value, [CallerArgumentExpression(nameof(value))] string name = null!) =>
-        AsNamedDbParameter((object?)value, name);
-
-    private static (string Name, object? Value) AsNamedDbParameter(this object? value, [CallerArgumentExpression(nameof(value))] string name = null!)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-        return (CleanParameterName(name), value ?? DBNull.Value);
-    }
-
     private static NpgsqlCommand CreateCommand(this NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters) =>
-        ConfigureCommand(connection.CreateCommand(), commandText, parameters);
+        ConfigureCommand(connection.CreateCommand(commandText), parameters);
 
     private static NpgsqlCommand CreateCommand(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters) =>
-        ConfigureCommand(dataSource.CreateCommand(), commandText, parameters);
+        ConfigureCommand(dataSource.CreateCommand(commandText), parameters);
 
-    private static NpgsqlCommand ConfigureCommand(NpgsqlCommand cmd, string commandText, NpgsqlParameter[] parameters)
-    {
-        cmd.CommandText = commandText;
-
-        for (var i = 0; i < parameters.Length; i++)
+    private static NpgsqlCommand ConfigureCommand(NpgsqlCommand cmd, NpgsqlParameter[] parameters) =>
+        ConfigureCommand(cmd, parameterCollection =>
         {
-            cmd.Parameters.Add(parameters[i]);
-        }
-
-        return cmd;
-    }
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                parameterCollection.Add(parameters[i]);
+            }
+        });
 
     private static NpgsqlCommand CreateCommand(this NpgsqlConnection connection, string commandText, Action<NpgsqlParameterCollection>? configureParameters = null) =>
         ConfigureCommand(connection.CreateCommand(commandText), configureParameters);
@@ -326,15 +283,9 @@ public static class DataExtensions
 
         return cmd;
     }
-
-    private static string CleanParameterName(string name)
-    {
-        var lastIndexOfPeriod = name.LastIndexOf('.');
-        return lastIndexOfPeriod > 0 ? name[(lastIndexOfPeriod + 1)..] : name;
-    }
 }
 
-public interface IDataReaderMapper<T> where T : IDataReaderMapper<T>
+internal interface IDataReaderMapper<T> where T : IDataReaderMapper<T>
 {
     abstract static T Map(NpgsqlDataReader dataReader);
 }
