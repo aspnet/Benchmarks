@@ -4,15 +4,18 @@ using TodosApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-#if ENABLE_LOGGING
 // Load custom configuration
 var settingsFiles = new[] { "appsettings.json", $"appsettings.{builder.Environment.EnvironmentName}.json" };
 foreach (var settingsFile in settingsFiles)
 {
     builder.Configuration.AddJsonFile(builder.Environment.ContentRootFileProvider, settingsFile, optional: true, reloadOnChange: true);
 }
-builder.Configuration.AddUserSecrets<Program>();
 
+#if DEBUG || DEBUG_DATABASE
+builder.Configuration.AddUserSecrets<Program>();
+#endif
+
+#if ENABLE_LOGGING
 // Configure logging
 builder.Logging
     .AddConfiguration(builder.Configuration.GetSection("Logging"))
