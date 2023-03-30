@@ -10,7 +10,8 @@ internal static class Database
 
         if (Environment.GetEnvironmentVariable("SUPPRESS_DB_INIT") != "true")
         {
-            logger.LogInformation("Ensuring database exists and is up to date at connection string '{connectionString}'", ObscurePassword(db.ConnectionString));
+            // NOTE: Npgsql removes the password from the connection string
+            logger.LogInformation("Ensuring database exists and is up to date at connection string '{connectionString}'", db.ConnectionString);
 
             var sql = $"""
                   CREATE TABLE IF NOT EXISTS public.todos
@@ -36,19 +37,7 @@ internal static class Database
         }
         else
         {
-            logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", ObscurePassword(db.ConnectionString));
-        }
-
-        string ObscurePassword(string connectionString)
-        {
-            var passwordKey = "Password=";
-            var passwordIndex = connectionString.IndexOf(passwordKey, 0, StringComparison.OrdinalIgnoreCase);
-            if (passwordIndex < 0)
-            {
-                return connectionString;
-            }
-            var semiColonIndex = connectionString.IndexOf(";", passwordIndex, StringComparison.OrdinalIgnoreCase);
-            return string.Concat(connectionString.AsSpan(0, passwordIndex + passwordKey.Length), "*****", semiColonIndex >= 0 ? connectionString[semiColonIndex..] : "");
+            logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", db.ConnectionString);
         }
     }
 }

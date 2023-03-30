@@ -9,6 +9,8 @@
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <PublishRelease>true</PublishRelease>
+    <EnableLogging Condition="$(Configuration.StartsWith('Debug'))">true</EnableLogging>
+    <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
