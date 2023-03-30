@@ -22,14 +22,12 @@ internal static class JwtConfiguration
                 // When not running in development configure the JWT signing key from environment variable
                 var jwtKeyMaterialValue = builder.Configuration["JWT_SIGNING_KEY"];
 
-                if (string.IsNullOrEmpty(jwtKeyMaterialValue))
+                if (!string.IsNullOrEmpty(jwtKeyMaterialValue))
                 {
-                    throw new InvalidOperationException("JWT signing key not found!");
+                    var jwtKeyMaterial = Convert.FromBase64String(jwtKeyMaterialValue);
+                    var jwtSigningKey = new SymmetricSecurityKey(jwtKeyMaterial);
+                    options.TokenValidationParameters.IssuerSigningKey = jwtSigningKey;
                 }
-
-                var jwtKeyMaterial = Convert.FromBase64String(jwtKeyMaterialValue);
-                var jwtSigningKey = new SymmetricSecurityKey(jwtKeyMaterial);
-                options.TokenValidationParameters.IssuerSigningKey = jwtSigningKey;
             }
         };
     }

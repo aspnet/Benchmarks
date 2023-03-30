@@ -21,7 +21,7 @@ public class JwtHealthCheck : IHealthCheck
         var valid = ValidateJwtOptions(_jwtOptions.CurrentValue);
         var status = valid
             ? HealthCheckResult.Healthy("JWT options configured correctly")
-            : HealthCheckResult.Degraded("JWT options are not configured. Run 'dotnet user-jwts create' in project directory to configure JWT.");
+            : HealthCheckResult.Degraded("JWT options are not configured. Verify the JWT signing key is correctly configured for the current environment.");
         return Task.FromResult(status);
     }
 

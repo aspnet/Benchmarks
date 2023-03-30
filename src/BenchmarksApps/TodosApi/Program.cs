@@ -62,11 +62,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.MapHealthChecks("/health");
-
-app.MapTodoApi();
-
 // Enables testing request exception handling behavior
 app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the throw endpoint"));
+
+// These need to manually registered until https://github.com/dotnet/aspnetcore/issues/47507 is fixed
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapTodoApi();
 
 #if !ENABLE_LOGGING
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
