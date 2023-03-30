@@ -8,7 +8,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 var settingsFiles = new[] { "appsettings.json", $"appsettings.{builder.Environment.EnvironmentName}.json" };
 foreach (var settingsFile in settingsFiles)
 {
-    builder.Configuration.AddJsonFile(builder.Environment.ContentRootFileProvider, settingsFile, optional: false, reloadOnChange: true);
+    builder.Configuration.AddJsonFile(builder.Environment.ContentRootFileProvider, settingsFile, optional: true, reloadOnChange: true);
 }
 #if DEBUG || DEBUG_DATABASE
 builder.Configuration.AddUserSecrets<Program>();
@@ -16,7 +16,7 @@ builder.Configuration.AddUserSecrets<Program>();
 
 // Configure logging
 builder.Logging
-    .AddConfiguration(builder.Configuration)
+    .AddConfiguration(builder.Configuration.GetSection("Logging"))
     .AddSimpleConsole();
 
 // Configure authentication & authorization
@@ -34,7 +34,6 @@ builder.Services.AddSingleton(_ => new NpgsqlSlimDataSourceBuilder(connectionStr
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, JwtOptionsJsonSerializerContext.Default);
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, TodoApiJsonSerializerContext.Default);
 });
 
