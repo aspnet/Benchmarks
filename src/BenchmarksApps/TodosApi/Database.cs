@@ -4,7 +4,7 @@ namespace TodosApi;
 
 internal static class Database
 {
-    public static async Task Initialize(IServiceProvider services, ILogger logger)
+    public static async Task Initialize(IServiceProvider services, ILogger logger, CancellationToken cancellationToken = default)
     {
         var db = services.GetRequiredService<NpgsqlDataSource>();
 
@@ -33,7 +33,7 @@ internal static class Database
                       ('Walk the kangaroo.', CURRENT_DATE + INTERVAL '1 day', false),
                       ('Call Grandma.', CURRENT_DATE + INTERVAL '1 day', false);
                   """;
-            await db.ExecuteAsync(sql);
+            await db.ExecuteAsync(sql, cancellationToken);
         }
         else
         {

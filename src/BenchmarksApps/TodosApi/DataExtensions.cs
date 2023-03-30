@@ -1,59 +1,71 @@
 ﻿using System.Data;
+using System.Runtime.CompilerServices;
 
 namespace Npgsql;
 
 internal static class DataExtensions
 {
-    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText)
+    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken = default)
     {
         await using var cmd = dataSource.CreateCommand(commandText);
 
-        return await cmd.ExecuteNonQueryAsync();
+        return await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public static async Task<object?> ExecuteScalarAsync(this NpgsqlDataSource dataSource, string commandText)
+    public static async Task<object?> ExecuteScalarAsync(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken = default)
     {
         await using var cmd = dataSource.CreateCommand(commandText);
 
-        return await cmd.ExecuteScalarAsync(CancellationToken.None);
+        return await cmd.ExecuteScalarAsync(cancellationToken);
     }
 
-    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+    public static Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+        => ExecuteAsync(dataSource, commandText, default, parameters);
+
+    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken, params NpgsqlParameter[] parameters)
     {
         await using var cmd = dataSource.CreateCommand(commandText, parameters);
 
-        return await cmd.ExecuteNonQueryAsync();
+        return await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection> configureParameters)
+    public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection> configureParameters, CancellationToken cancellationToken = default)
     {
         await using var cmd = dataSource.CreateCommand(commandText, configureParameters);
 
-        return await cmd.ExecuteNonQueryAsync();
+        return await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public static async Task<T?> QuerySingleAsync<T>(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+    public static Task<T?> QuerySingleAsync<T>(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+        where T : IDataReaderMapper<T>
+        => QuerySingleAsync<T>(dataSource, commandText, default, parameters);
+
+    public static async Task<T?> QuerySingleAsync<T>(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken, params NpgsqlParameter[] parameters)
         where T : IDataReaderMapper<T>
     {
-        await using var reader = await dataSource.QuerySingleAsync(commandText, parameters);
+        await using var reader = await dataSource.QuerySingleAsync(commandText, cancellationToken, parameters);
 
         return await reader.MapSingleAsync<T>();
     }
 
-    public static async Task<T?> QuerySingleAsync<T>(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection>? configureParameters = null)
+    public static async Task<T?> QuerySingleAsync<T>(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection>? configureParameters = null, CancellationToken cancellationToken = default)
         where T : IDataReaderMapper<T>
     {
         await using var cmd = dataSource.CreateCommand(commandText, configureParameters);
 
-        await using var reader = await cmd.QuerySingleAsync();
+        await using var reader = await cmd.QuerySingleAsync(cancellationToken);
 
         return await reader.MapSingleAsync<T>();
     }
 
-    public static async IAsyncEnumerable<T> QueryAsync<T>(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+    public static IAsyncEnumerable<T> QueryAsync<T>(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
+        where T : IDataReaderMapper<T>
+        => QueryAsync<T>(dataSource, commandText, default, parameters);
+
+    public static async IAsyncEnumerable<T> QueryAsync<T>(this NpgsqlDataSource dataSource, string commandText, [EnumeratorCancellation] CancellationToken cancellationToken, params NpgsqlParameter[] parameters)
         where T : IDataReaderMapper<T>
     {
-        var query = dataSource.QueryAsync<T>(commandText, parameterCollection => parameterCollection.AddRange(parameters));
+        var query = dataSource.QueryAsync<T>(commandText, parameterCollection => parameterCollection.AddRange(parameters), cancellationToken);
 
         await foreach (var item in query)
         {
@@ -61,12 +73,12 @@ internal static class DataExtensions
         }
     }
 
-    public static async IAsyncEnumerable<T> QueryAsync<T>(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection>? configureParameters = null)
+    public static async IAsyncEnumerable<T> QueryAsync<T>(this NpgsqlDataSource dataSource, string commandText, Action<NpgsqlParameterCollection>? configureParameters = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where T : IDataReaderMapper<T>
     {
         await using var cmd = dataSource.CreateCommand(commandText, configureParameters);
 
-        await using var reader = await cmd.QueryAsync();
+        await using var reader = await cmd.QueryAsync(cancellationToken);
 
         await foreach (var item in MapAsync<T>(reader))
         {
@@ -109,31 +121,37 @@ internal static class DataExtensions
     }
 
     public static Task<NpgsqlDataReader> QuerySingleAsync(this NpgsqlDataSource dataSource, string commandText, params NpgsqlParameter[] parameters)
-        => QueryAsync(dataSource, commandText, CommandBehavior.SingleResult | CommandBehavior.SingleRow, parameters);
+        => QuerySingleAsync(dataSource, commandText, default, parameters);
 
-    public static Task<NpgsqlDataReader> QuerySingleAsync(this NpgsqlCommand command)
-        => QueryAsync(command, CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+    public static Task<NpgsqlDataReader> QuerySingleAsync(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken, params NpgsqlParameter[] parameters)
+        => QueryAsync(dataSource, commandText, CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken, parameters);
 
-    public static async Task<NpgsqlDataReader> QueryAsync(this NpgsqlDataSource dataSource, string commandText, CommandBehavior commandBehavior, params NpgsqlParameter[] parameters)
+    public static Task<NpgsqlDataReader> QuerySingleAsync(this NpgsqlCommand command, CancellationToken cancellationToken = default)
+        => QueryAsync(command, CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken);
+
+    public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlDataSource dataSource, string commandText, CommandBehavior commandBehavior, params NpgsqlParameter[] parameters)
+        => QueryAsync(dataSource, commandText, commandBehavior, default, parameters);
+
+    public static async Task<NpgsqlDataReader> QueryAsync(this NpgsqlDataSource dataSource, string commandText, CommandBehavior commandBehavior, CancellationToken cancellationToken, params NpgsqlParameter[] parameters)
     {
         await using var cmd = dataSource.CreateCommand(commandText, parameters);
 
-        return await cmd.ExecuteReaderAsync(commandBehavior);
+        return await cmd.ExecuteReaderAsync(commandBehavior, cancellationToken);
     }
 
-    public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command)
-        => QueryAsync(command, CommandBehavior.Default);
+    public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CancellationToken cancellationToken = default)
+        => QueryAsync(command, CommandBehavior.Default, cancellationToken);
 
-    public static async Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CommandBehavior commandBehavior)
+    public static async Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken = default)
     {
-        return await command.ExecuteReaderAsync(commandBehavior);
+        return await command.ExecuteReaderAsync(commandBehavior, cancellationToken);
     }
 
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int? initialCapacity = null)
+    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int? initialCapacity = null, CancellationToken cancellationToken = default)
     {
         var list = initialCapacity.HasValue ? new List<T>(initialCapacity.Value) : new List<T>();
 
-        await foreach (var item in enumerable)
+        await foreach (var item in enumerable.WithCancellation(cancellationToken))
         {
             list.Add(item);
         }

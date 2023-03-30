@@ -18,7 +18,7 @@ public class DatabaseHealthCheck : IHealthCheck
         Exception? exception = null;
         try
         {
-            result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1");
+            result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1", cancellationToken);
         }
         catch (Exception ex)
         {

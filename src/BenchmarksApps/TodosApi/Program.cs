@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.Extensions.Logging.Configuration;
 using Npgsql;
 using TodosApi;
@@ -45,7 +46,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 // Configure health checks
 builder.Services.AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>("Database")
+    .AddCheck<DatabaseHealthCheck>("Database", timeout: TimeSpan.FromSeconds(2))
     .AddCheck<JwtHealthCheck>("JwtAuthentication");
 
 // Problem details
