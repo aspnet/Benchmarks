@@ -41,9 +41,16 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, TodoApiJsonSerializerContext.Default);
 });
 
+// Configure health checks
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("Database")
+    .AddCheck<JwtHealthCheck>("JwtAuthentication");
+
 var app = builder.Build();
 
 await Database.Initialize(app.Services, app.Logger);
+
+app.MapHealthChecks("/health");
 
 app.MapTodoApi();
 

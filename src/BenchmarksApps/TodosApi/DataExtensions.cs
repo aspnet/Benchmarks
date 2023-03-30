@@ -27,6 +27,13 @@ internal static class DataExtensions
         return await cmd.ExecuteNonQueryAsync();
     }
 
+    public static async Task<object?> ExecuteScalarAsync(this NpgsqlDataSource dataSource, string commandText)
+    {
+        await using var cmd = dataSource.CreateCommand(commandText);
+
+        return await cmd.ExecuteScalarAsync(CancellationToken.None);
+    }
+
     public static async Task<int> ExecuteAsync(this NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters)
     {
         await using var cmd = connection.CreateCommand(commandText, parameters);

@@ -31,49 +31,7 @@ internal static class JwtConfiguration
                 var jwtSigningKey = new SymmetricSecurityKey(jwtKeyMaterial);
                 options.TokenValidationParameters.IssuerSigningKey = jwtSigningKey;
             }
-
-            // Validate the JWT options
-            builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-                .Validate<IHostEnvironment, ILoggerFactory>(ValidateJwtOptions,
-                    "JWT options are not configured. Run 'dotnet user-jwts create' in project directory to configure JWT.")
-                .ValidateOnStart();
         };
-    }
-
-    private const string JwtOptionsLogMessage = "JwtBearerAuthentication options configuration: {JwtOptions}";
-
-    /// <summary>
-    /// Validates that JWT Bearer authentication has been configured correctly.
-    /// </summary>
-    /// <param name="options"></param>
-    /// <param name="hostEnvironment"></param>
-    /// <param name="loggerFactory"></param>
-    /// <returns><c>true</c> if required JWT Bearer settings are loaded, otherwise <c>false</c>.</returns>
-    public static bool ValidateJwtOptions(JwtBearerOptions options, IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory)
-    {
-        var relevantOptions = new JwtOptionsSummary
-        {
-            Audience = options.Audience,
-            ClaimsIssuer = options.ClaimsIssuer,
-            Audiences = options.TokenValidationParameters?.ValidAudiences,
-            Issuers = options.TokenValidationParameters?.ValidIssuers,
-            IssuerSigningKey = options.TokenValidationParameters?.IssuerSigningKey,
-            IssuerSigningKeys = options.TokenValidationParameters?.IssuerSigningKeys
-        };
-
-        var logger = loggerFactory.CreateLogger(hostEnvironment.ApplicationName ?? nameof(Program));
-        var jwtOptionsJson = JsonSerializer.Serialize(relevantOptions, JwtOptionsJsonSerializerContext.Default.JwtOptionsSummary);
-
-        if ((string.IsNullOrEmpty(relevantOptions.Audience) && relevantOptions.Audiences?.Any() != true)
-            || (relevantOptions.ClaimsIssuer is null && relevantOptions.Issuers?.Any() != true)
-            || (relevantOptions.IssuerSigningKey is null && relevantOptions.IssuerSigningKeys?.Any() != true))
-        {
-            logger.LogError(JwtOptionsLogMessage, jwtOptionsJson);
-            return false;
-        }
-
-        logger.LogInformation(JwtOptionsLogMessage, jwtOptionsJson);
-        return true;
     }
 }
 
