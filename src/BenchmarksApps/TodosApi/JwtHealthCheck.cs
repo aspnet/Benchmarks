@@ -20,7 +20,7 @@ public class JwtHealthCheck : IHealthCheck
     {
         var valid = ValidateJwtOptions(_jwtOptions.CurrentValue);
         var status = valid
-            ? HealthCheckResult.Healthy("")
+            ? HealthCheckResult.Healthy("JWT options configured correctly")
             : HealthCheckResult.Degraded("JWT options are not configured. Run 'dotnet user-jwts create' in project directory to configure JWT.");
         return Task.FromResult(status);
     }

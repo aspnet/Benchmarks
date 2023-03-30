@@ -14,11 +14,21 @@ public class DatabaseHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1");
+        object? result = null;
+        Exception? exception = null;
+        try
+        {
+            result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1");
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+        
         return result switch
         {
-            null or int => HealthCheckResult.Healthy(),
-            _ => HealthCheckResult.Unhealthy()
+            null or int => HealthCheckResult.Healthy("Database health verified successfully"),
+            _ => HealthCheckResult.Unhealthy("Error occurred when checking database health", exception: exception)
         };
     }
 }
