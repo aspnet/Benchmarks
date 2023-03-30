@@ -1,4 +1,3 @@
-using System.Threading;
 using Microsoft.Extensions.Logging.Configuration;
 using Npgsql;
 using TodosApi;
