@@ -46,13 +46,24 @@ builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("Database")
     .AddCheck<JwtHealthCheck>("JwtAuthentication");
 
+// Problem details
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 await Database.Initialize(app.Services, app.Logger);
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler();
+}
+
 app.MapHealthChecks("/health");
 
 app.MapTodoApi();
+
+// Enables testing request exception handling behavior
+app.MapGet("/throw", (HttpContext httpContext) => throw new InvalidOperationException("You hit the throw endpoint"));
 
 #if !ENABLE_LOGGING
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));

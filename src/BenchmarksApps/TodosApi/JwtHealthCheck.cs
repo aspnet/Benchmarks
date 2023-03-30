@@ -8,19 +8,17 @@ namespace TodosApi;
 public class JwtHealthCheck : IHealthCheck
 {
     private readonly IOptionsMonitor<JwtBearerOptions> _jwtOptions;
-    private readonly IHostEnvironment _hostEnvironment;
     private readonly ILogger<JwtHealthCheck> _logger;
 
-    public JwtHealthCheck(IOptionsMonitor<JwtBearerOptions> jwtOptions, IHostEnvironment hostEnvironment, ILogger<JwtHealthCheck> logger)
+    public JwtHealthCheck(IOptionsMonitor<JwtBearerOptions> jwtOptions, ILogger<JwtHealthCheck> logger)
     {
         _jwtOptions = jwtOptions;
-        _hostEnvironment = hostEnvironment;
         _logger = logger;
     }
 
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var valid = ValidateJwtOptions(_jwtOptions.CurrentValue, _hostEnvironment);
+        var valid = ValidateJwtOptions(_jwtOptions.CurrentValue);
         var status = valid
             ? HealthCheckResult.Healthy("")
             : HealthCheckResult.Degraded("JWT options are not configured. Run 'dotnet user-jwts create' in project directory to configure JWT.");
@@ -29,7 +27,7 @@ public class JwtHealthCheck : IHealthCheck
 
     private const string JwtOptionsLogMessage = "JwtBearerAuthentication options configuration: {JwtOptions}";
     
-    private bool ValidateJwtOptions(JwtBearerOptions options, IHostEnvironment hostEnvironment)
+    private bool ValidateJwtOptions(JwtBearerOptions options)
     {
         var relevantOptions = new JwtOptionsSummary
         {
