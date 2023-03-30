@@ -14,10 +14,10 @@ public class DatabaseHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        var result = await _dataSource.ExecuteScalarAsync("SELECT COUNT(id) FROM public.todos");
+        var result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1");
         return result switch
         {
-            long count when count >= 0 => HealthCheckResult.Healthy(),
+            null or int => HealthCheckResult.Healthy(),
             _ => HealthCheckResult.Unhealthy()
         };
     }
