@@ -65,7 +65,7 @@ app.MapHealthChecks("/health");
 app.MapTodoApi();
 
 // Enables testing request exception handling behavior
-app.MapGet("/throw", (HttpContext httpContext) => throw new InvalidOperationException("You hit the throw endpoint"));
+app.MapGet("/throw", (HttpContext _) => throw new InvalidOperationException("You hit the throw endpoint"));
 
 #if !ENABLE_LOGGING
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
