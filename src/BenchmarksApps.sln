@@ -34,9 +34,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "BenchmarksApps\TechEmpower\PlatformBenchmarks\PlatformBenchmarks.csproj", "{ACA43671-AD28-4F72-AAAB-6C32B388C2F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{689C58F6-8DF0-4565-887F-C9A9BDA757D8}"
-	ProjectSection(SolutionItems) = preProject
-		BenchmarksApps\Directory.Build.props = BenchmarksApps\Directory.Build.props
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildPerformance", "BenchmarksApps\BuildPerformance\BuildPerformance.csproj", "{2E953AFB-4900-4B5D-9E78-819E950CD365}"
 EndProject
@@ -51,6 +48,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcpEcho", "BenchmarksApps\TcpEcho\TcpEcho.csproj", "{436118C1-B9A7-4966-86AB-6F2477B6B201}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnited", "BenchmarksApps\TechEmpower\BlazorUnited\BlazorUnited.csproj", "{FE3606FF-CBC9-421A-A0B5-836E312E7719}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodosApi", "BenchmarksApps\TodosApi\TodosApi.csproj", "{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -196,6 +195,14 @@ Global
 		{FE3606FF-CBC9-421A-A0B5-836E312E7719}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
 		{FE3606FF-CBC9-421A-A0B5-836E312E7719}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE3606FF-CBC9-421A-A0B5-836E312E7719}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Debug_Database|Any CPU.ActiveCfg = Debug_Database|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Debug_Database|Any CPU.Build.0 = Debug_Database|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release_Database|Any CPU.ActiveCfg = Release_Database|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

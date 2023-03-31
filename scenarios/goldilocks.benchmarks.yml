@@ -21,6 +21,16 @@ jobs:
       serverScheme: http
       serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+  todosapiaspnetbenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TodosApi/TodosApi.csproj
+    readyStateText: Application started.
+    variables:
+      serverScheme: http
+      serverPort: 5000
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   basicgrpcaspnetbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
@@ -42,6 +52,16 @@ jobs:
     waitForExit: false
     options:
       requiredOperatingSystem: linux
+  postgresql:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: toolset/databases/postgres/postgres.dockerfile
+      dockerImageName: postgres_te
+      dockerContextDirectory: toolset/databases/postgres
+    readyStateText: ready to accept connections
+    noClean: true
+
 
 scenarios:
 
@@ -81,6 +101,58 @@ scenarios:
       variables:
         presetHeaders: json
         path: /todos
+
+  todosapipublishaot:
+    db:
+      job: postgresql
+    application:
+      job: todosapiaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=true"
+        - "/p:StripSymbols=true"
+      environmentVariables:
+        CONNECTIONSTRINGS__TODODB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /api/todos
+
+  todosapipublishtrimr2rsinglefile:
+    db:
+      job: postgresql
+    application:
+      job: todosapiaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=false"
+        - "/p:PublishTrimmed=true"
+        - "/p:PublishReadyToRun=true"
+        - "/p:PublishSingleFile=true"
+        - "/p:TrimMode=full"
+        - "/p:EnableRequestDelegateGenerator=true"
+      environmentVariables:
+        CONNECTIONSTRINGS__TODODB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /api/todos
+
+  todosapivanilla:
+    db:
+      job: postgresql
+    application:
+      job: todosapiaspnetbenchmarks
+      buildArguments: 
+        - "/p:PublishAot=false"
+        - "/p:EnableRequestDelegateGenerator=false"
+      environmentVariables:
+        CONNECTIONSTRINGS__TODODB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /api/todos
 
   basicgrpcpublishaot:
     application:

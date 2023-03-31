@@ -12,6 +12,10 @@
 
     <!-- Repo contains only test code -->
     <EnableApiCheck>false</EnableApiCheck>
+
+    <!-- Create database build configurations -->
+    <Configurations>Debug;Release;Debug_Database;Release_Database</Configurations>
+    <IsDatabase Condition="$(Configuration.EndsWith('_Database'))">true</IsDatabase>
   </PropertyGroup>
 
 </Project>

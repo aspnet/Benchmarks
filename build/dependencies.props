@@ -66,24 +66,26 @@
     <MicrosoftEntityFrameworkCoreSqliteVersion50>5.0.17</MicrosoftEntityFrameworkCoreSqliteVersion50>
     <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.14</MicrosoftEntityFrameworkCoreSqliteVersion60>
     <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-preview.1.23111.4</MicrosoftEntityFrameworkCoreSqliteVersion80>
+
+    <MicrosoftAspNetCoreAppPackageVersion80>8.0.0-preview.3.23177.8</MicrosoftAspNetCoreAppPackageVersion80>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <MicrosoftAspNetCoreAppPackageVersion>2.1.3</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.2'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
     <MicrosoftAspNetCoreAppPackageVersion>2.2.0</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <MicrosoftAspNetCoreAppPackageVersion>3.0.0</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <MicrosoftAspNetCoreAppPackageVersion>3.1.0</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'net6.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <MicrosoftAspNetCoreAppPackageVersion>6.0.14</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'net8.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>8.0.0-preview.1.23112.2</MicrosoftAspNetCoreAppPackageVersion>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>$(MicrosoftAspNetCoreAppPackageVersion80)</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 </Project>
