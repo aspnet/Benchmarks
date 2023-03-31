@@ -32,19 +32,3 @@ internal static class JwtConfiguration
         };
     }
 }
-
-
-internal class JwtOptionsSummary
-{
-    public string? Audience { get; set; }
-    public string? ClaimsIssuer { get; set; }
-    public IEnumerable<string>? Audiences { get; set; }
-    public IEnumerable<string>? Issuers { get; set; }
-    public SecurityKey? IssuerSigningKey { get; set; }
-    public IEnumerable<SecurityKey>? IssuerSigningKeys { get; set; }
-}
-
-[JsonSerializable(typeof(JwtOptionsSummary))]
-internal partial class JwtOptionsJsonSerializerContext : JsonSerializerContext
-{
-}

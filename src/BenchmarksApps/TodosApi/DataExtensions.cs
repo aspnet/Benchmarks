@@ -86,7 +86,6 @@ internal static class DataExtensions
         }
     }
 
-
     public static Task<T?> MapSingleAsync<T>(this NpgsqlDataReader reader)
         where T : IDataReaderMapper<T>
         => MapSingleAsync(reader, T.Map);
@@ -142,10 +141,8 @@ internal static class DataExtensions
     public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CancellationToken cancellationToken = default)
         => QueryAsync(command, CommandBehavior.Default, cancellationToken);
 
-    public static async Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken = default)
-    {
-        return await command.ExecuteReaderAsync(commandBehavior, cancellationToken);
-    }
+    public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken = default)
+        => command.ExecuteReaderAsync(commandBehavior, cancellationToken);
 
     public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int? initialCapacity = null, CancellationToken cancellationToken = default)
     {

@@ -14,11 +14,10 @@ public class DatabaseHealthCheck : IHealthCheck
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        object? result = null;
         Exception? exception = null;
         try
         {
-            result = await _dataSource.ExecuteScalarAsync("SELECT id FROM public.todos LIMIT 1", cancellationToken);
+            await _dataSource.ExecuteScalarAsync("SELECT 1", cancellationToken);
         }
         catch (Exception ex)
         {

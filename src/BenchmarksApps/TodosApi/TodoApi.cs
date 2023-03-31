@@ -87,15 +87,14 @@ internal static class TodoApi
                 : TypedResults.NotFound())
         .WithName("DeleteTodo");
 
-        group.MapDelete("/delete-all", async (NpgsqlDataSource db, CancellationToken ct) => TypedResults.Ok(await db.ExecuteAsync("DELETE FROM Todos", ct)))
+        group.MapDelete("/delete-all", async (NpgsqlDataSource db, CancellationToken ct) =>
+            TypedResults.Ok(await db.ExecuteAsync("DELETE FROM Todos", ct)))
             .WithName("DeleteAll")
             .RequireAuthorization(policy => policy.RequireAuthenticatedUser().RequireRole("admin"));
 
         return group;
     }
 }
-
-
 
 [JsonSerializable(typeof(Todo))]
 [JsonSerializable(typeof(IAsyncEnumerable<Todo>))]

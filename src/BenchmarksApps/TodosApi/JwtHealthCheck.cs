@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace TodosApi;
 
-public class JwtHealthCheck : IHealthCheck
+internal class JwtHealthCheck : IHealthCheck
 {
     private readonly IOptionsMonitor<JwtBearerOptions> _jwtOptions;
     private readonly ILogger<JwtHealthCheck> _logger;
@@ -52,4 +52,19 @@ public class JwtHealthCheck : IHealthCheck
         _logger.LogInformation(JwtOptionsLogMessage, jwtOptionsJson);
         return true;
     }
+}
+
+internal class JwtOptionsSummary
+{
+    public string? Audience { get; set; }
+    public string? ClaimsIssuer { get; set; }
+    public IEnumerable<string>? Audiences { get; set; }
+    public IEnumerable<string>? Issuers { get; set; }
+    public SecurityKey? IssuerSigningKey { get; set; }
+    public IEnumerable<SecurityKey>? IssuerSigningKeys { get; set; }
+}
+
+[JsonSerializable(typeof(JwtOptionsSummary))]
+internal partial class JwtOptionsJsonSerializerContext : JsonSerializerContext
+{
 }
