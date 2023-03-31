@@ -111,7 +111,7 @@ scenarios:
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
       environmentVariables:
-        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+        CONNECTIONSTRINGS__TODOSDB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
@@ -131,7 +131,7 @@ scenarios:
         - "/p:TrimMode=full"
         - "/p:EnableRequestDelegateGenerator=true"
       environmentVariables:
-        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+        CONNECTIONSTRINGS__TODOSDB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
@@ -147,7 +147,7 @@ scenarios:
         - "/p:PublishAot=false"
         - "/p:EnableRequestDelegateGenerator=false"
       environmentVariables:
-        connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
+        CONNECTIONSTRINGS__TODOSDB: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
       variables:
