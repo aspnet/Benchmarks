@@ -25,9 +25,9 @@ public class DatabaseHealthCheck : IHealthCheck
             exception = ex;
         }
         
-        return result switch
+        return exception switch
         {
-            null or int => HealthCheckResult.Healthy("Database health verified successfully"),
+            null => HealthCheckResult.Healthy("Database health verified successfully"),
             _ => HealthCheckResult.Unhealthy("Error occurred when checking database health", exception: exception)
         };
     }
