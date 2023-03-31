@@ -15,7 +15,7 @@ parameters:
   default:
 
   - displayName: GC - GcPerfSim
-    arguments: '--scenario gcperfsim --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables "DOTNET_GCHeapCount={{ cores | minus: 2 }}" --application.variables.tc 52 --application.variables.tagb 540 --application.variables.tlgb 0 --application.variables.lohar 0 --application.variables.pohar 0 --application.variables.sohsr 100-4000 --application.variables.lohsr 102400-204800 --application.variables.pohsr 100-204800 --application.variables.sohsi 0 --application.variables.lohsi 0 --application.variables.pohsi 0 --application.variables.sohpi 0 --application.variables.lohpi 0 --application.variables.sohfi 0 --application.variables.lohfi 0 --application.variables.pohfi 0 --application.variables.allocType reference --application.variables.testKind time --property scenario=gcperfsim --property pohfi=0'
+    arguments: '--scenario gcperfsim --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \\"DOTNET_GCHeapCount={{ cores | minus: 2 }}\\" --application.variables.tc 52 --application.variables.tagb 540 --application.variables.tlgb 0 --application.variables.lohar 0 --application.variables.pohar 0 --application.variables.sohsr 100-4000 --application.variables.lohsr 102400-204800 --application.variables.pohsr 100-204800 --application.variables.sohsi 0 --application.variables.lohsi 0 --application.variables.pohsi 0 --application.variables.sohpi 0 --application.variables.lohpi 0 --application.variables.sohfi 0 --application.variables.lohfi 0 --application.variables.pohfi 0 --application.variables.allocType reference --application.variables.testKind time --property scenario=gcperfsim --property pohfi=0'
     condition: 'true'
 
 steps:
