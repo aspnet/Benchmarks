@@ -98,7 +98,6 @@ scenarios:
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
-        - "/p:EnableRequestDelegateGenerator=true"
     load:
       job: wrk
       variables:
