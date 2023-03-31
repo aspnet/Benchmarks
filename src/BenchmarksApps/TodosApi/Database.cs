@@ -21,8 +21,6 @@ internal static class Database
                       {nameof(Todo.DueBy)} date NULL,
                       {nameof(Todo.IsComplete)} boolean NOT NULL DEFAULT false
                   );
-                  ALTER TABLE IF EXISTS public.todos
-                      OWNER to "TodosApp";
                   DELETE FROM public.todos;
                   INSERT INTO
                       public.todos ({nameof(Todo.Title)}, {nameof(Todo.DueBy)}, {nameof(Todo.IsComplete)})
