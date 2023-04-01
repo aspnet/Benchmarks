@@ -8,7 +8,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 var settingsFiles = new[] { "appsettings.json", $"appsettings.{builder.Environment.EnvironmentName}.json" };
 foreach (var settingsFile in settingsFiles)
 {
-    builder.Configuration.AddJsonFile(builder.Environment.ContentRootFileProvider, settingsFile, optional: true, reloadOnChange: true);
+    builder.Configuration.AddJsonFile(settingsFile, optional: true, reloadOnChange: true);
 }
 
 #if DEBUG || DEBUG_DATABASE
