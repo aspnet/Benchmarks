@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -266,6 +267,13 @@ namespace Benchmarks
             {
                 services.AddResponseCaching();
             }
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -433,6 +441,7 @@ namespace Benchmarks
                 app.UseResponseCachingPlaintextVaryByCached();
             }
 
+            app.UseResponseCompression();
             app.UseAutoShutdown();
         }
     }
