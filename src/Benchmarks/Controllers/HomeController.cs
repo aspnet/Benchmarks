@@ -59,8 +59,7 @@ namespace Benchmarks.Controllers
         [Produces("application/json")]
         public object Json()
         {
-            throw new Exception();
-            // return new { message = "Hello, World!" };
+            return new { message = "Hello, World!" };
         }
 
         // Note that this produces 4kb data. We're leaving the misnamed scenario as is to avoid loosing historical context
