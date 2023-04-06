@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
 
 namespace Mvc
 {
@@ -69,11 +70,19 @@ namespace Mvc
             services.AddAuthorization();
 #endif
 
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
+            app.UseResponseCompression();
+
 #if !ONLYAUTH
             if (UseNewtonsoftJson)
             {
