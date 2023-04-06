@@ -517,11 +517,27 @@ These scenarios provide benchmarks for Blazor.
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml --scenario ssr --profile aspnet-perf-lin
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario ssr --profile aspnet-perf-lin
+```
+
+## GC benchmarks
+
+These scenarios provide benchmarks to help improve the performance of the .NET GC.
+### Sample
+
+```
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net8.0 
 ```
 ### Available scenarios
 
-- `ssr`: Server-side rendering
+- `0gb - Server`
+- `2gb - Server`
+- `2gb-pinning - Server`
+- `20gb - Server`
+- `0gb - Workstation`
+- `2gb - Workstation`
+- `2gb-pinning - Workstation`
+- `20gb - Workstation`
 
 ## Micro benchmarks
 
