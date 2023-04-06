@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.ResponseCompression;
 using RazorSlices;
 using Minimal;
 using Minimal.Database;
@@ -23,7 +24,16 @@ builder.Configuration.Bind(appSettings);
 // Add services to the container.
 builder.Services.AddSingleton(new Db(appSettings));
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 app.MapGet("/plaintext", () => "Hello, World!");
 
