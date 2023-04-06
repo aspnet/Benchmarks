@@ -278,6 +278,8 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseResponseCompression();
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -441,7 +443,6 @@ namespace Benchmarks
                 app.UseResponseCachingPlaintextVaryByCached();
             }
 
-            app.UseResponseCompression();
             app.UseAutoShutdown();
         }
     }
