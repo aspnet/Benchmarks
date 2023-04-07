@@ -16,36 +16,36 @@ parameters:
 
   # Server Runs.
   - displayName: 0gb Server
-    arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=0gb'
+    arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=0gb-server'
     condition: 'true'
 
   - displayName: 2gb Server
-    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcWorkstation=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb'
+    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcWorkstation=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-server'
     condition: 'true'
 
   - displayName: 2gb Pinning Server
-    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-pinning'
+    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-pinning-server'
     condition: 'true'
 
   - displayName: 20gb Server
-    arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=20gb'
+    arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=20gb-server'
     condition: 'true'
 
   # Workstation Runs.
   - displayName: 0gb Workstation
-    arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=0 --property scenario=0gb --application.variables.tc 2'
+    arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=0gb-workstation'
     condition: 'true'
 
   - displayName: 2gb Workstation
-    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=0 --property scenario=2gb --application.variables.tc 2'
+    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=2gb-workstation'
     condition: 'true'
 
   - displayName: 2gb Pinning Workstation
-    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=0 --property scenario=2gb-pinning --application.variables.tc 2'
+    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=2gb-pinning-workstation'
     condition: 'true'
 
   - displayName: 20gb Workstation
-    arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=0 --property scenario=20gb --application.variables.tc 2'
+    arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=20gb-workstation'
     condition: 'true'
 
 steps:
