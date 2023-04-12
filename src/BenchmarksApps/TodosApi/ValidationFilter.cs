@@ -113,7 +113,7 @@ internal class ValidationFilter : IEndpointFilter
 
 internal class ValidationMetadata(int[] map)
 {
-#pragma warning disable CA1822 // Mark members as static (This seems to be a bug with the analyzer not supporting primary constructors)
+#pragma warning disable CA1822 // Mark members as static: BUG https://github.com/dotnet/roslyn/issues/67783
     public int[] ValidatableParametersMap => map;
 #pragma warning restore CA1822
 }

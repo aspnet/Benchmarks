@@ -4,6 +4,11 @@
 
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
+Get {{TodosApi_HostAddress}}/api/todos/
+Accept: application/json
+
+###
+
 Post {{TodosApi_HostAddress}}/api/todos/
 Content-Type: application/json
 Accept: application/json
@@ -12,6 +17,23 @@ Accept: application/json
 
 ###
 
-Get {{TodosApi_HostAddress}}/api/todos/
+Get {{TodosApi_HostAddress}}/api/todos/1
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/find
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/throw
+Accept: application/json
+
+###
+
+Delete {{TodosApi_HostAddress}}/api/todos/delete-all
+Accept: application/json 
+Authorization: Bearer <put a JWT here>
 
 ###

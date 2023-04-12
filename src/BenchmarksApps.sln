@@ -34,6 +34,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformBenchmarks", "BenchmarksApps\TechEmpower\PlatformBenchmarks\PlatformBenchmarks.csproj", "{ACA43671-AD28-4F72-AAAB-6C32B388C2F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{689C58F6-8DF0-4565-887F-C9A9BDA757D8}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildPerformance", "BenchmarksApps\BuildPerformance\BuildPerformance.csproj", "{2E953AFB-4900-4B5D-9E78-819E950CD365}"
 EndProject
