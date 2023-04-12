@@ -13,7 +13,7 @@ internal static class TodoApi
 
         group.AddValidationFilter();
 
-        // BUG: Having to call ToListAsync() on query results until JSON support for unspeakable types is resolved
+        // BUG: Having to call ToListAsync() on query results until JSON support for unspeakable types (https://github.com/dotnet/aspnetcore/issues/47548) is resolved
 
         group.MapGet("/", (NpgsqlDataSource db, CancellationToken ct) =>
             db.QueryAsync<Todo>("SELECT * FROM Todos", ct).ToListAsync(ct))
