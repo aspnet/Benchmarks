@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -6,11 +7,17 @@ namespace TodosApi;
 
 internal class ValidationFilter : IEndpointFilter
 {
+    private static readonly ConcurrentDictionary<IServiceProvider, ValidationFilter> _instances = new();
     private readonly ILogger<ValidationFilter> _logger;
 
-    public ValidationFilter(ILogger<ValidationFilter> logger)
+    private ValidationFilter(ILogger<ValidationFilter> logger)
     {
         _logger = logger;
+    }
+
+    public static ValidationFilter Create(IServiceProvider serviceProvider)
+    {
+        return _instances.GetOrAdd(serviceProvider, sp => new(sp.GetRequiredService<ILogger<ValidationFilter>>()));
     }
 
     public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
@@ -139,7 +146,7 @@ internal static class ValidationExtensions
                     builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
                     builder.FilterFactories.Add((effc, next) =>
                     {
-                        var filter = new ValidationFilter(effc.ApplicationServices.GetRequiredService<ILogger<ValidationFilter>>());
+                        var filter = ValidationFilter.Create(effc.ApplicationServices);
                         return (efic) =>
                         {
                             return filter.InvokeAsync(efic, next);
