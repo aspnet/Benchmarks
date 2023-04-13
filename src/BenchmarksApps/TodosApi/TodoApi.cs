@@ -11,13 +11,20 @@ internal static class TodoApi
     {
         var group = routes.MapGroup("/api/todos");
 
-        group.MapGet("/", (NpgsqlDataSource db, CancellationToken ct) => db.QueryAsync<Todo>("SELECT * FROM Todos", ct))
+        group.AddValidationFilter();
+
+        // BUG: Having to call ToListAsync() on query results until JSON support for unspeakable types (https://github.com/dotnet/aspnetcore/issues/47548) is resolved
+
+        group.MapGet("/", (NpgsqlDataSource db, CancellationToken ct) =>
+            db.QueryAsync<Todo>("SELECT * FROM Todos", ct).ToListAsync(ct))
             .WithName("GetAllTodos");
 
-        group.MapGet("/complete", (NpgsqlDataSource db, CancellationToken ct) => db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = true", ct))
+        group.MapGet("/complete", (NpgsqlDataSource db, CancellationToken ct) =>
+            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = true", ct).ToListAsync(ct))
             .WithName("GetCompleteTodos");
 
-        group.MapGet("/incomplete", (NpgsqlDataSource db, CancellationToken ct) => db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = false", ct))
+        group.MapGet("/incomplete", (NpgsqlDataSource db, CancellationToken ct) =>
+            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = false", ct).ToListAsync(ct))
             .WithName("GetIncompleteTodos");
 
         group.MapGet("/{id:int}", async Task<Results<Ok<Todo>, NotFound>> (int id, NpgsqlDataSource db, CancellationToken ct) =>
@@ -39,7 +46,7 @@ internal static class TodoApi
                     : TypedResults.NotFound())
             .WithName("FindTodo");
 
-        group.MapPost("/", async Task<Results<Created<Todo>, ValidationProblem>> (Todo todo, NpgsqlDataSource db, CancellationToken ct) =>
+        group.MapPost("/", async Task<Created<Todo>> (Todo todo, NpgsqlDataSource db, CancellationToken ct) =>
         {
             var createdTodo = await db.QuerySingleAsync<Todo>(
                 "INSERT INTO Todos(Title, IsComplete) Values($1, $2) RETURNING *",
@@ -51,7 +58,7 @@ internal static class TodoApi
         })
         .WithName("CreateTodo");
 
-        group.MapPut("/{id}", async Task<Results<NoContent, NotFound, ValidationProblem>> (int id, Todo inputTodo, NpgsqlDataSource db, CancellationToken ct) =>
+        group.MapPut("/{id}", async Task<Results<NoContent, NotFound>> (int id, Todo inputTodo, NpgsqlDataSource db, CancellationToken ct) =>
         {
             inputTodo.Id = id;
             
@@ -97,8 +104,8 @@ internal static class TodoApi
 }
 
 [JsonSerializable(typeof(Todo))]
+[JsonSerializable(typeof(List<Todo>))]
 [JsonSerializable(typeof(IAsyncEnumerable<Todo>))]
-[JsonSerializable(typeof(IEnumerable<Todo>))]
 internal partial class TodoApiJsonSerializerContext : JsonSerializerContext
 {
 

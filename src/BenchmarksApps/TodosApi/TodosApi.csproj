@@ -6,8 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <LangVersion>preview</LangVersion>
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
-    <PublishAot>false</PublishAot>
+    <PublishAot>true</PublishAot>
     <EnableLogging Condition="$(Configuration.StartsWith('Debug'))">true</EnableLogging>
     <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
   </PropertyGroup>
