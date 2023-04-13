@@ -80,7 +80,7 @@ internal class ValidationFilter : IEndpointFilter
         return next(context);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = "Instance type is statically represented in generic argument declared as dynamically accessing public properties.")]
     private static ValidationContext GetValidationContext<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TTarget>
