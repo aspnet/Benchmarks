@@ -7,25 +7,6 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
 {
     private readonly IEnumerable<string> _contentTypes;
 
-    public ProducesResponseTypeMetadata(int statusCode)
-        : this(typeof(void), statusCode, Enumerable.Empty<string>())
-    {
-    }
-
-    public ProducesResponseTypeMetadata(Type type, int statusCode)
-    {
-        Type = type ?? throw new ArgumentNullException(nameof(type));
-        StatusCode = statusCode;
-        _contentTypes = Enumerable.Empty<string>();
-    }
-
-    public ProducesResponseTypeMetadata(int statusCode, string contentType)
-    {
-        StatusCode = statusCode;
-        MediaTypeHeaderValue.Parse(contentType);
-        _contentTypes = GetContentTypes(contentType, Array.Empty<string>());
-    }
-
     public ProducesResponseTypeMetadata(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
     {
         ArgumentNullException.ThrowIfNull(contentType);
@@ -42,15 +23,6 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
         _contentTypes = GetContentTypes(contentType, additionalContentTypes);
     }
 
-    // Only for internal use where validation is unnecessary.
-    private ProducesResponseTypeMetadata(Type? type, int statusCode, IEnumerable<string> contentTypes)
-    {
-
-        Type = type;
-        StatusCode = statusCode;
-        _contentTypes = contentTypes;
-    }
-
     /// <summary>
     /// Gets or sets the type of the value returned by an action.
     /// </summary>
@@ -62,8 +34,6 @@ internal sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetada
     public int StatusCode { get; set; }
 
     public IEnumerable<string> ContentTypes => _contentTypes;
-
-    //internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes) => new(type, statusCode, contentTypes);
 
     private static List<string> GetContentTypes(string contentType, string[] additionalContentTypes)
     {
