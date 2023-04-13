@@ -83,8 +83,8 @@ internal class ValidationFilter : IEndpointFilter
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
         Justification = """
                         Instance type is statically represented in generic argument TTarget and is declared as dynamically
-                        accessing public properties and no recursion into TTarget's property types (which won't be preserved)
-                        is occurring.
+                        accessing public properties. This ensures the properties on TTarget are preserved. Note that recursive
+                        properties of those properties are still not preserved, but this validation doesn't recurse.
                         """)]
     private static ValidationContext GetValidationContext<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TTarget>
