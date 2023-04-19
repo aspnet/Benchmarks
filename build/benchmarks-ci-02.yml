@@ -371,7 +371,7 @@ jobs:
   - template: crossgen2-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 1
-      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile intel-db-db "
+      arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load "
       
 - job: Crossgen_Intel_Linux
   displayName: 10- Crossgen Intel Linux

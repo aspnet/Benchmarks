@@ -207,7 +207,6 @@ groups:
       profiles:
       - arm-lin-28-app 
       - amd-lin-load
-      - intel-db-db
 
     - name: Crossgen Intel Linux
       template: crossgen2-scenarios.yml
