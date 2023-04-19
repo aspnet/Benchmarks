@@ -31,7 +31,7 @@ profiles:
 
   intel-lin-load:
     variables:
-      secondaryAddress: 10.0.0.105
+      secondaryAddress: 10.0.0.102
     agents:
       load:
         endpoints: 
@@ -76,7 +76,7 @@ profiles:
 
   intel-db-load:
     variables:
-      secondaryAddress: 10.0.0.105
+      secondaryAddress: 10.0.0.103
     agents:
       load:
         endpoints: 
