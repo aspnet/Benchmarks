@@ -159,6 +159,7 @@ groups:
       profiles:
       - intel-win-app 
       - intel-lin-load
+      - amd-lin2-db
 
   - jobs:
 

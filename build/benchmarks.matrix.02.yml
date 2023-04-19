@@ -46,7 +46,14 @@ groups:
       profiles:
       - intel-lin-app 
       - intel-load-load
-      
+
+    - name: Native Aot Intel Linux
+      template: nativeaot-scenarios.yml
+      profiles:
+      - intel-db-app
+      - amd-lin-load
+      - amd-lin2-db
+
   - jobs:
 
     - name: PGO Arm 28 Linux
@@ -200,20 +207,12 @@ groups:
       profiles:
       - arm-lin-28-app 
       - amd-lin-load
-      - intel-db-db
 
     - name: Crossgen Intel Linux
       template: crossgen2-scenarios.yml
       profiles:
       - intel-lin-app 
       - intel-load-load
-
-    - name: Native Aot Intel Linux
-      template: nativeaot-scenarios.yml
-      profiles:
-      - intel-load2-app
-      - amd-lin2-load
-      - amd-lin2-db
 
   - jobs:
 
