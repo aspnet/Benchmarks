@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "TcpEcho": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53701;http://localhost:53702"
+    }
+  }
+}

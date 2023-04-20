@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "BenchmarkServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53697;http://localhost:53698"
+    }
+  }
+}

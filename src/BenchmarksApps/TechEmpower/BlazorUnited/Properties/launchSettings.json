@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "BlazorUnited": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53703;http://localhost:53704"
+    }
+  }
+}

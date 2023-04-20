@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DistributedCache": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53684;http://localhost:53687"
+    }
+  }
+}
