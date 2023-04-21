@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace Npgsql;
 
+// Replace this with https://www.nuget.org/packages/Nanorm once it's ready
+
 internal static class DataExtensions
 {
     public static async Task<int> ExecuteAsync(this NpgsqlDataSource dataSource, string commandText, CancellationToken cancellationToken = default)
