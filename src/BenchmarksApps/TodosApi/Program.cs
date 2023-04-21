@@ -7,20 +7,20 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.ClearProviders();
 #endif
 
-// Configure authentication & authorization
-builder.Services.AddAuthentication()
-    .AddJwtBearer(JwtConfiguration.ConfigureJwtBearer(builder));
+// Bind app settings from configuration & validate
+builder.Services.ConfigureAppSettings(builder.Configuration);
 
+// Configure authentication & authorization
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.ConfigureOptions<JwtConfiguration>();
 builder.Services.AddAuthorization();
 
 // Configure data access
-var connectionString = builder.Configuration.GetConnectionString("TodoDb")
-    ?? throw new InvalidOperationException("""
-        Connection string not found.
-        If running locally, set the connection string in user secrets for key 'ConnectionStrings:TodoDb'.
-        If running after deployment, set the connection string via the environment variable 'CONNECTIONSTRINGS__TODODB'.
-        """);
-builder.Services.AddSingleton(_ => new NpgsqlSlimDataSourceBuilder(connectionString).Build());
+builder.Services.AddSingleton(sp =>
+{
+    var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
+    return new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+});
 
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
