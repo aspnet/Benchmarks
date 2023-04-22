@@ -1,3 +1,6 @@
+#if ENABLE_OPENAPI
+using Microsoft.OpenApi.Models;
+#endif
 using Npgsql;
 using TodosApi;
 
@@ -21,6 +24,7 @@ builder.Services.AddSingleton(sp =>
     var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
     return new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 });
+builder.Services.AddHostedService<DatabaseInitializer>();
 
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -36,16 +40,26 @@ builder.Services.AddHealthChecks()
 // Problem details
 builder.Services.AddProblemDetails();
 
-var app = builder.Build();
+#if ENABLE_OPENAPI
+// Configure OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Todos API", Version = "v1" });
+});
+#endif
 
-await Database.Initialize(app.Services, app.Logger);
+var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler();
 }
 
+app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
+
 app.MapHealthChecks("/health");
+
 // Enables testing request exception handling behavior
 app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the throw endpoint"));
 
