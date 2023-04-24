@@ -62,6 +62,17 @@ profiles:
           - warmup
           - secondary
 
+  intel-db-app:
+    variables:
+      serverAddress: 10.0.0.103
+      cores: 28
+    agents:
+      application:
+        endpoints: 
+          - http://asp-citrine-db:5001
+        aliases:
+          - main
+
   intel-db-db:
     variables:
       databaseServer: 10.0.0.103
