@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "BasicMinimalApi": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "todos",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:53680"
+    }
+  }
+}
