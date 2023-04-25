@@ -13,18 +13,16 @@ internal static class TodoApi
 
         group.AddValidationFilter();
 
-        // BUG: Having to call ToListAsync() on query results until JSON support for unspeakable types (https://github.com/dotnet/aspnetcore/issues/47548) is resolved
-
         group.MapGet("/", (NpgsqlDataSource db, CancellationToken ct) =>
-            db.QueryAsync<Todo>("SELECT * FROM Todos", ct).ToListAsync(ct))
+            db.QueryAsync<Todo>("SELECT * FROM Todos", ct))
             .WithName("GetAllTodos");
 
         group.MapGet("/complete", (NpgsqlDataSource db, CancellationToken ct) =>
-            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = true", ct).ToListAsync(ct))
+            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = true", ct))
             .WithName("GetCompleteTodos");
 
         group.MapGet("/incomplete", (NpgsqlDataSource db, CancellationToken ct) =>
-            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = false", ct).ToListAsync(ct))
+            db.QueryAsync<Todo>("SELECT * FROM Todos WHERE IsComplete = false", ct))
             .WithName("GetIncompleteTodos");
 
         group.MapGet("/{id:int}", async Task<Results<Ok<Todo>, NotFound>> (int id, NpgsqlDataSource db, CancellationToken ct) =>
@@ -104,7 +102,6 @@ internal static class TodoApi
 }
 
 [JsonSerializable(typeof(Todo))]
-[JsonSerializable(typeof(List<Todo>))]
 [JsonSerializable(typeof(IAsyncEnumerable<Todo>))]
 internal partial class TodoApiJsonSerializerContext : JsonSerializerContext
 {
