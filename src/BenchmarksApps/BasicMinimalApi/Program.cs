@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using BasicMinimalApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-// No logging for benchmark scenario, template has AddConsole();
+builder.Logging.ClearProviders();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

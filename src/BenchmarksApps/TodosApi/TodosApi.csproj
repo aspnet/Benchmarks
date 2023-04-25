@@ -15,6 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.*" />
-    <PackageReference Include="Npgsql" Version="8.0.0-preview.2" />
+    <PackageReference Include="Npgsql" Version="8.0.0-preview.3" />
   </ItemGroup>
 </Project>

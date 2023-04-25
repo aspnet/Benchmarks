@@ -1,25 +1,10 @@
-using Microsoft.Extensions.Logging.Configuration;
 using Npgsql;
 using TodosApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-// Load custom configuration
-var settingsFiles = new[] { "appsettings.json", $"appsettings.{builder.Environment.EnvironmentName}.json" };
-foreach (var settingsFile in settingsFiles)
-{
-    builder.Configuration.AddJsonFile(settingsFile, optional: true, reloadOnChange: true);
-}
-
-#if DEBUG || DEBUG_DATABASE
-builder.Configuration.AddUserSecrets<Program>();
-#endif
-
-#if ENABLE_LOGGING
-// Configure logging
-builder.Logging
-    .AddConfiguration(builder.Configuration.GetSection("Logging"))
-    .AddSimpleConsole();
+#if !ENABLE_LOGGING
+builder.Logging.ClearProviders();
 #endif
 
 // Configure authentication & authorization
@@ -63,10 +48,6 @@ if (!app.Environment.IsDevelopment())
 app.MapHealthChecks("/health");
 // Enables testing request exception handling behavior
 app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the throw endpoint"));
-
-// These need to manually registered until https://github.com/dotnet/aspnetcore/issues/47507 is fixed
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapTodoApi();
 
