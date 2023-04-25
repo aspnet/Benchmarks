@@ -29,7 +29,6 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(EnableOpenApi)' == 'true' ">
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.*" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 </Project>
