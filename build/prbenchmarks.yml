@@ -46,7 +46,7 @@ jobs:
   displayName: Benchmarks Windows Image
   pool:
     name: ASP.NET-Performance-Controller-new
-    vmImage: "MMSWindows2022-Secure"  
+    demands: ImageOverride -equals MMSWindows2022-Secure
   timeoutInMinutes: 120
   steps:
   - powershell: |
@@ -101,7 +101,7 @@ jobs:
   displayName: Benchmarks Linux Image
   pool:
     name: ASP.NET-Performance-Controller-new
-    vmImage: "MMSUbuntu22.04-Secure"  
+    demands: ImageOverride -equals MMSUbuntu22.04-Secure
     timeoutInMinutes: 120
   steps:
   - powershell: |
