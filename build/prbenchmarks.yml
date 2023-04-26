@@ -51,6 +51,7 @@ jobs:
   steps:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
+        git rev-parse HEAD
         cd .\crank\src\Microsoft.Crank.PullRequestBot
         dotnet build -c release --framework net7.0
 
@@ -105,6 +106,7 @@ jobs:
   steps:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
+        git rev-parse HEAD
         cd ./crank/src/Microsoft.Crank.PullRequestBot
         dotnet build -c release --framework net7.0
 
