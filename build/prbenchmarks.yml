@@ -1,7 +1,5 @@
 trigger: none
 
-pool: ASP.NET-Performance-Controller-new
-
 variables:
   - group: 'ASP.NET Benchmarks'
 
@@ -44,7 +42,10 @@ schedules:
   always: "true"
 
 jobs:
-- job: Benchmark
+- job: Benchmark - Windows Image
+  pool:
+    name: ASP.NET-Performance-Controller-new
+    vmImage: "MMSWindows2022-Secure"  
   timeoutInMinutes: 120
   steps:
   - powershell: |
@@ -89,6 +90,23 @@ jobs:
             --app-key "env:APP_KEY" `
             --publish-results true `
             --external-log-uri $buildUrl
+
+    env:
+        AZURE_RELAY: $(relay.connectionstring)
+        APP_KEY: $(github.privatekey)
+
+- job: Benchmark - Linux Image
+  pool:
+    name: ASP.NET-Performance-Controller-new
+    vmImage: "MMSUbuntu22.04-Secure"  
+    timeoutInMinutes: 120
+  steps:
+  - powershell: |
+        git clone https://github.com/dotnet/crank -b main
+        cd ./crank/src/Microsoft.Crank.PullRequestBot
+        dotnet build -c release --framework net7.0
+
+        $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
 
         dotnet run --no-build --framework net7.0 -c release `
             --repository https://github.com/dotnet/runtime `
