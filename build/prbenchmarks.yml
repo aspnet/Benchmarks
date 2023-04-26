@@ -51,8 +51,8 @@ jobs:
   steps:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
-        git rev-parse HEAD
         cd .\crank\src\Microsoft.Crank.PullRequestBot
+        git rev-parse HEAD
         dotnet build -c release --framework net7.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
@@ -106,8 +106,8 @@ jobs:
   steps:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
-        git rev-parse HEAD
         cd ./crank/src/Microsoft.Crank.PullRequestBot
+        git rev-parse HEAD
         dotnet build -c release --framework net7.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
