@@ -103,7 +103,7 @@ jobs:
   steps:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
-        cd .\crank\src\Microsoft.Crank.PullRequestBot
+        cd ./crank/src/Microsoft.Crank.PullRequestBot
         dotnet build -c release --framework net7.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
