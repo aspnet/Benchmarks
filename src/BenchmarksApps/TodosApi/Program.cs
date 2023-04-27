@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 #if ENABLE_OPENAPI
 using Microsoft.OpenApi.Models;
 #endif
@@ -22,7 +23,9 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton(sp =>
 {
     var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
-    return new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+    return appSettings.GeneratingOpenApiDoc
+        ? default!
+        : new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 });
 builder.Services.AddHostedService<DatabaseInitializer>();
 

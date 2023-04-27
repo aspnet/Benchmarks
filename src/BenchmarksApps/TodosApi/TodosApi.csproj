@@ -9,9 +9,10 @@
     <LangVersion>preview</LangVersion>
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
     <PublishAot>true</PublishAot>
+    <!-- Don't use configuration binding generator until bug is fixed: https://github.com/dotnet/runtime/issues/83600 -->
     <EnableConfigurationBindingGenerator>false</EnableConfigurationBindingGenerator>
     <EnableLogging Condition=" '$(EnableLogging)' == '' and $(Configuration.StartsWith('Debug')) ">true</EnableLogging>
-    <EnableOpenApi Condition=" '$(EnableOpenApi)' == '' and $(Configuration.StartsWith('Debug')) ">true</EnableOpenApi>
+    <EnableOpenApi Condition=" ('$(EnableOpenApi)' == '' and $(Configuration.StartsWith('Debug'))) or '$(OpenApiGenerateDocuments)' == 'true' ">true</EnableOpenApi>
     <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
     <DefineConstants Condition=" '$(EnableOpenApi)' == 'true' ">$(DefineConstants);ENABLE_OPENAPI</DefineConstants>
   </PropertyGroup>
@@ -24,11 +25,13 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(EnableOpenApi)' == 'true' ">
-    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
-    <OpenApiDocumentsDirectory>./</OpenApiDocumentsDirectory>
+    <!-- Force OpenAPI doc generation during build to off as we're directly referencing Microsoft.Extensions.ApiDescription.Server -->
+    <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' ">false</OpenApiGenerateDocuments>
+    <DefineConstants Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">$(DefineConstants);GENERATING_OPENAPI_DOC</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(EnableOpenApi)' == 'true' ">
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.*" />
   </ItemGroup>
 </Project>

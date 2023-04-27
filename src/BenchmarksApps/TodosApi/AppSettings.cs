@@ -4,9 +4,26 @@ namespace TodosApi;
 
 internal class AppSettings
 {
+    private bool _suppressDbInitialization;
+
+#if GENERATING_OPENAPI_DOC
+    public AppSettings()
+    {
+        GeneratingOpenApiDoc = true;
+    }
+#endif
+
     public required string ConnectionString { get; set; }
 
+    public bool GeneratingOpenApiDoc { get; set; }
+
     public string? JwtSigningKey { get; set; }
+
+    public bool SuppressDbInitialization
+    {
+        get => _suppressDbInitialization || GeneratingOpenApiDoc;
+        set => _suppressDbInitialization = value;
+    }
 }
 
 // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
@@ -14,7 +31,7 @@ internal class AppSettingsValidator : IValidateOptions<AppSettings>
 {
     public ValidateOptionsResult Validate(string? name, AppSettings options)
     {
-        if (string.IsNullOrEmpty(options.ConnectionString))
+        if (string.IsNullOrEmpty(options.ConnectionString) && !options.GeneratingOpenApiDoc)
         {
             return ValidateOptionsResult.Fail("""
                 Connection string not found.
@@ -31,6 +48,8 @@ internal static class AppSettingsExtensions
 {
     public static IServiceCollection ConfigureAppSettings(this IServiceCollection services, IConfigurationRoot configurationRoot)
     {
+        // Can't use the configuration binding source generator due to bug where it emits non-compiling code right now
+        // https://github.com/dotnet/runtime/issues/83600
         services.Configure<AppSettings>(configurationRoot.GetSection(nameof(AppSettings)))
             .AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>()
             .AddOptions<AppSettings>()

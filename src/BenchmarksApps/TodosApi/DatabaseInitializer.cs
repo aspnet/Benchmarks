@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace TodosApi;
@@ -10,11 +11,11 @@ internal class DatabaseInitializer : IHostedService
     private readonly ILogger<DatabaseInitializer> _logger;
     private readonly bool _initDatabase;
 
-    public DatabaseInitializer(NpgsqlDataSource db, IServer server, ILogger<DatabaseInitializer> logger)
+    public DatabaseInitializer(NpgsqlDataSource db, IOptions<AppSettings> appSettings, IServer server, ILogger<DatabaseInitializer> logger)
     {
         _db = db;
         _logger = logger;
-        _initDatabase = Environment.GetEnvironmentVariable("SUPPRESS_DB_INIT") != "true"
+        _initDatabase = !appSettings.Value.SuppressDbInitialization
             // Only run if this is an actual IServer implementation with addresses to listen on.
             // Will not be the case for TestServer, NoopServer injected by the OpenAPI doc generator tool, etc.
             && server.Features.Get<IServerAddressesFeature>() is { Addresses.Count: >0 };
@@ -27,7 +28,10 @@ internal class DatabaseInitializer : IHostedService
             return Initialize(cancellationToken);
         }
 
-        _logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", _db.ConnectionString);
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", _db?.ConnectionString);
+        }
         return Task.CompletedTask;
     }
 
@@ -39,7 +43,10 @@ internal class DatabaseInitializer : IHostedService
     private async Task Initialize(CancellationToken cancellationToken = default)
     {
         // NOTE: Npgsql removes the password from the connection string
-        _logger.LogInformation("Ensuring database exists and is up to date at connection string '{connectionString}'", _db.ConnectionString);
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("Ensuring database exists and is up to date at connection string '{connectionString}'", _db.ConnectionString);
+        }
 
         var sql = $"""
                 CREATE TABLE IF NOT EXISTS public.todos
