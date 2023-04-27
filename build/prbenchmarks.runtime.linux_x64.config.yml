@@ -2,6 +2,7 @@
 components:
     runtime: 
         script: |
+            apt --assume-yes --force-yes install libkrb5-dev
             ./build.sh clr.runtime+clr.alljits+clr.iltools+clr.tools+clr.corelib+clr.nativecorelib -c Release -runtimeconfiguration Release -arch x64
 
         arguments: '--{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.x64.Release/clrjit.dll --{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.x64.Release/coreclr.dll --{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.x64.Release/System.Private.CoreLib.dll'
