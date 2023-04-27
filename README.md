@@ -12,3 +12,6 @@ These benchmark applications and docker images work best when used with [Microso
 The ASP.NET team runs all the scenarios in this repository as part of a continuous benchmarking effort.
 The scenarios that are available to use with Crank and some sample command lines are available on [the scenarios page](https://github.com/aspnet/Benchmarks/tree/main/scenarios).
 
+# Contributing
+
+Microsoft employees can approve and merge contributions by joining [this team](https://repos.opensource.microsoft.com/orgs/dotnet/teams/aspnet-team)
