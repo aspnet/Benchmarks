@@ -2,14 +2,14 @@
 components:
     runtime:
         script: |
-            call ./build.sh clr.runtime+clr.alljits+clr.iltools+clr.tools+clr.corelib+clr.nativecorelib -c Release -runtimeconfiguration Release -arch arm64
+            ./build.sh clr.runtime+clr.alljits+clr.iltools+clr.tools+clr.corelib+clr.nativecorelib -c Release -runtimeconfiguration Release -arch arm64
 
         arguments: '--{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.arm64.Release/clrjit.dll --{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.arm64.Release/coreclr.dll --{{job}}.options.outputFiles ./artifacts/bin/coreclr/Linux.arm64.Release/System.Private.CoreLib.dll'
 
     libs:
         script: |
-            call ./build.sh libs -c Release -runtimeconfiguration Release -arch arm64
-            call ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
+            ./build.sh libs -c Release -runtimeconfiguration Release -arch arm64
+            ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
             rm -rf ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/*.pdb
 
         arguments:
