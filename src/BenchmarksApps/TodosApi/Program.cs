@@ -1,8 +1,3 @@
-using Microsoft.Extensions.Options;
-#if ENABLE_OPENAPI
-using Microsoft.OpenApi.Models;
-#endif
-using Npgsql;
 using TodosApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -20,14 +15,7 @@ builder.Services.ConfigureOptions<JwtConfiguration>();
 builder.Services.AddAuthorization();
 
 // Configure data access
-builder.Services.AddSingleton(sp =>
-{
-    var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
-    return appSettings.GeneratingOpenApiDoc
-        ? default!
-        : new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
-});
-builder.Services.AddHostedService<DatabaseInitializer>();
+builder.Services.AddDatabase();
 
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -43,14 +31,8 @@ builder.Services.AddHealthChecks()
 // Problem details
 builder.Services.AddProblemDetails();
 
-#if ENABLE_OPENAPI
-// Configure OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Todos API", Version = "v1" });
-});
-#endif
+// OpenAPI
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -59,8 +41,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler();
 }
 
-// Causes issue with native AOT currently: https://github.com/dotnet/aspnetcore/issues/47941
-//app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
+app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
 
 app.MapHealthChecks("/health");
 

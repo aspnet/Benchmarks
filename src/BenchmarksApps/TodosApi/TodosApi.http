@@ -1,6 +1,6 @@
 @TodosApi_HostAddress = http://localhost:5054
 # Uncomment following line if sending requests to published app
-#@TodosApi_HostAddress = http://localhost:5000
+@TodosApi_HostAddress = http://localhost:5000
 
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 

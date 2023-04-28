@@ -22,6 +22,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.*" />
     <PackageReference Include="Npgsql" Version="8.0.0-preview.3" />
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
+    <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/47941 -->
+    <IlcArg Include="--nopreinitstatics" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(EnableOpenApi)' == 'true' ">

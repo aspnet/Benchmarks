@@ -11,14 +11,11 @@ internal class DatabaseInitializer : IHostedService
     private readonly ILogger<DatabaseInitializer> _logger;
     private readonly bool _initDatabase;
 
-    public DatabaseInitializer(NpgsqlDataSource db, IOptions<AppSettings> appSettings, IServer server, ILogger<DatabaseInitializer> logger)
+    public DatabaseInitializer(NpgsqlDataSource db, IOptions<AppSettings> appSettings, ILogger<DatabaseInitializer> logger)
     {
         _db = db;
         _logger = logger;
-        _initDatabase = !appSettings.Value.SuppressDbInitialization
-            // Only run if this is an actual IServer implementation with addresses to listen on.
-            // Will not be the case for TestServer, NoopServer injected by the OpenAPI doc generator tool, etc.
-            && server.Features.Get<IServerAddressesFeature>() is { Addresses.Count: >0 };
+        _initDatabase = !appSettings.Value.SuppressDbInitialization && !appSettings.Value.GeneratingOpenApiDoc;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -32,13 +29,11 @@ internal class DatabaseInitializer : IHostedService
         {
             _logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", _db?.ConnectionString);
         }
+
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     private async Task Initialize(CancellationToken cancellationToken = default)
     {
