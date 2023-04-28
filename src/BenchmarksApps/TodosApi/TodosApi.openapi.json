@@ -8,7 +8,7 @@
     "/throw": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "responses": {
           "200": {
@@ -20,7 +20,7 @@
     "/api/todos": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "GetAllTodos",
         "responses": {
@@ -41,7 +41,7 @@
       },
       "post": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "CreateTodo",
         "requestBody": {
@@ -65,7 +65,7 @@
     "/api/todos/complete": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "GetCompleteTodos",
         "responses": {
@@ -88,7 +88,7 @@
     "/api/todos/incomplete": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "GetIncompleteTodos",
         "responses": {
@@ -111,7 +111,7 @@
     "/api/todos/{id}": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "GetTodoById",
         "parameters": [
@@ -133,7 +133,7 @@
       },
       "put": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "UpdateTodo",
         "parameters": [
@@ -166,7 +166,7 @@
       },
       "delete": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "DeleteTodo",
         "parameters": [
@@ -190,7 +190,7 @@
     "/api/todos/find": {
       "get": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "FindTodo",
         "parameters": [
@@ -220,7 +220,7 @@
     "/api/todos/{id}/mark-complete": {
       "put": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "MarkComplete",
         "parameters": [
@@ -244,7 +244,7 @@
     "/api/todos/{id}/mark-incomplete": {
       "put": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "MarkIncomplete",
         "parameters": [
@@ -268,7 +268,7 @@
     "/api/todos/delete-all": {
       "delete": {
         "tags": [
-          "TodosApi"
+          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         ],
         "operationId": "DeleteAll",
         "responses": {

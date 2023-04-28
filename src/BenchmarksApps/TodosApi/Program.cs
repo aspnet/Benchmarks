@@ -59,7 +59,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler();
 }
 
-app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
+// Causes issue with native AOT currently: https://github.com/dotnet/aspnetcore/issues/47941
+//app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
 
 app.MapHealthChecks("/health");
 
