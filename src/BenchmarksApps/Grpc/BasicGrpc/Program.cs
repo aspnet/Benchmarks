@@ -1,18 +1,9 @@
-using System.Text;
 using BasicGrpc.Services;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-// No logging for benchmark scenario, template has AddConsole();
+builder.Logging.ClearProviders();
 
 builder.Services.AddGrpc();
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ConfigureEndpointDefaults(listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http2;
-    });
-});
 
 var app = builder.Build();
 
