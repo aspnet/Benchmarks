@@ -144,21 +144,6 @@ internal static class DataExtensions
     public static Task<NpgsqlDataReader> QueryAsync(this NpgsqlCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken = default)
         => command.ExecuteReaderAsync(commandBehavior, cancellationToken);
 
-    public static Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, CancellationToken cancellationToken)
-        => ToListAsync(enumerable, null, cancellationToken);
-
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> enumerable, int? initialCapacity = null, CancellationToken cancellationToken = default)
-    {
-        var list = initialCapacity.HasValue ? new List<T>(initialCapacity.Value) : new List<T>();
-
-        await foreach (var item in enumerable.WithCancellation(cancellationToken))
-        {
-            list.Add(item);
-        }
-
-        return list;
-    }
-
     public static NpgsqlParameterCollection AddTyped<T>(this NpgsqlParameterCollection parameters, T? value)
     {
         parameters.Add(new NpgsqlParameter<T>
