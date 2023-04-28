@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace TodosApi;
@@ -15,7 +13,7 @@ internal class DatabaseInitializer : IHostedService
     {
         _db = db;
         _logger = logger;
-        _initDatabase = !appSettings.Value.SuppressDbInitialization && !appSettings.Value.GeneratingOpenApiDoc;
+        _initDatabase = !appSettings.Value.SuppressDbInitialization;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)

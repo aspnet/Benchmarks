@@ -8,7 +8,7 @@
     "/throw": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "responses": {
           "200": {
@@ -20,7 +20,7 @@
     "/api/todos": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "GetAllTodos",
         "responses": {
@@ -41,7 +41,7 @@
       },
       "post": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "CreateTodo",
         "requestBody": {
@@ -65,7 +65,7 @@
     "/api/todos/complete": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "GetCompleteTodos",
         "responses": {
@@ -88,7 +88,7 @@
     "/api/todos/incomplete": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "GetIncompleteTodos",
         "responses": {
@@ -111,7 +111,7 @@
     "/api/todos/{id}": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "GetTodoById",
         "parameters": [
@@ -119,6 +119,7 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -133,7 +134,7 @@
       },
       "put": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "UpdateTodo",
         "parameters": [
@@ -141,6 +142,7 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -166,7 +168,7 @@
       },
       "delete": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "DeleteTodo",
         "parameters": [
@@ -174,6 +176,7 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -190,7 +193,7 @@
     "/api/todos/find": {
       "get": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "FindTodo",
         "parameters": [
@@ -198,6 +201,7 @@
             "name": "title",
             "in": "query",
             "required": true,
+            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -205,6 +209,7 @@
           {
             "name": "isComplete",
             "in": "query",
+            "style": "form",
             "schema": {
               "type": "boolean"
             }
@@ -220,7 +225,7 @@
     "/api/todos/{id}/mark-complete": {
       "put": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "MarkComplete",
         "parameters": [
@@ -228,6 +233,7 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -244,7 +250,7 @@
     "/api/todos/{id}/mark-incomplete": {
       "put": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "MarkIncomplete",
         "parameters": [
@@ -252,6 +258,7 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -268,7 +275,7 @@
     "/api/todos/delete-all": {
       "delete": {
         "tags": [
-          "TodosApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+          "TodosApi"
         ],
         "operationId": "DeleteAll",
         "responses": {

@@ -1,0 +1,14 @@
+<Project>
+
+  <PropertyGroup>
+    <OpenApiEnabled Condition=" '$(OpenApiEnabled)' == '' and $(Configuration.StartsWith('Release')) and ('$(OpenApiGenerateDocuments)' != 'true') ">false</OpenApiEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.OpenApi.OpenApiFeature.IsEnabled"
+                                    Condition=" '$(OpenApiEnabled)' != '' "
+                                    Value="$(OpenApiEnabled)"
+                                    Trim="true" />
+  </ItemGroup>
+
+</Project>

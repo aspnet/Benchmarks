@@ -55,6 +55,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnited", "BenchmarksA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodosApi", "BenchmarksApps\TodosApi\TodosApi.csproj", "{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore.OpenApi", "BenchmarksApps\AspNetCore.OpenApi\AspNetCore.OpenApi.csproj", "{28F432A6-1328-4996-91DD-BB1C87F45BF2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Database|Any CPU = Debug_Database|Any CPU
@@ -207,6 +209,14 @@ Global
 		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
 		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E1A1F61-43E4-4629-A25B-7E5FA82697D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Debug_Database|Any CPU.ActiveCfg = Debug_Database|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Debug_Database|Any CPU.Build.0 = Debug_Database|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Release_Database|Any CPU.ActiveCfg = Release_Database|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F432A6-1328-4996-91DD-BB1C87F45BF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

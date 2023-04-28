@@ -9,31 +9,31 @@
     <LangVersion>preview</LangVersion>
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
     <PublishAot>true</PublishAot>
+    <OpenApiDocumentsDirectory>.\</OpenApiDocumentsDirectory>
+    <!--<OpenApiEnabled>false</OpenApiEnabled>-->
     <!-- Don't use configuration binding generator until bug is fixed: https://github.com/dotnet/runtime/issues/83600 -->
     <EnableConfigurationBindingGenerator>false</EnableConfigurationBindingGenerator>
     <EnableLogging Condition=" '$(EnableLogging)' == '' and $(Configuration.StartsWith('Debug')) ">true</EnableLogging>
-    <EnableOpenApi Condition=" ('$(EnableOpenApi)' == '' and $(Configuration.StartsWith('Debug'))) or '$(OpenApiGenerateDocuments)' == 'true' ">true</EnableOpenApi>
     <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
-    <DefineConstants Condition=" '$(EnableOpenApi)' == 'true' ">$(DefineConstants);ENABLE_OPENAPI</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.*" />
+    <ProjectReference Include="..\AspNetCore.OpenApi\AspNetCore.OpenApi.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.4.*" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.4.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.4.*" />
     <PackageReference Include="Npgsql" Version="8.0.0-preview.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
     <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/47941 -->
     <IlcArg Include="--nopreinitstatics" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(EnableOpenApi)' == 'true' ">
-    <!-- Force OpenAPI doc generation during build to off as we're directly referencing Microsoft.Extensions.ApiDescription.Server -->
-    <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' ">false</OpenApiGenerateDocuments>
-    <DefineConstants Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">$(DefineConstants);GENERATING_OPENAPI_DOC</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(EnableOpenApi)' == 'true' ">
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.*" />
-  </ItemGroup>
+  <Import Project="..\AspNetCore.OpenApi\build\AspNetCore.OpenApi.targets" />
 </Project>
