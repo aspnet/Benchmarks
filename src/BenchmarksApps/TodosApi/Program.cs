@@ -7,7 +7,7 @@ builder.Logging.ClearProviders();
 #endif
 
 // Bind app settings from configuration & validate
-builder.Services.ConfigureAppSettings(builder.Configuration);
+builder.Services.ConfigureAppSettings(builder.Configuration, builder.Environment);
 
 // Configure authentication & authorization
 builder.Services.AddAuthentication().AddJwtBearer();

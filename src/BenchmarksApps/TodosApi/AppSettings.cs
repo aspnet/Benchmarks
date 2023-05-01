@@ -14,16 +14,9 @@ internal class AppSettings
 // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
 internal class AppSettingsValidator : IValidateOptions<AppSettings>
 {
-    private readonly IHostEnvironment _hostEnvironment;
-
-    public AppSettingsValidator(IHostEnvironment hostEnvironment)
-    {
-        _hostEnvironment = hostEnvironment;
-    }
-
     public ValidateOptionsResult Validate(string? name, AppSettings options)
     {
-        if (!_hostEnvironment.IsEnvironment("Build") && string.IsNullOrEmpty(options.ConnectionString))
+        if (string.IsNullOrEmpty(options.ConnectionString))
         {
             return ValidateOptionsResult.Fail("""
                 Connection string not found.
@@ -38,14 +31,18 @@ internal class AppSettingsValidator : IValidateOptions<AppSettings>
 
 internal static class AppSettingsExtensions
 {
-    public static IServiceCollection ConfigureAppSettings(this IServiceCollection services, IConfigurationRoot configurationRoot)
+    public static IServiceCollection ConfigureAppSettings(this IServiceCollection services, IConfigurationRoot configurationRoot, IHostEnvironment hostEnvironment)
     {
         // Can't use the configuration binding source generator due to bug where it emits non-compiling code right now
         // https://github.com/dotnet/runtime/issues/83600
-        services.Configure<AppSettings>(configurationRoot.GetSection(nameof(AppSettings)))
-            .AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>()
-            .AddOptions<AppSettings>()
-            .ValidateOnStart();
+        var optionsBuilder = services.Configure<AppSettings>(configurationRoot.GetSection(nameof(AppSettings)))
+            .AddOptions<AppSettings>();
+
+        if (!hostEnvironment.IsBuild())
+        {
+            services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>();
+            optionsBuilder.ValidateOnStart();
+        }
 
         // Change to using BindConfiguration once https://github.com/dotnet/runtime/issues/83600 is complete
         //services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>()

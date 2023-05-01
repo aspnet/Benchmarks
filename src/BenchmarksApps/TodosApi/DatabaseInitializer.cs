@@ -13,7 +13,7 @@ internal class DatabaseInitializer : IHostedService
     {
         _db = db;
         _logger = logger;
-        _initDatabase = !(hostEnvironment.IsEnvironment("Build") || appSettings.Value.SuppressDbInitialization);
+        _initDatabase = !(hostEnvironment.IsBuild() || appSettings.Value.SuppressDbInitialization);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
