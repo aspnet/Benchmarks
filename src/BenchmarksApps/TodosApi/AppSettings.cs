@@ -14,9 +14,16 @@ internal class AppSettings
 // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
 internal class AppSettingsValidator : IValidateOptions<AppSettings>
 {
+    private readonly IHostEnvironment _hostEnvironment;
+
+    public AppSettingsValidator(IHostEnvironment hostEnvironment)
+    {
+        _hostEnvironment = hostEnvironment;
+    }
+
     public ValidateOptionsResult Validate(string? name, AppSettings options)
     {
-        if (string.IsNullOrEmpty(options.ConnectionString))
+        if (!_hostEnvironment.IsEnvironment("Build") && string.IsNullOrEmpty(options.ConnectionString))
         {
             return ValidateOptionsResult.Fail("""
                 Connection string not found.

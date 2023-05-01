@@ -11,7 +11,10 @@ internal static class DatabaseConfiguration
         services.AddSingleton(static sp =>
         {
             var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
-            var db = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+            var hostEnvironment = sp.GetRequiredService<IHostEnvironment>();
+            var db = hostEnvironment.IsEnvironment("Build")
+            ? default!
+            : new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 
             return db;
         });

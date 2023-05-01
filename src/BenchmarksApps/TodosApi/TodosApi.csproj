@@ -20,13 +20,13 @@
   <ItemGroup>
     <ProjectReference Include="..\AspNetCore.OpenApi\AspNetCore.OpenApi.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.4.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.4.*" />
+    <PackageReference Include="Npgsql" Version="8.0.0-preview.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.4.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.4.*" />
-    <PackageReference Include="Npgsql" Version="8.0.0-preview.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>

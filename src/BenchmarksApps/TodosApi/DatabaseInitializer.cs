@@ -9,11 +9,11 @@ internal class DatabaseInitializer : IHostedService
     private readonly ILogger<DatabaseInitializer> _logger;
     private readonly bool _initDatabase;
 
-    public DatabaseInitializer(NpgsqlDataSource db, IOptions<AppSettings> appSettings, ILogger<DatabaseInitializer> logger)
+    public DatabaseInitializer(NpgsqlDataSource db, IOptions<AppSettings> appSettings, IHostEnvironment hostEnvironment, ILogger<DatabaseInitializer> logger)
     {
         _db = db;
         _logger = logger;
-        _initDatabase = !appSettings.Value.SuppressDbInitialization;
+        _initDatabase = !(hostEnvironment.IsEnvironment("Build") || appSettings.Value.SuppressDbInitialization);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ internal class DatabaseInitializer : IHostedService
 
         if (_logger.IsEnabled(LogLevel.Information))
         {
-            _logger.LogInformation("Database initialization disabled for connection string '{connectionString}'", _db?.ConnectionString);
+            _logger.LogInformation("Database initialization is disabled");
         }
 
         return Task.CompletedTask;
@@ -38,7 +38,7 @@ internal class DatabaseInitializer : IHostedService
         // NOTE: Npgsql removes the password from the connection string
         if (_logger.IsEnabled(LogLevel.Information))
         {
-            _logger.LogInformation("Ensuring database exists and is up to date at connection string '{connectionString}'", _db.ConnectionString);
+            _logger.LogInformation("Ensuring database exists and is up to date");
         }
 
         var sql = $"""
