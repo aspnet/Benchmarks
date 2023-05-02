@@ -13,8 +13,8 @@ internal static class DatabaseConfiguration
             var appSettings = sp.GetRequiredService<IOptions<AppSettings>>().Value;
             var hostEnvironment = sp.GetRequiredService<IHostEnvironment>();
             var db = hostEnvironment.IsBuild()
-            ? default!
-            : new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+                ? default!
+                : new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
 
             return db;
         });
