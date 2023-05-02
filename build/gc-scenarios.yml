@@ -20,11 +20,11 @@ parameters:
     condition: 'true'
 
   - displayName: 2gb Server
-    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcWorkstation=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-server'
+    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-server'
     condition: 'true'
 
   - displayName: 2gb Pinning Server
-    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-pinning-server'
+    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-pinning-server'
     condition: 'true'
 
   - displayName: 20gb Server
