@@ -22,7 +22,7 @@ Accept: application/json
 
 ###
 
-Get {{TodosApi_HostAddress}}/api/todos/find
+Get {{TodosApi_HostAddress}}/api/todos/find?title=wash+the+dishes.
 Accept: application/json
 
 ###

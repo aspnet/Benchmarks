@@ -1,7 +1,11 @@
 ﻿using System.Data;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Options;
+using TodosApi;
 
 namespace Npgsql;
+
+// Replace this with https://www.nuget.org/packages/Nanorm once it's ready
 
 internal static class DataExtensions
 {

@@ -1,15 +1,13 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "BasicMinimalApi": {
+    "BlazorUnited": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "todos",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:53680"
+      "applicationUrl": "https://localhost:53703;http://localhost:53704"
     }
   }
 }

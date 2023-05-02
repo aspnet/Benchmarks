@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace TodosApi;
 
-public class DatabaseHealthCheck : IHealthCheck
+internal class DatabaseHealthCheck : IHealthCheck
 {
     private readonly NpgsqlDataSource _dataSource;
 

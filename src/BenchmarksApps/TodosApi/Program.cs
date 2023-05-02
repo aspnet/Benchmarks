@@ -1,4 +1,3 @@
-using Npgsql;
 using TodosApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -7,20 +6,16 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Logging.ClearProviders();
 #endif
 
-// Configure authentication & authorization
-builder.Services.AddAuthentication()
-    .AddJwtBearer(JwtConfiguration.ConfigureJwtBearer(builder));
+// Bind app settings from configuration & validate
+builder.Services.ConfigureAppSettings(builder.Configuration, builder.Environment);
 
+// Configure authentication & authorization
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.ConfigureOptions<JwtConfiguration>();
 builder.Services.AddAuthorization();
 
 // Configure data access
-var connectionString = builder.Configuration.GetConnectionString("TodoDb")
-    ?? throw new InvalidOperationException("""
-        Connection string not found.
-        If running locally, set the connection string in user secrets for key 'ConnectionStrings:TodoDb'.
-        If running after deployment, set the connection string via the environment variable 'CONNECTIONSTRINGS__TODODB'.
-        """);
-builder.Services.AddSingleton(_ => new NpgsqlSlimDataSourceBuilder(connectionString).Build());
+builder.Services.AddDatabase();
 
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -36,16 +31,20 @@ builder.Services.AddHealthChecks()
 // Problem details
 builder.Services.AddProblemDetails();
 
-var app = builder.Build();
+// OpenAPI
+builder.Services.AddOpenApi();
 
-await Database.Initialize(app.Services, app.Logger);
+var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler();
 }
 
+app.MapShortCircuit(StatusCodes.Status404NotFound, "/favicon.ico");
+
 app.MapHealthChecks("/health");
+
 // Enables testing request exception handling behavior
 app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the throw endpoint"));
 
