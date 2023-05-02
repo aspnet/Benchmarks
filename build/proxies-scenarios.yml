@@ -30,7 +30,7 @@ parameters:
     condition: 'true'
   - displayName: YARP-net70
     scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp-net70 --application.framework net7.0 --application.sdkVersion 8.0.100-preview.4.23221.1
+    arguments: $(proxyJobs) --property proxy=yarp-net70 --application.framework net7.0 --application.noGlobalJson true
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
