@@ -43,3 +43,7 @@ benchmarks:
     fortunes:
       description: TechEmpower Fortunes Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes
+
+    fortunes_ef:
+      description: TechEmpower Fortunes Scenario with EF Core - ASP.NET Platform implementation
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes_ef
