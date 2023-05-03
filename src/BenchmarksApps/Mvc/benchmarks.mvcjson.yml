@@ -79,6 +79,8 @@ scenarios:
       job: wrk
       variables:
         path: /jsonNbytes/2097152
+        connections: 4
+        threads: 4
 
   # 2M json output (Newtonsoft.Json)
   MvcJsonNetOutput2M:
@@ -90,6 +92,8 @@ scenarios:
       job: wrk
       variables:
         path: /jsonNbytes/2097152
+        connections: 4
+        threads: 4
 
   # Sending 2k Json to Mvc
   MvcJsonInput2k:
@@ -147,6 +151,8 @@ scenarios:
         path: /JsonInput
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
         scriptArguments: 2097152
+        connections: 4
+        threads: 4
 
   # 2M json output (Json.NET)
   MvcJsonNetInput2M:
@@ -160,6 +166,8 @@ scenarios:
         path: /JsonInput
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
         scriptArguments: 2097152
+        connections: 4
+        threads: 4
 
   # MapAction Echo { "Id": 42, "Name": "Write benchmarks!", "IsComplete": false }
   MapActionEchoTodo:
