@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Nanorm.Npgsql;
 using Npgsql;
 
 namespace TodosApi;
