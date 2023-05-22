@@ -58,7 +58,7 @@ namespace PlatformBenchmarks
 
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-#if DEBUG
+#if DEBUG || DEBUG_DATABASE
                 .AddUserSecrets<Program>()
 #endif
                 .AddEnvironmentVariables()
