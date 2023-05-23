@@ -41,7 +41,7 @@ parameters:
     condition: 'true'
 
   - displayName: 2gb Pinning Workstation
-    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=2gb-pinning-workstation'
+    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --application.variables.tagb 100 --property scenario=2gb-pinning-workstation'
     condition: 'true'
 
   - displayName: 20gb Workstation
