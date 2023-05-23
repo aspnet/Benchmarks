@@ -36,14 +36,6 @@ parameters:
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
-  - displayName: YARP-PGO
-    scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp-pgo --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
-    supportsHttp: true
-    supportsServerHttps: true
-    supportsServerHttp2: true
-    supportsDownstreamHttp2: true
-    condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
   - displayName: HttpClient
     scenario: proxy-httpclient
     arguments: $(proxyJobs) --property proxy=httpclient --application.framework net8.0
@@ -52,14 +44,6 @@ parameters:
     supportsServerHttp2: true
     supportsDownstreamHttp2: true
     condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 4 half-days
-  - displayName: HttpClient-PGO
-    scenario: proxy-httpclient
-    arguments: $(proxyJobs) --property proxy=httpclient-pgo --application.framework net8.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
-    supportsHttp: true
-    supportsServerHttps: true
-    supportsServerHttp2: true
-    supportsDownstreamHttp2: true
-    condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
   - displayName: NGinx
     scenario: proxy-nginx
     arguments: $(proxyJobs) --property proxy=nginx --variable warmup=0
