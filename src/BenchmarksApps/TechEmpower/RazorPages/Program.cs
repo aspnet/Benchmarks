@@ -18,9 +18,10 @@ builder.Configuration.Bind(appSettings);
 builder.Services.AddDbContextPool<AppDbContext>(options => options
     .UseNpgsql(appSettings.ConnectionString, npgsql => npgsql.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
     .EnableThreadSafetyChecks(false));
-
 builder.Services.AddSingleton(new Db(appSettings));
+
 builder.Services.AddRazorPages();
+
 builder.Services.AddSingleton(serviceProvider =>
 {
     var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
