@@ -15,6 +15,8 @@ builder.Configuration.Bind(appSettings);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddTransient<Db>();
+builder.Services.AddSingleton(appSettings);
+builder.Services.AddSingleton<DbDapper>();
 builder.Services.AddDbContextPool<ApplicationDbContext>(
     options => options
         .UseNpgsql(appSettings.ConnectionString, o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
