@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using BlazorUnited;
-using BlazorUnited.Components;
-using BlazorUnited.Database;
+using BlazorSSR;
+using BlazorSSR.Components;
+using BlazorSSR.Database;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,12 @@ builder.Services.AddDbContextPool<AppDbContext>(options => options
 
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+    settings.AllowCharacter('\u2014'); // allow EM DASH through
+    return HtmlEncoder.Create(settings);
+});
 
 var app = builder.Build();
 

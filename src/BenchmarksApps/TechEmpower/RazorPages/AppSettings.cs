@@ -1,4 +1,4 @@
-﻿namespace BlazorUnited;
+﻿namespace RazorPages;
 
 public class AppSettings
 {

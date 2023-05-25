@@ -1,4 +1,4 @@
-namespace BlazorUnited.Models;
+namespace RazorPages.Models;
 
 public class Fortune
 {

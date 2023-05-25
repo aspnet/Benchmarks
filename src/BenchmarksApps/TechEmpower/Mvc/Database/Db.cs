@@ -3,7 +3,7 @@ using Mvc.Models;
 
 namespace Mvc.Database;
 
-public class Db
+public sealed class Db
 {
     private readonly ApplicationDbContext _dbContext;
 

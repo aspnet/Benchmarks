@@ -12,4 +12,12 @@ public class FortunesController : Controller
 
         return View(fortunes);
     }
+
+    [Route("fortunes/dapper")]
+    public async Task<IActionResult> Dapper([FromServices] DbDapper db)
+    {
+        var fortunes = await db.LoadFortunesRowsDapper();
+
+        return View("Index", fortunes);
+    }
 }

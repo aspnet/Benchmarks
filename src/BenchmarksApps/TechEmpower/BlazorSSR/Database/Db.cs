@@ -1,8 +1,8 @@
-﻿using BlazorUnited.Models;
+﻿using BlazorSSR.Models;
 using Dapper;
 using Npgsql;
 
-namespace BlazorUnited.Database;
+namespace BlazorSSR.Database;
 
 public sealed class Db : IAsyncDisposable
 {
