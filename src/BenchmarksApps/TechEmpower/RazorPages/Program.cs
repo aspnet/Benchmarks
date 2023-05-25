@@ -1,0 +1,27 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using RazorPages;
+using RazorPages.Database;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Disable logging as this is not required for the benchmark
+builder.Logging.ClearProviders();
+
+// Load custom configuration
+var appSettings = new AppSettings();
+builder.Configuration.Bind(appSettings);
+
+// Add services to the container.
+builder.Services.AddDbContextPool<AppDbContext>(options => options
+    .UseNpgsql(appSettings.ConnectionString, npgsql => npgsql.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
+    .EnableThreadSafetyChecks(false));
+
+builder.Services.AddSingleton(new Db(appSettings));
+builder.Services.AddRazorPages();
+
+var app = builder.Build();
+
+app.MapRazorPages();
+
+app.Run();
