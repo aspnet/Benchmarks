@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using RazorPages;
@@ -19,6 +21,12 @@ builder.Services.AddDbContextPool<AppDbContext>(options => options
 
 builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+    settings.AllowCharacter('\u2014'); // allow EM DASH through
+    return HtmlEncoder.Create(settings);
+});
 
 var app = builder.Build();
 

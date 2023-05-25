@@ -1,3 +1,5 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Mvc;
@@ -22,6 +24,12 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(
         .UseNpgsql(appSettings.ConnectionString, o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d)))
         .EnableThreadSafetyChecks(false)
         );
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
+    settings.AllowCharacter('\u2014'); // allow EM DASH through
+    return HtmlEncoder.Create(settings);
+});
 
 var app = builder.Build();
 
