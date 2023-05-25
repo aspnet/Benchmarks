@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using BlazorUnited;
-using BlazorUnited.Components;
-using BlazorUnited.Database;
+using BlazorSSR;
+using BlazorSSR.Components;
+using BlazorSSR.Database;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 

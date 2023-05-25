@@ -1,7 +1,7 @@
-﻿using BlazorUnited.Models;
+﻿using BlazorSSR.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlazorUnited.Database;
+namespace BlazorSSR.Database;
 
 public class AppDbContext : DbContext
 {

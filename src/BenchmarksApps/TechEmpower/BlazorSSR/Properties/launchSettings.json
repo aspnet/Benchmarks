@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "BlazorUnited": {
+    "http": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

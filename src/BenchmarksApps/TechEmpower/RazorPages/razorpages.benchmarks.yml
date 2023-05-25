@@ -61,4 +61,4 @@ profiles:
         source:
           localFolder: .
           respository: ''
-          project: BlazorUnited.csproj
+          project: RazorPages.csproj

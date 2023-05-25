@@ -1,4 +1,4 @@
-﻿namespace BlazorUnited;
+﻿namespace BlazorSSR;
 
 public class AppSettings
 {
