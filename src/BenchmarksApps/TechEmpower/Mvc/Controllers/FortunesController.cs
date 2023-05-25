@@ -18,6 +18,6 @@ public class FortunesController : Controller
     {
         var fortunes = await db.LoadFortunesRowsDapper();
 
-        return View(fortunes);
+        return View("Index", fortunes);
     }
 }
