@@ -9,6 +9,16 @@ Accept: application/json
 
 ###
 
+Get {{TodosApi_HostAddress}}/api/todos/incomplete
+Accept: application/json
+
+###
+
+Get {{TodosApi_HostAddress}}/api/todos/complete
+Accept: application/json
+
+###
+
 Post {{TodosApi_HostAddress}}/api/todos/
 Content-Type: application/json
 Accept: application/json
@@ -17,7 +27,30 @@ Accept: application/json
 
 ###
 
-Get {{TodosApi_HostAddress}}/api/todos/1
+Get {{TodosApi_HostAddress}}/api/todos/619
+Accept: application/json
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619
+Content-Type: application/json
+Accept: application/json
+
+{ "title" : "Update the stage 2 app - changed" }
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619/mark-complete
+Accept: application/json
+
+###
+
+Put {{TodosApi_HostAddress}}/api/todos/619/mark-incomplete
+Accept: application/json
+
+###
+
+Delete {{TodosApi_HostAddress}}/api/todos/619
 Accept: application/json
 
 ###

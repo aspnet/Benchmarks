@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.4.23260.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.4.23259.5" />
     <PackageReference Include="Npgsql" Version="8.0.0-preview.4" />
-    <PackageReference Include="Nanorm.Npgsql" Version="0.0.4" />
+    <PackageReference Include="Nanorm.Npgsql" Version="0.0.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.0-preview.4.23260.4">
       <PrivateAssets>all</PrivateAssets>
@@ -32,8 +32,6 @@
 
   <ItemGroup>
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
-    <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/47941 -->
-    <IlcArg Include="--nopreinitstatics" />
   </ItemGroup>
 
   <Import Project="..\AspNetCore.OpenApi\build\AspNetCore.OpenApi.targets" />

@@ -41,7 +41,7 @@ internal class DatabaseInitializer : IHostedService
             _logger.LogInformation("Ensuring database exists and is up to date");
         }
 
-        var sql = $"""
+        const string sql = $"""
                 CREATE TABLE IF NOT EXISTS public.todos
                 (
                     {nameof(Todo.Id)} SERIAL PRIMARY KEY,
