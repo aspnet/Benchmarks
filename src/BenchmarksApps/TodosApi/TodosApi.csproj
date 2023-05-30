@@ -32,8 +32,6 @@
 
   <ItemGroup>
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
-    <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/47941 -->
-    <IlcArg Include="--nopreinitstatics" />
   </ItemGroup>
 
   <Import Project="..\AspNetCore.OpenApi\build\AspNetCore.OpenApi.targets" />
