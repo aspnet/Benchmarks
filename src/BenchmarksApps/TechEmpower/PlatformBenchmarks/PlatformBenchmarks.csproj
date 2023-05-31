@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
-    <PackageReference Include="RazorSlices" Version="0.6.1" />
+    <PackageReference Include="RazorSlices" Version="0.6.2" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) != 'net8.0'">
