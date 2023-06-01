@@ -55,6 +55,13 @@ parameters:
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
     condition: Math.round(Date.now() / 43200000) % 2 == 0 # mornings
 
+  - displayName: Json ASP.NET Composite
+    arguments: --scenario json_aspnet_composite --property scenario=JsonAspNetComposite
+    condition: Math.round(Date.now() / 43200000) % 2 == 0 # mornings
+  - displayName: Fortunes ASP.NET Composite
+    arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite
+    condition: Math.round(Date.now() / 43200000) % 2 == 0 # mornings
+
   - displayName: Json ASP.NET 7.0
     arguments: --scenario json_aspnet_net7 --property scenario=JsonAspNet70
     condition: Math.round(Date.now() / 43200000) % 2 == 1 # afternoons
