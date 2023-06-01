@@ -1,6 +1,4 @@
-﻿@implements IRazorComponentApplication<App>
-
-<Router AppAssembly="@typeof(App).Assembly">
+﻿<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
     </Found>
