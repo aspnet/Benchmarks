@@ -4,6 +4,7 @@
     "http": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "fortunes",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
