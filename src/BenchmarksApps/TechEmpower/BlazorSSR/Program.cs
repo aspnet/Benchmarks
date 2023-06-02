@@ -25,6 +25,7 @@ builder.Services.AddSingleton(new Db(appSettings));
 builder.Services.AddRazorComponents();
 builder.Services.AddSingleton(serviceProvider =>
 {
+    // TODO: This custom configured HtmlEncoder won't actually be used until Blazor supports it: https://github.com/dotnet/aspnetcore/issues/47477
     var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
     settings.AllowCharacter('\u2014'); // allow EM DASH through
     return HtmlEncoder.Create(settings);
@@ -32,18 +33,12 @@ builder.Services.AddSingleton(serviceProvider =>
 
 var app = builder.Build();
 
-app.MapGet("/fortunes", () => new RazorComponentResult<Fortunes>());
-app.MapGet("/fortunes-ef", () => new RazorComponentResult<FortunesEf>());
+app.MapRazorComponents<App>();
+
+app.MapGet("/direct/fortunes", () => new RazorComponentResult<Fortunes>());
+app.MapGet("/direct/fortunes-ef", () => new RazorComponentResult<FortunesEf>());
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
 
 app.Run();
-
-// TODO: Use this custom configured HtmlEncoder when Blazor supports it: https://github.com/dotnet/aspnetcore/issues/47477
-//static HtmlEncoder CreateHtmlEncoder()
-//{
-//    var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
-//    settings.AllowCharacter('\u2014'); // allow EM DASH through
-//    return HtmlEncoder.Create(settings);
-//}
