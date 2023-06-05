@@ -66,7 +66,6 @@ namespace Benchmarks
 
             Console.WriteLine($"Database: {appSettings.Database}");
             Console.WriteLine($"ConnectionString: {appSettings.ConnectionString}");
-            Console.WriteLine($"WAL: {appSettings.WAL}");
 
             switch (appSettings.Database)
             {
@@ -183,19 +182,8 @@ namespace Benchmarks
                         connection.Open();
 
                         command = connection.CreateCommand();
-                        command.CommandText = "PRAGMA journal_mode";
-                        var currentMode = (string)command.ExecuteScalar();
-
-                        if (appSettings.WAL && currentMode != "wal")
-                        {
-                            command.CommandText = "PRAGMA journal_mode = 'wal'";
-                            command.ExecuteNonQuery();
-                        }
-                        else if (!appSettings.WAL && currentMode == "wal")
-                        {
-                            command.CommandText = "PRAGMA journal_mode = 'delete'";
-                            command.ExecuteNonQuery();
-                        }
+                        command.CommandText = "PRAGMA journal_mode = 'wal'";
+                        command.ExecuteNonQuery();
                     }
 
                     services.AddEntityFrameworkSqlite();

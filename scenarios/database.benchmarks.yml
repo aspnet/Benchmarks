@@ -254,4 +254,4 @@ profiles:
       application:
         environmentVariables:
           database: Sqlite
-          connectionString: Data Source=benchmarks.db;Cache=Shared
+          connectionString: Data Source=benchmarks.db

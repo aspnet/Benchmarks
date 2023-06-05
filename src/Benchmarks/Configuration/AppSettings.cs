@@ -8,7 +8,5 @@ namespace Benchmarks.Configuration
         public string ConnectionString { get; set; }
 
         public DatabaseServer Database { get; set; } = DatabaseServer.None;
-
-        public bool WAL { get; set; }
     }
 }
