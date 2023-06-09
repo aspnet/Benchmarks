@@ -15,96 +15,111 @@ parameters:
   default:
 
   - displayName: Goldilocks Stage 1 (CoreCLR)
-    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1 --property publish=coreclr
+    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1 --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1ServerGC --property publish=coreclr
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (CoreCLR - PGO)
-    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1Pgo --property publish=coreclr --application.environmentVariables DOTNET_TieredPGO=1
+    arguments: --scenario basicminimalapivanilla $(goldilocksJobs) --property scenario=Stage1Pgo --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.environmentVariables DOTNET_TieredPGO=1
     condition: Math.round(Date.now() / 43200000) % 6 == 1 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks Stage 1 (CoreCLR - Trim R2R SingleFile)
-    arguments: --scenario basicminimalapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1TrimR2RSingleFile --property publish=coreclr
+    arguments: --scenario basicminimalapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
-  - displayName: Goldilocks Stage 1 (NativeAOT - Workstation GC)
+  - displayName: Goldilocks Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1Aot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1Aot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
     condition: 'true'
+
+  - displayName: Goldilocks Stage 1 (NativeAOT - Workstation GC)
+    # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotWorkstationGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=false\"
+    condition: Math.round(Date.now() / 43200000) % 6 == 0 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Optimize for Speed)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:OptimizationPreference=Speed\"
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.buildArguments \"/p:OptimizationPreference=Speed\"
     condition: Math.round(Date.now() / 43200000) % 6 == 3 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks Stage 2 (CoreCLR)
-    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2 --property publish=coreclr
+    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2 --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (CoreCLR - Server GC)
-    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2ServerGC --property publish=coreclr --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2ServerGC --property publish=coreclr
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (CoreCLR - PGO)
-    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2Pgo --property publish=coreclr --application.environmentVariables DOTNET_TieredPGO=1
+    arguments: --scenario todosapivanilla $(goldilocksJobs) --property scenario=Stage2Pgo --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.environmentVariables DOTNET_TieredPGO=1
     condition: Math.round(Date.now() / 43200000) % 6 == 1 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks Stage 2 (CoreCLR - Trim R2R SingleFile)
-    arguments: --scenario todosapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage2TrimR2RSingleFile --property publish=coreclr
+    arguments: --scenario todosapipublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage2TrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
-  - displayName: Goldilocks Stage 2 (NativeAOT - Workstation GC)
+  - displayName: Goldilocks Stage 2 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2Aot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2Aot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
     condition: 'true'
+
+  - displayName: Goldilocks Stage 2 (NativeAOT - Workstation GC)
+    # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotWorkstationGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=false\"
+    condition: Math.round(Date.now() / 43200000) % 6 == 2 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Optimize for Speed)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:OptimizationPreference=Speed\"
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.buildArguments \"/p:OptimizationPreference=Speed\"
     condition: Math.round(Date.now() / 43200000) % 6 == 4 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1Grpc --property publish=coreclr
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1Grpc --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Server GC)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcServerGC --property publish=coreclr
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - PGO)
-    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcPgo --property publish=coreclr --application.environmentVariables DOTNET_TieredPGO=1
+    arguments: --scenario basicgrpcvanilla $(goldilocksJobs) --property scenario=Stage1GrpcPgo --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.environmentVariables DOTNET_TieredPGO=1
     condition: Math.round(Date.now() / 43200000) % 6 == 1 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks gRPC Stage 1 (CoreCLR - Trim R2R SingleFile)
-    arguments: --scenario basicgrpcpublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1GrpcTrimR2RSingleFile --property publish=coreclr
+    arguments: --scenario basicgrpcpublishtrimr2rsinglefile $(goldilocksJobs) --property scenario=Stage1GrpcTrimR2RSingleFile --property publish=coreclr --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=true\"
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
     condition: 'true'
 
-  - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Server GC)
+  - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Workstation GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:OptimizationPreference=Speed\"
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=false\"
+    condition: Math.round(Date.now() / 43200000) % 6 == 3 # once every 6 half-days (43200000 ms per half-day)
+
+  - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Optimize for Speed)
+    # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotSpeedOpt --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.buildArguments \"/p:OptimizationPreference=Speed\"
     condition: Math.round(Date.now() / 43200000) % 6 == 5 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks gRPC Stage 1 (golang)
