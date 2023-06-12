@@ -50,31 +50,31 @@ parameters:
 
   - displayName: Json ASP.NET
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
-    condition: Math.round(Date.now() / 43200000) % 3 == 0 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: Fortunes ASP.NET
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
-    condition: Math.round(Date.now() / 43200000) % 3 == 0 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
 
   - displayName: Json ASP.NET Alpine
     arguments: --scenario json_aspnet_alpine --property scenario=JsonAspNetAlpine
-    condition: Math.round(Date.now() / 43200000) % 3 == 1 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
   - displayName: Fortunes ASP.NET Alpine
     arguments: --scenario fortunes_aspnet_alpine --property scenario=FortunesAspNetAlpine
-    condition: Math.round(Date.now() / 43200000) % 3 == 1 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
 
   - displayName: Json ASP.NET Composite
     arguments: --scenario json_aspnet_composite --property scenario=JsonAspNetComposite
-    condition: Math.round(Date.now() / 43200000) % 3 == 1 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 3 half-days
   - displayName: Fortunes ASP.NET Composite
     arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite
-    condition: Math.round(Date.now() / 43200000) % 3 == 1 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 4 half-days
 
   - displayName: Json ASP.NET 7.0
     arguments: --scenario json_aspnet_net7 --property scenario=JsonAspNet70
-    condition: Math.round(Date.now() / 43200000) % 3 == 2 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
   - displayName: Fortunes ASP.NET 7.0
     arguments: --scenario fortunes_aspnet_net7 --property scenario=FortunesAspNet70
-    condition: Math.round(Date.now() / 43200000) % 3 == 2 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
 
   - displayName: Json Actix
     arguments: --scenario json_actix --property scenario=JsonActix
