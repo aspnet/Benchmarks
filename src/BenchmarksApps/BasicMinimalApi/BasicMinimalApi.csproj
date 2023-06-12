@@ -8,4 +8,8 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Common\StartupExtensions.cs" />
+  </ItemGroup>
+  
 </Project>

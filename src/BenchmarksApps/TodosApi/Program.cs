@@ -51,7 +51,7 @@ app.MapGet("/throw", void () => throw new InvalidOperationException("You hit the
 app.MapTodoApi();
 
 #if !ENABLE_LOGGING
-app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
+app.RegisterStartup();
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));
 #endif
 

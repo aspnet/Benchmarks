@@ -9,5 +9,5 @@ var app = builder.Build();
 
 app.MapGrpcService<TodoServiceImpl>();
 
-app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
+app.RegisterStartup();
 app.Run();

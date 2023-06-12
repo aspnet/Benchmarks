@@ -20,7 +20,7 @@ todosApi.MapGet("/{id}", (int id) =>
         ? Results.Ok(todo)
         : Results.NotFound());
 
-app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
+app.RegisterStartup();
 app.Run();
 
 [JsonSerializable(typeof(Todo[]))]

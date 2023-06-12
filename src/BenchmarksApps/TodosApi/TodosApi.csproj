@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common\StartupExtensions.cs" />
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
   </ItemGroup>
 
