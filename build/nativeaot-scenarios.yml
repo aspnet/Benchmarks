@@ -114,7 +114,7 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Workstation GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAot --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=false\"
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotWorkstationGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.buildArguments \"/p:ServerGarbageCollection=false\"
     condition: Math.round(Date.now() / 43200000) % 6 == 3 # once every 6 half-days (43200000 ms per half-day)
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Optimize for Speed)
