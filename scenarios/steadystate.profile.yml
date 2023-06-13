@@ -20,7 +20,7 @@ onResultsCreated:
       return;
     }
 
-    let lastMeasurement = measurements.length == 0 ? null : measurements[measurements.length-1];
+    let lastMeasurement = measurements[measurements.length-1];
     let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
     let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
     let average = recent.reduce((acc, m) => acc + m.value, 0) / recent.length;
