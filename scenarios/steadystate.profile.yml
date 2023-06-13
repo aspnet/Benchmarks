@@ -1,0 +1,27 @@
+# This file adds a new "Steady State Working Set" result (working-set/steady) to the "application" job.
+# It averages all the working-set measurements after the warmup is done.
+
+results:
+
+- name: working-set/steady
+  description: Steady State Working Set (MB)
+  format: n0
+
+onResultsCreated:
+  - |
+    // This measures the working set value based only on the time when the warmup has ended
+
+    let duration = benchmarks.jobs.load.variables.duration;
+    let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == "runtime-counter/working-set");
+    
+    // Don't add any result if there are no measurements
+    if (measurements.length == 0) {
+      console.warn("Could not evaluate "working-set/steady", no measurements available for "runtime-counter/working-set".");
+      return;
+    }
+
+    let lastMeasurement = measurements.length == 0 ? null : measurements[measurements.length-1];
+    let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
+    let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
+    let average = recent.reduce((acc, m) => acc + m.value, 0) / recent.length;
+    benchmarks.jobs.application.results["working-set/steady"] = average;
