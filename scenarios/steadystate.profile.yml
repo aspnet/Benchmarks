@@ -1,0 +1,43 @@
+# This file adds a new "Steady State" results (working set and cpu) to the "application" job.
+# It uses all the measurements after the warmup is done.
+
+results:
+
+- name: benchmarks/working-set/steady
+  description: Load Working Set - P90 (MB)
+  format: n0
+
+- name: benchmarks/cpu/steady
+  description: Load CPU Usage - P90 (%)
+  format: n0
+
+onResultsCreating:
+  - |
+
+    function steadyState(measurement, reduce) {
+      // Calculates the result of the 'reduce' operation on the 'measurement' property of the application job.
+      // example: 
+      //   const result = steadyState('benchmarks/working-set', percentile90);
+
+      let duration = benchmarks.jobs.load.variables.duration;
+      let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == measurement);
+      
+      // Don't add any result if there are no measurements
+      if (measurements.length == 0) {
+        console.warn(`No measurements available for '${measurement}'.`);
+        return null;
+      }
+
+      let lastMeasurement = measurements[measurements.length-1];
+      let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
+      let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
+      let values = recent.map(m => m.value);
+      let result = reduce(values);
+      
+      return result;
+    }
+
+onResultsCreated:
+  - |
+    benchmarks.jobs.application.results["benchmarks/working-set/steady"] = steadyState('benchmarks/working-set', percentile90);
+    benchmarks.jobs.application.results["benchmarks/cpu/steady"] = steadyState('benchmarks/cpu', percentile90);
