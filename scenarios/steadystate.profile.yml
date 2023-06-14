@@ -12,7 +12,7 @@ onResultsCreated:
     // This measures the working set value based only on the time when the warmup has ended
 
     let duration = benchmarks.jobs.load.variables.duration;
-    let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == "runtime-counter/working-set");
+    let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == "benchmarks/working-set");
     
     // Don't add any result if there are no measurements
     if (measurements.length == 0) {
@@ -23,5 +23,10 @@ onResultsCreated:
     let lastMeasurement = measurements[measurements.length-1];
     let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
     let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
-    let average = recent.reduce((acc, m) => acc + m.value, 0) / recent.length;
-    benchmarks.jobs.application.results["working-set/steady"] = average;
+    let values = recent.map(m => m.value);
+    
+    // Use percentile90 function defined in 
+    // https://github.com/dotnet/crank/blob/e973f798a9b9f95fdc2cb96b09d2595cff1d7592/src/Microsoft.Crank.Controller/default.config.yml#LL900C9-L900C21
+    let p90 = percentile90(values);
+
+    benchmarks.jobs.application.results["working-set/steady"] = p90;
