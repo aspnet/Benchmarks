@@ -1,32 +1,43 @@
-# This file adds a new "Steady State Working Set" result (working-set/steady) to the "application" job.
-# It averages all the working-set measurements after the warmup is done.
+# This file adds a new "Steady State" results (working set and cpu) to the "application" job.
+# It uses all the measurements after the warmup is done.
 
 results:
 
-- name: working-set/steady
+- name: benchmarks/working-set/steady
   description: Steady State Working Set (MB)
   format: n0
 
-onResultsCreated:
-  - |
-    // This measures the working set value based only on the time when the warmup has ended
+- name: benchmarks/cpu/steady
+  description: Steady State CPU Usage (%)
+  format: n0
 
-    let duration = benchmarks.jobs.load.variables.duration;
-    let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == "benchmarks/working-set");
-    
-    // Don't add any result if there are no measurements
-    if (measurements.length == 0) {
-      console.warn("Could not evaluate "working-set/steady", no measurements available for "runtime-counter/working-set".");
-      return;
+onResultsCreating:
+  - |
+
+    function steadyState(measurement, reduce) {
+      // Calculates the result of the 'reduce' operation on the 'measurement' property of the application job.
+      // example: 
+      //   const result = steadyState('benchmarks/working-set', percentile90);
+
+      let duration = benchmarks.jobs.load.variables.duration;
+      let measurements = benchmarks.jobs.application.measurements[0].filter(m => m.name == measurement);
+      
+      // Don't add any result if there are no measurements
+      if (measurements.length == 0) {
+        console.warn(`No measurements available for '${measurement}'.`);
+        return null;
+      }
+
+      let lastMeasurement = measurements[measurements.length-1];
+      let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
+      let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
+      let values = recent.map(m => m.value);
+      let result = reduce(values);
+      
+      return result;
     }
 
-    let lastMeasurement = measurements[measurements.length-1];
-    let begin = new Date(lastMeasurement.timestamp) - duration * 1000;
-    let recent = measurements.filter(m => new Date(m.timestamp) >= begin);
-    let values = recent.map(m => m.value);
-    
-    // Use percentile90 function defined in 
-    // https://github.com/dotnet/crank/blob/e973f798a9b9f95fdc2cb96b09d2595cff1d7592/src/Microsoft.Crank.Controller/default.config.yml#LL900C9-L900C21
-    let p90 = percentile90(values);
-
-    benchmarks.jobs.application.results["working-set/steady"] = p90;
+onResultsCreated:
+  - |
+    benchmarks.jobs.application.results["benchmarks/working-set/steady"] = steadyState('benchmarks/working-set', percentile90);
+    benchmarks.jobs.application.results["benchmarks/cpu/steady"] = steadyState('benchmarks/cpu', percentile90);
