@@ -504,7 +504,7 @@ profiles:
         endpoints: 
           - http://asp-gold-lin:5001
         variables:
-          databaseServer: 10.0.0.204
+          databaseServer: 10.0.0.125
         aliases:
           - main
       load:
@@ -529,7 +529,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/goldlin
         variables:
-          databaseServer: 10.0.0.204
+          databaseServer: 10.0.0.125
         aliases:
           - main
       load:
@@ -541,7 +541,7 @@ profiles:
 
   aspnet-gold-win:
     variables:
-      serverAddress: 10.0.0.201
+      serverAddress: 10.0.0.122
       cores: 56
     jobs: 
       db:
@@ -554,7 +554,7 @@ profiles:
         endpoints: 
           - http://asp-gold-win:5001
         variables:
-          databaseServer: 10.0.0.204
+          databaseServer: 10.0.0.125
         aliases:
           - main
       load:
@@ -566,7 +566,7 @@ profiles:
 
   aspnet-gold-win-relay:
     variables:
-      serverAddress: 10.0.0.201
+      serverAddress: 10.0.0.122
       cores: 56
     jobs: 
       db:

@@ -521,12 +521,12 @@ profiles:
 
   aspnet-gold-lin:
     variables:
-      mainAddress: 10.0.0.203
-      secondaryAddress: 10.0.0.206
-      extraAddress: 10.0.0.204
-      serverAddress: 10.0.0.203
-      databaseServer: 10.0.0.204
-      downstreamAddress: 10.0.0.204
+      mainAddress: 10.0.0.121
+      secondaryAddress: 10.0.0.123
+      extraAddress: 10.0.0.125
+      serverAddress: 10.0.0.121
+      databaseServer: 10.0.0.125
+      downstreamAddress: 10.0.0.125
       cores: 56
     agents:
       main:
@@ -549,12 +549,12 @@ profiles:
 
   aspnet-gold-lin-relay:
     variables:
-      mainAddress: 10.0.0.203
-      secondaryAddress: 10.0.0.206
-      extraAddress: 10.0.0.204
-      serverAddress: 10.0.0.203
-      databaseServer: 10.0.0.204
-      downstreamAddress: 10.0.0.204
+      mainAddress: 10.0.0.121
+      secondaryAddress: 10.0.0.123
+      extraAddress: 10.0.0.125
+      serverAddress: 10.0.0.121
+      databaseServer: 10.0.0.125
+      downstreamAddress: 10.0.0.125
       cores: 56
     agents:
       main:
@@ -577,12 +577,12 @@ profiles:
 
   aspnet-gold-win:
     variables:
-      mainAddress: 10.0.0.201
-      secondaryAddress: 10.0.0.205
-      extraAddress: 10.0.0.204
-      serverAddress: 10.0.0.201
-      databaseServer: 10.0.0.204
-      downstreamAddress: 10.0.0.204
+      mainAddress: 10.0.0.122
+      secondaryAddress: 10.0.0.124
+      extraAddress: 10.0.0.125
+      serverAddress: 10.0.0.122
+      databaseServer: 10.0.0.125
+      downstreamAddress: 10.0.0.125
       cores: 56
     agents:
       main:
@@ -605,12 +605,12 @@ profiles:
 
   aspnet-perf-win-relay:
     variables:
-      mainAddress: 10.0.0.201
-      secondaryAddress: 10.0.0.205
-      extraAddress: 10.0.0.204
+      mainAddress: 10.0.0.122
+      secondaryAddress: 10.0.0.124
+      extraAddress: 10.0.0.125
       serverAddress: 10.0.0.201
-      databaseServer: 10.0.0.204
-      downstreamAddress: 10.0.0.204
+      databaseServer: 10.0.0.125
+      downstreamAddress: 10.0.0.125
       cores: 56
     agents:
       main:
