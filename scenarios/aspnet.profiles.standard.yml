@@ -518,3 +518,115 @@ profiles:
         aliases:
           - db
           - downstream
+
+  aspnet-gold-lin:
+    variables:
+      mainAddress: 10.0.0.203
+      secondaryAddress: 10.0.0.206
+      extraAddress: 10.0.0.204
+      serverAddress: 10.0.0.203
+      databaseServer: 10.0.0.204
+      downstreamAddress: 10.0.0.204
+      cores: 56
+    agents:
+      main:
+        endpoints: 
+          - http://asp-gold-lin:5001
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - http://asp-gold-load:5001
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - http://asp-gold-db:5001
+        aliases:
+          - db
+          - downstream
+
+  aspnet-gold-lin-relay:
+    variables:
+      mainAddress: 10.0.0.203
+      secondaryAddress: 10.0.0.206
+      extraAddress: 10.0.0.204
+      serverAddress: 10.0.0.203
+      databaseServer: 10.0.0.204
+      downstreamAddress: 10.0.0.204
+      cores: 56
+    agents:
+      main:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldlin
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldload
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/golddb
+        aliases:
+          - db
+          - downstream
+
+  aspnet-gold-win:
+    variables:
+      mainAddress: 10.0.0.201
+      secondaryAddress: 10.0.0.205
+      extraAddress: 10.0.0.204
+      serverAddress: 10.0.0.201
+      databaseServer: 10.0.0.204
+      downstreamAddress: 10.0.0.204
+      cores: 56
+    agents:
+      main:
+        endpoints: 
+          - http://asp-gold-win:5001
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - http://asp-gold-load2:5001
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - http://asp-gold-db:5001
+        aliases:
+          - db
+          - downstream
+
+  aspnet-perf-win-relay:
+    variables:
+      mainAddress: 10.0.0.201
+      secondaryAddress: 10.0.0.205
+      extraAddress: 10.0.0.204
+      serverAddress: 10.0.0.201
+      databaseServer: 10.0.0.204
+      downstreamAddress: 10.0.0.204
+      cores: 56
+    agents:
+      main:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldwin
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldload2
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/golddb
+        aliases:
+          - db
+          - downstream

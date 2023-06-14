@@ -488,3 +488,103 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  aspnet-gold-lin:
+    variables:
+      serverAddress: 10.0.0.121
+      cores: 56
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-gold-db:5001
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - http://asp-gold-lin:5001
+        variables:
+          databaseServer: 10.0.0.204
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://asp-gold-load:5001
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-gold-lin-relay:
+    variables:
+      serverAddress: 10.0.0.121
+      cores: 56
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/golddb
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldlin
+        variables:
+          databaseServer: 10.0.0.204
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldload
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-gold-win:
+    variables:
+      serverAddress: 10.0.0.201
+      cores: 56
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-gold-db:5001
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - http://asp-gold-win:5001
+        variables:
+          databaseServer: 10.0.0.204
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://asp-gold-load2:5001
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-gold-win-relay:
+    variables:
+      serverAddress: 10.0.0.201
+      cores: 56
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/golddb
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldwin
+        variables:
+          databaseServer: 10.0.0.204
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/goldload2
+        aliases:
+          - warmup
+          - secondary
