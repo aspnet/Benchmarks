@@ -255,7 +255,7 @@ profiles:
         aliases:
           - main
 
-###########
+# INTEL Xeon Gold machines
 
   gold-lin-app:
     variables:
@@ -263,6 +263,18 @@ profiles:
       cores: 56
     agents: 
       application:
+        endpoints: 
+          - http://asp-gold-lin:5001
+        aliases:
+          - main
+
+  gold-lin-28-app:
+    variables:
+      serverAddress: 10.0.0.121
+      cores: 28
+    agents: 
+      application:
+        cpuSet: 0-27
         endpoints: 
           - http://asp-gold-lin:5001
         aliases:
@@ -285,6 +297,18 @@ profiles:
       cores: 56
     agents: 
       application:
+        endpoints: 
+          - http://asp-gold-win:5001
+        aliases:
+          - main
+
+  gold-win-28-app:
+    variables:
+      serverAddress: 10.0.0.122
+      cores: 28
+    agents: 
+      application:
+        cpuSet: 0-27
         endpoints: 
           - http://asp-gold-win:5001
         aliases:
