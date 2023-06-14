@@ -54,5 +54,6 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
+ENV DB_HOST postgres_te
 
 CMD ["node", "server.js"]

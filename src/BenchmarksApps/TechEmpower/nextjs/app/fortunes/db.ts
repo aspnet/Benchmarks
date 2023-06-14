@@ -17,8 +17,10 @@ const queries = {
 };
 
 async function getFortunes() {
+    //console.log("Getting fortunes data from database");
     const res = await db.pool.query(queries.fortunes);
     var fortunes = res.rows.map(r => new Fortune(r.id, r.message));
+    //console.log(`${fortunes.length} rows read from database`);
     fortunes.push(new Fortune(0, "Additional fortune added at request time."));
     fortunes.sort((a, b) => a.message.localeCompare(b.message));
     return fortunes;
