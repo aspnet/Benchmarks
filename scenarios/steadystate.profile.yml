@@ -4,11 +4,11 @@
 results:
 
 - name: benchmarks/working-set/steady
-  description: Steady State Working Set (MB)
+  description: Load Working Set - P90 (MB)
   format: n0
 
 - name: benchmarks/cpu/steady
-  description: Steady State CPU Usage (%)
+  description: Load CPU Usage - P90 (%)
   format: n0
 
 onResultsCreating:
