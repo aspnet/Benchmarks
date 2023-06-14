@@ -48,6 +48,23 @@ parameters:
     arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=20gb-workstation'
     condition: 'true'
 
+  # DATAs Runs.
+  - displayName: 0gb DATAs 
+    arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1  --application.variables.tc 2 --property scenario=0gb-DATAs'
+    condition: 'true'
+
+  - displayName: 2gb DATAs 
+    arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1  --application.variables.tc 2 --property scenario=2gb-DATAs'
+    condition: 'true'
+
+  - displayName: 2gb Pinning DATAs 
+    arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.variables.tc 2  --application.variables.tagb 100 --property scenario=2gb-pinning-DATAs'
+    condition: 'true'
+
+  - displayName: 20gb DATAs 
+    arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.variables.tc 2 --property scenario=20gb-DATAs'
+    condition: 'true'
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
