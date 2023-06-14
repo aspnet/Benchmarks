@@ -35,7 +35,7 @@ profiles:
     agents:
       load:
         endpoints: 
-          - http://asp-citrine-load:5001
+          - http://asp-citrine-lin:5001
         aliases:
           - warmup
           - secondary
@@ -254,3 +254,61 @@ profiles:
           - http://10.240.177.200:5001
         aliases:
           - main
+
+###########
+
+  gold-lin-app:
+    variables:
+      serverAddress: 10.0.0.121
+      cores: 56
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-gold-lin:5001
+        aliases:
+          - main
+
+  gold-load-load:
+    variables:
+      secondaryAddress: 10.0.0.123
+    agents:
+      load:
+        endpoints: 
+          - http://asp-gold-load:5001
+        aliases:
+          - warmup
+          - secondary
+
+  gold-win-app:
+    variables:
+      serverAddress: 10.0.0.122
+      cores: 56
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-gold-win:5001
+        aliases:
+          - main
+
+  gold-db-db:
+    variables:
+      databaseServer: 10.0.0.125
+      downstreamAddress: 10.0.0.125
+    agents:
+      db:
+        endpoints: 
+          - http://asp-gold-db:5001
+        aliases:
+          - downstream
+          - extra
+
+  gold-load2-load:
+    variables:
+      secondaryAddress: 10.0.0.124
+    agents:
+      load:
+        endpoints: 
+          - http://asp-gold-load2:5001
+        aliases:
+          - warmup
+          - secondary
