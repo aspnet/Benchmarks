@@ -76,6 +76,6 @@ steps:
         messageBody: |
           {
             "name": "crank",
-            "condition": "(${{ parameters.condition }})",
+            "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 3 == 0)",
             "args": [ "${{ s.arguments }} ${{ m.arguments }} $(azureProfile) ${{ parameters.arguments }} --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} ${{ m.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table PgoBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

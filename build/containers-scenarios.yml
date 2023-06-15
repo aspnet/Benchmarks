@@ -50,66 +50,66 @@ parameters:
 
   - displayName: Json ASP.NET
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
-    condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
-    condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
 
   - displayName: Json ASP.NET Alpine
     arguments: --scenario json_aspnet_alpine --property scenario=JsonAspNetAlpine
-    condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 2 # once every 8 half-days
   - displayName: Fortunes ASP.NET Alpine
     arguments: --scenario fortunes_aspnet_alpine --property scenario=FortunesAspNetAlpine
-    condition: Math.round(Date.now() / 43200000) % 4 == 1 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 2 # once every 8 half-days
 
   - displayName: Json ASP.NET Composite
     arguments: --scenario json_aspnet_composite --property scenario=JsonAspNetComposite
-    condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 3 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
   - displayName: Fortunes ASP.NET Composite
     arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite
-    condition: Math.round(Date.now() / 43200000) % 4 == 2 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
 
   - displayName: Json ASP.NET 7.0
     arguments: --scenario json_aspnet_net7 --property scenario=JsonAspNet70
-    condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
   - displayName: Fortunes ASP.NET 7.0
     arguments: --scenario fortunes_aspnet_net7 --property scenario=FortunesAspNet70
-    condition: Math.round(Date.now() / 43200000) % 4 == 3 # once every 4 half-days
+    condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
   - displayName: Json Actix
     arguments: --scenario json_actix --property scenario=JsonActix
-    condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 0 # once every 10 half-days
   - displayName: Fortunes Actix
     arguments: --scenario fortunes_actix --property scenario=FortunesActix
-    condition: Math.round(Date.now() / 43200000) % 5 == 0 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 1 # once every 10 half-days
 
   - displayName: Json NodeJS
     arguments: --scenario json_nodejs --property scenario=JsonNodeJs
-    condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 2 # once every 10 half-days
   - displayName: Fortunes NodeJS
     arguments: --scenario fortunes_nodejs --property scenario=FortunesNodeJs
-    condition: Math.round(Date.now() / 43200000) % 5 == 1 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 3 # once every 10 half-days
 
   - displayName: Json FastHttp
     arguments: --scenario json_fasthttp --property scenario=JsonFastHttp
-    condition: Math.round(Date.now() / 43200000) % 5 == 2 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 4 # once every 10 half-days
   - displayName: Fortunes FastHttp
     arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
-    condition: Math.round(Date.now() / 43200000) % 5 == 2 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 5 # once every 10 half-days
 
   - displayName: Json Ulib
     arguments: --scenario json_ulib --property scenario=JsonUlib
-    condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 6 # once every 10 half-days
   - displayName: Fortunes Ulib
     arguments: --scenario fortunes_ulib --property scenario=FortunesUlib
-    condition: Math.round(Date.now() / 43200000) % 5 == 3 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 7 # once every 10 half-days
 
   - displayName: Json Wizzardo
     arguments: --scenario json_wizzardo --property scenario=JsonWizzardo
-    condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
   - displayName: Fortunes Wizzardo
     arguments: --scenario fortunes_wizzardo --property scenario=FortunesWizzardo
-    condition: Math.round(Date.now() / 43200000) % 5 == 4 # once every 5 half-days
+    condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
 steps:
 - ${{ each scenario in parameters.scenarios }}:

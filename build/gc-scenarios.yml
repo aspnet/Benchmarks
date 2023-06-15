@@ -17,53 +17,53 @@ parameters:
   # Server Runs.
   - displayName: 0gb Server
     arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=0gb-server'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb Server
     arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-server'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb Pinning Server
     arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=2gb-pinning-server'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 20gb Server
     arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables \"DOTNET_GCHeapCount={{ cores | minus: 2 }}\" --property scenario=20gb-server'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   # Workstation Runs.
   - displayName: 0gb Workstation
     arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=0gb-workstation'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb Workstation
     arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=2gb-workstation'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb Pinning Workstation
     arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --application.variables.tagb 100 --property scenario=2gb-pinning-workstation'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 20gb Workstation
     arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=0 --application.variables.tc 2 --property scenario=20gb-workstation'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   # DATAs Runs.
   - displayName: 0gb DATAs 
     arguments: '--scenario 0gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1  --application.variables.tc 2 --property scenario=0gb-DATAs'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb DATAs 
     arguments: '--scenario 2gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1  --application.variables.tc 2 --property scenario=2gb-DATAs'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 2gb Pinning DATAs 
     arguments: '--scenario 2gb-pinning --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.variables.tc 2  --application.variables.tagb 100 --property scenario=2gb-pinning-DATAs'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
   - displayName: 20gb DATAs 
     arguments: '--scenario 20gb --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1 --application.variables.tc 2 --property scenario=20gb-DATAs'
-    condition: 'true'
+    condition: (Math.round(Date.now() / 43200000) % 2 == 0)
 
 steps:
 - ${{ each s in parameters.scenarios }}:
