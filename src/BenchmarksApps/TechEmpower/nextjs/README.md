@@ -8,4 +8,6 @@ The app requires a Postgres database based on the [TechEmpower Postgres Docker i
 
 *NOTE: Currently using Next.js version 13.4.0 rather than latest due to [this issue](https://github.com/vercel/next.js/issues/48173#issuecomment-1584585902)*
 
-The [Dockerfile](./Dockerfile) will build a standalone image (based on node-alpine) for running the app on port 3000.
+The app is using a custom server to enable clustering (scaling node instances across CPUs) in production based on the [custom server example here](https://github.com/vercel/next.js/tree/canary/examples/custom-server).
+
+The [Dockerfile](./Dockerfile) will build a standalone image (based on node-alpine) for running the app on port 3000. Note that in docker the host name for the Postgres database is set to `postgres_te`.
