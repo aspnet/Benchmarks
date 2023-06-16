@@ -42,12 +42,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+# Copy files required to run the app
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/dist/server.js ./cluster.js
 
 USER nextjs
 
@@ -56,4 +55,4 @@ EXPOSE 3000
 ENV PORT 3000
 ENV DB_HOST postgres_te
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "cluster.js"]
