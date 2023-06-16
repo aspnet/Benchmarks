@@ -33,13 +33,27 @@ if (!dev) {
   //console.log(`server.js found at: ${server}`);
 
   if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is running`);
+    console.log(`Primary is running on process ${process.pid}`);
     
+    cluster.setupPrimary({ silent: true });
     const numCPUs = os.cpus().length;
 
     // Fork workers
+    let listening = 0;
     for (let i = 0; i < numCPUs; i++) {
-      cluster.fork();
+      const w = cluster.fork();
+      w.process.stdout?.on('data', (chunk) => {
+        const msg = chunk.toString().trim();
+        if (msg.startsWith('Listening on port')) {
+          listening++;
+          console.log(`Worker ${listening} of ${numCPUs} on process ${w.process.pid}: ${msg}`);
+          if (listening == numCPUs) {
+            console.log('All workers listening.');
+          }
+        } else {
+          console.log(`Worker ${w.id}: ${msg}`)
+        }
+      });
     }
 
     cluster.on('exit', (worker, code, signal) => {
