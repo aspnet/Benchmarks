@@ -37,7 +37,7 @@ parameters:
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario basicminimalapipublishaot $(goldilocksJobs) --property scenario=Stage1AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 1 (NativeAOT - Workstation GC)
@@ -73,7 +73,7 @@ parameters:
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario todosapipublishaot $(goldilocksJobs) --property scenario=Stage2AotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks Stage 2 (NativeAOT - Workstation GC)
@@ -109,7 +109,7 @@ parameters:
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Server GC)
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --scenario basicgrpcpublishaot $(goldilocksJobs) --property scenario=Stage1GrpcAotServerGC --property publish=nativeaot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\" --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: 'true'
 
   - displayName: Goldilocks gRPC Stage 1 (NativeAOT - Workstation GC)
