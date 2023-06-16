@@ -1,9 +1,11 @@
 import { cookies } from 'next/headers';
 import { db } from "./db";
 
+// Force page to render dynamically from the server every request
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Page() {
-  // Force dynamic rendering by observing request cookies
-  const c = cookies();
   const data = await db.getFortunes();
   return (
     <table>

@@ -1,3 +1,4 @@
+import 'server-only';
 import { Pool } from "pg";
 import { Fortune } from "./fortune";
 import { env } from "process";
@@ -17,7 +18,6 @@ const queries = {
 };
 
 async function getFortunes() {
-    //console.log("Getting fortunes data from database");
     const res = await db.pool.query(queries.fortunes);
     var fortunes = res.rows.map(r => new Fortune(r.id, r.message));
     //console.log(`${fortunes.length} rows read from database`);
