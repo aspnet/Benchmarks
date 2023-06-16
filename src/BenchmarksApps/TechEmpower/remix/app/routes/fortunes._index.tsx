@@ -1,11 +1,14 @@
-import { db } from "./db";
+import { LoaderFunction, json } from "@remix-run/node";
+import { db } from "../models/db";
+import { useLoaderData } from "@remix-run/react";
 
-// Force page to render dynamically from the server every request
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default async function Page() {
+export const loader = async () => {
   const data = await db.getFortunes();
+  return json({ data });
+}
+
+export default function Page() {
+  const { data } = useLoaderData<typeof loader>();
   return (
     <table>
       <tbody>

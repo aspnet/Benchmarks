@@ -1,4 +1,3 @@
-import "server-only";
 import { Pool } from "pg";
 import { Fortune } from "./fortune";
 import { env } from "process";
@@ -7,7 +6,7 @@ const pool = new Pool({
   user: "benchmarkdbuser",
   password: "benchmarkdbpass",
   database: "hello_world",
-  host: env["DB_HOST"] ?? "localhost",
+  host: env["DB_HOST"] ?? "172.21.97.80",
 });
 
 const queries = {
