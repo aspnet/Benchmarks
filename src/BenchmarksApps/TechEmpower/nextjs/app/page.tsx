@@ -1,5 +1,5 @@
-export default function Page() {
-  return (
-    <a href="fortunes">Fortunes</a>
-  )
+import { redirect } from 'next/navigation';
+
+export default async function Page() {
+    redirect('/fortunes');
 }
