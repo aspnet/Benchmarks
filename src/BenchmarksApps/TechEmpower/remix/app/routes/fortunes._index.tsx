@@ -1,11 +1,11 @@
-import { LoaderFunction, json } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { db } from "../models/db";
 import { useLoaderData } from "@remix-run/react";
 
 export const loader = async () => {
   const data = await db.getFortunes();
   return json({ data });
-}
+};
 
 export default function Page() {
   const { data } = useLoaderData<typeof loader>();

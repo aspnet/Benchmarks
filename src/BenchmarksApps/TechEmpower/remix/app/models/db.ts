@@ -6,7 +6,7 @@ const pool = new Pool({
   user: "benchmarkdbuser",
   password: "benchmarkdbpass",
   database: "hello_world",
-  host: env["DB_HOST"] ?? "172.21.97.80",
+  host: env["DB_HOST"] ?? "localhost",
 });
 
 const queries = {
