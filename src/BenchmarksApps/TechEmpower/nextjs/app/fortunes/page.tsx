@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers';
 import { db } from "./db";
 
 // Force page to render dynamically from the server every request
