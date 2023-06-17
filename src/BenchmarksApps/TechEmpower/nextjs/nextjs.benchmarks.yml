@@ -14,7 +14,6 @@ jobs:
       dockerImageName: nextjsfortunes_te
       dockerContextDirectory: src/BenchmarksApps/TechEmpower/nextjs
     readyStateText: All workers listening.
-    arguments: 
     variables:
       serverScheme: http
     environmentVariables:
