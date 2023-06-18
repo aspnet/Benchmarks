@@ -36,18 +36,18 @@ if (!dev) {
     console.log(`Primary is running on process ${process.pid}`);
     
     cluster.setupPrimary({ silent: true });
-    const numCPUs = os.cpus().length;
+    const numWorkers = process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : os.cpus().length;
 
     // Fork workers
     let listening = 0;
-    for (let i = 0; i < numCPUs; i++) {
+    for (let i = 0; i < numWorkers; i++) {
       const w = cluster.fork();
       w.process.stdout?.on('data', (chunk) => {
         const msg = chunk.toString().trim();
         if (msg.startsWith('Listening on port')) {
           listening++;
-          console.log(`Worker ${listening} of ${numCPUs} on process ${w.process.pid}: ${msg}`);
-          if (listening == numCPUs) {
+          console.log(`Worker ${listening} of ${numWorkers} on process ${w.process.pid}: ${msg}`);
+          if (listening == numWorkers) {
             console.log('All workers listening.');
           }
         } else {
