@@ -61,6 +61,7 @@ if (!dev) {
       console.log(`worker ${worker.process.pid} stopped`, { code, signal });
     });
   } else {
+    setTimeout(() => { console.log('All workers listening.'); }, 2000);
     require(server);
   }
 } else {
