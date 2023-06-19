@@ -5,6 +5,7 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
+    "start:no-db": "cross-env NO_DB=true remix-serve build",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "@types/pg": "^8.10.2",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
+    "cross-env": "^7.0.3",
     "eslint": "^8.38.0",
     "typescript": "^5.0.4"
   },
