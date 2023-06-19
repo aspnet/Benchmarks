@@ -1,53 +1,9 @@
-# Welcome to Remix!
+# Fortunes implementation using Remix
 
-- [Remix Docs](https://remix.run/docs)
+This is an implementation of the [TechEmpower Fortunes benchmark](https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview#fortunes) using Remix
 
-## Development
+Run the app by executing `npm run build && npm start` in the app root.
 
-From your terminal:
+The app requires a Postgres database based on the [TechEmpower Postgres Docker image](https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/toolset/databases/postgres). Clone the [TechEmpower repo](https://github.com/TechEmpower/FrameworkBenchmarks), navigate to `./toolset/databases/postgres`, and run `docker build -f .\postgres.dockerfile -t postgres_te .` to build a container from that image, then `docker run -p 5432:5432 --name postgres_te postgres_te`.
 
-```sh
-npm run dev
-```
-
-This starts your app in development mode, rebuilding assets on file changes.
-
-## Deployment
-
-First, build your app for production:
-
-```sh
-npm run build
-```
-
-Then run the app in production mode:
-
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `remix build`
-
-- `build/`
-- `public/build/`
-
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over your `app/` folder to the new project that's pre-configured for your target server.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+The [Dockerfile](./Dockerfile) will build a standalone image (based on node-alpine) for running the app on port 3000. Note that in docker the host name for the Postgres database is set to `postgres_te`.
