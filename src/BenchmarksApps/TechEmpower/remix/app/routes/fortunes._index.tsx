@@ -7,22 +7,28 @@ export const loader = async () => {
   return json({ data });
 };
 
+export const meta = () => {
+  return [
+    {
+      title: "Fortunes",
+    },
+  ];
+};
+
 export default function Page() {
   const { data } = useLoaderData<typeof loader>();
   return (
     <table>
-      <tbody>
-        <tr>
-          <th>id</th>
-          <th>message</th>
+      <tr>
+        <th>id</th>
+        <th>message</th>
+      </tr>
+      {data.map((row, idx) => (
+        <tr key={idx}>
+          <td>{row.id}</td>
+          <td>{row.message}</td>
         </tr>
-        {data.map((row, idx) => (
-          <tr key={idx}>
-            <td>{row.id}</td>
-            <td>{row.message}</td>
-          </tr>
-        ))}
-      </tbody>
+      ))}
     </table>
   );
 }
