@@ -1,8 +1,10 @@
 import { db } from "./db";
+import { Metadata } from 'next'
 
 // Force page to render dynamically from the server every request
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const metadata: Metadata = { viewport: {} };
 
 export default async function Page() {
   const data = await db.getFortunes();

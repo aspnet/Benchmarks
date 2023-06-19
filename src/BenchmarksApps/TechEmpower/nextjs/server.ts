@@ -32,11 +32,12 @@ if (!dev) {
 
   //console.log(`server.js found at: ${server}`);
 
-  if (cluster.isPrimary) {
+  const numWorkers = process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : os.cpus().length;
+
+  if (cluster.isPrimary && numWorkers > 1) {
     console.log(`Primary is running on process ${process.pid}`);
     
     cluster.setupPrimary({ silent: true });
-    const numWorkers = process.env.WORKER_COUNT ? parseInt(process.env.WORKER_COUNT) : os.cpus().length;
 
     // Fork workers
     let listening = 0;
