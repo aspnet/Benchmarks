@@ -32,8 +32,7 @@ parameters:
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
   - displayName: AOT
     # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    # workaround https://github.com/dotnet/runtime/issues/86654 by disabling ConfigurationBindingGenerator
-    arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true /p:EnableConfigurationBindingGenerator=false\" --property mode=Aot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
 
 steps:
 - ${{ each s in parameters.scenarios }}:
