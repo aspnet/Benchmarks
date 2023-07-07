@@ -40,6 +40,16 @@ scenarios:
         path: /plaintext
         pipeline: 16
 
+  plaintext_result:
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext/result
+        pipeline: 16
+
   json:
     application:
       job: minimal
@@ -48,7 +58,16 @@ scenarios:
       variables:
         presetHeaders: json
         path: /json
-  
+
+  json_result:
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json/result
+
   fortunes:
     db:
       job: postgresql
@@ -59,7 +78,18 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
-  
+
+  fortunes_result:
+    db:
+      job: postgresql
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes/result
+
   single_query:
     db:
       job: postgresql
@@ -70,6 +100,18 @@ scenarios:
       variables:
         presetHeaders: json
         path: /db
+        connections: 512
+
+  single_query_result:
+    db:
+      job: postgresql
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db/result
         connections: 512
 
   multiple_queries:
@@ -84,6 +126,18 @@ scenarios:
         path: /queries/20
         connections: 512
 
+  multiple_queries_result:
+    db:
+      job: postgresql
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries/20/result
+        connections: 512
+
   updates:
     db:
       job: postgresql
@@ -94,6 +148,18 @@ scenarios:
       variables:
         presetHeaders: json
         path: /updates/20
+        connections: 512
+
+  updates_result:
+    db:
+      job: postgresql
+    application:
+      job: minimal
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates/20/result
         connections: 512
 
 profiles:
