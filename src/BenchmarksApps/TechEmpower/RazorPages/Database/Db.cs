@@ -14,13 +14,17 @@ public sealed class Db : IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(appSettings.ConnectionString);
 
+#if NET8_0_OR_GREATER
         _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+#else
+        _dataSource = new NpgsqlDataSourceBuilder(appSettings.ConnectionString).Build();
+#endif
     }
 
     public async Task<List<Fortune>> LoadFortunesRowsDapper()
     {
         await using var connection = _dataSource.CreateConnection();
-        var result = (await connection.QueryAsync<Fortune>($"SELECT id, message FROM fortune")).ToList();
+        var result = (await connection.QueryAsync<Fortune>($"SELECT id, message FROM fortune")).AsList();
 
         result.Add(new Fortune { Id = 0, Message = "Additional fortune added at request time." });
         result.Sort(FortuneSortComparison);

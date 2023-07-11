@@ -27,12 +27,19 @@ var app = builder.Build();
 
 app.MapGet("/plaintext", () => "Hello, World!");
 
+app.MapGet("/plaintext/result", () => Results.Text("Hello, World!"));
+
 app.MapGet("/json", () => new { message = "Hello, World!" });
+
+app.MapGet("/json/result", () => Results.Json(new { message = "Hello, World!" }));
 
 app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
+app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryRow()));
+
 var createFortunesTemplate = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
 var htmlEncoder = CreateHtmlEncoder();
+
 app.MapGet("/fortunes", async (HttpContext context, Db db) => {
     var fortunes = await db.LoadFortunesRows();
     var template = (RazorSliceHttpResult<List<Fortune>>)createFortunesTemplate(fortunes);
@@ -42,7 +49,11 @@ app.MapGet("/fortunes", async (HttpContext context, Db db) => {
 
 app.MapGet("/queries/{count}", async (Db db, int count) => await db.LoadMultipleQueriesRows(count));
 
+app.MapGet("/queries/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleQueriesRows(count)));
+
 app.MapGet("/updates/{count}", async (Db db, int count) => await db.LoadMultipleUpdatesRows(count));
+
+app.MapGet("/updates/{count}/result", async (Db db, int count) => Results.Json(await db.LoadMultipleUpdatesRows(count)));
 
 app.Lifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started. Press Ctrl+C to shut down."));
 app.Lifetime.ApplicationStopping.Register(() => Console.WriteLine("Application is shutting down..."));

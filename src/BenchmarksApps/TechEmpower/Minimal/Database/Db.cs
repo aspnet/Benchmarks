@@ -19,13 +19,13 @@ public class Db
         _connectionString = appSettings.ConnectionString;
     }
 
-    public Task<World> LoadSingleQueryRow()
+    public async Task<World> LoadSingleQueryRow()
     {
-        using var db = _dbProviderFactory.CreateConnection();
+        await using var db = _dbProviderFactory.CreateConnection();
         db!.ConnectionString = _connectionString;
 
         // Note: Don't need to open connection if only doing one thing; let dapper do it
-        return ReadSingleRow(db);
+        return await ReadSingleRow(db);
     }
 
     static Task<World> ReadSingleRow(DbConnection db)
@@ -40,7 +40,7 @@ public class Db
         count = Math.Clamp(count, 1, 500);
 
         var results = new World[count];
-        using var db = _dbProviderFactory.CreateConnection();
+        await using var db = _dbProviderFactory.CreateConnection();
 
         db!.ConnectionString = _connectionString;
         await db.OpenAsync();
@@ -59,7 +59,7 @@ public class Db
 
         var parameters = new Dictionary<string, object>();
 
-        using var db = _dbProviderFactory.CreateConnection();
+        await using var db = _dbProviderFactory.CreateConnection();
 
         db!.ConnectionString = _connectionString;
         await db.OpenAsync();
@@ -87,7 +87,7 @@ public class Db
     {
         List<Fortune> result;
 
-        using var db = _dbProviderFactory.CreateConnection();
+        await using var db = _dbProviderFactory.CreateConnection();
 
         db!.ConnectionString = _connectionString;
 
