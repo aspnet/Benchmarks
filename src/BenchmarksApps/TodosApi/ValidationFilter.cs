@@ -147,7 +147,8 @@ internal static class ValidationExtensions
                 if (validatableParametersMap?.Count > 0)
                 {
                     builder.Metadata.Add(new ValidationMetadata(validatableParametersMap.ToArray()));
-                    builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json"));
+
+                    builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, typeof(HttpValidationProblemDetails), new[] { "application/problem+json" }));
                     builder.FilterFactories.Add((effc, next) =>
                     {
                         var filter = ValidationFilter.Create(effc.ApplicationServices);
