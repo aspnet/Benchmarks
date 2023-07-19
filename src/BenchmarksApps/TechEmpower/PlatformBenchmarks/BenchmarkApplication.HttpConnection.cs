@@ -20,7 +20,7 @@ namespace PlatformBenchmarks
         public PipeReader Reader { get; set; }
         public PipeWriter Writer { get; set; }
 
-        protected HtmlEncoder HtmlEncoder { get; } = CreateHtmlEncoder();
+        private HtmlEncoder HtmlEncoder { get; } = CreateHtmlEncoder();
 
         private HttpParser<ParsingAdapter> Parser { get; } = new HttpParser<ParsingAdapter>();
 
