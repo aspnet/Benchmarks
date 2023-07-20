@@ -31,8 +31,8 @@ parameters:
   - displayName: Trimmed
     arguments: --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishSingleFile=true /p:PublishTrimmed=true\" --property mode=Trimmed
   - displayName: AOT
-    # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.Dotnet.ILCompiler version
-    arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.Dotnet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
+    # workaround https://github.com/dotnet/runtime/issues/81382 by explicitly referencing a Microsoft.DotNet.ILCompiler version
+    arguments: --application.buildArguments \"/p:PublishAot=true /p:StripSymbols=true\" --property mode=Aot --application.packageReferences \"Microsoft.DotNet.ILCompiler=$(MicrosoftNETCoreAppPackageVersion)\"
 
 steps:
 - ${{ each s in parameters.scenarios }}:
