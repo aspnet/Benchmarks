@@ -33,22 +33,14 @@ internal static class AppSettingsExtensions
 {
     public static IServiceCollection ConfigureAppSettings(this IServiceCollection services, IConfigurationRoot configurationRoot, IHostEnvironment hostEnvironment)
     {
-        // Can't use the configuration binding source generator due to bug where it emits non-compiling code right now
-        // https://github.com/dotnet/runtime/issues/83600
-        var optionsBuilder = services.Configure<AppSettings>(configurationRoot.GetSection(nameof(AppSettings)))
-            .AddOptions<AppSettings>();
+        var optionsBuilder = services.AddOptions<AppSettings>()
+            .BindConfiguration(nameof(AppSettings));
 
         if (!hostEnvironment.IsBuild())
         {
             services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>();
             optionsBuilder.ValidateOnStart();
         }
-
-        // Change to using BindConfiguration once https://github.com/dotnet/runtime/issues/83600 is complete
-        //services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>()
-        //    .AddOptions<AppSettings>()
-        //    .BindConfiguration(nameof(AppSettings))
-        //    .ValidateOnStart();
 
         // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
         //services.AddOptions<AppSettings>()
