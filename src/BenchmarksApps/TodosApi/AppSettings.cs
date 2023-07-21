@@ -33,10 +33,14 @@ internal static class AppSettingsExtensions
 {
     public static IServiceCollection ConfigureAppSettings(this IServiceCollection services, IConfigurationRoot configurationRoot, IHostEnvironment hostEnvironment)
     {
-        services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>()
-            .AddOptions<AppSettings>()
-            .BindConfiguration(nameof(AppSettings))
-            .ValidateOnStart();
+        var optionsBuilder = services.AddOptions<AppSettings>()
+            .BindConfiguration(nameof(AppSettings));
+
+        if (!hostEnvironment.IsBuild())
+        {
+            services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>();
+            optionsBuilder.ValidateOnStart();
+        }
 
         // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
         //services.AddOptions<AppSettings>()
