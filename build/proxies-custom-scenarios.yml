@@ -42,7 +42,7 @@ steps:
   - ${{ each p in parameters.proxies }}:
     - task: PublishToAzureServiceBus@1
       condition: succeededOrFailed()
-      timeoutInMinutes: 5
+      timeoutInMinutes: 10
       displayName: ${{ p.displayName }} ${{ s.displayName }}
       inputs:
         connectedServiceName: ${{ parameters.connection }}

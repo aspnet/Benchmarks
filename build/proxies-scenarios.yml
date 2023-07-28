@@ -142,7 +142,7 @@ steps:
       - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( ne( protocol.scenarioSuffix, '-h2load'), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
-          timeoutInMinutes: 5
+          timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
@@ -165,7 +165,7 @@ steps:
       - ${{ if and( protocol.requiresGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
-          timeoutInMinutes: 5
+          timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}

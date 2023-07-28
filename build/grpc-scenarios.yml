@@ -111,7 +111,7 @@ steps:
           - ${{ if or( not( eq(protocol.displayName, 'h3')), eq( parameters.runH3, 'true')) }}:
             - task: PublishToAzureServiceBus@1
               condition: succeededOrFailed()
-              timeoutInMinutes: 5
+              timeoutInMinutes: 10
               displayName: ${{ protocol.displayName }} ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ stream.displayName }}
               inputs:
                 connectedServiceName: ${{ parameters.connection }}
@@ -131,7 +131,7 @@ steps:
       - ${{ each stream in parameters.connectionStreams }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
-          timeoutInMinutes: 5
+          timeoutInMinutes: 10
           displayName: h2c ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ stream.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}

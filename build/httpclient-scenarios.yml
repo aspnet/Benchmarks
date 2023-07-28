@@ -66,7 +66,7 @@ steps:
       - ${{ each response in parameters.response }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
-          timeoutInMinutes: 5
+          timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
@@ -86,7 +86,7 @@ steps:
       - ${{ each content in parameters.requestContent }}:
         - task: PublishToAzureServiceBus@1
           condition: succeededOrFailed()
-          timeoutInMinutes: 5
+          timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
