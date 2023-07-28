@@ -46,6 +46,7 @@ steps:
     displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
     timeoutInMinutes: 10
+    retryCountOnTaskFailure: 1
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true

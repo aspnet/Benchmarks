@@ -50,6 +50,7 @@ steps:
   - task: PublishToAzureServiceBus@1
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
+    retryCountOnTaskFailure: 1
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
