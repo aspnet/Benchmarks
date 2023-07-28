@@ -24,7 +24,7 @@ namespace Build
 
         public async Task RunAsync()
         {
-            await _dotnet.ExecuteAsync($"new blazorwasm --hosted");
+            await _dotnet.ExecuteAsync($"new blazor --use-wasm");
 
             await Build();
 
