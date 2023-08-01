@@ -120,7 +120,7 @@ namespace Build
 
         async Task ModifyCshtmlFile()
         {
-            var file = Path.Combine(_workingDirectory, "Pages", "_Host.cshtml");
+            var file = Path.Combine(_workingDirectory, "App.razor");
             var originalContent = File.ReadAllText(file);
 
             File.WriteAllText(file, originalContent.Replace("<body>", "<body><h2>Some text</h2>"));
