@@ -135,7 +135,6 @@ steps:
   - task: PublishToAzureServiceBus@1
     displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
-    retryCountOnTaskFailure: 1
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
@@ -144,5 +143,6 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
+          "retries": 1,
           "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net8.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table NativeAotBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }

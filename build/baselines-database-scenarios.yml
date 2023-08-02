@@ -72,7 +72,6 @@ steps:
     - task: PublishToAzureServiceBus@1
       condition: succeededOrFailed()
       timeoutInMinutes: 10
-      retryCountOnTaskFailure: 1
       displayName: "${{ s.displayName }} - ${{ b.displayName }}"
       inputs:
         connectedServiceName: ${{ parameters.connection }}
@@ -82,5 +81,6 @@ steps:
           {
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
+            "retries": 1,
             "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

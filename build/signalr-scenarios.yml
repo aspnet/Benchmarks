@@ -55,7 +55,6 @@ steps:
         condition: succeededOrFailed()
         enabled: ${{ not( and( eq(transport.displayName, 'ServerSentEvents'), eq(protocol.displayName, 'MessagePack'))) }}
         displayName: ${{ s.displayName }} ${{ transport.displayName }} ${{ protocol.displayName }}
-        retryCountOnTaskFailure: 1
         inputs:
           connectedServiceName: ${{ parameters.connection }}
           waitForCompletion: true
@@ -64,6 +63,7 @@ steps:
             {
               "timeout": "00:5:00",
               "condition": "${{ parameters.condition }}",
+              "retries": 1,
               "name": "crank",
               "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.channel edge --load.framework net8.0 --warmup.channel edge --warmup.framework net8.0 --application.framework net8.0 --session $(session) --command-line-property --table SignalRBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
             }
