@@ -90,7 +90,7 @@ sources:
   - name: PublishedSizeAot
     table: NativeAotBenchmarks
     rules:
-      - include: Stage1Aot
+      - include: Stage.*Aot
     daysToLoad: 60
     stdevCount: 5
     regressions:
@@ -132,7 +132,7 @@ sources:
   - name: Native AOT Reliability
     table: NativeAotBenchmarks
     rules:
-      - include: Stage1Aot
+      - include: Stage.*Aot
     regressions:
       labels: 
         - Perf
