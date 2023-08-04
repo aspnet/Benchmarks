@@ -70,8 +70,7 @@ parameters:
     arguments: --scenario ApiCrudListProducts $(crudApiJwtJobs) --property scenario=ApiCrudListProductsJwtAuth
   - displayName: plaintext (JWT)
     arguments: --scenario NoMvcAuth $(crudApiJwtJobs) --property scenario=PlaintextRawJwt
-
-  - displayName: plaintext (JWT)
+  - displayName: plaintext (No Auth)
     arguments: --scenario NoMvcNoAuth $(crudApiJwtJobs) --property scenario=PlaintextRawNoAuth
 
 # Orchard Core
