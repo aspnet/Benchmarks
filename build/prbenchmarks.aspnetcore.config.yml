@@ -47,6 +47,10 @@ benchmarks:
       description: TechEmpower Plaintext Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario plaintext
 
+    plaintext_endpoint:
+      description: TechEmpower Plaintext Scenario - ASP.NET Endpoint Routing
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario endpoint
+      
     json:
       description: TechEmpower JSON Scenario - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario json
