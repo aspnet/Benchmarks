@@ -13,6 +13,13 @@ components:
         arguments: 
             --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Mvc\release\net8.0\
 
+    routing: 
+        script: |
+            call .\src\Http\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
+            
+        arguments: 
+            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Routing\release\net8.0\
+
 # default arguments that are always used on crank commands
 defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net8.0 --relay AZURE_RELAY 
 
