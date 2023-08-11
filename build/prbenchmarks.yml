@@ -34,6 +34,7 @@ jobs:
   - powershell: |
         git clone https://github.com/dotnet/crank -b main
         cd .\crank\src\Microsoft.Crank.PullRequestBot
+        git pull
         git rev-parse HEAD
         dotnet build -c release --framework net7.0
 
