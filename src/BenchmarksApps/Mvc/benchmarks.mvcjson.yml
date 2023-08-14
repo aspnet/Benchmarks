@@ -192,12 +192,7 @@ scenarios:
       variables:
         verb: POST
         headers:
-          content-type: application/x-www-form-urlencoded
-          form-data:
-          - name: Id
-            value: 1
-          - name: Name
-            value: Write tests
-          - name: IsComplete
-            value: false
+          formInput: '--header "content-type: application/x-www-form-urlencoded"'
+        presetHeaders: 'formInput'
         path: /EchoTodoForm
+        bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/todo-form.txt
