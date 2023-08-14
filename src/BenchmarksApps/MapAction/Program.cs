@@ -19,6 +19,9 @@ using var host = Host.CreateDefaultBuilder(args)
             {
                 Todo EchoTodo([FromBody] Todo todo) => todo;
                 endpoints.MapPost("/EchoTodo", (Func<Todo, Todo>)EchoTodo);
+                // Intentionally disable anti-forgery for this endpoint so we can evaluate just the form-processing portions
+                endpoints.MapPost("/EchoTodoForm", ([FromForm] Todo todo) => todo)
+                    .DisableAntiforgery();
 
                 string Plaintext() => "Hello, World!";
                 endpoints.MapGet("/plaintext", (Func<string>)Plaintext);
