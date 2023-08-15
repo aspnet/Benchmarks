@@ -13,9 +13,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NETCOREAPP5_0 && !NET5_0 && !NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -76,13 +73,11 @@ namespace Benchmarks
                     .AddSingleton<Scenarios>()
                     .Configure<LoggerFilterOptions>(options =>
                     {
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
                         if (Boolean.TryParse(config["DisableScopes"], out var disableScopes) && disableScopes)
                         {
                             Console.WriteLine($"LoggerFilterOptions.CaptureScopes = false");
                             options.CaptureScopes = false;
                         }
-#endif
                     })
                 )
                 .UseDefaultServiceProvider(
@@ -106,66 +101,19 @@ namespace Benchmarks
                     {
                         Listen(options, config, "http://localhost:5000/");
                     }
-#if !NETCOREAPP3_0 && !NETCOREAPP3_1 && !NET5_0 && !NET6_0_OR_GREATER
-
-                    var kestrelThreadPoolDispatchingValue = config["KestrelThreadPoolDispatching"];
-                    if (kestrelThreadPoolDispatchingValue != null)
-                    {
-                        if (bool.Parse(kestrelThreadPoolDispatchingValue))
-                        {
-                            options.ApplicationSchedulingMode = SchedulingMode.ThreadPool;
-                        }
-                        else
-                        {
-                            options.ApplicationSchedulingMode = SchedulingMode.Inline;
-                        }
-                    }
-#endif
                 });
 
                 var threadCount = GetThreadCount(config);
-                var kestrelTransport = config["KestrelTransport"];
 
-                if (threadPoolDispatching == false || string.Equals(kestrelTransport, "Libuv", StringComparison.OrdinalIgnoreCase))
+                webHostBuilder.UseSockets(socketOptions =>
                 {
-#if !NET6_0_OR_GREATER
-                    webHostBuilder.UseLibuv(options =>
+                    if (threadCount > 0)
                     {
-                        if (threadCount > 0)
-                        {
-                            options.ThreadCount = threadCount;
-                        }
-                        else if (threadPoolDispatching == false)
-                        {
-                            // If thread pool dispatching is explicitly set to false
-                            // and the thread count wasn't specified then use 2 * number of logical cores
-                            options.ThreadCount = Environment.ProcessorCount * 2;
-                        }
+                        socketOptions.IOQueueCount = threadCount;
+                    }
 
-                        Console.WriteLine($"Using Libuv with {options.ThreadCount} threads");
-                    });
-#endif
-                }
-                else if (string.Equals(kestrelTransport, "Sockets", StringComparison.OrdinalIgnoreCase))
-                {
-                    webHostBuilder.UseSockets(socketOptions =>
-                    {
-                        if (threadCount > 0)
-                        {
-                            socketOptions.IOQueueCount = threadCount;
-                        }
-
-                        Console.WriteLine($"Using Sockets with {socketOptions.IOQueueCount} threads");
-                    });
-                }
-                else if (string.IsNullOrEmpty(kestrelTransport))
-                {
-                    throw new InvalidOperationException($"Transport must be specified");
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unknown transport {kestrelTransport}");
-                }
+                    Console.WriteLine($"Using Sockets with {socketOptions.IOQueueCount} threads");
+                });
 
                 webHostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
             }
@@ -176,12 +124,10 @@ namespace Benchmarks
                 webHostBuilder = webHostBuilder.UseHttpSys();
                 #pragma warning restore CA1416
             }
-#if NETCOREAPP2_2 || NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseKestrel().UseIIS();
             }
-#endif
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
@@ -269,7 +215,6 @@ namespace Benchmarks
 
             options.Listen(endpoint, listenOptions =>
             {
-#if !NETCOREAPP2_0 && !NETCOREAPP2_1
                 if (Protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
                 {
                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -278,7 +223,6 @@ namespace Benchmarks
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
                 }
-#endif
 
                 if (urlPrefix.IsHttps)
                 {

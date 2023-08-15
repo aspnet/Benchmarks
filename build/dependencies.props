@@ -1,91 +1,38 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <CoreFxVersion>4.4.0-*</CoreFxVersion>
-    <JsonNetVersion>11.0.2</JsonNetVersion>
-    <JilVersion>2.15.4</JilVersion>
-    <SignalRVersion>1.1.0-*</SignalRVersion>
-    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
-    <NETCoreAppImplicitPackageVersion>2.0.0</NETCoreAppImplicitPackageVersion>
-
-    <MicrosoftNETSdkRazorPackageVersion21></MicrosoftNETSdkRazorPackageVersion21>
-    <MicrosoftAspNetCoreLibuvPackageVersion21>2.1.3</MicrosoftAspNetCoreLibuvPackageVersion21>
-
-    <!-- Default values that are set to RuntimeFrameworkVersion if none is specified in BenchmarksRuntimeFrameworkVersion c.f. Directory.Build.Targets -->
-    <!-- Directory.Build.targets comes last, even after the csproj values, so setting RuntimeFrameworkVersion in the csproj has no effect -->
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0</MicrosoftNETCoreApp22PackageVersion>
-
-    <!--
-      Following properties are specific to src/Benchmarks/Benchmarks.csproj.
-      Separate to ease testing of earlier releases.
-    -->
-    <BenchmarksAspNetCoreVersion>$(AspNetCoreVersion)</BenchmarksAspNetCoreVersion>
-    <BenchmarksNETStandardImplicitPackageVersion>$(NETStandardImplicitPackageVersion)</BenchmarksNETStandardImplicitPackageVersion>
-    <BenchmarksNETCoreAppImplicitPackageVersion>$(NETCoreAppImplicitPackageVersion)</BenchmarksNETCoreAppImplicitPackageVersion>
-    <BenchmarksRuntimeFrameworkVersion>$(RuntimeFrameworkVersion)</BenchmarksRuntimeFrameworkVersion>
-
-    <MongoDbVersion>2.8.0</MongoDbVersion>
-    <DapperVersion>2.0.30</DapperVersion>
-
-    <NpgsqlVersion50>5.0.5</NpgsqlVersion50>
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
+    <NpgsqlVersion70>7.0.4</NpgsqlVersion60>
     <NpgsqlVersion80>8.0.0-preview.3</NpgsqlVersion80>
 
-    <MicrosoftDataSqlClientVersion60>4.0.0</MicrosoftDataSqlClientVersion60>
-    <MicrosoftDataSqlClientVersion80>5.1.0</MicrosoftDataSqlClientVersion80>
+    <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
+    <MicrosoftDataSqlClientVersion80>5.1.1</MicrosoftDataSqlClientVersion80>
 
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion20>2.0.2</NpgsqlEntityFrameworkCorePostgreSQLVersion20>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion21>2.1.2</NpgsqlEntityFrameworkCorePostgreSQLVersion21>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion22>2.2.4</NpgsqlEntityFrameworkCorePostgreSQLVersion22>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion30>3.0.1</NpgsqlEntityFrameworkCorePostgreSQLVersion30>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion31>3.1.18</NpgsqlEntityFrameworkCorePostgreSQLVersion31>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion50>5.0.10</NpgsqlEntityFrameworkCorePostgreSQLVersion50>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.3</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.4</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
 
-    <PomeloEntityFrameworkCoreMySqlVersion20>2.0.1</PomeloEntityFrameworkCoreMySqlVersion20>
-    <PomeloEntityFrameworkCoreMySqlVersion21>2.1.4</PomeloEntityFrameworkCoreMySqlVersion21>
-    <PomeloEntityFrameworkCoreMySqlVersion22>2.2.0</PomeloEntityFrameworkCoreMySqlVersion22>
-    <PomeloEntityFrameworkCoreMySqlVersion30>3.0.1</PomeloEntityFrameworkCoreMySqlVersion30>
-    <PomeloEntityFrameworkCoreMySqlVersion31>3.1.1</PomeloEntityFrameworkCoreMySqlVersion31>
-    <PomeloEntityFrameworkCoreMySqlVersion50>5.0.2</PomeloEntityFrameworkCoreMySqlVersion50>
     <PomeloEntityFrameworkCoreMySqlVersion60>6.0.2</PomeloEntityFrameworkCoreMySqlVersion60>
+    <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
     <PomeloEntityFrameworkCoreMySqlVersion80>7.0.0</PomeloEntityFrameworkCoreMySqlVersion80>
 
-    <MicrosoftEntityFrameworkCoreSqlServerVersion30>3.0.3</MicrosoftEntityFrameworkCoreSqlServerVersion30>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion31>3.1.32</MicrosoftEntityFrameworkCoreSqlServerVersion31>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion50>5.0.17</MicrosoftEntityFrameworkCoreSqlServerVersion50>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.14</MicrosoftEntityFrameworkCoreSqlServerVersion60>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.0-preview.3.23174.2</MicrosoftEntityFrameworkCoreSqlServerVersion80>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqlServerVersion60>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqlServerVersion70>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.0-preview.7.23375.4</MicrosoftEntityFrameworkCoreSqlServerVersion80>
 
-    <MicrosoftEntityFrameworkCoreSqliteVersion21>2.1.14</MicrosoftEntityFrameworkCoreSqliteVersion21>
-    <MicrosoftEntityFrameworkCoreSqliteVersion22>2.2.6</MicrosoftEntityFrameworkCoreSqliteVersion22>
-    <MicrosoftEntityFrameworkCoreSqliteVersion30>3.0.3</MicrosoftEntityFrameworkCoreSqliteVersion30>
-    <MicrosoftEntityFrameworkCoreSqliteVersion31>3.1.32</MicrosoftEntityFrameworkCoreSqliteVersion31>
-    <MicrosoftEntityFrameworkCoreSqliteVersion50>5.0.17</MicrosoftEntityFrameworkCoreSqliteVersion50>
-    <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.14</MicrosoftEntityFrameworkCoreSqliteVersion60>
-    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-preview.3.23174.2</MicrosoftEntityFrameworkCoreSqliteVersion80>
+    <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqliteVersion60>
+    <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqliteVersion70>
+    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-preview.7.23375.4</MicrosoftEntityFrameworkCoreSqliteVersion80>
 
-    <MicrosoftAspNetCoreAppPackageVersion80>8.0.0-preview.3.23177.8</MicrosoftAspNetCoreAppPackageVersion80>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <MicrosoftAspNetCoreAppPackageVersion>2.1.3</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-    <MicrosoftAspNetCoreAppPackageVersion>2.2.0</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>3.0.0</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <MicrosoftAspNetCoreAppPackageVersion>3.1.0</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
+  <!-- ASP.NET versions used by default when no specific one is defined for a benchmark -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>6.0.14</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>6.0.21</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>7.0.10</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>$(MicrosoftAspNetCoreAppPackageVersion80)</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>8.0.0-preview.7.23375.9</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 </Project>

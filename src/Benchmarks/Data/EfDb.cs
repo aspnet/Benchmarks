@@ -71,21 +71,6 @@ namespace Benchmarks.Data
             return results;
         }
 
-#if NETCOREAPP2_1 || NETCOREAPP2_2
-        private static readonly Func<ApplicationDbContext, AsyncEnumerable<Fortune>> _fortunesQuery
-            = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
-
-        public async Task<IEnumerable<Fortune>> LoadFortunesRows()
-        {
-            var result = await _fortunesQuery(_dbContext).ToListAsync();
-
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
-            result.Sort();
-
-            return result;
-        }
-
-#else
         private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
             = EF.CompileAsyncQuery((ApplicationDbContext context) => context.Fortune);
 
@@ -104,7 +89,5 @@ namespace Benchmarks.Data
 
             return result;
         }
-
-#endif
     }
 }
