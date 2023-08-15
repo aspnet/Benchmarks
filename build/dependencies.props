@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Package Versions">
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
-    <NpgsqlVersion70>7.0.4</NpgsqlVersion60>
+    <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
     <NpgsqlVersion80>8.0.0-preview.3</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
