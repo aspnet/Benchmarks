@@ -191,8 +191,6 @@ scenarios:
       job: bombardier
       variables:
         verb: POST
-        headers:
-          formInput: '--header "content-type: application/x-www-form-urlencoded"'
-        presetHeaders: 'formInput'
+        customHeaders: [ 'content-type: application/x-www-form-urlencoded' ]
         path: /EchoTodoForm
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/todo-form.txt
