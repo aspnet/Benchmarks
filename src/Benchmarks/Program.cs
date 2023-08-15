@@ -83,7 +83,6 @@ namespace Benchmarks
                 .UseDefaultServiceProvider(
                     (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());
 
-            bool? threadPoolDispatching = null;
             if (String.Equals(Server, "Kestrel", StringComparison.OrdinalIgnoreCase))
             {
                 webHostBuilder = webHostBuilder.UseKestrel(options =>

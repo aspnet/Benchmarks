@@ -5,6 +5,7 @@
     <NpgsqlVersion80>8.0.0-preview.3</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
+    <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
     <MicrosoftDataSqlClientVersion80>5.1.1</MicrosoftDataSqlClientVersion80>
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
