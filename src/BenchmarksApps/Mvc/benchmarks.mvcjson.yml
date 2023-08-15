@@ -182,3 +182,22 @@ scenarios:
         presetHeaders: 'jsonInput'
         path: /EchoTodo
         bodyFile: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/assets/todo.json
+
+  # MapAction EchoForm
+  MapActionEchoTodoForm:
+    application:
+      job: mapaction
+    load:
+      job: bombardier
+      variables:
+        verb: POST
+        headers:
+          content-type: application/x-www-form-urlencoded
+          form-data:
+          - name: Id
+            value: 1
+          - name: Name
+            value: Write tests
+          - name: IsComplete
+            value: false
+        path: /EchoTodoForm
