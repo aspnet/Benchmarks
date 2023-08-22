@@ -3,11 +3,7 @@
 
 using System;
 using System.Data.Common;
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
 using Microsoft.Data.SqlClient;
-#else
-using System.Data.SqlClient;
-#endif
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -80,13 +76,9 @@ namespace Benchmarks
                     services.AddDbContextPool<ApplicationDbContext>(
                         options => options
                             .UseNpgsql(appSettings.ConnectionString
-#if NET5_0_OR_GREATER
                                 , o => o.ExecutionStrategy(d => new NonRetryingExecutionStrategy(d))
-#endif
                                 )
-#if NET6_0_OR_GREATER
                             .EnableThreadSafetyChecks(false)
-#endif
                         , 1024);
 
                     if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -106,20 +98,7 @@ namespace Benchmarks
                     break;
 
                 case DatabaseServer.MySql:
-
-#if NETCOREAPP3_0 || NETCOREAPP3_1 ||  NET5_0 || NET6_0_OR_GREATER
-                    throw new NotSupportedException("EF/MySQL is unsupported on netcoreapp3.0 until a provider is available");
-#else
-                    services.AddEntityFrameworkMySql();
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString));
-
-                    if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
-                    {
-                        services.AddSingleton<DbProviderFactory>(MySql.Data.MySqlClient.MySqlClientFactory.Instance);
-                    }
-
-                    break;
-#endif
+                    throw new NotSupportedException("EF/MySQL is unsupported");
 
                 case DatabaseServer.Sqlite:
                     using (var connection = new SqliteConnection(appSettings.ConnectionString))
@@ -352,12 +331,6 @@ namespace Benchmarks
                 app.UseFortunesEf();
             }
 
-#if NETCOREAPP2_1 || NETCOREAPP2_2
-            if (Scenarios.Any("Mvc"))
-            {
-                app.UseMvc();
-            }
-#elif NETCOREAPP3_0 || NETCOREAPP3_1 || NETCOREAPP5_0 || NET5_0 || NET6_0_OR_GREATER
             if (Scenarios.Any("EndpointPlaintext"))
             {
                 app.UseRouting();
@@ -389,7 +362,6 @@ namespace Benchmarks
                     endpoints.MapControllers();
                 });
             }
-#endif
 
             if (Scenarios.MemoryCachePlaintext)
             {

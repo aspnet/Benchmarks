@@ -20,124 +20,37 @@
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 
-  <!-- Old way of overriding the dotnet runtime -->
-  <PropertyGroup Condition="$(TargetFramework) != 'net5.0' and $(TargetFramework) != 'net6.0' and $(TargetFramework) != 'net7.0' and $(TargetFramework) != 'net8.0'">
-    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="$(DapperVersion)" />
-    
-    <!-- We need to be able to reference a specific Pipelines version without having to change aspnet or netcore runtimes -->
-    <PackageReference Include="System.IO.Pipelines" Condition="$(SystemIOPipelinesVersion) != ''" Version="$(SystemIOPipelinesVersion)" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <!-- Sockets where only available as a preview package for 2.0 -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.1.40" />
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion20)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion20)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreLibuvPackageVersion21)" />
-
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion21)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion21)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion21)" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.2'">
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
-
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <!--<PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />-->
-    <!-- Temporary pinned version until the package is built again -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.2" />
-    
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion22)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion22)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion22)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.0'">
-    <!-- These versions are now fixed, unless a service package is released -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="3.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.2" />
-
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="3.0.0-preview3-19122-02" />
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion30)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion50)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion30)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion30)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
-    <!-- These versions are now fixed, unless a service package is released -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="3.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
-
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="3.0.0-preview3-19122-02" />
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion31)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion50)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion31)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion31)" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="$(TargetFramework) == 'net5.0'">
-      <!-- Floating versions that matches the ASP.NET one while not stabilized -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+  <ItemGroup Condition="$(TargetFramework) == 'net6.0'">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <!-- Pinning version as the feeds don't include this anymore as of 4/25/2020 -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" /> -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-preview.6.20303.1" />
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion50)" />
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion50)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion50)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion50)" />
-    <!--PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion50)" /-->
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'net6.0' or $(TargetFramework) == 'net7.0' ">
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <!-- Pinning version as the feeds don't include this anymore as of 4/25/2020 -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" /> -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-preview.6.20303.1" /> -->
-
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion60)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion60)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion60)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion60)" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion60)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion60)" />
     <!--PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion60)" /-->
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework) == 'net7.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion70)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion70)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion70)" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MicrosoftDataSqlClientVersion70)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqliteVersion70)" />
+    <!--PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(PomeloEntityFrameworkCoreMySqlVersion70)" /-->
+  </ItemGroup>
+
   <ItemGroup Condition="$(TargetFramework) == 'net8.0' ">
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-
-    <!-- Pinning version as the feeds don't include this anymore as of 4/25/2020 -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreAppPackageVersion)" /> -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="5.0.0-preview.6.20303.1" /> -->
-
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion80)" />
