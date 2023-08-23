@@ -2,7 +2,7 @@
   <PropertyGroup Label="Package Versions">
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
     <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.0-preview.3</NpgsqlVersion80>
+    <NpgsqlVersion80>8.0.0-preview.4</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
@@ -10,7 +10,7 @@
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.4</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-preview.7</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
 
     <PomeloEntityFrameworkCoreMySqlVersion60>6.0.2</PomeloEntityFrameworkCoreMySqlVersion60>
     <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
@@ -34,6 +34,6 @@
     <MicrosoftAspNetCoreAppPackageVersion>7.0.10</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>8.0.0-preview.7.23375.9</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>8.0.0-rc.2.23421.27</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 </Project>
