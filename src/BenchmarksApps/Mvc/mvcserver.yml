@@ -8,9 +8,10 @@ jobs:
     waitForExit: false
     variables:
       useNewtonsoftJson: false
+      useAsymmetricKey: false
       serverScheme: http
       serverPort: 5000
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {%if useNewtonsoftJson == true %} --useNewtonsoftJson true {% endif %} {%if useAsymmetricKey == true %} --useAsymmetricKey true {% endif %}"
   mapaction:
     source:
       repository: https://github.com/aspnet/Benchmarks.git
