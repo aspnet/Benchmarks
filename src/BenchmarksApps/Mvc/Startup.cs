@@ -15,7 +15,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.IO;
-using System.Reflection;
 
 namespace Mvc
 {

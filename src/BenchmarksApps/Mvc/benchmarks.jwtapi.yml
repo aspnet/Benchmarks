@@ -24,7 +24,7 @@ scenarios:
           authorization: '--header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InRlc3QiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QHRlc3QuY29tIiwic3ViIjoidGVzdEB0ZXN0LmNvbSIsImV4cCI6MjAxMzUzMjk3NiwiaXNzIjoiVGVzdCIsImF1ZCI6InRlc3QifQ.tQ-s9uAokahLfeKY-SKnvYQWDU4HrFCRV-0Ae7LAabY"'
         presetHeaders: 'authorization'
 
-  NoMvcAsym:
+  NoMvcAsymmetricAuth:
     application:
       job: mvcServer
       variables:
