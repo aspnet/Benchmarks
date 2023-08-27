@@ -24,6 +24,21 @@ scenarios:
           authorization: '--header "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InRlc3QiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QHRlc3QuY29tIiwic3ViIjoidGVzdEB0ZXN0LmNvbSIsImV4cCI6MjAxMzUzMjk3NiwiaXNzIjoiVGVzdCIsImF1ZCI6InRlc3QifQ.tQ-s9uAokahLfeKY-SKnvYQWDU4HrFCRV-0Ae7LAabY"'
         presetHeaders: 'authorization'
 
+  NoMvcAsym:
+    application:
+      job: mvcServer
+      variables:
+        useAsymmetricKey: true
+      buildArguments: 
+      - "/p:UseJwtAuth=true /p:UseAuthorize=true /p:UseOnlyAuth=true"
+    load:
+      job: bombardier
+      variables:
+        path: /Hi
+        headers:
+          authorization: '--header "Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjQ3MDU0M0UwRkMxOUYzRDQzNTU0NTdBOEMyMkU3ODkxOUVBOUFBNjYiLCJ0eXAiOiJKV1QifQ.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImJyb3dzZXIgV2ViU29ja2V0cyIsImV4cCI6MjE2NjU2MTczNywiaXNzIjoiU2lnbmFsUlRlc3RTZXJ2ZXIiLCJhdWQiOiJTaWduYWxSVGVzdHMifQ.VkVJ4uEQTVqHU9LQB8fiMMfCjcwJ32rOupe_VA7QkFQYQ0KP18Shpt08msAGyapvUZFcAzQUdxJHybqbbNFV5Z14cqHPkQxRlGzBgn-JVlwLHFr7WEc2Luo-6FDg0EGjcGcSpueCJk8UANoRs3xl7QL5IGL8kjvzJpfGaCH70SJlVBK5_l4exkbiJxG4_tSnFT2VI_u6C3maNjGEsoDvjx4BPvVDgAhUxCNNJmV6ZwvbDn2KD8Ge65bhuATh6MlieuTGr90NoWquLsE64IfRn1yIw3c10DqvpraAxRF5nGxmvNYMkjh5ohHe1pWjk6ljYabMGxu_bMnZT9YRexyWdQ"'
+        presetHeaders: 'authorization'
+
     # Get with bearer without mvc or auth
   NoMvcNoAuth:
     application:
