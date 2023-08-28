@@ -75,7 +75,7 @@ parameters:
   - displayName: plaintext (JWT)
     arguments: --scenario NoMvcAuth $(crudApiJwtJobs) --property scenario=PlaintextRawJwt
   - displayName: plaintext (JWT Asymmetric Key)
-    arguments: --scenario NoMvcAsymmetricAuth $(crudApiJwtJobs) --property scenario=PlaintextRawJwt
+    arguments: --scenario NoMvcAsymmetricAuth $(crudApiJwtJobs) --property scenario=PlaintextJwtAsymmetricKey
   - displayName: plaintext (No Auth)
     arguments: --scenario NoMvcNoAuth $(crudApiJwtJobs) --property scenario=PlaintextRawNoAuth
 
