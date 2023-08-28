@@ -35,7 +35,6 @@ namespace Mvc
             else
             {
                 SecurityKey = new SymmetricSecurityKey(Convert.FromBase64String("MFswDQYJKoZIhvcNAQEBBQADSgAwRwJAca32BtkpByiveJTwINuEerWBg2kac7sb"));
-                throw new Exception("symmetric");
             }
 #endif
         }
