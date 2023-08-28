@@ -1,0 +1,16 @@
+<Project>
+  <!--
+  ASP.NET versions used by default when no specific one is defined for a benchmark.
+  Note these need to be defined in a .targets file because they depend on the TargetFramework,
+  which isn't set until the .csproj is evaluated.
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>6.0.*</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>7.0.*</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>8.0.*-*</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
+</Project>
