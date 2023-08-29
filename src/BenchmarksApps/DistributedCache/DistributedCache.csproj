@@ -4,16 +4,9 @@
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-
-    <!-- Set package versions to float to latest based on TFM if not defined -->
-    <MicrosoftNETCoreAppPackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '' and '$(TargetFramework)' != ''">$(TargetFramework.Substring(3,3)).*</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == '' and '$(TargetFramework)' != ''">$(TargetFramework.Substring(3,3)).*</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Use the latest version based on the requested TFM -->
-    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftNETCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-
-    <!-- Set package versions to float to latest based on TFM if not defined -->
-    <MicrosoftNETCoreAppPackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '' and '$(TargetFramework)' != ''">$(TargetFramework.Substring(3,3)).*</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftAspNetCoreAppPackageVersion Condition="'$(MicrosoftAspNetCoreAppPackageVersion)' == '' and '$(TargetFramework)' != ''">$(TargetFramework.Substring(3,3)).*</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

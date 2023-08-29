@@ -25,15 +25,4 @@
     <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-preview.7.23375.4</MicrosoftEntityFrameworkCoreSqliteVersion80>
 
   </PropertyGroup>
-
-  <!-- ASP.NET versions used by default when no specific one is defined for a benchmark -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>6.0.21</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>7.0.10</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <MicrosoftAspNetCoreAppPackageVersion>8.0.0-rc.2.23421.27</MicrosoftAspNetCoreAppPackageVersion>
-  </PropertyGroup>
 </Project>
