@@ -8,17 +8,17 @@ using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
     public class MultipleUpdatesEfMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiUpdateEf));
-        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         private readonly RequestDelegate _next;
@@ -37,7 +37,7 @@ namespace Benchmarks.Middleware
                 var db = httpContext.RequestServices.GetService<EfDb>();
                 var rows = await db.LoadMultipleUpdatesRows(count);
 
-                var result = JsonConvert.SerializeObject(rows, _jsonSettings);
+                var result = JsonSerializer.Serialize(rows, _jsonSerializerOptions);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
                 httpContext.Response.ContentType = "application/json";

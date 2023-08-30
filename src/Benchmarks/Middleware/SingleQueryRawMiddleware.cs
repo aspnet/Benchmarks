@@ -8,17 +8,18 @@ using Benchmarks.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
     public class SingleQueryRawMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbSingleQueryRaw));
-        private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         private readonly RequestDelegate _next;
@@ -35,7 +36,7 @@ namespace Benchmarks.Middleware
                 var db = httpContext.RequestServices.GetService<RawDb>();
                 var row = await db.LoadSingleQueryRow();
 
-                var result = JsonConvert.SerializeObject(row, _jsonSettings);
+                var result = JsonSerializer.Serialize(row, _jsonSerializerOptions);
 
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
                 httpContext.Response.ContentType = "application/json";

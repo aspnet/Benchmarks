@@ -20,32 +20,10 @@ scenarios:
       variables:
         path: /json-helloworld
 
-  # Hello world JSON output using Newtonsoft.Json
-  MvcJsonNet:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
-    load:
-      job: wrk
-      variables:
-        path: /json-helloworld
-
   # ~2k Json output
   MvcJson2k:
     application:
       job: mvcServer
-    load:
-      job: wrk
-      variables:
-        path: /json2k
-
-  # ~2k Json output (Newtonsoft.Json)
-  MvcJsonNet2k:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
     load:
       job: wrk
       variables:
@@ -60,34 +38,10 @@ scenarios:
       variables:
         path: /jsonNbytes/60000
 
-  # 60k json output.
-  MvcJsonNetOutput60k:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
-    load:
-      job: wrk
-      variables:
-        path: /jsonNbytes/60000
-
   # 2M json output
   MvcJsonOutput2M:
     application:
       job: mvcServer
-    load:
-      job: wrk
-      variables:
-        path: /jsonNbytes/2097152
-        connections: 4
-        threads: 4
-
-  # 2M json output (Newtonsoft.Json)
-  MvcJsonNetOutput2M:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
     load:
       job: wrk
       variables:
@@ -105,18 +59,6 @@ scenarios:
         path: /JsonInput
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
 
-  # Sending 2k Json to Mvc (Json.NET)
-  MvcJsonNetInput2k:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
-    load:
-      job: wrk
-      variables:
-        path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
-
   # Sending 60k Json to Mvc
   MvcJsonInput60k:
     application:
@@ -128,38 +70,10 @@ scenarios:
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
         scriptArguments: 60000
 
-  # Sending 60k Json to Mvc (Json.NET)
-  MvcJsonNetInput60k:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
-    load:
-      job: wrk
-      variables:
-        path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
-        scriptArguments: 60000
-
   # 2M json output
   MvcJsonInput2M:
     application:
       job: mvcServer
-    load:
-      job: wrk
-      variables:
-        path: /JsonInput
-        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/scripts/mvcjsoninput.lua
-        scriptArguments: 2097152
-        connections: 4
-        threads: 4
-
-  # 2M json output (Json.NET)
-  MvcJsonNetInput2M:
-    application:
-      job: mvcServer
-      variables:
-        useNewtonsoftJson: true
     load:
       job: wrk
       variables:
