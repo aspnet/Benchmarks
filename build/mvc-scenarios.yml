@@ -36,6 +36,8 @@ parameters:
   # Forms
   - displayName: MapAction Echo Todo (Form)
     arguments: --scenario MapActionEchoTodoForm $(mvcJobs) --property scenario=MapActionEchoTodoForm
+  - displayName: MapAction Echo Todo (Form Mapping)
+    arguments: --scenario MapActionEchoTodoFormMapping $(mvcJobs) --property scenario=MapActionEchoTodoFormMapping
 
   # CRUD API
   - displayName: API return collection data

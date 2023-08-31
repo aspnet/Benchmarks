@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using var host = Host.CreateDefaultBuilder(args)
-    .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
+    // .ConfigureLogging(logBuilder => logBuilder.ClearProviders())
     .ConfigureWebHostDefaults(webBuilder =>
     {
         webBuilder.Configure(app =>
@@ -22,6 +22,8 @@ using var host = Host.CreateDefaultBuilder(args)
                 // Intentionally disable anti-forgery for this endpoint so we can evaluate just the form-processing portions
 #if NET8_0_OR_GREATER
                 endpoints.MapPost("/EchoTodoForm", ([FromForm] IFormCollection form) => form)
+                    .DisableAntiforgery();
+                endpoints.MapPost("/EchoTodoFromForm", ([FromForm] Todo form) => form)
                     .DisableAntiforgery();
 #else
                 endpoints.MapPost("/EchoTodoForm", ([FromForm] IFormCollection form) => form);
