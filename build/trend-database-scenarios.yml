@@ -40,6 +40,17 @@ parameters:
   - displayName: Fortunes Dapper
     arguments: --scenario fortunes_dapper $(databaseJobs) --property scenario=FortunesDapper --property protocol=http
 
+# Minimal APIS
+
+  - displayName: Fortunes Minimal APIs
+    arguments: --scenario fortunes $(minimalJobs) --property scenario=FortunesMinimalApis --property protocol=http
+  - displayName: Single Query Minimal APIs
+    arguments: --scenario single_query $(minimalJobs) --property scenario=SingleQueryMinimalApis --property protocol=http
+  - displayName: Multiple Queries Minimal APIs
+    arguments: --scenario multiple_queries $(minimalJobs) --property scenario=MultipleQueriesMinimalApis --property protocol=http
+  - displayName: Updates Minimal APIs
+    arguments: --scenario updates $(minimalJobs) --property scenario=UpdatesMinimalApis --property protocol=http --variable duration=30
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
