@@ -95,6 +95,18 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
+  drogon:
+    source:
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/C++/drogon/drogon.dockerfile
+      dockerContextDirectory: frameworks/C++/drogon/
+      dockerImageName: drogon
+    readyStateText: Started http server
+    port: 8080
+    arguments: --add-host="tfb-database:{{databaseServer}}"
+    noClean: true
+
   netty:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -363,6 +375,40 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortune
+        serverPort: 8080
+
+# Drogon (C++)
+  plaintext_drogon:
+    application:
+      job: drogon
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+        serverPort: 8080
+
+  json_drogon:
+    application:
+      job: drogon
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+
+  fortunes_drogon:
+    db:
+      job: postgresql
+    application:
+      job: drogon
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
         serverPort: 8080
 
   # Netty (Java)
