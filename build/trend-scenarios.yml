@@ -35,6 +35,8 @@ parameters:
     arguments: --scenario mvc $(plaintextJobs) --property scenario=PlaintextMvc --property protocol=http
   - displayName: Plaintext MapAction
     arguments: --scenario mapaction $(plaintextJobs) --property scenario=PlaintextMapAction --property protocol=http
+  - displayName: Plaintext Minimal APIs
+    arguments: --scenario plaintext $(minimalJobs) --property scenario=PlaintextMinimalApis --property protocol=http
   - displayName: Plaintext Endpoint
     arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint --property protocol=http
   - displayName: Plaintext (No Filters)
@@ -78,6 +80,8 @@ parameters:
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc --property protocol=http
   - displayName: Json MapAction
     arguments: --scenario mapaction $(jsonJobs) --property scenario=JsonMapAction --property protocol=http
+  - displayName: Json Minimal APIs
+    arguments: --scenario json $(minimalJobs) --property scenario=JsonMinimalApis --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
