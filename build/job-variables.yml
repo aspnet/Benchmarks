@@ -87,3 +87,5 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containers.benchmarks.yml
 - name: httpClientJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml
+- name: minimalJobs
+  value: --config https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml?raw=true
