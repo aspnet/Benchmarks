@@ -97,11 +97,11 @@ parameters:
     arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
     condition: Math.round(Date.now() / 43200000) % 10 == 5 # once every 10 half-days
 
-  - displayName: Json Ulib
-    arguments: --scenario json_ulib --property scenario=JsonUlib
+  - displayName: Json Drogon
+    arguments: --scenario json_drogon --property scenario=JsonDrogon
     condition: Math.round(Date.now() / 43200000) % 10 == 6 # once every 10 half-days
-  - displayName: Fortunes Ulib
-    arguments: --scenario fortunes_ulib --property scenario=FortunesUlib
+  - displayName: Fortunes Drogon
+    arguments: --scenario fortunes_drogon --property scenario=FortunesDrogon
     condition: Math.round(Date.now() / 43200000) % 10 == 7 # once every 10 half-days
 
   - displayName: Json Wizzardo

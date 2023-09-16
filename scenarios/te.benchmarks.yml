@@ -84,17 +84,6 @@ jobs:
     port: 8080 # used to poll the application to detect startup
     noClean: true
 
-  ulib:
-    source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
-      dockerContextDirectory: frameworks/C++/ulib/
-      dockerImageName: ulib
-    # readyStateText: Started http server
-    port: 8080
-    arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
-
   drogon:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
