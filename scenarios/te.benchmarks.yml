@@ -102,7 +102,7 @@ jobs:
       dockerFile: frameworks/C++/drogon/drogon.dockerfile
       dockerContextDirectory: frameworks/C++/drogon/
       dockerImageName: drogon
-    readyStateText: Started http server
+    # readyStateText: Drogon doesn't log anything
     port: 8080
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
@@ -334,51 +334,10 @@ scenarios:
         path: /fortunes
         serverPort: 8080
 
-  # Ulib (C++)
-  plaintext_ulib:
-    application:
-      job: ulib
-      source:
-          dockerFile: frameworks/C++/ulib/ulib.dockerfile
-          dockerImageName: ulib_plaintext
-    load:
-      job: wrk
-      variables:
-        presetHeaders: plaintext
-        path: /plaintext
-        pipeline: 16
-        serverPort: 8080
-
-  json_ulib:
-    application:
-      job: ulib
-      source:
-          dockerFile: frameworks/C++/ulib/ulib-json.dockerfile
-          dockerImageName: ulib_json
-    load:
-      job: wrk
-      variables:
-        presetHeaders: json
-        path: /json
-        serverPort: 8080
-
-  fortunes_ulib:
+  # Drogon (C++)
+  plaintext_drogon:
     db:
       job: postgresql
-    application:
-      job: ulib
-      source:
-          dockerFile: frameworks/C++/ulib/ulib-postgres.dockerfile
-          dockerImageName: ulib_postgres
-    load:
-      job: wrk
-      variables:
-        presetHeaders: html
-        path: /fortune
-        serverPort: 8080
-
-# Drogon (C++)
-  plaintext_drogon:
     application:
       job: drogon
     load:
@@ -390,6 +349,8 @@ scenarios:
         serverPort: 8080
 
   json_drogon:
+    db:
+      job: postgresql
     application:
       job: drogon
     load:

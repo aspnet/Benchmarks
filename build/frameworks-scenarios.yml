@@ -19,11 +19,7 @@ parameters:
 # List of scenarios
 
   # NodeJS (JavaScript)
-
-  - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
-  - displayName: NodeJS Json
-    arguments: --scenario json_nodejs $(frameworksJobs) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
+  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
   # Express (JavaScript)
 
@@ -33,11 +29,7 @@ parameters:
     arguments: --scenario json_express $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
 
   # Gin (Go)
-
-  - displayName: Gin Plaintext
-    arguments: --scenario plaintext_gin $(frameworksJobs) --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
-  - displayName: Gin Json
-    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
+  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
   # Actix (Rust)
 
@@ -45,6 +37,9 @@ parameters:
     arguments: --scenario plaintext_actix $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
   - displayName: Actix Json
     arguments: --scenario json_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
+
+  # Drogon (C++)
+  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
   # FastHttp (Go)
 
