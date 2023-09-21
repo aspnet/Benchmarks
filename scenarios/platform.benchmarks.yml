@@ -13,7 +13,7 @@ jobs:
   platformbenchmarks:
     source:
       repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      branchOrCommit: sebros/static
       project: src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
     framework: net7.0
@@ -31,6 +31,23 @@ jobs:
       dockerContextDirectory: toolset/databases/postgres
     readyStateText: ready to accept connections
     noClean: true
+
+  nginxproxy:
+    source:
+      Repository: https://github.com/aspnet/benchmarks.git
+      BranchOrCommit: sebros/jsonstatic
+      DockerFile: docker/nginx/nginx.dockerfile
+      DockerImageName: nginx-reverseproxy
+      DockerContextDirectory: docker/nginx
+    environmentVariables:
+        DOWNSTREAM_SCHEME: '{{downstreamScheme}}'
+        DOWNSTREAM_ADDRESS: '{{downstreamAddress}}'
+        DOWNSTREAM_PORT: '{{downstreamPort}}'
+        WORKER_PROCESSES: '{{cores}}'
+    buildArguments: 
+      - SERVER_SCHEME=http
+      - SERVER_PROTOCOL=json
+    port: 8080
 
 scenarios:
   plaintext:
@@ -62,6 +79,17 @@ scenarios:
       variables:
         presetHeaders: json
         path: /static
+        connections: 512
+        threads: 19
+
+  json_nginx:
+    application:
+      job: nginxproxy
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
         connections: 512
         threads: 19
 

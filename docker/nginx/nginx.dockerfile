@@ -44,6 +44,12 @@ FROM base AS scheme-https-grpc
 # ARG SERVER_SCHEME
 ADD nginx-grpc.conf /etc/nginx/nginx.conf
 
+# Json scenario
+FROM base AS scheme-http-json
+# ARG SERVER_SCHEME
+ADD nginx-json.conf /etc/nginx/nginx.conf
+
+
 FROM scheme-${SERVER_SCHEME}-${SERVER_PROTOCOL} AS final
 
 ENTRYPOINT ["/run.sh"]
