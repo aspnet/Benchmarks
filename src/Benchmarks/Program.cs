@@ -83,7 +83,11 @@ namespace Benchmarks
                     .ConfigureHttpJsonOptions(jsonOptions =>
                     {
                         jsonOptions.SerializerOptions.Encoder = null;
+#if NET7_0
                         jsonOptions.SerializerOptions.AddContext<Middleware.CustomJsonContext>();
+#elif NET8_0_OR_GREATER
+                        jsonOptions.SerializerOptions.TypeInfoResolverChain.Insert(0, Middleware.CustomJsonContext.Default);
+#endif
                     })
                 )
                 .UseDefaultServiceProvider(
@@ -125,9 +129,9 @@ namespace Benchmarks
             else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
             {
                 // Disable cross-platform warning
-                #pragma warning disable CA1416
+#pragma warning disable CA1416
                 webHostBuilder = webHostBuilder.UseHttpSys();
-                #pragma warning restore CA1416
+#pragma warning restore CA1416
             }
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {

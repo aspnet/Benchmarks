@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.Json;
 
 namespace Benchmarks.Middleware
 {
@@ -36,7 +35,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync<JsonMessage>(new JsonMessage { message = "Hello, World!" }, _jsonOptions, httpContext.RequestAborted);
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" }, _jsonOptions, httpContext.RequestAborted);
             }
 
             return _next(httpContext);
