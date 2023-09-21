@@ -86,6 +86,9 @@ namespace PlatformBenchmarks
             public static ReadOnlySpan<byte> Updates => "/updates/"u8;
             public static ReadOnlySpan<byte> MultipleQueries => "/queries/"u8;
             public static ReadOnlySpan<byte> Caching => "/cached-worlds/"u8;
+
+            // Used as baseline for Json
+            public static ReadOnlySpan<byte> JsonStatic => "/static"u8;
         }
 
         private RequestType _requestType;
@@ -106,6 +109,10 @@ namespace PlatformBenchmarks
             else if (path.Length == 5 && path.SequenceEqual(Paths.Json))
             {
                 return RequestType.Json;
+            }
+            else if (path.Length == 7 && path.SequenceEqual(Paths.JsonStatic))
+            {
+                return RequestType.JsonStatic;
             }
 #else
             if (path.Length == 3 && path[0] == '/' && path[1] == 'd' && path[2] == 'b')
@@ -152,6 +159,10 @@ namespace PlatformBenchmarks
             else if (_requestType == RequestType.Json)
             {
                 Json(ref writer, Writer);
+            }
+            else if (_requestType == RequestType.JsonStatic)
+            {
+                JsonStatic(ref writer);
             }
             else
             {
@@ -213,6 +224,7 @@ namespace PlatformBenchmarks
             NotRecognized,
             PlainText,
             Json,
+            JsonStatic,
             FortunesRaw,
             FortunesDapper,
             FortunesEf,

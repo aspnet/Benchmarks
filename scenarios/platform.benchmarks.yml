@@ -54,6 +54,17 @@ scenarios:
         path: /json
         connections: 512
 
+  json_static:
+    application:
+      job: platformbenchmarks
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /static
+        connections: 512
+        threads: 19
+
   fortunes:
     db:
       job: postgresql
