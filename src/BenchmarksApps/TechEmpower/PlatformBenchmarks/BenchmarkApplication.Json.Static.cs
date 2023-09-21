@@ -11,9 +11,6 @@ namespace PlatformBenchmarks
     {
 #if !DATABASE
         private static ReadOnlySpan<byte> _jsonBody => "{\"message\":\"Hello, World!\"}"u8;
-        private readonly static uint _jsonPayloadSize = (uint)_payload.Length;
-
-        private readonly static uint _jsonPayloadSize = (uint)_payload.Length;
 
         private static void JsonStatic(ref BufferWriter<WriterAdapter> writer)
         {
