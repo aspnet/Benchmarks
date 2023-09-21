@@ -15,13 +15,6 @@ namespace PlatformBenchmarks
 
         private readonly static uint _jsonPayloadSize = (uint)_payload.Length;
 
-        private static ReadOnlySpan<byte> _jsonPreamble =>
-            "HTTP/1.1 200 OK\r\n"u8 +
-            "Server: K\r\n"u8 +
-            "Content-Type: application/json\r\n"u8 +
-            "Content-Length: 27"u8;
-
-
         private static void JsonStatic(ref BufferWriter<WriterAdapter> writer)
         {
             writer.Write(_jsonPreamble);
