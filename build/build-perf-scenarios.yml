@@ -13,9 +13,9 @@ parameters:
   type: object
   default:
 
-  - displayName: "Build - BlazorWasm"
-    arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
 # https://github.com/dotnet/aspnetcore/issues/49760
+#  - displayName: "Build - BlazorWasm"
+#    arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
 #  - displayName: "Build - BlazorWasm (Hosted)"
 #    arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
 #  - displayName: "Build - BlazorServer"
