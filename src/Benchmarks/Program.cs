@@ -7,7 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime;
 using System.Text.RegularExpressions;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Hosting;
@@ -83,12 +82,6 @@ namespace Benchmarks
                     .ConfigureHttpJsonOptions(jsonOptions =>
                     {
                         jsonOptions.SerializerOptions.Encoder = null;
-#if NET7_0
-                        jsonOptions.SerializerOptions.TypeInfoResolver =
-                            JsonTypeInfoResolver.Combine(Middleware.CustomJsonContext.Default, jsonOptions.SerializerOptions.TypeInfoResolver);
-#elif NET8_0_OR_GREATER
-                        jsonOptions.SerializerOptions.TypeInfoResolverChain.Insert(0, Middleware.CustomJsonContext.Default);
-#endif
                     })
                 )
                 .UseDefaultServiceProvider(

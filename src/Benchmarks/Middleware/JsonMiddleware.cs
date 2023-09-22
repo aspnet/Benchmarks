@@ -21,20 +21,10 @@ namespace Benchmarks.Middleware
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
-#if NET8_0_OR_GREATER
-        private readonly JsonTypeInfo<JsonMessage> _jsonTypeInfo;
-#else
-        private readonly JsonSerializerOptions _jsonOptions;
-#endif
 
-        public JsonMiddleware(RequestDelegate next, IOptions<JsonOptions> jsonOptions)
+        public JsonMiddleware(RequestDelegate next)
         {
             _next = next;
-#if NET8_0_OR_GREATER
-            _jsonTypeInfo = (JsonTypeInfo<JsonMessage>)jsonOptions.Value.SerializerOptions.GetTypeInfo(typeof(JsonMessage));
-#else
-            _jsonOptions = jsonOptions.Value.SerializerOptions;
-#endif
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -44,13 +34,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" },
-#if NET8_0_OR_GREATER
-                    _jsonTypeInfo
-#else
-                    _jsonOptions
-#endif
-                    );
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" }, CustomJsonContext.Default.JsonMessage);
             }
 
             return _next(httpContext);
