@@ -19,7 +19,6 @@ namespace Benchmarks.Middleware
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
-        private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
 #if NET8_0_OR_GREATER
         private readonly JsonTypeInfo<JsonMessage> _jsonTypeInfo;
@@ -42,7 +41,6 @@ namespace Benchmarks.Middleware
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 httpContext.Response.StatusCode = 200;
-                httpContext.Response.ContentLength = _bufferSize;
 
                 return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" },
 #if NET8_0_OR_GREATER
