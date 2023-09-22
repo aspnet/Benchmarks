@@ -21,14 +21,17 @@ namespace Benchmarks.Middleware
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
+#if NET8_0_OR_GREATER
+        private readonly JsonTypeInfo<JsonMessage> _jsonTypeInfo;
+#else
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly JsonTypeInfo _jsonTypeInfo;
+#endif
 
         public JsonMiddleware(RequestDelegate next, IOptions<JsonOptions> jsonOptions)
         {
             _next = next;
 #if NET8_0_OR_GREATER
-            _jsonTypeInfo = jsonOptions.Value.SerializerOptions.GetTypeInfo(typeof(JsonMessage));
+            _jsonTypeInfo = JsonTypeInfo.CreateJsonTypeInfo<JsonMessage>(jsonOptions.Value.SerializerOptions);
 #else
             _jsonOptions = jsonOptions.Value.SerializerOptions;
 #endif
