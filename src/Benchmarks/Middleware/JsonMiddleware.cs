@@ -31,7 +31,7 @@ namespace Benchmarks.Middleware
         {
             _next = next;
 #if NET8_0_OR_GREATER
-            _jsonTypeInfo = JsonTypeInfo.CreateJsonTypeInfo<JsonMessage>(jsonOptions.Value.SerializerOptions);
+            _jsonTypeInfo = jsonOptions.Value.SerializerOptions.GetTypeInfo(typeof(JsonMessage)) as JsonTypeInfo<JsonMessage>;
 #else
             _jsonOptions = jsonOptions.Value.SerializerOptions;
 #endif
