@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Benchmarks.Middleware
 {
@@ -21,11 +22,16 @@ namespace Benchmarks.Middleware
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly JsonTypeInfo _jsonTypeInfo;
 
         public JsonMiddleware(RequestDelegate next, IOptions<JsonOptions> jsonOptions)
         {
             _next = next;
+#if NET8_0_OR_GREATER
+            _jsonTypeInfo = jsonOptions.Value.SerializerOptions.GetTypeInfo(typeof(JsonMessage));
+#else
             _jsonOptions = jsonOptions.Value.SerializerOptions;
+#endif
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -35,7 +41,13 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" }, _jsonOptions, httpContext.RequestAborted);
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" },
+#if NET8_0_OR_GREATER
+                    _jsonTypeInfo
+#else
+                    _jsonOptions
+#endif
+                    );
             }
 
             return _next(httpContext);
@@ -47,7 +59,11 @@ namespace Benchmarks.Middleware
         public static IApplicationBuilder UseJson(this IApplicationBuilder builder) => builder.UseMiddleware<JsonMiddleware>();
     }
 
+#if NET8_0_OR_GREATER
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+#else
     [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+#endif
     [JsonSerializable(typeof(JsonMessage))]
     internal partial class CustomJsonContext : JsonSerializerContext
     {

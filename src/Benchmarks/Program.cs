@@ -84,7 +84,8 @@ namespace Benchmarks
                     {
                         jsonOptions.SerializerOptions.Encoder = null;
 #if NET7_0
-                        jsonOptions.SerializerOptions.AddContext<Middleware.CustomJsonContext>();
+                        jsonOptions.SerializerOptions.TypeInfoResolver =
+                            JsonTypeInfoResolver.Combine(Middleware.CustomJsonContext.Default, jsonOptions.SerializerOptions.TypeInfoResolver);
 #elif NET8_0_OR_GREATER
                         jsonOptions.SerializerOptions.TypeInfoResolverChain.Insert(0, Middleware.CustomJsonContext.Default);
 #endif
