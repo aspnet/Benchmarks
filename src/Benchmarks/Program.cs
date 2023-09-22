@@ -79,10 +79,6 @@ namespace Benchmarks
                             options.CaptureScopes = false;
                         }
                     })
-                    .ConfigureHttpJsonOptions(jsonOptions =>
-                    {
-                        jsonOptions.SerializerOptions.Encoder = null;
-                    })
                 )
                 .UseDefaultServiceProvider(
                     (context, options) => options.ValidateScopes = context.HostingEnvironment.IsDevelopment());
