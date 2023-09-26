@@ -119,9 +119,9 @@ namespace Benchmarks
             else if (String.Equals(Server, "HttpSys", StringComparison.OrdinalIgnoreCase))
             {
                 // Disable cross-platform warning
-                #pragma warning disable CA1416
+#pragma warning disable CA1416
                 webHostBuilder = webHostBuilder.UseHttpSys();
-                #pragma warning restore CA1416
+#pragma warning restore CA1416
             }
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {

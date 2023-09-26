@@ -4,34 +4,37 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Benchmarks.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Benchmarks.Middleware
 {
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
-        private static readonly UTF8Encoding _encoding = new UTF8Encoding(false);
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
 
-        public JsonMiddleware(RequestDelegate next) => _next = next;
+        public JsonMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
 
         public Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
             {
                 httpContext.Response.StatusCode = 200;
-                httpContext.Response.ContentType = "application/json";
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return JsonSerializer.SerializeAsync<JsonMessage>(httpContext.Response.Body, new JsonMessage { message = "Hello, World!" });
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" }, CustomJsonContext.Default.JsonMessage);
             }
 
             return _next(httpContext);
@@ -41,6 +44,16 @@ namespace Benchmarks.Middleware
     public static class JsonMiddlewareExtensions
     {
         public static IApplicationBuilder UseJson(this IApplicationBuilder builder) => builder.UseMiddleware<JsonMiddleware>();
+    }
+
+#if NET8_0_OR_GREATER
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+#else
+    [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+#endif
+    [JsonSerializable(typeof(JsonMessage))]
+    internal partial class CustomJsonContext : JsonSerializerContext
+    {
     }
 
     public struct JsonMessage
