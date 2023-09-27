@@ -25,10 +25,11 @@ parameters:
   default:
     - displayName: "Mono - JIT"
       arguments: --application.useMonoRuntime jit --property runtime=mono-jit
-    - displayName: "Mono - LLVM JIT"
-      arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm
-    - displayName: "Mono - LLVM AOT"
-      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot
+    # LLVM jobs quarantined until issue is fixed https://github.com/aspnet/Benchmarks/issues/1906
+    # - displayName: "Mono - LLVM JIT"
+    #   arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm
+    # - displayName: "Mono - LLVM AOT"
+    #   arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot
     - displayName: "Core CLR"
       arguments: --property runtime=coreclr
 
