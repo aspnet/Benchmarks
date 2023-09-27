@@ -33,12 +33,13 @@ parameters:
       arguments: --application.useMonoRuntime jit --property runtime=mono-jit
     - displayName: "Mono - JIT preemptive"
       arguments: --application.useMonoRuntime jit --property runtime=mono-jit-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive
-    - displayName: "Mono - LLVM JIT"
-      arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm --application.environmentVariables MONO_ENV_OPTIONS=--llvm
-    - displayName: "Mono - LLVM AOT"
-      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot --application.environmentVariables MONO_ENV_OPTIONS=--llvm
-    - displayName: "Mono - LLVM AOT preemptive"
-      arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive --application.environmentVariables MONO_ENV_OPTIONS=--llvm
+    # LLVM jobs quarantined until issue is fixed https://github.com/aspnet/Benchmarks/issues/1906
+    # - displayName: "Mono - LLVM JIT"
+    #   arguments: --application.useMonoRuntime llvm-jit --property runtime=mono-llvm --application.environmentVariables MONO_ENV_OPTIONS=--llvm
+    # - displayName: "Mono - LLVM AOT"
+    #   arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot --application.environmentVariables MONO_ENV_OPTIONS=--llvm
+    # - displayName: "Mono - LLVM AOT preemptive"
+    #   arguments: --application.useMonoRuntime llvm-aot --application.buildTimeout 01:00:00 --property runtime=mono-aot-preemptive --application.environmentVariables MONO_THREADS_SUSPEND=preemptive --application.environmentVariables MONO_ENV_OPTIONS=--llvm
 
 steps:
 - ${{ each s in parameters.scenarios }}:
