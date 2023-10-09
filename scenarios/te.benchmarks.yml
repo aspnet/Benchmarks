@@ -16,7 +16,7 @@ jobs:
 #    arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
-  nodejs:
+  bun:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
       branchOrCommit: master
