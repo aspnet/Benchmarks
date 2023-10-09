@@ -224,6 +224,7 @@ The variable `presetHeaders` is used to select one of these:
 These scenarios measure the performance of different other frameworks
 
 - NodeJs (JavaScript)
+- Bun (TypeScript)
 - Actix (Rust)
 - FastHttp (Go)
 - Netty (Java)
@@ -241,6 +242,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 ### Available scenarios
 
 - `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
+- `plaintext_bun`, `json_bun`
 - `plaintext_actix`, `json_actix`, `fortunes_actix`
 - `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
 - `plaintext_netty`, `json_netty`
