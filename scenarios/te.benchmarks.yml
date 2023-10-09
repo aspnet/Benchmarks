@@ -13,7 +13,7 @@ jobs:
       dockerImageName: nodejs
       dockerContextDirectory: frameworks/JavaScript/nodejs/
     readyStateText: NodeJS worker listening
-#    arguments: --add-host="tfb-database:{{databaseServer}}"
+    arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
   bun:
