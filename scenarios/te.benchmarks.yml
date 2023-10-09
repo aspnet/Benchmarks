@@ -204,7 +204,7 @@ scenarios:
 
   json_bun:
     application:
-      job: nodejs
+      job: bun
     load:
       job: wrk
       variables:
