@@ -23,7 +23,7 @@ jobs:
       dockerFile: frameworks/TypeScript/bun/bun.dockerfile
       dockerImageName: bun
       dockerContextDirectory: frameworks/TypeScript/bun/
-    readyStateText: worker listening
+    readyStateText: Listening
 #    arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
