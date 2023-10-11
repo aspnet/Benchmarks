@@ -2,7 +2,7 @@
   <PropertyGroup Label="Package Versions">
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
     <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.0-preview.4</NpgsqlVersion80>
+    <NpgsqlVersion80>8.0.0-rc.2</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
