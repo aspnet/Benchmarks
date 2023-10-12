@@ -2,7 +2,7 @@ imports:
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/packages.yml?raw=true
 
 variables:
-  localhost: localhost
+  localendpoint: http://localhost:5010
   
 profiles:
   short:
@@ -24,20 +24,20 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://{{localhost}}:5010
+          - '{{localendpoint}}'
         aliases:
           - downstream
           - extra
       application:
         endpoints: 
-          - http://{{localhost}}:5010
+          - '{{localendpoint}}'
         variables:
           databaseServer: localhost
         aliases:
           - main
       load:
         endpoints: 
-          - http://{{localhost}}:5010
+          - '{{localendpoint}}'
         aliases:
           - warmup
           - secondary
