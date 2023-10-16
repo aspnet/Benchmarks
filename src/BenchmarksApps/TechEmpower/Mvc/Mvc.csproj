@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net8.0'">
-    <PackageReference Include="Npgsql" Version="8.0.0-rc.2" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-rc.2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
   </ItemGroup>
 </Project>
