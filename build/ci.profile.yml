@@ -220,6 +220,17 @@ profiles:
         aliases:
           - main
 
+  arm-lin-load:
+    variables:
+      secondaryAddress: 10.0.0.108
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-citrine-ampere:5001
+        aliases:
+          - warmup
+          - secondary
+
   arm-lin-28-app:
     variables:
       serverAddress: 10.0.0.108
@@ -254,6 +265,17 @@ profiles:
           - http://10.240.177.200:5001
         aliases:
           - main
+
+  arm-win-load:
+    variables:
+      secondaryAddress: 10.0.0.110
+    agents: 
+      load:
+        endpoints: 
+          - http://10.240.177.200:5001
+        aliases:
+          - warmup
+          - secondary
 
 # INTEL Xeon Gold machines
 
