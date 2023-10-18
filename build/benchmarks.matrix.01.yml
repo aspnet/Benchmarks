@@ -69,11 +69,10 @@ groups:
       - arm-lin-28-app
       - intel-load2-load
       
-    # - name: Trends Arm 28 Windows
-    #   template: trend-scenarios.yml
-    #   profiles:
-    #   - arm-win-28-app 
-    #   - intel-lin-load
+    - name: GC Intel Windows
+      template: gc-scenarios.yml
+      profiles:
+      - intel-win-app 
 
   - jobs:
 
@@ -132,12 +131,12 @@ groups:
       - intel-lin-app 
       - intel-load2-load
       
-    # - name: Baselines Database Arm 28 Windows
-    #   template: baselines-database-scenarios.yml
-    #   profiles:
-    #   - arm-win-28-app 
-    #   - amd-lin-load
-    #   - amd-lin2-db
+    - name: PGO Arm 28 Linux
+      template: pgo-scenarios.yml
+      profiles:
+      - arm-lin-28-app
+      - amd-lin-load
+      - amd-lin2-db
 
   - jobs:
 
@@ -213,13 +212,6 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: PGO Intel Windows
-      template: pgo-scenarios.yml
-      profiles:
-      - intel-win-app
-      - intel-lin-load
-      - intel-load2-db
-
     - name: Frameworks Arm 80 Linux
       template: frameworks-scenarios.yml
       profiles:
@@ -233,11 +225,11 @@ groups:
       template: frameworks-scenarios.yml
       profiles:
       - amd-lin-app 
-      - intel-load2-load
-      - amd-lin2-db # required by nodejs and tfb-database argument 
+      - amd-lin2-load
+      - intel-load2-db # required by nodejs and tfb-database argument 
 
-    - name: PGO Intel Linux
-      template: pgo-scenarios.yml
+    - name: Native Aot Intel Linux
+      template: nativeaot-scenarios.yml
       profiles:
       - intel-lin-app
       - intel-load-load
