@@ -1,0 +1,43 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/socket.benchmarks.yml --scenario basic-server-client --profile aspnet-perf-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+    warmup: 15 #seconds
+    duration: 15 #seconds
+    serverPort: 5000
+    async: true
+    useNagleAlgorithm: false
+    addressFamily: 'DualSocket' # 'DualSocket', 'IPv4', 'IPv6'
+
+scenarios:
+  basic-server-client:
+    server:
+      job: basic-server
+      agent: secondary
+      variables:
+        host: '{{secondaryAddress}}'
+    client:
+      job: basic-client
+      agent: main
+      variables:
+        host: '{{secondaryAddress}}'
+
+jobs:
+  basic-server:
+    source:
+      localFolder: C:\Users\aaksoy\Desktop\Benchmarks
+      project: src/BenchmarkApps/SocketBenchmarks/Servers/Basic/SocketBenchmarks.Servers.Basic.csproj
+    readyStateText: Server started
+    arguments: '--address {{host}} --port {{serverPort}} --async {{async}} --useNagleAlgorithm {{useNagleAlgorithm}} --addressFamily {{addressFamily}}'
+
+  basic-client:
+    source:
+      localFolder: C:\Users\aaksoy\Desktop\Benchmarks
+      project: src/BenchmarkApps/SocketBenchmarks/Clients/Basic/SocketBenchmarks.Clients.Basic.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 120
+    arguments: '--address {{host}} --port {{serverPort}} --async {{async}} --useNagleAlgorithm {{useNagleAlgorithm}} --addressFamily {{addressFamily}} --warmup {{warmup}} --duration {{duration}}'
