@@ -16,9 +16,8 @@ parameters:
   type: object
   default: []
 
-  # Restore when asp-perf-lin works again 
-  # - displayName: Blazor Wasm
-  #   arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
+  - displayName: Blazor Wasm
+    arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
 steps:
 - ${{ each s in parameters.scenarios }}:
