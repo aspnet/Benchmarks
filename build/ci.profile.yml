@@ -336,6 +336,17 @@ profiles:
         aliases:
           - main
 
+  gold-win-load:
+    variables:
+      secondaryAddress: 10.0.0.122
+    agents:
+      load:
+        endpoints: 
+          - http://asp-gold-win:5001
+        aliases:
+          - warmup
+          - secondary
+
   gold-db-db:
     variables:
       databaseServer: 10.0.0.125
