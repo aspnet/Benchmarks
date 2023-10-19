@@ -14,10 +14,10 @@ parameters:
 # Scenarios
 - name: scenarios 
   type: object
-  default: []
+  default:
 
-  - displayName: Blazor Wasm
-    arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
+    - displayName: Blazor Wasm
+      arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
 steps:
 - ${{ each s in parameters.scenarios }}:
