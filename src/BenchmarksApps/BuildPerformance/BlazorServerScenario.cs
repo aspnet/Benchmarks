@@ -68,7 +68,7 @@ namespace Build
 
         async Task ChangeToRazorMarkup()
         {
-            var indexRazorFile = Path.Combine(_workingDirectory, "Pages", "Index.razor");
+            var indexRazorFile = Path.Combine(_workingDirectory, "Components", "Pages", "Index.razor");
             File.AppendAllText(indexRazorFile, Environment.NewLine + "<h3>New content</h3>");
 
             var buildDuration = await _dotnet.ExecuteAsync("build --no-restore");
@@ -101,7 +101,7 @@ namespace Build
 
         async Task AddParameterToComponent()
         {
-            var counterRazorFile = Path.Combine(_workingDirectory, "Pages", "Counter.razor");
+            var counterRazorFile = Path.Combine(_workingDirectory, "Components", "Pages", "Counter.razor");
             var builder = new StringBuilder()
                 .AppendLine()
                 .AppendLine("@code {")
