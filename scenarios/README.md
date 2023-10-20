@@ -30,7 +30,7 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 | Profile        | Arch         | OS           | Proc |
 | :------------- | :----------: | :----------- | :----------- |
 |  `local` | (local machine) | (local machine) | (local machine) |
-|  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
+|  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-perf-win` | INTEL, 12 logical cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-citrine-lin` | INTEL, logical 28 cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
 |  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
