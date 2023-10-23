@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Benchmarks
 {
@@ -36,7 +37,22 @@ namespace Benchmarks
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
-                    webBuilder.UseStartup<Startup>()
-                );
+                {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.ConfigureKestrel((webHostBuilderContext, kestrelServerOptions) =>
+                    {
+                        kestrelServerOptions.ConfigureHttpsDefaults(httpsConnectionAdapterOptions =>
+                        {
+                            httpsConnectionAdapterOptions.OnAuthenticate = (connectionContext, sslServerAuthenticationOptions) =>
+                            {
+                                sslServerAuthenticationOptions.CertificateChainPolicy = new X509ChainPolicy
+                                {
+                                    DisableCertificateDownloads = true
+                                };
+                            };
+                        });
+                    });
+                }
+            );
     }
 }
