@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Benchmarks.Configuration;
@@ -226,7 +227,15 @@ namespace Benchmarks
                 if (urlPrefix.IsHttps)
                 {
                     // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-                    listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    listenOptions.UseHttps("testCert.pfx", "testPassword", configureOptions => {
+                        configureOptions.OnAuthenticate = (connectionContext, sslServerAuthenticationOptions) =>
+                        {
+                            sslServerAuthenticationOptions.CertificateChainPolicy = new X509ChainPolicy
+                            {
+                                DisableCertificateDownloads = true
+                            };
+                        };
+                    });
                 }
             });
         }
