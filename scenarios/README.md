@@ -626,3 +626,14 @@ Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.
 Most pages in the Power BI dashboard list the crank command lines that were used. Select a benchmark and an environment to filter the table:
 
 ![image](https://user-images.githubusercontent.com/1165805/168184269-70732746-8490-4e6e-abe8-cf161ea421d6.png)
+
+### Collecting crash dumps
+
+.NET can collect crash dumps automatically using specific https://learn.microsoft.com/en-us/dotnet/core/diagnostics/collect-dumps-crash
+
+Here is how to do it with crank and download the crash dump automatically.
+```console
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin --application.environmentVariables DOTNET_DbgEnableMiniDump=1 --application.environmentVariables DOTNET_DbgMiniDumpType=4 --application.environmentVariables DOTNET_DbgMiniDumpName=mydump --application.environmentVariables DOTNET_CreateDumpVerboseDiagnostics=1 --application.options.downloadfiles mydump
+```
+
+Note that these ENVs could be set for all runs and crank will run just fine if it can't download the file because no crash happened.
