@@ -14,7 +14,8 @@ jobs:
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
     framework: net7.0
-    buildFiles: https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config
+    buildFiles: 
+      - https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config
     environmentVariables:
       OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__ShellName: "Default"
