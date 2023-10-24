@@ -142,31 +142,6 @@ profiles:
           - warmup
           - secondary
           
-  aspnet-citrine-arm:
-    variables:
-      serverAddress: 10.0.0.107
-      cores: 32
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-citrine-db:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints: 
-          - http://asp-citrine-arm:5001
-        variables:
-          databaseServer: 10.0.0.103
-        aliases:
-          - main
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001
-        aliases:
-          - warmup
-          - secondary
-
   aspnet-citrine-arm-relay:
     variables:
       serverAddress: 10.0.0.107
