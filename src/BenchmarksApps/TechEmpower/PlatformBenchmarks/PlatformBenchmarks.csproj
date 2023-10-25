@@ -22,12 +22,12 @@
     <PackageReference Include="RazorSlices" Version="0.6.2" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) != 'net8.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'net7.0'">
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion70)" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion70)" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework) == 'net8.0'">
+  <ItemGroup Condition="$(TargetFramework) == 'net8.0' or $(TargetFramework) == 'net9.0'">
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
   </ItemGroup>

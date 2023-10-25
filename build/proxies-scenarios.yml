@@ -17,7 +17,7 @@ parameters:
   default: 
   - displayName: YARP
     scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp --application.framework net8.0
+    arguments: $(proxyJobs) --property proxy=yarp --application.framework net9.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
@@ -25,7 +25,7 @@ parameters:
     condition: 'true'
   - displayName: YARP gRPC
     scenario: proxy-yarp-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net8.0
+    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net9.0
     supportsGRPC: true
     condition: 'true'
   - displayName: YARP-net70

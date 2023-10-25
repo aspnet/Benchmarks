@@ -65,6 +65,6 @@ steps:
               "condition": "${{ parameters.condition }}",
               "retries": 1,
               "name": "crank",
-              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.channel edge --load.framework net8.0 --warmup.channel edge --warmup.framework net8.0 --application.framework net8.0 --session $(session) --command-line-property --table SignalRBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
+              "args": [ "${{ s.arguments }} ${{ transport.arguments }} ${{ protocol.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net9.0 --warmup.framework net9.0 --application.framework net9.0 --session $(session) --command-line-property --table SignalRBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --no-metadata --warmup.options.discardResults true" ]
             }
 

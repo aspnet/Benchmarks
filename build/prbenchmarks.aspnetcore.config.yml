@@ -5,13 +5,13 @@ components:
             call .\src\Servers\Kestrel\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
 
         arguments:
-            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Server.Kestrel\release\net8.0\
+            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Server.Kestrel\release\net9.0\
     mvc: 
         script: |
             call .\src\Mvc\build.cmd -noBuildJava -noBuildNodeJs -c release -noBuildNative /p:UseIisNativeAssets=false
             
         arguments: 
-            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Mvc\release\net8.0\
+            --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Mvc\release\net9.0\
 
     routing: 
         script: |
@@ -21,7 +21,7 @@ components:
             --application.options.outputFiles .\artifacts\bin\Microsoft.AspNetCore.Routing\release\net8.0\
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net8.0 --application.options.collectCounters true --relay AZURE_RELAY 
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net9.0 --application.options.collectCounters true --relay AZURE_RELAY 
 
 # the first value is the default if none is specified
 profiles:

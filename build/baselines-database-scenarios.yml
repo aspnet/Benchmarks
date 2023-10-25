@@ -17,13 +17,13 @@ parameters:
   default: 
   
   - displayName: "7.0"
-    arguments: --application.channel current --application.framework net7.0 --property framework=net7.0
+    arguments: --application.framework net7.0 --property framework=net7.0
 
   - displayName: "8.0"
-    arguments: --application.channel edge --application.framework net8.0 --property framework=net8.0
+    arguments: --application.framework net8.0 --property framework=net8.0
 
   - displayName: "9.0"
-    arguments: --application.channel edge --application.framework net9.0 --property framework=net9.0
+    arguments: --application.framework net9.0 --property framework=net9.0
 
 # Scenarios
 - name: scenarios 

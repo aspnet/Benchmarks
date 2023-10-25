@@ -13,7 +13,7 @@ scenarios:
   ssr:
     application:
       job: server
-      framework: net8.0
+      framework: net9.0
     load:
       job: bombardier
       variables:
