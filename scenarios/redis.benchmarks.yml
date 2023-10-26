@@ -19,7 +19,7 @@ jobs:
       cacheCount: 256
       redisEndpoint: ''
       cache: ''
-    arguments: --Cache "{{ cache }}" --RedisEndpoint "{{ redisEndpoint }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
+    arguments: --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --Cache "{{ cache }}" --RedisEndpoint "{{ redisEndpoint }}" --WriteRatio {{ writeRatio }} --ContentLength {{ contentLength }} --KeyLength {{ keyLength }} --CacheCount {{ cacheCount }}
 
 scenarios:
   redis:

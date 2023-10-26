@@ -17,6 +17,7 @@ jobs:
       project: src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
     framework: net7.0
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     environmentVariables:
       database: PostgreSQL
       # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]

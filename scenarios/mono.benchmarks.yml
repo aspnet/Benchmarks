@@ -16,6 +16,7 @@ jobs:
       project: src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj
     readyStateText: Application started.
     framework: net7.0
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
   aspnetbenchmarks:
     source:

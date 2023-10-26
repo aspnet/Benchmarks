@@ -18,7 +18,7 @@ jobs:
     variables:
       filename: file.txt
       sizeInBytes: 1024
-    arguments: "--filename {{filename}} --size {{sizeInBytes}}"
+    arguments: "--filename {{filename}} --size {{sizeInBytes}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   
 scenarios:
   static:

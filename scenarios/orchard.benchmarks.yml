@@ -14,6 +14,7 @@ jobs:
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
     framework: net7.0
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     buildFiles: 
       - https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config
     environmentVariables:
