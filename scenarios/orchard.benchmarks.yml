@@ -4,6 +4,7 @@
 
 variables:
   serverPort: 5000
+  serverScheme: http
 
 jobs:
 

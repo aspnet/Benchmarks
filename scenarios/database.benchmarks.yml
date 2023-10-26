@@ -7,8 +7,9 @@ imports:
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
 variables:
-    serverPort: 5000
-    
+  serverPort: 5000
+  serverScheme: http
+
 jobs:
   aspnetbenchmarks:
     source:
@@ -17,10 +18,8 @@ jobs:
       project: src/Benchmarks/Benchmarks.csproj
     readyStateText: Application started.
     variables:
-      serverPort: 5000
       server: Kestrel
       transport: Sockets
-      serverScheme: http
     arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     environmentVariables:
       database: PostgresQL
@@ -58,7 +57,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 5000
         presetHeaders: html
         path: /fortunes/raw
 
@@ -76,7 +74,6 @@ scenarios:
     load:
       job: wrk
       variables:
-        serverPort: 5000
         presetHeaders: html
         path: /fortunes/raw
 
