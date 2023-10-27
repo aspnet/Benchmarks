@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -41,7 +42,7 @@ namespace PlatformBenchmarks
 
             if (string.IsNullOrEmpty(url))
             {
-                return new IPEndPoint(IPAddress.Loopback, 8080);
+                yield return new IPEndPoint(IPAddress.Loopback, 8080);
             }
 
             var urls = url.Split(";");
