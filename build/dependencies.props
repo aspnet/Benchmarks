@@ -24,5 +24,9 @@
     <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqliteVersion70>
     <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-rc.2.23480.1</MicrosoftEntityFrameworkCoreSqliteVersion80>
 
+    <MicrosoftIISTestingVersion60>6.0.0-*</MicrosoftIISTestingVersion60>
+    <MicrosoftIISTestingVersion70>7.0.0-*</MicrosoftIISTestingVersion70>
+    <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
+
   </PropertyGroup>
 </Project>

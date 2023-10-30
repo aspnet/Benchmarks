@@ -125,10 +125,18 @@ namespace Benchmarks
             }
             else if (String.Equals(Server, "IISInProcess", StringComparison.OrdinalIgnoreCase))
             {
+                // if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                // {
+                //     throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                // }
                 webHostBuilder = webHostBuilder.UseKestrel().UseIIS();
             }
             else if (String.Equals(Server, "IISOutOfProcess", StringComparison.OrdinalIgnoreCase))
             {
+                // if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_VERSION")))
+                // {
+                //     throw new InvalidOperationException("Benchmark wants to use IIS but app isn't running in IIS.");
+                // }
                 webHostBuilder = webHostBuilder.UseKestrel().UseIISIntegration();
             }
             else
