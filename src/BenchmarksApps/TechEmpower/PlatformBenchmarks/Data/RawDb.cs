@@ -28,7 +28,9 @@ namespace PlatformBenchmarks
         public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
             _random = random;
-#if NET7_0_OR_GREATER
+#if NET8_0_OR_GREATER
+            _dataSource = new NpgsqlSlimDataSourceBuilder(appSettings.ConnectionString).Build();
+#elif NET7_0
             _dataSource = NpgsqlDataSource.Create(appSettings.ConnectionString);
 #else
             _connectionString = appSettings.ConnectionString;
