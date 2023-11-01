@@ -432,7 +432,7 @@ profiles:
         endpoints: 
           - http://asp-perf-win:5001
         variables:
-          databaseServer: 10.0.0.106
+          databaseServer: 10.0.0.105
         aliases:
           - main
       load:
