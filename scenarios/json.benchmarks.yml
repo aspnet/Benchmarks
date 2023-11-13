@@ -31,6 +31,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/MapAction/MapAction.csproj
     readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
