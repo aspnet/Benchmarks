@@ -5,6 +5,7 @@ using Dapper;
 using Npgsql;
 
 [module: DapperAot] // enable AOT Dapper support project-wide
+[module: CacheCommand] // reuse DbCommand instances when possible
 
 namespace PlatformBenchmarks
 {
