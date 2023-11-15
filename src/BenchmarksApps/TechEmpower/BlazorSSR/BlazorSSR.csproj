@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.21" />
-    <PackageReference Include="Dapper.AOT" Version="1.0.2" />
+    <PackageReference Include="Dapper.AOT" Version="1.0.10" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
   </ItemGroup>
 </Project>

@@ -64,7 +64,6 @@ public class Db
         return results;
     }
 
-    [DapperAot(false)] // dictionary usage isn't going to work today
     public async Task<World[]> LoadMultipleUpdatesRows(int count)
     {
         count = Math.Clamp(count, 1, 500);
