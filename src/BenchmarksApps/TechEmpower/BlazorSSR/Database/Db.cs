@@ -2,6 +2,8 @@
 using Dapper;
 using Npgsql;
 
+[module: DapperAot] // enable AOT Dapper support project-wide
+
 namespace BlazorSSR.Database;
 
 public sealed class Db : IAsyncDisposable

@@ -2,6 +2,8 @@ using System.Data.Common;
 using Dapper;
 using Minimal.Models;
 
+[module: DapperAot] // enable AOT Dapper support project-wide
+
 namespace Minimal.Database;
 
 public class Db
@@ -28,6 +30,14 @@ public class Db
         return await ReadSingleRow(db);
     }
 
+    // note that this QueryFirstOrDefaultAsync<struct> is unusual, hence DAP038
+    // see: https://aot.dapperlib.dev/rules/DAP038
+    //
+    // options:
+    // 0. leave it as-is
+    // 1. use QueryFirstAsync and eat the exception if no rows
+    // 2  use QueryFirstOrDefaultAsync<World?> which allows `null` to be expressed
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Library", "DAP038:Value-type single row 'OrDefault' usage", Justification = "Retain old behaviour for baseline")]
     static Task<World> ReadSingleRow(DbConnection db)
     {
         return db.QueryFirstOrDefaultAsync<World>(

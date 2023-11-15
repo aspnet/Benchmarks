@@ -2,6 +2,8 @@
 using Npgsql;
 using RazorPages.Models;
 
+[module: DapperAot] // enable AOT Dapper support project-wide
+
 namespace RazorPages.Database;
 
 public sealed class Db : IAsyncDisposable

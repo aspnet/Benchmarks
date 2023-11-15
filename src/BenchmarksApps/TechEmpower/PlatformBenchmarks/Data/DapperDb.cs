@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Dapper;
 using Npgsql;
 
+[module: DapperAot] // enable AOT Dapper support project-wide
+
 namespace PlatformBenchmarks
 {
     public sealed class DapperDb
