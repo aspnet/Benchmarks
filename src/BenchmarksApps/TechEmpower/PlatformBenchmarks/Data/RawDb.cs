@@ -242,7 +242,7 @@ namespace PlatformBenchmarks
             {
                 await db.OpenAsync();
 
-                using var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db);
+                using var cmd = new NpgsqlCommand("SELECT * FROM Fortune", db);
                 using var rdr = await cmd.ExecuteReaderAsync();
 
                 while (await rdr.ReadAsync())
