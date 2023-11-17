@@ -6,5 +6,6 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/SignalR/BenchmarkServer.csproj
     readyStateText: Application started
-    runtimeVersion: '5.0.*'
     waitForExit: false
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    
