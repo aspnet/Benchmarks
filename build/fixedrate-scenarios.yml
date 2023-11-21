@@ -1,0 +1,82 @@
+imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk2/wrk2.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  rate: 100000
+
+parameters:
+- name: arguments
+  type: string
+  default: ''
+- name: connection
+  type: string
+  default: ''
+- name: condition
+  type: string
+  default: 'true'
+
+# Scenarios
+- name: scenarios 
+  type: object
+  default: 
+
+# .NET
+
+  - displayName: .NET Plaintext (Fixed Rate)
+    arguments: --scenario plaintext $(minimalJobs) --property scenario=PlaintextMinimalApis --property protocol=http
+  - displayName: .NET Json (Fixed Rate)
+    arguments: --scenario json $(minimalJobs) --property scenario=JsonMinimalApis --property protocol=http
+
+# Express (JavaScript)
+
+  - displayName: Express Plaintext (Fixed Rate)
+    arguments: --scenario plaintext_express $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextExpress --property protocol=http
+  - displayName: Express Json (Fixed Rate)
+    arguments: --scenario json_express $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
+
+  # Gin (Go)
+  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
+  # TODO
+
+  # Actix (Rust)
+
+  - displayName: Actix Plaintext (Fixed Rate)
+    arguments: --scenario plaintext_actix $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
+  - displayName: Actix Json (Fixed Rate)
+    arguments: --scenario json_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
+
+  # Drogon (C++)
+  # Scenarios are in frameworks-database-scenarios.yml since they require the db server
+  # TODO
+
+  # FastHttp (Go)
+
+  - displayName: Go Plaintext (Fixed Rate)
+    arguments: --scenario plaintext_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
+  - displayName: Go Json (Fixed Rate)
+    arguments: --scenario json_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
+
+  # Netty
+
+  - displayName: Netty Plaintext (Fixed Rate)
+    arguments: --scenario plaintext_netty $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNetty --property protocol=http
+  - displayName: Netty Json (Fixed Rate)
+    arguments: --scenario json_netty $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonNetty --property protocol=http
+
+steps:
+- ${{ each s in parameters.scenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }})",
+          "retries": 1,
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --load.job wrk2 --load.variables rate=${{ variables.rate }} --application.noClean true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+        }
