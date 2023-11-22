@@ -15,7 +15,7 @@ components:
         arguments: '--{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\'
 
 # default arguments that are always used on crank commands
-defaults: '--{{job}}.framework net8.0 --relay AZURE_RELAY'
+defaults: '--{{job}}.framework net9.0 --relay AZURE_RELAY'
 
 variables:
     job: application
