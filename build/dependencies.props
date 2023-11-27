@@ -2,7 +2,7 @@
   <PropertyGroup Label="Package Versions">
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
     <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.0-rc.2</NpgsqlVersion80>
+    <NpgsqlVersion80>8.0.0</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
@@ -10,7 +10,7 @@
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
 
     <PomeloEntityFrameworkCoreMySqlVersion60>6.0.2</PomeloEntityFrameworkCoreMySqlVersion60>
     <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
@@ -18,15 +18,15 @@
 
     <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqlServerVersion60>
     <MicrosoftEntityFrameworkCoreSqlServerVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqlServerVersion70>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.0-rc.2.23480.1</MicrosoftEntityFrameworkCoreSqlServerVersion80>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.0</MicrosoftEntityFrameworkCoreSqlServerVersion80>
 
     <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqliteVersion60>
     <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqliteVersion70>
-    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0-rc.2.23480.1</MicrosoftEntityFrameworkCoreSqliteVersion80>
+    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0</MicrosoftEntityFrameworkCoreSqliteVersion80>
 
     <MicrosoftIISTestingVersion60>6.0.0-*</MicrosoftIISTestingVersion60>
     <MicrosoftIISTestingVersion70>7.0.0-*</MicrosoftIISTestingVersion70>
-    <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
+    <MicrosoftIISTestingVersion80>8.0.0-*</MicrosoftIISTestingVersion80>
 
   </PropertyGroup>
 </Project>
