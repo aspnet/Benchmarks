@@ -26,7 +26,7 @@
 
     <MicrosoftIISTestingVersion60>6.0.0-*</MicrosoftIISTestingVersion60>
     <MicrosoftIISTestingVersion70>7.0.0-*</MicrosoftIISTestingVersion70>
-    <MicrosoftIISTestingVersion80>8.0.0-*</MicrosoftIISTestingVersion80>
+    <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
 
   </PropertyGroup>
 </Project>
