@@ -236,13 +236,14 @@ namespace PlatformBenchmarks
         public async Task<List<FortuneUtf8>> LoadFortunesRows()
         {
             // Benchmark requirements explicitly prohibit pre-initializing the list size
-            var result = new List<FortuneUtf8>();
+            var result = new List<FortuneUtf8>(32);
+            result.Add(new FortuneUtf8(id: 0, AdditionalFortune));
 
             using (var db = CreateConnection())
             {
                 await db.OpenAsync();
 
-                using var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db);
+                using var cmd = new NpgsqlCommand("SELECT * FROM fortune", db);
                 using var rdr = await cmd.ExecuteReaderAsync();
 
                 while (await rdr.ReadAsync())
@@ -255,7 +256,6 @@ namespace PlatformBenchmarks
                 }
             }
 
-            result.Add(new FortuneUtf8(id: 0, AdditionalFortune));
             result.Sort();
 
             return result;
