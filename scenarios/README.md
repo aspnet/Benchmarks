@@ -226,6 +226,7 @@ These scenarios measure the performance of different other frameworks
 - NodeJs (JavaScript)
 - Bun (TypeScript)
 - Actix (Rust)
+- Xitca (Rust)
 - FastHttp (Go)
 - Netty (Java)
 - Drogon (C++)
@@ -244,6 +245,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
 - `plaintext_bun`, `json_bun`
 - `plaintext_actix`, `json_actix`, `fortunes_actix`
+- `plaintext_xitca`, `json_xitca`, `fortunes_xitca`
 - `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
 - `plaintext_netty`, `json_netty`
 - `plaintext_drogon`, `json_drogon`, `fortunes_drogon`
