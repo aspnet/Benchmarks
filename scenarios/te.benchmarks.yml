@@ -102,7 +102,8 @@ jobs:
       dockerFile: frameworks/Rust/xitca-web/xitca-web.dockerfile
       dockerImageName: xitca
       dockerContextDirectory: frameworks/Rust/xitca-web/
-    readyStateText: Starting http server
+    # readyStateText: Starting http server
+    port: 8080 # used to poll the application to detect startup
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
