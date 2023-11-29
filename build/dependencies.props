@@ -4,7 +4,7 @@
     <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
     <NpgsqlVersion80>8.0.0</NpgsqlVersion80>
 
-    <MicrosoftDataSqlClientVersion60>4.1.1</MicrosoftDataSqlClientVersion60>
+    <MicrosoftDataSqlClientVersion60>5.1.1</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
     <MicrosoftDataSqlClientVersion80>5.1.1</MicrosoftDataSqlClientVersion80>
 
