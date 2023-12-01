@@ -19,8 +19,12 @@ namespace Benchmarks.Middleware
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
+        //private const int _bufferSize = 400014;
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
+
+        //private readonly string _message = new string('a', 400000);
+        private readonly string _message = new string("Hello, World!");
 
         public JsonMiddleware(RequestDelegate next)
         {
@@ -34,7 +38,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = "Hello, World!" }, CustomJsonContext.Default.JsonMessage);
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = _message });
             }
 
             return _next(httpContext);
