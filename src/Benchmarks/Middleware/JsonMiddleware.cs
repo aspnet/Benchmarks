@@ -23,6 +23,8 @@ namespace Benchmarks.Middleware
         private const int _bufferSize = 27;
         private readonly RequestDelegate _next;
 
+        private readonly JsonSerializerOptions _jsonOptions = new();
+
         //private readonly string _message = new string('a', 400000);
         private readonly string _message = new string("Hello, World!");
 
@@ -38,7 +40,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = _message });
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = _message }, _jsonOptions);
             }
 
             return _next(httpContext);
