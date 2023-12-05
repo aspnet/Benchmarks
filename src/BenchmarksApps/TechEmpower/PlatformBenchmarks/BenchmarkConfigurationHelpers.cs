@@ -43,6 +43,7 @@ namespace PlatformBenchmarks
             if (string.IsNullOrEmpty(url))
             {
                 yield return new IPEndPoint(IPAddress.Loopback, 8080);
+                yield break;
             }
 
             var urls = url.Split(";");
