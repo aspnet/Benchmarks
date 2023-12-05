@@ -12,13 +12,15 @@
     <!--<OpenApiEnabled>false</OpenApiEnabled>-->
     <EnableLogging Condition=" '$(EnableLogging)' == '' and $(Configuration.StartsWith('Debug')) ">true</EnableLogging>
     <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
   </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\AspNetCore.OpenApi\AspNetCore.OpenApi.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
-    <PackageReference Include="Nanorm.Npgsql" Version="0.0.5" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Dapper.AOT" Version="1.0.23" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftAspNetCoreAppPackageVersion)">
       <PrivateAssets>all</PrivateAssets>

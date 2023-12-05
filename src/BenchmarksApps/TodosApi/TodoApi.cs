@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using TodosApi;
+using Dapper;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -14,7 +15,7 @@ internal static class TodoApi
 
         group.AddValidationFilter();
 
-        group.MapGet("/", ([FromServices] NpgsqlDataSource db, CancellationToken ct) => db.QueryAsync<Todo>("SELECT * FROM Todos", ct))
+        group.MapGet("/", ([FromServices] NpgsqlDataSource db, CancellationToken ct) => db.OpenConnection().QueryAsync<Todo>("SELECT * FROM Todos", ct))
             .WithName("GetAllTodos");
 
         group.MapGet("/complete", ([FromServices] NpgsqlDataSource db, CancellationToken ct) =>

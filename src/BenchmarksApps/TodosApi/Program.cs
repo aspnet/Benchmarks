@@ -1,5 +1,7 @@
 using TodosApi;
 
+[module: Dapper.DapperAot]
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
 #if !ENABLE_LOGGING
