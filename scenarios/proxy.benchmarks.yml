@@ -104,7 +104,7 @@ jobs:
       branchOrCommit: main
       project: src/Downstream/Downstream.csproj
     readyStateText: Application started.
-    framework: net7.0
+    framework: net8.0
     environmentVariables:
       DOTNET_TieredPGO: 1
       DOTNET_ReadyToRun: 0
