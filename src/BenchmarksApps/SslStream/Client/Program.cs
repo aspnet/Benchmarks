@@ -178,6 +178,11 @@ internal class Program
             TargetHost = options.TlsHostName ?? options.Hostname,
             RemoteCertificateValidationCallback = delegate { return true; },
             ApplicationProtocols = new List<SslApplicationProtocol> { new(options.Scenario.ToString()) },
+#if HAS_ALLOW_TLS_RESUME
+            AllowTlsResume = !options.DisableTlsResume,
+#endif
+            EnabledSslProtocols = options.EnabledSslProtocols,
+            CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
         };
 
         if (options.ClientCertificate != null)
@@ -196,7 +201,7 @@ internal class Program
                     break;
 #endif
                 default:
-                    throw new InvalidOperationException($"Unsupported certificate source: {options.CertificateSource}");
+                    throw new InvalidOperationException($"Certificate source: {options.CertificateSource} is not supported in this .NET version.");
             }
         }
 

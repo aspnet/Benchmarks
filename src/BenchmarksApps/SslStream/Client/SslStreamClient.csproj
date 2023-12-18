@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -11,13 +11,11 @@
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
+    <Compile Include="../Shared/CommonOptions.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Common\SslStreamCommon.csproj" />
-  </ItemGroup>
   <PropertyGroup Condition="'$(TargetFramework.TrimStart(`netcoreap`))' >= '8.0'">
-    <DefineConstants>HAS_CLIENT_CERTIFICATE_CONTEXT;$(AdditionalConstants)</DefineConstants>
+    <DefineConstants>$(Net80Defines);$(AdditionalConstants)</DefineConstants>
   </PropertyGroup>
 
 </Project>

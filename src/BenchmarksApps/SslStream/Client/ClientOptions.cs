@@ -11,24 +11,20 @@ namespace SslStreamClient;
 
 public enum CertificateSource
 {
-//#if HAS_CLIENT_CERTIFICATE_CONTEXT
+    //#if HAS_CLIENT_CERTIFICATE_CONTEXT
     Context,
-//#endif
+    //#endif
     Certificate,
     Callback,
 }
 
-public class ClientOptions
+public class ClientOptions : OptionsBase
 {
     public string Hostname { get; set; } = null!;
-    public int Port { get; set; }
-    public int ReceiveBufferSize { get; set; }
-    public int SendBufferSize { get; set; }
     public CertificateSource CertificateSource { get; set; }
     public X509Certificate2? ClientCertificate { get; set; } = null!;
     public string? TlsHostName { get; set; }
     public Scenario Scenario { get; set; }
-    public SslProtocols EnabledSslProtocols { get; set; }
     public TimeSpan Warmup { get; set; }
     public TimeSpan Duration { get; set; }
 }
@@ -49,14 +45,14 @@ public class OptionsBinder : BinderBase<ClientOptions>
     {
         command.AddOption(HostOption);
         command.AddOption(PortOption);
-        command.AddOption(CommonOptions.RecieveBufferSizeOption);
-        command.AddOption(CommonOptions.SendBufferSizeOption);
+        command.AddOption(ScenarioOption);
+
+        CommonOptions.AddOptions(command);
+
+        command.AddOption(CertificateSourceOption);
         command.AddOption(ClientCertificatePathOption);
         command.AddOption(ClientCertificatePasswordOption);
         command.AddOption(TlsHostNameOption);
-        command.AddOption(ScenarioOption);
-        command.AddOption(CertificateSourceOption);
-        command.AddOption(CommonOptions.SslProtocolsOptions);
         command.AddOption(DurationOption);
         command.AddOption(WarmupOption);
     }
@@ -69,16 +65,15 @@ public class OptionsBinder : BinderBase<ClientOptions>
         {
             Hostname = parsed.GetValueForOption(HostOption)!,
             Port = parsed.GetValueForOption(PortOption),
-            ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption),
-            SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption),
             ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null),
-            EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.SslProtocolsOptions),
             Scenario = parsed.GetValueForOption(ScenarioOption),
             CertificateSource = parsed.GetValueForOption(CertificateSourceOption),
             TlsHostName = parsed.GetValueForOption(TlsHostNameOption),
             Duration = parsed.GetValueForOption(DurationOption),
             Warmup = parsed.GetValueForOption(WarmupOption),
         };
+
+        CommonOptions.BindOptions(options, bindingContext);
 
         return options;
     }

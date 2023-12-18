@@ -138,6 +138,11 @@ internal class Program
             ClientCertificateRequired = options.RequireClientCertificate,
             RemoteCertificateValidationCallback = delegate { return true; },
             ApplicationProtocols = options.ApplicationProtocols,
+#if HAS_ALLOW_TLS_RESUME
+            AllowTlsResume = !options.DisableTlsResume,
+#endif
+            EnabledSslProtocols = options.EnabledSslProtocols,
+            CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
         };
 
         switch (options.CertificateSource)

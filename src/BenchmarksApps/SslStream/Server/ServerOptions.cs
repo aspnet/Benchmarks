@@ -16,16 +16,18 @@ public enum CertificateSource
     Context
 }
 
-public class ServerOptions
+public class ServerOptions : OptionsBase
 {
     public int Port { get; set; }
     public int ReceiveBufferSize { get; set; }
     public int SendBufferSize { get; set; }
     public CertificateSource CertificateSource { get; set; }
     public bool RequireClientCertificate { get; set; }
+    public bool DisableTlsResume { get; set; }
     public X509Certificate2 ServerCertificate { get; set; } = null!;
     public List<SslApplicationProtocol> ApplicationProtocols { get; set; } = null!;
     public SslProtocols EnabledSslProtocols { get; set; }
+    public X509RevocationMode CertificateRevocationCheckMode { get; set; }
 }
 
 public class OptionsBinder : BinderBase<ServerOptions>
@@ -40,14 +42,14 @@ public class OptionsBinder : BinderBase<ServerOptions>
     public static void AddOptions(RootCommand command)
     {
         command.AddOption(PortOption);
-        command.AddOption(CommonOptions.RecieveBufferSizeOption);
-        command.AddOption(CommonOptions.SendBufferSizeOption);
+
+        CommonOptions.AddOptions(command);
+
+        command.AddOption(CertificateSourceOption);
         command.AddOption(ServerCertificatePathOption);
         command.AddOption(ServerCertificatePasswordOption);
         command.AddOption(HostNameOption);
         command.AddOption(RequireClientCertificateOption);
-        command.AddOption(CertificateSourceOption);
-        command.AddOption(CommonOptions.SslProtocolsOptions);
     }
 
     protected override ServerOptions GetBoundValue(BindingContext bindingContext)
@@ -57,14 +59,13 @@ public class OptionsBinder : BinderBase<ServerOptions>
         var options = new ServerOptions()
         {
             Port = parsed.GetValueForOption(PortOption),
-            ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption),
-            SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption),
             CertificateSource = parsed.GetValueForOption(CertificateSourceOption),
             RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption),
             ServerCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ServerCertificatePathOption), parsed.GetValueForOption(ServerCertificatePasswordOption), parsed.GetValueForOption(HostNameOption))!,
             ApplicationProtocols = Enum.GetValues<Scenario>().Select(v => new SslApplicationProtocol(v.ToString())).ToList(),
-            EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.SslProtocolsOptions),
         };
+
+        CommonOptions.BindOptions(options, bindingContext);
 
         return options;
     }

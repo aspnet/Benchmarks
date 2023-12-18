@@ -17,12 +17,60 @@ public enum Scenario
     Handshake
 }
 
+public class OptionsBase
+{
+
+    public int Port { get; set; }
+    public int ReceiveBufferSize { get; set; }
+    public int SendBufferSize { get; set; }
+    public bool DisableTlsResume { get; set; }
+    public SslProtocols EnabledSslProtocols { get; set; }
+    public X509RevocationMode CertificateRevocationCheckMode { get; set; }
+}
+
 public static class CommonOptions
 {
-    public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to listen on") { IsRequired = true };
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
     public static Option<SslProtocols> SslProtocolsOptions { get; } = new Option<SslProtocols>("--ssl-protocols", "The SSL protocols to use.");
+    public static Option<bool> DisableTlsResumeOption { get; } = new Option<bool>("--disable-tls-resume", "Disables TLS session resumption.");
+    public static Option<X509RevocationMode> CertificateRevocationCheckModeOption { get; } = new Option<X509RevocationMode>("--x509-revocation-check-mode", "Revocation check mode for the peer certificate.");
+
+#if !HAS_ALLOW_TLS_RESUME
+    static CommonOptions()
+    {
+        DisableTlsResumeOption.IsHidden = true;
+        DisableTlsResumeOption.AddValidator(symbol =>
+        {
+            if (symbol.GetValueOrDefault<bool>())
+            {
+                return "The option --disable-tls-resume is not supported on this .NET version.";
+            }
+
+            return null;
+        });
+    }
+#endif
+
+    public static void AddOptions(RootCommand command)
+    {
+        command.AddOption(CommonOptions.RecieveBufferSizeOption);
+        command.AddOption(CommonOptions.SendBufferSizeOption);
+        command.AddOption(CommonOptions.SslProtocolsOptions);
+        command.AddOption(CommonOptions.DisableTlsResumeOption);
+        command.AddOption(CommonOptions.CertificateRevocationCheckModeOption);
+    }
+
+    public static void BindOptions(OptionsBase options, BindingContext bindingContext)
+    {
+        var parsed = bindingContext.ParseResult;
+
+        options.ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption);
+        options.SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption);
+        options.DisableTlsResume = parsed.GetValueForOption(CommonOptions.DisableTlsResumeOption);
+        options.EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.SslProtocolsOptions);
+        options.CertificateRevocationCheckMode = parsed.GetValueForOption(CommonOptions.CertificateRevocationCheckModeOption);
+    }
 
     public static X509Certificate2? GetCertificate(string? path, string? password, string? hostname)
     {
