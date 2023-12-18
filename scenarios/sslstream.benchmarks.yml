@@ -1,0 +1,99 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  # common parameters
+  serverPort: 5000
+  sendBufferSize: 32768 # bytes
+  receiveBufferSize: 32768 # bytes
+  sslProtocols: "None" # <Default|None|Ssl2|Ssl3|Tls|Tls11|Tls12|Tls13>
+  certSource: "Context" # <Callback|Certificate|Context>
+
+  # client-specific parameters
+  warmup: 15 #seconds
+  duration: 15 #seconds
+
+  # server-specific parameters
+  # requireClientCert: false
+
+scenarios:
+  read-write:
+    server:
+      job: sslServer
+      agent: secondary
+      variables:
+        host: "{{secondaryAddress}}"
+    client:
+      job: sslClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+
+  client-read:
+    server:
+      job: sslServer
+      agent: secondary
+      variables:
+        host: "{{secondaryAddress}}"
+        receiveBufferSize: 0
+    client:
+      job: sslClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        sendBufferSize: 0
+
+  client-write:
+    server:
+      job: sslServer
+      agent: secondary
+      variables:
+        host: "{{secondaryAddress}}"
+        sendBufferSize: 0
+    client:
+      job: sslClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        receiveBufferSize: 0
+
+  handshake:
+    server:
+      job: sslServer
+      agent: secondary
+      variables:
+        host: "{{secondaryAddress}}"
+    client:
+      job: sslClient
+      agent: main
+      variables:
+        scenario: Handshake
+        host: "{{secondaryAddress}}"
+
+jobs:
+  sslServer:
+    source:
+      # repository: https://github.com/aspnet/benchmarks.git
+      # branchOrCommit: main
+      localFolder: C:/source/aspnet/benchmarks/src/BenchmarksApps/SslStream
+      # project: src/BenchmarksApps/SslStream/Server/SslStreamServer.csproj
+      project: Server/SslStreamServer.csproj
+    isConsoleApp: true
+    # readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
+    arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --ssl-protocols {{sslProtocols}} --cert-source {{certSource}}"
+
+  sslClient:
+    source:
+      # repository: https://github.com/aspnet/benchmarks.git
+      # branchOrCommit: main
+      localFolder: C:/source/aspnet/benchmarks/src/BenchmarksApps/SslStream
+      # project: src/BenchmarksApps/SslStream/Client/SslStreamClient.csproj
+      project: Client/SslStreamClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 300 #seconds
+    arguments: "--host {{secondaryAddress}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --ssl-protocols {{sslProtocols}} --scenario {{scenario}} --warmup 00:00:{{warmup}} --duration 00:00:{{duration}}"
