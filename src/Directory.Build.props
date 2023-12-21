@@ -16,6 +16,9 @@
     <!-- Create database build configurations -->
     <Configurations>Debug;Release;Debug_Database;Release_Database</Configurations>
     <IsDatabase Condition="$(Configuration.EndsWith('_Database'))">true</IsDatabase>
+
+    <!-- enable AOT scenarios -->
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
 </Project>

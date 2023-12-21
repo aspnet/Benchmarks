@@ -2,6 +2,9 @@
 using Mvc.Models;
 using Npgsql;
 
+[module: DapperAot] // enable AOT Dapper support project-wide
+[module: CacheCommand] // reuse DbCommand instances when possible
+
 namespace Mvc.Database;
 
 public sealed class DbDapper
@@ -24,7 +27,7 @@ public sealed class DbDapper
     public async Task<List<Fortune>> LoadFortunesRowsDapper()
     {
         await using var connection = _dataSource.CreateConnection();
-        var result = (await connection.QueryAsync<Fortune>($"SELECT id, message FROM fortune")).AsList();
+        var result = (await connection.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
 
         result.Add(new Fortune { Id = 0, Message = "Additional fortune added at request time." });
         result.Sort(FortuneSortComparison);
