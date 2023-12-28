@@ -73,10 +73,10 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
 
   - displayName: Json ASP.NET 8.0
-    arguments: --scenario json_aspnet_net7 --property scenario=JsonAspNet80
+    arguments: --scenario json_aspnet_current --property scenario=JsonAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
   - displayName: Fortunes ASP.NET 8.0
-    arguments: --scenario fortunes_aspnet_net7 --property scenario=FortunesAspNet80
+    arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
   - displayName: Json Actix
