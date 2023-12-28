@@ -29,5 +29,7 @@
     <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
     <MicrosoftIISTestingVersion90>9.0.0-*</MicrosoftIISTestingVersion90>
 
+    <DapperVersion>2.1.24</DapperVersion>
+    <RazorSlicesVersion>0.7.0</RazorSlicesVersion>
   </PropertyGroup>
 </Project>
