@@ -9,16 +9,15 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: 'true'
+  default: 'false' # Skip https://github.com/dotnet/aspnetcore/issues/49760
 
 # Scenarios
 - name: scenarios 
   type: object
   default:
-
-  # Skip https://github.com/dotnet/aspnetcore/issues/49760
-    # - displayName: Blazor Wasm
-    #   arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
+  
+  - displayName: Blazor Wasm
+    arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
 steps:
 - ${{ each s in parameters.scenarios }}:
