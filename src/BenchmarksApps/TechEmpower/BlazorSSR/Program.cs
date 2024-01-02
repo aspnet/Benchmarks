@@ -33,6 +33,8 @@ builder.Services.AddSingleton(serviceProvider =>
 
 var app = builder.Build();
 
+app.UseAntiforgery();
+
 app.MapRazorComponents<App>();
 
 app.MapGet("/direct/fortunes", () => new RazorComponentResult<Fortunes>());
