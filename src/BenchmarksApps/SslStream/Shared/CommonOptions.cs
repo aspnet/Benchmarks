@@ -23,7 +23,7 @@ public class OptionsBase
     public int Port { get; set; }
     public int ReceiveBufferSize { get; set; }
     public int SendBufferSize { get; set; }
-    public bool DisableTlsResume { get; set; }
+    public bool AllowTlsResume { get; set; }
     public SslProtocols EnabledSslProtocols { get; set; }
     public X509RevocationMode CertificateRevocationCheckMode { get; set; }
 }
@@ -33,18 +33,18 @@ public static class CommonOptions
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
     public static Option<SslProtocols> SslProtocolsOptions { get; } = new Option<SslProtocols>("--ssl-protocols", "The SSL protocols to use.");
-    public static Option<bool> DisableTlsResumeOption { get; } = new Option<bool>("--disable-tls-resume", "Disables TLS session resumption.");
+    public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Disables TLS session resumption.");
     public static Option<X509RevocationMode> CertificateRevocationCheckModeOption { get; } = new Option<X509RevocationMode>("--x509-revocation-check-mode", "Revocation check mode for the peer certificate.");
 
-#if !HAS_ALLOW_TLS_RESUME
+#if !NET8_0_OR_GREATER
     static CommonOptions()
     {
-        DisableTlsResumeOption.IsHidden = true;
-        DisableTlsResumeOption.AddValidator(symbol =>
+        AllowTlsResumeOption.IsHidden = true;
+        AllowTlsResumeOption.AddValidator(symbol =>
         {
-            if (symbol.GetValueOrDefault<bool>())
+            if (!symbol.GetValueOrDefault<bool>())
             {
-                return "The option --disable-tls-resume is not supported on this .NET version.";
+                return "The option --allow-tls-resume is not supported on this .NET version.";
             }
 
             return null;
@@ -57,7 +57,7 @@ public static class CommonOptions
         command.AddOption(CommonOptions.RecieveBufferSizeOption);
         command.AddOption(CommonOptions.SendBufferSizeOption);
         command.AddOption(CommonOptions.SslProtocolsOptions);
-        command.AddOption(CommonOptions.DisableTlsResumeOption);
+        command.AddOption(CommonOptions.AllowTlsResumeOption);
         command.AddOption(CommonOptions.CertificateRevocationCheckModeOption);
     }
 
@@ -67,7 +67,7 @@ public static class CommonOptions
 
         options.ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption);
         options.SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption);
-        options.DisableTlsResume = parsed.GetValueForOption(CommonOptions.DisableTlsResumeOption);
+        options.AllowTlsResume = parsed.GetValueForOption(CommonOptions.AllowTlsResumeOption);
         options.EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.SslProtocolsOptions);
         options.CertificateRevocationCheckMode = parsed.GetValueForOption(CommonOptions.CertificateRevocationCheckModeOption);
     }

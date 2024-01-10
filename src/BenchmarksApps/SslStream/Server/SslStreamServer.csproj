@@ -14,8 +14,4 @@
     <Compile Include="../Shared/CommonOptions.cs" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework.TrimStart(`netcoreap`))' >= '8.0'">
-    <DefineConstants>$(Net80Defines);$(AdditionalConstants)</DefineConstants>
-  </PropertyGroup>
-
 </Project>

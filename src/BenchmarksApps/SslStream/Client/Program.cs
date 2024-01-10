@@ -178,8 +178,8 @@ internal class Program
             TargetHost = options.TlsHostName ?? options.Hostname,
             RemoteCertificateValidationCallback = delegate { return true; },
             ApplicationProtocols = new List<SslApplicationProtocol> { new(options.Scenario.ToString()) },
-#if HAS_ALLOW_TLS_RESUME
-            AllowTlsResume = !options.DisableTlsResume,
+#if NET8_0_OR_GREATER
+            AllowTlsResume = options.AllowTlsResume,
 #endif
             EnabledSslProtocols = options.EnabledSslProtocols,
             CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
@@ -195,7 +195,7 @@ internal class Program
                 case CertificateSource.Callback:
                     sslOptions.LocalCertificateSelectionCallback = delegate { return options.ClientCertificate; };
                     break;
-#if HAS_CLIENT_CERTIFICATE_CONTEXT
+#if NET8_0_OR_GREATER
                 case CertificateSource.Context:
                     sslOptions.ClientCertificateContext = SslStreamCertificateContext.Create(options.ClientCertificate, new X509Certificate2Collection());
                     break;

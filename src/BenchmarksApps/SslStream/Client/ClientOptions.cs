@@ -11,9 +11,7 @@ namespace SslStreamClient;
 
 public enum CertificateSource
 {
-    //#if HAS_CLIENT_CERTIFICATE_CONTEXT
     Context,
-    //#endif
     Certificate,
     Callback,
 }

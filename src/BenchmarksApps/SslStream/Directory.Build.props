@@ -1,9 +1,0 @@
-<Project>
-
-  <Import Project="..\..\Directory.Build.props" />
-
-  <PropertyGroup> 
-    <Net80Defines>HAS_CLIENT_CERTIFICATE_CONTEXT;HAS_ALLOW_TLS_RESUME;$(AdditionalConstants)</Net80Defines>
-  </PropertyGroup>
-
-</Project>

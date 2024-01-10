@@ -18,16 +18,11 @@ public enum CertificateSource
 
 public class ServerOptions : OptionsBase
 {
-    public int Port { get; set; }
-    public int ReceiveBufferSize { get; set; }
-    public int SendBufferSize { get; set; }
     public CertificateSource CertificateSource { get; set; }
     public bool RequireClientCertificate { get; set; }
     public bool DisableTlsResume { get; set; }
     public X509Certificate2 ServerCertificate { get; set; } = null!;
     public List<SslApplicationProtocol> ApplicationProtocols { get; set; } = null!;
-    public SslProtocols EnabledSslProtocols { get; set; }
-    public X509RevocationMode CertificateRevocationCheckMode { get; set; }
 }
 
 public class OptionsBinder : BinderBase<ServerOptions>
