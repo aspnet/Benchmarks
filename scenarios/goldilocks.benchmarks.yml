@@ -12,11 +12,13 @@ variables:
     serverScheme: http
 
 jobs:
-  basicminimalapiaspnetbenchmarks:
+  basicminimalapiaspnetbenchmarks2:
     source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
-      project: src/BenchmarksApps/BasicMinimalApi/BasicMinimalApi.csproj
+      # repository: https://github.com/aspnet/benchmarks.git
+      # branchOrCommit: main
+      # project: src/BenchmarksApps/BasicMinimalApi/BasicMinimalApi.csproj
+      localFolder: /Users/captainsafia/gh/Benchmarks/src/BenchmarksApps/BasicMinimalApi/bin/Debug/net8.0/
+      executable: BasicMinimalApi.dll
     readyStateText: Application started.
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   todosapiaspnetbenchmarks:
@@ -59,7 +61,7 @@ scenarios:
 
   basicminimalapipublishaot:
     application:
-      job: basicminimalapiaspnetbenchmarks
+      job: basicminimalapiaspnetbenchmarks2
       buildArguments: 
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
