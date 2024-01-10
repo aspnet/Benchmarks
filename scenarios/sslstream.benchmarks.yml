@@ -1,5 +1,5 @@
 # Example:
-# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --scenario httpclient-kestrel-get --profile aspnet-perf-lin --variable concurrencyPerHttpClient=200
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/sslstream.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
