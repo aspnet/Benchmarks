@@ -38,7 +38,7 @@ profiles:
         arguments: --profile aspnet-citrine-amd-relay
 
 benchmarks:
-    microbenchmarks:
+    micro:
       description: '.NET Performance micro benchmarks (set filter by adding `--variable filter=...`; by default `filter=*LinqBenchmarks*`)'
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom
 
@@ -58,8 +58,8 @@ benchmarks:
       description: TechEmpower Fortunes Scenario with EF Core - ASP.NET Platform implementation
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/platform.benchmarks.yml --scenario fortunes_ef
 
-    httpclient-kestrel-configured:
-      description: 'HttpClient Benchmark (default: HTTP/1.1 GET 8K)'
+    httpclient:
+      description: 'HttpClient Benchmark (change HTTP version by adding e.g. `--variable httpVersion=3.0`; change response size by adding e.g. `--variable responseSize=256`; default: HTTP/1.1 GET 8K)'
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net9.0 --scenario httpclient-kestrel-configured
       variables:
           job: client

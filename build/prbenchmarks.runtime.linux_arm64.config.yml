@@ -29,7 +29,7 @@ profiles:
         arguments: --profile aspnet-citrine-arm-lin-relay
 
 benchmarks:
-    microbenchmarks:
+    micro:
       description: '.NET Performance micro benchmarks (set filter by adding `--variable filter=...`; by default `filter=*LinqBenchmarks*`)'
       arguments: --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom
 
