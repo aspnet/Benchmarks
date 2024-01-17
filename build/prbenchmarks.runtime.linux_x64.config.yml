@@ -12,6 +12,7 @@ components:
             ./build.sh libs -c Release -runtimeconfiguration Release -arch x64
             ./src/tests/build.sh Release x64 generatelayoutonly /p:LibrariesConfiguration=Release
             rm -rf ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/*.pdb
+            rm -rf ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/CommandLine.dll
 
         arguments: '--{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/'
 
@@ -38,7 +39,7 @@ profiles:
 
 benchmarks:
     microbenchmarks:
-      description: '.NET Performance micro benchmarks (default filter: "*LinqBenchmarks*", change by adding "--variable filter=...")'
+      description: '.NET Performance micro benchmarks (set filter by adding `--variable filter=...`; by default `filter=*LinqBenchmarks*`)'
       arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom
 
     plaintext:
