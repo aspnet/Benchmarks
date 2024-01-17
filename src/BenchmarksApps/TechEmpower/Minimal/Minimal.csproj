@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
-    <PackageReference Include="Dapper" Version="2.0.123" />
-    <PackageReference Include="RazorSlices" Version="0.6.2" />
+    <PackageReference Include="Dapper" Version="$(DapperVersion)" />
+    <PackageReference Include="RazorSlices" Version="$(RazorSlicesVersion)" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup Label="Package Versions">
     <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
-    <NpgsqlVersion70>7.0.4</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.0</NpgsqlVersion80>
+    <NpgsqlVersion70>7.0.6</NpgsqlVersion70>
+    <NpgsqlVersion80>8.0.1</NpgsqlVersion80>
 
     <MicrosoftDataSqlClientVersion60>5.1.1</MicrosoftDataSqlClientVersion60>
     <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
@@ -29,5 +29,7 @@
     <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
     <MicrosoftIISTestingVersion90>9.0.0-*</MicrosoftIISTestingVersion90>
 
+    <DapperVersion>2.1.24</DapperVersion>
+    <RazorSlicesVersion>0.7.0</RazorSlicesVersion>
   </PropertyGroup>
 </Project>

@@ -16,8 +16,8 @@ parameters:
   type: object
   default:
 
-    - displayName: 0.25 - 128mb
-      arguments: --property cpu=0.25 --property mem=128mb --property size=250m-128mb --application.cpuLimitRatio 0.25 --application.memoryLimitInBytes 128000000 
+    - displayName: 0.5 - 256mb
+      arguments: --property cpu=0.5 --property mem=256mb --property size=500m-256mb --application.cpuLimitRatio 0.5 --application.memoryLimitInBytes 256000000 
     - displayName: 1 - 512mb
       arguments: --property cpu=1 --property mem=512mb --property size=1000m-512mb --application.cpuLimitRatio 1 --application.memoryLimitInBytes 512000000 
     - displayName: 4 - 1gb
@@ -72,11 +72,11 @@ parameters:
     arguments: --scenario fortunes_aspnet_composite --property scenario=FortunesAspNetComposite
     condition: Math.round(Date.now() / 43200000) % 8 == 4 # once every 8 half-days
 
-  - displayName: Json ASP.NET 7.0
-    arguments: --scenario json_aspnet_net7 --property scenario=JsonAspNet70
+  - displayName: Json ASP.NET 8.0
+    arguments: --scenario json_aspnet_current --property scenario=JsonAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
-  - displayName: Fortunes ASP.NET 7.0
-    arguments: --scenario fortunes_aspnet_net7 --property scenario=FortunesAspNet70
+  - displayName: Fortunes ASP.NET 8.0
+    arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
   - displayName: Json Actix

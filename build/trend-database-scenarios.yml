@@ -51,6 +51,16 @@ parameters:
   - displayName: Updates Minimal APIs
     arguments: --scenario updates $(minimalJobs) --property scenario=UpdatesMinimalApis --property protocol=http --variable duration=30
 
+# Blazor
+
+  - displayName: Fortunes Blazor SSR
+    arguments: --scenario fortunes $(blazorSsrJobs) --property scenario=FortunesBlazorSsr --property protocol=http
+
+# Razor Pages
+
+  - displayName: Fortunes Razor Pages
+    arguments: --scenario fortunes $(razorPagesJobs) --property scenario=FortunesRazorPages --property protocol=http
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1

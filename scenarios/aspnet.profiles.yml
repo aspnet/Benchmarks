@@ -5,6 +5,11 @@ variables:
   localendpoint: http://localhost:5010
   
 profiles:
+  noload:
+    variables:
+      warmup: 0
+      duration: 0
+
   short:
     variables:
       warmup: 3

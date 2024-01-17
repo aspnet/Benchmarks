@@ -169,7 +169,7 @@ jobs:
       dockerFile: toolset/databases/mysql/mysql.dockerfile
       dockerImageName: mysql_te
       dockerContextDirectory: toolset/databases/mysql
-    readyStateText: ready for connections
+    readyStateText: Ready for start up
     noClean: true
 
 scenarios:
@@ -238,7 +238,7 @@ scenarios:
 
   fortunes_nodejs:
     db:
-      job: mysql
+      job: postgresql
     application:
       job: nodejs
     load:
