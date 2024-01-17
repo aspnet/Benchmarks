@@ -7,6 +7,11 @@ profiles:
       warmup: 3
       duration: 7
 
+  noload:
+    variables:
+      warmup: 0
+      duration: 0
+
   pgo:
     jobs:
       application:
