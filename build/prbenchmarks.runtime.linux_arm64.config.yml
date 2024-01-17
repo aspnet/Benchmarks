@@ -11,7 +11,7 @@ components:
             ./build.sh libs -c Release -runtimeconfiguration Release -arch arm64
             ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
             rm -rf ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/*.pdb
-            rm -rf ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/CommandLine.dll
+            rm -rf ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/CommandLine.dll
 
         arguments:
             --{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/
