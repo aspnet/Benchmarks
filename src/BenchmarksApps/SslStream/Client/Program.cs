@@ -101,7 +101,7 @@ internal class Program
         BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n0");
         BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n0");
 
-        static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken)
+        static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken = default)
         {
             if (bufferSize == 0)
             {
@@ -109,21 +109,14 @@ internal class Program
             }
 
             var sendBuffer = new byte[bufferSize];
-            try
+            while (s_isRunning)
             {
-                while (s_isRunning)
-                {
-                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
-                    Interlocked.Add(ref s_counters.BytesWritten, bufferSize);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected, just return
+                await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
+                Interlocked.Add(ref s_counters.BytesWritten, bufferSize);
             }
         }
 
-        static async Task ReadingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken)
+        static async Task ReadingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken = default)
         {
             if (bufferSize == 0)
             {
@@ -131,17 +124,10 @@ internal class Program
             }
 
             var recvBuffer = new byte[bufferSize];
-            try
+            while (s_isRunning)
             {
-                while (s_isRunning)
-                {
-                    int bytesRead = await stream.ReadAsync(recvBuffer, cancellationToken).ConfigureAwait(false);
-                    Interlocked.Add(ref s_counters.BytesRead, bytesRead);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected, just return
+                int bytesRead = await stream.ReadAsync(recvBuffer, cancellationToken).ConfigureAwait(false);
+                Interlocked.Add(ref s_counters.BytesRead, bytesRead);
             }
         }
 
@@ -151,12 +137,10 @@ internal class Program
 
         byte[] recvBuffer = new byte[options.ReceiveBufferSize];
 
-        CancellationTokenSource cts = new CancellationTokenSource();
-
         s_isRunning = true;
 
-        var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize, cts.Token));
-        var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize, cts.Token));
+        var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize));
+        var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize));
 
         await Task.Delay(options.Warmup).ConfigureAwait(false);
         Log("Completing warmup...");
@@ -168,8 +152,6 @@ internal class Program
         await Task.Delay(options.Duration).ConfigureAwait(false);
         s_isRunning = false;
         Log("Completing scenario...");
-
-        cts.Cancel();
 
         await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
         sw.Stop();
