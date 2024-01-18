@@ -9,7 +9,7 @@ variables:
   serverPort: 5000
   sendBufferSize: 32768 # bytes
   receiveBufferSize: 32768 # bytes
-  sslProtocols: "None" # <Default|None|Ssl2|Ssl3|Tls|Tls11|Tls12|Tls13>
+  tlsVersion: "1.3" # <1.2|1.3>
   certSource: "Context" # <Callback|Certificate|Context>
 
   # client-specific parameters
@@ -77,23 +77,18 @@ scenarios:
 jobs:
   sslServer:
     source:
-      # repository: https://github.com/aspnet/benchmarks.git
-      # branchOrCommit: main
-      localFolder: C:/source/aspnet/benchmarks/src/BenchmarksApps/SslStream
-      # project: src/BenchmarksApps/SslStream/Server/SslStreamServer.csproj
-      project: Server/SslStreamServer.csproj
-    isConsoleApp: true
-    # readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
-    arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --ssl-protocols {{sslProtocols}} --cert-source {{certSource}}"
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/SslStream/Server/SslStreamServer.csproj
+    readyStateText: Listening on # app should write this line to output -- default Kestrel logging does that
+    arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-source {{certSource}}"
 
   sslClient:
     source:
-      # repository: https://github.com/aspnet/benchmarks.git
-      # branchOrCommit: main
-      localFolder: C:/source/aspnet/benchmarks/src/BenchmarksApps/SslStream
-      # project: src/BenchmarksApps/SslStream/Client/SslStreamClient.csproj
-      project: Client/SslStreamClient.csproj
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/SslStream/Client/SslStreamClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds
-    arguments: "--host {{secondaryAddress}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --ssl-protocols {{sslProtocols}} --scenario {{scenario}} --warmup 00:00:{{warmup}} --duration 00:00:{{duration}}"
+    arguments: "--host {{secondaryAddress}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --scenario {{scenario}} --warmup 00:00:{{warmup}} --duration 00:00:{{duration}}"

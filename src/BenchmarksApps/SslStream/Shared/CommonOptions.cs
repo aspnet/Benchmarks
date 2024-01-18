@@ -32,8 +32,8 @@ public static class CommonOptions
 {
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
-    public static Option<SslProtocols> SslProtocolsOptions { get; } = new Option<SslProtocols>("--ssl-protocols", "The SSL protocols to use.");
-    public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Disables TLS session resumption.");
+    public static Option<Version> TlsVersionOption { get; } = new Option<Version>("--tls-version", () => new Version(1, 3), "The TLS protocol version to use.").FromAmong("1.2", "1.3");
+    public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
     public static Option<X509RevocationMode> CertificateRevocationCheckModeOption { get; } = new Option<X509RevocationMode>("--x509-revocation-check-mode", "Revocation check mode for the peer certificate.");
 
 #if !NET8_0_OR_GREATER
@@ -56,7 +56,7 @@ public static class CommonOptions
     {
         command.AddOption(CommonOptions.RecieveBufferSizeOption);
         command.AddOption(CommonOptions.SendBufferSizeOption);
-        command.AddOption(CommonOptions.SslProtocolsOptions);
+        command.AddOption(CommonOptions.TlsVersionOption);
         command.AddOption(CommonOptions.AllowTlsResumeOption);
         command.AddOption(CommonOptions.CertificateRevocationCheckModeOption);
     }
@@ -68,7 +68,12 @@ public static class CommonOptions
         options.ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption);
         options.SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption);
         options.AllowTlsResume = parsed.GetValueForOption(CommonOptions.AllowTlsResumeOption);
-        options.EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.SslProtocolsOptions);
+        options.EnabledSslProtocols = parsed.GetValueForOption(CommonOptions.TlsVersionOption) switch
+        {
+            Version { Major: 1, Minor: 2 } => SslProtocols.Tls12,
+            Version { Major: 1, Minor: 3 } => SslProtocols.Tls13,
+            _ => throw new InvalidOperationException("Invalid TLS version.")
+        };
         options.CertificateRevocationCheckMode = parsed.GetValueForOption(CommonOptions.CertificateRevocationCheckModeOption);
     }
 
