@@ -16,7 +16,7 @@ internal class Program
         var rootCommand = new RootCommand("SslStream benchmark server");
         OptionsBinder.AddOptions(rootCommand);
         rootCommand.SetHandler<ServerOptions>(Run, new OptionsBinder());
-        return await rootCommand.InvokeAsync(args);
+        return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
     static async Task Run(ServerOptions options)
@@ -31,7 +31,7 @@ internal class Program
         CancellationTokenSource ctrlC = new CancellationTokenSource();
         Console.CancelKeyPress += (s, e) =>
         {
-            Log("Ctrl+C pressed.");
+            Log("Shutting down...");
             e.Cancel = true;
             ctrlC.Cancel();
         };
@@ -40,7 +40,7 @@ internal class Program
         {
             while (!ctrlC.IsCancellationRequested)
             {
-                var clientSock = await sock.AcceptAsync(ctrlC.Token);
+                var clientSock = await sock.AcceptAsync(ctrlC.Token).ConfigureAwait(false);
                 _ = Task.Run(() => ProcessClient(clientSock, options, sslOptions, ctrlC.Token));
             }
         }
@@ -67,7 +67,7 @@ internal class Program
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await stream.WriteAsync(sendBuffer, cancellationToken);
+                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -87,21 +87,21 @@ internal class Program
 
         while (true)
         {
-            if (await stream.ReadAsync(recvBufer, cts.Token) == 0)
+            if (await stream.ReadAsync(recvBufer, cts.Token).ConfigureAwait(false) == 0)
             {
                 cts.Cancel();
                 break;
             }
         }
 
-        await writeTask;
+        await writeTask.ConfigureAwait(false);
     }
 
     static async Task ProcessClient(Socket socket, ServerOptions options, SslServerAuthenticationOptions sslOptions, CancellationToken cancellationToken)
     {
         try
         {
-            using var stream = await EstablishSslStreamAsync(socket, sslOptions, cancellationToken);
+            using var stream = await EstablishSslStreamAsync(socket, sslOptions, cancellationToken).ConfigureAwait(false);
 
             if (stream.NegotiatedApplicationProtocol.Protocol.Span.SequenceEqual("Handshake"u8))
             {
@@ -110,7 +110,7 @@ internal class Program
             }
             if (stream.NegotiatedApplicationProtocol.Protocol.Span.SequenceEqual("ReadWrite"u8))
             {
-                await ReadWriteScenario(stream, options, cancellationToken);
+                await ReadWriteScenario(stream, options, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -165,7 +165,7 @@ internal class Program
     {
         var networkStream = new NetworkStream(socket, ownsSocket: true);
         var stream = new SslStream(networkStream, leaveInnerStreamOpen: false);
-        await stream.AuthenticateAsServerAsync(options, cancellationToken);
+        await stream.AuthenticateAsServerAsync(options, cancellationToken).ConfigureAwait(false);
         return stream;
     }
 

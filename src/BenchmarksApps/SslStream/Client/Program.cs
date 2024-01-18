@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
@@ -10,11 +11,18 @@ using Microsoft.Crank.EventSources;
 using SslStreamCommon;
 using SslStreamClient;
 
+// avoid false sharing among counters
+[StructLayout(LayoutKind.Explicit)]
+internal struct Counters
+{
+    [FieldOffset(0)] public long BytesRead;
+    [FieldOffset(64)] public long BytesWritten;
+    [FieldOffset(128)] public long TotalHandshakes;
+}
+
 internal class Program
 {
-    private static long s_bytesRead;
-    private static long s_bytesWritten;
-    private static long s_totalHandshakes;
+    private static Counters s_counters;
     private static bool s_isRunning;
 
     private static async Task<int> Main(string[] args)
@@ -22,7 +30,7 @@ internal class Program
         var rootCommand = new RootCommand("SslStream benchmark client");
         OptionsBinder.AddOptions(rootCommand);
         rootCommand.SetHandler<ClientOptions>(Run, new OptionsBinder());
-        return await rootCommand.InvokeAsync(args);
+        return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
     static async Task Run(ClientOptions options)
@@ -34,10 +42,10 @@ internal class Program
             switch (options.Scenario)
             {
                 case Scenario.ReadWrite:
-                    await RunReadWriteScenario(options);
+                    await RunReadWriteScenario(options).ConfigureAwait(false);
                     break;
                 case Scenario.Handshake:
-                    await RunHandshakeScenario(options);
+                    await RunHandshakeScenario(options).ConfigureAwait(false);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown scenario: {options.Scenario}");
@@ -56,10 +64,10 @@ internal class Program
         static async Task EstablishConnection(ClientOptions options)
         {
             using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            await sock.ConnectAsync(options.Hostname, options.Port);
-            using var stream = await EstablishSslStreamAsync(sock, options);
+            await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
+            using var stream = await EstablishSslStreamAsync(sock, options).ConfigureAwait(false);
 
-            Interlocked.Increment(ref s_totalHandshakes);
+            Interlocked.Increment(ref s_counters.TotalHandshakes);
         }
 
         s_isRunning = true;
@@ -68,24 +76,24 @@ internal class Program
         {
             while (s_isRunning)
             {
-                await EstablishConnection(options);
+                await EstablishConnection(options).ConfigureAwait(false);
             }
         });
 
-        await Task.Delay(options.Warmup);
+        await Task.Delay(options.Warmup).ConfigureAwait(false);
         Log("Completing warmup...");
 
         Stopwatch sw = Stopwatch.StartNew();
-        Volatile.Write(ref s_totalHandshakes, 0);
+        Volatile.Write(ref s_counters.TotalHandshakes, 0);
 
-        await Task.Delay(options.Duration);
+        await Task.Delay(options.Duration).ConfigureAwait(false);
         s_isRunning = false;
         Log("Completing scenario...");
 
-        await task;
+        await task.ConfigureAwait(false);
         sw.Stop();
 
-        LogMetric("sslstream/handshakes/mean", s_totalHandshakes / sw.Elapsed.TotalSeconds);
+        LogMetric("sslstream/handshakes/mean", s_counters.TotalHandshakes / sw.Elapsed.TotalSeconds);
     }
 
     static async Task RunReadWriteScenario(ClientOptions options)
@@ -105,8 +113,8 @@ internal class Program
             {
                 while (s_isRunning)
                 {
-                    await stream.WriteAsync(sendBuffer, cancellationToken);
-                    Interlocked.Add(ref s_bytesWritten, bufferSize);
+                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
+                    Interlocked.Add(ref s_counters.BytesWritten, bufferSize);
                 }
             }
             catch (OperationCanceledException)
@@ -127,8 +135,8 @@ internal class Program
             {
                 while (s_isRunning)
                 {
-                    int bytesRead = await stream.ReadAsync(recvBuffer, cancellationToken);
-                    Interlocked.Add(ref s_bytesRead, bytesRead);
+                    int bytesRead = await stream.ReadAsync(recvBuffer, cancellationToken).ConfigureAwait(false);
+                    Interlocked.Add(ref s_counters.BytesRead, bytesRead);
                 }
             }
             catch (OperationCanceledException)
@@ -138,8 +146,8 @@ internal class Program
         }
 
         using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
-        await sock.ConnectAsync(options.Hostname, options.Port);
-        using var stream = await EstablishSslStreamAsync(sock, options);
+        await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
+        using var stream = await EstablishSslStreamAsync(sock, options).ConfigureAwait(false);
 
         byte[] recvBuffer = new byte[options.ReceiveBufferSize];
 
@@ -150,25 +158,24 @@ internal class Program
         var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize, cts.Token));
         var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize, cts.Token));
 
-        await Task.Delay(options.Warmup);
+        await Task.Delay(options.Warmup).ConfigureAwait(false);
         Log("Completing warmup...");
 
         Stopwatch sw = Stopwatch.StartNew();
-        Volatile.Write(ref s_bytesRead, 0);
-        Volatile.Write(ref s_bytesWritten, 0);
+        Volatile.Write(ref s_counters.BytesRead, 0);
+        Volatile.Write(ref s_counters.BytesWritten, 0);
 
-        await Task.Delay(options.Duration);
+        await Task.Delay(options.Duration).ConfigureAwait(false);
         s_isRunning = false;
         Log("Completing scenario...");
 
         cts.Cancel();
 
-        await writeTask;
-        await readTask;
+        await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
         sw.Stop();
 
-        LogMetric("sslstream/read/mean", s_bytesRead / sw.Elapsed.TotalSeconds);
-        LogMetric("sslstream/write/mean", s_bytesWritten / sw.Elapsed.TotalSeconds);
+        LogMetric("sslstream/read/mean", s_counters.BytesRead / sw.Elapsed.TotalSeconds);
+        LogMetric("sslstream/write/mean", s_counters.BytesWritten / sw.Elapsed.TotalSeconds);
     }
 
     static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(ClientOptions options)
@@ -212,7 +219,7 @@ internal class Program
     {
         var networkStream = new NetworkStream(socket, ownsSocket: true);
         var stream = new SslStream(networkStream, leaveInnerStreamOpen: false);
-        await stream.AuthenticateAsClientAsync(CreateSslClientAuthenticationOptions(options));
+        await stream.AuthenticateAsClientAsync(CreateSslClientAuthenticationOptions(options)).ConfigureAwait(false);
         return stream;
     }
 
