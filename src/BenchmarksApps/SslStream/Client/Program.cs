@@ -59,7 +59,7 @@ internal class Program
 
     static async Task RunHandshakeScenario(ClientOptions options)
     {
-        BenchmarksEventSource.Register("sslstream/handshakes/mean", Operations.Avg, Operations.Avg, "Mean TLS handshakes per second.", "Handshakes per second - mean", "n0");
+        BenchmarksEventSource.Register("sslstream/handshake/mean", Operations.Avg, Operations.Avg, "Mean handshake duration (ms)", "Handshakes duration in milliseconds - mean", "n3");
 
         static async Task EstablishConnection(ClientOptions options)
         {
@@ -93,13 +93,13 @@ internal class Program
         await task.ConfigureAwait(false);
         sw.Stop();
 
-        LogMetric("sslstream/handshakes/mean", s_counters.TotalHandshakes / sw.Elapsed.TotalSeconds);
+        LogMetric("sslstream/handshake/mean", sw.Elapsed.TotalMilliseconds / s_counters.TotalHandshakes);
     }
 
     static async Task RunReadWriteScenario(ClientOptions options)
     {
-        BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n0");
-        BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n0");
+        BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n2");
+        BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n2");
 
         static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken = default)
         {

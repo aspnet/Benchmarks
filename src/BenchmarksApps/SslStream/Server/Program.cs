@@ -76,25 +76,37 @@ internal class Program
             }
         }
 
+        static async Task ReadingTask(SslStream stream, int bufferSize, CancellationTokenSource cts)
+        {
+            var recvBuffer = new byte[Math.Max(bufferSize, 1)];
+
+            while (true)
+            {
+                var bytesRead = await stream.ReadAsync(recvBuffer, cts.Token).ConfigureAwait(false);
+
+                if (bytesRead > 0 && bufferSize == 0)
+                {
+                    throw new Exception("Client is sending data but the server is not expecting any");
+                }
+
+                if (bytesRead == 0)
+                {
+                    // client closed the connection.
+                    cts.Cancel();
+                    break;
+                }
+            }
+        }
+
         byte[] recvBuffer = new byte[options.ReceiveBufferSize];
 
         CancellationTokenSource cts = new CancellationTokenSource();
         using var reg = cancellationToken.Register(() => cts.Cancel());
 
         var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize, cts.Token));
+        var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize, cts));
 
-        var recvBufer = new byte[options.ReceiveBufferSize];
-
-        while (true)
-        {
-            if (await stream.ReadAsync(recvBufer, cts.Token).ConfigureAwait(false) == 0)
-            {
-                cts.Cancel();
-                break;
-            }
-        }
-
-        await writeTask.ConfigureAwait(false);
+        await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
     }
 
     static async Task ProcessClient(Socket socket, ServerOptions options, SslServerAuthenticationOptions sslOptions, CancellationToken cancellationToken)
