@@ -131,22 +131,18 @@ internal class Program
             }
             else
             {
-                Log($"Negotiated unknown protocol: {stream.NegotiatedApplicationProtocol}");
-                s_errors++;
+                throw new Exception($"Negotiated unknown protocol: {stream.NegotiatedApplicationProtocol}");
             }
-        }
-        catch (AuthenticationException e)
-        {
-            Log($"Authentication failed: {e}");
-            s_errors++;
         }
         catch (IOException e) when (e.InnerException is SocketException)
         {
-            // client closed the connection, ignore this
+            // client closed the connection on us, ignore this
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception occured: {e}");
+            s_errors++;
+            Log($"Exception occured: {e}");
+            throw;
         }
     }
 
