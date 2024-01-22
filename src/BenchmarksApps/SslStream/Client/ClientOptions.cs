@@ -9,17 +9,17 @@ using SslStreamCommon;
 
 namespace SslStreamClient;
 
-public enum CertificateSource
+public enum CertificateSelectionType
 {
-    Context,
-    Certificate,
+    CertContext,
+    Collection,
     Callback,
 }
 
 public class ClientOptions : OptionsBase
 {
     public string Hostname { get; set; } = null!;
-    public CertificateSource CertificateSource { get; set; }
+    public CertificateSelectionType CertificateSelection { get; set; }
     public X509Certificate2? ClientCertificate { get; set; } = null!;
     public string? TlsHostName { get; set; }
     public Scenario Scenario { get; set; }
@@ -33,7 +33,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to connect to.");
     public static Option<string> ClientCertificatePathOption { get; } = new Option<string>("--cert", "Path to the client certificate.");
     public static Option<string> ClientCertificatePasswordOption { get; } = new Option<string>("--cert-password", "Password to the certificate file specified in --cert.");
-    public static Option<CertificateSource> CertificateSourceOption { get; } = new Option<CertificateSource>("--cert-source", () => CertificateSource.Context, "The source of the server certificate in SslClientAuthenticationOptions.");
+    public static Option<CertificateSelectionType> CertificateSelectionOption { get; } = new Option<CertificateSelectionType>("--cert-selection", () => CertificateSelectionType.CertContext, "The source of the server certificate in SslClientAuthenticationOptions.");
     public static Option<string> TlsHostNameOption { get; } = new Option<string>("--tls-host-name", "The target host name to send in TLS Client Hello. If not specified, the value from --host is used.");
     public static Option<Scenario> ScenarioOption { get; } = new Option<Scenario>("--scenario", () => Scenario.ReadWrite, "The scenario to run.");
     public static Option<TimeSpan> DurationOption { get; } = new Option<TimeSpan>("--duration", () => TimeSpan.FromSeconds(15), "The duration of the test.");
@@ -47,7 +47,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
 
         CommonOptions.AddOptions(command);
 
-        command.AddOption(CertificateSourceOption);
+        command.AddOption(CertificateSelectionOption);
         command.AddOption(ClientCertificatePathOption);
         command.AddOption(ClientCertificatePasswordOption);
         command.AddOption(TlsHostNameOption);
@@ -65,7 +65,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
             Port = parsed.GetValueForOption(PortOption),
             ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null),
             Scenario = parsed.GetValueForOption(ScenarioOption),
-            CertificateSource = parsed.GetValueForOption(CertificateSourceOption),
+            CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),
             TlsHostName = parsed.GetValueForOption(TlsHostNameOption),
             Duration = parsed.GetValueForOption(DurationOption),
             Warmup = parsed.GetValueForOption(WarmupOption),

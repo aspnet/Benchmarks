@@ -145,15 +145,15 @@ internal class Program
             CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
         };
 
-        switch (options.CertificateSource)
+        switch (options.CertificateSelection)
         {
-            case CertificateSource.Certificate:
+            case CertificateSelectionType.Certificate:
                 sslOptions.ServerCertificate = options.ServerCertificate;
                 break;
-            case CertificateSource.Callback:
+            case CertificateSelectionType.Callback:
                 sslOptions.ServerCertificateSelectionCallback = delegate { return options.ServerCertificate; };
                 break;
-            case CertificateSource.Context:
+            case CertificateSelectionType.CertContext:
                 sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create(options.ServerCertificate, new X509Certificate2Collection());
                 break;
         }

@@ -176,21 +176,21 @@ internal class Program
 
         if (options.ClientCertificate != null)
         {
-            switch (options.CertificateSource)
+            switch (options.CertificateSelection)
             {
-                case CertificateSource.Certificate:
+                case CertificateSelectionType.Collection:
                     sslOptions.ClientCertificates = new X509CertificateCollection { options.ClientCertificate };
                     break;
-                case CertificateSource.Callback:
+                case CertificateSelectionType.Callback:
                     sslOptions.LocalCertificateSelectionCallback = delegate { return options.ClientCertificate; };
                     break;
 #if NET8_0_OR_GREATER
-                case CertificateSource.Context:
+                case CertificateSelectionType.CertContext:
                     sslOptions.ClientCertificateContext = SslStreamCertificateContext.Create(options.ClientCertificate, new X509Certificate2Collection());
                     break;
 #endif
                 default:
-                    throw new InvalidOperationException($"Certificate source: {options.CertificateSource} is not supported in this .NET version.");
+                    throw new InvalidOperationException($"Certificate selection type {options.CertificateSelection} is not supported in this .NET version.");
             }
         }
 
