@@ -18,12 +18,20 @@ internal struct Counters
     [FieldOffset(0)] public long BytesRead;
     [FieldOffset(64)] public long BytesWritten;
     [FieldOffset(128)] public long TotalHandshakes;
+
+    public void Reset()
+    {
+        BytesRead = 0;
+        BytesWritten = 0;
+        TotalHandshakes = 0;
+    }
 }
 
 internal class Program
 {
     private static Counters s_counters;
     private static bool s_isRunning;
+    private static bool s_isWarmup;
 
     private static async Task<int> Main(string[] args)
     {
@@ -61,35 +69,32 @@ internal class Program
     {
         BenchmarksEventSource.Register("sslstream/handshake/mean", Operations.Avg, Operations.Avg, "Mean handshake duration (ms)", "Handshakes duration in milliseconds - mean", "n3");
 
-        static async Task EstablishConnection(ClientOptions options)
-        {
-            using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
-            using var stream = await EstablishSslStreamAsync(sock, options).ConfigureAwait(false);
-
-            Interlocked.Increment(ref s_counters.TotalHandshakes);
-        }
-
-        s_isRunning = true;
-
-        var task = Task.Run(async () =>
+        static async Task DoRun(ClientOptions options)
         {
             while (s_isRunning)
             {
-                await EstablishConnection(options).ConfigureAwait(false);
+                using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
+                await using var stream = await EstablishSslStreamAsync(sock, options).ConfigureAwait(false);
+                s_counters.TotalHandshakes++;
             }
-        });
+        }
 
+        s_isRunning = true;
+        var task = Task.Run(() => DoRun(options));
         await Task.Delay(options.Warmup).ConfigureAwait(false);
+        s_isRunning = false;
         Log("Completing warmup...");
+        await task.ConfigureAwait(false);
 
+        s_counters.Reset();
+
+        s_isRunning = true;
+        task = Task.Run(() => DoRun(options));
         Stopwatch sw = Stopwatch.StartNew();
-        Volatile.Write(ref s_counters.TotalHandshakes, 0);
-
         await Task.Delay(options.Duration).ConfigureAwait(false);
         s_isRunning = false;
         Log("Completing scenario...");
-
         await task.ConfigureAwait(false);
         sw.Stop();
 
@@ -98,8 +103,6 @@ internal class Program
 
     static async Task RunReadWriteScenario(ClientOptions options)
     {
-        BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n2");
-        BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n2");
 
         static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken = default)
         {
@@ -108,12 +111,27 @@ internal class Program
                 return;
             }
 
+            BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n2");
+
             var sendBuffer = new byte[bufferSize];
+            Stopwatch sw = Stopwatch.StartNew();
+            bool isWarmup = true;
+
             while (s_isRunning)
             {
+                if (isWarmup && !s_isWarmup)
+                {
+                    isWarmup = false;
+                    sw.Restart();
+                    s_counters.BytesWritten = 0;
+                }
+
                 await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
-                Interlocked.Add(ref s_counters.BytesWritten, bufferSize);
+                s_counters.BytesWritten += bufferSize;
             }
+
+            sw.Stop();
+            LogMetric("sslstream/write/mean", s_counters.BytesWritten / sw.Elapsed.TotalSeconds);
         }
 
         static async Task ReadingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken = default)
@@ -123,12 +141,27 @@ internal class Program
                 return;
             }
 
+            BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n2");
+
             var recvBuffer = new byte[bufferSize];
+            Stopwatch sw = Stopwatch.StartNew();
+            bool isWarmup = true;
+
             while (s_isRunning)
             {
+                if (isWarmup && !s_isWarmup)
+                {
+                    isWarmup = false;
+                    sw.Restart();
+                    s_counters.BytesRead = 0;
+                }
+
                 int bytesRead = await stream.ReadAsync(recvBuffer, cancellationToken).ConfigureAwait(false);
-                Interlocked.Add(ref s_counters.BytesRead, bytesRead);
+                s_counters.BytesRead += bytesRead;
             }
+
+            sw.Stop();
+            LogMetric("sslstream/read/mean", s_counters.BytesRead / sw.Elapsed.TotalSeconds);
         }
 
         using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
@@ -138,26 +171,17 @@ internal class Program
         byte[] recvBuffer = new byte[options.ReceiveBufferSize];
 
         s_isRunning = true;
-
         var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize));
         var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize));
 
         await Task.Delay(options.Warmup).ConfigureAwait(false);
         Log("Completing warmup...");
 
-        Stopwatch sw = Stopwatch.StartNew();
-        Volatile.Write(ref s_counters.BytesRead, 0);
-        Volatile.Write(ref s_counters.BytesWritten, 0);
-
+        s_isWarmup = false;
         await Task.Delay(options.Duration).ConfigureAwait(false);
-        s_isRunning = false;
         Log("Completing scenario...");
-
+        s_isRunning = false;
         await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
-        sw.Stop();
-
-        LogMetric("sslstream/read/mean", s_counters.BytesRead / sw.Elapsed.TotalSeconds);
-        LogMetric("sslstream/write/mean", s_counters.BytesWritten / sw.Elapsed.TotalSeconds);
     }
 
     static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(ClientOptions options)
