@@ -11,6 +11,8 @@ using SslStreamServer;
 
 internal class Program
 {
+    private static int s_errors;
+
     private static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("SslStream benchmark server");
@@ -21,6 +23,8 @@ internal class Program
 
     static async Task Run(ServerOptions options)
     {
+        SetupMeasurements();
+
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
         sock.Bind(new IPEndPoint(IPAddress.IPv6Any, options.Port));
@@ -49,6 +53,7 @@ internal class Program
             // Expected, just return
         }
 
+        LogMetric("sslstream/error", s_errors);
         Log("Exitting...");
     }
 
@@ -127,11 +132,13 @@ internal class Program
             else
             {
                 Log($"Negotiated unknown protocol: {stream.NegotiatedApplicationProtocol}");
+                s_errors++;
             }
         }
         catch (AuthenticationException e)
         {
             Log($"Authentication failed: {e}");
+            s_errors++;
         }
         catch (IOException e) when (e.InnerException is SocketException)
         {
@@ -181,9 +188,21 @@ internal class Program
         return stream;
     }
 
+    public static void SetupMeasurements()
+    {
+        BenchmarksEventSource.Register("sslstream/error", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
+        LogMetric("env/processorcount", Environment.ProcessorCount);
+    }
+
     static void Log(string message)
     {
         var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
         Console.WriteLine($"[{time}] {message}");
+    }
+
+    private static void LogMetric(string name, double value)
+    {
+        BenchmarksEventSource.Measure(name, value);
+        Log($"{name}: {value}");
     }
 }
