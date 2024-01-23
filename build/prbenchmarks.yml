@@ -10,14 +10,20 @@ schedules:
     include:
     - main
   always: "true" # whether to always run the pipeline or only if there have been source code changes since the last successful scheduled run. The default is false.
-- cron: "20 * * * *"
-  displayName: "On :10"
+- cron: "15 * * * *"
+  displayName: "On :15"
   branches:
     include:
     - main
   always: "true"
-- cron: "40 * * * *"
-  displayName: "On :20"
+- cron: "30 * * * *"
+  displayName: "On :30"
+  branches:
+    include:
+    - main
+  always: "true"
+- cron: "45 * * * *"
+  displayName: "On :45"
   branches:
     include:
     - main
@@ -36,11 +42,11 @@ jobs:
         cd .\crank\src\Microsoft.Crank.PullRequestBot
         git pull
         git rev-parse HEAD
-        dotnet build -c release --framework net7.0
+        dotnet build -c release --framework net8.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/aspnetcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
             --app-id $(github.appid) `
@@ -49,7 +55,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/efcore `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
             --app-id $(github.appid) `
@@ -58,7 +64,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
             --app-id $(github.appid) `
@@ -67,7 +73,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
             --app-id $(github.appid) `
@@ -91,11 +97,11 @@ jobs:
         git clone https://github.com/dotnet/crank -b main
         cd ./crank/src/Microsoft.Crank.PullRequestBot
         git rev-parse HEAD
-        dotnet build -c release --framework net7.0
+        dotnet build -c release --framework net8.0
 
         $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
             --app-id $(github.appid) `
@@ -104,7 +110,7 @@ jobs:
             --publish-results true `
             --external-log-uri $buildUrl
 
-        dotnet run --no-build --framework net7.0 -c release `
+        dotnet run --no-build --framework net8.0 -c release `
             --repository https://github.com/dotnet/runtime `
             --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
             --app-id $(github.appid) `
