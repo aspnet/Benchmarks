@@ -53,7 +53,7 @@ internal class Program
             // Expected, just return
         }
 
-        LogMetric("sslstream/error", s_errors);
+        LogMetric("sslstream/errors", s_errors);
         Log("Exitting...");
     }
 
@@ -134,15 +134,15 @@ internal class Program
                 throw new Exception($"Negotiated unknown protocol: {stream.NegotiatedApplicationProtocol}");
             }
         }
-        catch (IOException e) when (e.InnerException is SocketException)
+        catch (IOException e) when (e.InnerException is SocketException ex && ex.SocketErrorCode == SocketError.ConnectionReset)
         {
-            // client closed the connection on us, ignore this
+            // client closed the connection on us, this is expected as clients
+            // simply close the socket after the test is done.
         }
         catch (Exception e)
         {
             s_errors++;
             Log($"Exception occured: {e}");
-            throw;
         }
     }
 
@@ -186,7 +186,7 @@ internal class Program
 
     public static void SetupMeasurements()
     {
-        BenchmarksEventSource.Register("sslstream/error", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
+        BenchmarksEventSource.Register("sslstream/errors", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
     }
 
