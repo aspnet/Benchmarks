@@ -34,7 +34,7 @@ public static class CommonOptions
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
     public static Option<Version> TlsVersionOption { get; } = new Option<Version>("--tls-version", () => new Version(1, 3), "The TLS protocol version to use.").FromAmong("1.2", "1.3");
     public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
-    public static Option<X509RevocationMode> CertificateRevocationCheckModeOption { get; } = new Option<X509RevocationMode>("--x509-revocation-check-mode", "Revocation check mode for the peer certificate.");
+    public static Option<X509RevocationMode> CertificateRevocationCheckModeOption { get; } = new Option<X509RevocationMode>("--x509-revocation-check-mode", () => X509RevocationMode.NoCheck, "Revocation check mode for the peer certificate.");
 
 #if !NET8_0_OR_GREATER
     static CommonOptions()
