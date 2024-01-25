@@ -41,7 +41,7 @@ internal class Program
         return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
-    static async Task Run(ClientOptions options)
+    static async Task<int> Run(ClientOptions options)
     {
         SetupMeasurements();
 
@@ -62,7 +62,10 @@ internal class Program
         catch (Exception e)
         {
             Log($"Exception occured: {e}");
+            return 1;
         }
+
+        return 0;
     }
 
     static async Task RunHandshakeScenario(ClientOptions options)
