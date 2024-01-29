@@ -4,9 +4,9 @@
     <NpgsqlVersion70>7.0.6</NpgsqlVersion70>
     <NpgsqlVersion80>8.0.1</NpgsqlVersion80>
 
-    <MicrosoftDataSqlClientVersion60>5.1.1</MicrosoftDataSqlClientVersion60>
-    <MicrosoftDataSqlClientVersion70>5.1.1</MicrosoftDataSqlClientVersion70>
-    <MicrosoftDataSqlClientVersion80>5.1.1</MicrosoftDataSqlClientVersion80>
+    <MicrosoftDataSqlClientVersion60>5.1.5</MicrosoftDataSqlClientVersion60>
+    <MicrosoftDataSqlClientVersion70>5.1.5</MicrosoftDataSqlClientVersion70>
+    <MicrosoftDataSqlClientVersion80>5.1.5</MicrosoftDataSqlClientVersion80>
 
     <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
     <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
