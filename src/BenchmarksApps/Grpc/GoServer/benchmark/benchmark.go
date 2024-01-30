@@ -29,7 +29,7 @@ import (
 	"log"
 	"net"
 
-	testpb "github.com/grpc/grpc-dotnet/grpc_testing"
+	testpb "github.com/grpc/grpc-dotnet/protos"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
@@ -58,6 +58,7 @@ func NewPayload(t testpb.PayloadType, size int) *testpb.Payload {
 }
 
 type testServer struct {
+	testpb.UnimplementedBenchmarkServiceServer
 }
 
 func (s *testServer) UnaryCall(ctx context.Context, in *testpb.SimpleRequest) (*testpb.SimpleResponse, error) {

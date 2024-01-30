@@ -17,6 +17,8 @@
 
 syntax = "proto3";
 
+option go_package = "./grpc_testing";
+
 package grpc.testing;
 
 // TODO(dgq): Go back to using well-known types once
