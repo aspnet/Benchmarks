@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	testpb "github.com/grpc/grpc-dotnet/grpc_testing"
+	testpb "github.com/grpc/grpc-dotnet/protos"
 )
 
 var (
