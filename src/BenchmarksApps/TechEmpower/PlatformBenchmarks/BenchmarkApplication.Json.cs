@@ -10,11 +10,6 @@ namespace PlatformBenchmarks
     public partial class BenchmarkApplication
     {
 #if !DATABASE
-        private readonly static uint _jsonPayloadSize = (uint)JsonSerializer.SerializeToUtf8Bytes(
-            new JsonMessage { message = "Hello, World!" },
-            SerializerContext.JsonMessage
-            ).Length;
-
         private static ReadOnlySpan<byte> _jsonPreamble =>
             "HTTP/1.1 200 OK\r\n"u8 +
             "Server: K\r\n"u8 +
