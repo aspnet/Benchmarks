@@ -57,7 +57,10 @@ public class OptionsBinder : BinderBase<ServerOptions>
             CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),
             RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption),
             ServerCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ServerCertificatePathOption), parsed.GetValueForOption(ServerCertificatePasswordOption), parsed.GetValueForOption(HostNameOption))!,
-            ApplicationProtocols = Enum.GetValues<Scenario>().Select(v => new SslApplicationProtocol(v.ToString())).ToList(),
+            ApplicationProtocols = new () {
+                ApplicationProtocolConstants.ReadWrite,
+                ApplicationProtocolConstants.Handshake,
+            },
         };
 
         CommonOptions.BindOptions(options, bindingContext);

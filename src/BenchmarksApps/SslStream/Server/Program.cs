@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Crank.EventSources;
 
 using SslStreamServer;
+using SslStreamCommon;
 
 internal class Program
 {
@@ -120,12 +121,12 @@ internal class Program
         {
             using var stream = await EstablishSslStreamAsync(socket, sslOptions, cancellationToken).ConfigureAwait(false);
 
-            if (stream.NegotiatedApplicationProtocol.Protocol.Span.SequenceEqual("Handshake"u8))
+            if (stream.NegotiatedApplicationProtocol == ApplicationProtocolConstants.Handshake)
             {
                 // done everything
                 return;
             }
-            if (stream.NegotiatedApplicationProtocol.Protocol.Span.SequenceEqual("ReadWrite"u8))
+            if (stream.NegotiatedApplicationProtocol == ApplicationProtocolConstants.ReadWrite)
             {
                 await ReadWriteScenario(stream, options, cancellationToken).ConfigureAwait(false);
             }
