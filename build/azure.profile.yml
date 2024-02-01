@@ -84,19 +84,19 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azuredb
+          - https://aspnetperf.servicebus.windows.net/azurearm64db
         aliases:
           - extra
       application:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureserver
+          - https://aspnetperf.servicebus.windows.net/azurearm64server
         variables:
           databaseServer: 10.0.0.6
         aliases:
           - main
       load:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azureclient
+          - https://aspnetperf.servicebus.windows.net/azurearm64client
         aliases:
           - warmup
           - secondary
