@@ -15,12 +15,22 @@ groups:
       profiles:
       - aspnet-azure-lin
 
+    - name: Trends Database Azure Arm64 Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - aspnet-azurearm64-lin
+
   - jobs:
 
     - name: Trends Azure Linux
       template: trend-scenarios.yml
       profiles:
       - aspnet-azure-lin
+    
+    - name: Trends Azure Arm64 Linux
+      template: trend-scenarios.yml
+      profiles:
+      - aspnet-azurearm64-lin
 
   - jobs:
 
@@ -28,6 +38,11 @@ groups:
       template: baselines-database-scenarios.yml
       profiles:
       - aspnet-azure-lin
+    
+    - name: Baselines Database Azure Arm64 Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - aspnet-azurearm64-lin
 
   - jobs:
 
@@ -35,4 +50,9 @@ groups:
       template: baselines-scenarios.yml
       profiles:
       - aspnet-azure-lin
+    
+    - name: Baselines Azure Arm64 Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - aspnet-azurearm64-lin
 
