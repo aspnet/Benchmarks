@@ -61,7 +61,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/azurearm64server
         variables:
-          databaseServer: localhost
+          databaseServer: 10.0.0.6
         aliases:
           - main
       load:
