@@ -50,3 +50,53 @@ profiles:
         aliases:
           - warmup
           - secondary
+  
+  aspnet-azurearm64-lin:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.4
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - http://10.0.0.6:5000
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - http://10.0.0.4:5000
+        variables:
+          databaseServer: 10.0.0.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://10.0.0.5:5000
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-azurearm64-lin-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.0.4
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azurearm64db
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azurearm64server
+        variables:
+          databaseServer: 10.0.0.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azurearm64client
+        aliases:
+          - warmup
+          - secondary
