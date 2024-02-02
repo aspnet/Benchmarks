@@ -59,19 +59,19 @@ profiles:
     jobs: 
       db:
         endpoints: 
-          - http://10.0.0.6:5000
+          - http://10.0.0.6:5001
         aliases:
           - extra
       application:
         endpoints: 
-          - http://10.0.0.4:5000
+          - http://10.0.0.4:5001
         variables:
           databaseServer: 10.0.0.6
         aliases:
           - main
       load:
         endpoints: 
-          - http://10.0.0.5:5000
+          - http://10.0.0.5:5001
         aliases:
           - warmup
           - secondary
