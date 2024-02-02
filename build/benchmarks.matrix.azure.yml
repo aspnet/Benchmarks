@@ -3,6 +3,7 @@
 
 queues:
   - ASP.NET Benchmarks Azure Queue
+  - ASP.NET Benchmarks Azure Queue 2
 
 schedule: "0 9/12 * * *"
 
