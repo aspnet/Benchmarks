@@ -9,6 +9,8 @@ namespace Build
 {
     class BlazorWasmHosted
     {
+        private const string ProjectName = "BlazorApp";
+
         private readonly DotNet _dotnet;
         private readonly string _workingDirectory;
         private readonly string _serverDirectory;
@@ -18,18 +20,15 @@ namespace Build
         {
             _dotnet = dotNet;
             _workingDirectory = dotNet.WorkingDirectory;
-            _serverDirectory = Path.Combine(_workingDirectory, "Server");
-            _clientDirectory = Path.Combine(_workingDirectory, "Client");
+            _serverDirectory = Path.Combine(_workingDirectory, ProjectName);
+            _clientDirectory = Path.Combine(_workingDirectory, $"{ProjectName}.Client");
         }
 
         public async Task RunAsync()
         {
-            await _dotnet.ExecuteAsync($"new blazor -int WebAssembly");
+            await _dotnet.ExecuteAsync($"new blazor -n {ProjectName} -int WebAssembly");
 
             await Build();
-
-            // Change
-            await ChangeShared();
 
             // Changes to .razor file markup
             await ChangeClient();
@@ -67,23 +66,9 @@ namespace Build
                 "Change a file in Server");
         }
 
-        async Task ChangeShared()
-        {
-            // Changes to .cs file
-            var csFile = Path.Combine(_workingDirectory, "Shared", "WeatherForecast.cs");
-            File.AppendAllText(csFile, Environment.NewLine + "// Hello world");
-
-            var buildDuration = await _dotnet.ExecuteAsync("build --no-restore", _serverDirectory);
-
-            MeasureAndRegister(
-                "blazorwasm-hosted/shared-file",
-                buildDuration.TotalMilliseconds,
-                "Change a file in shared");
-        }
-
         async Task ChangeClient()
         {
-            var indexRazorFile = Path.Combine(_clientDirectory, "Pages", "Index.razor");
+            var indexRazorFile = Path.Combine(_clientDirectory, "Pages", "Counter.razor");
             File.AppendAllText(indexRazorFile, Environment.NewLine + "<h3>New content</h3>");
 
             var buildDuration = await _dotnet.ExecuteAsync("build --no-restore", _serverDirectory);
