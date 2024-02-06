@@ -19,7 +19,7 @@ namespace Build
 
         public async Task RunAsync()
         {
-            await _dotnet.ExecuteAsync($"new blazor --use-server");
+            await _dotnet.ExecuteAsync($"new blazor -int Server");
 
             await Build();
 

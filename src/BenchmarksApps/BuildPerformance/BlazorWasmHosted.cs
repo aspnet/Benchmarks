@@ -24,11 +24,11 @@ namespace Build
 
         public async Task RunAsync()
         {
-            await _dotnet.ExecuteAsync($"new blazor --use-wasm");
+            await _dotnet.ExecuteAsync($"new blazor -int WebAssembly");
 
             await Build();
 
-            // Change 
+            // Change
             await ChangeShared();
 
             // Changes to .razor file markup
