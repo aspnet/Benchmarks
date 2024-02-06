@@ -35,9 +35,6 @@ namespace Build
             // No-Op build
             await NoOpBuild();
 
-            // Changes to a .cshtml file
-            await ModifyCshtmlFile();
-
             // Rebuild
             await Rebuild();
         }
@@ -116,21 +113,6 @@ namespace Build
                 "blazorserver/razor-add-parameter",
                 buildDuration.TotalMilliseconds,
                 "Add a parameter to .razor");
-        }
-
-        async Task ModifyCshtmlFile()
-        {
-            var file = Path.Combine(_workingDirectory, "App.razor");
-            var originalContent = File.ReadAllText(file);
-
-            File.WriteAllText(file, originalContent.Replace("<body>", "<body><h2>Some text</h2>"));
-
-            var buildDuration = await _dotnet.ExecuteAsync("build --no-restore");
-
-            MeasureAndRegister(
-                "blazorserver/razor-change-cshtml",
-                buildDuration.TotalMilliseconds,
-                "Change .cshtml file markup");
         }
     }
 }
