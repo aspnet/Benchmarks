@@ -9,7 +9,7 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: 'false' # Skip https://github.com/dotnet/aspnetcore/issues/49760
+  default: 'true' # Check https://github.com/dotnet/aspnetcore/issues/49713
 
 # Scenarios
 - name: scenarios 
