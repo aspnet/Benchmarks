@@ -26,7 +26,7 @@ namespace Build
 
         public async Task RunAsync()
         {
-            await _dotnet.ExecuteAsync($"new blazor -n {ProjectName} -int WebAssembly");
+            await _dotnet.ExecuteAsync($"new blazor -n {ProjectName} -o . -int WebAssembly");
 
             await Build();
 
