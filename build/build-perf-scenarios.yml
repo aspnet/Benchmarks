@@ -15,11 +15,10 @@ parameters:
 
   - displayName: "Build - BlazorWasm"
     arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
-  # Skip https://github.com/dotnet/aspnetcore/issues/49760
-  # - displayName: "Build - BlazorWasm (Hosted)"
-  #   arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
-  # - displayName: "Build - BlazorServer"
-  #   arguments: --scenario blazorserver $(buildJobs) --property scenario=BlazorServer
+  - displayName: "Build - BlazorWasm (Hosted)"
+    arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
+  - displayName: "Build - BlazorServer"
+    arguments: --scenario blazorserver $(buildJobs) --property scenario=BlazorServer
   - displayName: "Build - MVC"
     arguments: --scenario mvc $(buildJobs) --property scenario=MVC
   - displayName: "Build - API"
