@@ -30,7 +30,7 @@ parameters:
     condition: 'true'
   - displayName: YARP-net80
     scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp-net70 --application.framework net8.0 --application.noGlobalJson true
+    arguments: $(proxyJobs) --property proxy=yarp-net80 --application.framework net8.0 --application.noGlobalJson true
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
