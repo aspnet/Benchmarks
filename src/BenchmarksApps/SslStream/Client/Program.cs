@@ -193,7 +193,13 @@ internal class Program
         {
             TargetHost = options.TlsHostName ?? options.Hostname,
             RemoteCertificateValidationCallback = delegate { return true; },
-            ApplicationProtocols = new List<SslApplicationProtocol> { new(options.Scenario.ToString()) },
+            ApplicationProtocols = new List<SslApplicationProtocol> {
+                options.Scenario switch {
+                    Scenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
+                    Scenario.Handshake => ApplicationProtocolConstants.Handshake,
+                    _ => throw new Exception("Unknown scenario")
+                }
+            },
 #if NET8_0_OR_GREATER
             AllowTlsResume = options.AllowTlsResume,
 #endif

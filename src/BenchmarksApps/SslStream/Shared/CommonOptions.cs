@@ -8,6 +8,13 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace SslStreamCommon;
 
+public static class ApplicationProtocolConstants
+{
+    // Reuse known ALPN protocols to leverage special casing optimization in SslStream to avoid allocation
+    public readonly static SslApplicationProtocol ReadWrite = SslApplicationProtocol.Http2;
+    public readonly static SslApplicationProtocol Handshake = SslApplicationProtocol.Http3;
+}
+
 public enum Scenario
 {
     // Measure throughput

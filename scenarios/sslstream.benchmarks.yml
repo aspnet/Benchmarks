@@ -25,8 +25,6 @@ scenarios:
     server:
       job: sslServer
       agent: secondary
-      variables:
-        host: "{{secondaryAddress}}"
     client:
       job: sslClient
       agent: main
@@ -39,7 +37,6 @@ scenarios:
       job: sslServer
       agent: secondary
       variables:
-        host: "{{secondaryAddress}}"
         receiveBufferSize: 0
     client:
       job: sslClient
@@ -53,7 +50,6 @@ scenarios:
       job: sslServer
       agent: secondary
       variables:
-        host: "{{secondaryAddress}}"
         sendBufferSize: 0
     client:
       job: sslClient
@@ -66,8 +62,6 @@ scenarios:
     server:
       job: sslServer
       agent: secondary
-      variables:
-        host: "{{secondaryAddress}}"
     client:
       job: sslClient
       agent: main
@@ -92,4 +86,4 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds
-    arguments: "--host {{secondaryAddress}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --warmup 00:00:{{warmup}} --duration 00:00:{{duration}}"
+    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --warmup 00:00:{{warmup}} --duration 00:00:{{duration}}"
