@@ -1,0 +1,33 @@
+imports:
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.standard.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  runTemplate:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: mbuck/lighthouse-metrics
+      project: src/BenchmarksApps/RunTemplate/RunTemplate.csproj
+    arguments: --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {{runTemplateArgs}}
+    variables:
+      serverScheme: http
+    readyStateText: Template is running
+
+  lighthouse:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: mbuck/lighthouse-metrics
+      dockerImageName: lighthouse
+      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
+      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+
+scenarios:
+  test:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: blazor -int Server
+    load:
+      job: lighthouse
