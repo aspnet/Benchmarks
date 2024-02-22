@@ -15,13 +15,13 @@ jobs:
       serverScheme: http
     readyStateText: Template is running
 
-  lighthouse:
-    source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: mbuck/lighthouse-metrics
-      # dockerImageName: lighthouse
-      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
-      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+  # lighthouse:
+  #   source:
+  #     repository: https://github.com/aspnet/benchmarks.git
+  #     branchOrCommit: mbuck/lighthouse-metrics
+  #     # dockerImageName: lighthouse
+  #     dockerContextDirectory: src/BenchmarksApps/Lighthouse/
+  #     dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
 
 scenarios:
   test:

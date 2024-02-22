@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.Crank.EventSources;
 
 namespace RunTemplate.Helpers;
 
@@ -23,6 +24,8 @@ internal sealed class AspNetProcess : IDisposable
         };
 
         var process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Unable to start process");
+
+        BenchmarksEventSource.SetChildProcessId(process.Id);
 
         process.BeginOutputReadLine();
 
