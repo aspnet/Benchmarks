@@ -21,12 +21,15 @@ internal sealed class BlazorWebScenario : ITemplateScenario
 
         await _dotnet.ExecuteAsync($"new blazor -int {Interactivity} -n BlazorApp -o .");
 
-        await _dotnet.ExecuteAsync("build");
+        await _dotnet.ExecuteAsync("publish -o ./publish");
     }
 
     public async Task RunAsync(string urls, Action notifyReady)
     {
-        using var aspNetProcess = AspNetProcess.Start(_dotnet, urls, noBuild: true);
+        var publishDirectory = Path.Combine(_workingDirectory, "publish");
+        var executableName = OperatingSystem.IsWindows() ? "BlazorApp.exe" : "BlazorApp";
+
+        using var aspNetProcess = AspNetProcess.Start(publishDirectory, executableName, urls);
 
         await aspNetProcess.WaitForApplicationStartAsync();
 

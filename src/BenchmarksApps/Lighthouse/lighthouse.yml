@@ -19,7 +19,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: mbuck/lighthouse-metrics
-      dockerImageName: lighthouse
+      # dockerImageName: lighthouse
       dockerContextDirectory: src/BenchmarksApps/Lighthouse/
       dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
 
@@ -29,5 +29,5 @@ scenarios:
       job: runTemplate
       variables:
         runTemplateArgs: blazor -int Server
-    load:
-      job: lighthouse
+    # load:
+    #   job: lighthouse
