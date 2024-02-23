@@ -3,6 +3,7 @@ imports:
 
 variables:
   serverPort: 5000
+  serverScheme: http
 
 jobs:
   runTemplate:
@@ -11,17 +12,24 @@ jobs:
       branchOrCommit: mbuck/lighthouse-metrics
       project: src/BenchmarksApps/RunTemplate/RunTemplate.csproj
     arguments: --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {{runTemplateArgs}}
-    variables:
-      serverScheme: http
     readyStateText: Template is running
 
-  # lighthouse:
-  #   source:
-  #     repository: https://github.com/aspnet/benchmarks.git
-  #     branchOrCommit: mbuck/lighthouse-metrics
-  #     # dockerImageName: lighthouse
-  #     dockerContextDirectory: src/BenchmarksApps/Lighthouse/
-  #     dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+  lighthouse:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: mbuck/lighthouse-metrics
+      # dockerImageName: lighthouse
+      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
+      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+    environmentVariables:
+      SERVER_SCHEME: '{{serverScheme}}'
+      SERVER_ADDRESS: '{{serverAddress}}'
+      SERVER_PORT: '{{serverPort}}'
+    arguments: "--clean"
+    # buildArguments:
+    #   - ARG_SERVER_SCHEME='{{serverScheme}}'
+    #   - ARG_SERVER_ADDRESS='{{serverAddress}}'
+    #   - ARG_SERVER_PORT='{{serverPort}}'
 
 scenarios:
   test:
@@ -29,5 +37,5 @@ scenarios:
       job: runTemplate
       variables:
         runTemplateArgs: blazor -int Server
-    # load:
-    #   job: lighthouse
+    load:
+      job: lighthouse

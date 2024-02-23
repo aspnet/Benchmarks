@@ -29,6 +29,8 @@ internal sealed class BlazorWebScenario : ITemplateScenario
 
     public async Task RunAsync(string urls, Action notifyReady)
     {
+        Console.WriteLine($"URLs: {urls}");
+
         var publishDirectory = Path.Combine(_workingDirectory, PublishFolderName);
         var relativeFileName = $"{ProjectName}.dll";
 
@@ -38,9 +40,7 @@ internal sealed class BlazorWebScenario : ITemplateScenario
 
         notifyReady();
 
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-
-        var exitCode = await aspNetProcess.WaitForExitAsync(cts.Token);
+        var exitCode = await aspNetProcess.WaitForExitAsync();
 
         Console.WriteLine($"Application exited with exit code {exitCode}.");
     }

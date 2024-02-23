@@ -1,4 +1,6 @@
 FROM mcr.microsoft.com/dotnet/nightly/sdk:latest AS build-env
+WORKDIR /src
+COPY . ./
 RUN dotnet publish -c Release -o /publish
 
 FROM node:18-bullseye-slim
@@ -16,8 +18,15 @@ RUN apt-get update \
 # Install Lighthouse
 RUN npm install -g lighthouse
 
-RUN lighthouse http://localhost:5000 \
+# FIXME: Do not hard-code the server address
+ENV SERVER_SCHEME=http
+ENV SERVER_ADDRESS=10.0.0.102
+ENV SERVER_PORT=5000
+
+# Run lighthouse against the app URL
+RUN lighthouse $SERVER_SCHEME://$SERVER_ADDRESS:$SERVER_PORT \
     --no-enable-error-reporting \
+    --chrome-flags="--no-sandbox --headless" \
     --output=json \
     --output-path=./report.json \
     --only-audits="first-contentful-paint,interaction-to-next-paint,largest-contentful-paint,total-blocking-time"
