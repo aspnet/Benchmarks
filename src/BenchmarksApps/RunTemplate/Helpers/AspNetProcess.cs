@@ -9,21 +9,15 @@ internal sealed class AspNetProcess : IDisposable
     private readonly TaskCompletionSource _applicationStartedTcs = new();
     private bool _disposed;
 
-    public static AspNetProcess Start(string workingDirectory, string executableName, string urls)
+    public static AspNetProcess Start(DotNet dotnet, string workingDirectory, string relativeFileName, string urls)
     {
-        var executablePath = Path.Combine(workingDirectory, executableName);
-        var args = $"{executableName} --urls {urls}";
+        var args = $"{relativeFileName} --urls {urls}";
 
-        var processStartInfo = new ProcessStartInfo
+        var process = dotnet.Execute(args, processStartInfo =>
         {
-            FileName = executablePath,
-            Arguments = args,
-            WorkingDirectory = workingDirectory,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-        };
-
-        var process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Unable to start process");
+            processStartInfo.WorkingDirectory = workingDirectory;
+            processStartInfo.RedirectStandardOutput = true;
+        });
 
         BenchmarksEventSource.SetChildProcessId(process.Id);
 
