@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/nightly/sdk:latest
+
+ARG TEMPLATE_ARGS
+ARG TEMPLATE_NAME=TemplateApp
+ARG MAIN_PROJECT_RELATIVE_PATH=./
+
+ENV RUN_ARGS=
+
+RUN dotnet new $TEMPLATE_ARGS -n $TEMPLATE_NAME -o /src
+WORKDIR /src/$MAIN_PROJECT_RELATIVE_PATH
+
+RUN dotnet publish -c Release -o /publish
+WORKDIR /publish
+
+RUN chmod +x ./$TEMPLATE_NAME
+
+ENV TEMPLATE_NAME=$TEMPLATE_NAME
+ENTRYPOINT ./$TEMPLATE_NAME $RUN_ARGS

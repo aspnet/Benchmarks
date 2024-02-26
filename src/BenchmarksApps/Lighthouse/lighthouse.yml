@@ -10,17 +10,24 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: mbuck/lighthouse-metrics
-      project: src/BenchmarksApps/RunTemplate/RunTemplate.csproj
-    arguments: --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} {{runTemplateArgs}}
-    readyStateText: Template is running
+      dockerImageName: run-template
+      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
+      dockerFile: src/BenchmarksApps/Lighthouse/run-template.dockerfile
+    buildArguments:
+      - TEMPLATE_ARGS="{{templateArgs}}"
+      - TEMPLATE_NAME="{{templateName}}"
+      - MAIN_PROJECT_RELATIVE_PATH="{{templateMainProjectRelativePath}}"
+    environmentVariables:
+      RUN_ARGS: "\"{{templateRunArgs}}\""
+    readyStateText: "{{templateReadyStateText}}"
 
   lighthouse:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: mbuck/lighthouse-metrics
-      # dockerImageName: lighthouse-1
+      dockerImageName: lighthouse
       dockerContextDirectory: src/BenchmarksApps/Lighthouse/
-      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+      dockerFile: src/BenchmarksApps/Lighthouse/lighthouse.dockerfile
     environmentVariables:
       SERVER_SCHEME: '{{serverScheme}}'
       SERVER_ADDRESS: '{{serverAddress}}'
@@ -29,10 +36,25 @@ jobs:
     waitForExit: true
 
 scenarios:
-  test:
+  blazorWebInteractiveServer:
     application:
       job: runTemplate
       variables:
-        runTemplateArgs: blazor -int Server
+        templateArgs: blazor -int Server
+        templateName: BlazorWebApp
+        templateRunArgs: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: Application started
+    load:
+      job: lighthouse
+
+  blazorWebInteractiveWebAssembly:
+    application:
+      job: runTemplate
+      variables:
+        templateArgs: blazor -int WebAssembly
+        templateName: BlazorWebApp
+        templateMainProjectRelativePath: ./BlazorWebApp
+        templateRunArgs: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: Application started
     load:
       job: lighthouse
