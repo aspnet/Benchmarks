@@ -18,11 +18,10 @@ RUN apt-get update \
 # Install Lighthouse
 RUN npm install -g lighthouse
 
-# FIXME: Do not hard-code the server address
-ENV SERVER_SCHEME=http
-ENV SERVER_ADDRESS=10.0.0.102
-ENV SERVER_PORT=5000
-
 COPY --from=build-env /publish /publish
+
+ENV SERVER_SCHEME=http
+ENV SERVER_ADDRESS=localhost
+ENV SERVER_PORT=5000
 
 ENTRYPOINT /publish/Lighthouse --url $SERVER_SCHEME://$SERVER_ADDRESS:$SERVER_PORT

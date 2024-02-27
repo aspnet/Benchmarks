@@ -10,15 +10,8 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: mbuck/lighthouse-metrics
-      dockerImageName: run-template
-      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
-      dockerFile: src/BenchmarksApps/Lighthouse/run-template.dockerfile
-    buildArguments:
-      - TEMPLATE_ARGS="{{templateArgs}}"
-      - TEMPLATE_NAME="{{templateName}}"
-      - MAIN_PROJECT_RELATIVE_PATH="{{templateMainProjectRelativePath}}"
-    environmentVariables:
-      RUN_ARGS: "\"{{templateRunArgs}}\""
+      project: src/BenchmarksApps/RunTemplate/RunTemplate.csproj
+    arguments: "{{runTemplateArgs}}"
     readyStateText: "{{templateReadyStateText}}"
 
   lighthouse:
@@ -27,7 +20,7 @@ jobs:
       branchOrCommit: mbuck/lighthouse-metrics
       dockerImageName: lighthouse
       dockerContextDirectory: src/BenchmarksApps/Lighthouse/
-      dockerFile: src/BenchmarksApps/Lighthouse/lighthouse.dockerfile
+      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
     environmentVariables:
       SERVER_SCHEME: '{{serverScheme}}'
       SERVER_ADDRESS: '{{serverAddress}}'
@@ -40,10 +33,10 @@ scenarios:
     application:
       job: runTemplate
       variables:
-        templateArgs: blazor -int Server
-        templateName: BlazorWebApp
-        templateRunArgs: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
-        templateReadyStateText: Application started
+        runTemplateArgs: >
+          --template-args "blazor -int Server"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
     load:
       job: lighthouse
 
@@ -51,10 +44,11 @@ scenarios:
     application:
       job: runTemplate
       variables:
-        templateArgs: blazor -int WebAssembly
-        templateName: BlazorWebApp
-        templateMainProjectRelativePath: ./BlazorWebApp
-        templateRunArgs: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
-        templateReadyStateText: Application started
+        runTemplateArgs: >
+          --template-args "blazor -int WebAssembly"
+          --project-name "BlazorApp"
+          --main-project-relative-path "./BlazorApp"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
     load:
       job: lighthouse
