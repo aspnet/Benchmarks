@@ -1,4 +1,6 @@
 FROM mcr.microsoft.com/dotnet/nightly/sdk:latest AS build-env
+
+# Build the Lighthouse runner
 WORKDIR /src
 COPY . ./
 RUN dotnet publish --self-contained -r linux-x64 -c Release -o /publish
@@ -18,8 +20,7 @@ RUN apt-get update \
 # Install Lighthouse
 RUN npm install -g lighthouse
 
+# Copy the previously-built Lighthouse runner to this image and run it
 COPY --from=build-env /publish /publish
-
 ENV TARGET_URL=http://localhost:5000
-
 ENTRYPOINT /publish/Lighthouse --url $TARGET_URL --warm-up

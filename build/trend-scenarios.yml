@@ -83,6 +83,13 @@ parameters:
   - displayName: Json Minimal APIs
     arguments: --scenario json $(minimalJobs) --property scenario=JsonMinimalApis --property protocol=http
 
+# Lighthouse
+
+  - displayName: Lighthouse - Blazor Web App (InteractiveServer)
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property protocol=http
+  - displayName: Lighthouse - Blazor Web App (InteractiveWebAssembly)
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property protocol=http
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
