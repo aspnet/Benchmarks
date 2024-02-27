@@ -20,8 +20,6 @@ RUN npm install -g lighthouse
 
 COPY --from=build-env /publish /publish
 
-ENV SERVER_SCHEME=http
-ENV SERVER_ADDRESS=localhost
-ENV SERVER_PORT=5000
+ENV TARGET_URL=http://localhost:5000
 
-ENTRYPOINT /publish/Lighthouse --url $SERVER_SCHEME://$SERVER_ADDRESS:$SERVER_PORT
+ENTRYPOINT /publish/Lighthouse --url $TARGET_URL

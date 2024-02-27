@@ -1,6 +1,8 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://github.com/aspnet/Benchmarks/blob/mbuck/lighthouse-metrics/src/BenchmarksApps/Lighthouse/lighthouse.yml?raw=true
+  - https://github.com/aspnet/Benchmarks/blob/mbuck/lighthouse-metrics/src/BenchmarksApps/RunTemplate/runtemplate.yml?raw=true
 
 variables:
   serverPort: 5000
@@ -12,7 +14,8 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/BlazorBlazingPizza/BlazingPizza.Server.csproj
-      arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}""
+      arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+
 scenarios:
   ssr:
     application:
@@ -23,3 +26,31 @@ scenarios:
       variables:
         serverPort: 5000
         path: /
+
+  blazorWebInteractiveServer:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: >
+          --template-args "blazor -int Server"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
+    load:
+      job: lighthouse
+      variables:
+        subPath: /counter
+
+  blazorWebInteractiveWebAssembly:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: >
+          --template-args "blazor -int WebAssembly"
+          --project-name "BlazorApp"
+          --main-project-relative-path "./BlazorApp"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
+    load:
+      job: lighthouse
+      variables:
+        subPath: /counter

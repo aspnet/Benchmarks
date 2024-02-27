@@ -17,7 +17,7 @@ var projectNameOption = new Option<string>(
 
 var mainProjectRelativePathOption = new Option<string?>(
     alias: "--main-project-relative-path",
-    description: "The relative path of the project to publish after the template gets generated");
+    description: "The path of the project to publish, relative to the root of the generated project");
 
 var runArgsOption = new Option<string?>(
     alias: "--run-args",
