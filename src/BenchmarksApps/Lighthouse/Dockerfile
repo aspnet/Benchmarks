@@ -22,4 +22,4 @@ COPY --from=build-env /publish /publish
 
 ENV TARGET_URL=http://localhost:5000
 
-ENTRYPOINT /publish/Lighthouse --url $TARGET_URL
+ENTRYPOINT /publish/Lighthouse --url $TARGET_URL --warm-up
