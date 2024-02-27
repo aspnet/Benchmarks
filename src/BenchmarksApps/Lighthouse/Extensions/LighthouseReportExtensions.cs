@@ -1,4 +1,6 @@
-﻿namespace Lighthouse.Models;
+﻿using Lighthouse.Configuration;
+
+namespace Lighthouse.Models;
 
 internal static class LighthouseReportExtensions
 {

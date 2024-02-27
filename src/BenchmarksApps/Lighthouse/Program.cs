@@ -1,10 +1,10 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Lighthouse;
+using Lighthouse.Configuration;
 using Lighthouse.Models;
 
 var urlOption = new Option<string>(
@@ -14,11 +14,11 @@ var urlOption = new Option<string>(
     IsRequired = true
 };
 
-var sampleCountOption = new Option<int>(
-    alias: "--sample-count",
+var runCountOption = new Option<int>(
+    alias: "--run-count",
     getDefaultValue: static () => 3,
     description: "The number of times to run Lighthouse");
-sampleCountOption.AddValidator(static result =>
+runCountOption.AddValidator(static result =>
 {
     if (result.GetValueOrDefault<int>() is not > 0)
     {
@@ -35,21 +35,11 @@ var warmUpOption = new Option<bool>(
 var rootCommand = new RootCommand()
 {
     urlOption,
-    sampleCountOption,
+    runCountOption,
     warmUpOption
 };
 
-var lighthouseReportJsonSerializerOptions = new JsonSerializerOptions()
-{
-    PropertyNameCaseInsensitive = true,
-};
-
-var benchmarkOutputJsonSerializerOptions = new JsonSerializerOptions()
-{
-    WriteIndented = true,
-};
-
-rootCommand.Handler = CommandHandler.Create(async (string url, int sampleCount, bool warmUp) =>
+rootCommand.Handler = CommandHandler.Create(async (string url, int runCount, bool warmUp) =>
 {
     Console.WriteLine("Generating Lighthouse report...");
 
@@ -61,23 +51,25 @@ rootCommand.Handler = CommandHandler.Create(async (string url, int sampleCount, 
 
     if (warmUp)
     {
-        await RunLighthouseAsync(
+        Console.WriteLine($"==== WARM-UP ====");
+
+        await LighthouseRunner.RunAsync(
             benchmarkOutput,
             lighthouseArgs,
-            RunKind.WarmUp);
+            LighthouseRunKind.WarmUp);
     }
 
-    for (var i = 0; i < sampleCount; i++)
+    for (var i = 0; i < runCount; i++)
     {
-        Console.WriteLine($"==== SAMPLE {i + 1} ====");
+        Console.WriteLine($"==== RUN {i + 1} ====");
 
-        await RunLighthouseAsync(
+        await LighthouseRunner.RunAsync(
             benchmarkOutput,
             lighthouseArgs,
-            i == 0 ? RunKind.FirstRun : RunKind.SuccessiveRun);
+            i == 0 ? LighthouseRunKind.FirstRun : LighthouseRunKind.SuccessiveRun);
     }
 
-    var benchmarkJson = JsonSerializer.Serialize(benchmarkOutput, benchmarkOutputJsonSerializerOptions);
+    var benchmarkJson = JsonSerializer.Serialize(benchmarkOutput, JsonOptions.BenchmarkOutputOptions);
 
     var outputBuilder = new StringBuilder();
     outputBuilder.AppendLine("#StartJobStatistics");
@@ -88,70 +80,3 @@ rootCommand.Handler = CommandHandler.Create(async (string url, int sampleCount, 
 });
 
 await rootCommand.InvokeAsync(args);
-
-async Task RunLighthouseAsync(BenchmarkOutput benchmarkOutput, string args, RunKind runKind)
-{
-    var processStartInfo = new ProcessStartInfo()
-    {
-        FileName = "lighthouse",
-        Arguments = args,
-        UseShellExecute = false,
-        RedirectStandardOutput = true,
-    };
-
-    using var process = System.Diagnostics.Process.Start(processStartInfo)
-        ?? throw new InvalidOperationException("Unable to start Lighthouse");
-
-    var lighthouseReportJson = await process.StandardOutput.ReadToEndAsync();
-    await process.WaitForExitAsync();
-
-    if (process.ExitCode != 0)
-    {
-        throw new InvalidOperationException($"Lighthouse failed with exit code {process.ExitCode}");
-    }
-
-    if (runKind != RunKind.WarmUp)
-    {
-        var lighthouseReport = JsonSerializer.Deserialize<LighthouseReport>(lighthouseReportJson, lighthouseReportJsonSerializerOptions)
-            ?? throw new InvalidOperationException("Could not parse Lighthouse report JSON");
-
-        var addMetadata = runKind == RunKind.FirstRun;
-        lighthouseReport.AddToBenchmarkOutput(benchmarkOutput, addMetadata);
-        AddRawLighthouseJsonToBenchmarkOutput(lighthouseReportJson, benchmarkOutput, lighthouseReport.FetchTime, addMetadata);
-    }
-
-    static void AddRawLighthouseJsonToBenchmarkOutput(
-        string lighthouseReportJson,
-        BenchmarkOutput benchmarkOutput,
-        DateTime timestamp,
-        bool addMetadata)
-    {
-        if (addMetadata)
-        {
-            benchmarkOutput.Metadata.Add(new()
-            {
-                Source = BenchmarkOutputSettings.Source,
-                Name = "lighthouse/raw",
-                Aggregate = Operation.All,
-                Reduce = Operation.All,
-                LongDescription = "Raw output",
-                ShortDescription = "Raw output",
-                Format = "json",
-            });
-        }
-
-        benchmarkOutput.Measurements.Add(new()
-        {
-            Name = "lighthouse/raw",
-            Timestamp = timestamp,
-            Value = lighthouseReportJson,
-        });
-    }
-}
-
-enum RunKind
-{
-    WarmUp,
-    FirstRun,
-    SuccessiveRun
-}

@@ -1,4 +1,4 @@
-﻿namespace Lighthouse;
+﻿namespace Lighthouse.Configuration;
 
 internal static class BenchmarkOutputSettings
 {
