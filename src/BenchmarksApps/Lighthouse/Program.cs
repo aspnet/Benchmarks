@@ -47,7 +47,7 @@ rootCommand.Handler = CommandHandler.Create(async (string url, int runCount, boo
     var lighthouseArgs = url +
         " --chrome-flags=\"--no-sandbox --headless\"" +
         " --output=json" +
-        " --only-audits=\"first-contentful-paint,interaction-to-next-paint,largest-contentful-paint,total-blocking-time\"";
+        " --only-audits=\"first-contentful-paint,interaction-to-next-paint,largest-contentful-paint,total-blocking-time,interactive\"";
 
     if (warmUp)
     {
