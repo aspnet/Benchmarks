@@ -38,7 +38,7 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: HttpClient
     scenario: proxy-httpclient
-    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net8.0
+    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net9.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
