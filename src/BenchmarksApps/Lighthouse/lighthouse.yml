@@ -7,7 +7,7 @@ jobs:
       dockerContextDirectory: src/BenchmarksApps/Lighthouse/
       dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
     environmentVariables:
-      TARGET_URL: "{{serverScheme}}://{{serverAddress}}:{{serverPort}}{{subPath}}"
-    readyStateText: Generating Lighthouse report
-    noClean: true
+      SCENARIO_SCRIPT: "{{script}}"
+      SCENARIO_SCRIPT_ARGS: "\"{{scriptArgs}}\""
+    readyStateText: Starting...
     waitForExit: true

@@ -16,6 +16,8 @@ variables:
   value: --database MySql --jobs https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/Mvc/benchmarkapps/BasicViews/benchmarks.json
 - name: http2Jobs
   value: --client-name H2Load -p Streams=70 --headers None
+- name: blazorJobs
+  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.blazor.json
 
 - name: plaintextPlatformJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.plaintext.json
@@ -91,5 +93,3 @@ variables:
   value: --config https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/TechEmpower/BlazorSSR/blazorssr.benchmarks.yml?raw=true
 - name: razorPagesJobs
   value: --config https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/TechEmpower/RazorPages/razorpages.benchmarks.yml?raw=true
-- name: blazorJobs
-  value: --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/blazor.benchmarks.yml?raw=true

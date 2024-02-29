@@ -1,11 +1,8 @@
-FROM mcr.microsoft.com/dotnet/nightly/sdk:latest AS build-env
+FROM node:18-bullseye-slim
 
-# Build the Lighthouse runner
+# Copy the context folder to this image
 WORKDIR /src
 COPY . ./
-RUN dotnet publish --self-contained -r linux-x64 -c Release -o /publish
-
-FROM node:18-bullseye-slim
 
 # Install utilities
 RUN apt-get update --fix-missing && apt-get -y upgrade && apt-get install -y git wget gnupg && apt-get clean
@@ -17,10 +14,10 @@ RUN apt-get update \
     && apt-get install -y google-chrome-stable --no-install-recommends \
     && apt-get clean
 
-# Install Lighthouse
-RUN npm install -g lighthouse
+# Install node packages
+RUN npm install
 
-# Copy the previously-built Lighthouse runner to this image and run it
-COPY --from=build-env /publish /publish
-ENV TARGET_URL=http://localhost:5000
-ENTRYPOINT /publish/Lighthouse --url $TARGET_URL --warm-up
+ENV SCENARIO_SCRIPT=
+ENV SCENARIO_SCRIPT_ARGS=
+
+ENTRYPOINT node ./src/$SCENARIO_SCRIPT $SCENARIO_SCRIPT_ARGS --job-url $CRANK_JOB_LOCAL_URL
