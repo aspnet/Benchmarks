@@ -142,7 +142,7 @@ internal class Program
         }
         catch (Exception e)
         {
-            s_errors++;
+            Interlocked.Increment(ref s_errors);
             Log($"Exception occured: {e}");
         }
     }

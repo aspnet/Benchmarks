@@ -36,8 +36,8 @@ public class OptionsBinder : BinderBase<ClientOptions>
     public static Option<CertificateSelectionType> CertificateSelectionOption { get; } = new Option<CertificateSelectionType>("--cert-selection", () => CertificateSelectionType.CertContext, "The source of the server certificate in SslClientAuthenticationOptions.");
     public static Option<string> TlsHostNameOption { get; } = new Option<string>("--tls-host-name", "The target host name to send in TLS Client Hello. If not specified, the value from --host is used.");
     public static Option<Scenario> ScenarioOption { get; } = new Option<Scenario>("--scenario", () => Scenario.ReadWrite, "The scenario to run.");
-    public static Option<TimeSpan> DurationOption { get; } = new Option<TimeSpan>("--duration", () => TimeSpan.FromSeconds(15), "The duration of the test.");
-    public static Option<TimeSpan> WarmupOption { get; } = new Option<TimeSpan>("--warmup", () => TimeSpan.FromSeconds(15), "The duration of the warmup.");
+    public static Option<double> DurationOption { get; } = new Option<double>("--duration", () => 15, "The duration of the test in seconds.");
+    public static Option<double> WarmupOption { get; } = new Option<double>("--warmup", () => 15, "The duration of the warmup in seconds.");
 
     public static void AddOptions(RootCommand command)
     {
@@ -67,8 +67,8 @@ public class OptionsBinder : BinderBase<ClientOptions>
             Scenario = parsed.GetValueForOption(ScenarioOption),
             CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),
             TlsHostName = parsed.GetValueForOption(TlsHostNameOption),
-            Duration = parsed.GetValueForOption(DurationOption),
-            Warmup = parsed.GetValueForOption(WarmupOption),
+            Duration = TimeSpan.FromSeconds(parsed.GetValueForOption(DurationOption)),
+            Warmup = TimeSpan.FromSeconds(parsed.GetValueForOption(WarmupOption)),
         };
 
         CommonOptions.BindOptions(options, bindingContext);

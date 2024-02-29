@@ -70,38 +70,42 @@ internal class Program
 
     static async Task RunHandshakeScenario(ClientOptions options)
     {
-        BenchmarksEventSource.Register("sslstream/handshake/mean", Operations.Avg, Operations.Avg, "Mean handshake duration (ms)", "Handshakes duration in milliseconds - mean", "n3");
+        RegisterPercentiledMetric("sslstream/handshake", "Handshake duration (ms)", "Handshakes duration in milliseconds");
 
-        static async Task DoRun(ClientOptions options)
+        static async Task<List<double>> DoRun(ClientOptions options)
         {
+            var values = new List<double>();
             while (s_isRunning)
             {
                 using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
+
+                long timestamp = Stopwatch.GetTimestamp();
                 await using var stream = await EstablishSslStreamAsync(sock, options).ConfigureAwait(false);
-                s_counters.TotalHandshakes++;
+                if (!s_isWarmup)
+                {
+                    values.Add(Stopwatch.GetElapsedTime(timestamp).TotalMilliseconds);
+                }
             }
+
+            return values;
         }
 
         s_isRunning = true;
         var task = Task.Run(() => DoRun(options));
         await Task.Delay(options.Warmup).ConfigureAwait(false);
-        s_isRunning = false;
         Log("Completing warmup...");
-        await task.ConfigureAwait(false);
-
         s_counters.Reset();
 
-        s_isRunning = true;
-        task = Task.Run(() => DoRun(options));
         Stopwatch sw = Stopwatch.StartNew();
         await Task.Delay(options.Duration).ConfigureAwait(false);
-        s_isRunning = false;
+
         Log("Completing scenario...");
-        await task.ConfigureAwait(false);
+        s_isRunning = false;
+        var values = await task.ConfigureAwait(false);
         sw.Stop();
 
-        LogMetric("sslstream/handshake/mean", sw.Elapsed.TotalMilliseconds / s_counters.TotalHandshakes);
+        LogPercentiledMetric("sslstream/handshake", values);
     }
 
     static async Task RunReadWriteScenario(ClientOptions options)
@@ -174,6 +178,10 @@ internal class Program
         byte[] recvBuffer = new byte[options.ReceiveBufferSize];
 
         s_isRunning = true;
+
+        // spawn the reading and writing tasks on the thread pool, note that if we were to use
+        //     var writeTask = WritingTask(stream, options.SendBufferSize);
+        // then it could end up writing a lot of data until it finally suspended control back to this function.
         var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize));
         var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize));
 
@@ -242,6 +250,48 @@ internal class Program
     {
         BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
+    }
+
+    static void RegisterPercentiledMetric(string name, string shortDescription, string longDescription)
+    {
+        BenchmarksEventSource.Register(name + "/avg", Operations.Min, Operations.Min, shortDescription + " - avg", longDescription + " - avg", "n3");
+        BenchmarksEventSource.Register(name + "/min", Operations.Min, Operations.Min, shortDescription + " - min", longDescription + " - min", "n3");
+        BenchmarksEventSource.Register(name + "/p50", Operations.Max, Operations.Max, shortDescription + " - p50", longDescription + " - 50th percentile", "n3");
+        BenchmarksEventSource.Register(name + "/p75", Operations.Max, Operations.Max, shortDescription + " - p75", longDescription + " - 75th percentile", "n3");
+        BenchmarksEventSource.Register(name + "/p90", Operations.Max, Operations.Max, shortDescription + " - p90", longDescription + " - 90th percentile", "n3");
+        BenchmarksEventSource.Register(name + "/p99", Operations.Max, Operations.Max, shortDescription + " - p99", longDescription + " - 99th percentile", "n3");
+        BenchmarksEventSource.Register(name + "/max", Operations.Max, Operations.Max, shortDescription + " - max", longDescription + " - max", "n3");
+    }
+
+    static void LogPercentiledMetric(string name, List<double> values)
+    {
+        values.Sort();
+
+        LogMetric(name + "/avg", values.Average());
+        LogMetric(name + "/min", GetPercentile(0, values));
+        LogMetric(name + "/p50", GetPercentile(50, values));
+        LogMetric(name + "/p75", GetPercentile(75, values));
+        LogMetric(name + "/p90", GetPercentile(90, values));
+        LogMetric(name + "/p99", GetPercentile(99, values));
+        LogMetric(name + "/max", GetPercentile(100, values));
+    }
+
+    static double GetPercentile(int percent, List<double> sortedValues)
+    {
+        if (percent == 0)
+        {
+            return sortedValues[0];
+        }
+
+        if (percent == 100)
+        {
+            return sortedValues[sortedValues.Count - 1];
+        }
+
+        var i = percent * sortedValues.Count / 100.0 + 0.5;
+        var fractionPart = i - Math.Truncate(i);
+
+        return (1.0 - fractionPart) * sortedValues[(int)Math.Truncate(i) - 1] + fractionPart * sortedValues[(int)Math.Ceiling(i) - 1];
     }
 
     private static void Log(string message)
