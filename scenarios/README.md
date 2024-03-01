@@ -231,6 +231,7 @@ These scenarios measure the performance of different other frameworks
 - Netty (Java)
 - Drogon (C++)
 - Wizzardo (Java)
+- Spring (Java)
 - Gin (Go)
 - Express (JavaScript)
 
@@ -250,6 +251,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `plaintext_netty`, `json_netty`
 - `plaintext_drogon`, `json_drogon`, `fortunes_drogon`
 - `plaintext_wizzardo`, `json_wizzardo`, `single_query_wizzardo`, `multiple_queries_wizzardo`, `updates_wizzardo`, `cached_queries_wizzardo`
+- `plaintext_spring`, `json_spring`, `single_query_spring`, `multiple_queries_spring`, `updates_spring`
 - `plaintext_gin`, `json_gin`, `fortunes_gin`
 - `plaintext_express`, `json_express`, `fortunes_express`
 

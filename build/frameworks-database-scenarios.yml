@@ -55,6 +55,15 @@ parameters:
   - displayName: Drogon Fortunes
     arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
 
+  # Spring (Java)
+  
+  - displayName: Spring Plaintext
+    arguments: --scenario plaintext_spring $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+  - displayName: Spring Json
+    arguments: --scenario json_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+  - displayName: Spring Fortunes
+    arguments: --scenario fortunes_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+
   # FastHttp (Go)
 
   - displayName: Go Fortunes
