@@ -17,7 +17,7 @@ variables:
 - name: http2Jobs
   value: --client-name H2Load -p Streams=70 --headers None
 - name: blazorJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.blazor.json
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml
 
 - name: plaintextPlatformJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/TechEmpower/PlatformBenchmarks/benchmarks.plaintext.json

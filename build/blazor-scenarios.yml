@@ -18,6 +18,15 @@ parameters:
   
   - displayName: Blazor Wasm
     arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
+  
+  - displayName: Blazor Web (Server)
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property protocol=http
+
+  - displayName: Blazor Web (WebAssembly)
+    arguments: --scenario blazorWebInteractiveWebAssembly $(blazorJobs) --property protocol=http
+
+  - displayName: Blazor Web (Auto)
+    arguments: --scenario blazorWebInteractiveAuto $(blazorJobs) --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
