@@ -19,6 +19,19 @@ parameters:
   - displayName: Blazor Wasm
     arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
+- name: lighthouseScenarios
+  type: object
+  default:
+  
+  - displayName: Blazor Web (Server)
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property protocol=http
+
+  - displayName: Blazor Web (WebAssembly)
+    arguments: --scenario blazorWebInteractiveWebAssembly $(blazorJobs) --property protocol=http
+
+  - displayName: Blazor Web (Auto)
+    arguments: --scenario blazorWebInteractiveAuto $(blazorJobs) --property protocol=http
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
@@ -33,4 +46,19 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+        }
+
+- ${{ each s in parameters.lighthouseScenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --chart" ]
         }
