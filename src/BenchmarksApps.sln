@@ -62,6 +62,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSSR", "BenchmarksApps
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{CB5A25E6-1F5B-4737-B99E-04B9E4B579B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunTemplate", "BenchmarksApps\RunTemplate\RunTemplate.csproj", "{E9CB7AE5-AC38-4E90-AC24-A518F8147210}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Database|Any CPU = Debug_Database|Any CPU
@@ -238,6 +240,14 @@ Global
 		{CB5A25E6-1F5B-4737-B99E-04B9E4B579B0}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
 		{CB5A25E6-1F5B-4737-B99E-04B9E4B579B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB5A25E6-1F5B-4737-B99E-04B9E4B579B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Debug_Database|Any CPU.ActiveCfg = Debug_Database|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Debug_Database|Any CPU.Build.0 = Debug_Database|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Release_Database|Any CPU.ActiveCfg = Release_Database|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Release_Database|Any CPU.Build.0 = Release_Database|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9CB7AE5-AC38-4E90-AC24-A518F8147210}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
