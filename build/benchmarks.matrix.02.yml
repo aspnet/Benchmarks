@@ -52,12 +52,13 @@ groups:
       template: signalr-scenarios.yml
       profiles:
       - intel-win-app
-      - intel-load-load
+      - intel-load2-load
 
     - name: Blazor Intel Linux
       template: blazor-scenarios.yml
       profiles:
       - intel-perflin-app
+      - intel-perfload-load
 
   - jobs: 
 

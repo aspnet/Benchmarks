@@ -29,6 +29,17 @@ profiles:
         aliases:
           - main
 
+  intel-perfload-load:
+    variables:
+      secondaryAddress: 10.0.0.105
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-perf-load:5001
+        aliases:
+          - secondary
+          - warmup
+
   intel-lin-load:
     variables:
       secondaryAddress: 10.0.0.102

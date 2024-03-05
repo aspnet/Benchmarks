@@ -105,7 +105,7 @@ jobs:
   - template: signalr-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
-      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load "
+      arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Blazor_Intel_Linux
   displayName: 3- Blazor Intel Linux
@@ -117,7 +117,7 @@ jobs:
   - template: blazor-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-perflin-app "
+      arguments: "$(ciProfile) --profile intel-perflin-app --profile intel-perfload-load "
       
 # GROUP 4
 
