@@ -42,6 +42,9 @@ rootCommand.Handler = CommandHandler.Create(async (InvocationContext context) =>
 
     Console.WriteLine($"dotnet path: {dotnetPath}");
 
+    // Run "dotnet --info" for debugging purposes
+    await RunDotNetCommand(dotnetPath, "--info");
+
     var workingDirectory = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
     Directory.CreateDirectory(workingDirectory);
 
