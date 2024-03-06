@@ -45,7 +45,7 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net9.0 --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
         }
 
 - ${{ each s in parameters.lighthouseScenarios }}:
@@ -60,5 +60,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net9.0 --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --chart" ]
         }
