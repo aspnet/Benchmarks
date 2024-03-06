@@ -24,13 +24,13 @@ parameters:
   default:
   
   - displayName: Blazor Web (Server)
-    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property protocol=http
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property interactivity=Server --property template=Blazor
 
   - displayName: Blazor Web (WebAssembly)
-    arguments: --scenario blazorWebInteractiveWebAssembly $(blazorJobs) --property protocol=http
+    arguments: --scenario blazorWebInteractiveWebAssembly $(blazorJobs) --property interactivity=WebAssembly --property template=Blazor
 
   - displayName: Blazor Web (Auto)
-    arguments: --scenario blazorWebInteractiveAuto $(blazorJobs) --property protocol=http
+    arguments: --scenario blazorWebInteractiveAuto $(blazorJobs) --property interactivity=Auto --property template=Blazor
 
 steps:
 - ${{ each s in parameters.scenarios }}:
