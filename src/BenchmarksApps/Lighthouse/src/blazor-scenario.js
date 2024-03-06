@@ -199,6 +199,7 @@ async function reportStatistics(flowResult, jobUrl) {
   console.log('Collecting Crank statistics...');
 
   const reporter = new LighthouseCrankReporter(flowResult, /* metadataPrefix */ 'lighthouse-blazor');
+  reporter.measureRawJson();
   addNavigationMeasurements(reporter, /* stepId */ 0);
   addNavigationMeasurements(reporter, /* stepId */ 1);
   addInteractionMeasurements(reporter, /* stepId */ 2);
