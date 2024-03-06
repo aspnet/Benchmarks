@@ -104,6 +104,34 @@ export class LighthouseCrankReporter {
   }
 
   /**
+   * Measures the flow result's raw JSON and includes it in the statistics report
+   */
+  measureRawJson() {
+    const metadataId = `${this.metadataPrefix}/raw`;
+    if (this.metadataIds.has(metadataId)) {
+      return;
+    }
+
+    this.metadataIds.add(metadataId);
+    this.statistics.metadata.push({
+      name: metadataId,
+      aggregate: 'First',
+      reduce: 'First',
+      format: 'json',
+      shortDescription: 'Raw JSON',
+      longDescription: 'The raw flow result JSON data',
+    });
+
+    const json = JSON.stringify(this.flowResult);
+    const timeStamp = new Date().toISOString();
+    this.statistics.measurements.push({
+      name: metadataId,
+      timeStamp,
+      value: json,
+    });
+  }
+
+  /**
    * @private
    * @param {number} stepId
    * @param {string} auditId
