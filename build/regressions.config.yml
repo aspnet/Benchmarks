@@ -144,6 +144,37 @@ sources:
       healthCheck: true
       title: >-
         Benchmark stopped running: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+  - name: BlazorWasm Reliability
+    table: BlazorWasm
+    rules:
+      - include: .
+    regressions:
+      labels:
+        - Perf
+        - perf-regression
+        - area-blazor
+      owners:
+        - sebastienros
+        - MackinnonBuck
+      template: reliability
+      healthCheck: true
+      title: >-
+        Benchmark stopped running: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
+  - name: Lighthouse Reliability
+    table: Lighthouse
+    rules:
+      - include: .
+    regressions:
+      labels:
+        - Perf
+        - perf-regression
+      owners:
+        - sebastienros
+        - MackinnonBuck
+      template: reliability
+      healthCheck: true
+      title: >-
+        Benchmark stopped running: {% for r in Regressions limit: 4 %}{{ r.CurrentResult.Scenario }}{% if forloop.last == false %}, {% endif %}{% endfor %}
 
 templates:
   rps: |
