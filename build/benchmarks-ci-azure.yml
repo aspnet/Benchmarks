@@ -142,7 +142,7 @@ jobs:
   dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: rate-limited-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Azure Queue
       arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
@@ -154,7 +154,7 @@ jobs:
   dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
   condition: succeededOrFailed()
   steps:
-  - template: rate-limited-scenarios.yml
+  - template: containers-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Azure Queue 2
       arguments: "$(ciProfile) --profile aspnet-azure-lin "
