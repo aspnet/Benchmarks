@@ -133,4 +133,30 @@ jobs:
       connection: ASP.NET Benchmarks Azure Queue 2
       arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
       
+# GROUP 5
+
+- job: Constant_Requests_Azure_Arm64_Linux
+  displayName: 5- Constant Requests Azure Arm64 Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue
+      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      
+- job: Constant_Requests_Azure_Linux
+  displayName: 5- Constant Requests Azure Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: containers-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Azure Queue 2
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      
 
