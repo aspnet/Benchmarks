@@ -56,4 +56,15 @@ groups:
       template: baselines-scenarios.yml
       profiles:
       - aspnet-azurearm64-lin
+  
+  - jobs:
+      - name: Constant Requests Azure Arm64 Linux
+        template: rate-limited-scenarios.yml
+        profiles:
+        - aspnet-azurearm64-lin
+  
+      - name: Constant Requests Azure Linux
+        template: rate-limited-scenarios.yml
+        profiles:
+        - aspnet-azure-lin
 
