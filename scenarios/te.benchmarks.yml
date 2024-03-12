@@ -154,8 +154,8 @@ jobs:
 
   spring:
     source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
+      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
+      branchOrCommit: sebros/springready
       dockerFile: frameworks/Java/spring/spring.dockerfile
       dockerImageName: spring
       dockerContextDirectory: frameworks/Java/spring/
