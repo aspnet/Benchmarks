@@ -7,7 +7,7 @@ sources:
         labels: 
           - area-mvc
       - exclude: drogon|fasthttp|actix|gin|express|node|netty
-      - exclude: azure
+      - exclude: [aA]zure
       - exclude: Arm\s80
     daysToLoad: 60
     stdevCount: 7
