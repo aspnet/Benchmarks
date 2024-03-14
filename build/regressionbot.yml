@@ -60,7 +60,7 @@ extends:
           path: benchmarks
           displayName: Checkout aspnet-benchmarks
         - powershell: |
-              dotnet $(Pipeline.Workspace)/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
                   --config $(Pipeline.Workspace)/benchmarks/build/regressions.config.yml `
                   --connectionstring BENCHMARKSBOT_ConnectionString `
                   --repository-id $(github.repositoryId) `
@@ -70,7 +70,7 @@ extends:
                   --app-key BENCHMARKSBOT_GitHubAppKey `
                   --verbose
               
-              dotnet $(Pipeline.Workspace)/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
                   --config $(Pipeline.Workspace)/benchmarks/build/regressions.blazor.config.yml `
                   --connectionstring BENCHMARKSBOT_ConnectionString `
                   --repository-id $(github.repositoryId) `
