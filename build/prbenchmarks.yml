@@ -51,10 +51,13 @@ extends:
       name: ASP.NET-Performance-Controller-new
       image: MMSWindows2022-Secure
       os: windows
-
-    # opting-out of SBOM generation as we don't produce artifacts
     sdl:
+      sourceRepositoriesToScan:
+          exclude:
+          # exclude dotnet-crank from this SDL since it already has it's own Official pipeline
+          - repository: dotnet-crank
       sbom:
+       # opting-out of SBOM generation as we don't produce artifacts
         enabled: false
 
     stages:

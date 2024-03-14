@@ -33,7 +33,6 @@ extends:
       name: ASP.NET-Performance-Controller-new
       image: MMSWindows2022-Secure
       os: windows
-
     sdl:
       sourceRepositoriesToScan:
           exclude:
