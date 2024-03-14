@@ -6,7 +6,7 @@ ARG SERVER_PROTOCOL=http
 
 # NOTE: nginx doesn't support http2 connections to the upstream server
 
-FROM nginx:latest AS base
+FROM mcr.microsoft.com/cbl-mariner/base/nginx:1 AS base
 
 ENV WORKER_PROCESSES auto
 ENV DOWNSTREAM_SCHEME http
