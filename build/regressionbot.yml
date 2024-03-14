@@ -52,8 +52,9 @@ extends:
         steps:
         - checkout: dotnet-crank
           path: crank
+          fetchDepth: 0
           displayName: Checkout dotnet-crank
-        - powershell: dotnet build -c release ./src/Microsoft.Crank.RegressionBot/
+        - powershell: dir; dotnet build -c release ./src/Microsoft.Crank.RegressionBot/
           displayName: Build dotnet-crank
         - checkout: self
           path: benchmarks
