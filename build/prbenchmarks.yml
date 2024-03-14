@@ -10,24 +10,24 @@ schedules:
     include:
     - main
   always: "true" # whether to always run the pipeline or only if there have been source code changes since the last successful scheduled run. The default is false.
-- cron: "15 * * * *"
-  displayName: "On :15"
-  branches:
-    include:
-    - main
-  always: "true"
+# - cron: "15 * * * *"
+#   displayName: "On :15"
+#   branches:
+#     include:
+#     - main
+#   always: "true"
 - cron: "30 * * * *"
   displayName: "On :30"
   branches:
     include:
     - main
   always: "true"
-- cron: "45 * * * *"
-  displayName: "On :45"
-  branches:
-    include:
-    - main
-  always: "true"
+# - cron: "45 * * * *"
+#   displayName: "On :45"
+#   branches:
+#     include:
+#     - main
+#   always: "true"
 
 # The `resources` specify the location and version of the 1ES PT.
 resources:
