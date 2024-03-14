@@ -39,7 +39,7 @@ extends:
     - stage: Stage
       jobs:
       - job: RegressionBot
-        timeoutInMinutes: 10
+        timeoutInMinutes: 30
         
         steps:
         - powershell: |
