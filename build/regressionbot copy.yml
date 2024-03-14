@@ -1,0 +1,53 @@
+pool: ASP.NET-Performance-Controller-new
+
+variables:
+  - group: 'ASP.NET Benchmarks'
+
+# All the jobs are triggered at the same time
+# Jobs are run in parallel
+# Steps are serial
+
+schedules:
+- cron: "0 7,19 * * *"
+  displayName: "Twice a day"
+  branches:
+    include:
+    - main
+  always: "true"
+
+jobs:
+- job: RegressionBot
+  timeoutInMinutes: 10
+  steps:
+  - powershell: |
+        git clone https://github.com/dotnet/crank
+        cd ./crank/
+        git checkout main
+        git pull
+        cd src/Microsoft.Crank.RegressionBot
+        dotnet build -c release
+        
+        dotnet run --no-restore --no-build -c release -- `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.config.yml `
+            --connectionstring BENCHMARKSBOT_ConnectionString `
+            --repository-id $(github.repositoryId) `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --username $(github.username) `
+            --app-key BENCHMARKSBOT_GitHubAppKey `
+            --verbose
+        
+        dotnet run --no-restore --no-build -c release -- `
+            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.blazor.config.yml `
+            --connectionstring BENCHMARKSBOT_ConnectionString `
+            --repository-id $(github.repositoryId) `
+            --app-id $(github.appid) `
+            --install-id $(github.installid) `
+            --username $(github.username) `
+            --app-key BENCHMARKSBOT_GitHubAppKey `
+            --verbose
+
+
+    env:
+        BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
+        BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)
