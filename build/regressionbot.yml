@@ -18,6 +18,10 @@ resources:
     type: git
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
+  - repository: dotnet-crank
+    type: git
+    name: internal/dotnet-crank
+    ref: refs/heads/main
 
 extends:
   # The pipeline extends the 1ES PT which will inject different SDL and compliance tasks.
