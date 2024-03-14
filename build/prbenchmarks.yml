@@ -36,6 +36,10 @@ resources:
     type: git
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
+  - repository: dotnet-crank
+    type: git
+    name: internal/dotnet-crank
+    ref: refs/heads/main
 
 extends:
   # The pipeline extends the 1ES PT which will inject different SDL and compliance tasks.
@@ -64,16 +68,15 @@ extends:
           os: windows
         timeoutInMinutes: 120
         steps:
+        - checkout: dotnet-crank
+          path: crank
+          fetchDepth: 1
+          displayName: Checkout dotnet-crank
+        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.PullRequestBot/
+          displayName: Build PR benchmarks
         - powershell: |
-              git clone https://github.com/dotnet/crank -b main
-              cd .\crank\src\Microsoft.Crank.PullRequestBot
-              git pull
-              git rev-parse HEAD
-              dotnet build -c release --framework net8.0
-
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-
-              dotnet run --no-build --framework net8.0 -c release `
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/aspnetcore `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
                   --app-id $(github.appid) `
@@ -81,8 +84,14 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
+          displayName: ASP.NET Core
+          env:
+              AZURE_RELAY: $(relay.connectionstring)
+              APP_KEY: $(github.privatekey)
 
-              dotnet run --no-build --framework net8.0 -c release `
+        - powershell: |
+              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/efcore `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
                   --app-id $(github.appid) `
@@ -90,8 +99,14 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
+          displayName: EF Core
+          env:
+              AZURE_RELAY: $(relay.connectionstring)
+              APP_KEY: $(github.privatekey)
 
-              dotnet run --no-build --framework net8.0 -c release `
+        - powershell: |
+              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
                   --app-id $(github.appid) `
@@ -99,8 +114,14 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
+          displayName: Runtime Windows X64
+          env:
+              AZURE_RELAY: $(relay.connectionstring)
+              APP_KEY: $(github.privatekey)
 
-              dotnet run --no-build --framework net8.0 -c release `
+        - powershell: |
+              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
                   --app-id $(github.appid) `
@@ -108,7 +129,7 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-
+          displayName: Runtime Windows ARM64
           env:
               AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
@@ -121,14 +142,15 @@ extends:
           os: linux
           timeoutInMinutes: 120
         steps:
+        - checkout: dotnet-crank
+          path: crank
+          fetchDepth: 1
+          displayName: Checkout dotnet-crank
+        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.PullRequestBot/
+          displayName: Build PR benchmarks
+          
         - powershell: |
-              git clone https://github.com/dotnet/crank -b main
-              cd ./crank/src/Microsoft.Crank.PullRequestBot
-              git rev-parse HEAD
-              dotnet build -c release --framework net8.0
-
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-
               dotnet run --no-build --framework net8.0 -c release `
                   --repository https://github.com/dotnet/runtime `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
@@ -137,7 +159,13 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
+          displayName: Runtime Linux X64
+          env:
+              AZURE_RELAY: $(relay.connectionstring)
+              APP_KEY: $(github.privatekey)
 
+        - powershell: |
+              $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet run --no-build --framework net8.0 -c release `
                   --repository https://github.com/dotnet/runtime `
                   --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
@@ -146,7 +174,7 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-
+          displayName: Runtime Linux ARM64
           env:
               AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)

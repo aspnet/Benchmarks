@@ -54,7 +54,7 @@ extends:
           path: crank
           fetchDepth: 1
           displayName: Checkout dotnet-crank
-        - powershell: dotnet build -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.RegressionBot/
+        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.RegressionBot/
           displayName: Build regression bot
         - checkout: self
           path: benchmarks
