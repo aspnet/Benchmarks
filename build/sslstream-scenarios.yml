@@ -15,13 +15,13 @@ parameters:
     type: object
     default:
       - displayName: "read-write"
-        arguments: --scenario read-write --client.options.collectCounters true
+        arguments: --scenario read-write --client.options.collectCounters true --property scenario=Read-Write
 
   - name: handshakeScenarios
     type: object
     default:
-      - displayName: "read-write"
-        arguments: --scenario handshake --client.options.collectCounters true
+      - displayName: "handshake"
+        arguments: --scenario handshake --client.options.collectCounters true --property scenario=Handshake
 
   - name: tlsResume
     type: object
@@ -51,21 +51,21 @@ steps:
   # handshake scenarios
   - ${{ each s in parameters.handshakeScenarios }}:
       - ${{ each version in parameters.tlsVersion }}:
-          - ${{ each res in parameters.tlsResume }}:
-              - ${{ each c in parameters.concurrency }}:
+          - ${{ each c in parameters.concurrency }}:
+              - ${{ each res in parameters.tlsResume }}:
                   - task: PublishToAzureServiceBus@1
                     condition: succeededOrFailed()
                     timeoutInMinutes: 10
-                    displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ res.displayName }}
+                    displayName: ${{ version.displayName }} ${{ s.displayName }} $ {{ c.displayName }} ${{ res.displayName }}
                     inputs:
                       connectedServiceName: ${{ parameters.connection }}
                       waitForCompletion: true
                       useDataContractSerializer: "false"
                       messageBody: |
                         {
-                          "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                          "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                           "name": "crank",
-                          "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
+                          "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
                         }
 
   # read-write scenarios
@@ -75,14 +75,14 @@ steps:
               - task: PublishToAzureServiceBus@1
                 condition: succeededOrFailed()
                 timeoutInMinutes: 10
-                displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ res.displayName }}
+                displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }}
                 inputs:
                   connectedServiceName: ${{ parameters.connection }}
                   waitForCompletion: true
                   useDataContractSerializer: "false"
                   messageBody: |
                     {
-                      "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
+                      "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                       "name": "crank",
-                      "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ c.arguments }}" ]
+                      "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ c.arguments }}" ]
                     }
