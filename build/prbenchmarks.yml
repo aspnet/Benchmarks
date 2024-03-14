@@ -151,6 +151,10 @@ extends:
           displayName: Checkout dotnet-crank
         - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.PullRequestBot/
           displayName: Build PR benchmarks
+        - checkout: self
+          fetchDepth: 1
+          path: benchmarks
+          displayName: Checkout aspnet-benchmarks
           
         - powershell: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
