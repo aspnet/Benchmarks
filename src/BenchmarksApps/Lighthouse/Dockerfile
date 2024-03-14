@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM mcr.microsoft.com/cbl-mariner/base/nodejs:18
 
 # Copy the context folder to this image
 WORKDIR /src
