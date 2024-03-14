@@ -42,12 +42,13 @@ extends:
         timeoutInMinutes: 30
         
         steps:
+        - checkout: dotnet-crank
+          path: crank
+          displayName: Checkout dotnet/crank
         - powershell: |
-              git clone https://github.com/dotnet/crank
-              cd ./crank/
-              git checkout main
-              git pull
-              cd src/Microsoft.Crank.RegressionBot
+              dir .
+              
+              cd ./crank/src/Microsoft.Crank.RegressionBot
               dotnet build -c release
               
               dotnet run --no-restore --no-build -c release -- `
