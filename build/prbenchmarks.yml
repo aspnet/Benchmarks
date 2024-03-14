@@ -81,7 +81,7 @@ extends:
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/aspnetcore `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.aspnetcore.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.aspnetcore.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
@@ -96,7 +96,7 @@ extends:
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/efcore `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.efcore.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.efcore.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
@@ -111,7 +111,7 @@ extends:
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_x64.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.windows_x64.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
@@ -126,7 +126,7 @@ extends:
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.windows_arm64.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.windows_arm64.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
@@ -154,9 +154,9 @@ extends:
           
         - powershell: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet run --no-build --framework net8.0 -c release `
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_x64.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.linux_x64.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
@@ -169,9 +169,9 @@ extends:
 
         - powershell: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
-              dotnet run --no-build --framework net8.0 -c release `
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
-                  --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/prbenchmarks.runtime.linux_arm64.config.yml `
+                  --config $(Pipeline.Workspace)/benchmarks/build/prbenchmarks.runtime.linux_arm64.config.yml `
                   --app-id $(github.appid) `
                   --install-id $(github.installid) `
                   --app-key "env:APP_KEY" `
