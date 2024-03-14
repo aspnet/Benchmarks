@@ -90,6 +90,7 @@ steps:
     - task: PublishToAzureServiceBus@1
       condition: succeededOrFailed()
       displayName: h2c ${{ s.displayName }} ${{ stream.displayName }}
+      timeoutInMinutes: 10
       inputs:
         connectedServiceName: ${{ parameters.connection }}
         waitForCompletion: true
