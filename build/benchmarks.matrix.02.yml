@@ -193,3 +193,11 @@ groups:
       profiles:
       - intel-lin-app
       - amd-lin2-load
+
+  - jobs:
+
+    - name: SslStream Intel Linux
+      template: sslstream-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - amd-lin2-load

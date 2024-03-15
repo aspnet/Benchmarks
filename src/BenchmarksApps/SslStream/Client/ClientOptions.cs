@@ -19,6 +19,7 @@ public enum CertificateSelectionType
 public class ClientOptions : OptionsBase
 {
     public string Hostname { get; set; } = null!;
+    public int Concurrency { get; set; }
     public CertificateSelectionType CertificateSelection { get; set; }
     public X509Certificate2? ClientCertificate { get; set; } = null!;
     public string? TlsHostName { get; set; }
@@ -31,6 +32,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
 {
     public static Option<string> HostOption { get; } = new Option<string>("--host", "The host to connect to.") { IsRequired = true };
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to connect to.");
+    public static Option<int> ConcurrencyOption { get; } = new Option<int>("--concurrency", () => 1, "The number of concurrent connections to make.");
     public static Option<string> ClientCertificatePathOption { get; } = new Option<string>("--cert", "Path to the client certificate.");
     public static Option<string> ClientCertificatePasswordOption { get; } = new Option<string>("--cert-password", "Password to the certificate file specified in --cert.");
     public static Option<CertificateSelectionType> CertificateSelectionOption { get; } = new Option<CertificateSelectionType>("--cert-selection", () => CertificateSelectionType.CertContext, "The source of the server certificate in SslClientAuthenticationOptions.");
@@ -47,6 +49,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
 
         CommonOptions.AddOptions(command);
 
+        command.AddOption(ConcurrencyOption);
         command.AddOption(CertificateSelectionOption);
         command.AddOption(ClientCertificatePathOption);
         command.AddOption(ClientCertificatePasswordOption);
@@ -63,6 +66,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
         {
             Hostname = parsed.GetValueForOption(HostOption)!,
             Port = parsed.GetValueForOption(PortOption),
+            Concurrency = parsed.GetValueForOption(ConcurrencyOption),
             ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null),
             Scenario = parsed.GetValueForOption(ScenarioOption),
             CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),

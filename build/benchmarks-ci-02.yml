@@ -361,4 +361,18 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
       
+# GROUP 11
+
+- job: SslStream_Intel_Linux
+  displayName: 11- SslStream Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Crossgen_Intel_Windows, Crossgen_Amd_Linux, HttpClient_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: sslstream-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 1
+      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
+      
 
