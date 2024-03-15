@@ -1,0 +1,155 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2024-03-14 04:24:35Z",
+      "lastUpdatedDate": "2024-03-14 04:24:35Z"
+    }
+  },
+  "results": {
+    "78e7ef3e144d5902270fd24f3e2ebcf9f8eb5b72a3c39a8f2eb14229e0d2941d": {
+      "signature": "78e7ef3e144d5902270fd24f3e2ebcf9f8eb5b72a3c39a8f2eb14229e0d2941d",
+      "alternativeSignatures": [],
+      "target": "scenarios/orchard.benchmarks.yml",
+      "line": 28,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "d66f2bd03efd9568059dfbf875132b71774e34bdc214382e0c6fa36205ff2587": {
+      "signature": "d66f2bd03efd9568059dfbf875132b71774e34bdc214382e0c6fa36205ff2587",
+      "alternativeSignatures": [],
+      "target": "docker/mssql-techempower/run.sh",
+      "line": 15,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "22de2d60f173b107dce35ee95608cbbb94443406930e003945256ca768e4fdcf": {
+      "signature": "22de2d60f173b107dce35ee95608cbbb94443406930e003945256ca768e4fdcf",
+      "alternativeSignatures": [],
+      "target": "src/Benchmarks/testCert.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "fb479923057203ae4958ad8e4b535363cea3dfe520cceea86f0027ce7b9f5268": {
+      "signature": "fb479923057203ae4958ad8e4b535363cea3dfe520cceea86f0027ce7b9f5268",
+      "alternativeSignatures": [],
+      "target": "src/Downstream/testCert.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "461a48083ac3d8700e18f768c0bca010873df6473d7557f493198d16bf78b9a8": {
+      "signature": "461a48083ac3d8700e18f768c0bca010873df6473d7557f493198d16bf78b9a8",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/Mvc/testCert.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "bad6eea822f2d04d41c0ffca289f522e489cc7fc17d96fbbafbdeb48eb57ef79": {
+      "signature": "bad6eea822f2d04d41c0ffca289f522e489cc7fc17d96fbbafbdeb48eb57ef79",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/HttpClient/Proxy/testCert.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "eba32ee92e38824b1b2b6129ee61ff558c1c34a0bc0caf79f62742d9015bc9c1": {
+      "signature": "eba32ee92e38824b1b2b6129ee61ff558c1c34a0bc0caf79f62742d9015bc9c1",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/Grpc/BasicGoServer/certs/server1.key",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "ea4f15035f7af6797274eb962b3432194eb6d08b1544e73ec41cc967747cbb46": {
+      "signature": "ea4f15035f7af6797274eb962b3432194eb6d08b1544e73ec41cc967747cbb46",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/Grpc/GoClient/certs/server1.key",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "4a40f2648bb5908eefabc05563f2975b8148be03fe3eb2ad024dd9924ef50456": {
+      "signature": "4a40f2648bb5908eefabc05563f2975b8148be03fe3eb2ad024dd9924ef50456",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/Grpc/GoServer/certs/server1.key",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    },
+    "fc51134a68f816064efac2af7c2dc0fccdcd44661424b53f8320a069eabba2c6": {
+      "signature": "fc51134a68f816064efac2af7c2dc0fccdcd44661424b53f8320a069eabba2c6",
+      "alternativeSignatures": [],
+      "target": "src/BenchmarksApps/Grpc/GrpcHttpApiServer/Server/Certs/testCert.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-03-14 04:45:51Z",
+      "expirationDate": "2024-08-31 04:52:52Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-14 04:52:52Z"
+    }
+  }
+}
