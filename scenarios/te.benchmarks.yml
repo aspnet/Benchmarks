@@ -154,12 +154,12 @@ jobs:
 
   spring:
     source:
-      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
-      branchOrCommit: sebros/springready
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
       dockerFile: frameworks/Java/spring/spring.dockerfile
       dockerImageName: spring
       dockerContextDirectory: frameworks/Java/spring/
-    readyStateText: Application is ready
+    readyStateText: Spring Boot
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
