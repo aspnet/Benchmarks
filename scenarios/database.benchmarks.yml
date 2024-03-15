@@ -23,7 +23,6 @@ jobs:
     arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}}"
     environmentVariables:
       database: PostgresQL
-      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
       connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=18;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Buffer Threshold Bytes=1000
 
   postgresql:
@@ -69,7 +68,6 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: SqlServer
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=sa;Password=Benchmarkdbp@55;Encrypt=false
     load:
       job: wrk

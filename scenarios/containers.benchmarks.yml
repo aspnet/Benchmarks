@@ -19,7 +19,6 @@ jobs:
     readyStateText: Application started.
     environmentVariables:
       database: "PostgreSQL"
-      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
       connectionString: '"Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"'
     noClean: true
 

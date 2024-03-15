@@ -103,7 +103,6 @@ scenarios:
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -124,7 +123,6 @@ scenarios:
         - "/p:TrimMode=full"
         - "/p:EnableRequestDelegateGenerator=true"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -141,7 +139,6 @@ scenarios:
         - "/p:PublishAot=false"
         - "/p:EnableRequestDelegateGenerator=false"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk

@@ -166,7 +166,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -185,7 +184,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -204,7 +202,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -223,7 +220,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -355,7 +351,6 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: PostgresQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -373,7 +368,6 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: PostgresQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -391,7 +385,6 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: PostgresQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -409,7 +402,6 @@ scenarios:
         scenario: DbFortunesRaw
       environmentVariables:
         database: PostgresQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -426,7 +418,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -444,7 +435,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -462,7 +452,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -480,7 +469,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;Enlist=false;Max Auto Prepare=4;Multiplexing=true;Write Coalescing Delay Us=500;Write Coalescing Buffer Threshold Bytes=1000
     load:
       job: wrk
@@ -497,7 +485,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -515,7 +502,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -533,7 +519,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -551,7 +536,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionstring: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -568,7 +552,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -586,7 +569,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -604,7 +586,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -622,7 +603,6 @@ scenarios:
         - "/p:IsDatabase=true"
       environmentVariables:
         database: PostgreSQL
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         connectionString: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk

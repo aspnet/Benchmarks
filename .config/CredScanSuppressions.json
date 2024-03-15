@@ -1,0 +1,49 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "placeholder": "benchmarkdbpass",
+      "_justification": "This is a fake password used in test code."
+    },
+    {
+      "placeholder": "Password1!",
+      "_justification": "This is a fake password used in test code."
+    },
+    {
+      "placeholder": "Benchmarkdbp@55",
+      "_justification": "This is a fake password used for local development."
+    },
+    {
+      "file": "src/Benchmarks/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/Downstream/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/Mvc/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/HttpClient/Proxy/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/Grpc/BasicGoServer/certs/server1.key",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/Grpc/GoClient/certs/server1.key",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/Grpc/GoServer/certs/server1.key",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    },
+    {
+      "file": "src/BenchmarksApps/Grpc/GrpcHttpApiServer/Server/Certs/testCert.pfx",
+      "_justification": "Legitimate development X.509 Certificate Private Key"
+    }
+  ]
+}
