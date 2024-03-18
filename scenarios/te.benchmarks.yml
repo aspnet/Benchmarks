@@ -75,8 +75,8 @@ jobs:
 
   actix_default: # json and plaintext scenarios
     source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
+      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
+      branchOrCommit: sebros/actix
       dockerFile: frameworks/Rust/actix/actix.dockerfile
       dockerImageName: actix_default
       dockerContextDirectory: frameworks/Rust/actix/
@@ -86,8 +86,8 @@ jobs:
 
   actix_http: # db scenarios are in another image
     source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
+      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
+      branchOrCommit: sebros/actix
       dockerFile: frameworks/Rust/actix/actix-http.dockerfile
       dockerImageName: actix_http
       dockerContextDirectory: frameworks/Rust/actix/
