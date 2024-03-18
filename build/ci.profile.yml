@@ -380,3 +380,25 @@ profiles:
         aliases:
           - warmup
           - secondary
+
+  siryn-win-app:
+    variables:
+      serverAddress: 10.0.0.111
+      cores: 128
+    agents: 
+      application:
+        endpoints: 
+          - http://asp-siryn-win:5001
+        aliases:
+          - main
+
+  siryn-win-load:
+    variables:
+      secondaryAddress: 10.0.0.111
+    agents: 
+      load:
+        endpoints: 
+          - http://asp-siryn-win:5001
+        aliases:
+          - warmup
+          - secondary
