@@ -159,7 +159,7 @@ jobs:
       dockerFile: frameworks/Java/spring/spring.dockerfile
       dockerImageName: spring
       dockerContextDirectory: frameworks/Java/spring/
-    readyStateText: Spring Boot
+    readyStateText: Application is ready
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
