@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/cbl-mariner/base/nodejs:18
+FROM mcr.microsoft.com/devcontainers/javascript-node:18
 
 # Copy the context folder to this image
 WORKDIR /src
