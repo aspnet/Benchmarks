@@ -135,8 +135,8 @@ jobs:
       
 # GROUP 5
 
-- job: Constant_Requests_Azure_Arm64_Linux
-  displayName: 5- Constant Requests Azure Arm64 Linux
+- job: Containers_Azure_Intel_Linux
+  displayName: 5- Containers Azure Intel Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
@@ -145,10 +145,10 @@ jobs:
   - template: containers-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Azure Queue
-      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
+      arguments: "$(ciProfile) --profile aspnet-azure-lin "
       
-- job: Constant_Requests_Azure_Linux
-  displayName: 5- Constant Requests Azure Linux
+- job: Containers_Azure_Arm64_Linux
+  displayName: 5- Containers Azure Arm64 Linux
   pool: server
   timeoutInMinutes: 120
   dependsOn: [Baselines_Azure_Linux, Baselines_Azure_Arm64_Linux]
@@ -157,6 +157,5 @@ jobs:
   - template: containers-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Azure Queue 2
-      arguments: "$(ciProfile) --profile aspnet-azure-lin "
+      arguments: "$(ciProfile) --profile aspnet-azurearm64-lin "
       
-

@@ -58,13 +58,13 @@ groups:
       - aspnet-azurearm64-lin
   
   - jobs:
-      - name: Constant Requests Azure Arm64 Linux
-        template: containers-scenarios.yml
-        profiles:
-        - aspnet-azurearm64-lin
-  
-      - name: Constant Requests Azure Linux
+      
+      - name: Containers Azure Intel Linux
         template: containers-scenarios.yml
         profiles:
         - aspnet-azure-lin
 
+      - name: Containers Azure Arm64 Linux
+        template: containers-scenarios.yml
+        profiles:
+        - aspnet-azurearm64-lin
