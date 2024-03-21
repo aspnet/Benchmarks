@@ -47,30 +47,6 @@ profiles:
           - warmup
           - secondary
 
-  azure-arm64-lin:
-    variables:
-      serverAddress: 10.0.0.4
-    jobs: 
-      db:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azurearm64db
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azurearm64server
-        variables:
-          databaseServer: localhost
-        aliases:
-          - main
-      load:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/azurearm64client
-        aliases:
-          - warmup
-          - secondary
-
   aspnet-citrine-lin:
     variables:
       serverAddress: 10.0.0.102
