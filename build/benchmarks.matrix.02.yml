@@ -12,19 +12,12 @@ groups:
 
   - jobs:
 
-    - name: Mono Database Intel Linux
-      template: mono-database-scenarios.yml
-      profiles:
-      - intel-lin-app 
-      - amd-lin-load
-      - intel-db-db
-
-    - name: Mono Database Arm 28 Linux
-      template: mono-database-scenarios.yml
+    - name: Frameworks Arm 28 Linux
+      template: frameworks-scenarios.yml
       profiles:
       - arm-lin-28-app 
-      - amd-lin2-load
-      - intel-load2-db
+      - intel-load2-load
+      - amd-lin2-db # required by nodejs and tfb-database argument
 
     - name: GC Intel Linux
       template: gc-scenarios.yml
@@ -33,47 +26,19 @@ groups:
 
   - jobs:
 
-    - name: Mono Arm 28 Linux
-      template: mono-scenarios.yml
-      timeout: 180
-      profiles:
-      - arm-lin-28-app
-      - intel-load2-load
-
-    - name: Mono Intel Linux
-      template: mono-scenarios.yml
-      timeout: 180
-      profiles:
-      - intel-lin-app 
-      - intel-load-load
-
-    - name: Native Aot Intel Linux
-      template: nativeaot-scenarios.yml
-      profiles:
-      - intel-db-app
-      - amd-lin-load
-      - amd-lin2-db
-
-  - jobs:
-
-    - name: PGO Arm 28 Linux
+    - name: PGO Intel Windows
       template: pgo-scenarios.yml
       profiles:
-      - arm-lin-28-app
-      - intel-load2-load
+      - intel-win-app
+      - amd-lin2-load
       - intel-db-db
 
-    - name: Grpc Intel Linux
-      template: grpc-scenarios.yml
+    - name: PGO Intel Linux
+      template: pgo-scenarios.yml
       profiles:
       - intel-lin-app
-      - intel-load-load
-
-    # - name: Trends Arm 80 Windows
-    #   template: trend-scenarios.yml
-    #   profiles:
-    #   - arm-win-app 
-    #   - amd-lin2-load
+      - amd-lin-load
+      - intel-load-db
 
   - jobs:
 
@@ -87,12 +52,13 @@ groups:
       template: signalr-scenarios.yml
       profiles:
       - intel-win-app
-      - intel-load-load
+      - intel-load2-load
 
     - name: Blazor Intel Linux
       template: blazor-scenarios.yml
       profiles:
       - intel-perflin-app
+      - intel-perfload-load
 
   - jobs: 
 
@@ -188,17 +154,11 @@ groups:
       - intel-load-load
       - intel-db-db
 
-    - name: Frameworks Arm 28 Linux
-      template: frameworks-scenarios.yml
+    - name: Grpc Intel Linux
+      template: grpc-scenarios.yml
       profiles:
-      - arm-lin-28-app 
-      - intel-load2-load
-      - amd-lin2-db # required by nodejs and tfb-database argument
-
-    - name: GC Intel Windows
-      template: gc-scenarios.yml
-      profiles:
-      - intel-win-app 
+      - intel-load2-app
+      - amd-lin-load
 
   - jobs:
 
@@ -230,6 +190,14 @@ groups:
 
     - name: HttpClient Intel Linux
       template: httpclient-scenarios.yml
+      profiles:
+      - intel-lin-app
+      - amd-lin2-load
+
+  - jobs:
+
+    - name: SslStream Intel Linux
+      template: sslstream-scenarios.yml
       profiles:
       - intel-lin-app
       - amd-lin2-load

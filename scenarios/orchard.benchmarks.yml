@@ -4,6 +4,7 @@
 
 variables:
   serverPort: 5000
+  serverScheme: http
 
 jobs:
 
@@ -13,7 +14,10 @@ jobs:
       branchOrCommit: main
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
-    framework: net7.0 
+    framework: net8.0
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    buildFiles: 
+      - https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config
     environmentVariables:
       OrchardCore__OrchardCore_AutoSetup__AutoSetupPath: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__ShellName: "Default"
@@ -23,7 +27,6 @@ jobs:
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminEmail: "info@orchardproject.net"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__AdminPassword: "Password1!"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
-      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass"
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseTablePrefix: ""
       OrchardCore__OrchardCore_AutoSetup__Tenants__0__RecipeName: "Blog"
@@ -61,7 +64,6 @@ scenarios:
       job: orchard
       environmentVariables:
         OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseProvider: "Postgres"
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         OrchardCore__OrchardCore_AutoSetup__Tenants__0__DatabaseConnectionString: "Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass"
     load:
       job: bombardier

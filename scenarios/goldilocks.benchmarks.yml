@@ -9,6 +9,7 @@ imports:
 
 variables:
     serverPort: 5000
+    serverScheme: http
 
 jobs:
   basicminimalapiaspnetbenchmarks:
@@ -17,9 +18,6 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/BasicMinimalApi/BasicMinimalApi.csproj
     readyStateText: Application started.
-    variables:
-      serverScheme: http
-      serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   todosapiaspnetbenchmarks:
     source:
@@ -27,9 +25,6 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/TodosApi/TodosApi.csproj
     readyStateText: Application started.
-    variables:
-      serverScheme: http
-      serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   basicgrpcaspnetbenchmarks:
     source:
@@ -37,9 +32,6 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/Grpc/BasicGrpc/BasicGrpc.csproj
     readyStateText: Application started.
-    variables:
-      serverScheme: http
-      serverPort: 5000
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
   basicgrpcgobenchmarks:
     source:
@@ -111,7 +103,6 @@ scenarios:
         - "/p:PublishAot=true"
         - "/p:StripSymbols=true"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -132,7 +123,6 @@ scenarios:
         - "/p:TrimMode=full"
         - "/p:EnableRequestDelegateGenerator=true"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk
@@ -149,7 +139,6 @@ scenarios:
         - "/p:PublishAot=false"
         - "/p:EnableRequestDelegateGenerator=false"
       environmentVariables:
-        # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
         APPSETTINGS__CONNECTIONSTRING: Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4
     load:
       job: wrk

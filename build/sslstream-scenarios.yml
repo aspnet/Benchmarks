@@ -1,0 +1,88 @@
+# SslStream scenarios
+
+parameters:
+  - name: arguments
+    type: string
+    default: ""
+  - name: connection
+    type: string
+    default: ""
+  - name: condition
+    type: string
+    default: "true"
+
+  - name: readWriteScenarios
+    type: object
+    default:
+      - displayName: "read-write"
+        arguments: --scenario read-write --property scenario=Read-Write --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/sslstream.benchmarks.yml?raw=true
+
+  - name: handshakeScenarios
+    type: object
+    default:
+      - displayName: "handshake"
+        arguments: --scenario handshake true --property scenario=Handshake --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/sslstream.benchmarks.yml?raw=true
+
+  - name: tlsResume
+    type: object
+    default:
+      - displayName: "TLS Resume"
+        arguments: --variable allowTlsResume=true --property tlsResume=resume
+      - displayName: "No TLS Resume"
+        arguments: --variable allowTlsResume=false --property tlsResume=no-resume
+
+  - name: tlsVersion
+    type: object
+    default:
+      - displayName: "TLS 1.3"
+        arguments: --variable tlsVersion=1.3 --property tlsVersion=1.3
+      - displayName: "TLS 1.2"
+        arguments: --variable tlsVersion=1.2 --property tlsVersion=1.2
+
+  - name: concurrency
+    type: object
+    default:
+      - displayName: "1 connection"
+        arguments: --variable concurrency=1 --property concurrency=1
+      - displayName: "16 connections"
+        arguments: --variable concurrency=16 --property concurrency=16
+
+steps:
+  # handshake scenarios
+  - ${{ each s in parameters.handshakeScenarios }}:
+      - ${{ each version in parameters.tlsVersion }}:
+          - ${{ each c in parameters.concurrency }}:
+              - ${{ each res in parameters.tlsResume }}:
+                  - task: PublishToAzureServiceBus@1
+                    condition: succeededOrFailed()
+                    timeoutInMinutes: 10
+                    displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }}
+                    inputs:
+                      connectedServiceName: ${{ parameters.connection }}
+                      waitForCompletion: true
+                      useDataContractSerializer: "false"
+                      messageBody: |
+                        {
+                          "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
+                          "name": "crank",
+                          "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
+                        }
+
+  # read-write scenarios
+  - ${{ each s in parameters.readWriteScenarios }}:
+      - ${{ each version in parameters.tlsVersion }}:
+          - ${{ each c in parameters.concurrency }}:
+              - task: PublishToAzureServiceBus@1
+                condition: succeededOrFailed()
+                timeoutInMinutes: 10
+                displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }}
+                inputs:
+                  connectedServiceName: ${{ parameters.connection }}
+                  waitForCompletion: true
+                  useDataContractSerializer: "false"
+                  messageBody: |
+                    {
+                      "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
+                      "name": "crank",
+                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ c.arguments }}" ]
+                    }

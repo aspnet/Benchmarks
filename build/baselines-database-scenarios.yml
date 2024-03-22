@@ -17,13 +17,13 @@ parameters:
   default: 
   
   - displayName: "7.0"
-    arguments: --application.channel current --application.framework net7.0 --property framework=net7.0
+    arguments: --application.framework net7.0 --property framework=net7.0
 
   - displayName: "8.0"
-    arguments: --application.channel edge --application.framework net8.0 --property framework=net8.0
+    arguments: --application.framework net8.0 --property framework=net8.0
 
   - displayName: "9.0"
-    arguments: --application.channel edge --application.framework net9.0 --property framework=net9.0
+    arguments: --application.framework net9.0 --property framework=net9.0
 
 # Scenarios
 - name: scenarios 
@@ -85,5 +85,5 @@ steps:
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
             "retries": 1,
-            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --load.options.reuseBuild true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
           }

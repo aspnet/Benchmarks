@@ -7,3 +7,6 @@ jobs:
       project: src/BenchmarksApps/Websocket/BenchmarkServer.csproj
     readyStateText: Application started
     waitForExit: false
+    variables:
+      serverScheme: http
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"

@@ -1,6 +1,12 @@
 imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+  - https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/Lighthouse/lighthouse.yml?raw=true
+  - https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/RunTemplate/runtemplate.yml?raw=true
+
+variables:
+  serverPort: 5000
+  serverScheme: http
 
 jobs:
   server:
@@ -8,14 +14,65 @@ jobs:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
       project: src/BenchmarksApps/BlazorBlazingPizza/BlazingPizza.Server.csproj
+      arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
   ssr:
     application:
       job: server
-      framework: net8.0
+      framework: net9.0
     load:
       job: bombardier
       variables:
         serverPort: 5000
         path: /
+
+  blazorWebInteractiveServer:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: >
+          --template-args "blazor -int Server"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
+    load:
+      job: lighthouse
+      variables:
+        script: blazor-scenario.js
+        scriptArgs: --target-base-url {{serverScheme}}://{{serverAddress}}:{{serverPort}}
+
+  blazorWebInteractiveWebAssembly:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: >
+          --template-args "blazor -int WebAssembly"
+          --project-name "BlazorApp"
+          --main-project-relative-path "./BlazorApp"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
+    load:
+      job: lighthouse
+      variables:
+        script: blazor-scenario.js
+        scriptArgs: >
+          --target-base-url {{serverScheme}}://{{serverAddress}}:{{serverPort}}
+          --enforce-wasm-caching
+
+  blazorWebInteractiveAuto:
+    application:
+      job: runTemplate
+      variables:
+        runTemplateArgs: >
+          --template-args "blazor -int Auto"
+          --project-name "BlazorApp"
+          --main-project-relative-path "./BlazorApp"
+          --run-args "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+        templateReadyStateText: "Application started"
+    load:
+      job: lighthouse
+      variables:
+        script: blazor-scenario.js
+        scriptArgs: >
+          --target-base-url {{serverScheme}}://{{serverAddress}}:{{serverPort}}
+          --enforce-wasm-caching

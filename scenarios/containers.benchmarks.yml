@@ -19,7 +19,6 @@ jobs:
     readyStateText: Application started.
     environmentVariables:
       database: "PostgreSQL"
-      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Development password, not confidential")]
       connectionString: '"Server={{databaseServer}};Database=hello_world;User Id=benchmarkdbuser;Password=benchmarkdbpass;Maximum Pool Size=256;NoResetOnClose=true;Enlist=false;Max Auto Prepare=4"'
     noClean: true
 
@@ -110,11 +109,11 @@ scenarios:
         path: /fortunes/raw
         serverPort: 8080
 
-  json_aspnet_net6:
+  json_aspnet_current:
     application:
       job: aspnet
       source:
-        dockerFile: docker/container-matrix/Middleware-net6.dockerfile
+        dockerFile: docker/container-matrix/Middleware-current.dockerfile
       variables:
         scenario: json
     load:
@@ -124,43 +123,13 @@ scenarios:
         path: /json
         serverPort: 8080
 
-  fortunes_aspnet_net6:
+  fortunes_aspnet_current:
     db:
       job: postgresql
     application:
       job: aspnet
       source:
-        dockerFile: docker/container-matrix/Middleware-net6.dockerfile
-      variables:
-        scenario: dbfortunesraw
-    load:
-      job: wrk
-      variables:
-        presetHeaders: html
-        path: /fortunes/raw
-        serverPort: 8080
-
-  json_aspnet_net7:
-    application:
-      job: aspnet
-      source:
-        dockerFile: docker/container-matrix/Middleware-net7.dockerfile
-      variables:
-        scenario: json
-    load:
-      job: wrk
-      variables:
-        presetHeaders: json
-        path: /json
-        serverPort: 8080
-
-  fortunes_aspnet_net7:
-    db:
-      job: postgresql
-    application:
-      job: aspnet
-      source:
-        dockerFile: docker/container-matrix/Middleware-net7.dockerfile
+        dockerFile: docker/container-matrix/Middleware-current.dockerfile
       variables:
         scenario: dbfortunesraw
     load:

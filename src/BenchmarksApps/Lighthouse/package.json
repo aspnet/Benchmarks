@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "name": "lighthousebenchmarks",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "lighthouse": "^11.6.0",
+    "open": "^10.0.4",
+    "puppeteer": "^22.3.0"
+  }
+}

@@ -1,11 +1,4 @@
-pool: ASP.NET-Performance-Controller-new
-
-variables:
-  - group: 'ASP.NET Benchmarks'
-
-# All the jobs are triggered at the same time
-# Jobs are run in parallel
-# Steps are serial
+trigger: none
 
 schedules:
 - cron: "0 7,19 * * *"
@@ -15,39 +8,78 @@ schedules:
     - main
   always: "true"
 
-jobs:
-- job: RegressionBot
-  timeoutInMinutes: 10
-  steps:
-  - powershell: |
-        git clone https://github.com/dotnet/crank
-        cd ./crank/
-        git checkout main
-        git pull
-        cd src/Microsoft.Crank.RegressionBot
-        dotnet build -c release
-        
-        dotnet run --no-restore --no-build -c release -- `
-            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.config.yml `
-            --connectionstring BENCHMARKSBOT_ConnectionString `
-            --repository-id $(github.repositoryId) `
-            --app-id $(github.appid) `
-            --install-id $(github.installid) `
-            --username $(github.username) `
-            --app-key BENCHMARKSBOT_GitHubAppKey `
-            --verbose
-        
-        dotnet run --no-restore --no-build -c release -- `
-            --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/build/regressions.blazor.config.yml `
-            --connectionstring BENCHMARKSBOT_ConnectionString `
-            --repository-id $(github.repositoryId) `
-            --app-id $(github.appid) `
-            --install-id $(github.installid) `
-            --username $(github.username) `
-            --app-key BENCHMARKSBOT_GitHubAppKey `
-            --verbose
+variables:
+  - group: 'ASP.NET Benchmarks'
 
+# The `resources` specify the location and version of the 1ES PT.
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+  - repository: dotnet-crank
+    type: git
+    name: internal/dotnet-crank
+    ref: refs/heads/main
 
-    env:
-        BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
-        BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)
+extends:
+  # The pipeline extends the 1ES PT which will inject different SDL and compliance tasks.
+  # For non-production pipelines, use "Unofficial" as defined below.
+  # For productions pipelines, use "Official".  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: ASP.NET-Performance-Controller-new
+      image: MMSWindows2022-Secure
+      os: windows
+    sdl:
+      sourceRepositoriesToScan:
+          exclude:
+          # exclude dotnet-crank from this SDL since it already has it's own Official pipeline
+          - repository: dotnet-crank
+      sbom:
+       # opting-out of SBOM generation as we don't produce artifacts
+        enabled: false
+
+    stages:
+    - stage: Stage
+      jobs:
+      - job: RegressionBot
+        timeoutInMinutes: 30
+        
+        steps:
+        - checkout: dotnet-crank
+          path: crank
+          fetchDepth: 1
+          displayName: Checkout dotnet-crank
+        - powershell: dotnet build --framework net8.0 -c release $(Pipeline.Workspace)/crank/src/Microsoft.Crank.RegressionBot/
+          displayName: Build regression bot
+        - checkout: self
+          fetchDepth: 1
+          path: benchmarks
+          displayName: Checkout aspnet-benchmarks
+        - powershell: |
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+                  --config $(Pipeline.Workspace)/benchmarks/build/regressions.config.yml `
+                  --connectionstring BENCHMARKSBOT_ConnectionString `
+                  --repository-id $(github.repositoryId) `
+                  --app-id $(github.appid) `
+                  --install-id $(github.installid) `
+                  --username $(github.username) `
+                  --app-key BENCHMARKSBOT_GitHubAppKey `
+                  --verbose
+              
+              dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.RegressionBot/release/net8.0/Microsoft.Crank.RegressionBot.dll `
+                  --config $(Pipeline.Workspace)/benchmarks/build/regressions.blazor.config.yml `
+                  --connectionstring BENCHMARKSBOT_ConnectionString `
+                  --repository-id $(github.repositoryId) `
+                  --app-id $(github.appid) `
+                  --install-id $(github.installid) `
+                  --username $(github.username) `
+                  --app-key BENCHMARKSBOT_GitHubAppKey `
+                  --verbose
+          displayName: Run regression bot
+          env:
+            BENCHMARKSBOT_ConnectionString: $(sql.connectionstring)
+            BENCHMARKSBOT_GitHubAppKey: $(github.privatekey)

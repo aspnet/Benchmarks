@@ -55,6 +55,15 @@ parameters:
   - displayName: Drogon Fortunes
     arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
 
+  # Spring (Java)
+  
+  - displayName: Spring Plaintext
+    arguments: --scenario plaintext_spring $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+  - displayName: Spring Json
+    arguments: --scenario json_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+  - displayName: Spring Fortunes
+    arguments: --scenario fortunes_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+
   # FastHttp (Go)
 
   - displayName: Go Fortunes
@@ -68,6 +77,7 @@ steps:
   - task: PublishToAzureServiceBus@1
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
+    timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
@@ -77,5 +87,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
         }

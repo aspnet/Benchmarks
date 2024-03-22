@@ -30,7 +30,7 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 | Profile        | Arch         | OS           | Proc |
 | :------------- | :----------: | :----------- | :----------- |
 |  `local` | (local machine) | (local machine) | (local machine) |
-|  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
+|  `aspnet-perf-lin` | INTEL, 12 logical cores, 1 socket, 32GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-perf-win` | INTEL, 12 logical cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) E-2336 CPU @ 2.90GHz |
 |  `aspnet-citrine-lin` | INTEL, logical 28 cores, 1 socket, 32GB | Ubuntu 20.04, Kernel 5.4.0 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
 |  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
@@ -226,10 +226,12 @@ These scenarios measure the performance of different other frameworks
 - NodeJs (JavaScript)
 - Bun (TypeScript)
 - Actix (Rust)
+- Xitca (Rust)
 - FastHttp (Go)
 - Netty (Java)
 - Drogon (C++)
 - Wizzardo (Java)
+- Spring (Java)
 - Gin (Go)
 - Express (JavaScript)
 
@@ -244,10 +246,12 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
 - `plaintext_bun`, `json_bun`
 - `plaintext_actix`, `json_actix`, `fortunes_actix`
+- `plaintext_xitca`, `json_xitca`, `fortunes_xitca`
 - `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
 - `plaintext_netty`, `json_netty`
 - `plaintext_drogon`, `json_drogon`, `fortunes_drogon`
 - `plaintext_wizzardo`, `json_wizzardo`, `single_query_wizzardo`, `multiple_queries_wizzardo`, `updates_wizzardo`, `cached_queries_wizzardo`
+- `plaintext_spring`, `json_spring`, `single_query_spring`, `multiple_queries_spring`, `updates_spring`
 - `plaintext_gin`, `json_gin`, `fortunes_gin`
 - `plaintext_express`, `json_express`, `fortunes_express`
 
@@ -533,7 +537,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net8.0 
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net9.0 
 ```
 ### Available scenarios
 
@@ -577,10 +581,10 @@ By default the pre-configured scenarios are using the latest official release of
 
 Example:
 
-Using the daily builds of .NET by targeting net8.0 for the `application` service.
+Using the daily builds of .NET by targeting net9.0 for the `application` service.
 
 ```
---application.framework net8.0
+--application.framework net9.0
 ```
 
 ### How to benchmark a custom fork and/or branch?
@@ -616,8 +620,8 @@ This argument can be repeated in case there are multiple sources.
 ### Running with specific runtime versions to isolate regressions
 
 The list of public builds for ASP.NET and Core CLR are available on these feeds:
-- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
-- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
+- ASP.NET: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/flat2/Microsoft.AspNetCore.App.Runtime.linux-x64/index.json
+- Core CLR: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/flat2/Microsoft.NetCore.App.Runtime.linux-x64/index.json
 
 Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.y.z` to isolate which build, and ultimately which commit introduced a regression.
 
@@ -626,3 +630,14 @@ Use `--application.runtimeVersion x.y.z` and `--application.aspnetCoreVersion x.
 Most pages in the Power BI dashboard list the crank command lines that were used. Select a benchmark and an environment to filter the table:
 
 ![image](https://user-images.githubusercontent.com/1165805/168184269-70732746-8490-4e6e-abe8-cf161ea421d6.png)
+
+### Collecting crash dumps
+
+.NET can collect crash dumps automatically using specific https://learn.microsoft.com/en-us/dotnet/core/diagnostics/collect-dumps-crash
+
+Here is how to do it with crank and download the crash dump automatically.
+```console
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/plaintext.benchmarks.yml --scenario plaintext --profile aspnet-perf-lin --application.environmentVariables DOTNET_DbgEnableMiniDump=1 --application.environmentVariables DOTNET_DbgMiniDumpType=4 --application.environmentVariables DOTNET_DbgMiniDumpName=mydump --application.environmentVariables DOTNET_CreateDumpVerboseDiagnostics=1 --application.options.downloadfiles mydump
+```
+
+Note that these ENVs could be set for all runs and crank will run just fine if it can't download the file because no crash happened.

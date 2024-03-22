@@ -5,6 +5,11 @@ variables:
   localendpoint: http://localhost:5010
   
 profiles:
+  noload:
+    variables:
+      warmup: 0
+      duration: 0
+
   short:
     variables:
       warmup: 3
@@ -142,31 +147,6 @@ profiles:
           - warmup
           - secondary
           
-  aspnet-citrine-arm:
-    variables:
-      serverAddress: 10.0.0.107
-      cores: 32
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-citrine-db:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints: 
-          - http://asp-citrine-arm:5001
-        variables:
-          databaseServer: 10.0.0.103
-        aliases:
-          - main
-      load:
-        endpoints: 
-          - http://asp-citrine-load:5001
-        aliases:
-          - warmup
-          - secondary
-
   aspnet-citrine-arm-relay:
     variables:
       serverAddress: 10.0.0.107
@@ -407,7 +387,7 @@ profiles:
         endpoints: 
           - http://asp-perf-lin:5001
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
@@ -432,7 +412,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perflin
         variables:
-          databaseServer: 10.0.0.103
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
@@ -457,7 +437,7 @@ profiles:
         endpoints: 
           - http://asp-perf-win:5001
         variables:
-          databaseServer: 10.0.0.104
+          databaseServer: 10.0.0.105
         aliases:
           - main
       load:
@@ -482,7 +462,7 @@ profiles:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/perfwin
         variables:
-          databaseServer: 10.0.0.104
+          databaseServer: 10.0.0.106
         aliases:
           - main
       load:
@@ -588,6 +568,56 @@ profiles:
       load:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/goldload2
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-siryn-arm-win:
+    variables:
+      serverAddress: 10.0.0.111
+      cores: 128
+    jobs: 
+      db:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - http://asp-siryn-win:5001
+        variables:
+          databaseServer: 10.0.0.106
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+        aliases:
+          - warmup
+          - secondary
+
+  aspnet-siryn-arm-win-relay:
+    variables:
+      serverAddress: 10.0.0.111
+      cores: 128
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
+        aliases:
+          - downstream
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/sirynwin
+        variables:
+          databaseServer: 10.0.0.106
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd2
         aliases:
           - warmup
           - secondary

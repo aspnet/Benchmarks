@@ -18,6 +18,8 @@ syntax = "proto3";
 
 import "grpc/testing/messages.proto";
 
+option go_package = "./grpc_testing";
+
 package grpc.testing;
 
 service BenchmarkService {

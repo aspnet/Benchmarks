@@ -7,6 +7,11 @@ profiles:
       warmup: 3
       duration: 7
 
+  noload:
+    variables:
+      warmup: 0
+      duration: 0
+
   pgo:
     jobs:
       application:
@@ -155,62 +160,6 @@ profiles:
           - db
           - downstream
           
-  aspnet-citrine-arm:
-    variables:
-      mainAddress: 10.0.0.107
-      secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.103
-      serverAddress: 10.0.0.107
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
-      cores: 32
-    agents:
-      main:
-        endpoints: 
-          - http://asp-citrine-arm:5001
-        aliases:
-          - application
-      secondary:
-        endpoints: 
-          - http://asp-citrine-load:5001
-        aliases:
-          - load
-          - warmup
-      extra:
-        endpoints: 
-          - http://asp-citrine-db:5001
-        aliases:
-          - db
-          - downstream
-
-  aspnet-citrine-arm-relay:
-    variables:
-      mainAddress: 10.0.0.107
-      secondaryAddress: 10.0.0.105
-      extraAddress: 10.0.0.103
-      serverAddress: 10.0.0.107
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
-      cores: 32
-    agents:
-      main:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinearm
-        aliases:
-          - application
-      secondary:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrineload
-        aliases:
-          - load
-          - warmup
-      extra:
-        endpoints: 
-          - https://aspnetperf.servicebus.windows.net/citrinedb
-        aliases:
-          - db
-          - downstream
-
   aspnet-citrine-arm-lin:
     variables:
       mainAddress: 10.0.0.108
@@ -410,11 +359,11 @@ profiles:
   aspnet-perf-lin:
     variables:
       mainAddress: 10.0.0.102
-      secondaryAddress: 10.0.0.104
-      extraAddress: 10.0.0.103
+      secondaryAddress: 10.0.0.105
+      extraAddress: 10.0.0.106
       serverAddress: 10.0.0.102
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
       cores: 12
     agents:
       main:
@@ -438,11 +387,11 @@ profiles:
   aspnet-perf-lin-relay:
     variables:
       mainAddress: 10.0.0.102
-      secondaryAddress: 10.0.0.104
-      extraAddress: 10.0.0.103
+      secondaryAddress: 10.0.0.105
+      extraAddress: 10.0.0.106
       serverAddress: 10.0.0.102
-      databaseServer: 10.0.0.103
-      downstreamAddress: 10.0.0.103
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
       cores: 12
     agents:
       main:
@@ -466,11 +415,11 @@ profiles:
   aspnet-perf-win:
     variables:
       mainAddress: 10.0.0.110
-      secondaryAddress: 10.0.0.103
-      extraAddress: 10.0.0.104
+      secondaryAddress: 10.0.0.106
+      extraAddress: 10.0.0.105
       serverAddress: 10.0.0.110
-      databaseServer: 10.0.0.104
-      downstreamAddress: 10.0.0.104
+      databaseServer: 10.0.0.105
+      downstreamAddress: 10.0.0.105
       cores: 12
     agents:
       main:
@@ -494,11 +443,11 @@ profiles:
   aspnet-perf-win-relay:
     variables:
       mainAddress: 10.0.0.110
-      secondaryAddress: 10.0.0.103
-      extraAddress: 10.0.0.104
+      secondaryAddress: 10.0.0.105
+      extraAddress: 10.0.0.106
       serverAddress: 10.0.0.110
-      databaseServer: 10.0.0.104
-      downstreamAddress: 10.0.0.104
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
       cores: 12
     agents:
       main:
@@ -603,12 +552,12 @@ profiles:
           - db
           - downstream
 
-  aspnet-perf-win-relay:
+  aspnet-gold-win-relay:
     variables:
       mainAddress: 10.0.0.122
       secondaryAddress: 10.0.0.124
       extraAddress: 10.0.0.125
-      serverAddress: 10.0.0.201
+      serverAddress: 10.0.0.122
       databaseServer: 10.0.0.125
       downstreamAddress: 10.0.0.125
       cores: 56
@@ -627,6 +576,62 @@ profiles:
       extra:
         endpoints: 
           - https://aspnetperf.servicebus.windows.net/golddb
+        aliases:
+          - db
+          - downstream
+
+  aspnet-siryn-arm-win:
+    variables:
+      mainAddress: 10.0.0.111
+      secondaryAddress: 10.0.0.109
+      extraAddress: 10.0.0.106
+      serverAddress: 10.0.0.111
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
+      cores: 128
+    agents:
+      main:
+        endpoints: 
+          - http://asp-siryn-win:5001
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - http://asp-citrine-amd2:5001
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - http://asp-citrine-amd:5001
+        aliases:
+          - db
+          - downstream
+
+  aspnet-siryn-arm-win-relay:
+    variables:
+      mainAddress: 10.0.0.111
+      secondaryAddress: 10.0.0.109
+      extraAddress: 10.0.0.106
+      serverAddress: 10.0.0.111
+      databaseServer: 10.0.0.106
+      downstreamAddress: 10.0.0.106
+      cores: 128
+    agents:
+      main:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/sirynwin
+        aliases:
+          - application
+      secondary:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd2
+        aliases:
+          - load
+          - warmup
+      extra:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/citrineamd
         aliases:
           - db
           - downstream

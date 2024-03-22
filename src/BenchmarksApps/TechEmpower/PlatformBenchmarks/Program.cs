@@ -87,12 +87,15 @@ namespace PlatformBenchmarks
                 .UseBenchmarksConfiguration(config)
                 .UseKestrel((context, options) =>
                 {
-                    var endPoint = context.Configuration.CreateIPEndPoint();
+                    var endPoints = context.Configuration.CreateIPEndPoints();
 
-                    options.Listen(endPoint, builder =>
+                    foreach (var endPoint in endPoints)
                     {
-                        builder.UseHttpApplication<BenchmarkApplication>();
-                    });
+                        options.Listen(endPoint, builder =>
+                        {
+                            builder.UseHttpApplication<BenchmarkApplication>();
+                        });
+                    }
                 })
                 .UseStartup<Startup>();
 

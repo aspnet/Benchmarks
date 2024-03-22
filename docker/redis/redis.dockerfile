@@ -1,4 +1,4 @@
-FROM redis:6
+FROM mcr.microsoft.com/cbl-mariner/base/redis:6
 
 COPY redis.conf /etc/redis.conf
 

@@ -51,6 +51,16 @@ parameters:
   - displayName: Updates Minimal APIs
     arguments: --scenario updates $(minimalJobs) --property scenario=UpdatesMinimalApis --property protocol=http --variable duration=30
 
+# Blazor
+
+  - displayName: Fortunes Blazor SSR
+    arguments: --scenario fortunes $(blazorSsrJobs) --property scenario=FortunesBlazorSsr --property protocol=http
+
+# Razor Pages
+
+  - displayName: Fortunes Razor Pages
+    arguments: --scenario fortunes $(razorPagesJobs) --property scenario=FortunesRazorPages --property protocol=http
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
@@ -66,5 +76,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net8.0 ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} $(azureProfile) --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/steadystate.profile.yml --application.framework net9.0 ${{ parameters.arguments }} --application.options.collectCounters true --application.collectDependencies true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
         }

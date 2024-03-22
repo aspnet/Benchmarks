@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -35,29 +36,35 @@ namespace PlatformBenchmarks
             return builder;
         }
 
-        public static IPEndPoint CreateIPEndPoint(this IConfiguration config)
+        public static IEnumerable<IPEndPoint> CreateIPEndPoints(this IConfiguration config)
         {
             var url = config["server.urls"] ?? config["urls"];
 
             if (string.IsNullOrEmpty(url))
             {
-                return new IPEndPoint(IPAddress.Loopback, 8080);
+                yield return new IPEndPoint(IPAddress.Loopback, 8080);
+                yield break;
             }
 
-            var address = BindingAddress.Parse(url);
+            var urls = url.Split(";");
 
-            IPAddress ip;
-
-            if (string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            foreach (var u in urls)
             {
-                ip = IPAddress.Loopback;
-            }
-            else if (!IPAddress.TryParse(address.Host, out ip))
-            {
-                ip = IPAddress.IPv6Any;
-            }
+                var address = BindingAddress.Parse(u);
 
-            return new IPEndPoint(ip, address.Port);
+                IPAddress ip;
+
+                if (string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    ip = IPAddress.Loopback;
+                }
+                else if (!IPAddress.TryParse(address.Host, out ip))
+                {
+                    ip = IPAddress.IPv6Any;
+                }
+
+                yield return new IPEndPoint(ip, address.Port);
+            }
         }
     }
 }

@@ -1,0 +1,13 @@
+jobs:
+  lighthouse:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      dockerImageName: lighthouse
+      dockerContextDirectory: src/BenchmarksApps/Lighthouse/
+      dockerFile: src/BenchmarksApps/Lighthouse/Dockerfile
+    environmentVariables:
+      SCENARIO_SCRIPT: "{{script}}"
+      SCENARIO_SCRIPT_ARGS: "\"{{scriptArgs}}\""
+    readyStateText: Starting...
+    waitForExit: true

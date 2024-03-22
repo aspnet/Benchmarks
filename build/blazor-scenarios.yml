@@ -9,22 +9,35 @@ parameters:
   default: ''
 - name: condition
   type: string
-  default: 'true'
+  default: 'true' # Check https://github.com/dotnet/aspnetcore/issues/49713
 
 # Scenarios
 - name: scenarios 
   type: object
-  default: []
+  default:
+  
+  - displayName: Blazor Wasm
+    arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
 
-  # Restore when asp-perf-lin works again 
-  # - displayName: Blazor Wasm
-  #   arguments: --scenario blazorwasmbenchmark $(blazorWasmJobs) --application.options.requiredOperatingSystem Linux
+- name: lighthouseScenarios
+  type: object
+  default:
+  
+  - displayName: Blazor Web (Server)
+    arguments: --scenario blazorWebInteractiveServer $(blazorJobs) --property interactivity=Server --property template=Blazor
+
+  - displayName: Blazor Web (WebAssembly)
+    arguments: --scenario blazorWebInteractiveWebAssembly $(blazorJobs) --property interactivity=WebAssembly --property template=Blazor
+
+  - displayName: Blazor Web (Auto)
+    arguments: --scenario blazorWebInteractiveAuto $(blazorJobs) --property interactivity=Auto --property template=Blazor
 
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@1
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
+    timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
@@ -33,5 +46,21 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net9.0 --command-line-property --table BlazorWasm --sql SQL_CONNECTION_STRING --chart" ]
+        }
+
+- ${{ each s in parameters.lighthouseScenarios }}:
+  - task: PublishToAzureServiceBus@1
+    condition: succeededOrFailed()
+    displayName: ${{ s.displayName }}
+    timeoutInMinutes: 10
+    inputs:
+      connectedServiceName: ${{ parameters.connection }}
+      waitForCompletion: true
+      useDataContractSerializer: "false"
+      messageBody: |
+        {
+          "name": "crank",
+          "condition": "(${{ parameters.condition }})",
+          "args": [ "${{ parameters.arguments }} --session $(session) ${{ s.arguments }} --application.framework net9.0 --command-line-property --table Lighthouse --sql SQL_CONNECTION_STRING --chart" ]
         }

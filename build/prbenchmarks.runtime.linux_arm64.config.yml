@@ -11,12 +11,13 @@ components:
             ./build.sh libs -c Release -runtimeconfiguration Release -arch arm64
             ./src/tests/build.sh Release arm64 generatelayoutonly /p:LibrariesConfiguration=Release
             rm -rf ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/*.pdb
+            rm -rf ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/CommandLine.dll
 
         arguments:
             --{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.arm64.Release/tests/Core_Root/
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --{{job}}.framework net8.0 --relay AZURE_RELAY 
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --{{job}}.framework net9.0 --relay AZURE_RELAY 
 
 variables:
     job: application
@@ -28,8 +29,8 @@ profiles:
         arguments: --profile aspnet-citrine-arm-lin-relay
 
 benchmarks:
-    microbenchmarks:
-      description: '.NET Performance micro benchmarks (default filter: "*LinqBenchmarks*", change by adding "--variable filter=...")'
+    micro:
+      description: '.NET Performance micro benchmarks (set filter by adding `--variable filter=...`; by default `filter=*LinqBenchmarks*`)'
       arguments: --config https://raw.githubusercontent.com/aspnet/benchmarks/main/scenarios/dotnet.benchmarks.yml --scenario custom
 
     plaintext:

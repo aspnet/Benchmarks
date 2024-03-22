@@ -14,4 +14,4 @@ The scenarios that are available to use with Crank and some sample command lines
 
 # Contributing
 
-Microsoft employees can approve and merge contributions by joining [this team](https://repos.opensource.microsoft.com/orgs/dotnet/teams/aspnet-team)
+Microsoft employees can approve and merge contributions by joining [this team](https://repos.opensource.microsoft.com/orgs/aspnet/teams/aspnet-push)

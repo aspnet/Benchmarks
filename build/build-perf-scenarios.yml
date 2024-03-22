@@ -13,13 +13,12 @@ parameters:
   type: object
   default:
 
-# https://github.com/dotnet/aspnetcore/issues/49760
-#  - displayName: "Build - BlazorWasm"
-#    arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
-#  - displayName: "Build - BlazorWasm (Hosted)"
-#    arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
-#  - displayName: "Build - BlazorServer"
-#    arguments: --scenario blazorserver $(buildJobs) --property scenario=BlazorServer
+  - displayName: "Build - BlazorWasm"
+    arguments: --scenario blazorwasm $(buildJobs) --property scenario=BlazorWasm 
+  - displayName: "Build - BlazorWasm (Hosted)"
+    arguments: --scenario blazorwasm-hosted $(buildJobs) --property scenario=BlazorWasmHosted
+  - displayName: "Build - BlazorServer"
+    arguments: --scenario blazorserver $(buildJobs) --property scenario=BlazorServer
   - displayName: "Build - MVC"
     arguments: --scenario mvc $(buildJobs) --property scenario=MVC
   - displayName: "Build - API"
@@ -30,6 +29,7 @@ steps:
   - task: PublishToAzureServiceBus@1
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
+    timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
       waitForCompletion: true
@@ -38,5 +38,5 @@ steps:
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "${{ parameters.arguments }} --application.framework net8.0 ${{ s.arguments }} --command-line-property --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
+          "args": [ "${{ parameters.arguments }} --application.framework net9.0 ${{ s.arguments }} --command-line-property --table BuildPerf --sql SQL_CONNECTION_STRING --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" " ]
         }

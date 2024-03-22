@@ -1,0 +1,8 @@
+jobs:
+  runTemplate:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/RunTemplate/RunTemplate.csproj
+    arguments: "{{runTemplateArgs}}"
+    readyStateText: "{{templateReadyStateText}}"

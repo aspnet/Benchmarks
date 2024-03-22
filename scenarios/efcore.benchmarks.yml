@@ -12,7 +12,7 @@ jobs:
       jobType: short
     arguments: --job {{jobType}} --filter {{filter}} --memory
     # force .NET version as the project currently uses a variable
-    framework: net8.0
+    framework: net9.0
     options:
       benchmarkDotNet: true
 
