@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Sockets;
-using System.CommandLine;
+﻿using System.Net.Sockets;
 using System.Net;
 
 namespace SocketBenchmarks.Servers.Basic;
