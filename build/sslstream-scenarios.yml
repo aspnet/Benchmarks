@@ -21,7 +21,7 @@ parameters:
     type: object
     default:
       - displayName: "handshake"
-        arguments: --scenario handshake true --property scenario=Handshake --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/sslstream.benchmarks.yml?raw=true
+        arguments: --scenario handshake --property scenario=Handshake --config https://github.com/aspnet/Benchmarks/blob/main/scenarios/sslstream.benchmarks.yml?raw=true
 
   - name: tlsResume
     type: object
