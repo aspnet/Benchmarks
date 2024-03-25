@@ -1,0 +1,96 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+# crank --config C:\Users\knatalia\dev\git\Benchmarks\scenarios\quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  # common parameters
+  serverPort: 5000
+  sendBufferSize: 32768 # bytes
+  receiveBufferSize: 32768 # bytes
+  serverCertSelection: "CertContext" # <Callback|Certificate|CertContext>
+  clientCertSelection: "CertContext" # <Callback|Collection|CertContext>
+  allowTlsResume: true
+
+  # client-specific parameters
+  connections: 1 #number of parallel connections
+  streams: 1 #number of parallel streams per connection
+  warmup: 15 #seconds
+  duration: 15 #seconds
+
+  # server-specific parameters
+  # requireClientCert: false
+
+scenarios:
+  read-write:
+    server:
+      job: quicServer
+      agent: secondary
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+
+  client-read:
+    server:
+      job: quicServer
+      agent: secondary
+      variables:
+        receiveBufferSize: 0
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        sendBufferSize: 0
+
+  client-write:
+    server:
+      job: quicServer
+      agent: secondary
+      variables:
+        sendBufferSize: 0
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        receiveBufferSize: 0
+
+  handshake:
+    server:
+      job: quicServer
+      agent: secondary
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: Handshake
+        host: "{{secondaryAddress}}"
+
+jobs:
+  quicServer:
+    source:
+      #repository: https://github.com/aspnet/benchmarks.git
+      #branchOrCommit: main
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      project: src/BenchmarksApps/Quic/Server/QuicServer.csproj
+    readyStateText: Listening on # app should write this line to output
+    arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{serverCertSelection}}"
+
+  quicClient:
+    source:
+      #repository: https://github.com/aspnet/benchmarks.git
+      #branchOrCommit: main
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks
+      project: src/BenchmarksApps/Quic/Client/QuicClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 300 #seconds
+    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --connections {{connections}} --streams {{streams}} --warmup {{warmup}} --duration {{duration}}"
