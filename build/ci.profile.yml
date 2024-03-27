@@ -381,24 +381,24 @@ profiles:
           - warmup
           - secondary
 
-  siryn-win-app:
+  siryn-lin-app:
     variables:
       serverAddress: 10.0.0.111
       cores: 128
     agents: 
       application:
         endpoints: 
-          - http://asp-siryn-win:5001
+          - http://asp-siryn-lin:5001
         aliases:
           - main
 
-  siryn-win-load:
+  siryn-lin-load:
     variables:
       secondaryAddress: 10.0.0.111
     agents: 
       load:
         endpoints: 
-          - http://asp-siryn-win:5001
+          - http://asp-siryn-lin:5001
         aliases:
           - warmup
           - secondary
