@@ -580,7 +580,7 @@ profiles:
           - db
           - downstream
 
-  aspnet-siryn-arm-win:
+  aspnet-siryn-arm-lin:
     variables:
       mainAddress: 10.0.0.111
       secondaryAddress: 10.0.0.109
@@ -592,7 +592,7 @@ profiles:
     agents:
       main:
         endpoints: 
-          - http://asp-siryn-win:5001
+          - http://asp-siryn-lin:5001
         aliases:
           - application
       secondary:
@@ -608,7 +608,7 @@ profiles:
           - db
           - downstream
 
-  aspnet-siryn-arm-win-relay:
+  aspnet-siryn-arm-lin-relay:
     variables:
       mainAddress: 10.0.0.111
       secondaryAddress: 10.0.0.109
@@ -620,7 +620,7 @@ profiles:
     agents:
       main:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/sirynwin
+          - https://aspnetperf.servicebus.windows.net/sirynlin
         aliases:
           - application
       secondary:
