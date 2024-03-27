@@ -4,8 +4,9 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.CommandLine;
 using Microsoft.Crank.EventSources;
-using SslStreamCommon;
-using SslStreamClient;
+
+using ConnectedStreams.Client;
+using ConnectedStreams.Shared;
 using System.Net.Quic;
 
 #pragma warning disable CA1416 // This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'.
@@ -44,6 +45,9 @@ internal class Program
                     break;
                 case Scenario.Handshake:
                     await RunHandshakeScenario(options).ConfigureAwait(false);
+                    break;
+                case Scenario.Rps:
+                    await RunRpsScenario(options).ConfigureAwait(false);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown scenario: {options.Scenario}");
@@ -97,6 +101,89 @@ internal class Program
         sw.Stop();
 
         LogPercentiledMetric("quic/handshake", values);
+    }
+
+    static async Task RunRpsScenario(ClientOptions options)
+    {
+        BenchmarksEventSource.Register("quic/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "RPS - mean", "n2");
+        BenchmarksEventSource.Register("quic/errors", Operations.Sum, Operations.Sum, "Errors", "Errors", "n2");
+
+        static async Task<double> RunCore(QuicConnection connection, ClientOptions options, CancellationToken cancellationToken = default)
+        {
+            await using var stream = await EstablishQuicStreamAsync(connection, forceOpen: false).ConfigureAwait(false);
+
+            var sendBuffer = new byte[options.SendBufferSize];
+            var receiveBuffer = new byte[options.ReceiveBufferSize];
+
+            long successRequests = 0;
+            long exceptionRequests = 0;
+            bool isWarmup = true;
+
+            var durationStopwatch = Stopwatch.StartNew();
+            while (s_isRunning)
+            {
+                if (isWarmup && !s_isWarmup)
+                {
+                    if (successRequests == 0)
+                    {
+                        LogMetric("quic/errors", exceptionRequests);
+                        throw new Exception($"No successful requests during warmup.");
+                    }
+                    isWarmup = false;
+                    successRequests = 0;
+                    exceptionRequests = 0;
+                    durationStopwatch.Restart();
+                }
+
+                try
+                {
+                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
+                    await stream.ReadExactlyAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
+                    successRequests++;
+                }
+                catch (Exception ex)
+                {
+                    Log("Exception: " + ex);
+                    exceptionRequests++;
+                }
+            }
+            var elapsed = durationStopwatch.ElapsedTicks * 1.0 / Stopwatch.Frequency;
+            if (exceptionRequests > 0)
+            {
+                LogMetric("quic/errors", exceptionRequests);
+            }
+            return successRequests / elapsed;
+        }
+
+        s_isRunning = true;
+        s_isWarmup = true;
+
+        var connections = new List<QuicConnection>(options.Connections);
+        var tasks = new List<Task<double>>(options.Connections * options.Streams);
+        var connectionOptions = CreateQuicClientConnectionOptions(options);
+        for (int i = 0; i < options.Connections; i++)
+        {
+            connections.Add(await EstablishQuicConnectionAsync(connectionOptions).ConfigureAwait(false));
+            for (int j = 0; j < options.Streams; j++)
+            {
+                tasks.Add(RunCore(connections[i], options));
+            }
+        }
+
+        await Task.Delay(options.Warmup).ConfigureAwait(false);
+        Log("Completing warmup...");
+
+        s_isWarmup = false;
+        await Task.Delay(options.Duration).ConfigureAwait(false);
+        Log("Completing scenario...");
+        s_isRunning = false;
+        var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
+        LogMetric("quic/rps/mean", metrics.Sum(x => x));
+
+        foreach (var connection in connections)
+        {
+            await connection.DisposeAsync();
+        }
     }
 
     static async Task RunReadWriteScenario(ClientOptions options)
@@ -236,6 +323,7 @@ internal class Program
                 options.Scenario switch {
                     Scenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
                     Scenario.Handshake => ApplicationProtocolConstants.Handshake,
+                    Scenario.Rps => ApplicationProtocolConstants.Rps,
                     _ => throw new Exception("Unknown scenario")
                 }
             },

@@ -43,9 +43,9 @@ parameters:
     type: object
     default:
       - displayName: "1 connection"
-        arguments: --variable concurrency=1 --property concurrency=1
+        arguments: --variable connections=1 --property concurrency=1
       - displayName: "16 connections"
-        arguments: --variable concurrency=16 --property concurrency=16
+        arguments: --variable connections=16 --property concurrency=16
 
 steps:
   # handshake scenarios

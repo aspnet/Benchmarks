@@ -1,14 +1,12 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System.Net;
+﻿using System.Diagnostics;
 using System.Net.Security;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Sockets;
 using System.CommandLine;
 using Microsoft.Crank.EventSources;
-using SslStreamCommon;
+
+using ConnectedStreams.Client;
+using ConnectedStreams.Shared;
 using SslStreamClient;
 
 // avoid false sharing among counters
@@ -26,12 +24,12 @@ internal class Program
     private static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("SslStream benchmark client");
-        OptionsBinder.AddOptions(rootCommand);
-        rootCommand.SetHandler<ClientOptions>(Run, new OptionsBinder());
+        SslStreamOptionsBinder.AddOptions(rootCommand);
+        rootCommand.SetHandler<SslStreamClientOptions>(Run, new SslStreamOptionsBinder());
         return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
-    static async Task<int> Run(ClientOptions options)
+    static async Task<int> Run(SslStreamClientOptions options)
     {
         SetupMeasurements();
 
@@ -58,11 +56,11 @@ internal class Program
         return 0;
     }
 
-    static async Task RunHandshakeScenario(ClientOptions options)
+    static async Task RunHandshakeScenario(SslStreamClientOptions options)
     {
         RegisterPercentiledMetric("sslstream/handshake", "Handshake duration (ms)", "Handshakes duration in milliseconds");
 
-        static async Task<List<double>> DoRun(ClientOptions options)
+        static async Task<List<double>> DoRun(SslStreamClientOptions options)
         {
             var values = new List<double>();
             while (s_isRunning)
@@ -83,7 +81,7 @@ internal class Program
 
         s_isRunning = true;
         var tasks = new List<Task<List<double>>>();
-        for (int i = 0; i < options.Concurrency; i++)
+        for (int i = 0; i < options.Connections; i++)
         {
             tasks.Add(Task.Run(() => DoRun(options)));
         }
@@ -101,13 +99,13 @@ internal class Program
         LogPercentiledMetric("sslstream/handshake", values);
     }
 
-    static async Task RunReadWriteScenario(ClientOptions options)
+    static async Task RunReadWriteScenario(SslStreamClientOptions options)
     {
         BenchmarksEventSource.Register("sslstream/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n2");
 
         BenchmarksEventSource.Register("sslstream/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n2");
 
-        static async Task<Metrics> RunCore(ClientOptions options)
+        static async Task<Metrics> RunCore(SslStreamClientOptions options)
         {
             using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
             await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
@@ -191,7 +189,7 @@ internal class Program
 
         var tasks = new List<Task<Metrics>>();
 
-        for (int i = 0; i < options.Concurrency; i++)
+        for (int i = 0; i < options.Connections; i++)
         {
             tasks.Add(RunCore(options));
         }
@@ -208,7 +206,7 @@ internal class Program
         LogMetric("sslstream/write/mean", metrics.Sum(x => x.BytesWrittenPerSecond));
     }
 
-    static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(ClientOptions options)
+    static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(SslStreamClientOptions options)
     {
         var sslOptions = new SslClientAuthenticationOptions
         {
@@ -251,7 +249,7 @@ internal class Program
         return sslOptions;
     }
 
-    static async Task<SslStream> EstablishSslStreamAsync(Socket socket, ClientOptions options)
+    static async Task<SslStream> EstablishSslStreamAsync(Socket socket, SslStreamClientOptions options)
     {
         var networkStream = new NetworkStream(socket, ownsSocket: true);
         var stream = new SslStream(networkStream, leaveInnerStreamOpen: false);

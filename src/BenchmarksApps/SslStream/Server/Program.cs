@@ -1,14 +1,13 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Security;
-using System.Security.Authentication;
 using System.Net.Sockets;
 using System.CommandLine;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Crank.EventSources;
 
+using ConnectedStreams.Server;
+using ConnectedStreams.Shared;
 using SslStreamServer;
-using SslStreamCommon;
 
 internal class Program
 {
@@ -17,12 +16,12 @@ internal class Program
     private static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("SslStream benchmark server");
-        OptionsBinder.AddOptions(rootCommand);
-        rootCommand.SetHandler<ServerOptions>(Run, new OptionsBinder());
+        SslStreamOptionsBinder.AddOptions(rootCommand);
+        rootCommand.SetHandler<SslStreamServerOptions>(Run, new SslStreamOptionsBinder());
         return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
-    static async Task Run(ServerOptions options)
+    static async Task Run(SslStreamServerOptions options)
     {
         SetupMeasurements();
 
@@ -58,7 +57,7 @@ internal class Program
         Log("Exitting...");
     }
 
-    static async Task ReadWriteScenario(SslStream stream, ServerOptions options, CancellationToken cancellationToken)
+    static async Task ReadWriteScenario(SslStream stream, SslStreamServerOptions options, CancellationToken cancellationToken)
     {
         static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken)
         {
@@ -115,7 +114,7 @@ internal class Program
         await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
     }
 
-    static async Task ProcessClient(Socket socket, ServerOptions options, SslServerAuthenticationOptions sslOptions, CancellationToken cancellationToken)
+    static async Task ProcessClient(Socket socket, SslStreamServerOptions options, SslServerAuthenticationOptions sslOptions, CancellationToken cancellationToken)
     {
         try
         {
@@ -147,7 +146,7 @@ internal class Program
         }
     }
 
-    static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(ServerOptions options)
+    static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(SslStreamServerOptions options)
     {
         var sslOptions = new SslServerAuthenticationOptions
         {

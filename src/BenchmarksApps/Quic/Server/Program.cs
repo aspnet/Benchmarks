@@ -4,8 +4,8 @@ using System.CommandLine;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Crank.EventSources;
 
-using SslStreamServer;
-using SslStreamCommon;
+using ConnectedStreams.Server;
+using ConnectedStreams.Shared;
 using System.Net.Quic;
 
 #pragma warning disable CA1416 // This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'.
@@ -67,6 +67,57 @@ internal class Program
 
         LogMetric("quic/errors", s_errors);
         Log("Exiting...");
+    }
+
+    static async Task RpsScenario(QuicConnection quicConn, ServerOptions options, CancellationToken cancellationToken)
+    {
+        static async Task RunCore(Stream stream, ServerOptions options, CancellationToken token)
+        {
+            try
+            {
+                var sendBuffer = new byte[options.SendBufferSize];
+                var recvBuffer = new byte[options.ReceiveBufferSize];
+
+                int totalRead = 0;
+                while (true)
+                {
+                    var bytesRead = await stream.ReadAsync(recvBuffer, token).ConfigureAwait(false);
+
+                    if (bytesRead == 0)
+                    {
+                        if (totalRead > 0)
+                        {
+                            throw new Exception("Unexpected EOF");
+                        }
+
+                        // client closed the connection.
+                        return;
+                    }
+
+                    totalRead += bytesRead;
+                    if (totalRead > options.ReceiveBufferSize)
+                    {
+                        throw new Exception("Unexpected data received");
+                    }
+
+                    if (totalRead == options.ReceiveBufferSize) // finished reading request
+                    {
+                        await stream.WriteAsync(sendBuffer, token).ConfigureAwait(false);
+                        totalRead = 0;
+                    }
+                }
+            }
+            finally
+            {
+                stream.Dispose();
+            }
+        }
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var stream = await quicConn.AcceptInboundStreamAsync(cancellationToken);
+            _ = Task.Run(() => RunCore(stream, options, cancellationToken));
+        }
     }
 
     static async Task ReadWriteScenario(QuicConnection quicConn, ServerOptions options, CancellationToken cancellationToken)
@@ -140,19 +191,27 @@ internal class Program
     {
         try
         {
-            if (clientConn.NegotiatedApplicationProtocol == ApplicationProtocolConstants.Handshake)
+            var alpn = clientConn.NegotiatedApplicationProtocol;
+            Task task;
+
+            if (alpn == ApplicationProtocolConstants.Handshake)
             {
-                // done everything
-                return;
+                task = Task.CompletedTask;
             }
-            if (clientConn.NegotiatedApplicationProtocol == ApplicationProtocolConstants.ReadWrite)
+            else if (alpn == ApplicationProtocolConstants.Rps)
             {
-                await ReadWriteScenario(clientConn, options, cancellationToken).ConfigureAwait(false);
+                task = RpsScenario(clientConn, options, cancellationToken);
+            }
+            else if (alpn == ApplicationProtocolConstants.ReadWrite)
+            {
+                task = ReadWriteScenario(clientConn, options, cancellationToken);
             }
             else
             {
                 throw new Exception($"Negotiated unknown protocol: {clientConn.NegotiatedApplicationProtocol}");
             }
+
+            await task.ConfigureAwait(false);
         }
         catch (QuicException e) when (e.QuicError == QuicError.ConnectionAborted)
         {

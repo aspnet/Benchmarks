@@ -1,13 +1,10 @@
-using System;
 using System.CommandLine;
 using System.CommandLine.Binding;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using SslStreamCommon;
 
-namespace SslStreamClient;
+using ConnectedStreams.Shared;
+
+namespace ConnectedStreams.Client;
 
 public enum CertificateSelectionType
 {
@@ -61,26 +58,28 @@ public class OptionsBinder : BinderBase<ClientOptions>
         command.AddOption(WarmupOption);
     }
 
-    protected override ClientOptions GetBoundValue(BindingContext bindingContext)
+    public static void BindOptions(ClientOptions options, BindingContext bindingContext)
     {
         var parsed = bindingContext.ParseResult;
 
-        var options = new ClientOptions()
-        {
-            Hostname = parsed.GetValueForOption(HostOption)!,
-            Port = parsed.GetValueForOption(PortOption),
-            Connections = parsed.GetValueForOption(ConnectionsOption),
-            Streams = parsed.GetValueForOption(StreamsOption),
-            ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null),
-            Scenario = parsed.GetValueForOption(ScenarioOption),
-            CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),
-            TlsHostName = parsed.GetValueForOption(TlsHostNameOption),
-            Duration = TimeSpan.FromSeconds(parsed.GetValueForOption(DurationOption)),
-            Warmup = TimeSpan.FromSeconds(parsed.GetValueForOption(WarmupOption)),
-        };
+        options.Hostname = parsed.GetValueForOption(HostOption)!;
+        options.Port = parsed.GetValueForOption(PortOption);
+        options.Connections = parsed.GetValueForOption(ConnectionsOption);
+        options.Streams = parsed.GetValueForOption(StreamsOption);
+        options.ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null);
+        options.Scenario = parsed.GetValueForOption(ScenarioOption);
+        options.CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption);
+        options.TlsHostName = parsed.GetValueForOption(TlsHostNameOption);
+        options.Duration = TimeSpan.FromSeconds(parsed.GetValueForOption(DurationOption));
+        options.Warmup = TimeSpan.FromSeconds(parsed.GetValueForOption(WarmupOption));
 
         CommonOptions.BindOptions(options, bindingContext);
+    }
 
+    protected override ClientOptions GetBoundValue(BindingContext bindingContext)
+    {
+        var options = new ClientOptions();
+        BindOptions(options, bindingContext);
         return options;
     }
 }

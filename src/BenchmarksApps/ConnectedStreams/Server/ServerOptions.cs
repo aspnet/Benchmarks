@@ -2,9 +2,10 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using SslStreamCommon;
 
-namespace SslStreamServer;
+using ConnectedStreams.Shared;
+
+namespace ConnectedStreams.Server;
 
 public enum CertificateSelectionType
 {
@@ -43,24 +44,27 @@ public class OptionsBinder : BinderBase<ServerOptions>
         command.AddOption(RequireClientCertificateOption);
     }
 
-    protected override ServerOptions GetBoundValue(BindingContext bindingContext)
+    public static void BindOptions(ServerOptions options, BindingContext bindingContext)
     {
         var parsed = bindingContext.ParseResult;
 
-        var options = new ServerOptions()
-        {
-            Port = parsed.GetValueForOption(PortOption),
-            CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption),
-            RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption),
-            ServerCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ServerCertificatePathOption), parsed.GetValueForOption(ServerCertificatePasswordOption), parsed.GetValueForOption(HostNameOption))!,
-            ApplicationProtocols = new () {
-                ApplicationProtocolConstants.ReadWrite,
-                ApplicationProtocolConstants.Handshake,
-            },
+        options.Port = parsed.GetValueForOption(PortOption);
+        options.CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption);
+        options.RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption);
+        options.ServerCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ServerCertificatePathOption), parsed.GetValueForOption(ServerCertificatePasswordOption), parsed.GetValueForOption(HostNameOption))!;
+        options.ApplicationProtocols = new () {
+            ApplicationProtocolConstants.ReadWrite,
+            ApplicationProtocolConstants.Handshake,
+            ApplicationProtocolConstants.Rps,
         };
 
         CommonOptions.BindOptions(options, bindingContext);
+    }
 
+    protected override ServerOptions GetBoundValue(BindingContext bindingContext)
+    {
+        var options = new ServerOptions();
+        BindOptions(options, bindingContext);
         return options;
     }
 }

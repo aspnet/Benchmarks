@@ -15,7 +15,7 @@ variables:
   allowTlsResume: true
 
   # client-specific parameters
-  concurrency: 1 #number of parallel connections
+  connections: 1 #number of parallel connections
   warmup: 15 #seconds
   duration: 15 #seconds
 
@@ -90,4 +90,4 @@ jobs:
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds
-    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --concurrency {{concurrency}} --warmup {{warmup}} --duration {{duration}} --allow-tls-resume {{allowTlsResume}}"
+    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --connections {{connections}} --warmup {{warmup}} --duration {{duration}} --allow-tls-resume {{allowTlsResume}}"
