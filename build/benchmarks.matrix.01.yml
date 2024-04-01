@@ -219,6 +219,12 @@ groups:
       - amd-lin-load
       - amd-lin2-db # required by nodejs and tfb-database argument
 
+    - name: Trends Siryn Linux
+      template: trend-scenarios.yml
+      profiles:
+      - siryn-lin-app
+      - intel-load2-load
+
   - jobs:
 
     - name: Frameworks Amd Linux
