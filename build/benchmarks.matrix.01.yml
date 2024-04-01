@@ -223,8 +223,7 @@ groups:
       template: trend-scenarios.yml
       profiles:
       - siryn-lin-app
-      - intel-lin-load
-      - intel-load2-db
+      - intel-load2-load
 
   - jobs:
 

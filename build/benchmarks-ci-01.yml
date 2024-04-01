@@ -407,7 +407,7 @@ jobs:
   - template: trend-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-lin-load --profile intel-load2-db "
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load "
       
 # GROUP 11
 
