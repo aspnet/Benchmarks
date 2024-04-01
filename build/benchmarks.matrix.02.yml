@@ -24,6 +24,12 @@ groups:
       profiles:
       - intel-lin-app 
 
+    - name: SslStream Intel Linux
+      template: sslstream-scenarios.yml
+      profiles:
+      - intel-load-app
+      - amd-lin-load
+
   - jobs:
 
     - name: PGO Intel Windows
@@ -39,6 +45,13 @@ groups:
       - intel-lin-app
       - amd-lin-load
       - intel-load-db
+
+    - name: Mvc Siryn Linux
+      template: mvc-scenarios.yml
+      profiles:
+      - siryn-lin-app 
+      - arm-lin-load
+      - intel-load2-db
 
   - jobs:
 
@@ -174,6 +187,13 @@ groups:
       - intel-lin-app 
       - intel-load-load
 
+    - name: Trends Database Siryn Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - siryn-lin-app
+      - intel-load2-load
+      - intel-db-db
+
   - jobs:
 
     - name: Crossgen Intel Windows
@@ -190,14 +210,6 @@ groups:
 
     - name: HttpClient Intel Linux
       template: httpclient-scenarios.yml
-      profiles:
-      - intel-lin-app
-      - amd-lin2-load
-
-  - jobs:
-
-    - name: SslStream Intel Linux
-      template: sslstream-scenarios.yml
       profiles:
       - intel-lin-app
       - amd-lin2-load

@@ -55,13 +55,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app "
       
+- job: SslStream_Intel_Linux
+  displayName: 1- SslStream Intel Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: []
+  condition: succeededOrFailed()
+  steps:
+  - template: sslstream-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile intel-load-app --profile amd-lin-load "
+      
 # GROUP 2
 
 - job: PGO_Intel_Windows
   displayName: 2- PGO Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Arm_28_Linux, GC_Intel_Linux]
+  dependsOn: [Frameworks_Arm_28_Linux, GC_Intel_Linux, SslStream_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
@@ -73,7 +85,7 @@ jobs:
   displayName: 2- PGO Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Arm_28_Linux, GC_Intel_Linux]
+  dependsOn: [Frameworks_Arm_28_Linux, GC_Intel_Linux, SslStream_Intel_Linux]
   condition: succeededOrFailed()
   steps:
   - template: pgo-scenarios.yml
@@ -81,13 +93,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin-load --profile intel-load-db "
       
+- job: Mvc_Siryn_Linux
+  displayName: 2- Mvc Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Arm_28_Linux, GC_Intel_Linux, SslStream_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: mvc-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load --profile intel-load2-db "
+      
 # GROUP 3
 
 - job: SignalR_Intel_Linux
   displayName: 3- SignalR Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux]
+  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux, Mvc_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -99,7 +123,7 @@ jobs:
   displayName: 3- SignalR Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux]
+  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux, Mvc_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: signalr-scenarios.yml
@@ -111,7 +135,7 @@ jobs:
   displayName: 3- Blazor Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux]
+  dependsOn: [PGO_Intel_Windows, PGO_Intel_Linux, Mvc_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: blazor-scenarios.yml
@@ -323,13 +347,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
+- job: Trends_Database_Siryn_Linux
+  displayName: 9- Trends Database Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load --profile intel-db-db "
+      
 # GROUP 10
 
 - job: Crossgen_Intel_Windows
   displayName: 10- Crossgen Intel Windows
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Trends_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -341,7 +377,7 @@ jobs:
   displayName: 10- Crossgen Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Trends_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -353,26 +389,12 @@ jobs:
   displayName: 10- HttpClient Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux]
+  dependsOn: [Crossgen_Arm_28_Linux, Crossgen_Intel_Linux, Trends_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: httpclient-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 3
-      arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
-      
-# GROUP 11
-
-- job: SslStream_Intel_Linux
-  displayName: 11- SslStream Intel Linux
-  pool: server
-  timeoutInMinutes: 120
-  dependsOn: [Crossgen_Intel_Windows, Crossgen_Amd_Linux, HttpClient_Intel_Linux]
-  condition: succeededOrFailed()
-  steps:
-  - template: sslstream-scenarios.yml
-    parameters:
-      connection: ASP.NET Benchmarks Queue 1
       arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
       
 
