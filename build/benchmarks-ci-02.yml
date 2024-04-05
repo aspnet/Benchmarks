@@ -321,13 +321,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-load2-app --profile amd-lin-load "
       
+- job: Baselines_Database_Siryn_Linux
+  displayName: 8- Baselines Database Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Custom_Proxies_Intel_Linux, Build_Intel_Windows, Trends_Arm_80_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load --profile amd-lin2-db "
+      
 # GROUP 9
 
 - job: Crossgen_Arm_28_Linux
   displayName: 9- Crossgen Arm 28 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux]
+  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux, Baselines_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -339,7 +351,7 @@ jobs:
   displayName: 9- Crossgen Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux]
+  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux, Baselines_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: crossgen2-scenarios.yml
@@ -351,7 +363,7 @@ jobs:
   displayName: 9- Trends Database Siryn Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux]
+  dependsOn: [Proxies_Intel_Linux, Grpc_Intel_Linux, Baselines_Database_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-database-scenarios.yml

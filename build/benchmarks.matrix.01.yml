@@ -240,3 +240,9 @@ groups:
       - intel-lin-app
       - intel-load-load
       - intel-db-db
+
+    - name: Baselines Siryn Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - siryn-lin-app
+      - arm-lin-load
