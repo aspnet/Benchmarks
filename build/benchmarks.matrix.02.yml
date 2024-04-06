@@ -173,6 +173,13 @@ groups:
       - intel-load2-app
       - amd-lin-load
 
+    - name: Baselines Database Siryn Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - siryn-lin-app
+      - arm-lin-load
+      - amd-lin2-db
+
   - jobs:
 
     - name: Crossgen Arm 28 Linux

@@ -435,4 +435,16 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
+- job: Baselines_Siryn_Linux
+  displayName: 11- Baselines Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load "
+      
 
