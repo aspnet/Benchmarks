@@ -1,13 +1,12 @@
 ﻿namespace SocketBenchmarks.Clients.Basic;
 
-internal class ClientOptions
+public class ClientOptions
 {
-    public IPAddress Address { get; set; } = IPAddress.Loopback;
-    public int Port { get; set; } = 5678;
-    public int MessageSize { get; set; } = 1024;
-    public int Connections { get; set; } = 128;
-    public int Duration { get; set; } = 0;
-    public int WarmupTime { get; set; } = 5;
-    public int Timeout { get; set; } = 0;
-    public int ReportingInterval { get; set; } = 3;
+    public required IPEndPoint EndPoint { get; set; }
+    public required int ReceiveBufferSize { get; set; }
+    public required int SendBufferSize { get; set; }
+    public required int Connections { get; set; }
+    public required TimeSpan Duration { get; set; }
+    public required TimeSpan WarmupTime { get; set; }
+    public required Scenario Scenario { get; set; }
 }

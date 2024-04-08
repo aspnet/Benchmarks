@@ -7,37 +7,51 @@ imports:
 variables:
     warmup: 15 #seconds
     duration: 15 #seconds
+    connections: 8
     serverPort: 5000
-    async: true
-    useNagleAlgorithm: false
-    addressFamily: 'DualSocket' # 'DualSocket', 'IPv4', 'IPv6'
+    receiveBufferSize: 32768
+    sendBufferSize: 32768
 
 scenarios:
-  basic-server-client:
+  connection-establishment:
     server:
       job: basic-server
       agent: secondary
       variables:
-        host: '{{secondaryAddress}}'
+        scenario: ConnectionEstablishment
     client:
       job: basic-client
       agent: main
       variables:
         host: '{{secondaryAddress}}'
+        scenario: ConnectionEstablishment
+  
+  read-write-tcp:
+    server:
+      job: basic-server
+      agent: secondary
+      variables:
+        scenario: ReadWrite
+    client:
+      job: basic-client
+      agent: main
+      variables:
+        host: '{{secondaryAddress}}'
+        scenario: ReadWrite
 
 jobs:
   basic-server:
     source:
-      localFolder: C:\Users\aaksoy\Desktop\Benchmarks
+      localFolder: C:\Users\aaksoy\Desktop\dotnet\aspnet-Benchmarks
       project: src/BenchmarksApps/SocketBenchmarks/Servers/Basic/SocketBenchmarks.Servers.Basic.csproj
-    readyStateText: Server started
-    arguments: '--address {{host}} --port {{serverPort}} --async {{async}} --useNagleAlgorithm {{useNagleAlgorithm}} --addressFamily {{addressFamily}}'
+    readyStateText: Listening on
+    arguments: '--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}}'
 
   basic-client:
     source:
-      localFolder: C:\Users\aaksoy\Desktop\Benchmarks
+      localFolder: C:\Users\aaksoy\Desktop\dotnet\aspnet-Benchmarks
       project: src/BenchmarksApps/SocketBenchmarks/Clients/Basic/SocketBenchmarks.Clients.Basic.csproj
     isConsoleApp: true
     waitForExit: true
-    timeout: 120
-    arguments: '--address {{host}} --port {{serverPort}} --async {{async}} --useNagleAlgorithm {{useNagleAlgorithm}} --addressFamily {{addressFamily}} --warmup {{warmup}} --duration {{duration}}'
+    timeout: 120 #seconds
+    arguments: '--endpoint {{host}}:{{serverPort}} --warmup-time {{warmup}} --duration {{duration}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --connections {{connections}} --scenario {{scenario}}'
