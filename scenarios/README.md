@@ -641,3 +641,11 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 ```
 
 Note that these ENVs could be set for all runs and crank will run just fine if it can't download the file because no crash happened.
+
+### Downloading binlogs
+
+When running a benchmark, the binlog can be produced and downloaded by adding these arguments:
+
+```
+--application.buildArguments "-bl" --application.options.downloadFiles "../msbuild.binlog"
+```
