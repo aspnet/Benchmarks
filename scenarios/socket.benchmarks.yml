@@ -42,14 +42,16 @@ scenarios:
 jobs:
   basic-server:
     source:
-      localFolder: C:\Users\aaksoy\Desktop\dotnet\aspnet-Benchmarks
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/BenchmarksApps/SocketBenchmarks/Servers/Basic/SocketBenchmarks.Servers.Basic.csproj
     readyStateText: Listening on
     arguments: '--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}}'
 
   basic-client:
     source:
-      localFolder: C:\Users\aaksoy\Desktop\dotnet\aspnet-Benchmarks
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/BenchmarksApps/SocketBenchmarks/Clients/Basic/SocketBenchmarks.Clients.Basic.csproj
     isConsoleApp: true
     waitForExit: true
