@@ -7,16 +7,16 @@ using ConnectedStreams.Shared;
 
 namespace ConnectedStreams.Server;
 
-public enum CertificateSelectionType
+public enum ServerCertSelectionType
 {
     CertContext,
     Certificate,
     Callback,
 }
 
-public class ServerOptions : OptionsBase
+public class ServerOptions : CommonOptions
 {
-    public CertificateSelectionType CertificateSelection { get; set; }
+    public ServerCertSelectionType CertificateSelection { get; set; }
     public bool RequireClientCertificate { get; set; }
     public X509Certificate2 ServerCertificate { get; set; } = null!;
     public List<SslApplicationProtocol> ApplicationProtocols { get; set; } = null!;
@@ -27,7 +27,7 @@ public class OptionsBinder : BinderBase<ServerOptions>
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to listen on");
     public static Option<string> ServerCertificatePathOption { get; } = new Option<string>("--cert", "Path to the server certificate. If not specified, a self-signed certificate will be generated.");
     public static Option<string> ServerCertificatePasswordOption { get; } = new Option<string>("--cert-password", "Password to the certificate file specified in --cert.");
-    public static Option<CertificateSelectionType> CertificateSelectionOption { get; } = new Option<CertificateSelectionType>("--cert-selection", () => CertificateSelectionType.CertContext, "The source of the server certificate in SslServerAuthenticationOptions.");
+    public static Option<ServerCertSelectionType> CertificateSelectionOption { get; } = new Option<ServerCertSelectionType>("--cert-selection", () => ServerCertSelectionType.CertContext, "The source of the server certificate in SslServerAuthenticationOptions.");
     public static Option<string> HostNameOption { get; } = new Option<string>("--host-name", () => "contoso.com", "The host name to use for the generated self-signed certificate.");
     public static Option<bool> RequireClientCertificateOption { get; } = new Option<bool>("--require-client-cert", () => false, "Whether to require a client certificate.");
 
@@ -35,7 +35,7 @@ public class OptionsBinder : BinderBase<ServerOptions>
     {
         command.AddOption(PortOption);
 
-        CommonOptions.AddOptions(command);
+        OptionsBinderHelper.AddOptions(command);
 
         command.AddOption(CertificateSelectionOption);
         command.AddOption(ServerCertificatePathOption);
@@ -51,14 +51,17 @@ public class OptionsBinder : BinderBase<ServerOptions>
         options.Port = parsed.GetValueForOption(PortOption);
         options.CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption);
         options.RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption);
-        options.ServerCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ServerCertificatePathOption), parsed.GetValueForOption(ServerCertificatePasswordOption), parsed.GetValueForOption(HostNameOption))!;
-        options.ApplicationProtocols = new () {
+        options.ServerCertificate = GetCertificate(
+            parsed.GetValueForOption(ServerCertificatePathOption),
+            parsed.GetValueForOption(ServerCertificatePasswordOption),
+            parsed.GetValueForOption(HostNameOption));
+        options.ApplicationProtocols = [
             ApplicationProtocolConstants.ReadWrite,
             ApplicationProtocolConstants.Handshake,
             ApplicationProtocolConstants.Rps,
-        };
+        ];
 
-        CommonOptions.BindOptions(options, bindingContext);
+        OptionsBinderHelper.BindOptions(options, bindingContext);
     }
 
     protected override ServerOptions GetBoundValue(BindingContext bindingContext)
@@ -66,5 +69,12 @@ public class OptionsBinder : BinderBase<ServerOptions>
         var options = new ServerOptions();
         BindOptions(options, bindingContext);
         return options;
+    }
+
+    private static X509Certificate2 GetCertificate(string? path, string? password, string? hostname)
+    {
+        return path is null
+            ? OptionsBinderHelper.GenerateSelfSignedCertificate(hostname!, isServer: true)
+            : new X509Certificate2(path, password);
     }
 }

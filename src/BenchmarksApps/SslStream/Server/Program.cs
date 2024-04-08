@@ -2,203 +2,97 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using System.CommandLine;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Crank.EventSources;
 
 using ConnectedStreams.Server;
-using ConnectedStreams.Shared;
 using SslStreamServer;
 
 internal class Program
 {
-    private static int s_errors;
-
-    private static async Task<int> Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        var rootCommand = new RootCommand("SslStream benchmark server");
-        SslStreamOptionsBinder.AddOptions(rootCommand);
-        rootCommand.SetHandler<SslStreamServerOptions>(Run, new SslStreamOptionsBinder());
-        return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+        var server = new SslStreamBenchmarkServer();
+        await server.RunCommandAsync<SslStreamOptionsBinder>(args);
     }
+}
 
-    static async Task Run(SslStreamServerOptions options)
+internal class SslStreamBenchmarkServer : BenchmarkServer<SslStreamServerOptions>
+{
+    public override string Name => "SslStream benchmark server";
+    public override string MetricPrefix => "sslstream";
+
+    public override void AddCommandLineOptions(RootCommand rootCommand)
+        => SslStreamOptionsBinder.AddOptions(rootCommand);
+
+    public override bool IsConnectionCloseException(Exception e)
+        => e is IOException && e.InnerException is SocketException se && se.SocketErrorCode == SocketError.ConnectionReset;
+
+    public override Task<IListener> ListenAsync(SslStreamServerOptions options)
     {
-        SetupMeasurements();
-
         var sslOptions = CreateSslServerAuthenticationOptions(options);
-        using var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
-        sock.Bind(new IPEndPoint(IPAddress.IPv6Any, options.Port));
-        sock.Listen();
-
-        Log($"Listening on {sock.LocalEndPoint}.");
-
-        CancellationTokenSource ctrlC = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) =>
-        {
-            Log("Shutting down...");
-            e.Cancel = true;
-            ctrlC.Cancel();
-        };
-
-        try
-        {
-            while (!ctrlC.IsCancellationRequested)
-            {
-                var clientSock = await sock.AcceptAsync(ctrlC.Token).ConfigureAwait(false);
-                _ = Task.Run(() => ProcessClient(clientSock, options, sslOptions, ctrlC.Token));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected, just return
-        }
-
-        LogMetric("sslstream/errors", s_errors);
-        Log("Exitting...");
-    }
-
-    static async Task ReadWriteScenario(SslStream stream, SslStreamServerOptions options, CancellationToken cancellationToken)
-    {
-        static async Task WritingTask(SslStream stream, int bufferSize, CancellationToken cancellationToken)
-        {
-            if (bufferSize == 0)
-            {
-                return;
-            }
-
-            var sendBuffer = new byte[bufferSize];
-
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected, just return
-            }
-        }
-
-        static async Task ReadingTask(SslStream stream, int bufferSize, CancellationTokenSource cts)
-        {
-            var recvBuffer = new byte[Math.Max(bufferSize, 1)];
-
-            while (true)
-            {
-                var bytesRead = await stream.ReadAsync(recvBuffer, cts.Token).ConfigureAwait(false);
-
-                if (bytesRead > 0 && bufferSize == 0)
-                {
-                    throw new Exception("Client is sending data but the server is not expecting any");
-                }
-
-                if (bytesRead == 0)
-                {
-                    // client closed the connection.
-                    cts.Cancel();
-                    break;
-                }
-            }
-        }
-
-        byte[] recvBuffer = new byte[options.ReceiveBufferSize];
-
-        CancellationTokenSource cts = new CancellationTokenSource();
-        using var reg = cancellationToken.Register(() => cts.Cancel());
-
-        var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize, cts.Token));
-        var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize, cts));
-
-        await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
-    }
-
-    static async Task ProcessClient(Socket socket, SslStreamServerOptions options, SslServerAuthenticationOptions sslOptions, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var stream = await EstablishSslStreamAsync(socket, sslOptions, cancellationToken).ConfigureAwait(false);
-
-            if (stream.NegotiatedApplicationProtocol == ApplicationProtocolConstants.Handshake)
-            {
-                // done everything
-                return;
-            }
-            if (stream.NegotiatedApplicationProtocol == ApplicationProtocolConstants.ReadWrite)
-            {
-                await ReadWriteScenario(stream, options, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                throw new Exception($"Negotiated unknown protocol: {stream.NegotiatedApplicationProtocol}");
-            }
-        }
-        catch (IOException e) when (e.InnerException is SocketException ex && ex.SocketErrorCode == SocketError.ConnectionReset)
-        {
-            // client closed the connection on us, this is expected as clients
-            // simply close the socket after the test is done.
-        }
-        catch (Exception e)
-        {
-            Interlocked.Increment(ref s_errors);
-            Log($"Exception occured: {e}");
-        }
-    }
-
-    static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(SslStreamServerOptions options)
-    {
-        var sslOptions = new SslServerAuthenticationOptions
-        {
-            ClientCertificateRequired = options.RequireClientCertificate,
-            RemoteCertificateValidationCallback = delegate { return true; },
-            ApplicationProtocols = options.ApplicationProtocols,
+        sslOptions.EnabledSslProtocols = options.EnabledSslProtocols;
 #if NET8_0_OR_GREATER
-            AllowTlsResume = options.AllowTlsResume,
+        sslOptions.AllowTlsResume = options.AllowTlsResume;
 #endif
-            EnabledSslProtocols = options.EnabledSslProtocols,
-            CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
-        };
 
-        switch (options.CertificateSelection)
+        var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        socket.Bind(new IPEndPoint(IPAddress.IPv6Any, options.Port));
+        socket.Listen();
+
+        var listener = new SslStreamServerListener(socket, sslOptions);
+        return Task.FromResult<IListener>(listener);
+    }
+}
+
+internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthenticationOptions _sslOptions) : IListener
+{
+    public EndPoint LocalEndPoint => _listenSocket.LocalEndPoint!;
+
+    public async Task<IServerConnection> AcceptConnectionAsync(CancellationToken cancellationToken)
+    {
+        var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken).ConfigureAwait(false);
+        return new SslStreamServerConnection(acceptSocket, _sslOptions);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _listenSocket.Dispose();
+        return default;
+    }
+}
+
+internal class SslStreamServerConnection(Socket _socket, SslServerAuthenticationOptions _sslOptions) : IServerConnection
+{
+    private SslStream? _sslStream;
+    private bool _streamConsumed;
+    public SslApplicationProtocol NegotiatedApplicationProtocol
+        => _sslStream?.NegotiatedApplicationProtocol ?? throw new InvalidOperationException("Handshake not completed");
+
+    public async Task CompleteHandshakeAsync(CancellationToken cancellationToken)
+    {
+        if (_sslStream is not null)
         {
-            case CertificateSelectionType.Certificate:
-                sslOptions.ServerCertificate = options.ServerCertificate;
-                break;
-            case CertificateSelectionType.Callback:
-                sslOptions.ServerCertificateSelectionCallback = delegate { return options.ServerCertificate; };
-                break;
-            case CertificateSelectionType.CertContext:
-                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create(options.ServerCertificate, new X509Certificate2Collection());
-                break;
+            throw new InvalidOperationException("Handshake already completed");
         }
-
-        return sslOptions;
+        var networkStream = new NetworkStream(_socket, ownsSocket: true);
+        _sslStream = new SslStream(networkStream, leaveInnerStreamOpen: false);
+        await _sslStream.AuthenticateAsServerAsync(_sslOptions, cancellationToken).ConfigureAwait(false);
     }
 
-    static async Task<SslStream> EstablishSslStreamAsync(Socket socket, SslServerAuthenticationOptions options, CancellationToken cancellationToken)
+    public Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken)
     {
-        var networkStream = new NetworkStream(socket, ownsSocket: true);
-        var stream = new SslStream(networkStream, leaveInnerStreamOpen: false);
-        await stream.AuthenticateAsServerAsync(options, cancellationToken).ConfigureAwait(false);
-        return stream;
+        if (_sslStream is null)
+        {
+            throw new InvalidOperationException("Handshake not completed");
+        }
+        if (_streamConsumed)
+        {
+            //Special-case for SslStream
+            return Task.FromResult<Stream>(null!);
+        }
+        _streamConsumed = true;
+
+        return Task.FromResult<Stream>(_sslStream!);
     }
 
-    public static void SetupMeasurements()
-    {
-        BenchmarksEventSource.Register("sslstream/errors", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
-        LogMetric("env/processorcount", Environment.ProcessorCount);
-    }
-
-    static void Log(string message)
-    {
-        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{time}] {message}");
-    }
-
-    private static void LogMetric(string name, double value)
-    {
-        BenchmarksEventSource.Measure(name, value);
-        Log($"{name}: {value}");
-    }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

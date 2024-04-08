@@ -26,7 +26,7 @@ public enum Scenario
     Rps
 }
 
-public class OptionsBase
+public class CommonOptions
 {
     public int Port { get; set; }
     public int ReceiveBufferSize { get; set; }
@@ -34,7 +34,7 @@ public class OptionsBase
     public X509RevocationMode CertificateRevocationCheckMode { get; set; }
 }
 
-public static class CommonOptions
+public static class OptionsBinderHelper
 {
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
@@ -42,43 +42,34 @@ public static class CommonOptions
 
     public static void AddOptions(RootCommand command)
     {
-        command.AddOption(CommonOptions.RecieveBufferSizeOption);
-        command.AddOption(CommonOptions.SendBufferSizeOption);
-        command.AddOption(CommonOptions.CertificateRevocationCheckModeOption);
+        command.AddOption(RecieveBufferSizeOption);
+        command.AddOption(SendBufferSizeOption);
+        command.AddOption(CertificateRevocationCheckModeOption);
     }
 
-    public static void BindOptions(OptionsBase options, BindingContext bindingContext)
+    public static void BindOptions(CommonOptions options, BindingContext bindingContext)
     {
         var parsed = bindingContext.ParseResult;
 
-        options.ReceiveBufferSize = parsed.GetValueForOption(CommonOptions.RecieveBufferSizeOption);
-        options.SendBufferSize = parsed.GetValueForOption(CommonOptions.SendBufferSizeOption);
-        options.CertificateRevocationCheckMode = parsed.GetValueForOption(CommonOptions.CertificateRevocationCheckModeOption);
+        options.ReceiveBufferSize = parsed.GetValueForOption(RecieveBufferSizeOption);
+        options.SendBufferSize = parsed.GetValueForOption(SendBufferSizeOption);
+        options.CertificateRevocationCheckMode = parsed.GetValueForOption(CertificateRevocationCheckModeOption);
     }
 
-    public static X509Certificate2? GetCertificate(string? path, string? password, string? hostname)
+    public static X509Certificate2 GenerateSelfSignedCertificate(string hostname, bool isServer)
     {
-        return string.IsNullOrEmpty(path)
-            ? hostname == null ? null : GenerateSelfSignedCertificate(hostname)
-            : new X509Certificate2(path, password);
-    }
-
-    private static X509Certificate2 GenerateSelfSignedCertificate(string hostname)
-    {
-        // Create self-signed cert for server.
-        using (RSA rsa = RSA.Create())
+        var oid = isServer ? "1.3.6.1.5.5.7.3.1" : "1.3.6.1.5.5.7.3.2";
+        using var rsa = RSA.Create();
+        var certReq = new CertificateRequest("CN=" + hostname, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        certReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
+        certReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension([new Oid(oid)], false));
+        certReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
+        var cert = certReq.CreateSelfSigned(DateTimeOffset.UtcNow.AddMonths(-1), DateTimeOffset.UtcNow.AddMonths(1));
+        if (OperatingSystem.IsWindows())
         {
-            var certReq = new CertificateRequest("CN=" + hostname, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            certReq.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
-            certReq.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false));
-            certReq.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
-            X509Certificate2 cert = certReq.CreateSelfSigned(DateTimeOffset.UtcNow.AddMonths(-1), DateTimeOffset.UtcNow.AddMonths(1));
-            if (OperatingSystem.IsWindows())
-            {
-                cert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
-            }
-
-            return cert;
+            cert = new X509Certificate2(cert.Export(X509ContentType.Pfx));
         }
+
+        return cert;
     }
 }

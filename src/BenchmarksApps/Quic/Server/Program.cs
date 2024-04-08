@@ -1,31 +1,35 @@
 ﻿using System.Net;
 using System.Net.Security;
 using System.CommandLine;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Crank.EventSources;
 
 using ConnectedStreams.Server;
-using ConnectedStreams.Shared;
 using System.Net.Quic;
-
-#pragma warning disable CA1416 // This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'.
 
 internal class Program
 {
-    private static int s_errors;
-
-    private static async Task<int> Main(string[] args)
+    private static async Task Main(string[] args)
     {
-        var rootCommand = new RootCommand("QUIC benchmark server");
-        OptionsBinder.AddOptions(rootCommand);
-        rootCommand.SetHandler<ServerOptions>(Run, new OptionsBinder());
-        return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+        var server = new QuicBenchmarkServer();
+        await server.RunCommandAsync<OptionsBinder>(args);
     }
+}
 
-    static async Task Run(ServerOptions options)
+// The benchmarks are only run on Windows and Linux
+#pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
+
+internal class QuicBenchmarkServer : BenchmarkServer<ServerOptions>
+{
+    public override string Name => "QUIC benchmark server";
+    public override string MetricPrefix => "quic";
+
+    public override void AddCommandLineOptions(RootCommand rootCommand)
+        => OptionsBinder.AddOptions(rootCommand);
+
+    public override bool IsConnectionCloseException(Exception e)
+        => e is QuicException qe && qe.QuicError == QuicError.ConnectionAborted;
+
+    public override async Task<IListener> ListenAsync(ServerOptions options)
     {
-        SetupMeasurements();
-
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         var connectionOptions = new QuicServerConnectionOptions()
         {
@@ -40,232 +44,39 @@ internal class Program
             ApplicationProtocols = connectionOptions.ServerAuthenticationOptions.ApplicationProtocols!,
             ConnectionOptionsCallback = (_, _, _) => ValueTask.FromResult(connectionOptions)
         };
-        await using var listener = await QuicListener.ListenAsync(listenerOptions);
 
-        Log($"Listening on {listener.LocalEndPoint}.");
-
-        CancellationTokenSource ctrlC = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) =>
-        {
-            Log("Shutting down...");
-            e.Cancel = true;
-            ctrlC.Cancel();
-        };
-
-        try
-        {
-            while (!ctrlC.IsCancellationRequested)
-            {
-                var clientConn = await listener.AcceptConnectionAsync(ctrlC.Token).ConfigureAwait(false);
-                _ = Task.Run(() => ProcessClient(clientConn, options, ctrlC.Token));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected, just return
-        }
-
-        LogMetric("quic/errors", s_errors);
-        Log("Exiting...");
-    }
-
-    static async Task RpsScenario(QuicConnection quicConn, ServerOptions options, CancellationToken cancellationToken)
-    {
-        static async Task RunCore(Stream stream, ServerOptions options, CancellationToken token)
-        {
-            try
-            {
-                var sendBuffer = new byte[options.SendBufferSize];
-                var recvBuffer = new byte[options.ReceiveBufferSize];
-
-                int totalRead = 0;
-                while (true)
-                {
-                    var bytesRead = await stream.ReadAsync(recvBuffer, token).ConfigureAwait(false);
-
-                    if (bytesRead == 0)
-                    {
-                        if (totalRead > 0)
-                        {
-                            throw new Exception("Unexpected EOF");
-                        }
-
-                        // client closed the connection.
-                        return;
-                    }
-
-                    totalRead += bytesRead;
-                    if (totalRead > options.ReceiveBufferSize)
-                    {
-                        throw new Exception("Unexpected data received");
-                    }
-
-                    if (totalRead == options.ReceiveBufferSize) // finished reading request
-                    {
-                        await stream.WriteAsync(sendBuffer, token).ConfigureAwait(false);
-                        totalRead = 0;
-                    }
-                }
-            }
-            finally
-            {
-                stream.Dispose();
-            }
-        }
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var stream = await quicConn.AcceptInboundStreamAsync(cancellationToken);
-            _ = Task.Run(() => RunCore(stream, options, cancellationToken));
-        }
-    }
-
-    static async Task ReadWriteScenario(QuicConnection quicConn, ServerOptions options, CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var stream = await quicConn.AcceptInboundStreamAsync(cancellationToken);
-            _ = Task.Run(() => ReadWriteScenario(stream, options, cancellationToken));
-        }
-    }
-
-    static async Task ReadWriteScenario(Stream stream, ServerOptions options, CancellationToken cancellationToken)
-    {
-        static async Task WritingTask(Stream stream, int bufferSize, CancellationToken cancellationToken)
-        {
-            if (bufferSize == 0)
-            {
-                return;
-            }
-
-            var sendBuffer = new byte[bufferSize];
-
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    await stream.WriteAsync(sendBuffer, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected, just return
-            }
-        }
-
-        static async Task ReadingTask(Stream stream, int bufferSize, CancellationTokenSource cts)
-        {
-            var recvBuffer = new byte[Math.Max(bufferSize, 1)];
-
-            while (true)
-            {
-                var bytesRead = await stream.ReadAsync(recvBuffer, cts.Token).ConfigureAwait(false);
-
-                if (bytesRead > 0 && bufferSize == 0)
-                {
-                    throw new Exception("Client is sending data but the server is not expecting any");
-                }
-
-                if (bytesRead == 0)
-                {
-                    // client closed the connection.
-                    cts.Cancel();
-                    break;
-                }
-            }
-        }
-
-        byte[] recvBuffer = new byte[options.ReceiveBufferSize];
-
-        CancellationTokenSource cts = new CancellationTokenSource();
-        using var reg = cancellationToken.Register(() => cts.Cancel());
-
-        var writeTask = Task.Run(() => WritingTask(stream, options.SendBufferSize, cts.Token));
-        var readTask = Task.Run(() => ReadingTask(stream, options.ReceiveBufferSize, cts));
-
-        await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
-        stream.Dispose();
-    }
-
-    static async Task ProcessClient(QuicConnection clientConn, ServerOptions options, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var alpn = clientConn.NegotiatedApplicationProtocol;
-            Task task;
-
-            if (alpn == ApplicationProtocolConstants.Handshake)
-            {
-                task = Task.CompletedTask;
-            }
-            else if (alpn == ApplicationProtocolConstants.Rps)
-            {
-                task = RpsScenario(clientConn, options, cancellationToken);
-            }
-            else if (alpn == ApplicationProtocolConstants.ReadWrite)
-            {
-                task = ReadWriteScenario(clientConn, options, cancellationToken);
-            }
-            else
-            {
-                throw new Exception($"Negotiated unknown protocol: {clientConn.NegotiatedApplicationProtocol}");
-            }
-
-            await task.ConfigureAwait(false);
-        }
-        catch (QuicException e) when (e.QuicError == QuicError.ConnectionAborted)
-        {
-            // client closed the connection on us, this is expected as clients
-            // simply close the connection after the test is done.
-        }
-        catch (Exception e)
-        {
-            Interlocked.Increment(ref s_errors);
-            Log($"Exception occured: {e}");
-        }
-    }
-
-    static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(ServerOptions options)
-    {
-        var sslOptions = new SslServerAuthenticationOptions
-        {
-            ClientCertificateRequired = options.RequireClientCertificate,
-            RemoteCertificateValidationCallback = delegate { return true; },
-            ApplicationProtocols = options.ApplicationProtocols,
-            CertificateRevocationCheckMode = options.CertificateRevocationCheckMode,
-        };
-
-        switch (options.CertificateSelection)
-        {
-            case CertificateSelectionType.Certificate:
-                sslOptions.ServerCertificate = options.ServerCertificate;
-                break;
-            case CertificateSelectionType.Callback:
-                sslOptions.ServerCertificateSelectionCallback = delegate { return options.ServerCertificate; };
-                break;
-            case CertificateSelectionType.CertContext:
-                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create(options.ServerCertificate, new X509Certificate2Collection());
-                break;
-        }
-
-        return sslOptions;
-    }
-
-    public static void SetupMeasurements()
-    {
-        BenchmarksEventSource.Register("quic/errors", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
-        LogMetric("env/processorcount", Environment.ProcessorCount);
-    }
-
-    static void Log(string message)
-    {
-        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{time}] {message}");
-    }
-
-    private static void LogMetric(string name, double value)
-    {
-        BenchmarksEventSource.Measure(name, value);
-        Log($"{name}: {value}");
+        return new QuicServerListener(await QuicListener.ListenAsync(listenerOptions), options);
     }
 }
+
+internal class QuicServerListener(QuicListener _listener, ServerOptions _serverOptions) : IListener
+{
+    public EndPoint LocalEndPoint => _listener.LocalEndPoint;
+
+    public async Task<IServerConnection> AcceptConnectionAsync(CancellationToken cancellationToken)
+        => new QuicServerConnection(await _listener.AcceptConnectionAsync(cancellationToken), _serverOptions);
+
+    public ValueTask DisposeAsync() => _listener.DisposeAsync();
+}
+
+internal class QuicServerConnection(QuicConnection _connection, ServerOptions _serverOptions) : IServerConnection
+{
+    public Task CompleteHandshakeAsync(CancellationToken _) => Task.CompletedTask;
+    public SslApplicationProtocol NegotiatedApplicationProtocol => _connection.NegotiatedApplicationProtocol;
+    private static readonly byte[] s_byteBuf = new byte[1];
+
+    public async Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken)
+    {
+        var stream = await _connection.AcceptInboundStreamAsync(cancellationToken);
+        if (_serverOptions.ReceiveBufferSize == 0)
+        {
+            // drain the single byte used to open the stream
+            _ = await stream.ReadAsync(s_byteBuf, cancellationToken).ConfigureAwait(false);
+        }
+        return stream;
+    }
+
+    public ValueTask DisposeAsync() => _connection.DisposeAsync();
+}
+
+#pragma warning restore CA1416

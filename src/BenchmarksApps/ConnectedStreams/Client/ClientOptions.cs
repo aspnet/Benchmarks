@@ -13,7 +13,7 @@ public enum CertificateSelectionType
     Callback,
 }
 
-public class ClientOptions : OptionsBase
+public class ClientOptions : CommonOptions
 {
     public string Hostname { get; set; } = null!;
     public int Connections { get; set; }
@@ -26,7 +26,7 @@ public class ClientOptions : OptionsBase
     public TimeSpan Duration { get; set; }
 }
 
-public class OptionsBinder : BinderBase<ClientOptions>
+public class ClientOptionsBinder : BinderBase<ClientOptions>
 {
     public static Option<string> HostOption { get; } = new Option<string>("--host", "The host to connect to.") { IsRequired = true };
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to connect to.");
@@ -46,7 +46,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
         command.AddOption(PortOption);
         command.AddOption(ScenarioOption);
 
-        CommonOptions.AddOptions(command);
+        OptionsBinderHelper.AddOptions(command);
 
         command.AddOption(ConnectionsOption);
         command.AddOption(StreamsOption);
@@ -66,14 +66,16 @@ public class OptionsBinder : BinderBase<ClientOptions>
         options.Port = parsed.GetValueForOption(PortOption);
         options.Connections = parsed.GetValueForOption(ConnectionsOption);
         options.Streams = parsed.GetValueForOption(StreamsOption);
-        options.ClientCertificate = CommonOptions.GetCertificate(parsed.GetValueForOption(ClientCertificatePathOption), parsed.GetValueForOption(ClientCertificatePasswordOption), null);
+        options.ClientCertificate = GetCertificate(
+            parsed.GetValueForOption(ClientCertificatePathOption),
+            parsed.GetValueForOption(ClientCertificatePasswordOption));
         options.Scenario = parsed.GetValueForOption(ScenarioOption);
         options.CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption);
         options.TlsHostName = parsed.GetValueForOption(TlsHostNameOption);
         options.Duration = TimeSpan.FromSeconds(parsed.GetValueForOption(DurationOption));
         options.Warmup = TimeSpan.FromSeconds(parsed.GetValueForOption(WarmupOption));
 
-        CommonOptions.BindOptions(options, bindingContext);
+        OptionsBinderHelper.BindOptions(options, bindingContext);
     }
 
     protected override ClientOptions GetBoundValue(BindingContext bindingContext)
@@ -82,4 +84,7 @@ public class OptionsBinder : BinderBase<ClientOptions>
         BindOptions(options, bindingContext);
         return options;
     }
+
+    private static X509Certificate2? GetCertificate(string? path, string? password)
+        => path is null ? null : new X509Certificate2(path, password);
 }

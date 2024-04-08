@@ -16,7 +16,7 @@ public class SslStreamOptionsBinder : BinderBase<SslStreamClientOptions>
 {
     public static void AddOptions(RootCommand command)
     {
-        OptionsBinder.AddOptions(command);
+        ClientOptionsBinder.AddOptions(command);
         SslOptionsCommon.AddOptions(command);
     }
 
@@ -24,7 +24,7 @@ public class SslStreamOptionsBinder : BinderBase<SslStreamClientOptions>
     {
         var options = new SslStreamClientOptions();
 
-        OptionsBinder.BindOptions(options, bindingContext);
+        ClientOptionsBinder.BindOptions(options, bindingContext);
         SslOptionsCommon.BindOptions(options, bindingContext);
 
         return options;

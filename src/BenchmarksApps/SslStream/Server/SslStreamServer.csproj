@@ -2,15 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
+    <Compile Include="../../ConnectedStreams/Server/Program.cs" />
     <Compile Include="../../ConnectedStreams/Server/ServerOptions.cs" />
     <Compile Include="../../ConnectedStreams/Shared/CommonOptions.cs" />
     <Compile Include="../Shared/SslOptionsCommon.cs" />
