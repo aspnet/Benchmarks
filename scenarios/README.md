@@ -39,6 +39,7 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
 |  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 |  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-siryn-arm-lin` | ARM64, 128 logical cores, 1 socket, 1 NUMA, 250GB | Ubuntu 20.04, Kernel 5.4.0 | Ampere(R) AmpereOne(TM) |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
