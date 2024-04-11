@@ -4,6 +4,7 @@ using System.CommandLine;
 
 using ConnectedStreams.Server;
 using System.Net.Quic;
+using Common;
 
 internal class Program
 {
@@ -17,7 +18,7 @@ internal class Program
 // The benchmarks are only run on Windows and Linux
 #pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
-internal class QuicBenchmarkServer : BenchmarkServer<ServerOptions>
+internal class QuicBenchmarkServer : SslBenchmarkServer<ServerOptions>
 {
     public override string Name => "QUIC benchmark server";
     public override string MetricPrefix => "quic";
@@ -25,10 +26,10 @@ internal class QuicBenchmarkServer : BenchmarkServer<ServerOptions>
     public override void AddCommandLineOptions(RootCommand rootCommand)
         => OptionsBinder.AddOptions(rootCommand);
 
-    public override bool IsConnectionCloseException(Exception e)
+    public override bool IsExpectedException(Exception e)
         => e is QuicException qe && qe.QuicError == QuicError.ConnectionAborted;
 
-    public override async Task<IListener> ListenAsync(ServerOptions options)
+    public override async Task<IBaseListener<IServerConnection>> ListenAsync(ServerOptions options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         var connectionOptions = new QuicServerConnectionOptions()
@@ -36,7 +37,7 @@ internal class QuicBenchmarkServer : BenchmarkServer<ServerOptions>
             DefaultStreamErrorCode = 123,
             DefaultCloseErrorCode = 456,
             ServerAuthenticationOptions = sslOptions,
-            MaxInboundBidirectionalStreams = 50000
+            MaxInboundBidirectionalStreams = 20000
         };
         var listenerOptions = new QuicListenerOptions()
         {
@@ -45,7 +46,7 @@ internal class QuicBenchmarkServer : BenchmarkServer<ServerOptions>
             ConnectionOptionsCallback = (_, _, _) => ValueTask.FromResult(connectionOptions)
         };
 
-        return new QuicServerListener(await QuicListener.ListenAsync(listenerOptions), options);
+        return new QuicServerListener(await QuicListener.ListenAsync(listenerOptions, ct), options);
     }
 }
 
@@ -53,7 +54,7 @@ internal class QuicServerListener(QuicListener _listener, ServerOptions _serverO
 {
     public EndPoint LocalEndPoint => _listener.LocalEndPoint;
 
-    public async Task<IServerConnection> AcceptConnectionAsync(CancellationToken cancellationToken)
+    public async Task<IServerConnection> AcceptAsync(CancellationToken cancellationToken)
         => new QuicServerConnection(await _listener.AcceptConnectionAsync(cancellationToken), _serverOptions);
 
     public ValueTask DisposeAsync() => _listener.DisposeAsync();
@@ -63,6 +64,7 @@ internal class QuicServerConnection(QuicConnection _connection, ServerOptions _s
 {
     public Task CompleteHandshakeAsync(CancellationToken _) => Task.CompletedTask;
     public SslApplicationProtocol NegotiatedApplicationProtocol => _connection.NegotiatedApplicationProtocol;
+    public bool IsMultiplexed => true;
     private static readonly byte[] s_byteBuf = new byte[1];
 
     public async Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken)

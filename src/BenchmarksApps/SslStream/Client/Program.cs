@@ -13,7 +13,7 @@ internal class Program
     }
 }
 
-internal class SslStreamBenchmarkClient : BenchmarkClient<SslClientAuthenticationOptions, SslStreamClientOptions>
+internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthenticationOptions, SslStreamClientOptions>
 {
     public override string Name => "SslStream benchmark client";
     public override string MetricPrefix => "sslstream";

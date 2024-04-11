@@ -16,7 +16,7 @@ internal class Program
 // The benchmarks are only run on Windows and Linux
 #pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
-internal class QuicBenchmarkClient : BenchmarkClient<QuicClientConnectionOptions, ClientOptions>
+internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOptions, ClientOptions>
 {
     public static Task RunCommandAsync(string[] args)
     {

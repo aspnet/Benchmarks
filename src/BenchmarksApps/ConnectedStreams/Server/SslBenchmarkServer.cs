@@ -1,18 +1,15 @@
 ﻿using System.Net;
 using System.Net.Security;
-using System.CommandLine;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Crank.EventSources;
 
+using Common;
 using ConnectedStreams.Shared;
-using System.CommandLine.Binding;
 
 namespace ConnectedStreams.Server;
 
-internal interface IListener : IAsyncDisposable
+internal interface IListener : IBaseListener<IServerConnection>, IAsyncDisposable
 {
     EndPoint LocalEndPoint { get; }
-    Task<IServerConnection> AcceptConnectionAsync(CancellationToken cancellationToken);
 }
 
 internal interface IServerConnection : IAsyncDisposable
@@ -20,60 +17,16 @@ internal interface IServerConnection : IAsyncDisposable
     SslApplicationProtocol NegotiatedApplicationProtocol { get; }
     Task CompleteHandshakeAsync(CancellationToken cancellationToken);
     Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken);
+    bool IsMultiplexed { get; }
 }
 
-internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
+internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnection, TOptions>
+    where TOptions : ServerOptions
 {
-    private static int _errors;
+    public override string GetReadyStateText(IBaseListener<IServerConnection> listener)
+        => $"Listening on {((IListener)listener).LocalEndPoint}";
 
-    public abstract string Name { get; }
-    public abstract string MetricPrefix { get; }
-    public abstract void AddCommandLineOptions(RootCommand command);
-    public abstract Task<IListener> ListenAsync(TOptions options);
-    public abstract bool IsConnectionCloseException(Exception e);
-
-    public Task RunCommandAsync<TBinder>(string[] args) where TBinder : BinderBase<TOptions>, new()
-    {
-        var rootCommand = new RootCommand(Name);
-        AddCommandLineOptions(rootCommand);
-        rootCommand.SetHandler<TOptions>(RunAsync, new TBinder());
-        return rootCommand.InvokeAsync(args);
-    }
-
-    private async Task RunAsync(TOptions options)
-    {
-        BenchmarksEventSource.Register($"{MetricPrefix}/errors", Operations.First, Operations.First, "Connection error count", "Connection error count", "n0");
-        LogMetric("env/processorcount", Environment.ProcessorCount);
-
-        await using var listener = await ListenAsync(options);
-        Log($"Listening on {listener.LocalEndPoint}.");
-
-        var ctrlC = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) =>
-        {
-            Log("Shutting down...");
-            e.Cancel = true;
-            ctrlC.Cancel();
-        };
-
-        try
-        {
-            while (!ctrlC.IsCancellationRequested)
-            {
-                var connection = await listener.AcceptConnectionAsync(ctrlC.Token).ConfigureAwait(false);
-                _ = Task.Run(() => ProcessClient(connection, options, ctrlC.Token));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected, just return
-        }
-
-        LogMetric($"{MetricPrefix}/errors", _errors);
-        Log("Exiting...");
-    }
-
-    private async Task ProcessClient(IServerConnection connection, ServerOptions options, CancellationToken ct)
+    public override async Task ProcessAsyncInternal(IServerConnection connection, TOptions options, CancellationToken ct)
     {
         try
         {
@@ -82,7 +35,7 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
 
             if (alpn == ApplicationProtocolConstants.Handshake)
             {
-                return; // All done
+                return; // all done
             }
 
             if (alpn == ApplicationProtocolConstants.ReadWrite)
@@ -99,16 +52,6 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
 
             throw new Exception($"Negotiated unknown protocol: {connection.NegotiatedApplicationProtocol}");
         }
-        catch (Exception e) when (IsConnectionCloseException(e))
-        {
-            // client closed the connection on us, this is expected as clients
-            // simply close the connection after the test is done.
-        }
-        catch (Exception e)
-        {
-            Interlocked.Increment(ref _errors);
-            Log($"Exception occured: {e}");
-        }
         finally
         {
             await connection.DisposeAsync().ConfigureAwait(false);
@@ -120,10 +63,6 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
         while (!cancellationToken.IsCancellationRequested)
         {
             var stream = await connection.AcceptInboundStreamAsync(cancellationToken).ConfigureAwait(false);
-            if (stream == null)
-            {
-                return;
-            }
             _ = Task.Run(async () =>
                 {
                     try
@@ -134,7 +73,12 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
                     {
                         stream.Dispose();
                     }
-                });
+                }, cancellationToken);
+
+            if (!connection.IsMultiplexed)
+            {
+                break;
+            }
         }
     }
 
@@ -192,7 +136,7 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
             }
             catch (OperationCanceledException)
             {
-                // Expected, just return
+                // expected, just return
             }
         }
 
@@ -251,17 +195,5 @@ internal abstract class BenchmarkServer<TOptions> where TOptions : ServerOptions
         }
 
         return sslOptions;
-    }
-
-    private static void Log(string message)
-    {
-        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{time}] {message}");
-    }
-
-    private static void LogMetric(string name, double value)
-    {
-        BenchmarksEventSource.Measure(name, value);
-        Log($"{name}: {value}");
     }
 }

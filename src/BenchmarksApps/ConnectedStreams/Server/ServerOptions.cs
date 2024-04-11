@@ -20,6 +20,12 @@ public class ServerOptions : CommonOptions
     public bool RequireClientCertificate { get; set; }
     public X509Certificate2 ServerCertificate { get; set; } = null!;
     public List<SslApplicationProtocol> ApplicationProtocols { get; set; } = null!;
+
+    public override string ToString()
+    {
+        return $"{base.ToString()}, CertificateSelection: {CertificateSelection}, RequireClientCertificate: {RequireClientCertificate}, " +
+            $"ServerCertificate: {{ {ServerCertificate.ToString().ReplaceLineEndings(" ")}}}";
+    }
 }
 
 public class OptionsBinder : BinderBase<ServerOptions>

@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Net.Security;
-using System.CommandLine;
-using Microsoft.Crank.EventSources;
 
+using Common;
 using ConnectedStreams.Shared;
-using System.CommandLine.Binding;
+
+using static Common.Logger;
 
 namespace ConnectedStreams.Client;
 
@@ -20,63 +20,21 @@ internal interface IClientConnection : IAsyncDisposable
     Task<Stream> EstablishStreamAsync(ClientOptions options);
 }
 
-internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOptions : ClientOptions
+internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseClient<TOptions>
+    where TOptions : ClientOptions
 {
-    private static bool _isInit;
-    private static bool _isRunning;
-    private static bool _isWarmup;
-
-    public abstract string Name { get; }
-    public abstract string MetricPrefix { get; }
-    public abstract void AddCommandLineOptions(RootCommand command);
-    public abstract void ValidateOptions(TOptions options);
     public abstract TConnectionOptions CreateClientConnectionOptions(TOptions options);
     public abstract Task<IClientConnection> EstablishConnectionAsync(TConnectionOptions connectionOptions, TOptions options);
-
-    public Task RunCommandAsync<TBinder>(string[] args)
-        where TBinder : BinderBase<TOptions>, new()
+    protected override Task RunScenarioAsync(TOptions options)
     {
-        if (_isInit)
-        {
-            throw new InvalidOperationException("Client is already runnung.");
-        }
-        _isInit = true;
-
-        var rootCommand = new RootCommand(Name);
-        AddCommandLineOptions(rootCommand);
-        rootCommand.SetHandler<TOptions>(RunAsync, new TBinder());
-        return rootCommand.InvokeAsync(args);
-    }
-
-    private async Task RunAsync(TOptions options)
-    {
-        ValidateOptions(options);
-
-        BenchmarksEventSource.Register("env/processorcount", Operations.First, Operations.First, "Processor Count", "Processor Count", "n0");
-        LogMetric("env/processorcount", Environment.ProcessorCount);
-
-        _isRunning = true;
-        _isWarmup = true;
-
         var connectionOptions = CreateClientConnectionOptions(options);
-
-        var scenarioTask = options.Scenario switch
+        return options.Scenario switch
         {
             Scenario.Handshake => RunHandshakeScenario(connectionOptions, options),
             Scenario.ReadWrite => RunReadWriteScenario(connectionOptions, options),
             Scenario.Rps => RunRpsScenario(connectionOptions, options),
             _ => throw new InvalidOperationException($"Unknown scenario: {options.Scenario}")
         };
-
-        await Task.Delay(options.Warmup).ConfigureAwait(false);
-        _isWarmup = false;
-        Log("Completing warmup...");
-
-        await Task.Delay(options.Duration).ConfigureAwait(false);
-        _isRunning = false;
-        Log("Completing scenario...");
-
-        await scenarioTask.ConfigureAwait(false);
     }
 
     private async Task RunHandshakeScenario(TConnectionOptions connectionOptions, TOptions options)
@@ -93,30 +51,10 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
         LogPercentiledMetric($"{MetricPrefix}/handshake", metrics.SelectMany(x => x).ToList());
     }
 
-    private static async Task<List<double>> HandshakeScenario(BenchmarkClient<TConnectionOptions, TOptions> client, TConnectionOptions connectionOptions, TOptions options)
-    {
-        var values = new List<double>((int)options.Duration.TotalMilliseconds);
-        var isWarmup = true;
-        var sw = Stopwatch.StartNew();
-        while (_isRunning)
-        {
-            sw.Restart();
-            await using var connection = await client.EstablishConnectionAsync(connectionOptions, options).ConfigureAwait(false);
-            var elapsedMs = sw.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
-            if (isWarmup && !_isWarmup)
-            {
-                isWarmup = false;
-                values.Clear();
-            }
-            values.Add(elapsedMs);
-        }
-        return values;
-    }
-
     private async Task RunReadWriteScenario(TConnectionOptions connectionOptions, TOptions options)
     {
-        BenchmarksEventSource.Register($"{MetricPrefix}/write/mean", Operations.Avg, Operations.Avg, "Mean bytes written per second.", "Bytes per second - mean", "n2");
-        BenchmarksEventSource.Register($"{MetricPrefix}/read/mean", Operations.Avg, Operations.Avg, "Mean bytes read per second.", "Bytes per second - mean", "n2");
+        RegisterSimpleMetric($"{MetricPrefix}/read/mean", "Read B/s - mean");
+        RegisterSimpleMetric($"{MetricPrefix}/write/mean", "Write B/s - mean");
 
         var connections = new IClientConnection[options.Connections];
         var tasks = new List<Task<Metrics>>(options.Connections * options.Streams);
@@ -130,8 +68,8 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
         }
 
         var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
-        LogMetric($"{MetricPrefix}/read/mean", metrics.Sum(x => x.BytesReadPerSecond));
-        LogMetric($"{MetricPrefix}/write/mean", metrics.Sum(x => x.BytesWrittenPerSecond));
+        LogMetric($"{MetricPrefix}/read/mean", metrics.Order().Sum(x => x.BytesReadPerSecond));
+        LogMetric($"{MetricPrefix}/write/mean", metrics.Order().Sum(x => x.BytesWrittenPerSecond));
 
         foreach (var connection in connections)
         {
@@ -141,8 +79,8 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
 
     private async Task RunRpsScenario(TConnectionOptions connectionOptions, TOptions options)
     {
-        BenchmarksEventSource.Register($"{MetricPrefix}/rps/mean", Operations.Avg, Operations.Avg, "Mean RPS", "RPS - mean", "n2");
-        BenchmarksEventSource.Register($"{MetricPrefix}/errors", Operations.Sum, Operations.Sum, "Errors", "Errors", "n2");
+        RegisterSimpleMetric($"{MetricPrefix}/rps/mean", "RPS - mean");
+        RegisterSimpleMetric($"{MetricPrefix}/errors", "Errors", "n0");
 
         var connections = new IClientConnection[options.Connections];
         var tasks = new List<Task<(double Rps, long Errors)>>(options.Connections * options.Streams);
@@ -156,13 +94,37 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
         }
 
         var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
-        LogMetric($"{MetricPrefix}/rps/mean", metrics.Sum(x => x.Rps));
-        LogMetric($"{MetricPrefix}/errors", metrics.Sum(x => x.Errors));
+        LogMetric($"{MetricPrefix}/rps/mean", metrics.Order().Sum(x => x.Rps));
+        if (metrics.Any(x => x.Errors > 0))
+        {
+            LogMetric($"{MetricPrefix}/errors", metrics.Sum(x => x.Errors));
+        }
 
         foreach (var connection in connections)
         {
             await connection.DisposeAsync();
         }
+    }
+
+    private static async Task<List<double>> HandshakeScenario(SslBenchmarkClient<TConnectionOptions, TOptions> client, TConnectionOptions connectionOptions, TOptions options)
+    {
+        var values = new List<double>((int)options.Duration.TotalMilliseconds);
+        var isWarmup = true;
+        var sw = Stopwatch.StartNew();
+        while (IsRunning)
+        {
+            if (isWarmup && !IsWarmup)
+            {
+                isWarmup = false;
+                values.Clear();
+                OnWarmupCompleted();
+            }
+            sw.Restart();
+            await using var connection = await client.EstablishConnectionAsync(connectionOptions, options).ConfigureAwait(false);
+            var elapsedMs = sw.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
+            values.Add(elapsedMs);
+        }
+        return values;
     }
 
     private static async Task<Metrics> ReadWriteScenario(IClientConnection connection, ClientOptions options)
@@ -196,12 +158,13 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
 
             long bytesWritten = 0;
 
-            while (_isRunning)
+            while (IsRunning)
             {
-                if (isWarmup && !_isWarmup)
+                if (isWarmup && !IsWarmup)
                 {
                     isWarmup = false;
                     bytesWritten = 0;
+                    OnWarmupCompleted();
                     sw.Restart();
                 }
 
@@ -227,13 +190,18 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
 
             long bytesRead = 0;
 
-            while (_isRunning)
+            while (IsRunning)
             {
-                if (isWarmup && !_isWarmup)
+                if (isWarmup && !IsWarmup)
                 {
+                    if (bytesRead == 0)
+                    {
+                        throw new Exception($"No bytes read during warmup.");
+                    }
                     isWarmup = false;
-                    sw.Restart();
                     bytesRead = 0;
+                    OnWarmupCompleted();
+                    sw.Restart();
                 }
 
                 bytesRead += await stream.ReadAsync(recvBuffer, default).ConfigureAwait(false);
@@ -258,9 +226,9 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
         var isWarmup = true;
         var sw = Stopwatch.StartNew();
 
-        while (_isRunning)
+        while (IsRunning)
         {
-            if (isWarmup && !_isWarmup)
+            if (isWarmup && !IsWarmup)
             {
                 if (successRequests == 0)
                 {
@@ -269,6 +237,7 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
                 isWarmup = false;
                 successRequests = 0;
                 exceptionRequests = 0;
+                OnWarmupCompleted();
                 sw.Restart();
             }
 
@@ -326,59 +295,5 @@ internal abstract class BenchmarkClient<TConnectionOptions, TOptions> where TOpt
         }
 
         return sslOptions;
-    }
-
-    private static void RegisterPercentiledMetric(string name, string shortDescription, string longDescription)
-    {
-        BenchmarksEventSource.Register(name + "/avg", Operations.Min, Operations.Min, shortDescription + " - avg", longDescription + " - avg", "n3");
-        BenchmarksEventSource.Register(name + "/min", Operations.Min, Operations.Min, shortDescription + " - min", longDescription + " - min", "n3");
-        BenchmarksEventSource.Register(name + "/p50", Operations.Max, Operations.Max, shortDescription + " - p50", longDescription + " - 50th percentile", "n3");
-        BenchmarksEventSource.Register(name + "/p75", Operations.Max, Operations.Max, shortDescription + " - p75", longDescription + " - 75th percentile", "n3");
-        BenchmarksEventSource.Register(name + "/p90", Operations.Max, Operations.Max, shortDescription + " - p90", longDescription + " - 90th percentile", "n3");
-        BenchmarksEventSource.Register(name + "/p99", Operations.Max, Operations.Max, shortDescription + " - p99", longDescription + " - 99th percentile", "n3");
-        BenchmarksEventSource.Register(name + "/max", Operations.Max, Operations.Max, shortDescription + " - max", longDescription + " - max", "n3");
-    }
-
-    private static void LogPercentiledMetric(string name, List<double> values)
-    {
-        values.Sort();
-
-        LogMetric(name + "/avg", values.Average());
-        LogMetric(name + "/min", GetPercentile(0, values));
-        LogMetric(name + "/p50", GetPercentile(50, values));
-        LogMetric(name + "/p75", GetPercentile(75, values));
-        LogMetric(name + "/p90", GetPercentile(90, values));
-        LogMetric(name + "/p99", GetPercentile(99, values));
-        LogMetric(name + "/max", GetPercentile(100, values));
-    }
-
-    private static double GetPercentile(int percent, List<double> sortedValues)
-    {
-        if (percent == 0)
-        {
-            return sortedValues[0];
-        }
-
-        if (percent == 100)
-        {
-            return sortedValues[^1];
-        }
-
-        var i = percent * sortedValues.Count / 100.0 + 0.5;
-        var fractionPart = i - Math.Truncate(i);
-
-        return (1.0 - fractionPart) * sortedValues[(int)Math.Truncate(i) - 1] + fractionPart * sortedValues[(int)Math.Ceiling(i) - 1];
-    }
-
-    private static void Log(string message)
-    {
-        var time = DateTime.UtcNow.ToString("hh:mm:ss.fff");
-        Console.WriteLine($"[{time}] {message}");
-    }
-
-    private static void LogMetric(string name, double value)
-    {
-        BenchmarksEventSource.Measure(name, value);
-        Log($"{name}: {value}");
     }
 }

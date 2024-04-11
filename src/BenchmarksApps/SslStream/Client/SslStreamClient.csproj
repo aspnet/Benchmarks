@@ -11,9 +11,8 @@
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
     <PackageReference Include="Microsoft.Crank.EventSources" Version="0.1.0-alpha.20501.1" />
-    <Compile Include="../../ConnectedStreams/Client/Program.cs" />
-    <Compile Include="../../ConnectedStreams/Client/ClientOptions.cs" />
-    <Compile Include="../../ConnectedStreams/Shared/CommonOptions.cs" />
+    <Compile Include="../../Common/**" />
+    <Compile Include="../../ConnectedStreams/**" />
     <Compile Include="../Shared/SslOptionsCommon.cs" />
   </ItemGroup>
 

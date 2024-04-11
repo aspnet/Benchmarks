@@ -32,6 +32,10 @@ public class CommonOptions
     public int ReceiveBufferSize { get; set; }
     public int SendBufferSize { get; set; }
     public X509RevocationMode CertificateRevocationCheckMode { get; set; }
+
+    public override string ToString()
+        => $"Port: {Port}, ReceiveBufferSize: {ReceiveBufferSize}, SendBufferSize: {SendBufferSize}, " +
+            $"CertificateRevocationCheckMode: {CertificateRevocationCheckMode}";
 }
 
 public static class OptionsBinderHelper

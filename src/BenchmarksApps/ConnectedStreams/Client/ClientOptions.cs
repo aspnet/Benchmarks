@@ -2,6 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Security.Cryptography.X509Certificates;
 
+using Common;
 using ConnectedStreams.Shared;
 
 namespace ConnectedStreams.Client;
@@ -13,7 +14,7 @@ public enum CertificateSelectionType
     Callback,
 }
 
-public class ClientOptions : CommonOptions
+public class ClientOptions : CommonOptions, IBaseClientOptions
 {
     public string Hostname { get; set; } = null!;
     public int Connections { get; set; }
@@ -24,6 +25,14 @@ public class ClientOptions : CommonOptions
     public Scenario Scenario { get; set; }
     public TimeSpan Warmup { get; set; }
     public TimeSpan Duration { get; set; }
+
+    public override string ToString()
+        => $"{base.ToString()}, Hostname: {Hostname}, Connections: {Connections}, Streams: {Streams}, " +
+            $"CertificateSelection: {CertificateSelection}, ClientCertificate: " +
+            (ClientCertificate is not null
+                ? $"{{ {ClientCertificate.ToString().ReplaceLineEndings(" ")}}}"
+                : null) +
+            $", TlsHostName: {TlsHostName}, Scenario: {Scenario}, Warmup: {Warmup}, Duration: {Duration}";
 }
 
 public class ClientOptionsBinder : BinderBase<ClientOptions>

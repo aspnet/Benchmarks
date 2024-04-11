@@ -12,6 +12,11 @@ public class SslStreamServerOptions : ServerOptions, ISslOptions
     public bool DisableTlsResume { get; set; }
     public bool AllowTlsResume { get; set; }
     public SslProtocols EnabledSslProtocols { get; set; }
+
+    public override string ToString()
+    {
+        return $"{base.ToString()}, DisableTlsResume: {DisableTlsResume}, AllowTlsResume: {AllowTlsResume}, EnabledSslProtocols: {EnabledSslProtocols}";
+    }
 }
 
 public class SslStreamOptionsBinder : BinderBase<SslStreamServerOptions>

@@ -5,6 +5,7 @@ using System.CommandLine;
 
 using ConnectedStreams.Server;
 using SslStreamServer;
+using Common;
 
 internal class Program
 {
@@ -15,7 +16,7 @@ internal class Program
     }
 }
 
-internal class SslStreamBenchmarkServer : BenchmarkServer<SslStreamServerOptions>
+internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOptions>
 {
     public override string Name => "SslStream benchmark server";
     public override string MetricPrefix => "sslstream";
@@ -23,10 +24,10 @@ internal class SslStreamBenchmarkServer : BenchmarkServer<SslStreamServerOptions
     public override void AddCommandLineOptions(RootCommand rootCommand)
         => SslStreamOptionsBinder.AddOptions(rootCommand);
 
-    public override bool IsConnectionCloseException(Exception e)
+    public override bool IsExpectedException(Exception e)
         => e is IOException && e.InnerException is SocketException se && se.SocketErrorCode == SocketError.ConnectionReset;
 
-    public override Task<IListener> ListenAsync(SslStreamServerOptions options)
+    public override Task<IBaseListener<IServerConnection>> ListenAsync(SslStreamServerOptions options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         sslOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -39,7 +40,7 @@ internal class SslStreamBenchmarkServer : BenchmarkServer<SslStreamServerOptions
         socket.Listen();
 
         var listener = new SslStreamServerListener(socket, sslOptions);
-        return Task.FromResult<IListener>(listener);
+        return Task.FromResult<IBaseListener<IServerConnection>>(listener);
     }
 }
 
@@ -47,7 +48,7 @@ internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthentica
 {
     public EndPoint LocalEndPoint => _listenSocket.LocalEndPoint!;
 
-    public async Task<IServerConnection> AcceptConnectionAsync(CancellationToken cancellationToken)
+    public async Task<IServerConnection> AcceptAsync(CancellationToken cancellationToken)
     {
         var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken).ConfigureAwait(false);
         return new SslStreamServerConnection(acceptSocket, _sslOptions);
@@ -64,6 +65,7 @@ internal class SslStreamServerConnection(Socket _socket, SslServerAuthentication
 {
     private SslStream? _sslStream;
     private bool _streamConsumed;
+    public bool IsMultiplexed => false;
     public SslApplicationProtocol NegotiatedApplicationProtocol
         => _sslStream?.NegotiatedApplicationProtocol ?? throw new InvalidOperationException("Handshake not completed");
 
@@ -84,10 +86,10 @@ internal class SslStreamServerConnection(Socket _socket, SslServerAuthentication
         {
             throw new InvalidOperationException("Handshake not completed");
         }
+
         if (_streamConsumed)
         {
-            //Special-case for SslStream
-            return Task.FromResult<Stream>(null!);
+            throw new InvalidOperationException("Stream already consumed");
         }
         _streamConsumed = true;
 
