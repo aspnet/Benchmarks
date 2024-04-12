@@ -5,10 +5,8 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Security.Authentication;
 
-using System.Net.Security.Benchmarks.Client;
-using SslStreamCommon;
+namespace System.Net.Security.Benchmarks.SslStream;
 
-namespace SslStreamClient;
 public class SslStreamClientOptions : ClientOptions, ISslOptions
 {
     public bool AllowTlsResume { get; set; }

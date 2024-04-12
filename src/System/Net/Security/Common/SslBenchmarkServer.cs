@@ -1,16 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net;
-using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-using Common;
-using System.Net.Security.Benchmarks.Shared;
+using System.Net.Benchmarks;
 
-namespace System.Net.Security.Benchmarks.Server;
+namespace System.Net.Security.Benchmarks;
 
-internal interface IListener : IBaseListener<IServerConnection>, IAsyncDisposable
+internal interface ISecureListener : IBaseListener<IServerConnection>, IAsyncDisposable
 {
     EndPoint LocalEndPoint { get; }
 }
@@ -26,10 +23,12 @@ internal interface IServerConnection : IAsyncDisposable
 internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnection, TOptions>
     where TOptions : ServerOptions
 {
-    public override string GetReadyStateText(IBaseListener<IServerConnection> listener)
-        => $"Listening on {((IListener)listener).LocalEndPoint}";
+    protected override string GetReadyStateText(IBaseListener<IServerConnection> listener)
+        => $"Listening on {((ISecureListener)listener).LocalEndPoint}";
 
-    public override async Task ProcessAsyncInternal(IServerConnection connection, TOptions options, CancellationToken ct)
+    protected override void ValidateOptions(TOptions options) { }
+
+    protected override async Task ProcessAsyncInternal(IServerConnection connection, TOptions options, CancellationToken ct)
     {
         try
         {

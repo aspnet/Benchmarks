@@ -5,7 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Security.Authentication;
 
-namespace SslStreamCommon;
+namespace System.Net.Security.Benchmarks.SslStream;
 
 public interface ISslOptions
 {

@@ -3,12 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Binding;
-using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-using System.Net.Security.Benchmarks.Shared;
-
-namespace System.Net.Security.Benchmarks.Server;
+namespace System.Net.Security.Benchmarks;
 
 public enum ServerCertSelectionType
 {

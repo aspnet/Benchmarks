@@ -3,7 +3,7 @@
 
 using Microsoft.Crank.EventSources;
 
-namespace Common;
+namespace System.Net.Benchmarks;
 
 internal static class Logger
 {

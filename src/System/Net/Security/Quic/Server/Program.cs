@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net;
-using System.Net.Security;
 using System.CommandLine;
-
-using System.Net.Security.Benchmarks.Server;
+using System.Net;
 using System.Net.Quic;
-using Common;
+using System.Net.Security;
+
+using System.Net.Benchmarks;
+using System.Net.Security.Benchmarks;
 
 internal class Program
 {
@@ -18,21 +18,20 @@ internal class Program
     }
 }
 
-// The benchmarks are only run on Windows and Linux
 #pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
 internal class QuicBenchmarkServer : SslBenchmarkServer<ServerOptions>
 {
-    public override string Name => "QUIC benchmark server";
-    public override string MetricPrefix => "quic";
+    protected override string Name => "QUIC benchmark server";
+    protected override string MetricPrefix => "quic";
 
-    public override void AddCommandLineOptions(RootCommand rootCommand)
+    protected override void AddCommandLineOptions(RootCommand rootCommand)
         => OptionsBinder.AddOptions(rootCommand);
 
-    public override bool IsExpectedException(Exception e)
+    protected override bool IsExpectedException(Exception e)
         => e is QuicException qe && qe.QuicError == QuicError.ConnectionAborted;
 
-    public override async Task<IBaseListener<IServerConnection>> ListenAsync(ServerOptions options, CancellationToken ct)
+    protected override async Task<IBaseListener<IServerConnection>> ListenAsync(ServerOptions options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         var connectionOptions = new QuicServerConnectionOptions()
@@ -53,7 +52,7 @@ internal class QuicBenchmarkServer : SslBenchmarkServer<ServerOptions>
     }
 }
 
-internal class QuicServerListener(QuicListener _listener, ServerOptions _serverOptions) : IListener
+internal class QuicServerListener(QuicListener _listener, ServerOptions _serverOptions) : ISecureListener
 {
     public EndPoint LocalEndPoint => _listener.LocalEndPoint;
 

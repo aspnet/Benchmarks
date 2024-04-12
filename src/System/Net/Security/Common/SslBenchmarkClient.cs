@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
-using System.Net.Security;
 
-using Common;
-using System.Net.Security.Benchmarks.Shared;
+using System.Net.Benchmarks;
+using static System.Net.Benchmarks.Logger;
 
-using static Common.Logger;
+namespace System.Net.Security.Benchmarks;
 
-namespace System.Net.Security.Benchmarks.Client;
-
-// avoid false sharing among counters
 internal class Metrics
 {
     public double BytesReadPerSecond;
@@ -26,8 +22,8 @@ internal interface IClientConnection : IAsyncDisposable
 internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseClient<TOptions>
     where TOptions : ClientOptions
 {
-    public abstract TConnectionOptions CreateClientConnectionOptions(TOptions options);
-    public abstract Task<IClientConnection> EstablishConnectionAsync(TConnectionOptions connectionOptions, TOptions options);
+    protected abstract TConnectionOptions CreateClientConnectionOptions(TOptions options);
+    protected abstract Task<IClientConnection> EstablishConnectionAsync(TConnectionOptions connectionOptions, TOptions options);
     protected override Task RunScenarioAsync(TOptions options)
     {
         var connectionOptions = CreateClientConnectionOptions(options);

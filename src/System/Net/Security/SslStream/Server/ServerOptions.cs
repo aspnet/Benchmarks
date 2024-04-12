@@ -5,10 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Security.Authentication;
 
-using System.Net.Security.Benchmarks.Server;
-using SslStreamCommon;
-
-namespace SslStreamServer;
+namespace System.Net.Security.Benchmarks.SslStream;
 
 public class SslStreamServerOptions : ServerOptions, ISslOptions
 {
@@ -22,7 +19,7 @@ public class SslStreamServerOptions : ServerOptions, ISslOptions
     }
 }
 
-public class SslStreamOptionsBinder : BinderBase<SslStreamServerOptions>
+public class SslStreamServerOptionsBinder : BinderBase<SslStreamServerOptions>
 {
     public static void AddOptions(RootCommand command)
     {

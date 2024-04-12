@@ -5,7 +5,7 @@ using System.CommandLine;
 using System.Net;
 using System.Net.Quic;
 
-using System.Net.Security.Benchmarks.Client;
+using System.Net.Security.Benchmarks;
 
 internal class Program
 {
@@ -15,7 +15,6 @@ internal class Program
     }
 }
 
-// The benchmarks are only run on Windows and Linux
 #pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
 internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOptions, ClientOptions>
@@ -26,12 +25,12 @@ internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOpti
     }
     private QuicBenchmarkClient() { }
 
-    public override string Name => "QUIC benchmark client";
-    public override string MetricPrefix => "quic";
-    public override void AddCommandLineOptions(RootCommand command) => ClientOptionsBinder.AddOptions(command);
-    public override void ValidateOptions(ClientOptions options) { }
+    protected override string Name => "QUIC benchmark client";
+    protected override string MetricPrefix => "quic";
+    protected override void AddCommandLineOptions(RootCommand command) => ClientOptionsBinder.AddOptions(command);
+    protected override void ValidateOptions(ClientOptions options) { }
 
-    public override QuicClientConnectionOptions CreateClientConnectionOptions(ClientOptions options)
+    protected override QuicClientConnectionOptions CreateClientConnectionOptions(ClientOptions options)
         => new()
         {
             DefaultStreamErrorCode = 123,
@@ -40,7 +39,7 @@ internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOpti
             ClientAuthenticationOptions = CreateSslClientAuthenticationOptions(options)
         };
 
-    public override async Task<IClientConnection> EstablishConnectionAsync(QuicClientConnectionOptions options, ClientOptions _)
+    protected override async Task<IClientConnection> EstablishConnectionAsync(QuicClientConnectionOptions options, ClientOptions _)
         => new QuicClientConnection(await QuicConnection.ConnectAsync(options));
 }
 

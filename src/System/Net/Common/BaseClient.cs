@@ -4,41 +4,28 @@
 using System.CommandLine;
 using System.CommandLine.Binding;
 
-using static Common.Logger;
+using static System.Net.Benchmarks.Logger;
 
-namespace Common;
+namespace System.Net.Benchmarks;
 
-internal interface IBaseClientOptions
+internal abstract class BenchmarkApp<TOptions>
 {
-    TimeSpan Warmup { get; }
-    TimeSpan Duration { get; }
-}
+    private static bool s_appStarted;
 
-internal abstract class BaseClient<TOptions> where TOptions : IBaseClientOptions
-{
-    private static bool s_isInitialized;
-    private static bool s_isRunning;
-    private static bool s_isWarmup;
-    private static readonly TaskCompletionSource s_warmupCompletedTcs = new();
-
-    protected static bool IsRunning => s_isRunning;
-    protected static bool IsWarmup => s_isWarmup;
-    protected static void OnWarmupCompleted() => s_warmupCompletedTcs.TrySetResult();
-
-    public abstract string Name { get; }
-    public abstract string MetricPrefix { get; }
-    public abstract void AddCommandLineOptions(RootCommand command);
-    public abstract void ValidateOptions(TOptions options);
-    protected abstract Task RunScenarioAsync(TOptions options);
+    protected abstract string Name { get; }
+    protected abstract string MetricPrefix { get; }
+    protected abstract void AddCommandLineOptions(RootCommand command);
+    protected abstract void ValidateOptions(TOptions options);
+    protected abstract Task RunAsync(TOptions options);
 
     public Task RunCommandAsync<TBinder>(string[] args)
         where TBinder : BinderBase<TOptions>, new()
     {
-        if (s_isInitialized)
+        if (s_appStarted)
         {
-            throw new InvalidOperationException("Client is already running.");
+            throw new InvalidOperationException($"{Name} is already running.");
         }
-        s_isInitialized = true;
+        s_appStarted = true;
 
         var rootCommand = new RootCommand(Name);
         AddCommandLineOptions(rootCommand);
@@ -46,7 +33,7 @@ internal abstract class BaseClient<TOptions> where TOptions : IBaseClientOptions
         return rootCommand.InvokeAsync(args);
     }
 
-    protected async Task RunAsync(TOptions options)
+    protected void OnStartup(TOptions options)
     {
         Log($"Starting {Name}");
         Log($"Options:");
@@ -56,6 +43,25 @@ internal abstract class BaseClient<TOptions> where TOptions : IBaseClientOptions
 
         RegisterSimpleMetric("env/processorcount", "Processor Count", "n0");
         LogMetric("env/processorcount", Environment.ProcessorCount);
+    }
+}
+
+internal abstract class BaseClient<TOptions> : BenchmarkApp<TOptions>
+    where TOptions : IBaseClientOptions
+{
+    private static bool s_isRunning;
+    private static bool s_isWarmup;
+    private static readonly TaskCompletionSource s_warmupCompletedTcs = new();
+
+    protected static bool IsRunning => s_isRunning;
+    protected static bool IsWarmup => s_isWarmup;
+    protected static void OnWarmupCompleted() => s_warmupCompletedTcs.TrySetResult();
+
+    protected abstract Task RunScenarioAsync(TOptions options);
+
+    protected override async Task RunAsync(TOptions options)
+    {
+        OnStartup(options);
 
         s_isRunning = true;
         s_isWarmup = true;

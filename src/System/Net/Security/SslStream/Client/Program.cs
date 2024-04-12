@@ -5,8 +5,8 @@ using System.CommandLine;
 using System.Net.Security;
 using System.Net.Sockets;
 
-using System.Net.Security.Benchmarks.Client;
-using SslStreamClient;
+using System.Net.Security.Benchmarks;
+using System.Net.Security.Benchmarks.SslStream;
 
 internal class Program
 {
@@ -18,10 +18,10 @@ internal class Program
 
 internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthenticationOptions, SslStreamClientOptions>
 {
-    public override string Name => "SslStream benchmark client";
-    public override string MetricPrefix => "sslstream";
-    public override void AddCommandLineOptions(RootCommand command) => SslStreamOptionsBinder.AddOptions(command);
-    public override void ValidateOptions(SslStreamClientOptions options)
+    protected override string Name => "SslStream benchmark client";
+    protected override string MetricPrefix => "sslstream";
+    protected override void AddCommandLineOptions(RootCommand command) => SslStreamOptionsBinder.AddOptions(command);
+    protected override void ValidateOptions(SslStreamClientOptions options)
     {
         if (options.Streams != 1)
         {
@@ -29,7 +29,7 @@ internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthentica
         }
     }
 
-    public override SslClientAuthenticationOptions CreateClientConnectionOptions(SslStreamClientOptions options)
+    protected override SslClientAuthenticationOptions CreateClientConnectionOptions(SslStreamClientOptions options)
     {
         var authOptions = CreateSslClientAuthenticationOptions(options);
         authOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -39,7 +39,7 @@ internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthentica
         return authOptions;
     }
 
-    public override async Task<IClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
+    protected override async Task<IClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
     {
         var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
         await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);

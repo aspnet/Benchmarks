@@ -5,10 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Security.Cryptography.X509Certificates;
 
-using Common;
-using System.Net.Security.Benchmarks.Shared;
+using System.Net.Benchmarks;
 
-namespace System.Net.Security.Benchmarks.Client;
+namespace System.Net.Security.Benchmarks;
 
 public enum CertificateSelectionType
 {

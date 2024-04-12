@@ -1,36 +1,36 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.CommandLine;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.CommandLine;
 
-using System.Net.Security.Benchmarks.Server;
-using SslStreamServer;
-using Common;
+using System.Net.Benchmarks;
+using System.Net.Security.Benchmarks;
+using System.Net.Security.Benchmarks.SslStream;
 
 internal class Program
 {
     private static async Task Main(string[] args)
     {
         var server = new SslStreamBenchmarkServer();
-        await server.RunCommandAsync<SslStreamOptionsBinder>(args);
+        await server.RunCommandAsync<SslStreamServerOptionsBinder>(args);
     }
 }
 
 internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOptions>
 {
-    public override string Name => "SslStream benchmark server";
-    public override string MetricPrefix => "sslstream";
+    protected override string Name => "SslStream benchmark server";
+    protected override string MetricPrefix => "sslstream";
 
-    public override void AddCommandLineOptions(RootCommand rootCommand)
-        => SslStreamOptionsBinder.AddOptions(rootCommand);
+    protected override void AddCommandLineOptions(RootCommand rootCommand)
+        => SslStreamServerOptionsBinder.AddOptions(rootCommand);
 
-    public override bool IsExpectedException(Exception e)
+    protected override bool IsExpectedException(Exception e)
         => e is IOException && e.InnerException is SocketException se && se.SocketErrorCode == SocketError.ConnectionReset;
 
-    public override Task<IBaseListener<IServerConnection>> ListenAsync(SslStreamServerOptions options, CancellationToken ct)
+    protected override Task<IBaseListener<IServerConnection>> ListenAsync(SslStreamServerOptions options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         sslOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -47,7 +47,7 @@ internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOpti
     }
 }
 
-internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthenticationOptions _sslOptions) : IListener
+internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthenticationOptions _sslOptions) : ISecureListener
 {
     public EndPoint LocalEndPoint => _listenSocket.LocalEndPoint!;
 

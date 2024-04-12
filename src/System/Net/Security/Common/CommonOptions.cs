@@ -3,11 +3,10 @@
 
 using System.CommandLine;
 using System.CommandLine.Binding;
-using System.Net.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace System.Net.Security.Benchmarks.Shared;
+namespace System.Net.Security.Benchmarks;
 
 public static class ApplicationProtocolConstants
 {
@@ -41,7 +40,7 @@ public class CommonOptions
             $"CertificateRevocationCheckMode: {CertificateRevocationCheckMode}";
 }
 
-public static class OptionsBinderHelper
+internal static class OptionsBinderHelper
 {
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
