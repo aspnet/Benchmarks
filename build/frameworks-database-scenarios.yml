@@ -42,18 +42,18 @@ parameters:
     arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
 
   # Actix (Rust)
-
-  - displayName: Actix Fortunes
-    arguments: --scenario fortunes_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesActix --property protocol=http
+  # Actix is disable as the build is currently broken
+  # - displayName: Actix Fortunes
+  #   arguments: --scenario fortunes_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesActix --property protocol=http
 
   # Drogon (C++)
-  
-  - displayName: Drogon Plaintext
-    arguments: --scenario plaintext_drogon $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextDrogon --property protocol=http
-  - displayName: Drogon Json
-    arguments: --scenario json_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonDrogon --property protocol=http
-  - displayName: Drogon Fortunes
-    arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
+  # Drogon is disable as currently it takes 10 minutes to build
+  # - displayName: Drogon Plaintext
+  #   arguments: --scenario plaintext_drogon $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextDrogon --property protocol=http
+  # - displayName: Drogon Json
+  #   arguments: --scenario json_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonDrogon --property protocol=http
+  # - displayName: Drogon Fortunes
+  #   arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
 
   # Spring (Java)
   
