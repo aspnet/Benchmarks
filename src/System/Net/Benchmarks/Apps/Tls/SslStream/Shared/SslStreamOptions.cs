@@ -7,19 +7,19 @@ using System.Security.Authentication;
 
 namespace System.Net.Security.Benchmarks.SslStream;
 
-public interface ISslOptions
+public interface ISslStreamBenchmarkOptions
 {
     bool AllowTlsResume { get; set; }
     SslProtocols EnabledSslProtocols { get; set; }
 }
 
-public static class SslOptionsCommon
+public static class SslStreamBenchmarkOptionsHelper
 {
     public static Option<Version> TlsVersionOption { get; } = new Option<Version>("--tls-version", () => new Version(1, 3), "The TLS protocol version to use.").FromAmong("1.2", "1.3");
     public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
 
 #if !NET8_0_OR_GREATER
-    static SslOptionsCommon()
+    static SslStreamBenchmarkOptionsHelper()
     {
         AllowTlsResumeOption.IsHidden = true;
         AllowTlsResumeOption.AddValidator(symbol =>
@@ -34,13 +34,13 @@ public static class SslOptionsCommon
     }
 #endif
 
-    public static void AddOptions(RootCommand command)
+    public static void AddCommandLineArguments(RootCommand command)
     {
         command.AddOption(TlsVersionOption);
         command.AddOption(AllowTlsResumeOption);
     }
 
-    public static void BindOptions(ISslOptions options, ParseResult parsed)
+    public static void BindOptions(ISslStreamBenchmarkOptions options, ParseResult parsed)
     {
         options.AllowTlsResume = parsed.GetValueForOption(AllowTlsResumeOption);
         options.EnabledSslProtocols = parsed.GetValueForOption(TlsVersionOption) switch

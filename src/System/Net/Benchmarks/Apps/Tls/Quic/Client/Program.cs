@@ -16,16 +16,16 @@ internal class Program
 
 #pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
-internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOptions, ClientOptions>
+internal class QuicBenchmarkClient : TlsBenchmarkClient<Connection, QuicClientConnectionOptions, TlsBenchmarkClientOptions>
 {
     public static Task RunAsync(string[] args)
-        => new QuicBenchmarkClient().RunAsync<TlsBenchmarkClientOptionsBinder<ClientOptions>>(args);
+        => new QuicBenchmarkClient().RunAsync<TlsBenchmarkClientOptionsBinder<TlsBenchmarkClientOptions>>(args);
 
     protected override string Name => "QUIC benchmark client";
     protected override string MetricPrefix => "quic";
-    protected override void ValidateOptions(ClientOptions options) { }
+    protected override void ValidateOptions(TlsBenchmarkClientOptions options) { }
 
-    protected override QuicClientConnectionOptions CreateClientConnectionOptions(ClientOptions options)
+    protected override QuicClientConnectionOptions CreateClientConnectionOptions(TlsBenchmarkClientOptions options)
         => new()
         {
             DefaultStreamErrorCode = 123,
@@ -34,15 +34,15 @@ internal class QuicBenchmarkClient : SslBenchmarkClient<QuicClientConnectionOpti
             ClientAuthenticationOptions = CreateSslClientAuthenticationOptions(options)
         };
 
-    protected override async Task<IClientConnection> EstablishConnectionAsync(QuicClientConnectionOptions options, ClientOptions _)
-        => new QuicClientConnection(await QuicConnection.ConnectAsync(options));
+    protected override async Task<Connection> EstablishConnectionAsync(QuicClientConnectionOptions options, TlsBenchmarkClientOptions _)
+        => new Connection(await QuicConnection.ConnectAsync(options));
 }
 
-internal class QuicClientConnection(QuicConnection _connection) : IClientConnection
+internal class Connection(QuicConnection _connection) : ITlsBenchmarkClientConnection
 {
     private static readonly byte[] s_byteBuf = [ 42 ];
 
-    public async Task<Stream> EstablishStreamAsync(ClientOptions options)
+    public async Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
     {
         var stream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         if (options.SendBufferSize == 0) // we must send at least one byte to open the stream on the wire

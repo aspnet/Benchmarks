@@ -16,7 +16,7 @@ public enum CertificateSelectionType
     Callback,
 }
 
-public class ClientOptions : CommonOptions, IBaseClientOptions
+public class TlsBenchmarkClientOptions : TlsBenchmarkOptions, IBenchmarkClientOptions
 {
     public string Hostname { get; set; } = null!;
     public int Port { get; set; }
@@ -39,7 +39,7 @@ public class ClientOptions : CommonOptions, IBaseClientOptions
 }
 
 public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<TOptions>
-    where TOptions : ClientOptions, new()
+    where TOptions : TlsBenchmarkClientOptions, new()
 {
     public static Option<string> HostOption { get; } = new Option<string>("--host", "The host to connect to.") { IsRequired = true };
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to connect to.");
@@ -58,9 +58,6 @@ public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<
         command.AddOption(HostOption);
         command.AddOption(PortOption);
         command.AddOption(ScenarioOption);
-
-        OptionsBinderHelper.AddOptions(command);
-
         command.AddOption(ConnectionsOption);
         command.AddOption(StreamsOption);
         command.AddOption(CertificateSelectionOption);
@@ -69,6 +66,8 @@ public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<
         command.AddOption(TlsHostNameOption);
         command.AddOption(DurationOption);
         command.AddOption(WarmupOption);
+
+        TlsBenchmarkOptionsHelper.AddOptions(command);
     }
 
     protected override void BindOptions(TOptions options, ParseResult parsed)
@@ -77,7 +76,7 @@ public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<
         options.Port = parsed.GetValueForOption(PortOption);
         options.Connections = parsed.GetValueForOption(ConnectionsOption);
         options.Streams = parsed.GetValueForOption(StreamsOption);
-        options.ClientCertificate = OptionsBinderHelper.GetCertificateOrNull(
+        options.ClientCertificate = TlsBenchmarkOptionsHelper.GetCertificateOrNull(
             parsed.GetValueForOption(ClientCertificatePathOption),
             parsed.GetValueForOption(ClientCertificatePasswordOption));
         options.Scenario = parsed.GetValueForOption(ScenarioOption);
@@ -86,6 +85,6 @@ public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<
         options.Duration = TimeSpan.FromSeconds(parsed.GetValueForOption(DurationOption));
         options.Warmup = TimeSpan.FromSeconds(parsed.GetValueForOption(WarmupOption));
 
-        OptionsBinderHelper.BindOptions(options, parsed);
+        TlsBenchmarkOptionsHelper.BindOptions(options, parsed);
     }
 }

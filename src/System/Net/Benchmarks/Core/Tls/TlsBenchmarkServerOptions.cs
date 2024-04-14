@@ -16,7 +16,7 @@ public enum ServerCertSelectionType
     Callback,
 }
 
-public class ServerOptions : CommonOptions, IBenchmarkServerOptions
+public class TlsBenchmarkServerOptions : TlsBenchmarkOptions, IBenchmarkServerOptions
 {
     public int Port { get; set; }
     public ServerCertSelectionType CertificateSelection { get; set; }
@@ -32,7 +32,7 @@ public class ServerOptions : CommonOptions, IBenchmarkServerOptions
 }
 
 public class TlsBenchmarkServerOptionsBinder<TOptions> : BenchmarkOptionsBinder<TOptions>
-    where TOptions : ServerOptions, new()
+    where TOptions : TlsBenchmarkServerOptions, new()
 {
     public static Option<int> PortOption { get; } = new Option<int>("--port", () => 9998, "The server port to listen on");
     public static Option<string> ServerCertificatePathOption { get; } = new Option<string>("--cert", "Path to the server certificate. If not specified, a self-signed certificate will be generated.");
@@ -45,7 +45,7 @@ public class TlsBenchmarkServerOptionsBinder<TOptions> : BenchmarkOptionsBinder<
     {
         command.AddOption(PortOption);
 
-        OptionsBinderHelper.AddOptions(command);
+        TlsBenchmarkOptionsHelper.AddOptions(command);
 
         command.AddOption(CertificateSelectionOption);
         command.AddOption(ServerCertificatePathOption);
@@ -59,7 +59,7 @@ public class TlsBenchmarkServerOptionsBinder<TOptions> : BenchmarkOptionsBinder<
         options.Port = parsed.GetValueForOption(PortOption);
         options.CertificateSelection = parsed.GetValueForOption(CertificateSelectionOption);
         options.RequireClientCertificate = parsed.GetValueForOption(RequireClientCertificateOption);
-        options.ServerCertificate = OptionsBinderHelper.GetCertificateOrDefault(
+        options.ServerCertificate = TlsBenchmarkOptionsHelper.GetCertificateOrDefault(
             parsed.GetValueForOption(ServerCertificatePathOption),
             parsed.GetValueForOption(ServerCertificatePasswordOption),
             parsed.GetValueForOption(HostNameOption)!);
@@ -69,6 +69,6 @@ public class TlsBenchmarkServerOptionsBinder<TOptions> : BenchmarkOptionsBinder<
             ApplicationProtocolConstants.Rps,
         ];
 
-        OptionsBinderHelper.BindOptions(options, parsed);
+        TlsBenchmarkOptionsHelper.BindOptions(options, parsed);
     }
 }

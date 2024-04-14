@@ -7,7 +7,7 @@ using System.Security.Authentication;
 
 namespace System.Net.Security.Benchmarks.SslStream;
 
-public class SslStreamClientOptions : ClientOptions, ISslOptions
+public class SslStreamClientOptions : TlsBenchmarkClientOptions, ISslStreamBenchmarkOptions
 {
     public bool AllowTlsResume { get; set; }
     public SslProtocols EnabledSslProtocols { get; set; }
@@ -21,12 +21,12 @@ public class SslStreamOptionsBinder : TlsBenchmarkClientOptionsBinder<SslStreamC
     public override void AddCommandLineArguments(RootCommand command)
     {
         base.AddCommandLineArguments(command);
-        SslOptionsCommon.AddOptions(command);
+        SslStreamBenchmarkOptionsHelper.AddCommandLineArguments(command);
     }
 
     protected override void BindOptions(SslStreamClientOptions options, ParseResult parsed)
     {
         base.BindOptions(options, parsed);
-        SslOptionsCommon.BindOptions(options, parsed);
+        SslStreamBenchmarkOptionsHelper.BindOptions(options, parsed);
     }
 }

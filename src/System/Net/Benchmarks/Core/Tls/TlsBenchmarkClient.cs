@@ -7,22 +7,19 @@ using System.Net.Benchmarks;
 
 namespace System.Net.Security.Benchmarks;
 
-internal class Metrics
+internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
+
+internal interface ITlsBenchmarkClientConnection : IAsyncDisposable
 {
-    public double BytesReadPerSecond;
-    public double BytesWrittenPerSecond;
+    Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options);
 }
 
-internal interface IClientConnection : IAsyncDisposable
-{
-    Task<Stream> EstablishStreamAsync(ClientOptions options);
-}
-
-internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseClient<TOptions>
-    where TOptions : ClientOptions, new()
+internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOptions> : BenchmarkClient<TOptions>
+    where TConnection : ITlsBenchmarkClientConnection
+    where TOptions : TlsBenchmarkClientOptions, new()
 {
     protected abstract TConnectionOptions CreateClientConnectionOptions(TOptions options);
-    protected abstract Task<IClientConnection> EstablishConnectionAsync(TConnectionOptions connectionOptions, TOptions options);
+    protected abstract Task<TConnection> EstablishConnectionAsync(TConnectionOptions connectionOptions, TOptions options);
     protected override Task RunScenarioAsync(TOptions options, CancellationToken cancellationToken)
     {
         var connectionOptions = CreateClientConnectionOptions(options);
@@ -42,7 +39,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         var tasks = new List<Task<List<double>>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
         {
-            tasks.Add(HandshakeScenario(this, connectionOptions, options));
+            tasks.Add(HandshakeScenario(EstablishConnectionAsync, connectionOptions, options));
         }
 
         var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -54,8 +51,8 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         RegisterMetric(MetricName.Read + MetricName.Mean, "Read B/s - mean");
         RegisterMetric(MetricName.Write + MetricName.Mean, "Write B/s - mean");
 
-        var connections = new IClientConnection[options.Connections];
-        var tasks = new List<Task<Metrics>>(options.Connections * options.Streams);
+        var connections = new ITlsBenchmarkClientConnection[options.Connections];
+        var tasks = new List<Task<ReadWriteMetrics>>(options.Connections * options.Streams);
         for (var i = 0; i < options.Connections; i++)
         {
             connections[i] = await EstablishConnectionAsync(connectionOptions, options).ConfigureAwait(false);
@@ -80,7 +77,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         RegisterMetric(MetricName.Rps + MetricName.Mean, "RPS - mean");
         RegisterMetric(MetricName.Errors, "Errors", "n0");
 
-        var connections = new IClientConnection[options.Connections];
+        var connections = new ITlsBenchmarkClientConnection[options.Connections];
         var tasks = new List<Task<(double Rps, long Errors)>>(options.Connections * options.Streams);
         for (var i = 0; i < options.Connections; i++)
         {
@@ -104,7 +101,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         }
     }
 
-    private static async Task<List<double>> HandshakeScenario(SslBenchmarkClient<TConnectionOptions, TOptions> client, TConnectionOptions connectionOptions, TOptions options)
+    private static async Task<List<double>> HandshakeScenario(Func<TConnectionOptions, TOptions, Task<TConnection>> establishConnectionAsync, TConnectionOptions connectionOptions, TOptions options)
     {
         var values = new List<double>((int)options.Duration.TotalMilliseconds);
         var isWarmup = true;
@@ -118,14 +115,14 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
                 OnWarmupCompleted();
             }
             sw.Restart();
-            await using var connection = await client.EstablishConnectionAsync(connectionOptions, options).ConfigureAwait(false);
+            await using var connection = await establishConnectionAsync(connectionOptions, options).ConfigureAwait(false);
             var elapsedMs = sw.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
             values.Add(elapsedMs);
         }
         return values;
     }
 
-    private static async Task<Metrics> ReadWriteScenario(IClientConnection connection, ClientOptions options)
+    private static async Task<ReadWriteMetrics> ReadWriteScenario(ITlsBenchmarkClientConnection connection, TlsBenchmarkClientOptions options)
     {
         await using var s = await connection.EstablishStreamAsync(options).ConfigureAwait(false);
 
@@ -136,12 +133,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         var readTask = Task.Run(() => ReadingTask(s, options.ReceiveBufferSize));
 
         await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
-
-        return new Metrics
-        {
-            BytesReadPerSecond = await readTask,
-            BytesWrittenPerSecond = await writeTask
-        };
+        return new ReadWriteMetrics(BytesReadPerSecond: await readTask, BytesWrittenPerSecond: await writeTask);
 
         async Task<double> WritingTask(Stream stream, int bufferSize)
         {
@@ -211,7 +203,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         }
     }
 
-    private static async Task<(double Rps, long Errors)> RpsScenario(IClientConnection connection, ClientOptions options)
+    private static async Task<(double Rps, long Errors)> RpsScenario(ITlsBenchmarkClientConnection connection, TlsBenchmarkClientOptions options)
     {
         await using var stream = await connection.EstablishStreamAsync(options).ConfigureAwait(false);
 
@@ -255,7 +247,7 @@ internal abstract class SslBenchmarkClient<TConnectionOptions, TOptions> : BaseC
         return (successRequests / elapsed, exceptionRequests);
     }
 
-    protected static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(ClientOptions options)
+    protected static SslClientAuthenticationOptions CreateSslClientAuthenticationOptions(TlsBenchmarkClientOptions options)
     {
         var sslOptions = new SslClientAuthenticationOptions
         {

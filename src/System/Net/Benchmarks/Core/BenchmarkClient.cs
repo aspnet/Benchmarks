@@ -3,15 +3,14 @@
 
 namespace System.Net.Benchmarks;
 
-internal interface IBaseClientOptions : IBenchmarkOptions
+internal interface IBenchmarkClientOptions : IBenchmarkOptions
 {
     TimeSpan Warmup { get; }
     TimeSpan Duration { get; }
 }
 
-internal abstract class BaseClient
-    <TOptions> : BenchmarkApp<TOptions>
-    where TOptions : IBaseClientOptions, new()
+internal abstract class BenchmarkClient<TOptions> : BenchmarkApp<TOptions>
+    where TOptions : IBenchmarkClientOptions, new()
 {
     private static bool s_isRunning;
     private static bool s_isWarmup;

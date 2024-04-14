@@ -3,22 +3,24 @@
 
 namespace System.Net.Benchmarks;
 
-internal interface IBaseListener<TAcceptResult> : IAsyncDisposable
+internal interface IListener<TAcceptResult> : IAsyncDisposable
 {
     Task<TAcceptResult> AcceptAsync(CancellationToken cancellationToken);
+    EndPoint LocalEndPoint { get; }
 }
 
 internal interface IBenchmarkServerOptions : IBenchmarkOptions
 {
 }
 
-internal abstract class BaseServer<TAcceptResult, TOptions> : BenchmarkApp<TOptions>
+internal abstract class BenchmarkServer<TListener, TAcceptResult, TOptions> : BenchmarkApp<TOptions>
+    where TListener : IListener<TAcceptResult>
     where TOptions : IBenchmarkServerOptions, new()
 {
     private static int s_errors;
 
-    protected abstract Task<IBaseListener<TAcceptResult>> ListenAsync(TOptions options, CancellationToken ct);
-    protected abstract string GetReadyStateText(IBaseListener<TAcceptResult> listener);
+    protected abstract Task<TListener> ListenAsync(TOptions options, CancellationToken ct);
+    protected virtual string GetReadyStateText(TListener listener) => $"Listening on {listener.LocalEndPoint}";
     protected abstract Task ProcessAcceptedAsync(TAcceptResult accepted, TOptions options, CancellationToken ct);
     protected virtual bool IsExpectedException(Exception e) => false;
 

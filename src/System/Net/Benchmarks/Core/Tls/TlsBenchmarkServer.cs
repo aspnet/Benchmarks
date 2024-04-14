@@ -1,18 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Cryptography.X509Certificates;
-
 using System.Net.Benchmarks;
+using System.Security.Cryptography.X509Certificates;
 
 namespace System.Net.Security.Benchmarks;
 
-internal interface ISecureListener : IBaseListener<IServerConnection>, IAsyncDisposable
-{
-    EndPoint LocalEndPoint { get; }
-}
-
-internal interface IServerConnection : IAsyncDisposable
+internal interface ITlsBenchmarkServerConnection : IAsyncDisposable
 {
     SslApplicationProtocol NegotiatedApplicationProtocol { get; }
     Task CompleteHandshakeAsync(CancellationToken cancellationToken);
@@ -20,15 +14,14 @@ internal interface IServerConnection : IAsyncDisposable
     bool IsMultiplexed { get; }
 }
 
-internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnection, TOptions>
-    where TOptions : ServerOptions, new()
+internal abstract class TlsBenchmarkServer<TListener, TConnection, TOptions> : BenchmarkServer<TListener, TConnection, TOptions>
+    where TConnection : ITlsBenchmarkServerConnection
+    where TListener : IListener<TConnection>
+    where TOptions : TlsBenchmarkServerOptions, new()
 {
-    protected override string GetReadyStateText(IBaseListener<IServerConnection> listener)
-        => $"Listening on {((ISecureListener)listener).LocalEndPoint}";
-
     protected override void ValidateOptions(TOptions options) { }
 
-    protected override async Task ProcessAcceptedAsync(IServerConnection connection, TOptions options, CancellationToken ct)
+    protected override async Task ProcessAcceptedAsync(TConnection connection, TOptions options, CancellationToken ct)
     {
         try
         {
@@ -60,7 +53,7 @@ internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnect
         }
     }
 
-    private static async Task AcceptStreamsAsync(IServerConnection connection, ServerOptions options, Func<Stream, ServerOptions, CancellationToken, Task> scenario, CancellationToken cancellationToken)
+    private static async Task AcceptStreamsAsync(ITlsBenchmarkServerConnection connection, TlsBenchmarkServerOptions options, Func<Stream, TlsBenchmarkServerOptions, CancellationToken, Task> scenario, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -84,7 +77,7 @@ internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnect
         }
     }
 
-    private static async Task RpsScenario(Stream stream, ServerOptions options, CancellationToken token)
+    private static async Task RpsScenario(Stream stream, TlsBenchmarkServerOptions options, CancellationToken token)
     {
         var sendBuffer = new byte[options.SendBufferSize];
         var recvBuffer = new byte[options.ReceiveBufferSize];
@@ -118,7 +111,7 @@ internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnect
         }
     }
 
-    private static async Task ReadWriteScenario(Stream stream, ServerOptions options, CancellationToken ct)
+    private static async Task ReadWriteScenario(Stream stream, TlsBenchmarkServerOptions options, CancellationToken ct)
     {
         static async Task WritingTask(Stream stream, int bufferSize, CancellationToken linkedCt)
         {
@@ -173,7 +166,7 @@ internal abstract class SslBenchmarkServer<TOptions> : BaseServer<IServerConnect
         await Task.WhenAll(writeTask, readTask).ConfigureAwait(false);
     }
 
-    protected static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(ServerOptions options)
+    protected static SslServerAuthenticationOptions CreateSslServerAuthenticationOptions(TlsBenchmarkServerOptions options)
     {
         var sslOptions = new SslServerAuthenticationOptions
         {

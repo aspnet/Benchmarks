@@ -15,7 +15,7 @@ internal class Program
     }
 }
 
-internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthenticationOptions, SslStreamClientOptions>
+internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConnection, SslClientAuthenticationOptions, SslStreamClientOptions>
 {
     public static Task RunAsync(string[] args)
         => new SslStreamBenchmarkClient().RunAsync<SslStreamOptionsBinder>(args);
@@ -40,7 +40,7 @@ internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthentica
         return authOptions;
     }
 
-    protected override async Task<IClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
+    protected override async Task<SslStreamClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
     {
         var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
         await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
@@ -53,9 +53,9 @@ internal class SslStreamBenchmarkClient : SslBenchmarkClient<SslClientAuthentica
     }
 }
 
-internal class SslStreamClientConnection(SslStream _sslStream) : IClientConnection
+internal class SslStreamClientConnection(SslStream _sslStream) : ITlsBenchmarkClientConnection
 {
-    public Task<Stream> EstablishStreamAsync(ClientOptions options)
+    public Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
     {
         Stream stream = _sslStream;
         _sslStream = null!;

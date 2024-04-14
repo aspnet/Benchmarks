@@ -28,7 +28,7 @@ public enum Scenario
     Rps
 }
 
-public class CommonOptions
+public class TlsBenchmarkOptions
 {
     public int ReceiveBufferSize { get; set; }
     public int SendBufferSize { get; set; }
@@ -39,7 +39,7 @@ public class CommonOptions
             $"CertificateRevocationCheckMode: {CertificateRevocationCheckMode}";
 }
 
-internal static class OptionsBinderHelper
+internal static class TlsBenchmarkOptionsHelper
 {
     public static Option<int> RecieveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
@@ -52,7 +52,7 @@ internal static class OptionsBinderHelper
         command.AddOption(CertificateRevocationCheckModeOption);
     }
 
-    public static void BindOptions(CommonOptions options, ParseResult parsed)
+    public static void BindOptions(TlsBenchmarkOptions options, ParseResult parsed)
     {
         options.ReceiveBufferSize = parsed.GetValueForOption(RecieveBufferSizeOption);
         options.SendBufferSize = parsed.GetValueForOption(SendBufferSizeOption);

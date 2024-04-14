@@ -17,10 +17,10 @@ internal class Program
     }
 }
 
-internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOptions>
+internal class SslStreamBenchmarkServer : TlsBenchmarkServer<Listener, Connection, Options>
 {
     public static Task RunAsync(string[] args)
-        => new SslStreamBenchmarkServer().RunAsync<SslStreamServerOptionsBinder>(args);
+        => new SslStreamBenchmarkServer().RunAsync<OptionsBinder>(args);
 
     protected override string Name => "SslStream benchmark server";
     protected override string MetricPrefix => "sslstream";
@@ -28,7 +28,7 @@ internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOpti
     protected override bool IsExpectedException(Exception e)
         => e is IOException && e.InnerException is SocketException se && se.SocketErrorCode == SocketError.ConnectionReset;
 
-    protected override Task<IBaseListener<IServerConnection>> ListenAsync(SslStreamServerOptions options, CancellationToken ct)
+    protected override Task<Listener> ListenAsync(Options options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         sslOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -40,19 +40,19 @@ internal class SslStreamBenchmarkServer : SslBenchmarkServer<SslStreamServerOpti
         socket.Bind(new IPEndPoint(IPAddress.IPv6Any, options.Port));
         socket.Listen();
 
-        var listener = new SslStreamServerListener(socket, sslOptions);
-        return Task.FromResult<IBaseListener<IServerConnection>>(listener);
+        var listener = new Listener(socket, sslOptions);
+        return Task.FromResult(listener);
     }
 }
 
-internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthenticationOptions _sslOptions) : ISecureListener
+internal class Listener(Socket _listenSocket, SslServerAuthenticationOptions _sslOptions) : IListener<Connection>
 {
     public EndPoint LocalEndPoint => _listenSocket.LocalEndPoint!;
 
-    public async Task<IServerConnection> AcceptAsync(CancellationToken cancellationToken)
+    public async Task<Connection> AcceptAsync(CancellationToken cancellationToken)
     {
         var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken).ConfigureAwait(false);
-        return new SslStreamServerConnection(acceptSocket, _sslOptions);
+        return new Connection(acceptSocket, _sslOptions);
     }
 
     public ValueTask DisposeAsync()
@@ -62,7 +62,7 @@ internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthentica
     }
 }
 
-internal class SslStreamServerConnection(Socket _socket, SslServerAuthenticationOptions _sslOptions) : IServerConnection
+internal class Connection(Socket _socket, SslServerAuthenticationOptions _sslOptions) : ITlsBenchmarkServerConnection
 {
     private SslStream? _sslStream;
     private bool _streamConsumed;
