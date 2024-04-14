@@ -3,14 +3,14 @@
 
 namespace System.Net.Benchmarks;
 
+internal interface IBenchmarkServerOptions
+{
+}
+
 internal interface IListener<TAcceptResult> : IAsyncDisposable
 {
     Task<TAcceptResult> AcceptAsync(CancellationToken cancellationToken);
     EndPoint LocalEndPoint { get; }
-}
-
-internal interface IBenchmarkServerOptions : IBenchmarkOptions
-{
 }
 
 internal abstract class BenchmarkServer<TListener, TAcceptResult, TOptions> : BenchmarkApp<TOptions>

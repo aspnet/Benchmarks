@@ -3,7 +3,7 @@
 
 namespace System.Net.Benchmarks;
 
-internal interface IBenchmarkClientOptions : IBenchmarkOptions
+internal interface IBenchmarkClientOptions
 {
     TimeSpan Warmup { get; }
     TimeSpan Duration { get; }

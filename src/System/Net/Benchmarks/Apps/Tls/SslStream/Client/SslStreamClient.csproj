@@ -20,14 +20,22 @@
              Link="Common/BenchmarkApp.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkClient.cs"
              Link="Common/BenchmarkClient.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkOptionsBinder.cs"
+             Link="Common/BenchmarkOptionsBinder.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)LogHelper.cs"
              Link="Common/LogHelper.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/ApplicationProtocolConstants.cs"
+             Link="Common/Tls/ApplicationProtocolConstants.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkClient.cs"
              Link="Common/Tls/TlsBenchmarkClient.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkClientOptions.cs"
              Link="Common/Tls/TlsBenchmarkClientOptions.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkClientOptionsBinder.cs"
+             Link="Common/Tls/TlsBenchmarkClientOptionsBinder.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptions.cs"
              Link="Common/Tls/TlsBenchmarkOptions.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptionsHelper.cs"
+             Link="Common/Tls/TlsBenchmarkOptionsHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>
