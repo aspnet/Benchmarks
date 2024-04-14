@@ -1,0 +1,84 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.CommandLine;
+using System.CommandLine.Binding;
+using System.CommandLine.Parsing;
+
+namespace System.Net.Benchmarks;
+
+public interface IBenchmarkOptions
+{
+}
+
+public abstract class BenchmarkOptionsBinder<TOptions> : BinderBase<TOptions>
+    where TOptions : IBenchmarkOptions, new()
+{
+    public abstract void AddCommandLineArguments(RootCommand command);
+
+    protected abstract void BindOptions(TOptions options, ParseResult parsed);
+
+    protected override TOptions GetBoundValue(BindingContext bindingContext)
+    {
+        var options = new TOptions();
+        BindOptions(options, bindingContext.ParseResult);
+        return options;
+    }
+}
+
+public abstract class BenchmarkApp<TOptions> where TOptions : IBenchmarkOptions, new()
+{
+    private static bool s_appStarted;
+
+    protected static CancellationTokenSource GlobalCts { get; } = new();
+
+    protected abstract string Name { get; }
+    protected abstract string MetricPrefix { get; }
+
+    protected static void Log(string message) => LogHelper.Log(message);
+    protected void LogMetric(string name, double value) => LogHelper.LogMetric(MetricPrefix + name, value);
+    protected void LogPercentileMetric(string name, List<double> values) => LogHelper.LogPercentileMetric(MetricPrefix + name, values);
+    protected void RegisterMetric(string name, string description, string format = "n2") => LogHelper.RegisterSimpleMetric(MetricPrefix + name, description, format);
+    protected void RegisterPercentileMetric(string name, string description, string format = "n3") => LogHelper.RegisterPercentileMetric(MetricPrefix + name, description, description, format);
+
+    protected virtual void ValidateOptions(TOptions options) { }
+    protected abstract Task RunBenchmarkAsync(TOptions options, CancellationToken cancellationToken);
+
+    public Task RunAsync<TBinder>(string[] args)
+        where TBinder : BenchmarkOptionsBinder<TOptions>, new()
+    {
+        if (s_appStarted)
+        {
+            throw new InvalidOperationException($"{Name} is already running.");
+        }
+        s_appStarted = true;
+
+        var rootCommand = new RootCommand(Name);
+        var binder = new TBinder();
+        binder.AddCommandLineArguments(rootCommand);
+        rootCommand.SetHandler<TOptions>(RunAsyncInternal, binder);
+
+        return rootCommand.InvokeAsync(args);
+    }
+
+    private Task RunAsyncInternal(TOptions options)
+    {
+        Log($"Starting {Name}");
+        Log($"Options:");
+        Log($"{options}");
+
+        ValidateOptions(options);
+
+        LogHelper.RegisterSimpleMetric("env/processorcount", "Processor Count", "n0");
+        LogHelper.LogMetric("env/processorcount", Environment.ProcessorCount);
+
+        Console.CancelKeyPress += static (s, e) =>
+        {
+            Log("Keyboard interrupt...");
+            e.Cancel = true;
+            GlobalCts.Cancel();
+        };
+
+        return RunBenchmarkAsync(options, GlobalCts.Token);
+    }
+}

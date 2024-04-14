@@ -78,7 +78,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Security/SslStream/Server/SslStreamServer.csproj
+      project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Server/SslStreamServer.csproj
     readyStateText: Listening on # app should write this line to output -- default Kestrel logging does that
     arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{serverCertSelection}} --allow-tls-resume {{allowTlsResume}}"
 
@@ -86,7 +86,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Security/SslStream/Client/SslStreamClient.csproj
+      project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Client/SslStreamClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds
