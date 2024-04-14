@@ -11,10 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="../Shared/OptionsHelper.cs"
-             Link="SslStream/Shared/OptionsHelper.cs" />
+    <Compile Include="SslStreamServerConnection.cs" />
+    <Compile Include="SslStreamServerListener.cs" />
+    <Compile Include="SslStreamServerOptions.cs" />
+    <Compile Include="SslStreamServerOptionsBinder.cs" />
+    <Compile Include="../Shared/SslStreamOptionsHelper.cs"
+             Link="SslStream/Shared/SslStreamOptionsHelper.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
              Link="Common/BenchmarkApp.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkServer.cs"

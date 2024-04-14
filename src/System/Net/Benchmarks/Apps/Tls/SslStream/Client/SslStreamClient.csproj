@@ -10,10 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Options.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="../Shared/OptionsHelper.cs"
-             Link="SslStream/Shared/OptionsHelper.cs" />
+    <Compile Include="SslStreamClientConnection.cs" />
+    <Compile Include="SslStreamClientOptions.cs" />
+    <Compile Include="SslStreamClientOptionsBinder.cs" />
+    <Compile Include="../Shared/SslStreamOptionsHelper.cs"
+             Link="SslStream/Shared/SslStreamOptionsHelper.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
              Link="Common/BenchmarkApp.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkClient.cs"

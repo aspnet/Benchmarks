@@ -3,16 +3,14 @@
 
 using System.Net;
 using System.Net.Quic;
-using System.Net.Security;
-
-using System.Net.Benchmarks;
 using System.Net.Benchmarks.Tls;
+using System.Net.Benchmarks.Tls.QuicBenchmark;
 
 await QuicBenchmarkServer.RunAsync(args);
 
 // ----------------------------
 
-internal class QuicBenchmarkServer : TlsBenchmarkServer<Listener, Connection, TlsBenchmarkServerOptions>
+internal class QuicBenchmarkServer : TlsBenchmarkServer<QuicServerListener, QuicServerConnection, TlsBenchmarkServerOptions>
 {
     public static Task RunAsync(string[] args)
         => new QuicBenchmarkServer().RunAsync<TlsBenchmarkServerOptionsBinder<TlsBenchmarkServerOptions>>(args);
@@ -23,7 +21,7 @@ internal class QuicBenchmarkServer : TlsBenchmarkServer<Listener, Connection, Tl
     protected override bool IsExpectedException(Exception e)
         => e is QuicException qe && qe.QuicError == QuicError.ConnectionAborted;
 
-    protected override async Task<Listener> ListenAsync(TlsBenchmarkServerOptions options, CancellationToken ct)
+    protected override async Task<QuicServerListener> ListenAsync(TlsBenchmarkServerOptions options, CancellationToken ct)
     {
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         var connectionOptions = new QuicServerConnectionOptions()
@@ -40,37 +38,6 @@ internal class QuicBenchmarkServer : TlsBenchmarkServer<Listener, Connection, Tl
             ConnectionOptionsCallback = (_, _, _) => ValueTask.FromResult(connectionOptions)
         };
 
-        return new Listener(await QuicListener.ListenAsync(listenerOptions, ct), options);
+        return new QuicServerListener(await QuicListener.ListenAsync(listenerOptions, ct), options);
     }
-}
-
-internal class Listener(QuicListener _listener, TlsBenchmarkServerOptions _serverOptions) : IListener<Connection>
-{
-    public EndPoint LocalEndPoint => _listener.LocalEndPoint;
-
-    public async Task<Connection> AcceptAsync(CancellationToken cancellationToken)
-        => new Connection(await _listener.AcceptConnectionAsync(cancellationToken), _serverOptions);
-
-    public ValueTask DisposeAsync() => _listener.DisposeAsync();
-}
-
-internal class Connection(QuicConnection _connection, TlsBenchmarkServerOptions _serverOptions) : ITlsBenchmarkServerConnection
-{
-    public Task CompleteHandshakeAsync(CancellationToken _) => Task.CompletedTask;
-    public SslApplicationProtocol NegotiatedApplicationProtocol => _connection.NegotiatedApplicationProtocol;
-    public bool IsMultiplexed => true;
-    private static readonly byte[] s_byteBuf = new byte[1];
-
-    public async Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken)
-    {
-        var stream = await _connection.AcceptInboundStreamAsync(cancellationToken);
-        if (_serverOptions.ReceiveBufferSize == 0)
-        {
-            // drain the single byte used to open the stream
-            _ = await stream.ReadAsync(s_byteBuf, cancellationToken).ConfigureAwait(false);
-        }
-        return stream;
-    }
-
-    public ValueTask DisposeAsync() => _connection.DisposeAsync();
 }

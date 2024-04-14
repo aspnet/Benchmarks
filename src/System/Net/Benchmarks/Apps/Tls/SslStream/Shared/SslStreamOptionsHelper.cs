@@ -5,7 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Security.Authentication;
 
-namespace System.Net.Benchmarks.Tls.SslStream;
+namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
 public interface ISslStreamSpecificOptions
 {

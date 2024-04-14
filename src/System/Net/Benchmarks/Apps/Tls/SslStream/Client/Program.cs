@@ -5,20 +5,20 @@ using System.Net.Security;
 using System.Net.Sockets;
 
 using System.Net.Benchmarks.Tls;
-using System.Net.Benchmarks.Tls.SslStream;
+using System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
 await SslStreamBenchmarkClient.RunAsync(args);
 
 // ----------------------------
 
-internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConnection, SslClientAuthenticationOptions, Options>
+internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConnection, SslClientAuthenticationOptions, SslStreamClientOptions>
 {
     public static Task RunAsync(string[] args)
-        => new SslStreamBenchmarkClient().RunAsync<OptionsBinder>(args);
+        => new SslStreamBenchmarkClient().RunAsync<SslStreamClientOptionsBinder>(args);
 
     protected override string Name => "SslStream benchmark client";
     protected override string MetricPrefix => "sslstream";
-    protected override void ValidateOptions(Options options)
+    protected override void ValidateOptions(SslStreamClientOptions options)
     {
         if (options.Streams != 1)
         {
@@ -26,7 +26,7 @@ internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConn
         }
     }
 
-    protected override SslClientAuthenticationOptions CreateClientConnectionOptions(Options options)
+    protected override SslClientAuthenticationOptions CreateClientConnectionOptions(SslStreamClientOptions options)
     {
         var authOptions = CreateSslClientAuthenticationOptions(options);
         authOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -36,7 +36,7 @@ internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConn
         return authOptions;
     }
 
-    protected override async Task<SslStreamClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, Options options)
+    protected override async Task<SslStreamClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
     {
         var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
         await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);
@@ -47,16 +47,4 @@ internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConn
 
         return new SslStreamClientConnection(stream);
     }
-}
-
-internal class SslStreamClientConnection(SslStream _sslStream) : ITlsBenchmarkClientConnection
-{
-    public Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
-    {
-        Stream stream = _sslStream;
-        _sslStream = null!;
-        return Task.FromResult(stream);
-    }
-
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

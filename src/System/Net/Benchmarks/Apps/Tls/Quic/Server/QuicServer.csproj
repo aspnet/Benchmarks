@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="QuicServerConnection.cs" />
+    <Compile Include="QuicServerListener.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
              Link="Common/BenchmarkApp.cs" />
     <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkServer.cs"

@@ -3,14 +3,14 @@
 
 using System.Net;
 using System.Net.Quic;
-
 using System.Net.Benchmarks.Tls;
+using System.Net.Benchmarks.Tls.QuicBenchmark;
 
 await QuicBenchmarkClient.RunAsync(args);
 
 // ----------------------------
 
-internal class QuicBenchmarkClient : TlsBenchmarkClient<Connection, QuicClientConnectionOptions, TlsBenchmarkClientOptions>
+internal class QuicBenchmarkClient : TlsBenchmarkClient<QuicClientConnection, QuicClientConnectionOptions, TlsBenchmarkClientOptions>
 {
     public static Task RunAsync(string[] args)
         => new QuicBenchmarkClient().RunAsync<TlsBenchmarkClientOptionsBinder<TlsBenchmarkClientOptions>>(args);
@@ -27,23 +27,6 @@ internal class QuicBenchmarkClient : TlsBenchmarkClient<Connection, QuicClientCo
             ClientAuthenticationOptions = CreateSslClientAuthenticationOptions(options)
         };
 
-    protected override async Task<Connection> EstablishConnectionAsync(QuicClientConnectionOptions options, TlsBenchmarkClientOptions _)
-        => new Connection(await QuicConnection.ConnectAsync(options));
-}
-
-internal class Connection(QuicConnection _connection) : ITlsBenchmarkClientConnection
-{
-    private static readonly byte[] s_byteBuf = [ 42 ];
-
-    public async Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
-    {
-        var stream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
-        if (options.SendBufferSize == 0) // we must send at least one byte to open the stream on the wire
-        {
-            await stream.WriteAsync(s_byteBuf).ConfigureAwait(false);
-        }
-        return stream;
-    }
-
-    public ValueTask DisposeAsync() => _connection.DisposeAsync();
+    protected override async Task<QuicClientConnection> EstablishConnectionAsync(QuicClientConnectionOptions options, TlsBenchmarkClientOptions _)
+        => new QuicClientConnection(await QuicConnection.ConnectAsync(options));
 }
