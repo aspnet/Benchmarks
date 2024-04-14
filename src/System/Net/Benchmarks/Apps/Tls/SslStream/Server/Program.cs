@@ -6,13 +6,13 @@ using System.Net.Sockets;
 using System.Net.Benchmarks.Tls;
 using System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
-await SslStreamBenchmarkServer.RunAsync(args);
+return await SslStreamBenchmarkServer.RunAsync(args).ConfigureAwait(false);
 
 // ----------------------------
 
 internal class SslStreamBenchmarkServer : TlsBenchmarkServer<SslStreamServerListener, SslStreamServerConnection, SslStreamServerOptions>
 {
-    public static Task RunAsync(string[] args)
+    public static Task<int> RunAsync(string[] args)
         => new SslStreamBenchmarkServer().RunAsync<SslStreamServerOptionsBinder>(args);
 
     protected override string Name => "SslStream benchmark server";

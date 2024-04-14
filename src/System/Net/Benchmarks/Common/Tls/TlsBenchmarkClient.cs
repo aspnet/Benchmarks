@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Net.Security;
+using System.Threading;
 
 namespace System.Net.Benchmarks.Tls;
 
@@ -24,14 +25,14 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         var connectionOptions = CreateClientConnectionOptions(options);
         return options.Scenario switch
         {
-            Scenario.Handshake => RunHandshakeScenario(connectionOptions, options),
-            Scenario.ReadWrite => RunReadWriteScenario(connectionOptions, options),
-            Scenario.Rps => RunRpsScenario(connectionOptions, options),
+            Scenario.Handshake => RunHandshakeScenario(connectionOptions, options, cancellationToken),
+            Scenario.ReadWrite => RunReadWriteScenario(connectionOptions, options, cancellationToken),
+            Scenario.Rps => RunRpsScenario(connectionOptions, options, cancellationToken),
             _ => throw new InvalidOperationException($"Unknown scenario: {options.Scenario}")
         };
     }
 
-    private async Task RunHandshakeScenario(TConnectionOptions connectionOptions, TOptions options)
+    private async Task RunHandshakeScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
         RegisterPercentileMetric(MetricName.Handshake, "Handshake duration (ms)");
 
@@ -41,11 +42,11 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
             tasks.Add(HandshakeScenario(EstablishConnectionAsync, connectionOptions, options));
         }
 
-        var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
+        var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
         LogPercentileMetric(MetricName.Handshake, metrics.SelectMany(x => x).ToList());
     }
 
-    private async Task RunReadWriteScenario(TConnectionOptions connectionOptions, TOptions options)
+    private async Task RunReadWriteScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
         RegisterMetric(MetricName.Read + MetricName.Mean, "Read B/s - mean");
         RegisterMetric(MetricName.Write + MetricName.Mean, "Write B/s - mean");
@@ -61,7 +62,7 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
             }
         }
 
-        var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
+        var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
         LogMetric(MetricName.Read + MetricName.Mean, metrics.Sum(x => x.BytesReadPerSecond));
         LogMetric(MetricName.Write + MetricName.Mean, metrics.Sum(x => x.BytesWrittenPerSecond));
 
@@ -71,7 +72,7 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         }
     }
 
-    private async Task RunRpsScenario(TConnectionOptions connectionOptions, TOptions options)
+    private async Task RunRpsScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
         RegisterMetric(MetricName.Rps + MetricName.Mean, "RPS - mean");
         RegisterMetric(MetricName.Errors, "Errors", "n0");
@@ -87,7 +88,7 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
             }
         }
 
-        var metrics = await Task.WhenAll(tasks).ConfigureAwait(false);
+        var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
         LogMetric(MetricName.Rps + MetricName.Mean, metrics.Sum(x => x.Rps));
         if (metrics.Any(x => x.Errors > 0))
         {

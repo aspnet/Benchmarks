@@ -6,13 +6,13 @@ using System.Net.Quic;
 using System.Net.Benchmarks.Tls;
 using System.Net.Benchmarks.Tls.QuicBenchmark;
 
-await QuicBenchmarkClient.RunAsync(args);
+return await QuicBenchmarkClient.RunAsync(args).ConfigureAwait(false);
 
 // ----------------------------
 
 internal class QuicBenchmarkClient : TlsBenchmarkClient<QuicClientConnection, QuicClientConnectionOptions, TlsBenchmarkClientOptions>
 {
-    public static Task RunAsync(string[] args)
+    public static Task<int> RunAsync(string[] args)
         => new QuicBenchmarkClient().RunAsync<TlsBenchmarkClientOptionsBinder<TlsBenchmarkClientOptions>>(args);
 
     protected override string Name => "QUIC benchmark client";

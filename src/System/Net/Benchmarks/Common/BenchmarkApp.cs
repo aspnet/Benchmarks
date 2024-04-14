@@ -24,7 +24,7 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
     protected virtual void ValidateOptions(TOptions options) { }
     protected abstract Task RunBenchmarkAsync(TOptions options, CancellationToken cancellationToken);
 
-    public Task RunAsync<TBinder>(string[] args)
+    public Task<int> RunAsync<TBinder>(string[] args)
         where TBinder : BenchmarkOptionsBinder<TOptions>, new()
     {
         if (s_appStarted)
@@ -36,12 +36,12 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
         var rootCommand = new RootCommand(Name);
         var binder = new TBinder();
         binder.AddCommandLineArguments(rootCommand);
-        rootCommand.SetHandler<TOptions>(RunAsyncInternal, binder);
+        rootCommand.SetHandler(RunAsyncInternal, binder);
 
         return rootCommand.InvokeAsync(args);
     }
 
-    private Task RunAsyncInternal(TOptions options)
+    private async Task<int> RunAsyncInternal(TOptions options)
     {
         Log($"Starting {Name}");
         Log($"Options:");
@@ -59,6 +59,15 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
             GlobalCts.Cancel();
         };
 
-        return RunBenchmarkAsync(options, GlobalCts.Token);
+        try
+        {
+            await RunBenchmarkAsync(options, GlobalCts.Token);
+        }
+        catch (Exception e)
+        {
+            Log("Unhandled exception: " + e);
+            throw;
+        }
+        return 0;
     }
 }

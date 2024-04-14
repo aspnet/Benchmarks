@@ -29,7 +29,7 @@ internal abstract class BenchmarkClient<TOptions> : BenchmarkApp<TOptions>
 
         var scenarioTask = RunScenarioAsync(options, cancellationToken);
 
-        var timeout = 3 * (options.Warmup + options.Duration);
+        var timeout = 2 * (options.Warmup + options.Duration);
         GlobalCts.CancelAfter(timeout);
 
         Log($"Warmup {options.Warmup.TotalSeconds}s");
@@ -44,6 +44,9 @@ internal abstract class BenchmarkClient<TOptions> : BenchmarkApp<TOptions>
         Log("Completing...");
 
         await scenarioTask.ConfigureAwait(false);
+        Log("Done");
+
+        await Task.Delay(100).ConfigureAwait(false);
     }
 
     private static async Task WaitForWarmupCompletion(CancellationToken cancellationToken)
