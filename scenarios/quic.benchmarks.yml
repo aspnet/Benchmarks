@@ -77,19 +77,19 @@ scenarios:
 jobs:
   quicServer:
     source:
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
       #repository: https://github.com/aspnet/benchmarks.git
       #branchOrCommit: main
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
-      project: src/BenchmarksApps/Quic/Server/QuicServer.csproj
-    readyStateText: Listening on # app should write this line to output
+      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Server/QuicServer.csproj
+    readyStateText: Listening on # app should write this line to output when ready
     arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{serverCertSelection}}"
 
   quicClient:
     source:
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
       #repository: https://github.com/aspnet/benchmarks.git
       #branchOrCommit: main
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks
-      project: src/BenchmarksApps/Quic/Client/QuicClient.csproj
+      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Client/QuicClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds

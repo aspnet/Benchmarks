@@ -76,16 +76,18 @@ scenarios:
 jobs:
   sslServer:
     source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
+      #repository: https://github.com/aspnet/benchmarks.git
+      #branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Server/SslStreamServer.csproj
-    readyStateText: Listening on # app should write this line to output -- default Kestrel logging does that
+    readyStateText: Listening on # app should write this line to output when ready
     arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --tls-version {{tlsVersion}} --cert-selection {{serverCertSelection}} --allow-tls-resume {{allowTlsResume}}"
 
   sslClient:
     source:
-      repository: https://github.com/aspnet/benchmarks.git
-      branchOrCommit: main
+      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
+      #repository: https://github.com/aspnet/benchmarks.git
+      #branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Client/SslStreamClient.csproj
     isConsoleApp: true
     waitForExit: true

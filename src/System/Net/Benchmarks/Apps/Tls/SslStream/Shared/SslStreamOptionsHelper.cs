@@ -7,15 +7,16 @@ using System.Security.Authentication;
 
 namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
-public interface ISslStreamSpecificOptions
+public interface ISslStreamExtraOptions
 {
     bool AllowTlsResume { get; set; }
     SslProtocols EnabledSslProtocols { get; set; }
 }
 
-public static class OptionsHelper
+public static class SslStreamOptionsHelper
 {
-    public static Option<Version> TlsVersionOption { get; } = new Option<Version>("--tls-version", () => new Version(1, 3), "The TLS protocol version to use.").FromAmong("1.2", "1.3");
+    // in newer versions of System.CommandLine, parsing in to System.Version seems to be broken
+    public static Option<string> TlsVersionOption { get; } = new Option<string>("--tls-version", () => "1.3", "The TLS protocol version to use.").FromAmong("1.2", "1.3");
     public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
 
 #if !NET8_0_OR_GREATER
@@ -40,13 +41,13 @@ public static class OptionsHelper
         command.AddOption(AllowTlsResumeOption);
     }
 
-    public static void BindOptions(ISslStreamSpecificOptions options, ParseResult parsed)
+    public static void BindOptions(ISslStreamExtraOptions options, ParseResult parsed)
     {
         options.AllowTlsResume = parsed.GetValueForOption(AllowTlsResumeOption);
         options.EnabledSslProtocols = parsed.GetValueForOption(TlsVersionOption) switch
         {
-            Version { Major: 1, Minor: 2 } => SslProtocols.Tls12,
-            Version { Major: 1, Minor: 3 } => SslProtocols.Tls13,
+            "1.2" => SslProtocols.Tls12,
+            "1.3" => SslProtocols.Tls13,
             _ => throw new InvalidOperationException("Invalid TLS version.")
         };
     }

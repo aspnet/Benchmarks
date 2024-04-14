@@ -70,7 +70,7 @@ public static class LogHelper
         s_metrics[name] = metric with { IsLogged = true };
 
         BenchmarksEventSource.Measure(name, value);
-        Log($"    {name} -- {metric.Description}");
+        Log($"  > {name} ({metric.Description})");
         Log($"    {value.ToString(metric.Format)}");
     }
 

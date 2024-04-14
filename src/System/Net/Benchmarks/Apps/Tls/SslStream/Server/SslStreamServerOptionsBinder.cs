@@ -11,12 +11,12 @@ public class SslStreamServerOptionsBinder : TlsBenchmarkServerOptionsBinder<SslS
     public override void AddCommandLineArguments(RootCommand command)
     {
         base.AddCommandLineArguments(command);
-        OptionsHelper.AddCommandLineArguments(command);
+        SslStreamOptionsHelper.AddCommandLineArguments(command);
     }
 
     protected override void BindOptions(SslStreamServerOptions options, ParseResult parsed)
     {
         base.BindOptions(options, parsed);
-        OptionsHelper.BindOptions(options, parsed);
+        SslStreamOptionsHelper.BindOptions(options, parsed);
     }
 }

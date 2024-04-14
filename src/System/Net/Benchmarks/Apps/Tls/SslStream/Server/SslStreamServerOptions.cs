@@ -5,7 +5,7 @@ using System.Security.Authentication;
 
 namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
-public class SslStreamServerOptions : TlsBenchmarkServerOptions, ISslStreamSpecificOptions
+public class SslStreamServerOptions : TlsBenchmarkServerOptions, ISslStreamExtraOptions
 {
     public bool DisableTlsResume { get; set; }
     public bool AllowTlsResume { get; set; }
