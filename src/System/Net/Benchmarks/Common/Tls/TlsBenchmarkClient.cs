@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using System.Net.Security;
 
-using System.Net.Benchmarks;
-
-namespace System.Net.Security.Benchmarks;
+namespace System.Net.Benchmarks.Tls;
 
 internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
 

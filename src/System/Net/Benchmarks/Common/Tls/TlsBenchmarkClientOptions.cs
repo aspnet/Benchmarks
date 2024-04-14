@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Security.Cryptography.X509Certificates;
 
-using System.Net.Benchmarks;
-using System.CommandLine.Parsing;
-
-namespace System.Net.Security.Benchmarks;
+namespace System.Net.Benchmarks.Tls;
 
 public enum CertificateSelectionType
 {

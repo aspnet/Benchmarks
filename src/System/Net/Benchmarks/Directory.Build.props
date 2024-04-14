@@ -3,7 +3,7 @@
   <Import Project="..\..\..\Directory.Build.props" />
 
   <PropertyGroup>
-    <SystemNetBenchmarksRoot>$(MSBuildThisFileDirectory)</SystemNetBenchmarksRoot>
+    <SystemNetBenchmarksCommonPath>$(MSBuildThisFileDirectory)Common/</SystemNetBenchmarksCommonPath>
   </PropertyGroup>
 
 </Project>

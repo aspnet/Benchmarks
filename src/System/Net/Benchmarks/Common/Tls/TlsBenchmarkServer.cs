@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net.Benchmarks;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-namespace System.Net.Security.Benchmarks;
+namespace System.Net.Benchmarks.Tls;
 
 internal interface ITlsBenchmarkServerConnection : IAsyncDisposable
 {
@@ -19,8 +19,6 @@ internal abstract class TlsBenchmarkServer<TListener, TConnection, TOptions> : B
     where TListener : IListener<TConnection>
     where TOptions : TlsBenchmarkServerOptions, new()
 {
-    protected override void ValidateOptions(TOptions options) { }
-
     protected override async Task ProcessAcceptedAsync(TConnection connection, TOptions options, CancellationToken ct)
     {
         try

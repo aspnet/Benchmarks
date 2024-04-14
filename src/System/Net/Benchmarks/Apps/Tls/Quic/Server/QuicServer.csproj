@@ -7,11 +7,24 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);CA1416</NoWarn> <!-- "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'." -->
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SystemNetBenchmarksRoot)Core/*.cs" />
-    <Compile Include="$(SystemNetBenchmarksRoot)Core/Tls/*.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
+             Link="Common/BenchmarkApp.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkServer.cs"
+             Link="Common/BenchmarkServer.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)LogHelper.cs"
+             Link="Common/LogHelper.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServer.cs"
+             Link="Common/Tls/TlsBenchmarkServer.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServerOptions.cs"
+             Link="Common/Tls/TlsBenchmarkServerOptions.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptions.cs"
+             Link="Common/Tls/TlsBenchmarkOptions.cs" />
   </ItemGroup>
 
   <ItemGroup>

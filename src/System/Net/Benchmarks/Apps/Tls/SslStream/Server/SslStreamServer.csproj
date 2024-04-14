@@ -7,12 +7,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Shared/*.cs" />
-    <Compile Include="$(SystemNetBenchmarksRoot)Core/*.cs" />
-    <Compile Include="$(SystemNetBenchmarksRoot)Core/Tls/*.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="../Shared/OptionsHelper.cs"
+             Link="SslStream/Shared/OptionsHelper.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
+             Link="Common/BenchmarkApp.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkServer.cs"
+             Link="Common/BenchmarkServer.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)LogHelper.cs"
+             Link="Common/LogHelper.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServer.cs"
+             Link="Common/Tls/TlsBenchmarkServer.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServerOptions.cs"
+             Link="Common/Tls/TlsBenchmarkServerOptions.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptions.cs"
+             Link="Common/Tls/TlsBenchmarkOptions.cs" />
   </ItemGroup>
 
   <ItemGroup>

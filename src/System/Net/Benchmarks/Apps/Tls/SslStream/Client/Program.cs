@@ -4,25 +4,21 @@
 using System.Net.Security;
 using System.Net.Sockets;
 
-using System.Net.Security.Benchmarks;
-using System.Net.Security.Benchmarks.SslStream;
+using System.Net.Benchmarks.Tls;
+using System.Net.Benchmarks.Tls.SslStream;
 
-internal class Program
-{
-    private static async Task Main(string[] args)
-    {
-        await SslStreamBenchmarkClient.RunAsync(args);
-    }
-}
+await SslStreamBenchmarkClient.RunAsync(args);
 
-internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConnection, SslClientAuthenticationOptions, SslStreamClientOptions>
+// ----------------------------
+
+internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConnection, SslClientAuthenticationOptions, Options>
 {
     public static Task RunAsync(string[] args)
-        => new SslStreamBenchmarkClient().RunAsync<SslStreamOptionsBinder>(args);
+        => new SslStreamBenchmarkClient().RunAsync<OptionsBinder>(args);
 
     protected override string Name => "SslStream benchmark client";
     protected override string MetricPrefix => "sslstream";
-    protected override void ValidateOptions(SslStreamClientOptions options)
+    protected override void ValidateOptions(Options options)
     {
         if (options.Streams != 1)
         {
@@ -30,7 +26,7 @@ internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConn
         }
     }
 
-    protected override SslClientAuthenticationOptions CreateClientConnectionOptions(SslStreamClientOptions options)
+    protected override SslClientAuthenticationOptions CreateClientConnectionOptions(Options options)
     {
         var authOptions = CreateSslClientAuthenticationOptions(options);
         authOptions.EnabledSslProtocols = options.EnabledSslProtocols;
@@ -40,7 +36,7 @@ internal class SslStreamBenchmarkClient : TlsBenchmarkClient<SslStreamClientConn
         return authOptions;
     }
 
-    protected override async Task<SslStreamClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, SslStreamClientOptions options)
+    protected override async Task<SslStreamClientConnection> EstablishConnectionAsync(SslClientAuthenticationOptions authOptions, Options options)
     {
         var sock = new Socket(SocketType.Stream, ProtocolType.Tcp);
         await sock.ConnectAsync(options.Hostname, options.Port).ConfigureAwait(false);

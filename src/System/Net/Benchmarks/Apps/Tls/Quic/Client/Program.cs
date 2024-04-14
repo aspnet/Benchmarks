@@ -4,17 +4,11 @@
 using System.Net;
 using System.Net.Quic;
 
-using System.Net.Security.Benchmarks;
+using System.Net.Benchmarks.Tls;
 
-internal class Program
-{
-    private static async Task Main(string[] args)
-    {
-        await QuicBenchmarkClient.RunAsync(args);
-    }
-}
+await QuicBenchmarkClient.RunAsync(args);
 
-#pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
+// ----------------------------
 
 internal class QuicBenchmarkClient : TlsBenchmarkClient<Connection, QuicClientConnectionOptions, TlsBenchmarkClientOptions>
 {
@@ -23,7 +17,6 @@ internal class QuicBenchmarkClient : TlsBenchmarkClient<Connection, QuicClientCo
 
     protected override string Name => "QUIC benchmark client";
     protected override string MetricPrefix => "quic";
-    protected override void ValidateOptions(TlsBenchmarkClientOptions options) { }
 
     protected override QuicClientConnectionOptions CreateClientConnectionOptions(TlsBenchmarkClientOptions options)
         => new()
@@ -54,5 +47,3 @@ internal class Connection(QuicConnection _connection) : ITlsBenchmarkClientConne
 
     public ValueTask DisposeAsync() => _connection.DisposeAsync();
 }
-
-#pragma warning restore CA1416

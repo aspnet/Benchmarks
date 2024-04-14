@@ -3,10 +3,11 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Net.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace System.Net.Security.Benchmarks;
+namespace System.Net.Benchmarks.Tls;
 
 public static class ApplicationProtocolConstants
 {

@@ -5,21 +5,21 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Security.Authentication;
 
-namespace System.Net.Security.Benchmarks.SslStream;
+namespace System.Net.Benchmarks.Tls.SslStream;
 
-public interface ISslStreamBenchmarkOptions
+public interface ISslStreamSpecificOptions
 {
     bool AllowTlsResume { get; set; }
     SslProtocols EnabledSslProtocols { get; set; }
 }
 
-public static class SslStreamBenchmarkOptionsHelper
+public static class OptionsHelper
 {
     public static Option<Version> TlsVersionOption { get; } = new Option<Version>("--tls-version", () => new Version(1, 3), "The TLS protocol version to use.").FromAmong("1.2", "1.3");
     public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
 
 #if !NET8_0_OR_GREATER
-    static SslStreamBenchmarkOptionsHelper()
+    static OptionsHelper()
     {
         AllowTlsResumeOption.IsHidden = true;
         AllowTlsResumeOption.AddValidator(symbol =>
@@ -40,7 +40,7 @@ public static class SslStreamBenchmarkOptionsHelper
         command.AddOption(AllowTlsResumeOption);
     }
 
-    public static void BindOptions(ISslStreamBenchmarkOptions options, ParseResult parsed)
+    public static void BindOptions(ISslStreamSpecificOptions options, ParseResult parsed)
     {
         options.AllowTlsResume = parsed.GetValueForOption(AllowTlsResumeOption);
         options.EnabledSslProtocols = parsed.GetValueForOption(TlsVersionOption) switch

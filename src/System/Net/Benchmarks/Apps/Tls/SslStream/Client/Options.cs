@@ -5,9 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Security.Authentication;
 
-namespace System.Net.Security.Benchmarks.SslStream;
+namespace System.Net.Benchmarks.Tls.SslStream;
 
-public class SslStreamClientOptions : TlsBenchmarkClientOptions, ISslStreamBenchmarkOptions
+public class Options : TlsBenchmarkClientOptions, ISslStreamSpecificOptions
 {
     public bool AllowTlsResume { get; set; }
     public SslProtocols EnabledSslProtocols { get; set; }
@@ -16,17 +16,17 @@ public class SslStreamClientOptions : TlsBenchmarkClientOptions, ISslStreamBench
         => $"{base.ToString()}, AllowTlsResume: {AllowTlsResume}, EnabledSslProtocols: {EnabledSslProtocols}";
 }
 
-public class SslStreamOptionsBinder : TlsBenchmarkClientOptionsBinder<SslStreamClientOptions>
+public class OptionsBinder : TlsBenchmarkClientOptionsBinder<Options>
 {
     public override void AddCommandLineArguments(RootCommand command)
     {
         base.AddCommandLineArguments(command);
-        SslStreamBenchmarkOptionsHelper.AddCommandLineArguments(command);
+        OptionsHelper.AddCommandLineArguments(command);
     }
 
-    protected override void BindOptions(SslStreamClientOptions options, ParseResult parsed)
+    protected override void BindOptions(Options options, ParseResult parsed)
     {
         base.BindOptions(options, parsed);
-        SslStreamBenchmarkOptionsHelper.BindOptions(options, parsed);
+        OptionsHelper.BindOptions(options, parsed);
     }
 }

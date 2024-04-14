@@ -6,16 +6,12 @@ using System.Net.Security;
 using System.Net.Sockets;
 
 using System.Net.Benchmarks;
-using System.Net.Security.Benchmarks;
-using System.Net.Security.Benchmarks.SslStream;
+using System.Net.Benchmarks.Tls;
+using System.Net.Benchmarks.Tls.SslStream;
 
-internal class Program
-{
-    private static async Task Main(string[] args)
-    {
-        await SslStreamBenchmarkServer.RunAsync(args);
-    }
-}
+await SslStreamBenchmarkServer.RunAsync(args);
+
+// ----------------------------
 
 internal class SslStreamBenchmarkServer : TlsBenchmarkServer<Listener, Connection, Options>
 {

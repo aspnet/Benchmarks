@@ -6,13 +6,11 @@ using System.Net.Quic;
 using System.Net.Security;
 
 using System.Net.Benchmarks;
-using System.Net.Security.Benchmarks;
+using System.Net.Benchmarks.Tls;
 
 await QuicBenchmarkServer.RunAsync(args);
 
 // ----------------------------
-
-#pragma warning disable CA1416 // "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'."
 
 internal class QuicBenchmarkServer : TlsBenchmarkServer<Listener, Connection, TlsBenchmarkServerOptions>
 {
@@ -76,5 +74,3 @@ internal class Connection(QuicConnection _connection, TlsBenchmarkServerOptions 
 
     public ValueTask DisposeAsync() => _connection.DisposeAsync();
 }
-
-#pragma warning restore CA1416
