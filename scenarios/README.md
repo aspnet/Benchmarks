@@ -36,9 +36,10 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-citrine-win` | INTEL, logical 28 cores, 1 socket, 32GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz |
 |  `aspnet-citrine-amd` | AMD, logical 48 cores, 1 socket, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-amd2` | AMD, logical 48 cores, 1 socket, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
-|  `aspnet-citrine-arm-lin` | ARM64, 80 physical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
-|  `aspnet-gold-lin` | INTEL, 56 physical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
-|  `aspnet-gold-win` | INTEL, 56 physical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
+|  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-siryn-arm-lin` | ARM64, 128 logical cores, 1 socket, 1 NUMA, 250GB | Ubuntu 20.04, Kernel 5.4.0 | Ampere(R) AmpereOne(TM) |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
 
@@ -641,3 +642,11 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 ```
 
 Note that these ENVs could be set for all runs and crank will run just fine if it can't download the file because no crash happened.
+
+### Downloading binlogs
+
+When running a benchmark, the binlog can be produced and downloaded by adding these arguments:
+
+```
+--application.buildArguments "-bl" --application.options.downloadFiles "../msbuild.binlog"
+```

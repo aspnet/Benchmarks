@@ -397,13 +397,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile arm-lin-app --profile amd-lin-load --profile amd-lin2-db "
       
+- job: Trends_Siryn_Linux
+  displayName: 10- Trends Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: trend-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load "
+      
 # GROUP 11
 
 - job: Frameworks_Amd_Linux
   displayName: 11- Frameworks Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -415,12 +427,24 @@ jobs:
   displayName: 11- Native Aot Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Queue 2
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
+      
+- job: Baselines_Siryn_Linux
+  displayName: 11- Baselines Siryn Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: baselines-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Queue 3
+      arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load "
       
 

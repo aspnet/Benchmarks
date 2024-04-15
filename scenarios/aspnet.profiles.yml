@@ -572,7 +572,7 @@ profiles:
           - warmup
           - secondary
 
-  aspnet-siryn-arm-win:
+  aspnet-siryn-arm-lin:
     variables:
       serverAddress: 10.0.0.111
       cores: 128
@@ -585,7 +585,7 @@ profiles:
           - extra
       application:
         endpoints: 
-          - http://asp-siryn-win:5001
+          - http://asp-siryn-lin:5001
         variables:
           databaseServer: 10.0.0.106
         aliases:
@@ -597,7 +597,7 @@ profiles:
           - warmup
           - secondary
 
-  aspnet-siryn-arm-win-relay:
+  aspnet-siryn-arm-lin-relay:
     variables:
       serverAddress: 10.0.0.111
       cores: 128
@@ -610,7 +610,7 @@ profiles:
           - extra
       application:
         endpoints: 
-          - https://aspnetperf.servicebus.windows.net/sirynwin
+          - https://aspnetperf.servicebus.windows.net/sirynlin
         variables:
           databaseServer: 10.0.0.106
         aliases:
