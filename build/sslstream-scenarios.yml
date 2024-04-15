@@ -39,19 +39,19 @@ parameters:
       - displayName: "TLS 1.2"
         arguments: --variable tlsVersion=1.2 --property tlsVersion=1.2
 
-  - name: concurrency
+  - name: connections
     type: object
     default:
       - displayName: "1 connection"
-        arguments: --variable connections=1 --property concurrency=1
+        arguments: --variable connections=1 --property connections=1 --property streams=1
       - displayName: "16 connections"
-        arguments: --variable connections=16 --property concurrency=16
+        arguments: --variable connections=16 --property connections=16 --property streams=1
 
 steps:
   # handshake scenarios
   - ${{ each s in parameters.handshakeScenarios }}:
       - ${{ each version in parameters.tlsVersion }}:
-          - ${{ each c in parameters.concurrency }}:
+          - ${{ each c in parameters.connections }}:
               - ${{ each res in parameters.tlsResume }}:
                   - task: PublishToAzureServiceBus@1
                     condition: succeededOrFailed()
@@ -65,13 +65,13 @@ steps:
                         {
                           "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                           "name": "crank",
-                          "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
+                          "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
                         }
 
   # read-write scenarios
   - ${{ each s in parameters.readWriteScenarios }}:
       - ${{ each version in parameters.tlsVersion }}:
-          - ${{ each c in parameters.concurrency }}:
+          - ${{ each c in parameters.connections }}:
               - task: PublishToAzureServiceBus@1
                 condition: succeededOrFailed()
                 timeoutInMinutes: 10
@@ -84,5 +84,5 @@ steps:
                     {
                       "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                       "name": "crank",
-                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SslStreamBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ c.arguments }}" ]
+                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ c.arguments }}" ]
                     }

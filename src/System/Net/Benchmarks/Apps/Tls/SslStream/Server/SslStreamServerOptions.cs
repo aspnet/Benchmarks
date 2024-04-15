@@ -7,12 +7,9 @@ namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
 public class SslStreamServerOptions : TlsBenchmarkServerOptions, ISslStreamExtraOptions
 {
-    public bool DisableTlsResume { get; set; }
     public bool AllowTlsResume { get; set; }
     public SslProtocols EnabledSslProtocols { get; set; }
 
     public override string ToString()
-    {
-        return $"{base.ToString()}, DisableTlsResume: {DisableTlsResume}, AllowTlsResume: {AllowTlsResume}, EnabledSslProtocols: {EnabledSslProtocols}";
-    }
+        => $"{base.ToString()}, AllowTlsResume: {AllowTlsResume}, EnabledSslProtocols: {EnabledSslProtocols}";
 }

@@ -1,6 +1,6 @@
 # Quic Benchmark Apps
 
-Contains a pair of applications for measuring the performance of  and QuicStream.
+Contains a pair of applications for measuring the performance of QuicConnection and QuicStream.
 
 ## Implemented Scenarios
 
