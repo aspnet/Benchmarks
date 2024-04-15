@@ -12,16 +12,12 @@ variables:
   receiveBufferSize: 32768 # bytes
   serverCertSelection: "CertContext" # <Callback|Certificate|CertContext>
   clientCertSelection: "CertContext" # <Callback|Collection|CertContext>
-  allowTlsResume: true
 
   # client-specific parameters
   connections: 1 #number of parallel connections
   streams: 1 #number of parallel streams per connection
   warmup: 15 #seconds
   duration: 15 #seconds
-
-  # server-specific parameters
-  # requireClientCert: false
 
 scenarios:
   read-write:
@@ -40,7 +36,14 @@ scenarios:
       job: quicServer
       agent: secondary
       variables:
-        receiveBufferSize: 0
+        sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
     client:
       job: quicClient
       agent: main
@@ -48,13 +51,27 @@ scenarios:
         scenario: ReadWrite
         host: "{{secondaryAddress}}"
         sendBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
 
   client-write:
     server:
       job: quicServer
       agent: secondary
       variables:
-        sendBufferSize: 0
+        receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
     client:
       job: quicClient
       agent: main
@@ -62,6 +79,13 @@ scenarios:
         scenario: ReadWrite
         host: "{{secondaryAddress}}"
         receiveBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
 
   handshake:
     server:
@@ -82,7 +106,8 @@ jobs:
       #branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/Quic/Server/QuicServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
-    arguments: "--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{serverCertSelection}}"
+    # note: send and receive sizes are swapped for server side
+    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --cert-selection {{serverCertSelection}}"
 
   quicClient:
     source:
