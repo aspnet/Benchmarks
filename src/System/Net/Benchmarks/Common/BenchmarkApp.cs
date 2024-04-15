@@ -68,6 +68,6 @@ public abstract class BenchmarkApp<TOptions> where TOptions : new()
             Log("Unhandled exception: " + e);
             throw;
         }
-        return 0;
+        return 0; // on success, returning 0 explicitly; otherwise RootCommand (?) will not report unhandled exceptions to crank as failures
     }
 }

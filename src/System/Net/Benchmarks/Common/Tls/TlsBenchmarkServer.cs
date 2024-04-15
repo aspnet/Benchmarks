@@ -91,7 +91,7 @@ internal abstract class TlsBenchmarkServer<TListener, TConnection, TOptions> : B
                     throw new Exception("Unexpected EOF");
                 }
 
-                // client closed the connection.
+                // client closed the connection
                 return;
             }
 
@@ -148,7 +148,7 @@ internal abstract class TlsBenchmarkServer<TListener, TConnection, TOptions> : B
 
                 if (bytesRead == 0)
                 {
-                    // client closed the connection.
+                    // client closed the connection
                     linkedCts.Cancel();
                     break;
                 }

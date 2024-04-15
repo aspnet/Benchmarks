@@ -20,7 +20,7 @@ public static class SslStreamOptionsHelper
     public static Option<bool> AllowTlsResumeOption { get; } = new Option<bool>("--allow-tls-resume", () => true, "Sets TLS session resumption support.");
 
 #if !NET8_0_OR_GREATER
-    static OptionsHelper()
+    static SslStreamOptionsHelper()
     {
         AllowTlsResumeOption.IsHidden = true;
         AllowTlsResumeOption.AddValidator(symbol =>

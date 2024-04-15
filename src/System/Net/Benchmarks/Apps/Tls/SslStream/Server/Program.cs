@@ -26,7 +26,7 @@ internal class SslStreamBenchmarkServer : TlsBenchmarkServer<SslStreamServerList
         var sslOptions = CreateSslServerAuthenticationOptions(options);
         sslOptions.EnabledSslProtocols = options.EnabledSslProtocols;
 #if NET8_0_OR_GREATER
-        sslOptions.AllowTlsResume = options.AllowTlsResume;
+        sslOptions.AllowTlsResume = options.AllowTlsResume && !options.DisableTlsResume;
 #endif
 
         var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);

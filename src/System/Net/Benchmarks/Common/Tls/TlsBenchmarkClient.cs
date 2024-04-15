@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Net.Security;
-using System.Threading;
 
 namespace System.Net.Benchmarks.Tls;
 

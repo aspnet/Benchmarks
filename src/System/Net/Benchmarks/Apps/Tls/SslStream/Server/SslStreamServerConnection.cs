@@ -6,19 +6,10 @@ using System.Net.Sockets;
 
 namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
-internal class SslStreamServerConnection : ITlsBenchmarkServerConnection
+internal class SslStreamServerConnection(Socket _socket, SslServerAuthenticationOptions _sslOptions) : ITlsBenchmarkServerConnection
 {
     private SslStream? _sslStream;
     private bool _streamConsumed;
-    private readonly Socket _socket;
-    private readonly SslServerAuthenticationOptions _sslOptions;
-
-    public SslStreamServerConnection(Socket socket, SslServerAuthenticationOptions sslOptions)
-    {
-        _socket = socket;
-        _sslOptions = sslOptions;
-        //CompleteHandshakeAsync(default).GetAwaiter().GetResult();
-    }
 
     public bool IsMultiplexed => false;
     public SslApplicationProtocol NegotiatedApplicationProtocol
