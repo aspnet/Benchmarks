@@ -1,0 +1,9 @@
+<Project>
+
+  <Import Project="..\..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <SystemNetBenchmarksCommonPath>$(MSBuildThisFileDirectory)Common/</SystemNetBenchmarksCommonPath>
+  </PropertyGroup>
+
+</Project>

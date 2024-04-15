@@ -1,0 +1,118 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  # common parameters
+  serverPort: 5000
+  sendBufferSize: 32768 # bytes
+  receiveBufferSize: 32768 # bytes
+  serverCertSelection: "CertContext" # <Callback|Certificate|CertContext>
+  clientCertSelection: "CertContext" # <Callback|Collection|CertContext>
+
+  # client-specific parameters
+  connections: 1 #number of parallel connections
+  streams: 1 #number of parallel streams per connection
+  warmup: 15 #seconds
+  duration: 15 #seconds
+
+scenarios:
+  read-write:
+    server:
+      job: quicServer
+      agent: secondary
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+
+  client-read:
+    server:
+      job: quicServer
+      agent: secondary
+      variables:
+        sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        sendBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+
+  client-write:
+    server:
+      job: quicServer
+      agent: secondary
+      variables:
+        receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        receiveBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+
+  handshake:
+    server:
+      job: quicServer
+      agent: secondary
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: Handshake
+        host: "{{secondaryAddress}}"
+
+jobs:
+  quicServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Server/QuicServer.csproj
+    readyStateText: Listening on # app should write this line to output when ready
+    # note: send and receive sizes are swapped for server side
+    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --cert-selection {{serverCertSelection}}"
+
+  quicClient:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Client/QuicClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 300 #seconds
+    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --connections {{connections}} --streams {{streams}} --warmup {{warmup}} --duration {{duration}}"
