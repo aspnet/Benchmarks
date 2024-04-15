@@ -104,9 +104,8 @@ scenarios:
 jobs:
   sslServer:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
-      #repository: https://github.com/aspnet/benchmarks.git
-      #branchOrCommit: main
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Server/SslStreamServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
     # note: send and receive sizes are swapped for server side
@@ -114,9 +113,8 @@ jobs:
 
   sslClient:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
-      #repository: https://github.com/aspnet/benchmarks.git
-      #branchOrCommit: main
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/SslStream/Client/SslStreamClient.csproj
     isConsoleApp: true
     waitForExit: true

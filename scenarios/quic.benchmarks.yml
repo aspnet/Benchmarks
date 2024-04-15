@@ -1,6 +1,5 @@
 # Example:
 # crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
-# crank --config C:\Users\knatalia\dev\git\Benchmarks\scenarios\quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
@@ -101,9 +100,8 @@ scenarios:
 jobs:
   quicServer:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
-      #repository: https://github.com/aspnet/benchmarks.git
-      #branchOrCommit: main
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/Quic/Server/QuicServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
     # note: send and receive sizes are swapped for server side
@@ -111,9 +109,8 @@ jobs:
 
   quicClient:
     source:
-      localFolder: C:\Users\knatalia\dev\git\Benchmarks\
-      #repository: https://github.com/aspnet/benchmarks.git
-      #branchOrCommit: main
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/System/Net/Benchmarks/Apps/Tls/Quic/Client/QuicClient.csproj
     isConsoleApp: true
     waitForExit: true
