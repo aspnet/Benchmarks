@@ -32,11 +32,11 @@ parameters:
   # Scenarios are in frameworks-database-scenarios.yml since they require the db server
 
   # Actix (Rust)
-
-  - displayName: Actix Plaintext
-    arguments: --scenario plaintext_actix $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
-  - displayName: Actix Json
-    arguments: --scenario json_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
+  # Actix is disable as the build is currently broken
+  #- displayName: Actix Plaintext
+  #  arguments: --scenario plaintext_actix $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextActix --property protocol=http
+  #- displayName: Actix Json
+  #  arguments: --scenario json_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonActix --property protocol=http
 
   # Drogon (C++)
   # Scenarios are in frameworks-database-scenarios.yml since they require the db server
