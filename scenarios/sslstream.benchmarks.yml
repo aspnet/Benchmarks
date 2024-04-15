@@ -12,7 +12,7 @@ variables:
   tlsVersion: "1.3" # <1.2|1.3>
   serverCertSelection: "CertContext" # <Callback|Certificate|CertContext>
   clientCertSelection: "CertContext" # <Callback|Collection|CertContext>
-  allowTlsResume: false # default for parity with QUIC
+  allowTlsResume: false # can be true for .NET 8+ only, defaults to false for parity with older versions (and QUIC)
 
   # client-specific parameters
   connections: 1 #number of parallel connections
