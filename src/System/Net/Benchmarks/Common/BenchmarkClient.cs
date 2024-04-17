@@ -45,8 +45,6 @@ internal abstract class BenchmarkClient<TOptions> : BenchmarkApp<TOptions>
 
         await scenarioTask.ConfigureAwait(false);
         Log("Done");
-
-        await Task.Delay(100).ConfigureAwait(false); // sometimes the measure events seem to be lost? wait a bit to ensure they are collected
     }
 
     private static async Task WaitForWarmupCompletion(CancellationToken cancellationToken)

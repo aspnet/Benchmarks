@@ -26,13 +26,13 @@ parameters:
   - name: readWriteScenarios
     type: object
     default:
-      - displayName: "read-write"
+      - displayName: "Read-Write"
         arguments: --scenario read-write --property scenario=Read-Write
 
   - name: handshakeScenarios
     type: object
     default:
-      - displayName: "handshake"
+      - displayName: "Handshake"
         arguments: --scenario handshake --property scenario=Handshake
 
   - name: tlsResume
@@ -54,27 +54,27 @@ parameters:
   - name: connections
     type: object
     default:
-      - displayName: "1 connection"
+      - displayName: "1 conn"
         arguments: --variable connections=1 --property connections=1
-      - displayName: "16 connections"
+      - displayName: "16 conn"
         arguments: --variable connections=16 --property connections=16
 
   - name: singleStreamConnections
     type: object
     default:
-      - displayName: "1 connection 1 stream"
+      - displayName: "1 conn x 1 strm"
         arguments: --variable connections=1 --variable streams=1 --property connxstrm=1x1
-      - displayName: "16 connections 1 stream"
+      - displayName: "16 conn x 1 strm"
         arguments: --variable connections=16 --variable streams=1 --property connxstrm=16x1
 
   - name: multiplexedConnections
     type: object
     default:
-      - displayName: "1 connection 1 stream"
+      - displayName: "1 conn x 1 strm"
         arguments: --variable connections=1 --variable streams=1 --property connxstrm=1x1
-      - displayName: "1 connection 16 streams"
+      - displayName: "1 conn x 16 strm"
         arguments: --variable connections=1 --variable streams=16 --property connxstrm=1x16
-      - displayName: "16 connections 1 stream"
+      - displayName: "16 conn x 1 strm"
         arguments: --variable connections=16 --variable streams=1 --property connxstrm=16x1
 
 steps:
