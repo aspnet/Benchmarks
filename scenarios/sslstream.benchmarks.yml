@@ -101,6 +101,17 @@ scenarios:
         scenario: Handshake
         host: "{{secondaryAddress}}"
 
+  rps:
+    server:
+      job: sslServer
+      agent: secondary
+    client:
+      job: sslClient
+      agent: main
+      variables:
+        scenario: Rps
+        host: "{{secondaryAddress}}"
+
 jobs:
   sslServer:
     source:

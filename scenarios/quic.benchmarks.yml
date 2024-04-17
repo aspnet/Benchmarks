@@ -97,6 +97,17 @@ scenarios:
         scenario: Handshake
         host: "{{secondaryAddress}}"
 
+  rps:
+    server:
+      job: quicServer
+      agent: secondary
+    client:
+      job: quicClient
+      agent: main
+      variables:
+        scenario: Rps
+        host: "{{secondaryAddress}}"
+
 jobs:
   quicServer:
     source:
