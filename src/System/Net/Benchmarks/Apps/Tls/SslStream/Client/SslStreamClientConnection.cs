@@ -5,14 +5,9 @@ using System.Net.Security;
 
 namespace System.Net.Benchmarks.Tls.SslStreamBenchmark;
 
-internal class SslStreamClientConnection(SslStream _sslStream) : ITlsBenchmarkClientConnection
+internal class SslStreamClientConnection : SingleStreamConnection<SslStream>, ITlsBenchmarkClientConnection
 {
-    public Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
-    {
-        Stream stream = _sslStream;
-        _sslStream = null!;
-        return Task.FromResult(stream);
-    }
+    public SslStreamClientConnection(SslStream _sslStream) => InnerStream = _sslStream;
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options) => Task.FromResult<Stream>(ConsumeStream());
 }

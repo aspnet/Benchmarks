@@ -13,6 +13,7 @@ internal class SslStreamServerListener(Socket _listenSocket, SslServerAuthentica
     public async Task<SslStreamServerConnection> AcceptAsync(CancellationToken cancellationToken)
     {
         var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken).ConfigureAwait(false);
+        acceptSocket.NoDelay = true;
         return new SslStreamServerConnection(acceptSocket, _sslOptions);
     }
 
