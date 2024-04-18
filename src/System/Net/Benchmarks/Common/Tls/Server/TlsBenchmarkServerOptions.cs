@@ -6,13 +6,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace System.Net.Benchmarks.Tls;
 
-public enum ServerCertSelectionType
-{
-    CertContext,
-    Certificate,
-    Callback,
-}
-
 public class TlsBenchmarkServerOptions : TlsBenchmarkOptions, IBenchmarkServerOptions
 {
     public int Port { get; set; }

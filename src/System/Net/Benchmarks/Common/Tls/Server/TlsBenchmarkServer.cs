@@ -6,14 +6,6 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace System.Net.Benchmarks.Tls;
 
-internal interface ITlsBenchmarkServerConnection : IAsyncDisposable
-{
-    SslApplicationProtocol NegotiatedApplicationProtocol { get; }
-    Task CompleteHandshakeAsync(CancellationToken cancellationToken);
-    Task<Stream> AcceptInboundStreamAsync(CancellationToken cancellationToken);
-    bool IsMultiplexed { get; }
-}
-
 internal abstract class TlsBenchmarkServer<TListener, TConnection, TOptions> : BenchmarkServer<TListener, TConnection, TOptions>
     where TConnection : ITlsBenchmarkServerConnection
     where TListener : IListener<TConnection>

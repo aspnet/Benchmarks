@@ -5,35 +5,16 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace System.Net.Benchmarks.Tls;
 
-public enum Scenario
-{
-    // Measure throughput
-    ReadWrite,
-
-    // measure number of handshakes per second
-    Handshake,
-
-    // measure number of requests per second
-    Rps
-}
-
-public enum CertificateSelectionType
-{
-    CertContext,
-    Collection,
-    Callback,
-}
-
 public class TlsBenchmarkClientOptions : TlsBenchmarkOptions, IBenchmarkClientOptions
 {
     public string Hostname { get; set; } = null!;
     public int Port { get; set; }
     public int Connections { get; set; }
     public int Streams { get; set; }
-    public CertificateSelectionType CertificateSelection { get; set; }
+    public ClientCertSelectionType CertificateSelection { get; set; }
     public X509Certificate2? ClientCertificate { get; set; } = null!;
     public string? TlsHostName { get; set; }
-    public Scenario Scenario { get; set; }
+    public TlsBenchmarkScenario Scenario { get; set; }
     public TimeSpan Warmup { get; set; }
     public TimeSpan Duration { get; set; }
 

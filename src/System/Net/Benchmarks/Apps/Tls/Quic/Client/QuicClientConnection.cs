@@ -9,6 +9,8 @@ internal class QuicClientConnection(QuicConnection _connection) : ITlsBenchmarkC
 {
     private static readonly byte[] s_byteBuf = [ 42 ];
 
+    public bool IsMultiplexed => true;
+
     public async Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options)
     {
         var stream = await _connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
