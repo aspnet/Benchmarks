@@ -36,6 +36,10 @@ public static class LogHelper
             throw new InvalidOperationException($"Metric '{name}' is already registered.");
         }
         s_metrics[name] = (longDescription, format, IsLogged: false);
+
+        // NOTE:
+        // It is better for metrics to be registered with some delay to ensure the metadata is collected.
+        // Event listener is started (shortly) after the benchmark app starts, so it might miss the registration event.
         BenchmarksEventSource.Register(name, Operations.First, Operations.First, shortDescription, longDescription, format);
     }
 
