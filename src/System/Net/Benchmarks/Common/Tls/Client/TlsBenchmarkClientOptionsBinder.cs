@@ -15,9 +15,9 @@ public class TlsBenchmarkClientOptionsBinder<TOptions> : BenchmarkOptionsBinder<
     public static Option<int> StreamsOption { get; } = new Option<int>("--streams", () => 1, "The number of streams to open per connection.");
     public static Option<string> ClientCertificatePathOption { get; } = new Option<string>("--cert", "Path to the client certificate.");
     public static Option<string> ClientCertificatePasswordOption { get; } = new Option<string>("--cert-password", "Password to the certificate file specified in --cert.");
-    public static Option<CertificateSelectionType> CertificateSelectionOption { get; } = new Option<CertificateSelectionType>("--cert-selection", () => CertificateSelectionType.CertContext, "The source of the server certificate in SslClientAuthenticationOptions.");
+    public static Option<ClientCertSelectionType> CertificateSelectionOption { get; } = new Option<ClientCertSelectionType>("--cert-selection", () => ClientCertSelectionType.CertContext, "The source of the server certificate in SslClientAuthenticationOptions.");
     public static Option<string> TlsHostNameOption { get; } = new Option<string>("--tls-host-name", "The target host name to send in TLS Client Hello. If not specified, the value from --host is used.");
-    public static Option<Scenario> ScenarioOption { get; } = new Option<Scenario>("--scenario", () => Scenario.ReadWrite, "The scenario to run.");
+    public static Option<TlsBenchmarkScenario> ScenarioOption { get; } = new Option<TlsBenchmarkScenario>("--scenario", () => TlsBenchmarkScenario.ReadWrite, "The scenario to run.");
     public static Option<double> DurationOption { get; } = new Option<double>("--duration", () => 15, "The duration of the test in seconds.");
     public static Option<double> WarmupOption { get; } = new Option<double>("--warmup", () => 15, "The duration of the warmup in seconds.");
 

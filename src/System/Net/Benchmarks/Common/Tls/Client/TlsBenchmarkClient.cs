@@ -6,13 +6,6 @@ using System.Net.Security;
 
 namespace System.Net.Benchmarks.Tls;
 
-internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
-
-internal interface ITlsBenchmarkClientConnection : IAsyncDisposable
-{
-    Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options);
-}
-
 internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOptions> : BenchmarkClient<TOptions>
     where TConnection : ITlsBenchmarkClientConnection
     where TOptions : TlsBenchmarkClientOptions, new()
@@ -24,12 +17,14 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         var connectionOptions = CreateClientConnectionOptions(options);
         return options.Scenario switch
         {
-            Scenario.Handshake => RunHandshakeScenario(connectionOptions, options, cancellationToken),
-            Scenario.ReadWrite => RunReadWriteScenario(connectionOptions, options, cancellationToken),
-            Scenario.Rps => RunRpsScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.Handshake => RunHandshakeScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.ReadWrite => RunReadWriteScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.Rps => RunRpsScenario(connectionOptions, options, cancellationToken),
             _ => throw new InvalidOperationException($"Unknown scenario: {options.Scenario}")
         };
     }
+
+    internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
 
     private async Task RunHandshakeScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
@@ -246,9 +241,9 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
             RemoteCertificateValidationCallback = delegate { return true; },
             ApplicationProtocols = [
                 options.Scenario switch {
-                    Scenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
-                    Scenario.Handshake => ApplicationProtocolConstants.Handshake,
-                    Scenario.Rps => ApplicationProtocolConstants.Rps,
+                    TlsBenchmarkScenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
+                    TlsBenchmarkScenario.Handshake => ApplicationProtocolConstants.Handshake,
+                    TlsBenchmarkScenario.Rps => ApplicationProtocolConstants.Rps,
                     _ => throw new Exception("Unknown scenario")
                 }
             ],
@@ -259,14 +254,14 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         {
             switch (options.CertificateSelection)
             {
-                case CertificateSelectionType.Collection:
+                case ClientCertSelectionType.Collection:
                     sslOptions.ClientCertificates = [ options.ClientCertificate ];
                     break;
-                case CertificateSelectionType.Callback:
+                case ClientCertSelectionType.Callback:
                     sslOptions.LocalCertificateSelectionCallback = delegate { return options.ClientCertificate; };
                     break;
 #if NET8_0_OR_GREATER
-                case CertificateSelectionType.CertContext:
+                case ClientCertSelectionType.CertContext:
                     sslOptions.ClientCertificateContext = SslStreamCertificateContext.Create(options.ClientCertificate, []);
                     break;
 #endif
