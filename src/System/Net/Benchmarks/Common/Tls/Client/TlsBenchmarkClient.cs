@@ -6,13 +6,6 @@ using System.Net.Security;
 
 namespace System.Net.Benchmarks.Tls;
 
-internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
-
-internal interface ITlsBenchmarkClientConnection : IAsyncDisposable
-{
-    Task<Stream> EstablishStreamAsync(TlsBenchmarkClientOptions options);
-}
-
 internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOptions> : BenchmarkClient<TOptions>
     where TConnection : ITlsBenchmarkClientConnection
     where TOptions : TlsBenchmarkClientOptions, new()
@@ -24,17 +17,17 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         var connectionOptions = CreateClientConnectionOptions(options);
         return options.Scenario switch
         {
-            Scenario.Handshake => RunHandshakeScenario(connectionOptions, options, cancellationToken),
-            Scenario.ReadWrite => RunReadWriteScenario(connectionOptions, options, cancellationToken),
-            Scenario.Rps => RunRpsScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.Handshake => RunHandshakeScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.ReadWrite => RunReadWriteScenario(connectionOptions, options, cancellationToken),
+            TlsBenchmarkScenario.Rps => RunRpsScenario(connectionOptions, options, cancellationToken),
             _ => throw new InvalidOperationException($"Unknown scenario: {options.Scenario}")
         };
     }
 
+    internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
+
     private async Task RunHandshakeScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
-        RegisterPercentileMetric(MetricName.Handshake, "Handshake duration (ms)");
-
         var tasks = new List<Task<List<double>>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
         {
@@ -42,14 +35,11 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         }
 
         var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
-        LogPercentileMetric(MetricName.Handshake, metrics.SelectMany(x => x).ToList());
+        LogMetricPercentiles(MetricName.Handshake, "Handshake duration (ms)", metrics.SelectMany(x => x).ToList());
     }
 
     private async Task RunReadWriteScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
-        RegisterMetric(MetricName.Read + MetricName.Mean, "Read B/s - mean");
-        RegisterMetric(MetricName.Write + MetricName.Mean, "Write B/s - mean");
-
         var connections = new ITlsBenchmarkClientConnection[options.Connections];
         var tasks = new List<Task<ReadWriteMetrics>>(options.Connections * options.Streams);
         for (var i = 0; i < options.Connections; i++)
@@ -62,8 +52,8 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         }
 
         var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
-        LogMetric(MetricName.Read + MetricName.Mean, metrics.Sum(x => x.BytesReadPerSecond));
-        LogMetric(MetricName.Write + MetricName.Mean, metrics.Sum(x => x.BytesWrittenPerSecond));
+        LogMetric(MetricName.Read + MetricName.Mean, "Read B/s - mean", metrics.Sum(x => x.BytesReadPerSecond));
+        LogMetric(MetricName.Write + MetricName.Mean, "Write B/s - mean", metrics.Sum(x => x.BytesWrittenPerSecond));
 
         foreach (var connection in connections)
         {
@@ -73,9 +63,6 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
 
     private async Task RunRpsScenario(TConnectionOptions connectionOptions, TOptions options, CancellationToken cancellationToken)
     {
-        RegisterMetric(MetricName.Rps + MetricName.Mean, "RPS - mean");
-        RegisterMetric(MetricName.Errors, "Errors", "n0");
-
         var connections = new ITlsBenchmarkClientConnection[options.Connections];
         var tasks = new List<Task<(double Rps, long Errors)>>(options.Connections * options.Streams);
         for (var i = 0; i < options.Connections; i++)
@@ -88,10 +75,10 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         }
 
         var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
-        LogMetric(MetricName.Rps + MetricName.Mean, metrics.Sum(x => x.Rps));
+        LogMetric(MetricName.Rps + MetricName.Mean, "RPS - mean", metrics.Sum(x => x.Rps));
         if (metrics.Any(x => x.Errors > 0))
         {
-            LogMetric(MetricName.Errors, metrics.Sum(x => x.Errors));
+            LogMetric(MetricName.Errors, "Errors", metrics.Sum(x => x.Errors), "n0");
         }
 
         foreach (var connection in connections)
@@ -254,9 +241,9 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
             RemoteCertificateValidationCallback = delegate { return true; },
             ApplicationProtocols = [
                 options.Scenario switch {
-                    Scenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
-                    Scenario.Handshake => ApplicationProtocolConstants.Handshake,
-                    Scenario.Rps => ApplicationProtocolConstants.Rps,
+                    TlsBenchmarkScenario.ReadWrite => ApplicationProtocolConstants.ReadWrite,
+                    TlsBenchmarkScenario.Handshake => ApplicationProtocolConstants.Handshake,
+                    TlsBenchmarkScenario.Rps => ApplicationProtocolConstants.Rps,
                     _ => throw new Exception("Unknown scenario")
                 }
             ],
@@ -267,14 +254,14 @@ internal abstract class TlsBenchmarkClient<TConnection, TConnectionOptions, TOpt
         {
             switch (options.CertificateSelection)
             {
-                case CertificateSelectionType.Collection:
+                case ClientCertSelectionType.Collection:
                     sslOptions.ClientCertificates = [ options.ClientCertificate ];
                     break;
-                case CertificateSelectionType.Callback:
+                case ClientCertSelectionType.Callback:
                     sslOptions.LocalCertificateSelectionCallback = delegate { return options.ClientCertificate; };
                     break;
 #if NET8_0_OR_GREATER
-                case CertificateSelectionType.CertContext:
+                case ClientCertSelectionType.CertContext:
                     sslOptions.ClientCertificateContext = SslStreamCertificateContext.Create(options.ClientCertificate, []);
                     break;
 #endif

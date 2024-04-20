@@ -3,16 +3,6 @@
 
 namespace System.Net.Benchmarks;
 
-internal interface IBenchmarkServerOptions
-{
-}
-
-internal interface IListener<TAcceptResult> : IAsyncDisposable
-{
-    Task<TAcceptResult> AcceptAsync(CancellationToken cancellationToken);
-    EndPoint LocalEndPoint { get; }
-}
-
 internal abstract class BenchmarkServer<TListener, TAcceptResult, TOptions> : BenchmarkApp<TOptions>
     where TListener : IListener<TAcceptResult>
     where TOptions : IBenchmarkServerOptions, new()
@@ -26,8 +16,6 @@ internal abstract class BenchmarkServer<TListener, TAcceptResult, TOptions> : Be
 
     protected override async Task RunBenchmarkAsync(TOptions options, CancellationToken ct)
     {
-        RegisterMetric(MetricName.Errors, "Errors", "n0");
-
         await using var listener = await ListenAsync(options, ct);
         Log(GetReadyStateText(listener));
 
@@ -44,7 +32,7 @@ internal abstract class BenchmarkServer<TListener, TAcceptResult, TOptions> : Be
         {
             if (s_errors > 0)
             {
-                LogMetric(MetricName.Errors, s_errors);
+                LogMetric(MetricName.Errors, "Errors", s_errors, "n0");
             }
         }
         Log("Exiting...");

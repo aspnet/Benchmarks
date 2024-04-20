@@ -7,37 +7,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="SslStreamServerConnection.cs" />
-    <Compile Include="SslStreamServerListener.cs" />
-    <Compile Include="SslStreamServerOptions.cs" />
-    <Compile Include="SslStreamServerOptionsBinder.cs" />
-    <Compile Include="../Shared/SslStreamOptionsHelper.cs"
-             Link="SslStream/Shared/SslStreamOptionsHelper.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkApp.cs"
-             Link="Common/BenchmarkApp.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkOptionsBinder.cs"
-             Link="Common/BenchmarkOptionsBinder.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)BenchmarkServer.cs"
-             Link="Common/BenchmarkServer.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)LogHelper.cs"
-             Link="Common/LogHelper.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/ApplicationProtocolConstants.cs"
-             Link="Common/Tls/ApplicationProtocolConstants.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServer.cs"
-             Link="Common/Tls/TlsBenchmarkServer.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServerOptions.cs"
-             Link="Common/Tls/TlsBenchmarkServerOptions.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkServerOptionsBinder.cs"
-             Link="Common/Tls/TlsBenchmarkServerOptionsBinder.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptions.cs"
-             Link="Common/Tls/TlsBenchmarkOptions.cs" />
-    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/TlsBenchmarkOptionsHelper.cs"
-             Link="Common/Tls/TlsBenchmarkOptionsHelper.cs" />
+    <Compile Include="../Shared/*.cs" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Server/*.cs"
+             LinkBase="Common" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Shared/*.cs"
+             LinkBase="Common" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/Server/*.cs"
+             LinkBase="Common/Tls" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/Shared/*.cs"
+             LinkBase="Common/Tls" />
   </ItemGroup>
 
   <ItemGroup>
