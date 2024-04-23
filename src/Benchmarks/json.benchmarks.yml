@@ -21,7 +21,8 @@ jobs:
       transport: Sockets
       scenario: plaintext
       database: ''
-    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %}"
+      jsonsize: 0
+    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --kestrelTransport {{transport}} --protocol {{protocol}} {% if database.size > 0 %} --database {{ database }} {% endif %} {% if jsonsize > 0 %} --application.environmentVariables JSONSIZE={{ jsonsize }} {% endif %}"
   
 scenarios:
 
@@ -57,6 +58,17 @@ scenarios:
       job: wrk
       variables:
         path: /mvc/json
+
+  json_large:
+    application:
+      job: aspnetbenchmarks
+      variables:
+        scenario: json
+        jsonsize: 400000
+    load:
+      job: wrk
+      variables:
+        path: /json
 
   aspnet-citrine-lin:
     variables:

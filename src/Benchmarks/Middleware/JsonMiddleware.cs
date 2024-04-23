@@ -19,18 +19,26 @@ namespace Benchmarks.Middleware
     public class JsonMiddleware
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
-        //private const int _bufferSize = 400014;
-        private const int _bufferSize = 27;
+
+        private const int _jsonFramingSize = 14;
+
+        private readonly int _bufferSize;
         private readonly RequestDelegate _next;
 
-        private readonly JsonSerializerOptions _jsonOptions = new();
-
-        //private readonly string _message = new string('a', 400000);
         private readonly string _message = new string("Hello, World!");
 
         public JsonMiddleware(RequestDelegate next)
         {
+            if (!int.TryParse(Environment.GetEnvironmentVariable("JSONSIZE"), out var length))
+            {
+                length = _message.Length;
+            }
+            else
+            {
+                _message = new string('a', length);
+            }
             _next = next;
+            _bufferSize = length + _jsonFramingSize;
         }
 
         public Task Invoke(HttpContext httpContext)
@@ -40,7 +48,7 @@ namespace Benchmarks.Middleware
                 httpContext.Response.StatusCode = 200;
                 httpContext.Response.ContentLength = _bufferSize;
 
-                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = _message }, _jsonOptions);
+                return httpContext.Response.WriteAsJsonAsync(new JsonMessage { message = _message }, CustomJsonContext.Default.JsonMessage);
             }
 
             return _next(httpContext);
