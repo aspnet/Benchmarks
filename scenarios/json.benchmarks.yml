@@ -93,7 +93,7 @@ scenarios:
         path: /json
         presetHeaders: json
 
-  json_large:
+  json_400k:
     application:
       job: jsonbenchmarks
       variables:
