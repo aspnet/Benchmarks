@@ -14,9 +14,9 @@ public class JsonMiddleware
 
     private readonly string _message = new string("Hello, World!");
 
-    public JsonMiddleware(RequestDelegate next)
+    public JsonMiddleware(RequestDelegate next, IConfiguration config)
     {
-        if (!int.TryParse(Environment.GetEnvironmentVariable("JSONSIZE"), out var length))
+        if (!int.TryParse(config["JSONSIZE"], out var length))
         {
             length = _message.Length;
         }
