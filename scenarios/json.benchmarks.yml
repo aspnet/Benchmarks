@@ -41,10 +41,8 @@ jobs:
       project: src/BenchmarksApps/Json/Json.csproj
     readyStateText: Application started.
     variables:
-      protocol: http
-      server: Kestrel
-      scenario: json
-    arguments: "--nonInteractive true --scenarios {{scenario}} --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --server {{server}} --protocol {{protocol}}"
+      singleStringJsonSize: 500
+    arguments: "--nonInteractive true --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
@@ -93,13 +91,13 @@ scenarios:
         path: /json
         presetHeaders: json
 
-  json_400k:
+  json_middleware:
     application:
       job: jsonbenchmarks
       variables:
         scenario: json
       environmentVariables:
-        JSONSIZE: 400000
+        JSONSIZE: {{singleStringJsonSize}}
     load:
       job: wrk
       variables:
