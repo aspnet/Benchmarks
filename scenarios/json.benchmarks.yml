@@ -42,7 +42,7 @@ jobs:
     readyStateText: Application started.
     variables:
       singleStringJsonSize: 500
-    arguments: "--nonInteractive true --urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}} --jsonsize {{singleStringJsonSize}}"
 
 scenarios:
 
@@ -96,8 +96,6 @@ scenarios:
       job: jsonbenchmarks
       variables:
         scenario: json
-      environmentVariables:
-        JSONSIZE: {{singleStringJsonSize}}
     load:
       job: wrk
       variables:
