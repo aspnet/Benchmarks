@@ -58,7 +58,7 @@ rootCommand.Handler = CommandHandler.Create(async (InvocationContext context) =>
     await RunDotNetCommand(dotnetPath, $"publish -c Release -o {publishDirectory}", mainProjectAbsolutePath);
 
     var templateFileName = Path.Combine(publishDirectory, $"{projectName}.dll");
-    var templateProcessArgs = string.Join(" ", [templateFileName, templateRunArgs]);
+    var templateProcessArgs = string.Join(" ", (string?[]) [templateFileName, templateRunArgs]);
 
     await RunDotNetCommand(dotnetPath, templateProcessArgs, workingDirectory: publishDirectory);
 
