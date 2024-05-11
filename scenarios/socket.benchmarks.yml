@@ -1,59 +1,134 @@
 # Example:
-# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/socket.benchmarks.yml --scenario basic-server-client --profile aspnet-perf-lin
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
 
 variables:
-    warmup: 15 #seconds
-    duration: 15 #seconds
-    connections: 8
-    serverPort: 5000
-    receiveBufferSize: 32768
-    sendBufferSize: 32768
+  # common parameters
+  serverPort: 5000
+  sendBufferSize: 32768 # bytes
+  receiveBufferSize: 32768 # bytes
+
+  # client-specific parameters
+  connections: 1 #number of parallel connections
+  warmup: 15 #seconds
+  duration: 15 #seconds
 
 scenarios:
+  read-write:
+    server:
+      job: socketServer
+      agent: secondary
+      variables:
+        scenario: ReadWrite
+    client:
+      job: socketClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+
+  client-read:
+    server:
+      job: socketServer
+      agent: secondary
+      variables:
+        sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+    client:
+      job: socketClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        sendBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+
+  client-write:
+    server:
+      job: socketServer
+      agent: secondary
+      variables:
+        receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+    client:
+      job: socketClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        receiveBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+
   connection-establishment:
     server:
-      job: basic-server
+      job: socketServer
       agent: secondary
       variables:
         scenario: ConnectionEstablishment
     client:
-      job: basic-client
+      job: socketClient
       agent: main
       variables:
-        host: '{{secondaryAddress}}'
         scenario: ConnectionEstablishment
-  
-  read-write-tcp:
+        host: "{{secondaryAddress}}"
+
+  rps:
     server:
-      job: basic-server
+      job: socketServer
       agent: secondary
       variables:
-        scenario: ReadWrite
+        scenario: Rps
     client:
-      job: basic-client
+      job: socketClient
       agent: main
       variables:
-        host: '{{secondaryAddress}}'
-        scenario: ReadWrite
+        scenario: Rps
+        host: "{{secondaryAddress}}"
 
 jobs:
-  basic-server:
+  socketServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/SocketBenchmarks/Servers/Basic/SocketBenchmarks.Servers.Basic.csproj
-    readyStateText: Listening on
-    arguments: '--port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}}'
+      project: src/System/Net/Benchmarks/Apps/Socket/Server/SocketServer.csproj
+    readyStateText: Listening on # app should write this line to output when ready
+    # note: send and receive sizes are swapped for server side
+    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --scenario {{scenario}}"
 
-  basic-client:
+  socketClient:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/BenchmarksApps/SocketBenchmarks/Clients/Basic/SocketBenchmarks.Clients.Basic.csproj
+      project: src/System/Net/Benchmarks/Apps/Socket/Client/SocketClient.csproj
     isConsoleApp: true
     waitForExit: true
-    timeout: 120 #seconds
-    arguments: '--endpoint {{host}}:{{serverPort}} --warmup-time {{warmup}} --duration {{duration}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --connections {{connections}} --scenario {{scenario}}'
+    timeout: 300 #seconds
+    arguments: "--address {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}} --connections {{connections}} --warmup {{warmup}} --duration {{duration}}"

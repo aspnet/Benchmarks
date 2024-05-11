@@ -3,9 +3,18 @@
 
 namespace System.Net.Benchmarks;
 
-internal abstract class SingleStreamConnection<TStream> : IConnection
+internal class SingleStreamConnection<TStream> : IConnection
     where TStream : Stream
 {
+    internal SingleStreamConnection()
+    {
+
+    }
+
+    internal SingleStreamConnection(TStream innerStream)
+    {
+        InnerStream = innerStream;
+    }
     private int _streamConsumed;
     protected TStream? InnerStream { get; set; }
 
