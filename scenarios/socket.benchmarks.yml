@@ -1,5 +1,5 @@
 # Example:
-# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/socket.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
