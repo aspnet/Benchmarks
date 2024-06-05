@@ -114,7 +114,7 @@ steps:
                             {
                               "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                               "name": "crank",
-                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
+                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
                             }
 
   # handshake scenarios -- QUIC
@@ -133,7 +133,7 @@ steps:
                     {
                       "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                       "name": "crank",
-                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ c.arguments }}" ]
+                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ c.arguments }}" ]
                     }
 
   # read-write scenarios -- SslStream
@@ -155,7 +155,7 @@ steps:
                                 {
                                   "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                                   "name": "crank",
-                                  "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
+                                  "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
                                 }
 
   # read-write scenarios -- QUIC
@@ -176,5 +176,5 @@ steps:
                             {
                               "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                               "name": "crank",
-                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
+                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
                             }

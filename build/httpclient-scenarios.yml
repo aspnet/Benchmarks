@@ -76,7 +76,7 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
+                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
               }
 
 # POST scenarios
@@ -96,5 +96,5 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
               }

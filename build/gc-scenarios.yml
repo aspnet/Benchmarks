@@ -80,5 +80,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
           "timeout": "00:20:00",
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --application.framework net9.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table GcBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --application.framework net9.0 --application.options.collectCounters true --no-metadata --no-measurements --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table GcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart" ]
         }

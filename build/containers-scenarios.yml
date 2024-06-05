@@ -132,6 +132,6 @@ steps:
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
-              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart" ]
             }
             
