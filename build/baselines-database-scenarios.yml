@@ -85,5 +85,5 @@ steps:
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
             "retries": 1,
-            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --load.options.reuseBuild true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart" ]
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --variable duration=30 --load.options.reuseBuild true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --chart" ]
           }

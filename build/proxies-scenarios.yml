@@ -153,7 +153,7 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
@@ -176,5 +176,5 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANT_ID --cert-client-id SQL_SERVER_CLIENT_ID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }
