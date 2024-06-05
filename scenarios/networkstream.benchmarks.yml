@@ -1,5 +1,5 @@
 # Example:
-# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/socket.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/networkstream.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
@@ -18,12 +18,12 @@ variables:
 scenarios:
   read-write:
     server:
-      job: socketServer
+      job: networkStreamServer
       agent: secondary
       variables:
         scenario: ReadWrite
     client:
-      job: socketClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -31,7 +31,7 @@ scenarios:
 
   client-read:
     server:
-      job: socketServer
+      job: networkStreamServer
       agent: secondary
       variables:
         sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
@@ -44,7 +44,7 @@ scenarios:
           }
           '
     client:
-      job: socketClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -60,7 +60,7 @@ scenarios:
 
   client-write:
     server:
-      job: socketServer
+      job: networkStreamServer
       agent: secondary
       variables:
         receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
@@ -73,7 +73,7 @@ scenarios:
           }
           '
     client:
-      job: socketClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -87,14 +87,14 @@ scenarios:
           }
           '
 
-  connection-establishment:
+  connect:
     server:
-      job: socketServer
+      job: networkStreamServer
       agent: secondary
       variables:
         scenario: ConnectionEstablishment
     client:
-      job: socketClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ConnectionEstablishment
@@ -102,32 +102,32 @@ scenarios:
 
   rps:
     server:
-      job: socketServer
+      job: networkStreamServer
       agent: secondary
       variables:
         scenario: Rps
     client:
-      job: socketClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: Rps
         host: "{{secondaryAddress}}"
 
 jobs:
-  socketServer:
+  networkStreamServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Socket/Server/SocketServer.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Server/NetworkStreamServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
     # note: send and receive sizes are swapped for server side
     arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --scenario {{scenario}}"
 
-  socketClient:
+  networkStreamClient:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Socket/Client/SocketClient.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Client/NetworkStreamClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds

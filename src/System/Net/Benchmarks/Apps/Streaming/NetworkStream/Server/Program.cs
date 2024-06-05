@@ -3,30 +3,30 @@
 
 using System.Net;
 using System.Net.Benchmarks;
-using System.Net.Benchmarks.SocketBenchmark;
-using System.Net.Benchmarks.SocketBenchmark.Shared;
+using System.Net.Benchmarks.NetworkStreamBenchmark;
+using System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 using System.Net.Sockets;
 
-return await SocketBenchmarkServer.RunAsync(args).ConfigureAwait(false);
+return await NetworkStreamBenchmarkServer.RunAsync(args).ConfigureAwait(false);
 
-internal class SocketBenchmarkServer : BenchmarkServer<SocketServerListener, SocketServerConnection, SocketServerOptions>
+internal class NetworkStreamBenchmarkServer : BenchmarkServer<NetworkStreamServerListener, NetworkStreamServerConnection, NetworkStreamServerOptions>
 {
     public static Task<int> RunAsync(string[] args)
-        => new SocketBenchmarkServer().RunAsync<SocketServerOptionsBinder>(args);
+        => new NetworkStreamBenchmarkServer().RunAsync<NetworkStreamServerOptionsBinder>(args);
     protected override string Name => "Socket server";
 
     protected override string MetricPrefix => "socket";
 
-    protected override Task<SocketServerListener> ListenAsync(SocketServerOptions options, CancellationToken ct)
+    protected override Task<NetworkStreamServerListener> ListenAsync(NetworkStreamServerOptions options, CancellationToken ct)
     {
         var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         socket.Bind(new IPEndPoint(IPAddress.IPv6Any, options.Port));
         socket.Listen();
 
-        return Task.FromResult(new SocketServerListener(socket));
+        return Task.FromResult(new NetworkStreamServerListener(socket));
     }
 
-    protected override async Task ProcessAcceptedAsync(SocketServerConnection accepted, SocketServerOptions options, CancellationToken ct)
+    protected override async Task ProcessAcceptedAsync(NetworkStreamServerConnection accepted, NetworkStreamServerOptions options, CancellationToken ct)
     {
         Scenario scenario = options.Scenario;
         if (scenario == Scenario.ConnectionEstablishment)
@@ -50,7 +50,7 @@ internal class SocketBenchmarkServer : BenchmarkServer<SocketServerListener, Soc
         }
     }
 
-    private static async Task RpsScenario(Stream stream, SocketServerOptions options, CancellationToken token)
+    private static async Task RpsScenario(Stream stream, NetworkStreamServerOptions options, CancellationToken token)
     {
         var sendBuffer = new byte[options.SendBufferSize];
         var recvBuffer = new byte[options.ReceiveBufferSize];
@@ -84,7 +84,7 @@ internal class SocketBenchmarkServer : BenchmarkServer<SocketServerListener, Soc
         }
     }
 
-    private static async Task ReadWriteScenario(Stream stream, SocketServerOptions options, CancellationToken ct)
+    private static async Task ReadWriteScenario(Stream stream, NetworkStreamServerOptions options, CancellationToken ct)
     {
         static async Task WritingTask(Stream stream, int bufferSize, CancellationToken linkedCt)
         {

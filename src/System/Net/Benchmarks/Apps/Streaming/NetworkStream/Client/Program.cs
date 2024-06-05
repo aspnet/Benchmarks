@@ -1,22 +1,22 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Benchmarks;
-using System.Net.Benchmarks.SocketBenchmark.Client;
-using System.Net.Benchmarks.SocketBenchmark.Shared;
+using System.Net.Benchmarks.NetworkStreamBenchmark.Client;
+using System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 using System.Net.Sockets;
 
-return await SocketBenchmarkClient.RunAsync(args).ConfigureAwait(false);
+return await NetworkStreamBenchmarkClient.RunAsync(args).ConfigureAwait(false);
 
-internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
+internal class NetworkStreamBenchmarkClient : BenchmarkClient<NetworkStreamClientOptions>
 {
     public static Task<int> RunAsync(string[] args)
-        => new SocketBenchmarkClient().RunAsync<SocketClientOptionsBinder>(args);
+        => new NetworkStreamBenchmarkClient().RunAsync<NetworkStreamClientOptionsBinder>(args);
 
-    protected override string Name => "Socket benchmark client";
+    protected override string Name => "Network Stream benchmark client";
 
-    protected override string MetricPrefix => "socket";
+    protected override string MetricPrefix => "networkstream";
 
-    protected override async Task RunScenarioAsync(SocketClientOptions options, CancellationToken cancellationToken)
+    protected override async Task RunScenarioAsync(NetworkStreamClientOptions options, CancellationToken cancellationToken)
     {
         switch (options.Scenario)
         {
@@ -34,16 +34,16 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         }
     }
 
-    private async Task<SocketClientConnection> EstablishConnectionAsync(SocketClientOptions options)
+    private async Task<NetworkStreamClientConnection> EstablishConnectionAsync(NetworkStreamClientOptions options)
     {
         Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         await socket.ConnectAsync(new IPEndPoint(options.Address!, options.Port));
 
-        return new SocketClientConnection(new NetworkStream(socket, ownsSocket: true));
+        return new NetworkStreamClientConnection(new NetworkStream(socket, ownsSocket: true));
     }
 
     internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
-    private async Task RunConnectionEstablishmentScenario(SocketClientOptions options, CancellationToken cancellationToken)
+    private async Task RunConnectionEstablishmentScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
     {
         var tasks = new List<Task<List<double>>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
@@ -55,9 +55,9 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         LogMetricPercentiles(MetricName.ConnectionEstablishment, "Connection establishment duration (ms)", metrics.SelectMany(x => x).ToList());
     }
 
-    private async Task RunReadWriteScenario(SocketClientOptions options, CancellationToken cancellationToken)
+    private async Task RunReadWriteScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
     {
-        var connections = new SocketClientConnection[options.Connections];
+        var connections = new NetworkStreamClientConnection[options.Connections];
         var tasks = new List<Task<ReadWriteMetrics>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
         {
@@ -75,9 +75,9 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         }
     }
 
-    private async Task RunRpsScenario(SocketClientOptions options, CancellationToken cancellationToken)
+    private async Task RunRpsScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
     {
-        var connections = new SocketClientConnection[options.Connections];
+        var connections = new NetworkStreamClientConnection[options.Connections];
         var tasks = new List<Task<(double Rps, long Errors)>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
         {
@@ -98,7 +98,7 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         }
     }
 
-    private static async Task<List<double>> ConnectionEstablishmentScenario(Func<SocketClientOptions, Task<SocketClientConnection>> establishConnectionAsync, SocketClientOptions options)
+    private static async Task<List<double>> ConnectionEstablishmentScenario(Func<NetworkStreamClientOptions, Task<NetworkStreamClientConnection>> establishConnectionAsync, NetworkStreamClientOptions options)
     {
         var values = new List<double>((int)options.Duration.TotalMilliseconds);
         var isWarmup = true;
@@ -120,7 +120,7 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         return values;
     }
 
-    private static async Task<ReadWriteMetrics> ReadWriteScenario(SocketClientConnection connection, SocketClientOptions options)
+    private static async Task<ReadWriteMetrics> ReadWriteScenario(NetworkStreamClientConnection connection, NetworkStreamClientOptions options)
     {
         await using var s = await connection.EstablishStreamAsync(options).ConfigureAwait(false);
 
@@ -201,7 +201,7 @@ internal class SocketBenchmarkClient : BenchmarkClient<SocketClientOptions>
         }
     }
 
-    private static async Task<(double Rps, long Errors)> RpsScenario(SocketClientConnection connection, SocketClientOptions options)
+    private static async Task<(double Rps, long Errors)> RpsScenario(NetworkStreamClientConnection connection, NetworkStreamClientOptions options)
     {
         await using var stream = await connection.EstablishStreamAsync(options).ConfigureAwait(false);
 

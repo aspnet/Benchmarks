@@ -5,9 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 
 
-namespace System.Net.Benchmarks.SocketBenchmark.Shared;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 
-internal static class SocketOptionsHelper
+internal static class NetworkStreamOptionsHelper
 {
     public static Option<int> ReceiveBufferSizeOption { get; } = new Option<int>("--receive-buffer-size", () => 32 * 1024, "The size of the receive buffer.");
     public static Option<int> SendBufferSizeOption { get; } = new Option<int>("--send-buffer-size", () => 32 * 1024, "The size of the receive buffer, 0 for no writes.");
@@ -21,7 +21,7 @@ internal static class SocketOptionsHelper
         command.AddOption(ScenarioOption);
     }
 
-    public static void BindOptions(SocketOptions options, ParseResult parsed)
+    public static void BindOptions(NetworkStreamOptions options, ParseResult parsed)
     {
         options.ReceiveBufferSize = parsed.GetValueForOption(ReceiveBufferSizeOption);
         options.SendBufferSize = parsed.GetValueForOption(SendBufferSizeOption);

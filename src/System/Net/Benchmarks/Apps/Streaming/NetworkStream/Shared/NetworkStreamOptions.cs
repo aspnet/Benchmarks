@@ -1,6 +1,6 @@
-namespace System.Net.Benchmarks.SocketBenchmark.Shared;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 
-internal class SocketOptions
+internal class NetworkStreamOptions
 {
     public int ReceiveBufferSize { get; set; }
     public int SendBufferSize { get; set; }

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net.Benchmarks.SocketBenchmark.Shared;
+using System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 
-namespace System.Net.Benchmarks.SocketBenchmark;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark;
 
-internal class SocketServerOptions : SocketOptions, IBenchmarkServerOptions
+internal class NetworkStreamServerOptions : NetworkStreamOptions, IBenchmarkServerOptions
 {
     public int ListenBacklog { get; set; }
 

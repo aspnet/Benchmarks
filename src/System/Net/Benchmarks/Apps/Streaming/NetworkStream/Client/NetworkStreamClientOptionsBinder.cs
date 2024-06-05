@@ -1,10 +1,10 @@
-﻿using System.Net.Benchmarks.SocketBenchmark.Shared;
+﻿using System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace System.Net.Benchmarks.SocketBenchmark.Client;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark.Client;
 
-internal class SocketClientOptionsBinder : BenchmarkOptionsBinder<SocketClientOptions>
+internal class SocketClientOptionsBinder : BenchmarkOptionsBinder<NetworkStreamClientOptions>
 {
     public static Option<string> AddressOption { get; } = new Option<string>("--address", "The IP address to connect to.") { IsRequired = true };
     public static Option<int> ConnectionsOption { get; } = new Option<int>("--connections", () => 1, "The number of concurrent connections to make.");
@@ -13,16 +13,16 @@ internal class SocketClientOptionsBinder : BenchmarkOptionsBinder<SocketClientOp
 
     public override void AddCommandLineArguments(RootCommand command)
     {
-        SocketOptionsHelper.AddOptions(command);
+        NetworkStreamOptionsHelper.AddOptions(command);
         command.AddOption(AddressOption);
         command.AddOption(ConnectionsOption);
         command.AddOption(DurationOption);
         command.AddOption(WarmupOption);
     }
 
-    protected override void BindOptions(SocketClientOptions options, ParseResult parsed)
+    protected override void BindOptions(NetworkStreamClientOptions options, ParseResult parsed)
     {
-        SocketOptionsHelper.BindOptions(options, parsed);
+        NetworkStreamOptionsHelper.BindOptions(options, parsed);
 
         if (!IPAddress.TryParse(parsed.GetValueForOption(AddressOption), out var address))
         {

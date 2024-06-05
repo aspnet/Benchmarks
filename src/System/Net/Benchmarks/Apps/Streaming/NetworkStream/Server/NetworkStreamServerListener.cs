@@ -5,17 +5,17 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace System.Net.Benchmarks.SocketBenchmark;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark;
 
-internal class SocketServerListener(Socket listenSocket) : IListener<SocketServerConnection>
+internal class NetworkStreamServerListener(Socket listenSocket) : IListener<NetworkStreamServerConnection>
 {
     public EndPoint LocalEndPoint => listenSocket.LocalEndPoint!;
 
-    public async Task<SocketServerConnection> AcceptAsync(CancellationToken cancellationToken)
+    public async Task<NetworkStreamServerConnection> AcceptAsync(CancellationToken cancellationToken)
     {
         var acceptedSocket = await listenSocket.AcceptAsync(cancellationToken).ConfigureAwait(false);
         acceptedSocket.NoDelay = true;
-        return new SocketServerConnection(new NetworkStream(acceptedSocket, ownsSocket: true));
+        return new NetworkStreamServerConnection(new NetworkStream(acceptedSocket, ownsSocket: true));
     }
 
     public ValueTask DisposeAsync()

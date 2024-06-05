@@ -1,8 +1,8 @@
-﻿using System.Net.Benchmarks.SocketBenchmark.Shared;
+﻿using System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 
-namespace System.Net.Benchmarks.SocketBenchmark.Client;
+namespace System.Net.Benchmarks.NetworkStreamBenchmark.Client;
 
-internal class SocketClientOptions : SocketOptions, IBenchmarkClientOptions
+internal class NetworkStreamClientOptions : NetworkStreamOptions, IBenchmarkClientOptions
 {
     public TimeSpan Warmup { get; set; }
 
