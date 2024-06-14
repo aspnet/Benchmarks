@@ -6,4 +6,4 @@ RUN dotnet tool install --framework net8.0 -g Microsoft.Crank.Controller --versi
 
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-ENTRYPOINT ["crank-azdo", "--connection-string", "SERVICE_BUS_CONNECTION_STRING", "--queue", "SERVICE_BUS_QUEUE", "--cert-client-id", "SERVICE_BUS_CLIENTID", "--cert-tenant-id", "SERVICE_BUS_TENANTID", "--cert-path", "/certs/servicebus.pfx"]
+ENTRYPOINT ["crank-azdo", "--connection-string", "SERVICE_BUS_CONNECTION_STRING", "--queue", "SERVICE_BUS_QUEUE", "--cert-client-id", "SERVICE_BUS_CLIENTID", "--cert-tenant-id", "SERVICE_BUS_TENANTID", "--cert-path", "/certs/servicebus.pfx", "--cert-sni"]
