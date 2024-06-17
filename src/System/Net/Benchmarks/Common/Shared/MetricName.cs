@@ -18,5 +18,5 @@ public static class MetricName
     public const string Rps = "/rps";
     public const string Errors = "/errors";
     public const string Handshake = "/handshake";
-    public const string ConnectionEstablishment = "/connection-establishment";
+    public const string Connect = "/connect";
 }

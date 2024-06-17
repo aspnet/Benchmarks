@@ -23,8 +23,8 @@ internal class NetworkStreamBenchmarkClient : BenchmarkClient<NetworkStreamClien
     {
         switch (options.Scenario)
         {
-            case Scenario.ConnectionEstablishment:
-                await RunConnectionEstablishmentScenario(options, cancellationToken).ConfigureAwait(false);
+            case Scenario.Connect:
+                await RunConnectScenario(options, cancellationToken).ConfigureAwait(false);
                 break;
             case Scenario.ReadWrite:
                 await RunReadWriteScenario(options, cancellationToken).ConfigureAwait(false);
@@ -46,16 +46,16 @@ internal class NetworkStreamBenchmarkClient : BenchmarkClient<NetworkStreamClien
     }
 
     internal record ReadWriteMetrics(double BytesReadPerSecond, double BytesWrittenPerSecond);
-    private async Task RunConnectionEstablishmentScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
+    private async Task RunConnectScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
     {
         var tasks = new List<Task<List<double>>>(options.Connections);
         for (var i = 0; i < options.Connections; i++)
         {
-            tasks.Add(ConnectionEstablishmentScenario(EstablishConnectionAsync, options));
+            tasks.Add(ConnectScenario(EstablishConnectionAsync, options));
         }
 
         var metrics = await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
-        LogMetricPercentiles(MetricName.ConnectionEstablishment, "Connection establishment duration (ms)", metrics.SelectMany(x => x).ToList());
+        LogMetricPercentiles(MetricName.Connect, "Connect duration (ms)", metrics.SelectMany(x => x).ToList());
     }
 
     private async Task RunReadWriteScenario(NetworkStreamClientOptions options, CancellationToken cancellationToken)
@@ -101,7 +101,7 @@ internal class NetworkStreamBenchmarkClient : BenchmarkClient<NetworkStreamClien
         }
     }
 
-    private static async Task<List<double>> ConnectionEstablishmentScenario(Func<NetworkStreamClientOptions, Task<NetworkStreamClientConnection>> establishConnectionAsync, NetworkStreamClientOptions options)
+    private static async Task<List<double>> ConnectScenario(Func<NetworkStreamClientOptions, Task<NetworkStreamClientConnection>> establishConnectionAsync, NetworkStreamClientOptions options)
     {
         var values = new List<double>((int)options.Duration.TotalMilliseconds);
         var isWarmup = true;

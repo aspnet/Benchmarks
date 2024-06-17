@@ -29,7 +29,7 @@ internal class NetworkStreamBenchmarkServer : BenchmarkServer<NetworkStreamServe
     protected override async Task ProcessAcceptedAsync(NetworkStreamServerConnection accepted, NetworkStreamServerOptions options, CancellationToken ct)
     {
         Scenario scenario = options.Scenario;
-        if (scenario == Scenario.ConnectionEstablishment)
+        if (scenario == Scenario.Connect)
         {
             // Do nothing.
             return;

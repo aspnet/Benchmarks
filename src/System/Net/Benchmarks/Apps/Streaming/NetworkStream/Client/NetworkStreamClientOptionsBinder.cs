@@ -7,7 +7,7 @@ using System.CommandLine.Parsing;
 
 namespace System.Net.Benchmarks.NetworkStreamBenchmark.Client;
 
-internal class SocketClientOptionsBinder : BenchmarkOptionsBinder<NetworkStreamClientOptions>
+internal class NetworkStreamClientOptionsBinder : BenchmarkOptionsBinder<NetworkStreamClientOptions>
 {
     public static Option<string> AddressOption { get; } = new Option<string>("--address", "The IP address to connect to.") { IsRequired = true };
     public static Option<int> ConnectionsOption { get; } = new Option<int>("--connections", () => 1, "The number of concurrent connections to make.");

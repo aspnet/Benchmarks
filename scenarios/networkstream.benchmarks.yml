@@ -92,12 +92,12 @@ scenarios:
       job: networkStreamServer
       agent: secondary
       variables:
-        scenario: ConnectionEstablishment
+        scenario: Connect
     client:
       job: networkStreamClient
       agent: main
       variables:
-        scenario: ConnectionEstablishment
+        scenario: Connect
         host: "{{secondaryAddress}}"
 
   rps:

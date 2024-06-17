@@ -8,8 +8,10 @@ namespace System.Net.Benchmarks.NetworkStreamBenchmark;
 
 internal class NetworkStreamServerConnection : SingleStreamConnection<NetworkStream>, IConnection
 {
-    internal NetworkStreamServerConnection(NetworkStream innerStream) : base(innerStream)
-    { }
+    internal NetworkStreamServerConnection(NetworkStream innerStream)
+    {
+        InnerStream = innerStream;
+    }
 
     public ValueTask<NetworkStream> EstablishStreamAsync() => ValueTask.FromResult(ConsumeStream());
 }

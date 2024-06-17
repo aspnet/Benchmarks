@@ -5,7 +5,7 @@ namespace System.Net.Benchmarks.NetworkStreamBenchmark.Shared;
 
 internal enum Scenario
 {
-    ConnectionEstablishment,
+    Connect,
     ReadWrite,
     Rps
 }
