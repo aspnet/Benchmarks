@@ -1,5 +1,5 @@
 # Example:
-# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/quic.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/networkstream.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
 
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
@@ -9,22 +9,21 @@ variables:
   serverPort: 5000
   sendBufferSize: 32768 # bytes
   receiveBufferSize: 32768 # bytes
-  serverCertSelection: "CertContext" # <Callback|Certificate|CertContext>
-  clientCertSelection: "CertContext" # <Callback|Collection|CertContext>
 
   # client-specific parameters
   connections: 1 #number of parallel connections
-  streams: 1 #number of parallel streams per connection
   warmup: 15 #seconds
   duration: 15 #seconds
 
 scenarios:
   read-write:
     server:
-      job: quicServer
+      job: networkStreamServer
       agent: secondary
+      variables:
+        scenario: ReadWrite
     client:
-      job: quicClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -32,10 +31,11 @@ scenarios:
 
   client-read:
     server:
-      job: quicServer
+      job: networkStreamServer
       agent: secondary
       variables:
         sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
       onConfigure:
         - '
           if (String(job.Variables.sendBufferSize) != "0")
@@ -44,7 +44,7 @@ scenarios:
           }
           '
     client:
-      job: quicClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -60,10 +60,11 @@ scenarios:
 
   client-write:
     server:
-      job: quicServer
+      job: networkStreamServer
       agent: secondary
       variables:
         receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
       onConfigure:
         - '
           if (String(job.Variables.receiveBufferSize) != "0")
@@ -72,7 +73,7 @@ scenarios:
           }
           '
     client:
-      job: quicClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: ReadWrite
@@ -86,44 +87,48 @@ scenarios:
           }
           '
 
-  handshake:
+  connect:
     server:
-      job: quicServer
+      job: networkStreamServer
       agent: secondary
+      variables:
+        scenario: Connect
     client:
-      job: quicClient
+      job: networkStreamClient
       agent: main
       variables:
-        scenario: Handshake
+        scenario: Connect
         host: "{{secondaryAddress}}"
 
   rps:
     server:
-      job: quicServer
+      job: networkStreamServer
       agent: secondary
+      variables:
+        scenario: Rps
     client:
-      job: quicClient
+      job: networkStreamClient
       agent: main
       variables:
         scenario: Rps
         host: "{{secondaryAddress}}"
 
 jobs:
-  quicServer:
+  networkStreamServer:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Streaming/Tls/Quic/Server/QuicServer.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Server/NetworkStreamServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
     # note: send and receive sizes are swapped for server side
-    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --cert-selection {{serverCertSelection}}"
+    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --scenario {{scenario}}"
 
-  quicClient:
+  networkStreamClient:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Streaming/Tls/Quic/Client/QuicClient.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Client/NetworkStreamClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds
-    arguments: "--host {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --cert-selection {{clientCertSelection}} --scenario {{scenario}} --connections {{connections}} --streams {{streams}} --warmup {{warmup}} --duration {{duration}}"
+    arguments: "--address {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}} --connections {{connections}} --warmup {{warmup}} --duration {{duration}}"
