@@ -52,7 +52,7 @@ parameters:
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET
-    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
+    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet --application.environmentVariables DOTNET_gcServer=1 DOTNET_GCDynamicAdaptationMode=0
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET - DATAS
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNetDATAS --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
