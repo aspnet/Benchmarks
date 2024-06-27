@@ -129,6 +129,9 @@ namespace HttpClientBenchmarks
                         SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = delegate { return true; } },
                         MaxConnectionsPerServer = max11ConnectionsPerServer,
                         EnableMultipleHttp2Connections = s_options.Http20EnableMultipleConnections,
+    #if NET9_0_OR_GREATER
+                        EnableMultipleHttp3Connections = s_options.Http30EnableMultipleConnections,
+    #endif
                         ConnectTimeout = Timeout.InfiniteTimeSpan,
                     };
                 }
@@ -396,7 +399,7 @@ namespace HttpClientBenchmarks
         }
 
         private static HttpRequestMessage CreateRequest(HttpMethod method, Uri uri) =>
-            new HttpRequestMessage(method, uri) { 
+            new HttpRequestMessage(method, uri) {
                 Version = s_options.HttpVersion!,
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact
             };
