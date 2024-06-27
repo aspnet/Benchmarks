@@ -15,6 +15,7 @@ namespace HttpClientBenchmarks
         public static Option<int> ConcurrencyPerHttpClientOption { get; } = new Option<int>("--concurrencyPerHttpClient", () => 1, "Number of concurrect requests per one HttpClient");
         public static Option<int> Http11MaxConnectionsPerServerOption { get; } = new Option<int>("--http11MaxConnectionsPerServer", () => 0, "Max number of HTTP/1.1 connections per server, 0 for unlimited");
         public static Option<bool> Http20EnableMultipleConnectionsOption { get; } = new Option<bool>("--http20EnableMultipleConnections", () => true, "Enable multiple HTTP/2.0 connections");
+        public static Option<bool> Http30EnableMultipleConnectionsOption { get; } = new Option<bool>("--http30EnableMultipleConnections", () => true, "Enable multiple HTTP/3.0 connections");
         public static Option<bool> UseWinHttpHandlerOption { get; } = new Option<bool>("--useWinHttpHandler", () => false, "Use WinHttpHandler instead of SocketsHttpHandler");
         public static Option<bool> UseHttpMessageInvokerOption { get; } = new Option<bool>("--useHttpMessageInvoker", () => false, "Use HttpMessageInvoker instead of HttpClient");
         public static Option<bool> CollectRequestTimingsOption { get; } = new Option<bool>("--collectRequestTimings", () => false, "Collect percentiled metrics of request timings");
@@ -41,6 +42,7 @@ namespace HttpClientBenchmarks
             command.AddOption(ConcurrencyPerHttpClientOption);
             command.AddOption(Http11MaxConnectionsPerServerOption);
             command.AddOption(Http20EnableMultipleConnectionsOption);
+            command.AddOption(Http30EnableMultipleConnectionsOption);
             command.AddOption(UseWinHttpHandlerOption);
             command.AddOption(UseHttpMessageInvokerOption);
             command.AddOption(CollectRequestTimingsOption);
@@ -72,6 +74,7 @@ namespace HttpClientBenchmarks
                 ConcurrencyPerHttpClient = parsed.GetValueForOption(ConcurrencyPerHttpClientOption),
                 Http11MaxConnectionsPerServer = parsed.GetValueForOption(Http11MaxConnectionsPerServerOption),
                 Http20EnableMultipleConnections = parsed.GetValueForOption(Http20EnableMultipleConnectionsOption),
+                Http30EnableMultipleConnections = parsed.GetValueForOption(Http30EnableMultipleConnectionsOption),
                 UseWinHttpHandler = parsed.GetValueForOption(UseWinHttpHandlerOption),
                 UseHttpMessageInvoker = parsed.GetValueForOption(UseHttpMessageInvokerOption),
                 CollectRequestTimings = parsed.GetValueForOption(CollectRequestTimingsOption),
