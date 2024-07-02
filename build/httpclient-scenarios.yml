@@ -43,7 +43,7 @@ parameters:
     - displayName: "HTTP/3.0"
       arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=false --property httpversion=h3
     - displayName: "HTTP/3.0 (mult conn)"
-      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=true --property httpversion=h3mulconn
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=true --property httpversion=h3multconn
 
 - name: clientsxThreads
   type: object
