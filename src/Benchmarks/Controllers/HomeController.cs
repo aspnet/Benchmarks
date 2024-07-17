@@ -50,17 +50,11 @@ namespace Benchmarks.Controllers
         }).ToList();
 
         [HttpGet("plaintext")]
-        public IActionResult Plaintext()
-        {
-            return new PlainTextActionResult();
-        }
+        public IActionResult Plaintext() => new PlainTextActionResult();
 
         [HttpGet("json")]
         [Produces("application/json")]
-        public object Json()
-        {
-            return new { message = "Hello, World!" };
-        }
+        public object Json() => new { message = "Hello, World!" };
 
         // Note that this produces 4kb data. We're leaving the misnamed scenario as is to avoid loosing historical context
         [HttpGet("json2k")]
@@ -76,10 +70,7 @@ namespace Benchmarks.Controllers
         public ActionResult JsonInput([FromBody] List<Entry> entry) => Ok();
 
         [HttpGet("view")]
-        public ViewResult Index()
-        {
-            return View();
-        }
+        public ViewResult Index() => View();
 
         private class PlainTextActionResult : IActionResult
         {

@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class MultipleUpdatesRawMiddleware
+    public class MultipleUpdatesRawMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiUpdateRaw));
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -21,12 +21,7 @@ namespace Benchmarks.Middleware
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        private readonly RequestDelegate _next;
-
-        public MultipleUpdatesRawMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -54,9 +49,7 @@ namespace Benchmarks.Middleware
 
     public static class MultipleUpdatesRawMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleUpdatesRaw(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<MultipleUpdatesRawMiddleware>();
-        }
+        public static IApplicationBuilder UseMultipleUpdatesRaw(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<MultipleUpdatesRawMiddleware>();
     }
 }

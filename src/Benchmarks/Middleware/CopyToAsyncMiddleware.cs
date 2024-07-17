@@ -10,16 +10,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace Benchmarks.Middleware
 {
-    public class CopyToAsyncMiddleware
+    public class CopyToAsyncMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.CopyToAsync));
 
-        private readonly RequestDelegate _next;
-
-        public CopyToAsyncMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -47,9 +42,7 @@ namespace Benchmarks.Middleware
 
     public static class CopyToAsyncMiddlewareMiddlewareExtensions
     {
-        public static IApplicationBuilder UseCopyToAsync(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<CopyToAsyncMiddleware>();
-        }
+        public static IApplicationBuilder UseCopyToAsync(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<CopyToAsyncMiddleware>();
     }
 }

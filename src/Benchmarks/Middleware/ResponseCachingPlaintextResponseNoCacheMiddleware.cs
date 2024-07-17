@@ -9,16 +9,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace Benchmarks.Middleware
 {
-    public class ResponseCachingPlaintextResponseNoCacheMiddleware
+    public class ResponseCachingPlaintextResponseNoCacheMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.ResponseCachingPlaintextResponseNoCache));
 
-        private readonly RequestDelegate _next;
-
-        public ResponseCachingPlaintextResponseNoCacheMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public Task Invoke(HttpContext httpContext)
         {
@@ -33,9 +28,7 @@ namespace Benchmarks.Middleware
 
     public static class ResponseCachingPlaintextResponseNoCacheMiddlewareExtensions
     {
-        public static IApplicationBuilder UseResponseCachingPlaintextResponseNoCache(this IApplicationBuilder builder)
-        {
-            return builder.UseResponseCaching().UseMiddleware<ResponseCachingPlaintextResponseNoCacheMiddleware>();
-        }
+        public static IApplicationBuilder UseResponseCachingPlaintextResponseNoCache(this IApplicationBuilder builder) =>
+            builder.UseResponseCaching().UseMiddleware<ResponseCachingPlaintextResponseNoCacheMiddleware>();
     }
 }

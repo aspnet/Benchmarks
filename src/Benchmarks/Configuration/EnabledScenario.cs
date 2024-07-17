@@ -5,16 +5,10 @@ using System.Collections.Generic;
 
 namespace Benchmarks.Configuration
 {
-    public class EnabledScenario
+    public class EnabledScenario(string name, IEnumerable<string> paths)
     {
-        public EnabledScenario(string name, IEnumerable<string> paths)
-        {
-            Name = name;
-            Paths = paths;
-        }
+        public string Name { get; } = name;
 
-        public string Name { get; }
-
-        public IEnumerable<string> Paths { get; }
+        public IEnumerable<string> Paths { get; } = paths;
     }
 }

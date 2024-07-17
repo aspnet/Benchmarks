@@ -13,24 +13,15 @@ namespace Benchmarks.Controllers
     {
         [HttpGet("raw")]
         [Produces("application/json")]
-        public Task<World[]> Raw(int queries = 1)
-        {
-            return ExecuteQuery<RawDb>(queries);
-        }
+        public Task<World[]> Raw(int queries = 1) => ExecuteQuery<RawDb>(queries);
 
         [HttpGet("dapper")]
         [Produces("application/json")]
-        public Task<World[]> Dapper(int queries = 1)
-        {
-            return ExecuteQuery<DapperDb>(queries);
-        }
+        public Task<World[]> Dapper(int queries = 1) => ExecuteQuery<DapperDb>(queries);
 
         [HttpGet("ef")]
         [Produces("application/json")]
-        public Task<World[]> Ef(int queries = 1)
-        {
-            return ExecuteQuery<EfDb>(queries);
-        }
+        public Task<World[]> Ef(int queries = 1) => ExecuteQuery<EfDb>(queries);
 
         private Task<World[]> ExecuteQuery<T>(int queries) where T : IDb
         {

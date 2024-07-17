@@ -12,18 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Middleware
 {
-    public class FortunesRawSyncMiddleware
+    public class FortunesRawSyncMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbFortunesRawSync));
 
-        private readonly RequestDelegate _next;
-        private readonly HtmlEncoder _htmlEncoder;
-
-        public FortunesRawSyncMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
-        {
-            _next = next;
-            _htmlEncoder = htmlEncoder;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly HtmlEncoder _htmlEncoder = htmlEncoder;
 
         public Task Invoke(HttpContext httpContext)
         {
@@ -41,9 +35,7 @@ namespace Benchmarks.Middleware
 
     public static class FortunesRawMiddlewareSyncExtensions
     {
-        public static IApplicationBuilder UseFortunesRawSync(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<FortunesRawSyncMiddleware>();
-        }
+        public static IApplicationBuilder UseFortunesRawSync(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<FortunesRawSyncMiddleware>();
     }
 }

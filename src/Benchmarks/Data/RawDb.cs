@@ -11,20 +11,13 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class RawDb : IDb
+    public class RawDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings) : IDb
     {
         private static readonly Comparison<World> WorldSortComparison = (a, b) => a.Id.CompareTo(b.Id);
 
-        private readonly IRandom _random;
-        private readonly DbProviderFactory _dbProviderFactory;
-        private readonly string _connectionString;
-
-        public RawDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
-        {
-            _random = random;
-            _dbProviderFactory = dbProviderFactory;
-            _connectionString = appSettings.Value.ConnectionString;
-        }
+        private readonly IRandom _random = random;
+        private readonly DbProviderFactory _dbProviderFactory = dbProviderFactory;
+        private readonly string _connectionString = appSettings.Value.ConnectionString;
 
         public async Task<World> LoadSingleQueryRow()
         {

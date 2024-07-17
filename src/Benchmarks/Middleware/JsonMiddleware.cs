@@ -16,16 +16,11 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Benchmarks.Middleware
 {
-    public class JsonMiddleware
+    public class JsonMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Json));
         private const int _bufferSize = 27;
-        private readonly RequestDelegate _next;
-
-        public JsonMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public Task Invoke(HttpContext httpContext)
         {
