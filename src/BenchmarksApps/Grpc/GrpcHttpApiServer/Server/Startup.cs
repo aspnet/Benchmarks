@@ -11,10 +11,7 @@ namespace Server
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddGrpcHttpApi();
-        }
+        public void ConfigureServices(IServiceCollection services) => services.AddGrpcHttpApi();
 
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
