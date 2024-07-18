@@ -31,7 +31,7 @@
       We depend on this indirectly, via Microsoft.Data.SqlClient,
       but they have yet to update from 1.7.0, which has a CVE.
     -->
-    <PackageReference Include="Azure.Identity" Version="1.11.3" />
+    <PackageReference Include="Azure.Identity" Version="1.11.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
