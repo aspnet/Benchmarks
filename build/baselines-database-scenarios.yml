@@ -64,7 +64,7 @@ parameters:
 
   # Database Fortunes
   - displayName: Database Fortunes Raw
-    arguments: --scenario fortunes $(databaseJobs) --property scenario=Fortunes
+    arguments: --scenario fortunes $(minimalJobs) --property scenario=Fortunes
 
   - displayName: Database Fortunes EF
     arguments: --scenario fortunes_ef $(databaseJobs) --property scenario=FortunesEF

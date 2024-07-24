@@ -46,14 +46,14 @@ parameters:
 
   # Plaintext
   - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext
+    arguments: --scenario plaintext $(minimalJobs) --property scenario=Plaintext
 
   - displayName: Plaintext endpoint
     arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint
 
   # JSon
   - displayName: Json
-    arguments: --scenario json $(jsonJobs) --property scenario=Json
+    arguments: --scenario json $(minimalJobs) --property scenario=Json
 
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc
