@@ -122,7 +122,7 @@ steps:
                   {
                     "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                     "name": "crank",
-                    "args": [ "--application.framework net9.0 --load.framework net8.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements --load.options.reuseBuild true ${{ parameters.arguments }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
+                    "args": [ "--application.framework net9.0 --load.framework net9.0 --command-line-property --table GrpcBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --no-metadata --no-measurements --load.options.reuseBuild true ${{ parameters.arguments }} ${{ s.arguments }} ${{ callType.arguments }} ${{ payload.arguments }} ${{ stream.arguments }} ${{ protocol.arguments }}" ]
                   }
 
 # h2c between various clients and servers
