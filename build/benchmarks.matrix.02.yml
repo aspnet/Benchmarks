@@ -220,3 +220,11 @@ groups:
       profiles:
       - intel-lin-app
       - amd-lin2-load
+
+  - jobs:
+
+    - name: HttpClient Intel Windows
+      template: httpclient-scenarios.yml
+      profiles:
+      - intel-win-app
+      - amd-lin2-load
