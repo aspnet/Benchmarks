@@ -1,5 +1,9 @@
 # HttpClient scenarios
 
+variables:
+- name: httpClientJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml 
+
 parameters:
 - name: arguments
   type: string
@@ -10,10 +14,6 @@ parameters:
 - name: condition
   type: string
   default: 'true'
-
-variables:
-- name: httpClientJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml 
 
 - name: getScenarios 
   type: object
