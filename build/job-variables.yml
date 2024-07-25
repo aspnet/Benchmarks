@@ -8,8 +8,6 @@ variables:
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.json.json
 - name: multiQueryJobs
   value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/Benchmarks/benchmarks.multiquery.json
-- name: httpClientJobs
-  value: -j https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/HttpClient/Proxy/benchmarks.json
 - name: basicApiJobs
   value: --database MySql --jobs https://raw.githubusercontent.com/dotnet/aspnetcore/main/src/Mvc/benchmarkapps/BasicApi/benchmarks.json
 - name: basicViewsJobs
@@ -85,8 +83,6 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/orchard.benchmarks.yml
 - name: containerMatrixJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/containers.benchmarks.yml
-- name: httpClientJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml
 - name: minimalJobs
   value: --config https://github.com/aspnet/Benchmarks/blob/main/src/BenchmarksApps/TechEmpower/Minimal/minimal.benchmarks.yml?raw=true
 - name: blazorSsrJobs
