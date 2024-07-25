@@ -15,6 +15,10 @@ parameters:
   type: string
   default: '--config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml'
 
+- name: tfm
+  type: string
+  default: '--client.framework net9.0 --server.framework net8.0' # net8.0 for server is a temporary workaround
+
 - name: getScenarios 
   type: object
   default:
@@ -80,7 +84,7 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
+                "args": [ "${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
               }
 
 # POST scenarios
@@ -100,5 +104,5 @@ steps:
               {
                 "condition": "(${{ parameters.condition }}) && ((new Date().getUTCHours() - 7 + 24) % 24 >= 13)",
                 "name": "crank",
-                "args": [ "--client.framework net9.0 --server.framework net9.0 --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+                "args": [ "${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
               }
