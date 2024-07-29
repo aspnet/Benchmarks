@@ -33,8 +33,6 @@ parameters:
     arguments: --scenario plaintext $(plaintextJobs) --property scenario=PlaintextQueryString --property protocol=http --variable path=/plaintext?query1=lorem&query2=ipsum&query3=dolor%20est
   - displayName: Plaintext Mvc
     arguments: --scenario mvc $(plaintextJobs) --property scenario=PlaintextMvc --property protocol=http
-  - displayName: Plaintext MapAction
-    arguments: --scenario mapaction $(plaintextJobs) --property scenario=PlaintextMapAction --property protocol=http
   - displayName: Plaintext Minimal APIs
     arguments: --scenario plaintext $(minimalJobs) --property scenario=PlaintextMinimalApis --property protocol=http
   - displayName: Plaintext Endpoint
@@ -78,8 +76,6 @@ parameters:
     arguments: --scenario json $(jsonJobs) --property scenario=JsonCrossgen2 --property protocol=http --application.buildArguments \"/p:PublishReadyToRun=true /p:PublishReadyToRunUseCrossgen2=true \" --application.options.requiredOperatingSystem windows
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc --property protocol=http
-  - displayName: Json MapAction
-    arguments: --scenario mapaction $(jsonJobs) --property scenario=JsonMapAction --property protocol=http
   - displayName: Json Minimal APIs
     arguments: --scenario json $(minimalJobs) --property scenario=JsonMinimalApis --property protocol=http
   - displayName: Json 5M
