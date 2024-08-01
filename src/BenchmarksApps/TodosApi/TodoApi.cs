@@ -55,7 +55,7 @@ internal static class TodoApi
         group.MapPut("/{id}", async Task<Results<NoContent, NotFound>> (int id, Todo inputTodo, [FromServices] NpgsqlDataSource db, CancellationToken ct) =>
         {
             inputTodo.Id = id;
-            
+
             return await db.ExecuteAsync($"""
                 UPDATE Todos
                 SET Title = {inputTodo.Title}, IsComplete = {inputTodo.IsComplete}
@@ -94,6 +94,7 @@ internal static class TodoApi
 }
 
 [JsonSerializable(typeof(Todo))]
+[JsonSerializable(typeof(bool?))]
 [JsonSerializable(typeof(IAsyncEnumerable<Todo>))]
 internal partial class TodoApiJsonSerializerContext : JsonSerializerContext
 {

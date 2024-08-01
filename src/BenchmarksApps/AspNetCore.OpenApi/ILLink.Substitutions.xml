@@ -1,8 +1,0 @@
-﻿<linker>
-  <assembly fullname="AspNetCore.OpenApi">
-    <type fullname="Microsoft.AspNetCore.OpenApi.OpenApiFeature">
-      <method signature="System.Boolean get_IsEnabled()" body="stub" value="false"
-              feature="Microsoft.AspNetCore.OpenApi.OpenApiFeature.IsEnabled" featurevalue="false"/>
-    </type>
-  </assembly>
-</linker>

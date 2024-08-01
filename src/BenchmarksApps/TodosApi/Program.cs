@@ -32,7 +32,14 @@ builder.Services.AddHealthChecks()
 builder.Services.AddProblemDetails();
 
 // OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) => {
+        document.Info.Title = "Todos API";
+        document.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 
