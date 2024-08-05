@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class MultipleQueriesDapperMiddleware
+    public class MultipleQueriesDapperMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiQueryDapper));
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -21,12 +21,7 @@ namespace Benchmarks.Middleware
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        private readonly RequestDelegate _next;
-
-        public MultipleQueriesDapperMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -54,9 +49,7 @@ namespace Benchmarks.Middleware
 
     public static class MultipleQueriesDapperMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleQueriesDapper(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<MultipleQueriesDapperMiddleware>();
-        }
+        public static IApplicationBuilder UseMultipleQueriesDapper(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<MultipleQueriesDapperMiddleware>();
     }
 }

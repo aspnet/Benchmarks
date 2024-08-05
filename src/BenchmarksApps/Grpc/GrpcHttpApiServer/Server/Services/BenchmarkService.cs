@@ -38,19 +38,11 @@ namespace Server
             _entries.Entries.AddRange(entries);
         }
 
-        public override Task<HelloReply> Json(Empty request, ServerCallContext context)
-        {
-            return Task.FromResult(new HelloReply { Message = "Hello, World!" });
-        }
+        public override Task<HelloReply> Json(Empty request, ServerCallContext context) =>
+            Task.FromResult(new HelloReply { Message = "Hello, World!" });
 
-        public override Task<EntriesCollection> Json2k(Empty request, ServerCallContext context)
-        {
-            return Task.FromResult(_entries);
-        }
+        public override Task<EntriesCollection> Json2k(Empty request, ServerCallContext context) => Task.FromResult(_entries);
 
-        public override Task<Empty> JsonInput(EntriesCollection request, ServerCallContext context)
-        {
-            return Task.FromResult(new Empty());
-        }
+        public override Task<Empty> JsonInput(EntriesCollection request, ServerCallContext context) => Task.FromResult(new Empty());
     }
 }

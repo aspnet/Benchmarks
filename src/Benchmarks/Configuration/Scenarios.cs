@@ -13,10 +13,7 @@ namespace Benchmarks.Configuration
 {
     public class Scenarios
     {
-        public Scenarios(IScenariosConfiguration scenariosConfiguration)
-        {
-            scenariosConfiguration.ConfigureScenarios(this);
-        }
+        public Scenarios(IScenariosConfiguration scenariosConfiguration) => scenariosConfiguration.ConfigureScenarios(this);
 
         [ScenarioPath("/plaintext")]
         public bool Plaintext { get; set; }

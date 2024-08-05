@@ -13,17 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Middleware
 {
-    public class AutoShutdownMiddleware
+    public class AutoShutdownMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString("/shutdown");
 
-        private readonly RequestDelegate _next;
+        private readonly RequestDelegate _next = next;
 
-        public AutoShutdownMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-            
         public async Task Invoke(HttpContext httpContext)
         {
             if (httpContext.Request.Path.StartsWithSegments(_path, StringComparison.Ordinal))
@@ -42,9 +37,7 @@ namespace Benchmarks.Middleware
 
     public static class AutoShutdownMiddlewareExtensions
     {
-        public static IApplicationBuilder UseAutoShutdown(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<AutoShutdownMiddleware>();
-        }
+        public static IApplicationBuilder UseAutoShutdown(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<AutoShutdownMiddleware>();
     }
 }

@@ -11,19 +11,13 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Benchmarks.Middleware
 {
-    public class MemoryCachePlaintextMiddleware
+    public class MemoryCachePlaintextMiddleware(RequestDelegate next, IMemoryCache memoryCache)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.MemoryCachePlaintext));
         private static readonly object _key = new object();
 
-        private readonly RequestDelegate _next;
-        private readonly IMemoryCache _memoryCache;
-
-        public MemoryCachePlaintextMiddleware(RequestDelegate next, IMemoryCache memoryCache)
-        {
-            _next = next;
-            _memoryCache = memoryCache;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly IMemoryCache _memoryCache = memoryCache;
 
         public Task Invoke(HttpContext httpContext)
         {
@@ -54,9 +48,7 @@ namespace Benchmarks.Middleware
 
     public static class MemoryCachePlaintextMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMemoryCachePlaintext(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<MemoryCachePlaintextMiddleware>();
-        }
+        public static IApplicationBuilder UseMemoryCachePlaintext(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<MemoryCachePlaintextMiddleware>();
     }
 }

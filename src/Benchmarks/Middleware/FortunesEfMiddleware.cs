@@ -12,18 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks.Middleware
 {
-    public class FortunesEfMiddleware
+    public class FortunesEfMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbFortunesEf));
 
-        private readonly RequestDelegate _next;
-        private readonly HtmlEncoder _htmlEncoder;
-
-        public FortunesEfMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
-        {
-            _next = next;
-            _htmlEncoder = htmlEncoder;
-        }
+        private readonly RequestDelegate _next = next;
+        private readonly HtmlEncoder _htmlEncoder = htmlEncoder;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -43,9 +37,7 @@ namespace Benchmarks.Middleware
 
     public static class FortunesEfMiddlewareExtensions
     {
-        public static IApplicationBuilder UseFortunesEf(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<FortunesEfMiddleware>();
-        }
+        public static IApplicationBuilder UseFortunesEf(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<FortunesEfMiddleware>();
     }
 }

@@ -23,16 +23,12 @@ public class TodoServiceImpl : TodoService.TodoServiceBase
         AllTodosResponse.AllTodos.AddRange(AllTodos);
     }
 
-    public override Task<GetAllTodosResponse> GetAllTodos(GetAllTodosRequest request, ServerCallContext context)
-    {
-        return Task.FromResult(AllTodosResponse);
-    }
+    public override Task<GetAllTodosResponse> GetAllTodos(GetAllTodosRequest request, ServerCallContext context) =>
+        Task.FromResult(AllTodosResponse);
 
-    public override Task<GetTodoResponse> GetTodo(GetTodoRequest request, ServerCallContext context)
-    {
-        return Task.FromResult(new GetTodoResponse
+    public override Task<GetTodoResponse> GetTodo(GetTodoRequest request, ServerCallContext context) =>
+        Task.FromResult(new GetTodoResponse
         {
             Todo = AllTodos.FirstOrDefault(a => a.Id == request.Id)
         });
-    }
 }
