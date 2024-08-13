@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <LangVersion>preview</LangVersion>
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
     <PublishAot>true</PublishAot>
     <OpenApiDocumentsDirectory>.\</OpenApiDocumentsDirectory>
@@ -16,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
-    <PackageReference Include="Nanorm.Npgsql" Version="0.0.5" />
+    <PackageReference Include="Nanorm.Npgsql" Version="0.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftAspNetCoreAppPackageVersion)">
       <PrivateAssets>all</PrivateAssets>
