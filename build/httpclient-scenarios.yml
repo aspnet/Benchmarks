@@ -82,7 +82,7 @@ steps:
             useDataContractSerializer: "false"
             messageBody: |
               {
-                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",
+                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0)",
                 "name": "crank",
                 "args": [ "--description \"${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }} $(System.JobDisplayName)\" ${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ response.arguments }}" ]
               }
@@ -102,7 +102,7 @@ steps:
             useDataContractSerializer: "false"
             messageBody: |
               {
-                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",
+                "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0)",
                 "name": "crank",
-                "args": [ "--description \"${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }} $(System.JobDisplayName)\" ${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
+                "args": [ "--description \"${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }} $(System.JobDisplayName)\" ${{ parameters.tfm }} --command-line-property --table HttpClientBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} ${{ parameters.httpClientJobs }} --no-metadata --no-measurements ${{ s.arguments }} ${{ version.arguments }} ${{ ct.arguments }} ${{ content.arguments }}" ]
               }
