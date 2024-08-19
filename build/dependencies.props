@@ -33,5 +33,6 @@
     <RazorSlicesVersion>0.7.0</RazorSlicesVersion>
     <SystemCommandLineVersion>2.0.0-beta4.22272.1</SystemCommandLineVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24114.2</MicrosoftCrankEventSourcesVersion>
+    <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
   </PropertyGroup>
 </Project>
