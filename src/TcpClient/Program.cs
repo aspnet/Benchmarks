@@ -13,8 +13,8 @@ namespace TcpClient
         private static string Ip;
         private static int Port = 5201;
         private static int Size = 1;
-        private static int WarmupSeconds;
-        private static int DurationSeconds;
+        private static TimeSpan WarmupSeconds = default(TimeSpan);
+        private static TimeSpan DurationSeconds = default(TimeSpan);
         private static int Connections;
         private static Stopwatch _stopwatch = Stopwatch.StartNew();
 
@@ -65,11 +65,9 @@ namespace TcpClient
                     Size = int.Parse(optionSize.Value());
                 }
 
-                WarmupSeconds = optionWarmup.HasValue()
-                    ? int.Parse(optionWarmup.Value())
-                    : 0;
-
-                DurationSeconds = int.Parse(optionDuration.Value());
+                WarmupSeconds = TimeSpan.FromSeconds(optionWarmup.HasValue() ? int.Parse(optionWarmup.Value()) : 0);
+		
+		DurationSeconds = TimeSpan.FromSeconds(int.Parse(optionDuration.Value()));
 
                 Connections = int.Parse(optionConnections.Value());
 
