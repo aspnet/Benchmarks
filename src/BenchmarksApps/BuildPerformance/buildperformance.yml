@@ -43,5 +43,6 @@ jobs:
       bl: false
     arguments: '-s {{build_scenario}} -v {{verboseLogs}} --performanceSummary {{performanceSummary}} --bl {{bl}}'
     options:
-      downloadFiles: "{% if bl == true %}msbuild.binlog{% endif %}"
+      downloadFiles: 
+        - "{% if bl == true %}msbuild.binlog{% endif %}"
    
