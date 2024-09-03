@@ -45,4 +45,4 @@ jobs:
     options:
       downloadFiles: 
         - "{% if bl == 'true' %}msbuild.binlog{% endif %}"
-   
+      displayOutput: {{performanceSummary}}
