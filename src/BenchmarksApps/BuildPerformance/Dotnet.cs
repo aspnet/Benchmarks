@@ -49,7 +49,8 @@ namespace Build
 
                 if (_bl)
                 {
-                    args += " /bl";
+                    // Put the binlog file in the parent directory since the workdir is dynamic and unknown
+                    args += " /bl:../msbuild.binlog";
                 }
             }
 
