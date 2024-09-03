@@ -1,7 +1,7 @@
 imports:
   - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
   
-  scenarios:
+scenarios:
   blazorwasm:
     application:
       job: buildperformance
