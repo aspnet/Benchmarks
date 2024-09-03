@@ -26,11 +26,11 @@ namespace Build
         private readonly bool _performanceSummary;
         private readonly bool _bl;
 
-        public static DotNet Initialize(string workingDirectory, bool verbose, bool performanceSummary)
+        public static DotNet Initialize(string workingDirectory, bool verbose, bool performanceSummary, bool bl)
         {
             var muxerPath = Environment.GetEnvironmentVariable("DOTNET_EXE") ?? "dotnet";
             Console.WriteLine($"Muxer path: {muxerPath}.");
-            return new DotNet(muxerPath, workingDirectory, verbose, performanceSummary);
+            return new DotNet(muxerPath, workingDirectory, verbose, performanceSummary, bl);
         }
 
         public async ValueTask<TimeSpan> ExecuteAsync(string args, string? workingDir = null)
