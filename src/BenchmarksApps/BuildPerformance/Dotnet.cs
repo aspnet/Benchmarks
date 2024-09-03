@@ -9,12 +9,14 @@ namespace Build
         private readonly string _dotnetPath;
         private readonly Stopwatch _stopWatch;
 
-        private DotNet(string dotnetPath, string workingDirectory, bool verbose, bool performanceSummary)
+        private DotNet(string dotnetPath, string workingDirectory, bool verbose, bool performanceSummary, bool bl)
         {
             _dotnetPath = dotnetPath;
             WorkingDirectory = workingDirectory;
             _verbose = verbose;
             _performanceSummary = performanceSummary;
+            _bl = bl;
+
             _stopWatch = new Stopwatch();
         }
 
@@ -22,6 +24,7 @@ namespace Build
 
         private readonly bool _verbose;
         private readonly bool _performanceSummary;
+        private readonly bool _bl;
 
         public static DotNet Initialize(string workingDirectory, bool verbose, bool performanceSummary)
         {
@@ -42,6 +45,11 @@ namespace Build
                 if (_performanceSummary)
                 {
                     args += " /clp:PerformanceSummary";
+                }
+
+                if (_bl)
+                {
+                    args += " /bl";
                 }
             }
 

@@ -16,11 +16,12 @@ namespace Build
                 new Option<string>(new[] { "--scenario", "-s" }, "Scenario"),
                 new Option<bool>(new[] { "--verbose", "-v" }, "Verbose msbuild logs"),
                 new Option<bool>("--performanceSummary", "Display MSBuild performance summary."),
+                new Option<bool>("--bl", "Generates an msbuild binary log."),
             };
 
             Console.WriteLine(string.Join(" ", args));
 
-            rootCommand.Handler = CommandHandler.Create(async (string scenario, bool verbose, bool performanceSummary) =>
+            rootCommand.Handler = CommandHandler.Create(async (string scenario, bool verbose, bool performanceSummary, bool bl) =>
             {
                 var workingDirectory = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName());
                 Directory.CreateDirectory(workingDirectory);
@@ -28,7 +29,7 @@ namespace Build
 
                 BenchmarksEventSource.MeasureNetCoreAppVersion();
 
-                var dotnet = DotNet.Initialize(workingDirectory, verbose, performanceSummary);
+                var dotnet = DotNet.Initialize(workingDirectory, verbose, performanceSummary, bl);
 
                 switch (scenario)
                 {
