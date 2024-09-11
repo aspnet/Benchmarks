@@ -156,16 +156,16 @@ scenarios:
 jobs:
   kestrel:
     source:
-      repository: https://github.com/ManickaP/aspnet-benchmarks.git
-      branchOrCommit: h3-mul-conns
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Servers/Kestrel/Kestrel.csproj
     readyStateText: Application started # app should write this line to output -- default Kestrel logging does that
     arguments: '--address {{host}} --port {{serverPort}} --useHttps {{useHttps}} --httpVersion {{httpVersion}} --responseSize {{responseSize}} --http3StreamLimit {{http3StreamLimit}}'
 
   httpClient:
     source:
-      repository: https://github.com/ManickaP/aspnet-benchmarks.git
-      branchOrCommit: h3-mul-conns
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
       project: src/BenchmarksApps/HttpClientBenchmarks/Clients/HttpClient/HttpClient.csproj
     isConsoleApp: true
     waitForExit: true

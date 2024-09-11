@@ -37,7 +37,6 @@ namespace HttpClientBenchmarks
 
         public static async Task<int> Main(string[] args)
         {
-            Log($"Test Manicka: {Environment.Version}");
             var rootCommand = new RootCommand();
             ClientOptionsBinder.AddOptionsToCommand(rootCommand);
 
