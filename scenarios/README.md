@@ -8,7 +8,7 @@ Continuous benchmarking results are available on [this PowerBI dashboard](https:
 
 ## Requirements
 
-These jobs can be executed using the .NET Crank global tool. 
+These jobs can be executed using the .NET Crank global tool.
 [.NET Core](<http://dot.net>) is required to install the global tool.
 
 Install `crank` with the following command:
@@ -62,7 +62,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
-- `plaintext`: Middleware implementation 
+- `plaintext`: Middleware implementation
 - `https`: Middleware implementation, using HTTPS
 - `endpoint`: Middleware implementation with Endpoint routing
 - `mvc`: Controller implementation
@@ -85,7 +85,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
-- `json`: Middleware implementation 
+- `json`: Middleware implementation
 - `https`: Middleware implementation, using HTTPS
 - `mvc`: Controller implementation
 - `mapaction`: Endpoint routing implementation
@@ -125,8 +125,8 @@ The following scenarios are using ASP.NET CORE MVC
 - `fortunes_ef_mvc_https`
 
 The suffixes represent different database access strategies:
- 
-- No suffix: Raw ADO.NET 
+
+- No suffix: Raw ADO.NET
 - "ef" suffix: Entity Framework Core
 - "dapper" suffix: Dapper
 
@@ -159,7 +159,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 These scenarios are running several web proxies, including [YARP](https://github.com/microsoft/reverse-proxy).
 
-The downstream service returns a variable size content. By default the result is 10 bytes. 
+The downstream service returns a variable size content. By default the result is 10 bytes.
 
 ### Sample
 
@@ -261,7 +261,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 These scenarios measure the performance of different Grpc  server and clients implementations.
 
 - Go
-- Native (C) 
+- Native (C)
 - ASP.NET
 
 ### Sample
@@ -287,13 +287,13 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 #### Arguments
 
-- Number of streams: 
+- Number of streams:
   - `--variable streams=1`
   - `--variable streams=70`
-- Number of connections: 
+- Number of connections:
   - `--variable connections=1`
   - `--variable connections=28`
-- Protocol: 
+- Protocol:
   - `--variable protocol=h2`
   - `--variable protocol=h3`
   - `--variable protocol=h2c`
@@ -345,15 +345,15 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 #### Arguments
 
-- Scenario: 
+- Scenario:
   - `--variable scenario=broadcast`
   - `--variable scenario=echo`
   - `--variable scenario=echoAll`
-- Transport: 
+- Transport:
   - `--variable transport=websockets`
   - `--variable transport=serversentevents`
   - `--variable transport=longpolling`
-- Protocol: 
+- Protocol:
   - `--variable protocol=json`
   - `--variable protocol=messagepack`
 
@@ -397,7 +397,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 These scenarios are running various distributed cache benchmarks.
 
-For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio` 
+For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio`
 argument choosing a key randomly. The HTTP response won't contain the cache entry data so that it doesn't impact the raw store perf measurement.
 
 ### Sample
@@ -512,6 +512,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Enable multiple HTTP/2.0 connections:
   - `--variable http20EnableMultipleConnections=true` (default)
   - `--variable http20EnableMultipleConnections=false`
+- Enable multiple HTTP/3.0 connections (from .NET 9.0):
+  - `--variable http30EnableMultipleConnections=true` (default)
+  - `--variable http30EnableMultipleConnections=false`
 - Whether to use WinHttpHandler instead of SocketsHttpHandler:
   - `--variable useWinHttpHandler=false` (default)
   - `--variable useWinHttpHandler=true` -- *requires Windows*
@@ -538,7 +541,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net9.0 
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net9.0
 ```
 ### Available scenarios
 

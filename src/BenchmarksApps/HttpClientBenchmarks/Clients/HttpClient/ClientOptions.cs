@@ -18,6 +18,7 @@ namespace HttpClientBenchmarks
         public int ConcurrencyPerHttpClient { get; set; }
         public int Http11MaxConnectionsPerServer { get; set; }
         public bool Http20EnableMultipleConnections { get; set; }
+        public bool Http30EnableMultipleConnections { get; set; }
         public bool UseWinHttpHandler { get; set; }
         public bool UseHttpMessageInvoker { get; set; }
         public bool CollectRequestTimings { get; set; }
@@ -37,9 +38,9 @@ namespace HttpClientBenchmarks
         {
             return $"Address={Address}; Port={Port}; UseHttps={UseHttps}; Path={Path}; HttpVersion={HttpVersion}; NumberOfHttpClients={NumberOfHttpClients}; " +
                 $"ConcurrencyPerHttpClient={ConcurrencyPerHttpClient}; Http11MaxConnectionsPerServer={Http11MaxConnectionsPerServer}; " +
-                $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; UseWinHttpHandler={UseWinHttpHandler}; " +
-                $"UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; Scenario={Scenario}; " +
-                $"ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
+                $"Http20EnableMultipleConnections={Http20EnableMultipleConnections}; Http30EnableMultipleConnections={Http30EnableMultipleConnections}; " +
+                $"UseWinHttpHandler={UseWinHttpHandler}; UseHttpMessageInvoker={UseHttpMessageInvoker}; CollectRequestTimings={CollectRequestTimings}; " +
+                $"Scenario={Scenario}; ContentSize={ContentSize}; ContentWriteSize={ContentWriteSize}; ContentFlushAfterWrite={ContentFlushAfterWrite}; " +
                 $"ContentUnknownLength={ContentUnknownLength}; Headers=[{string.Join(", ", Headers.Select(h => $"\"{h.Name}: {h.Value}\""))}]; " +
                 $"GeneratedStaticHeadersCount={GeneratedStaticHeadersCount}; GeneratedDynamicHeadersCount={GeneratedDynamicHeadersCount}; " +
                 $"UseDefaultRequestHeaders={UseDefaultRequestHeaders}; Warmup={Warmup}; Duration={Duration}";

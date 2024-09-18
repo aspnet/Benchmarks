@@ -19,13 +19,13 @@ parameters:
   type: string
   default: '--client.framework net9.0 --server.framework net8.0' # net8.0 for server is a temporary workaround
 
-- name: getScenarios 
+- name: getScenarios
   type: object
   default:
   - displayName: "GET"
     arguments: --scenario httpclient-kestrel-get --variable useHttpMessageInvoker=true --property server=kestrel --property client=dotnetinvoker --property method=get --client.options.collectCounters true
 
-- name: postScenarios 
+- name: postScenarios
   type: object
   default:
   - displayName: "POST"
@@ -41,7 +41,9 @@ parameters:
     - displayName: "HTTP/2.0 (mult conn)"
       arguments: --variable httpVersion=2.0 --variable useHttps=true --variable http20EnableMultipleConnections=true --property httpversion=h2multconn
     - displayName: "HTTP/3.0"
-      arguments: --variable httpVersion=3.0 --variable useHttps=true --property httpversion=h3
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=false --property httpversion=h3
+    - displayName: "HTTP/3.0 (mult conn)"
+      arguments: --variable httpVersion=3.0 --variable useHttps=true --variable http30EnableMultipleConnections=true --property httpversion=h3multconn
 
 - name: clientsxThreads
   type: object
