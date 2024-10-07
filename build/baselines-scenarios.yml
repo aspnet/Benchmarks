@@ -65,6 +65,10 @@ parameters:
   - displayName: Json Https
     arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps
 
+  # Orchard Core
+
+  - displayName: Orchard - About - Sqlite
+    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit sebros/net90
   
 steps:
 - ${{ each s in parameters.scenarios }}:
