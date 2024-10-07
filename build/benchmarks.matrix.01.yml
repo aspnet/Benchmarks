@@ -5,6 +5,7 @@ queues:
   - ASP.NET Benchmarks Queue 1
   - ASP.NET Benchmarks Queue 2
   - ASP.NET Benchmarks Queue 3
+  - ASP.NET Benchmarks Mono Queue
 
 schedule: "0 9/12 * * *"
 
@@ -32,6 +33,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Trends Database Gold Linux
+      template: trend-database-scenarios.yml
+      profiles:
+      - aspnet-gold-lin
+
   - jobs:
 
     - name: Trends Database Intel Windows
@@ -54,6 +60,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Trends Gold Windows
+      template: trend-scenarios.yml
+      profiles:
+      - aspnet-gold-win
+
   - jobs:
 
     - name: Trends Database Amd Linux
@@ -74,6 +85,11 @@ groups:
       profiles:
       - intel-win-app 
 
+    - name: Trends Gold Linux
+      template: trend-scenarios.yml
+      profiles:
+      - aspnet-gold-lin
+
   - jobs:
 
     - name: Trends Amd Linux
@@ -93,6 +109,11 @@ groups:
       template: efcore-scenarios.yml
       profiles:
       - intel-win-app 
+
+    - name: Trends Database Gold Windows
+      template: trend-database-scenarios.yml
+      profiles:
+      - aspnet-gold-win
 
   - jobs:
 
@@ -116,6 +137,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Baselines Database Gold Linux
+      template: baselines-database-scenarios.yml
+      profiles:
+      - aspnet-gold-lin
+
   - jobs:
 
     - name: Baselines Database Intel Windows
@@ -137,6 +163,11 @@ groups:
       - arm-lin-28-app
       - amd-lin-load
       - amd-lin2-db
+
+    - name: Baselines Gold Windows
+      template: baselines-scenarios.yml
+      profiles:
+      - aspnet-gold-win
 
   - jobs:
 
@@ -160,6 +191,11 @@ groups:
       - intel-lin-load
       - amd-lin2-db
 
+    - name: Baselines Gold Linux
+      template: baselines-scenarios.yml
+      profiles:
+      - aspnet-gold-lin
+
   - jobs:
 
     - name: Baselines Amd Linux
@@ -180,6 +216,11 @@ groups:
       profiles:
       - intel-win-app 
       - intel-db-load
+
+    - name: Baselines Database Gold Windows
+      template: baselines-database-scenarios.yml
+      profiles:
+      - aspnet-gold-win
 
   - jobs:
 
