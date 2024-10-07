@@ -244,6 +244,11 @@ groups:
       - amd-lin-load
       - amd-lin2-db
 
+    - name: Frameworks Database Intel Gold Linux
+      template: frameworks-database-scenarios.yml
+      profiles:
+      - intel-gold-lin
+
   - jobs:
 
     - name: Frameworks Database Amd Linux
@@ -265,6 +270,11 @@ groups:
       profiles:
       - siryn-lin-app
       - intel-load2-load
+
+    - name: Frameworks Intel Gold Linux
+      template: frameworks-scenarios.yml
+      profiles:
+      - intel-gold-lin
 
   - jobs:
 

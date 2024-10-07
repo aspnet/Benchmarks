@@ -467,13 +467,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
+- job: Frameworks_Database_Intel_Gold_Linux
+  displayName: 9- Frameworks Database Intel Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Baselines_Amd_Linux, Frameworks_Intel_Linux, Grpc_Intel_Windows, Baselines_Database_Gold_Windows]
+  condition: succeededOrFailed()
+  steps:
+  - template: frameworks-database-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Mono Queue
+      arguments: "$(ciProfile) --profile intel-gold-lin "
+      
 # GROUP 10
 
 - job: Frameworks_Database_Amd_Linux
   displayName: 10- Frameworks Database Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-database-scenarios.yml
@@ -485,7 +497,7 @@ jobs:
   displayName: 10- Frameworks Arm 80 Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -497,7 +509,7 @@ jobs:
   displayName: 10- Trends Siryn Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux]
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: trend-scenarios.yml
@@ -505,13 +517,25 @@ jobs:
       connection: ASP.NET Benchmarks Queue 3
       arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load "
       
+- job: Frameworks_Intel_Gold_Linux
+  displayName: 10- Frameworks Intel Gold Linux
+  pool: server
+  timeoutInMinutes: 120
+  dependsOn: [Frameworks_Database_Intel_Linux, WebSockets_Intel_Windows, Frameworks_Database_Arm_28_Linux, Frameworks_Database_Intel_Gold_Linux]
+  condition: succeededOrFailed()
+  steps:
+  - template: frameworks-scenarios.yml
+    parameters:
+      connection: ASP.NET Benchmarks Mono Queue
+      arguments: "$(ciProfile) --profile intel-gold-lin "
+      
 # GROUP 11
 
 - job: Frameworks_Amd_Linux
   displayName: 11- Frameworks Amd Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: frameworks-scenarios.yml
@@ -523,7 +547,7 @@ jobs:
   displayName: 11- Native Aot Intel Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: nativeaot-scenarios.yml
@@ -535,7 +559,7 @@ jobs:
   displayName: 11- Baselines Siryn Linux
   pool: server
   timeoutInMinutes: 120
-  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux]
+  dependsOn: [Frameworks_Database_Amd_Linux, Frameworks_Arm_80_Linux, Trends_Siryn_Linux, Frameworks_Intel_Gold_Linux]
   condition: succeededOrFailed()
   steps:
   - template: baselines-scenarios.yml
