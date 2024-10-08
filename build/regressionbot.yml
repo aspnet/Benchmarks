@@ -34,6 +34,10 @@ extends:
       image: MMSWindows2022-Secure
       os: windows
     sdl:
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
       sourceRepositoriesToScan:
           exclude:
           # exclude dotnet-crank from this SDL since it already has it's own Official pipeline
