@@ -1,7 +1,8 @@
 # Frameworks trend scenarios
 
-# variables:
-#   config_arg: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
+variables:
+- name: config_arg
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 parameters:
 - name: arguments
