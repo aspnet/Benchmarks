@@ -2,8 +2,7 @@
 # Some plaintext/json scenarios are in this file when they still require a db instance to run
 
 variables:
-- name: config_arg
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
+  config_arg: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 parameters:
 - name: arguments
