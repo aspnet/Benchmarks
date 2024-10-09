@@ -1,9 +1,6 @@
 # Frameworks database trend scenarios
 # Some plaintext/json scenarios are in this file when they still require a db instance to run
 
-# variables:
-#   config_arg: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
-
 parameters:
 - name: arguments
   type: string
@@ -14,6 +11,9 @@ parameters:
 - name: condition
   type: string
   default: 'true'
+- name: config
+  type: string
+  default: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 # Scenarios
 - name: scenarios 
@@ -25,44 +25,44 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
+    arguments: --scenario fortunes_nodejs --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
   - displayName: NodeJS Json
-    arguments: --scenario json_nodejs --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
+    arguments: --scenario json_nodejs --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
 
   # Express (JavaScript)
 
   - displayName: Express Fortunes
-    arguments: --scenario fortunes_express --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
+    arguments: --scenario fortunes_express --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
 
   # Gin (Go)
 
   - displayName: Gin Fortunes
-    arguments: --scenario fortunes_gin --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
+    arguments: --scenario fortunes_gin --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
   - displayName: Gin Plaintext
-    arguments: --scenario plaintext_gin --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
+    arguments: --scenario plaintext_gin --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
   - displayName: Gin Json
-    arguments: --scenario json_gin --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
+    arguments: --scenario json_gin --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
 
 #  Ntex (Rust)
 
   - displayName: Ntex Fortunes
-    arguments: --scenario fortunes_ntex --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesNtex --property protocol=http
+    arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex --property protocol=http
 
   # Spring (Java)
   
   - displayName: Spring Plaintext
-    arguments: --scenario plaintext_spring --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+    arguments: --scenario plaintext_spring --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
   - displayName: Spring Json
-    arguments: --scenario json_spring --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+    arguments: --scenario json_spring --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
   - displayName: Spring Fortunes
-    arguments: --scenario fortunes_spring --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+    arguments: --scenario fortunes_spring --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
 
   # FastHttp (Go)
 
   - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+    arguments: --scenario fortunes_fasthttp --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
 
   # Netty
   # No db scenarios
@@ -82,5 +82,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ] 
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} ${{ parameters.config }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ] 
         }
