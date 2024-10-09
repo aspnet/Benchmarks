@@ -65,8 +65,6 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml
 - name: goldilocksJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml
-- name: frameworksJobs
-  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 - name: monoJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/mono.benchmarks.yml --application.options.requiredOperatingSystem linux
 - name: azureProfile

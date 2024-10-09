@@ -1,4 +1,9 @@
-# Frameworks trend scenarios
+# Frameworks database trend scenarios
+# Some plaintext/json scenarios are in this file when they still require a db instance to run
+
+variables:
+- name: config_arg
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 parameters:
 - name: arguments
@@ -21,53 +26,44 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
+    arguments: --scenario fortunes_nodejs $(config_arg) --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs $(config_arg) --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
   - displayName: NodeJS Json
-    arguments: --scenario json_nodejs $(frameworksJobs) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
+    arguments: --scenario json_nodejs $(config_arg) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
 
   # Express (JavaScript)
 
   - displayName: Express Fortunes
-    arguments: --scenario fortunes_express $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
+    arguments: --scenario fortunes_express $(config_arg) --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
 
   # Gin (Go)
 
   - displayName: Gin Fortunes
-    arguments: --scenario fortunes_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
+    arguments: --scenario fortunes_gin $(config_arg) --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
   - displayName: Gin Plaintext
-    arguments: --scenario plaintext_gin $(frameworksJobs) --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
+    arguments: --scenario plaintext_gin $(config_arg) --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
   - displayName: Gin Json
-    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
+    arguments: --scenario json_gin $(config_arg) --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
 
-  # Actix (Rust)
-  # Actix is disable as the build is currently broken
-  # - displayName: Actix Fortunes
-  #   arguments: --scenario fortunes_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesActix --property protocol=http
+#  Ntex (Rust)
 
-  # Drogon (C++)
-  # Drogon is disable as currently it takes 10 minutes to build
-  # - displayName: Drogon Plaintext
-  #   arguments: --scenario plaintext_drogon $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextDrogon --property protocol=http
-  # - displayName: Drogon Json
-  #   arguments: --scenario json_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonDrogon --property protocol=http
-  # - displayName: Drogon Fortunes
-  #   arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
+  - displayName: Ntex Fortunes
+    arguments: --scenario fortunes_ntex $(config_arg) --load.variables.connections 512 --property scenario=FortunesNtex --property protocol=http
 
   # Spring (Java)
   
   - displayName: Spring Plaintext
-    arguments: --scenario plaintext_spring $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+    arguments: --scenario plaintext_spring $(config_arg) --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
   - displayName: Spring Json
-    arguments: --scenario json_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+    arguments: --scenario json_spring $(config_arg) --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
   - displayName: Spring Fortunes
-    arguments: --scenario fortunes_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+    arguments: --scenario fortunes_spring $(config_arg) --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
 
   # FastHttp (Go)
 
   - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+    arguments: --scenario fortunes_fasthttp $(config_arg) --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
 
   # Netty
   # No db scenarios

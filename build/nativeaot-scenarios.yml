@@ -127,7 +127,7 @@ parameters:
     condition: true
 
   - displayName: Gin Json
-    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property publish=default --application.options.requiredOperatingSystem Linux
+    arguments: --scenario json_gin --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonGin --property publish=default --application.options.requiredOperatingSystem Linux
     condition: Math.round(Date.now() / 43200000) % 6 == 2 # once every 6 half-days (43200000 ms per half-day)
 
 steps:

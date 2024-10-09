@@ -5,7 +5,6 @@ imports:
 
 jobs:
 
-
   aspnetcore:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
@@ -73,25 +72,14 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
-  actix_default: # json and plaintext scenarios
+  ntex: # json and plaintext scenarios
     source:
-      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
-      branchOrCommit: sebros/actix
-      dockerFile: frameworks/Rust/actix/actix.dockerfile
-      dockerImageName: actix_default
-      dockerContextDirectory: frameworks/Rust/actix/
+      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
+      branchOrCommit: master
+      dockerFile: frameworks/Rust/ntex/ntex-plt.dockerfile
+      dockerImageName: ntex-plt
+      dockerContextDirectory: frameworks/Rust/ntex/
     readyStateText: Started http server
-    arguments: --add-host="tfb-database:{{databaseServer}}"
-    noClean: true
-
-  actix_http: # db scenarios are in another image
-    source:
-      repository: https://github.com/sebastienros/FrameworkBenchmarks.git
-      branchOrCommit: sebros/actix
-      dockerFile: frameworks/Rust/actix/actix-http.dockerfile
-      dockerImageName: actix_http
-      dockerContextDirectory: frameworks/Rust/actix/
-    readyStateText: Starting http server
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
@@ -117,18 +105,6 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     # readyStateText:
     port: 8080 # used to poll the application to detect startup
-    noClean: true
-
-  drogon:
-    source:
-      repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
-      branchOrCommit: master
-      dockerFile: frameworks/C++/drogon/drogon.dockerfile
-      dockerContextDirectory: frameworks/C++/drogon/
-      dockerImageName: drogon
-    # readyStateText: Drogon doesn't log anything
-    port: 8080
-    arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
   netty:
@@ -353,10 +329,10 @@ scenarios:
         path: /fortunes
         serverPort: 8080
 
-  # Actix (Rust)
-  plaintext_actix:
+  # Ntex (Rust)
+  plaintext_ntex:
     application:
-      job: actix_default
+      job: ntex
     load:
       job: wrk
       variables:
@@ -365,9 +341,9 @@ scenarios:
         pipeline: 16
         serverPort: 8080
 
-  json_actix:
+  json_ntex:
     application:
-      job: actix_default
+      job: ntex
     load:
       job: wrk
       variables:
@@ -375,11 +351,14 @@ scenarios:
         path: /json
         serverPort: 8080
 
-  fortunes_actix:
+  fortunes_ntex:
     db:
       job: postgresql
     application:
-      job: actix_http
+      job: ntex
+      source: 
+        dockerFile: frameworks/Rust/ntex/ntex-db.dockerfile
+        dockerImageName: ntex-db
     load:
       job: wrk
       variables:
@@ -452,44 +431,6 @@ scenarios:
       job: postgresql
     application:
       job: fasthttp
-    load:
-      job: wrk
-      variables:
-        presetHeaders: html
-        path: /fortunes
-        serverPort: 8080
-
-  # Drogon (C++)
-  plaintext_drogon:
-    db:
-      job: postgresql
-    application:
-      job: drogon
-    load:
-      job: wrk
-      variables:
-        presetHeaders: plaintext
-        path: /plaintext
-        pipeline: 16
-        serverPort: 8080
-
-  json_drogon:
-    db:
-      job: postgresql
-    application:
-      job: drogon
-    load:
-      job: wrk
-      variables:
-        presetHeaders: json
-        path: /json
-        serverPort: 8080
-
-  fortunes_drogon:
-    db:
-      job: postgresql
-    application:
-      job: drogon
     load:
       job: wrk
       variables:

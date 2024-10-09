@@ -32,28 +32,18 @@ parameters:
 
   # Platform
   - displayName: Plaintext Platform
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
+    arguments: --scenario plaintext $(platformJobs) --load.connections 1024 --property scenario=PlaintextPlatform
 
   - displayName: Json Platform
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
-
-  # PGO Inline
-  - displayName: Plaintext Platform PGO Inline
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Json Platform PGO Inline
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+    arguments: --scenario json $(platformJobs) --load.connections 512 --property scenario=JsonPlatform
 
   # Plaintext
-  - displayName: Plaintext
-    arguments: --scenario plaintext $(minimalJobs) --property scenario=Plaintext
-
-  - displayName: Plaintext endpoint
-    arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint
+  - displayName: Plaintext Minimal Apis
+    arguments: --scenario plaintext $(minimalJobs) --load.connections 1024--property scenario=Plaintext
 
   # JSon
-  - displayName: Json
-    arguments: --scenario json $(minimalJobs) --property scenario=Json
+  - displayName: Json Minimal Apis
+    arguments: --scenario json $(minimalJobs) --load.connections 512 --property scenario=Json
 
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc
@@ -68,7 +58,7 @@ parameters:
   # Orchard Core
 
   - displayName: Orchard - About - Sqlite
-    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit sebros/net90
+    arguments: --scenario about-sqlite $(orchardJobs) --application.sdkVersion edge --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit sebros/net90
   
 steps:
 - ${{ each s in parameters.scenarios }}:

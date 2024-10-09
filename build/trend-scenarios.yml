@@ -17,24 +17,24 @@ parameters:
 # Platform
 
   - displayName: Plaintext Platform
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform --property protocol=http
+    arguments: --scenario plaintext $(platformJobs) --load.connections 1024 --property scenario=PlaintextPlatform --property protocol=http
   - displayName: Json Platform
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform --property protocol=http
+    arguments: --scenario json $(platformJobs) --load.connections 512 --property scenario=JsonPlatform --property protocol=http
   - displayName: Plaintext Platform Inline
-    arguments: --scenario plaintext $(platformJobs) --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=PlaintextPlatformInline --property protocol=http
+    arguments: --scenario plaintext $(platformJobs) --load.connections 1024 --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=PlaintextPlatformInline --property protocol=http
   - displayName: Json Platform Inline
-    arguments: --scenario json $(platformJobs) --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=JsonPlatformInline --property protocol=http
+    arguments: --scenario json $(platformJobs) --load.connections 512 --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --property scenario=JsonPlatformInline --property protocol=http
 
 # Plaintext
 
   - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext --property protocol=http
+    arguments: --scenario plaintext $(plaintextJobs) --load.connections 1024 --property scenario=Plaintext --property protocol=http
   - displayName: Plaintext Query String
     arguments: --scenario plaintext $(plaintextJobs) --property scenario=PlaintextQueryString --property protocol=http --variable path=/plaintext?query1=lorem&query2=ipsum&query3=dolor%20est
   - displayName: Plaintext Mvc
     arguments: --scenario mvc $(plaintextJobs) --property scenario=PlaintextMvc --property protocol=http
   - displayName: Plaintext Minimal APIs
-    arguments: --scenario plaintext $(minimalJobs) --property scenario=PlaintextMinimalApis --property protocol=http
+    arguments: --scenario plaintext $(minimalJobs) --load.connections 1024 --property scenario=PlaintextMinimalApis --property protocol=http
   - displayName: Plaintext Endpoint
     arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint --property protocol=http
   - displayName: Plaintext (No Filters)
@@ -57,7 +57,7 @@ parameters:
 # Json
 
   - displayName: Json
-    arguments: --scenario json $(jsonJobs) --property scenario=Json --property protocol=http
+    arguments: --scenario json $(jsonJobs) --load.connections 512 --property scenario=Json --property protocol=http
   - displayName: Json HttpSys
     arguments: --scenario json $(jsonJobs) --property protocol=http --property scenario=JsonHttpSys --variable server=HttpSys --application.options.requiredOperatingSystem windows
   - displayName: Json IIS InProc
@@ -77,7 +77,7 @@ parameters:
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc --property protocol=http
   - displayName: Json Minimal APIs
-    arguments: --scenario json $(minimalJobs) --property scenario=JsonMinimalApis --property protocol=http
+    arguments: --scenario json $(minimalJobs) --load.connections 512 --property scenario=JsonMinimalApis --property protocol=http
   - displayName: Json 5M
     arguments: --scenario json_middleware --variable singleStringJsonSize=5000000 --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --property scenario=Json5M
   - displayName: Json 400k
