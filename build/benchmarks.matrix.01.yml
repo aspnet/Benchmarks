@@ -247,7 +247,7 @@ groups:
     - name: Frameworks Database Intel Gold Linux
       template: frameworks-database-scenarios.yml
       profiles:
-      - intel-gold-lin
+      - aspnet-gold-lin
 
   - jobs:
 
@@ -274,7 +274,7 @@ groups:
     - name: Frameworks Intel Gold Linux
       template: frameworks-scenarios.yml
       profiles:
-      - intel-gold-lin
+      - aspnet-gold-lin
 
   - jobs:
 

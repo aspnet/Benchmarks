@@ -477,7 +477,7 @@ jobs:
   - template: frameworks-database-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Mono Queue
-      arguments: "$(ciProfile) --profile intel-gold-lin "
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 10
 
@@ -527,7 +527,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASP.NET Benchmarks Mono Queue
-      arguments: "$(ciProfile) --profile intel-gold-lin "
+      arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 11
 
