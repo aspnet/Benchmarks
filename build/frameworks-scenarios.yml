@@ -1,7 +1,7 @@
 # Frameworks trend scenarios
 
-variables:
-  config_arg: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
+# variables:
+#   config_arg: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 parameters:
 - name: arguments
@@ -27,9 +27,9 @@ parameters:
   # Express (JavaScript)
 
   - displayName: Express Plaintext
-    arguments: --scenario plaintext_express $(config_arg) --load.variables.connections 1024 --property scenario=PlaintextExpress --property protocol=http
+    arguments: --scenario plaintext_express --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 1024 --property scenario=PlaintextExpress --property protocol=http
   - displayName: Express Json
-    arguments: --scenario json_express $(config_arg) --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
+    arguments: --scenario json_express --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonExpress --property protocol=http
 
   # Gin (Go)
   # Scenarios are in frameworks-database-scenarios.yml since they require the db server
@@ -37,23 +37,23 @@ parameters:
 #  Ntex (Rust)
 
   - displayName: Ntex Plaintext
-    arguments: --scenario plaintext_ntex $(config_arg) --load.variables.connections 1,024 --property scenario=PlaintextNtex --property protocol=http
+    arguments: --scenario plaintext_ntex --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 1,024 --property scenario=PlaintextNtex --property protocol=http
   - displayName: Ntex Json
-    arguments: --scenario json_ntex $(config_arg) --load.variables.connections 512 --property scenario=JsonNtex --property protocol=http
+    arguments: --scenario json_ntex --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonNtex --property protocol=http
 
   # FastHttp (Go)
 
   - displayName: Go Plaintext
-    arguments: --scenario plaintext_fasthttp $(config_arg) --load.variables.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
+    arguments: --scenario plaintext_fasthttp --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=PlaintextFastHttp --property protocol=http
   - displayName: Go Json
-    arguments: --scenario json_fasthttp $(config_arg) --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
+    arguments: --scenario json_fasthttp --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonFastHttp --property protocol=http
 
   # Netty
 
   - displayName: Netty Plaintext
-    arguments: --scenario plaintext_netty $(config_arg) --load.variables.connections 1024 --property scenario=PlaintextNetty --property protocol=http
+    arguments: --scenario plaintext_netty --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 1024 --property scenario=PlaintextNetty --property protocol=http
   - displayName: Netty Json
-    arguments: --scenario json_netty $(config_arg) --load.variables.connections 512 --property scenario=JsonNetty --property protocol=http
+    arguments: --scenario json_netty --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml --load.variables.connections 512 --property scenario=JsonNetty --property protocol=http
 
 steps:
 - ${{ each s in parameters.scenarios }}:
