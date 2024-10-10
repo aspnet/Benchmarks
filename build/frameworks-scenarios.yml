@@ -37,7 +37,7 @@ parameters:
 #  Ntex (Rust)
 
   - displayName: Ntex Plaintext
-    arguments: --scenario plaintext_ntex --load.variables.connections 1,024 --property scenario=PlaintextNtex --property protocol=http
+    arguments: --scenario plaintext_ntex --load.variables.connections 1024 --property scenario=PlaintextNtex --property protocol=http
   - displayName: Ntex Json
     arguments: --scenario json_ntex --load.variables.connections 512 --property scenario=JsonNtex --property protocol=http
 

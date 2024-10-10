@@ -359,6 +359,7 @@ scenarios:
       source: 
         dockerFile: frameworks/Rust/ntex/ntex-db.dockerfile
         dockerImageName: ntex-db
+      readyStateText: Starting http server
     load:
       job: wrk
       variables:
