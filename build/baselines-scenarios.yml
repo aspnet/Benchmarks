@@ -58,7 +58,7 @@ parameters:
   # Orchard Core
 
   - displayName: Orchard - About - Sqlite
-    arguments: --scenario about-sqlite $(orchardJobs) --application.sdkVersion edge --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit sebros/net90
+    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
   
 steps:
 - ${{ each s in parameters.scenarios }}:

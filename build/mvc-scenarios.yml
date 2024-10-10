@@ -68,10 +68,10 @@ parameters:
 # Orchard Core
 
   - displayName: Orchard - About - PostgresQL
-    arguments: --scenario about-postgresql $(orchardJobs) --property scenario=OrchardAboutPostgresQL --property protocol=http --application.source.branchOrCommit sebros/net90
+    arguments: --scenario about-postgresql $(orchardJobs) --property scenario=OrchardAboutPostgresQL --property protocol=http
 
   - displayName: Orchard - About - Sqlite
-    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http --application.source.branchOrCommit sebros/net90
+    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
 
 steps:
   - ${{ each s in parameters.scenarios }}:
