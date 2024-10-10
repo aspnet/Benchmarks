@@ -3,13 +3,8 @@
 
 namespace Benchmarks.Configuration
 {
-    public class ConsoleArgs
+    public class ConsoleArgs(string[] args)
     {
-        public ConsoleArgs(string[] args)
-        {
-            Args = args;
-        }
-
-        public string[] Args { get; }
+        public string[] Args { get; } = args;
     }
 }

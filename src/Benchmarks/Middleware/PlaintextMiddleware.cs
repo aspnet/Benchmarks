@@ -10,17 +10,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Benchmarks.Middleware
 {
-    public class PlaintextMiddleware
+    public class PlaintextMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.Plaintext));
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
-        private readonly RequestDelegate _next;
-
-        public PlaintextMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public Task Invoke(HttpContext httpContext)
         {
@@ -50,9 +45,7 @@ namespace Benchmarks.Middleware
 
     public static class PlaintextMiddlewareExtensions
     {
-        public static IApplicationBuilder UsePlainText(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<PlaintextMiddleware>();
-        }
+        public static IApplicationBuilder UsePlainText(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<PlaintextMiddleware>();
     }
 }

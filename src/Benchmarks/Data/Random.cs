@@ -24,9 +24,6 @@ namespace Benchmarks.Data
             return _random;
         }
 
-        public int Next(int minValue, int maxValue)
-        {
-            return Random.Next(minValue, maxValue);
-        }
+        public int Next(int minValue, int maxValue) => Random.Next(minValue, maxValue);
     }
 }

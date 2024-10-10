@@ -13,17 +13,10 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class EfDb : IDb
+    public class EfDb(IRandom random, ApplicationDbContext dbContext, IOptions<AppSettings> appSettings) : IDb
     {
-        private readonly IRandom _random;
-        private readonly ApplicationDbContext _dbContext;
-
-        public EfDb(IRandom random, ApplicationDbContext dbContext, IOptions<AppSettings> appSettings)
-        {
-            _random = random;
-            _dbContext = dbContext;
-        }
-
+        private readonly IRandom _random = random;
+        private readonly ApplicationDbContext _dbContext = dbContext;
         private static readonly Func<ApplicationDbContext, int, Task<World>> _firstWorldQuery
             = EF.CompileAsyncQuery((ApplicationDbContext context, int id)
                 => context.World.First(w => w.Id == id));

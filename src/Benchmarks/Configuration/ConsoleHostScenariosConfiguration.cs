@@ -8,14 +8,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace Benchmarks.Configuration
 {
-    public class ConsoleHostScenariosConfiguration : IScenariosConfiguration
+    public class ConsoleHostScenariosConfiguration(ConsoleArgs args) : IScenariosConfiguration
     {
-        private readonly string[] _args;
-
-        public ConsoleHostScenariosConfiguration(ConsoleArgs args)
-        {
-            _args = args.Args;
-        }
+        private readonly string[] _args = args.Args;
 
         public void ConfigureScenarios(Scenarios scenarios)
         {
