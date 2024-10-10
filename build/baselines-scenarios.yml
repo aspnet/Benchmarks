@@ -39,7 +39,7 @@ parameters:
 
   # Plaintext
   - displayName: Plaintext Minimal Apis
-    arguments: --scenario plaintext $(minimalJobs) --load.connections 1024--property scenario=Plaintext
+    arguments: --scenario plaintext $(minimalJobs) --load.connections 1024 --property scenario=Plaintext
 
   # JSon
   - displayName: Json Minimal Apis
