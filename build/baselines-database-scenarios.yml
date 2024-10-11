@@ -16,9 +16,6 @@ parameters:
   type: object
   default: 
   
-  - displayName: "7.0"
-    arguments: --application.framework net7.0 --property framework=net7.0
-
   - displayName: "8.0"
     arguments: --application.framework net8.0 --property framework=net8.0
 
