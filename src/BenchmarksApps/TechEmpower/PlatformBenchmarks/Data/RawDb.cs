@@ -257,13 +257,13 @@ namespace PlatformBenchmarks
                 }
             }
 
-            result.Add(new FortuneUtf8(id: 0, AdditionalFortune));
+            result.Add(new FortuneUtf8(id: 0, AdditionalFortuneUtf8));
             result.Sort();
 
             return result;
         }
 
-        public Task<List<FortuneUtf8>> LoadFortunesRowsNoDb()
+        public Task<List<FortuneUtf8>> LoadFortunesRowsNoDbUtf8()
         {
             // Benchmark requirements explicitly prohibit pre-initializing the list size
             var result = new List<FortuneUtf8>
@@ -280,7 +280,7 @@ namespace PlatformBenchmarks
                 new(10, "Computers make very fast, very accurate mistakes."u8.ToArray()),
                 new(11, "<script>alert(\"This should not be displayed in a browser alert box.\");</script>"u8.ToArray()),
                 new(12, "フレームワークのベンチマーク"u8.ToArray()),
-                new(0, AdditionalFortune)
+                new(0, AdditionalFortuneUtf8)
             };
 
             result.Sort();
@@ -288,7 +288,34 @@ namespace PlatformBenchmarks
             return Task.FromResult(result);
         }
 
-        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
+        public Task<List<FortuneUtf16>> LoadFortunesRowsNoDbUtf16()
+        {
+            // Benchmark requirements explicitly prohibit pre-initializing the list size
+            var result = new List<FortuneUtf16>
+            {
+                new(1, "fortune: No such file or directory"),
+                new(2, "A computer scientist is someone who fixes things that aren't broken."),
+                new(3, "After enough decimal places, nobody gives a damn."),
+                new(4, "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"),
+                new(5, "A computer program does what you tell it to do, not what you want it to do."),
+                new(6, "Emacs is a nice operating system, but I prefer UNIX. — Tom Christaensen"),
+                new(7, "Any program that runs right is obsolete."),
+                new(8, "A list is only as strong as its weakest link. — Donald Knuth"),
+                new(9, "Feature: A bug with seniority."),
+                new(10, "Computers make very fast, very accurate mistakes."),
+                new(11, "<script>alert(\"This should not be displayed in a browser alert box.\");</script>"),
+                new(12, "フレームワークのベンチマーク"),
+                new(0, AdditionalFortuneUtf16)
+            };
+
+            result.Sort();
+
+            return Task.FromResult(result);
+        }
+
+        private readonly byte[] AdditionalFortuneUtf8 = "Additional fortune added at request time."u8.ToArray();
+
+        private readonly string AdditionalFortuneUtf16 = "Additional fortune added at request time.";
 
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {

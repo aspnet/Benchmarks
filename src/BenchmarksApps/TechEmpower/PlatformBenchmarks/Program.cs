@@ -26,6 +26,7 @@ namespace PlatformBenchmarks
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.Plaintext));
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.Json));
 #else
+            Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesRawNoTemplate));
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesRaw));
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesDapper));
             Console.WriteLine(Encoding.UTF8.GetString(BenchmarkApplication.Paths.FortunesEf));

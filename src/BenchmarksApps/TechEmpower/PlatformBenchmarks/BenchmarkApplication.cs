@@ -80,6 +80,7 @@ namespace PlatformBenchmarks
             public static ReadOnlySpan<byte> Json => "/json"u8;
             public static ReadOnlySpan<byte> Plaintext => "/plaintext"u8;
             public static ReadOnlySpan<byte> SingleQuery => "/db"u8;
+            public static ReadOnlySpan<byte> FortunesRawNoTemplate => "/fortunes/notemplate"u8;
             public static ReadOnlySpan<byte> FortunesRaw => "/fortunes"u8;
             public static ReadOnlySpan<byte> FortunesDapper => "/fortunes/dapper"u8;
             public static ReadOnlySpan<byte> FortunesEf => "/fortunes/ef"u8;
@@ -119,6 +120,7 @@ namespace PlatformBenchmarks
                     9 when path.SequenceEqual(Paths.FortunesRaw) => RequestType.FortunesRaw,
                     16 when path.SequenceEqual(Paths.FortunesDapper) => RequestType.FortunesDapper,
                     12 when path.SequenceEqual(Paths.FortunesEf) => RequestType.FortunesEf,
+                    20 when path.SequenceEqual(Paths.FortunesRawNoTemplate) => RequestType.FortunesRawNoTemplate,
                     _ => RequestType.NotRecognized
                 };
             }
@@ -176,6 +178,7 @@ namespace PlatformBenchmarks
 
         private Task ProcessRequestAsync() => _requestType switch
         {
+            RequestType.FortunesRawNoTemplate => FortunesRawNoTemplate(Writer),
             RequestType.FortunesRaw => FortunesRaw(Writer),
             RequestType.FortunesDapper => FortunesDapper(Writer),
             RequestType.FortunesEf => FortunesEf(Writer),
@@ -214,6 +217,7 @@ namespace PlatformBenchmarks
             PlainText,
             Json,
             FortunesRaw,
+            FortunesRawNoTemplate,
             FortunesDapper,
             FortunesEf,
             SingleQuery,
