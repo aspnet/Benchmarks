@@ -244,6 +244,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
+- `plaintext_aspnetcore`, `json_aspnetcore`, `fortunes_aspnetcore`
 - `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
 - `plaintext_bun`, `json_bun`
 - `plaintext_actix`, `json_actix`, `fortunes_actix`
