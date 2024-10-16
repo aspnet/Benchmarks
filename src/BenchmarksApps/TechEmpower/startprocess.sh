@@ -1,4 +1,6 @@
-dotnet Platform.dll
-dotnet Platform.dll
-dotnet Platform.dll
-dotnet Platform.dll
+#!/bin/bash
+
+dotnet ./PlatformBenchmarks.dll &
+dotnet ./PlatformBenchmarks.dll &
+dotnet ./PlatformBenchmarks.dll &
+dotnet ./PlatformBenchmarks.dll

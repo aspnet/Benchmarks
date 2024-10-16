@@ -1,15 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
-COPY src/Platform .
-COPY startprocess.sh out
-RUN dotnet publish -c Release -o out /p:DatabaseProvider=Npgsql
+COPY . .
+RUN dotnet publish ./src/BenchmarksApps/TechEmpower/PlatformBenchmarks/PlatformBenchmarks.csproj -c Release -o out -f net9.0
+COPY ./src/BenchmarksApps/TechEmpower/startprocess.sh out
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-ENV URLS http://+:8080
+ENV URLS=http://+:8080
 
 WORKDIR /app
 COPY --from=build /app/out ./
 
 EXPOSE 8080
 
-CMD ./startprocess.sh
+CMD ["./startprocess.sh"]
