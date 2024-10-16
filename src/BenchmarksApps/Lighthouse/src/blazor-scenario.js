@@ -1,18 +1,20 @@
 import { writeFileSync } from 'fs';
 import puppeteer from 'puppeteer';
-import { startFlow } from 'lighthouse';
+import { startFlow, generateReport } from 'lighthouse';
 import { program } from 'commander';
 import { logReadyStateText } from './utilities/crank-helpers.js';
 import { LighthouseCrankReporter } from './utilities/lighthouse-crank-reporter.js';
 
 program.requiredOption('--target-base-url <url>', 'The base URL of the application to test against');
+program.option('--headless <true|false>', 'Whether to disable headless mode', 'true');
 program.option('--enforce-wasm-caching', 'Ensures that WASM resources are downloaded before the second page load');
 program.option('--job-url <url>', 'The URL of the crank job to receive the statistics report');
-program.option('--result-file <file>', 'The file to which the JSON test results should be written');
+program.option('--result-file <file>', 'The file to which the test results should be written');
 program.parse();
 
 const {
   targetBaseUrl,
+  headless,
   enforceWasmCaching,
   jobUrl,
   resultFile,
@@ -20,7 +22,11 @@ const {
 
 logReadyStateText(); // Required by the Crank job
 
-const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+const browser = await puppeteer.launch({
+  headless: headless === 'true',
+  args: ['--no-sandbox']
+});
+
 const pageUrl = `${targetBaseUrl}/counter`;
 
 // Warm up the target server so that any server-side caches are fully initialized
@@ -73,8 +79,7 @@ await browser.close();
 const flowResult = await flow.createFlowResult();
 
 if (resultFile) {
-  console.log(`Writing the results to '${resultFile}'...`);
-  writeFileSync(resultFile, JSON.stringify(flowResult, null, 2));
+  writeResultFile(flowResult, resultFile);
 }
 
 if (jobUrl) {
@@ -188,6 +193,18 @@ async function incrementCounter(enableRetries) {
     console.log('The current count did not update in the expected period');
     return false;
   }
+}
+
+/**
+ * Writes the given flow result to the specified file
+ * @param {import("lighthouse").FlowResult} flowResult
+ * @param {string} resultFile
+ */
+function writeResultFile(flowResult, resultFile) {
+  console.log(`Writing the results to '${resultFile}'...`);
+  const format = resultFile.endsWith('.html') ? 'html' : 'json';
+  const resultText = generateReport(flowResult, format);
+  writeFileSync(resultFile, resultText);
 }
 
 /**
