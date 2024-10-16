@@ -1,6 +1,13 @@
 #!/bin/bash
 
-dotnet ./PlatformBenchmarks.dll &
-dotnet ./PlatformBenchmarks.dll &
-dotnet ./PlatformBenchmarks.dll &
-dotnet ./PlatformBenchmarks.dll
+cgcreate -g cpu,cpuset:/cpugroup1 
+cgcreate -g cpu,cpuset:/cpugroup2
+
+cgset -r cpuset.cpus=0-27 /cpugroup1 
+cgset -r cpuset.cpus=28-55 /cpugroup2
+
+cgexec -g cpu:/cpugroup1 dotnet ./PlatformBenchmarks.dll &
+cgexec -g cpu:/cpugroup2 dotnet ./PlatformBenchmarks.dll 
+
+cgdelete -g cpu:/cpugroup1
+cgdelete -g cpu:/cpugroup2
