@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Install dependencies
+apt-get update \
+    && apt-get install -y --no-install-recommends \
+        cgroup-tools 
+
 cgcreate -g cpu,cpuset:/cpugroup1 
 cgcreate -g cpu,cpuset:/cpugroup2
 
