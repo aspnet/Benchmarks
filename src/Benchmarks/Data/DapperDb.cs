@@ -12,20 +12,13 @@ using Microsoft.Extensions.Options;
 
 namespace Benchmarks.Data
 {
-    public class DapperDb : IDb
+    public class DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings) : IDb
     {
         private static readonly Comparison<World> WorldSortComparison = (a, b) => a.Id.CompareTo(b.Id);
 
-        private readonly IRandom _random;
-        private readonly DbProviderFactory _dbProviderFactory;
-        private readonly string _connectionString;
-
-        public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
-        {
-            _random = random;
-            _dbProviderFactory = dbProviderFactory;
-            _connectionString = appSettings.Value.ConnectionString;
-        }
+        private readonly IRandom _random = random;
+        private readonly DbProviderFactory _dbProviderFactory = dbProviderFactory;
+        private readonly string _connectionString = appSettings.Value.ConnectionString;
 
         public async Task<World> LoadSingleQueryRow()
         {
@@ -38,12 +31,10 @@ namespace Benchmarks.Data
             }
         }
 
-        Task<World> ReadSingleRow(DbConnection db)
-        {
-            return db.QueryFirstOrDefaultAsync<World>(
+        Task<World> ReadSingleRow(DbConnection db) =>
+            db.QueryFirstOrDefaultAsync<World>(
                     "SELECT id, randomnumber FROM world WHERE id = @Id",
                     new { Id = _random.Next(1, 10001) });
-        }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {

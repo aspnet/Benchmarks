@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class MultipleUpdatesEfMiddleware
+    public class MultipleUpdatesEfMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbMultiUpdateEf));
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -21,12 +21,7 @@ namespace Benchmarks.Middleware
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        private readonly RequestDelegate _next;
-
-        public MultipleUpdatesEfMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -54,9 +49,6 @@ namespace Benchmarks.Middleware
 
     public static class MultipleUpdatesEfMiddlewareExtensions
     {
-        public static IApplicationBuilder UseMultipleUpdatesEf(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<MultipleUpdatesEfMiddleware>();
-        }
+        public static IApplicationBuilder UseMultipleUpdatesEf(this IApplicationBuilder builder) => builder.UseMiddleware<MultipleUpdatesEfMiddleware>();
     }
 }

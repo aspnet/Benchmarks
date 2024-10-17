@@ -23,15 +23,9 @@ namespace Benchmarks.Data
         [IgnoreDataMember]
         [Required]
         public string Message { get; set; }
-        
-        public int CompareTo(object obj)
-        {
-            return CompareTo((Fortune)obj);
-        }
 
-        public int CompareTo(Fortune other)
-        {
-            return String.CompareOrdinal(Message, other.Message);
-        }
+        public int CompareTo(object obj) => CompareTo((Fortune)obj);
+
+        public int CompareTo(Fortune other) => String.CompareOrdinal(Message, other.Message);
     }
 }

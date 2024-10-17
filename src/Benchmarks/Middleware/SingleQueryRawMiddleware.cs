@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace Benchmarks.Middleware
 {
-    public class SingleQueryRawMiddleware
+    public class SingleQueryRawMiddleware(RequestDelegate next)
     {
         private static readonly PathString _path = new PathString(Scenarios.GetPath(s => s.DbSingleQueryRaw));
 
@@ -22,12 +22,7 @@ namespace Benchmarks.Middleware
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        private readonly RequestDelegate _next;
-
-        public SingleQueryRawMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+        private readonly RequestDelegate _next = next;
 
         public async Task Invoke(HttpContext httpContext)
         {
@@ -53,9 +48,7 @@ namespace Benchmarks.Middleware
 
     public static class SingleQueryRawMiddlewareExtensions
     {
-        public static IApplicationBuilder UseSingleQueryRaw(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<SingleQueryRawMiddleware>();
-        }
+        public static IApplicationBuilder UseSingleQueryRaw(this IApplicationBuilder builder) =>
+            builder.UseMiddleware<SingleQueryRawMiddleware>();
     }
 }
