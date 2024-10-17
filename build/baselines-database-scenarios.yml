@@ -22,6 +22,9 @@ parameters:
   - displayName: "9.0"
     arguments: --application.framework net9.0 --property framework=net9.0
 
+  - displayName: "10.0"
+    arguments: --application.framework net10.0 --property framework=net10.0
+
 # Scenarios
 - name: scenarios 
   type: object
