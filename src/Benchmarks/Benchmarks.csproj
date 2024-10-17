@@ -54,7 +54,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftIISTestingVersion70)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' ">
+  <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerVersion80)" />
