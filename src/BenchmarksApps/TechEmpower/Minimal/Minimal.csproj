@@ -14,4 +14,7 @@
     <PackageReference Include="RazorSlices" Version="$(RazorSlicesVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))">
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
+  </ItemGroup>
 </Project>

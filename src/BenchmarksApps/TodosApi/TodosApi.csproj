@@ -28,6 +28,10 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))">
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
+  </ItemGroup>      
+
   <ItemGroup>
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
   </ItemGroup>
