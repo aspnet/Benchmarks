@@ -23,7 +23,7 @@ parameters:
     arguments: --application.framework net9.0 --property framework=net9.0
 
   - displayName: "10.0"
-    arguments: --application.framework net10.0 --property framework=net10.0
+    arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
 
 # Scenarios
 - name: scenarios 
