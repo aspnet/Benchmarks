@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -37,12 +39,14 @@ namespace Benchmarks.Middleware
 
             var sb = StringBuilderCache.Acquire();
             sb.Append("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>");
+
+            Span<char> buffer = stackalloc char[256];
             foreach (var item in model)
             {
                 sb.Append("<tr><td>");
-                sb.Append(item.Id.ToString(CultureInfo.InvariantCulture));
+                sb.Append(CultureInfo.InvariantCulture, $"{item.Id}");
                 sb.Append("</td><td>");
-                sb.Append(htmlEncoder.Encode(item.Message));
+                Encode(sb, htmlEncoder, item.Message);
                 sb.Append("</td></tr>");
             }
 
@@ -51,6 +55,18 @@ namespace Benchmarks.Middleware
             // fortunes includes multibyte characters so response.Length is incorrect
             httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(response);
             return httpContext.Response.WriteAsync(response);
+
+            static void Encode(StringBuilder sb, HtmlEncoder htmlEncoder, string item)
+            {
+                Span<char> buffer = stackalloc char[256];
+                int remaining = item.Length;
+                do
+                {
+                    htmlEncoder.Encode(item.AsSpan()[..remaining], buffer, out var consumed, out var written, isFinalBlock: true);
+                    remaining -= consumed;
+                    sb.Append(buffer.Slice(0, written));
+                } while (remaining != 0);
+            }
         }
     }
 }
