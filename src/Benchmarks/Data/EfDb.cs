@@ -83,7 +83,7 @@ namespace Benchmarks.Data
                 result.Add(fortune);
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = "Additional fortune added at request time."u8.ToArray() });
             
             result.Sort();
 

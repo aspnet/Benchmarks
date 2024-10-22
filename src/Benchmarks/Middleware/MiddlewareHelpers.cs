@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Http;
+using RazorSlices;
 
 namespace Benchmarks.Middleware
 {
@@ -30,27 +29,15 @@ namespace Benchmarks.Middleware
                     : 1;
         }
 
-        public static Task RenderFortunesHtml(IEnumerable<Fortune> model, HttpContext httpContext, HtmlEncoder htmlEncoder)
+        public static async Task RenderFortunesHtml(IEnumerable<Fortune> model, HttpContext httpContext,
+            HtmlEncoder htmlEncoder, SliceFactory<IEnumerable<Fortune>> fortunesFactory)
         {
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             httpContext.Response.ContentType = "text/html; charset=UTF-8";
 
-            var sb = StringBuilderCache.Acquire();
-            sb.Append("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>");
-            foreach (var item in model)
-            {
-                sb.Append("<tr><td>");
-                sb.Append(item.Id.ToString(CultureInfo.InvariantCulture));
-                sb.Append("</td><td>");
-                sb.Append(htmlEncoder.Encode(item.Message));
-                sb.Append("</td></tr>");
-            }
-
-            sb.Append("</table></body></html>");
-            var response = StringBuilderCache.GetStringAndRelease(sb);
-            // fortunes includes multibyte characters so response.Length is incorrect
-            httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(response);
-            return httpContext.Response.WriteAsync(response);
+            using var template = fortunesFactory(model);
+            await template.RenderToPipeWriterAsync(httpContext.Response.BodyWriter, htmlEncoder);
+            await httpContext.Response.BodyWriter.FlushAsync();
         }
     }
 }

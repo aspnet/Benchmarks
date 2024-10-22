@@ -104,7 +104,7 @@ namespace Benchmarks.Data
                 result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = "Additional fortune added at request time."u8.ToArray() });
             result.Sort();
 
             return result;

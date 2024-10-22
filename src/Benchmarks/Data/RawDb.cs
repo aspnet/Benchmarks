@@ -150,13 +150,13 @@ namespace Benchmarks.Data
                         result.Add(new Fortune
                         {
                             Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
+                            Message = rdr.GetFieldValue<byte[]>(1)
                         });
                     }
                 }
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = "Additional fortune added at request time."u8.ToArray() });
             result.Sort();
 
             return result;
@@ -184,13 +184,13 @@ namespace Benchmarks.Data
                         result.Add(new Fortune
                         {
                             Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
+                            Message = rdr.GetFieldValue<byte[]>(1)
                         });
                     }
                 }
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = "Additional fortune added at request time."u8.ToArray() });
             result.Sort();
 
             return result;
