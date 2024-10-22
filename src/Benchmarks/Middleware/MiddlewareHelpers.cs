@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -32,31 +33,27 @@ namespace Benchmarks.Middleware
                     : 1;
         }
 
-        public static Task RenderFortunesHtml(IEnumerable<Fortune> model, HttpContext httpContext, HtmlEncoder htmlEncoder)
+        public static async Task RenderFortunesHtml(IEnumerable<Fortune> model, HttpContext httpContext, HtmlEncoder htmlEncoder)
         {
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             httpContext.Response.ContentType = "text/html; charset=UTF-8";
 
-            var sb = StringBuilderCache.Acquire();
-            sb.Append("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>");
+            Encoding.UTF8.GetBytes("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>", httpContext.Response.BodyWriter);
 
-            Span<char> buffer = stackalloc char[256];
             foreach (var item in model)
             {
-                sb.Append("<tr><td>");
-                sb.Append(CultureInfo.InvariantCulture, $"{item.Id}");
-                sb.Append("</td><td>");
-                Encode(sb, htmlEncoder, item.Message);
-                sb.Append("</td></tr>");
+                Encoding.UTF8.GetBytes("<tr><td>", httpContext.Response.BodyWriter);
+                Encoding.UTF8.GetBytes(item.Id.ToString(CultureInfo.InvariantCulture), httpContext.Response.BodyWriter);
+                Encoding.UTF8.GetBytes("</td><td>", httpContext.Response.BodyWriter);
+                EncodeToPipe(httpContext.Response.BodyWriter, htmlEncoder, item.Message);
+                Encoding.UTF8.GetBytes("</td></tr>", httpContext.Response.BodyWriter);
             }
 
-            sb.Append("</table></body></html>");
-            var response = StringBuilderCache.GetStringAndRelease(sb);
-            // fortunes includes multibyte characters so response.Length is incorrect
-            httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(response);
-            return httpContext.Response.WriteAsync(response);
+            Encoding.UTF8.GetBytes("</table></body></html>", httpContext.Response.BodyWriter);
 
-            static void Encode(StringBuilder sb, HtmlEncoder htmlEncoder, string item)
+            await httpContext.Response.BodyWriter.FlushAsync();
+
+            static void EncodeToPipe(PipeWriter writer, HtmlEncoder htmlEncoder, string item)
             {
                 Span<char> buffer = stackalloc char[256];
                 int remaining = item.Length;
@@ -64,7 +61,7 @@ namespace Benchmarks.Middleware
                 {
                     htmlEncoder.Encode(item.AsSpan()[..remaining], buffer, out var consumed, out var written, isFinalBlock: true);
                     remaining -= consumed;
-                    sb.Append(buffer.Slice(0, written));
+                    Encoding.UTF8.GetBytes(buffer.Slice(0, written), writer);
                 } while (remaining != 0);
             }
         }
