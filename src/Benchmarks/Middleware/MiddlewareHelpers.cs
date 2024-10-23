@@ -42,20 +42,18 @@ namespace Benchmarks.Middleware
 
             var writer = new BufferWriter<byte>(httpContext.Response.BodyWriter);
 
-            Encoding.UTF8.GetBytes(
-                "<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>",
-                writer);
+            writer.Write("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>"u8);
 
             foreach (var item in model)
             {
-                Encoding.UTF8.GetBytes("<tr><td>", writer);
+                writer.Write("<tr><td>"u8);
                 Encoding.UTF8.GetBytes(item.Id.ToString(CultureInfo.InvariantCulture), writer);
-                Encoding.UTF8.GetBytes("</td><td>", writer);
+                writer.Write("</td><td>"u8);
                 EncodeToPipe(writer, htmlEncoder, item.Message);
-                Encoding.UTF8.GetBytes("</td></tr>", writer);
+                writer.Write("</td></tr>"u8);
             }
 
-            Encoding.UTF8.GetBytes("</table></body></html>", writer);
+            writer.Write("</table></body></html>"u8);
 
             writer.Commit();
 
