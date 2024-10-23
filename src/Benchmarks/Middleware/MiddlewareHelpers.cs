@@ -10,6 +10,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Http;
+using static Azure.Core.HttpHeader;
 
 namespace Benchmarks.Middleware
 {
@@ -93,17 +94,19 @@ namespace Benchmarks.Middleware
 
         public void Commit()
         {
-            _inner.Advance(_buffered);
-            _buffered = 0;
-            _memory = default;
+            if (_buffered != 0)
+            {
+                _inner.Advance(_buffered);
+                _buffered = 0;
+                _memory = default;
+            }
         }
 
         public Memory<T> GetMemory(int sizeHint = 0)
         {
             if (_memory.Length == 0 || _memory.Length < sizeHint)
             {
-                _inner.Advance(_buffered);
-                _buffered = 0;
+                Commit();
                 _memory = _inner.GetMemory(sizeHint);
             }
             return _memory;
