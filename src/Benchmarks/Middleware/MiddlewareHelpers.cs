@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO.Pipelines;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -57,6 +56,8 @@ namespace Benchmarks.Middleware
 
             Encoding.UTF8.GetBytes("</table></body></html>", writer);
 
+            writer.Commit();
+
             await httpContext.Response.BodyWriter.FlushAsync();
 
             static void EncodeToPipe(BufferWriter<byte> writer, HtmlEncoder htmlEncoder, string item)
@@ -77,6 +78,7 @@ namespace Benchmarks.Middleware
     {
         private readonly IBufferWriter<T> _inner;
         private Memory<T> _memory;
+        private int _buffered;
 
         public BufferWriter(IBufferWriter<T> writer)
         {
@@ -86,13 +88,22 @@ namespace Benchmarks.Middleware
         public void Advance(int count)
         {
             _memory = _memory.Slice(count);
-            _inner.Advance(count);
+            _buffered += count;
+        }
+
+        public void Commit()
+        {
+            _inner.Advance(_buffered);
+            _buffered = 0;
+            _memory = default;
         }
 
         public Memory<T> GetMemory(int sizeHint = 0)
         {
             if (_memory.Length == 0 || _memory.Length < sizeHint)
             {
+                _inner.Advance(_buffered);
+                _buffered = 0;
                 _memory = _inner.GetMemory(sizeHint);
             }
             return _memory;
