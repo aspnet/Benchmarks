@@ -51,7 +51,7 @@ namespace Benchmarks.Middleware
                 Encoding.UTF8.GetBytes("<tr><td>", writer);
                 Encoding.UTF8.GetBytes(item.Id.ToString(CultureInfo.InvariantCulture), writer);
                 Encoding.UTF8.GetBytes("</td><td>", writer);
-                EncodeToPipe(writer, htmlEncoder, item.Message);
+                EncodeToPipe(ref writer, htmlEncoder, item.Message);
                 Encoding.UTF8.GetBytes("</td></tr>", writer);
             }
 
@@ -59,7 +59,7 @@ namespace Benchmarks.Middleware
 
             await httpContext.Response.BodyWriter.FlushAsync();
 
-            static void EncodeToPipe(IBufferWriter<byte> writer, HtmlEncoder htmlEncoder, string item)
+            static void EncodeToPipe(ref BufferWriter<byte> writer, HtmlEncoder htmlEncoder, string item)
             {
                 Span<char> buffer = stackalloc char[256];
                 int remaining = item.Length;
@@ -73,7 +73,7 @@ namespace Benchmarks.Middleware
         }
     }
 
-    internal class BufferWriter<T> : IBufferWriter<T>
+    internal struct BufferWriter<T> : IBufferWriter<T>
     {
         private readonly IBufferWriter<T> _inner;
         private Memory<T> _memory;
