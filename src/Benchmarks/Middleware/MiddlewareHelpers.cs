@@ -38,7 +38,11 @@ namespace Benchmarks.Middleware
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             httpContext.Response.ContentType = "text/html; charset=UTF-8";
 
-            Encoding.UTF8.GetBytes("<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>", httpContext.Response.BodyWriter);
+            await httpContext.Response.StartAsync();
+
+            Encoding.UTF8.GetBytes(
+                "<!DOCTYPE html><html><head><title>Fortunes</title></head><body><table><tr><th>id</th><th>message</th></tr>",
+                httpContext.Response.BodyWriter);
 
             foreach (var item in model)
             {
