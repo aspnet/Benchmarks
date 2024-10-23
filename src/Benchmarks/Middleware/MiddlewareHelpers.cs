@@ -4,13 +4,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Benchmarks.Data;
 using Microsoft.AspNetCore.Http;
-using static Azure.Core.HttpHeader;
 
 namespace Benchmarks.Middleware
 {
@@ -47,7 +47,13 @@ namespace Benchmarks.Middleware
             foreach (var item in model)
             {
                 writer.Write("<tr><td>"u8);
-                Encoding.UTF8.GetBytes(item.Id.ToString(CultureInfo.InvariantCulture), writer);
+
+                const int maxFormatInt32Length = 10;
+                var span = writer.GetSpan(maxFormatInt32Length);
+                var res = item.Id.TryFormat(span, out var written, provider: CultureInfo.InvariantCulture);
+                Debug.Assert(res);
+                writer.Advance(written);
+
                 writer.Write("</td><td>"u8);
                 EncodeToPipe(writer, htmlEncoder, item.Message);
                 writer.Write("</td></tr>"u8);
