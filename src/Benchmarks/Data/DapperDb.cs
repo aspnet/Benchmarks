@@ -20,6 +20,8 @@ namespace Benchmarks.Data
         private readonly DbProviderFactory _dbProviderFactory;
         private readonly string _connectionString;
 
+        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
+
         public DapperDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
             _random = random;
@@ -104,7 +106,7 @@ namespace Benchmarks.Data
                 result = (await db.QueryAsync<Fortune>("SELECT id, message FROM fortune")).AsList();
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = AdditionalFortune });
             result.Sort();
 
             return result;

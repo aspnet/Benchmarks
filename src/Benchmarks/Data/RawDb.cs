@@ -19,6 +19,8 @@ namespace Benchmarks.Data
         private readonly DbProviderFactory _dbProviderFactory;
         private readonly string _connectionString;
 
+        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
+
         public RawDb(IRandom random, DbProviderFactory dbProviderFactory, IOptions<AppSettings> appSettings)
         {
             _random = random;
@@ -150,13 +152,13 @@ namespace Benchmarks.Data
                         result.Add(new Fortune
                         {
                             Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
+                            Message = rdr.GetFieldValue<byte[]>(1)
                         });
                     }
                 }
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = AdditionalFortune });
             result.Sort();
 
             return result;
@@ -184,13 +186,13 @@ namespace Benchmarks.Data
                         result.Add(new Fortune
                         {
                             Id = rdr.GetInt32(0),
-                            Message = rdr.GetString(1)
+                            Message = rdr.GetFieldValue<byte[]>(1)
                         });
                     }
                 }
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = AdditionalFortune });
             result.Sort();
 
             return result;
