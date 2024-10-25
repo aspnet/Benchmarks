@@ -29,8 +29,8 @@ namespace Benchmarks.Middleware
                     : 1;
         }
 
-        public static async Task RenderFortunesHtml(IEnumerable<Fortune> model, HttpContext httpContext,
-            HtmlEncoder htmlEncoder, SliceFactory<IEnumerable<Fortune>> fortunesFactory)
+        public static async Task RenderFortunesHtml<T>(IEnumerable<T> model, HttpContext httpContext,
+            HtmlEncoder htmlEncoder, SliceFactory<IEnumerable<T>> fortunesFactory)
         {
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             httpContext.Response.ContentType = "text/html; charset=UTF-8";

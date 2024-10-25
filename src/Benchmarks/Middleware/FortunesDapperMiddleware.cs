@@ -20,13 +20,13 @@ namespace Benchmarks.Middleware
 
         private readonly RequestDelegate _next;
         private readonly HtmlEncoder _htmlEncoder;
-        private readonly SliceFactory<IEnumerable<Fortune>> _fortunesFactory;
+        private readonly SliceFactory<IEnumerable<FortuneUtf16>> _fortunesFactory;
 
         public FortunesDapperMiddleware(RequestDelegate next, HtmlEncoder htmlEncoder)
         {
             _next = next;
             _htmlEncoder = htmlEncoder;
-            _fortunesFactory = RazorSlice.ResolveSliceFactory<IEnumerable<Fortune>>("/Templates/Fortunes.cshtml");
+            _fortunesFactory = RazorSlice.ResolveSliceFactory<IEnumerable<FortuneUtf16>>("/Templates/FortunesUtf16.cshtml");
         }
 
         public async Task Invoke(HttpContext httpContext)
