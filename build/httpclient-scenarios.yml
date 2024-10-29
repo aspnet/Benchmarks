@@ -17,7 +17,7 @@ parameters:
 
 - name: tfm
   type: string
-  default: '--client.framework net9.0 --server.framework net8.0' # net8.0 for server is a temporary workaround
+  default: '--client.framework net10.0 --server.framework net10.0'
 
 - name: getScenarios
   type: object
