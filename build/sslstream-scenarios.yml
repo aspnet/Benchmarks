@@ -7,6 +7,12 @@ parameters:
   - name: connection
     type: string
     default: ""
+  - name: serviceBusQueueName
+    type: string
+    default: ''
+  - name: serviceBusNamespace
+    type: string
+    default: ''
   - name: condition
     type: string
     default: "true"
@@ -106,7 +112,7 @@ steps:
           - ${{ each version in parameters.tlsVersion }}:
               - ${{ each c in parameters.connections }}:
                   - ${{ each res in parameters.tlsResume }}:
-                      - task: PublishToAzureServiceBus@1
+                      - task: PublishToAzureServiceBus@2
                         condition: succeededOrFailed()
                         timeoutInMinutes: 10
                         displayName: ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }}
@@ -125,7 +131,7 @@ steps:
   - ${{ each t in parameters.quicTransport }}:
       - ${{ each s in parameters.handshakeScenarios }}:
           - ${{ each c in parameters.connections }}:
-              - task: PublishToAzureServiceBus@1
+              - task: PublishToAzureServiceBus@2
                 condition: succeededOrFailed()
                 timeoutInMinutes: 10
                 displayName: ${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }}
@@ -147,7 +153,7 @@ steps:
               - ${{ each recvbuf in parameters.receiveBuffers }}:
                   - ${{ each version in parameters.tlsVersion }}:
                       - ${{ each c in parameters.singleStreamConnections }}:
-                          - task: PublishToAzureServiceBus@1
+                          - task: PublishToAzureServiceBus@2
                             condition: succeededOrFailed()
                             timeoutInMinutes: 10
                             displayName:  ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}
@@ -168,7 +174,7 @@ steps:
           - ${{ each sendbuf in parameters.sendBuffers }}:
               - ${{ each recvbuf in parameters.receiveBuffers }}:
                   - ${{ each c in parameters.multiplexedConnections }}:
-                      - task: PublishToAzureServiceBus@1
+                      - task: PublishToAzureServiceBus@2
                         condition: succeededOrFailed()
                         timeoutInMinutes: 10
                         displayName:  ${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}

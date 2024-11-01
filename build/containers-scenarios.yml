@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -120,12 +126,14 @@ steps:
 - ${{ each scenario in parameters.scenarios }}:
   - ${{ each size in parameters.sizes }}:
     - ${{ each rate in parameters.rates }}:
-      - task: PublishToAzureServiceBus@1
+      - task: PublishToAzureServiceBus@2
         condition: succeededOrFailed()
         displayName: ${{ scenario.displayName }} ${{ size.displayName }} ${{ rate.displayName }} RPS
         timeoutInMinutes: 10
         inputs:
           connectedServiceName: ${{ parameters.connection }}
+          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
           waitForCompletion: true
           useDataContractSerializer: "false"
           messageBody: |

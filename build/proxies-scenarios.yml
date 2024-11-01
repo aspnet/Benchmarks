@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -140,7 +146,7 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't (requiresServerHttps or supportsServerHttps) AND (doesn't requiresServerHttp2 or supportsServerHttp2)
       - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( ne( protocol.scenarioSuffix, '-h2load'), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
@@ -163,7 +169,7 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       - ${{ if and( protocol.requiresGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}

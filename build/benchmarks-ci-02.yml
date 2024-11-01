@@ -40,7 +40,9 @@ jobs:
   steps:
   - template: frameworks-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile amd-lin2-db "
       
 - job: GC_Intel_Linux
@@ -52,7 +54,9 @@ jobs:
   steps:
   - template: gc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app "
       
 - job: SslStream_Intel_Linux
@@ -64,7 +68,9 @@ jobs:
   steps:
   - template: sslstream-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-load-app --profile amd-lin-load "
       
 # GROUP 2
@@ -78,7 +84,9 @@ jobs:
   steps:
   - template: pgo-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile amd-lin2-load --profile intel-db-db "
       
 - job: PGO_Intel_Linux
@@ -90,7 +98,9 @@ jobs:
   steps:
   - template: pgo-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin-load --profile intel-load-db "
       
 - job: Mvc_Siryn_Linux
@@ -102,7 +112,9 @@ jobs:
   steps:
   - template: mvc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load --profile intel-load2-db "
       
 # GROUP 3
@@ -116,7 +128,9 @@ jobs:
   steps:
   - template: signalr-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: SignalR_Intel_Windows
@@ -128,7 +142,9 @@ jobs:
   steps:
   - template: signalr-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Blazor_Intel_Linux
@@ -140,7 +156,9 @@ jobs:
   steps:
   - template: blazor-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-perflin-app --profile intel-perfload-load "
       
 # GROUP 4
@@ -154,7 +172,9 @@ jobs:
   steps:
   - template: websocket-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Build_Intel_Linux
@@ -166,7 +186,9 @@ jobs:
   steps:
   - template: build-perf-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-load2-app --profile intel-db-load "
       
 - job: Trends_Database_Arm_80_Linux
@@ -178,7 +200,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 5
@@ -192,7 +216,9 @@ jobs:
   steps:
   - template: singlefile-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Mvc_Intel_Windows
@@ -204,7 +230,9 @@ jobs:
   steps:
   - template: mvc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load --profile intel-db-db "
       
 - job: Frameworks_Database_Arm_80_Linux
@@ -216,7 +244,9 @@ jobs:
   steps:
   - template: frameworks-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-app --profile amd-lin-load --profile amd-lin2-db "
       
 # GROUP 6
@@ -230,7 +260,9 @@ jobs:
   steps:
   - template: mvc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Single_File_Intel_Windows
@@ -242,7 +274,9 @@ jobs:
   steps:
   - template: singlefile-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: GC_Arm_28_Linux
@@ -254,7 +288,9 @@ jobs:
   steps:
   - template: gc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app "
       
 # GROUP 7
@@ -268,7 +304,9 @@ jobs:
   steps:
   - template: proxies-custom-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Build_Intel_Windows
@@ -280,7 +318,9 @@ jobs:
   steps:
   - template: build-perf-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load2-load "
       
 - job: Trends_Arm_80_Linux
@@ -292,7 +332,9 @@ jobs:
   steps:
   - template: trend-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-app --profile amd-lin-load "
       
 # GROUP 8
@@ -306,7 +348,9 @@ jobs:
   steps:
   - template: proxies-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Grpc_Intel_Linux
@@ -318,7 +362,9 @@ jobs:
   steps:
   - template: grpc-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-load2-app --profile amd-lin-load "
       
 - job: Baselines_Database_Siryn_Linux
@@ -330,7 +376,9 @@ jobs:
   steps:
   - template: baselines-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile siryn-lin-app --profile arm-lin-load --profile amd-lin2-db "
       
 # GROUP 9
@@ -344,7 +392,9 @@ jobs:
   steps:
   - template: crossgen2-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load "
       
 - job: Crossgen_Intel_Linux
@@ -356,7 +406,9 @@ jobs:
   steps:
   - template: crossgen2-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load "
       
 - job: Trends_Database_Siryn_Linux
@@ -368,7 +420,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile siryn-lin-app --profile intel-load2-load --profile intel-db-db "
       
 # GROUP 10
@@ -382,7 +436,9 @@ jobs:
   steps:
   - template: crossgen2-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load "
       
 - job: Crossgen_Amd_Linux
@@ -394,7 +450,9 @@ jobs:
   steps:
   - template: crossgen2-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 2
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine2
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load2-load "
       
 - job: HttpClient_Intel_Linux
@@ -406,7 +464,9 @@ jobs:
   steps:
   - template: httpclient-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile amd-lin2-load "
       
 # GROUP 11
@@ -420,6 +480,8 @@ jobs:
   steps:
   - template: httpclient-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile amd-lin2-load "
       

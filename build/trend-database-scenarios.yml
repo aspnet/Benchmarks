@@ -74,7 +74,7 @@ steps:
     condition: succeededOrFailed()
     timeoutInMinutes: 10
     inputs:
-      azureSubscription: ${{ parameters.connection }}
+      connectedServiceName: ${{ parameters.connection }}
       serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
       serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true

@@ -5,6 +5,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -36,12 +42,14 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each runtime in parameters.runtimes }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       displayName: "${{ s.displayName }} - ${{ runtime.displayName }}"
       condition: succeededOrFailed()
       timeoutInMinutes: 60
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |

@@ -5,6 +5,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -37,7 +43,7 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each mode in parameters.modes }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       displayName: "${{ s.displayName }} - ${{ mode.displayName }}"
       condition: succeededOrFailed()
       timeoutInMinutes: 10

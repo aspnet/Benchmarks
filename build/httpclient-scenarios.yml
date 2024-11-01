@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -74,12 +80,14 @@ steps:
   - ${{ each version in parameters.httpVersion }}:
     - ${{ each ct in parameters.clientsxThreads }}:
       - ${{ each response in parameters.response }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ response.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
@@ -94,12 +102,14 @@ steps:
   - ${{ each version in parameters.httpVersion }}:
     - ${{ each ct in parameters.clientsxThreads }}:
       - ${{ each content in parameters.requestContent }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ version.displayName }} ${{ s.displayName }} ${{ content.displayName }} ${{ ct.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |

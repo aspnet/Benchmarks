@@ -45,7 +45,9 @@ jobs:
   steps:
   - template: {{job.template}}
     parameters:
-      connection: {{queues[forloop.index0]}}
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: {{queues[forloop.index0]}}
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) {%for p in job.profiles%}--profile {{p}} {% endfor %}"
       
 {% endfor %}

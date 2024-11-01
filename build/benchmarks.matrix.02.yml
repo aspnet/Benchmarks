@@ -2,9 +2,10 @@
 # It generates the file benchmarks.yml. See this file for instructions.
 
 queues:
-  - ASP.NET Benchmarks Queue 1
-  - ASP.NET Benchmarks Queue 2
-  - ASP.NET Benchmarks Queue 3
+  - citrine1
+  - citrine2
+  - citrine3
+  - mono
 
 schedule: "0 3/12 * * *"
 

@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -87,12 +93,14 @@ steps:
 # h2c h2load unary to various servers
 - ${{ each s in parameters.h2loadscenarios }}:
   - ${{ each stream in parameters.connectionStreams }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       condition: succeededOrFailed()
       displayName: h2c ${{ s.displayName }} ${{ stream.displayName }}
       timeoutInMinutes: 10
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |
@@ -110,12 +118,14 @@ steps:
       - ${{ each protocol in parameters.protocols }}:
         - ${{ each stream in parameters.connectionStreams }}:
           - ${{ if or( not( eq(protocol.displayName, 'h3')), eq( parameters.runH3, 'true')) }}:
-            - task: PublishToAzureServiceBus@1
+            - task: PublishToAzureServiceBus@2
               condition: succeededOrFailed()
               timeoutInMinutes: 10
               displayName: ${{ protocol.displayName }} ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ stream.displayName }}
               inputs:
                 connectedServiceName: ${{ parameters.connection }}
+                serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                 waitForCompletion: true
                 useDataContractSerializer: "false"
                 messageBody: |
@@ -130,12 +140,14 @@ steps:
   - ${{ each callType in parameters.callTypes }}:
     - ${{ each payload in parameters.payloads }}:
       - ${{ each stream in parameters.connectionStreams }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: h2c ${{ s.displayName }} ${{ callType.displayName }} ${{ payload.displayName }} ${{ stream.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |

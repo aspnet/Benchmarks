@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -43,7 +49,7 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each size in parameters.sizes }}:
     - ${{ each compress in parameters.compress }}:
-      - task: PublishToAzureServiceBus@1
+      - task: PublishToAzureServiceBus@2
         condition: succeededOrFailed()
         displayName: ${{ s.displayName }} ${{ size.displayName }} ${{ compress.displayName }}
         timeoutInMinutes: 10
