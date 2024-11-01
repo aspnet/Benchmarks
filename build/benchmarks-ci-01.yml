@@ -40,7 +40,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Windows

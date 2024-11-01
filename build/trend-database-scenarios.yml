@@ -63,12 +63,14 @@ parameters:
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@2
     displayName: "${{ s.displayName }}"
     condition: succeededOrFailed()
     timeoutInMinutes: 10
     inputs:
-      connectedServiceName: ${{ parameters.connection }}
+      azureSubscription: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true
       useDataContractSerializer: "false"
       messageBody: |
