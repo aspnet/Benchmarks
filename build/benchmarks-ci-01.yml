@@ -66,7 +66,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 3
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine3
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 - job: Trends_Database_Gold_Linux
@@ -78,7 +80,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 2
@@ -92,7 +96,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Linux
@@ -142,7 +148,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Queue 1
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: citrine1
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Arm_28_Linux
@@ -228,7 +236,9 @@ jobs:
   steps:
   - template: trend-database-scenarios.yml
     parameters:
-      connection: ASP.NET Benchmarks Mono Queue
+      connection: ASPNET Benchmarks Service Bus
+      serviceBusQueueName: mono
+      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
       arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 5
