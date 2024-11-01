@@ -42,7 +42,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Windows
@@ -68,7 +68,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine3
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile amd-lin-load --profile amd-lin2-db "
       
 - job: Trends_Database_Gold_Linux
@@ -82,7 +82,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile aspnet-gold-lin "
       
 # GROUP 2
@@ -98,7 +98,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile intel-win-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Intel_Linux
@@ -150,7 +150,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: citrine1
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile amd-lin-app --profile intel-load-load --profile intel-db-db "
       
 - job: Trends_Arm_28_Linux
@@ -238,7 +238,7 @@ jobs:
     parameters:
       connection: ASPNET Benchmarks Service Bus
       serviceBusQueueName: mono
-      serviceBusNamespace: aspnetbenchmarks.servicebus.windows.net
+      serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile aspnet-gold-win "
       
 # GROUP 5
