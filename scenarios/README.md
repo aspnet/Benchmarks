@@ -542,7 +542,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net9.0
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net10.0
 ```
 ### Available scenarios
 
@@ -589,7 +589,7 @@ Example:
 Using the daily builds of .NET by targeting net9.0 for the `application` service.
 
 ```
---application.framework net9.0
+--application.framework net10.0
 ```
 
 ### How to benchmark a custom fork and/or branch?

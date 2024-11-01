@@ -28,7 +28,7 @@ This technique is useful when quickly iterating on the Lighthouse user flow, but
 
 Following is an example of a Crank command that runs one of the Blazor Web App Lighthouse benchmarks:
 ```text
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml --scenario blazorWebInteractiveAuto --profile aspnet-perf-lin --application.framework net9.0
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/blazor.benchmarks.yml --scenario blazorWebInteractiveAuto --profile aspnet-perf-lin --application.framework net10.0
 ```
 
 You can use different `--config` and `--scenario` options to point to other Lighthouse scenarios.
@@ -37,7 +37,7 @@ You can use different `--config` and `--scenario` options to point to other Ligh
 
 Following is a Crank command that points to a scenario defined in a specific branch:
 ```text
-crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/<BRANCH>/<CONFIG_FILE> --scenario <SCENARIO_NAME> --profile aspnet-perf-lin --application.framework net9.0 --application.source.branchOrCommit <BRANCH> --load.source.branchOrCommit <BRANCH>
+crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/<BRANCH>/<CONFIG_FILE> --scenario <SCENARIO_NAME> --profile aspnet-perf-lin --application.framework net10.0 --application.source.branchOrCommit <BRANCH> --load.source.branchOrCommit <BRANCH>
 ```
 
 **Note:** The specified config file may contain imports that point to `main`. If your branch contains changes to any imported config files, those import paths should be updated.
@@ -46,7 +46,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/<BRANCH>/<CON
 
 Following is a Crank command that uses a local copy of this repository:
 ```text
-crank --config <LOCAL_SCENARIO_CONFIG_FILE> --scenario <SCENARIO_NAME> --profile aspnet-perf-lin --application.framework net9.0 --application.source.localFolder <LOCAL_REPO_ROOT> --load.source.localFolder <LOCAL_REPO_ROOT>
+crank --config <LOCAL_SCENARIO_CONFIG_FILE> --scenario <SCENARIO_NAME> --profile aspnet-perf-lin --application.framework net10.0 --application.source.localFolder <LOCAL_REPO_ROOT> --load.source.localFolder <LOCAL_REPO_ROOT>
 ```
 
 **Note:**

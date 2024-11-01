@@ -17,7 +17,7 @@ parameters:
   default: 
   - displayName: YARP
     scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp --application.framework net9.0
+    arguments: $(proxyJobs) --property proxy=yarp --application.framework net10.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
@@ -25,7 +25,7 @@ parameters:
     condition: 'true'
   - displayName: YARP gRPC
     scenario: proxy-yarp-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net9.0
+    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net10.0
     supportsGRPC: true
     condition: 'true'
   - displayName: YARP-net80
@@ -38,7 +38,7 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: HttpClient
     scenario: proxy-httpclient
-    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net9.0
+    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net10.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
