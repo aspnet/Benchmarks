@@ -52,6 +52,8 @@ steps:
       displayName: ${{ p.displayName }} ${{ s.displayName }}
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |

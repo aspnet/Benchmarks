@@ -118,6 +118,8 @@ steps:
                         displayName: ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }}
                         inputs:
                           connectedServiceName: ${{ parameters.connection }}
+                          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                           waitForCompletion: true
                           useDataContractSerializer: "false"
                           messageBody: |
@@ -137,6 +139,8 @@ steps:
                 displayName: ${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }}
                 inputs:
                   connectedServiceName: ${{ parameters.connection }}
+                  serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                  serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                   waitForCompletion: true
                   useDataContractSerializer: "false"
                   messageBody: |
@@ -159,6 +163,8 @@ steps:
                             displayName:  ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}
                             inputs:
                               connectedServiceName: ${{ parameters.connection }}
+                              serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                              serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                               waitForCompletion: true
                               useDataContractSerializer: "false"
                               messageBody: |
@@ -180,6 +186,8 @@ steps:
                         displayName:  ${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}
                         inputs:
                           connectedServiceName: ${{ parameters.connection }}
+                          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                           waitForCompletion: true
                           useDataContractSerializer: "false"
                           messageBody: |

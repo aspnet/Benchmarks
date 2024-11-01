@@ -49,6 +49,8 @@ steps:
       timeoutInMinutes: 10
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |

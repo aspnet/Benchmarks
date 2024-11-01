@@ -41,7 +41,7 @@ jobs:
   - template: frameworks-scenarios.yml
     parameters:
       connection: ASPNET Benchmarks Service Bus
-      serviceBusQueueName: citrine
+      serviceBusQueueName: citrine1
       serviceBusNamespace: aspnetbenchmarks
       arguments: "$(ciProfile) --profile arm-lin-28-app --profile intel-load2-load --profile amd-lin2-db "
       

@@ -152,6 +152,8 @@ steps:
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
@@ -175,6 +177,8 @@ steps:
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
