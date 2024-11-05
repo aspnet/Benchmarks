@@ -85,14 +85,6 @@ parameters:
     arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
-  # Actix is disable as the build is currently broken
-  # - displayName: Json Actix
-  #   arguments: --scenario json_actix --property scenario=JsonActix
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 0 # once every 10 half-days
-  # - displayName: Fortunes Actix
-  #   arguments: --scenario fortunes_actix --property scenario=FortunesActix
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 1 # once every 10 half-days
-
   - displayName: Json NodeJS
     arguments: --scenario json_nodejs --property scenario=JsonNodeJs
     condition: Math.round(Date.now() / 43200000) % 10 == 2 # once every 10 half-days
@@ -107,19 +99,18 @@ parameters:
     arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
     condition: Math.round(Date.now() / 43200000) % 10 == 5 # once every 10 half-days
 
-  # Drogon is disable as currently it takes 10 minutes to build
-  # - displayName: Json Drogon
-  #   arguments: --scenario json_drogon --property scenario=JsonDrogon
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 6 # once every 10 half-days
-  # - displayName: Fortunes Drogon
-  #   arguments: --scenario fortunes_drogon --property scenario=FortunesDrogon
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 7 # once every 10 half-days
-
-  - displayName: Json Wizzardo
-    arguments: --scenario json_wizzardo --property scenario=JsonWizzardo
+  - displayName: Json Vertx
+    arguments: --scenario json_vertx --property scenario=JsonVertx
     condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
-  - displayName: Fortunes Wizzardo
-    arguments: --scenario fortunes_wizzardo --property scenario=FortunesWizzardo
+  - displayName: Fortunes Vertx
+    arguments: --scenario fortunes_vertx --property scenario=FortunesVertx
+    condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
+
+  - displayName: Json NTex
+    arguments: --scenario json_ntex --property scenario=JsonNTex
+    condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
+  - displayName: Fortunes NTex
+    arguments: --scenario fortunes_ntext --property scenario=FortunesNTex
     condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
 steps:

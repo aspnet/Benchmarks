@@ -230,7 +230,7 @@ These scenarios measure the performance of different other frameworks
 - Xitca (Rust)
 - FastHttp (Go)
 - Netty (Java)
-- Drogon (C++)
+- Vertx (Java)
 - Wizzardo (Java)
 - Spring (Java)
 - Gin (Go)
@@ -251,8 +251,8 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - `plaintext_xitca`, `json_xitca`, `fortunes_xitca`
 - `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
 - `plaintext_netty`, `json_netty`
-- `plaintext_drogon`, `json_drogon`, `fortunes_drogon`
 - `plaintext_wizzardo`, `json_wizzardo`, `single_query_wizzardo`, `multiple_queries_wizzardo`, `updates_wizzardo`, `cached_queries_wizzardo`
+- `plaintext_vertx`, `json_vertx`, `single_query_vertx`, `multiple_queries_vertx`, `updates_vertx`, `cached_queries_vertx`
 - `plaintext_spring`, `json_spring`, `single_query_spring`, `multiple_queries_spring`, `updates_spring`
 - `plaintext_gin`, `json_gin`, `fortunes_gin`
 - `plaintext_express`, `json_express`, `fortunes_express`

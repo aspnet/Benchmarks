@@ -118,13 +118,14 @@ jobs:
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
-  wizzardo:
+  vertx:
     source:
       repository: https://github.com/TechEmpower/FrameworkBenchmarks.git
       branchOrCommit: master
-      dockerFile: frameworks/Java/wizzardo-http/wizzardo-http.dockerfile
-      dockerImageName: wizzardo
-      dockerContextDirectory: frameworks/Java/wizzardo-http/
+      dockerFile: frameworks/Java/vertx/vertx.dockerfile
+      dockerImageName: vertx
+      dockerContextDirectory: frameworks/Java/vertx/
+    readyStateText: Server listening
     arguments: --add-host="tfb-database:{{databaseServer}}"
     noClean: true
 
@@ -365,6 +366,111 @@ scenarios:
       variables:
         presetHeaders: html
         path: /fortunes
+        serverPort: 8080
+
+  # Vertx (Java)
+  plaintext_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+    load:
+      job: wrk
+      variables:
+        presetHeaders: plaintext
+        path: /plaintext
+        pipeline: 16
+        serverPort: 8080
+        connections: 1024
+
+  json_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /json
+        serverPort: 8080
+        connections: 512
+
+  fortunes_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+      source: 
+        dockerFile: frameworks/Java/vertx/vertx-postgres.dockerfile
+        dockerImageName: vertx-postgres
+    load:
+      job: wrk
+      variables:
+        presetHeaders: html
+        path: /fortunes
+        serverPort: 8080
+        connections: 512
+
+  single_query_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+      source: 
+        dockerFile: frameworks/Java/vertx/vertx-postgres.dockerfile
+        dockerImageName: vertx-postgres
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /db
+        serverPort: 8080
+        connections: 512
+  
+  multiple_queries_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+      source: 
+        dockerFile: frameworks/Java/vertx/vertx-postgres.dockerfile
+        dockerImageName: vertx-postgres
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /queries?queries=20
+        serverPort: 8080
+
+  updates_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+      source: 
+        dockerFile: frameworks/Java/vertx/vertx-postgres.dockerfile
+        dockerImageName: vertx-postgres
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /updates?queries=20
+        serverPort: 8080
+
+  cached_queries_vertx:
+    db:
+      job: postgresql
+    application:
+      job: vertx
+      source: 
+        dockerFile: frameworks/Java/vertx/vertx-postgres.dockerfile
+        dockerImageName: vertx-postgres
+    load:
+      job: wrk
+      variables:
+        presetHeaders: json
+        path: /cached-queries?count=100
         serverPort: 8080
 
   # Xitca (Rust)

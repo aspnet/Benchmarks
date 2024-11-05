@@ -31,44 +31,49 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
+    arguments: --scenario fortunes_nodejs --load.variables.connections 512 --property scenario=FortunesNodeJS
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs --load.variables.connections 1024 --property scenario=PlaintextNodeJS
   - displayName: NodeJS Json
-    arguments: --scenario json_nodejs --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
+    arguments: --scenario json_nodejs --load.variables.connections 256 --property scenario=JsonNodeJS
 
   # Express (JavaScript)
 
   - displayName: Express Fortunes
-    arguments: --scenario fortunes_express --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
+    arguments: --scenario fortunes_express --load.variables.connections 512 --property scenario=FortunesExpress
 
   # Gin (Go)
 
   - displayName: Gin Fortunes
-    arguments: --scenario fortunes_gin --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
+    arguments: --scenario fortunes_gin --load.variables.connections 512 --property scenario=FortunesGin
   - displayName: Gin Plaintext
-    arguments: --scenario plaintext_gin --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
+    arguments: --scenario plaintext_gin --load.variables.connections 4096 --property scenario=PlaintextGin
   - displayName: Gin Json
-    arguments: --scenario json_gin --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
+    arguments: --scenario json_gin --load.variables.connections 512 --property scenario=JsonGin
 
-#  Ntex (Rust)
+  #  Ntex (Rust)
 
   - displayName: Ntex Fortunes
-    arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex --property protocol=http
+    arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex
+
+  #  Vertx (Java)
+
+  - displayName: Vertx Fortunes
+    arguments: --scenario fortunes_vertx --load.variables.connections 512 --property scenario=FortunesVertx 
 
   # Spring (Java)
   
   - displayName: Spring Plaintext
-    arguments: --scenario plaintext_spring --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+    arguments: --scenario plaintext_spring --load.variables.connections 256 --property scenario=PlaintextSpring
   - displayName: Spring Json
-    arguments: --scenario json_spring --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+    arguments: --scenario json_spring --load.variables.connections 512 --property scenario=JsonSpring
   - displayName: Spring Fortunes
-    arguments: --scenario fortunes_spring --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+    arguments: --scenario fortunes_spring --load.variables.connections 512 --property scenario=FortunesSpring
 
   # FastHttp (Go)
 
   - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+    arguments: --scenario fortunes_fasthttp --load.variables.connections 512 --property scenario=FortunesFastHttp
 
   # Netty
   # No db scenarios
