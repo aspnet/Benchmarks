@@ -169,7 +169,7 @@ extends:
           name: ASP.NET-Performance-Controller-new
           image: MMSUbuntu22.04-Secure
           os: linux
-          timeoutInMinutes: 120
+        timeoutInMinutes: 120
         steps:
         - checkout: dotnet-crank
           path: crank
@@ -185,7 +185,7 @@ extends:
         - task: AzureCLI@2
           inputs:
             azureSubscription: ASPNET Benchmarks Service Bus
-            scriptType: ps
+            scriptType: pscore
             scriptLocation: inlineScript
             inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
@@ -205,7 +205,7 @@ extends:
         - task: AzureCLI@2
           inputs:
             azureSubscription: ASPNET Benchmarks Service Bus
-            scriptType: ps
+            scriptType: pscore
             scriptLocation: inlineScript
             inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
