@@ -84,7 +84,7 @@ extends:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
@@ -104,7 +104,7 @@ extends:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
@@ -124,7 +124,7 @@ extends:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
@@ -145,7 +145,7 @@ extends:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
@@ -184,7 +184,7 @@ extends:
           
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
@@ -204,7 +204,7 @@ extends:
 
         - task: AzureCLI@2
           inputs:
-            azureSubscription: ASPNET Benchmarks Relay
+            azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
             inlineScript: >
