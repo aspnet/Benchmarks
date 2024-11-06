@@ -82,7 +82,12 @@ extends:
           path: benchmarks
           displayName: Checkout aspnet-benchmarks
 
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/aspnetcore `
@@ -93,11 +98,16 @@ extends:
                   --publish-results true `
                   --external-log-uri $buildUrl
           displayName: ASP.NET Core
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
 
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/efcore `
@@ -108,11 +118,16 @@ extends:
                   --publish-results true `
                   --external-log-uri $buildUrl
           displayName: EF Core
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
 
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -123,11 +138,17 @@ extends:
                   --publish-results true `
                   --external-log-uri $buildUrl
           displayName: Runtime Windows X64
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
 
-        - powershell: |
+
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -137,9 +158,9 @@ extends:
                   --app-key "env:APP_KEY" `
                   --publish-results true `
                   --external-log-uri $buildUrl
-          displayName: Runtime Windows ARM64
+          displayName: Runtime Windows X64
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
 
       - job: BenchmarkLinux
@@ -161,7 +182,12 @@ extends:
           path: benchmarks
           displayName: Checkout aspnet-benchmarks
           
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -172,11 +198,16 @@ extends:
                   --publish-results true `
                   --external-log-uri $buildUrl
           displayName: Runtime Linux X64
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
 
-        - powershell: |
+        - task: AzureCLI@2
+          inputs:
+            azureSubscription: ASPNET Benchmarks Relay
+            scriptType: ps
+            scriptLocation: inlineScript
+            inlineScript: >
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -187,6 +218,7 @@ extends:
                   --publish-results true `
                   --external-log-uri $buildUrl
           displayName: Runtime Linux ARM64
+          continueOnError: true
           env:
-              AZURE_RELAY: $(relay.connectionstring)
               APP_KEY: $(github.privatekey)
+

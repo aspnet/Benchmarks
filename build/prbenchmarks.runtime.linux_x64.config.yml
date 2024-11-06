@@ -17,7 +17,7 @@ components:
         arguments: '--{{job}}.options.outputFiles ./artifacts/tests/coreclr/Linux.x64.Release/tests/Core_Root/'
 
 # default arguments that are always used on crank commands
-defaults: '--{{job}}.framework net10.0 --relay AZURE_RELAY'
+defaults: '--{{job}}.framework net10.0 --relay'
 
 variables:
     job: application
