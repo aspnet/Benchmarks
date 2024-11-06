@@ -87,7 +87,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/aspnetcore `
@@ -107,7 +107,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/efcore `
@@ -127,7 +127,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -148,7 +148,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: ps
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -187,7 +187,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: pscore
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
@@ -207,7 +207,7 @@ extends:
             azureSubscription: ASPNET Benchmarks Service Bus
             scriptType: pscore
             scriptLocation: inlineScript
-            inlineScript: >
+            inlineScript: |
               $buildUrl="$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" 
               dotnet $(Pipeline.Workspace)/crank/artifacts/bin/Microsoft.Crank.PullRequestBot/release/net8.0/crank-pr.dll `
                   --repository https://github.com/dotnet/runtime `
