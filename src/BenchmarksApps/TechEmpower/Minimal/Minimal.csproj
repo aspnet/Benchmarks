@@ -1,11 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <UserSecretsId>38063504-d08c-495a-89c9-daaad2f60f31</UserSecretsId>
+    <RestoreAdditionalProjectSources>
+      https://dev.azure.com/dnceng/public/_artifacts/feed/general-testing/NuGet/Microsoft.Net.Compilers.Toolset/overview/4.13.0-1.24555.2
+    </RestoreAdditionalProjectSources>
+    <Features>$(Features);utf8-string-encoding</Features>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +19,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))">
-    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
+    <PackageReference Update="Npgsql" Version="$(NpgsqlVersion90)" />
   </ItemGroup>
 </Project>
