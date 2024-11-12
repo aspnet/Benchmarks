@@ -6,9 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <UserSecretsId>38063504-d08c-495a-89c9-daaad2f60f31</UserSecretsId>
-    <RestoreAdditionalProjectSources>
-      https://pkgs.dev.azure.com/dnceng/public/_packaging/general-testing/nuget/v3/index.json
-    </RestoreAdditionalProjectSources>
     <Features>$(Features);utf8-string-encoding</Features>
   </PropertyGroup>
 
