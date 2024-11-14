@@ -16,7 +16,7 @@ jobs:
     readyStateText: Application started.
     variables:
       singleStringJsonSize: 500
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
