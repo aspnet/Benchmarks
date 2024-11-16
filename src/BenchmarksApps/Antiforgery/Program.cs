@@ -10,7 +10,14 @@ builder.Logging.AddSimpleConsole(options =>
 
 builder.Services.AddHttpLogging(options =>
 {
-    options.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath | HttpLoggingFields.RequestHeaders;
+    options.LoggingFields =
+        // request
+        HttpLoggingFields.RequestMethod
+        | HttpLoggingFields.RequestPath
+        | HttpLoggingFields.RequestHeaders
+        // response
+        | HttpLoggingFields.ResponseStatusCode
+        | HttpLoggingFields.ResponseHeaders;
     options.CombineLogs = true;
 });
 
