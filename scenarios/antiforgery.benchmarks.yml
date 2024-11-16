@@ -16,7 +16,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/Antiforgery/Antiforgery.csproj
     readyStateText: Application started.
-    # arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 
