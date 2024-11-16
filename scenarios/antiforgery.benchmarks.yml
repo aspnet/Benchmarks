@@ -16,9 +16,7 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/Antiforgery/Antiforgery.csproj
     readyStateText: Application started.
-    variables:
-      singleStringJsonSize: 500
-    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+    # arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
 

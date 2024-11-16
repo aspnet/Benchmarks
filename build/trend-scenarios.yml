@@ -94,7 +94,7 @@ parameters:
 # Antiforgery
 
   - displayName: Antiforgery
-    arguments: --scenario antiforgery $(antiforgeryJobs) --load.connections 512 --property scenario=Antiforgery --property protocol=http
+    arguments: --scenario antiforgery $(antiforgeryJobs) --property scenario=Antiforgery
 
 steps:
 - ${{ each s in parameters.scenarios }}:
