@@ -1,11 +1,24 @@
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddSimpleConsole(options =>
+{
+    options.IncludeScopes = false;
+    options.TimestampFormat = "HH:mm:ss ";
+});
 
-builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = HttpLoggingFields.RequestMethod | HttpLoggingFields.RequestPath | HttpLoggingFields.RequestHeaders;
+    options.CombineLogs = true;
+});
+
+builder.Services.AddAntiforgery(options => options.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
 
+app.UseHttpLogging();
 app.UseAntiforgery();
 
 app.MapGet("/", () => Results.Ok("hello world!"));
