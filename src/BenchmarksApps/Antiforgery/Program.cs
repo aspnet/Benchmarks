@@ -10,7 +10,7 @@ app.UseAntiforgery();
 
 app.MapGet("/", () => Results.Ok("hello world!"));
 
-app.MapPost("/getAndValidateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
+app.MapGet("/getAndValidateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
 {
     if (!ctx.Request.Cookies.ContainsKey("XSRF-TOKEN"))
     {
