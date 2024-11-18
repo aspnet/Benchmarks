@@ -28,4 +28,4 @@ scenarios:
     load:
       job: wrk
       variables:
-        path: /getAndValidateToken
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-auth-token.lua
