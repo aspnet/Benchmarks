@@ -13,8 +13,7 @@ app.MapGet("/", () => Results.Ok("hello world!"));
 app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
 {
     var token = antiforgery.GetAndStoreTokens(ctx);
-    ctx.Response.Cookies.Append("XSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
-
+    ctx.Response.Headers.Append("XSRF-TOKEN", token.RequestToken!);
     Log($"'/auth' is called. Generating the antiforgery token. len='{token.RequestToken?.Length}'");
     return Results.Ok();
 });
@@ -23,8 +22,9 @@ app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
 // XSRF-TOKEN: <token retrieved from /auth>
 app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
 {
-    var antiforgeryTokenFromHeader = ctx.Request.Headers["XSRF-TOKEN"].FirstOrDefault();
-    Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; XSRF-TOKEN: len='{antiforgeryTokenFromHeader?.Length}' value='{antiforgeryTokenFromHeader?.Substring(0, 10)}...{antiforgeryTokenFromHeader?.Substring(antiforgeryTokenFromHeader.Length - 10)}'");
+    var xsrf = ctx.Request.Headers["XSRF-TOKEN"].FirstOrDefault();
+    var cookieToken = ctx.Request.Headers[""].FirstOrDefault();
+    Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; cookie: {cookieToken}; XSRF-TOKEN: len='{xsrf?.Length}' value='{xsrf?.Substring(0, 10)}...{xsrf?.Substring(xsrf.Length - 10)}'");
 
     try
     {

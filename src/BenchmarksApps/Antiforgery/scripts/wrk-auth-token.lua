@@ -1,9 +1,8 @@
 -- script firstly tries to authenticate against `/auth` endpoint
 -- then retrieves auth token, and uses for subsequent requests changing to `/validateToken` endpoint
 
-antiforgeryTokenHeaderName = "XSRF-TOKEN"
+tokenRetrieved = false
 
-token = nil
 path  = "/auth"
 httpMethod = "GET"
 
@@ -12,14 +11,20 @@ request = function() -- before each request https://github.com/wg/wrk/blob/a211d
 end
 
 response = function(status, headers, body) -- after each response https://github.com/wg/wrk/blob/a211dd5a7050b1f9e8a9870b95513060e72ac4a0/SCRIPTING#L43
-   if not token and status == 200 then
+   if not tokenRetrieved and status == 200 then
+      tokenRetrieved = true
       path  = "/validateToken"
       httpMethod = "POST"
 
-      -- should parse "Set-Cookie: XSRF-TOKEN=<token>; path=/" header
+      -- should parse antiforgery token
+      token = headers["XSRF-TOKEN"]
+      wrk.headers["XSRF-TOKEN"] = token
+
+      -- should parse cookie header
+      -- `set-cookie: .AspNetCore.Antiforgery.<unique-sequence>=<cookie_header>; path=/; samesite=strict; httponly`
       headerValue = headers["Set-Cookie"]
-      nameWithValue = string.match(headerValue, "(.-);")
-      token = string.sub(nameWithValue, string.len(antiforgeryTokenHeaderName) + 2)
-      wrk.headers[antiforgeryTokenHeaderName] = token
+      cookieName = string.match(headerValue, "(.-);")
+      cookieToken = string.sub(headerValue, string.len(cookieName) + 2)
+      wrk.headers[cookieName] = cookieToken
    end
 end
