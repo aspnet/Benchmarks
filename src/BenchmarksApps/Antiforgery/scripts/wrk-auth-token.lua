@@ -20,7 +20,7 @@ response = function(status, headers, body) -- after each response https://github
       token = headers["XSRF-TOKEN"]
       wrk.headers["XSRF-TOKEN"] = token
 
-      -- should parse cookie header
+      -- should parse cookie header which looks like
       -- `set-cookie: .AspNetCore.Antiforgery.<unique-sequence>=<cookie_header>; path=/; samesite=strict; httponly`
       headerValue = headers["Set-Cookie"]
       cookie = string.match(headerValue, "(.-);")
