@@ -93,8 +93,10 @@ parameters:
 
 # Antiforgery
 
-  - displayName: Antiforgery
-    arguments: --scenario antiforgery $(antiforgeryJobs) --property scenario=Antiforgery
+  - displayName: Antiforgery Token Validation
+    arguments: --scenario antiforgery-validation $(antiforgeryJobs) --property scenario=Antiforgery
+  - displayName: Antiforgery Token Generation
+    arguments: --scenario antiforgery-generation $(antiforgeryJobs) --property scenario=Antiforgery
 
 steps:
 - ${{ each s in parameters.scenarios }}:

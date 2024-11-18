@@ -20,7 +20,7 @@ jobs:
 
 scenarios:
 
-  antiforgery:
+  antiforgery-validation:
     application:
       job: antiforgerybenchmarks
       variables:
@@ -29,3 +29,13 @@ scenarios:
       job: wrk
       variables:
         script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-auth-token.lua
+
+  antiforgery-generation:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: antiforgery
+    load:
+      job: wrk
+      variables:
+        path: /auth
