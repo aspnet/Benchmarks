@@ -19,7 +19,7 @@ response = function(status, headers, body) -- after each response https://github
       -- should parse "Set-Cookie: XSRF-TOKEN=<token>; path=/" header
       headerValue = headers["Set-Cookie"]
       nameWithValue = string.match(headerValue, "(.-);")
-      token = string.sub(nameWithValue, string.len(antiforgeryTokenHeaderName) + 2, 155)
+      token = string.sub(nameWithValue, string.len(antiforgeryTokenHeaderName) + 2)
       wrk.headers[antiforgeryTokenHeaderName] = token
    end
 end
