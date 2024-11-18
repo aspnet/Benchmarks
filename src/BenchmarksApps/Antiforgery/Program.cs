@@ -12,29 +12,27 @@ app.MapGet("/", () => Results.Ok("hello world!"));
 // GET https://localhost:55471/auth
 app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
 {
-    Console.WriteLine("'/auth' is called. Generating the antiforgery token.");
+    Log("'/auth' is called. Generating the antiforgery token.");
 
     var token = antiforgery.GetAndStoreTokens(ctx);
     ctx.Response.Cookies.Append("XSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
     return Results.Ok();
 });
 
-var validatedTokenInvocation = false;
-
 // POST https://localhost:55471/validateToken
 // XSRF-TOKEN: <token retrieved from /auth>
 app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
 {
-    if (!validatedTokenInvocation)
-    {
-        Console.WriteLine($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; ");
-        validatedTokenInvocation = true;
-    }
+    var antiforgeryTokenFromHeader = ctx.Request.Headers["XSRF-TOKEN"].FirstOrDefault();
+    Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; XSRF-TOKEN: len='{antiforgeryTokenFromHeader?.Length}' sub='{antiforgeryTokenFromHeader?.Substring(0, 10)}'");
 
     await antiforgery.ValidateRequestAsync(ctx);
     return Results.Ok();
 });
 
 await app.StartAsync();
-Console.WriteLine("Application started.");
+Log("Application started.");
 await app.WaitForShutdownAsync();
+
+void Log(string message)
+    => Console.WriteLine($"[{DateTime.UtcNow.ToString("T")}] {message}");
