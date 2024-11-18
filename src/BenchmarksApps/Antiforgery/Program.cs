@@ -26,14 +26,7 @@ app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) 
     var cookie = ctx.Request.Headers["Cookie"].FirstOrDefault();
     Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; cookie: '{cookie}'; xsrf: '{xsrf}'");
 
-    try
-    {
-        await antiforgery.ValidateRequestAsync(ctx);
-    } catch (Exception ex)
-    {
-        Console.WriteLine("failed validation: " + ex);
-    }
-    
+    await antiforgery.ValidateRequestAsync(ctx);    
     return Results.Ok();
 });
 
