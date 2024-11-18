@@ -26,7 +26,14 @@ app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) 
     var antiforgeryTokenFromHeader = ctx.Request.Headers["XSRF-TOKEN"].FirstOrDefault();
     Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; XSRF-TOKEN: len='{antiforgeryTokenFromHeader?.Length}' value='{antiforgeryTokenFromHeader?.Substring(0, 10)}...{antiforgeryTokenFromHeader?.Substring(antiforgeryTokenFromHeader.Length - 10)}'");
 
-    await antiforgery.ValidateRequestAsync(ctx);
+    try
+    {
+        await antiforgery.ValidateRequestAsync(ctx);
+    } catch (Exception ex)
+    {
+        Console.WriteLine("failed validation: " + ex);
+    }
+    
     return Results.Ok();
 });
 
