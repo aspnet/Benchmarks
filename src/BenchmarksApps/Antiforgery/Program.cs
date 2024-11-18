@@ -1,13 +1,8 @@
 using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
-// builder.Logging.ClearProviders();
-
-builder.Logging.AddSimpleConsole(options =>
-{
-    options.IncludeScopes = false;
-    options.TimestampFormat = "HH:mm:ss ";
-});
+//builder.Logging.ClearProviders();
+//builder.Logging.AddConsole();
 builder.Services.AddAntiforgery(options => options.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
