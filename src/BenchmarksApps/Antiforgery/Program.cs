@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+// builder.Logging.ClearProviders();
 
 builder.Logging.AddSimpleConsole(options =>
 {
