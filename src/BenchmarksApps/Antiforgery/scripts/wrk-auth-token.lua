@@ -23,8 +23,7 @@ response = function(status, headers, body) -- after each response https://github
       -- should parse cookie header
       -- `set-cookie: .AspNetCore.Antiforgery.<unique-sequence>=<cookie_header>; path=/; samesite=strict; httponly`
       headerValue = headers["Set-Cookie"]
-      cookieName = string.match(headerValue, "(.-);")
-      cookieToken = string.sub(headerValue, string.len(cookieName) + 2)
-      wrk.headers[cookieName] = cookieToken
+      cookie = string.match(headerValue, "(.-);")
+      wrk.headers["Cookie"] = cookie
    end
 end

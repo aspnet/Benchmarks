@@ -24,7 +24,7 @@ app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) 
 {
     var xsrf = ctx.Request.Headers["XSRF-TOKEN"].FirstOrDefault();
     var cookieToken = ctx.Request.Headers[""].FirstOrDefault();
-    Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; cookie: {cookieToken}; XSRF-TOKEN: len='{xsrf?.Length}' value='{xsrf?.Substring(0, 10)}...{xsrf?.Substring(xsrf.Length - 10)}'");
+    Log($"'/validateToken' is called. Headers: {string.Join(",", ctx.Request.Headers.Keys)}; cookie: '{cookieToken}'; xsrf: '{xsrf}'");
 
     try
     {
