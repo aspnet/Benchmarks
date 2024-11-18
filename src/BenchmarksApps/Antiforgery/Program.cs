@@ -16,8 +16,7 @@ builder.Services.AddHttpLogging(options =>
         | HttpLoggingFields.RequestPath
         | HttpLoggingFields.RequestHeaders
         // response
-        | HttpLoggingFields.ResponseStatusCode
-        | HttpLoggingFields.ResponseHeaders;
+        | HttpLoggingFields.ResponseStatusCode;
     options.CombineLogs = true;
 });
 
@@ -30,15 +29,18 @@ app.UseAntiforgery();
 
 app.MapGet("/", () => Results.Ok("hello world!"));
 
-app.MapGet("/getAndValidateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
+// GET https://localhost:55471/auth
+app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
 {
-    if (!ctx.Request.Cookies.ContainsKey("XSRF-TOKEN"))
-    {
-        var token = antiforgery.GetAndStoreTokens(ctx);
-        ctx.Response.Cookies.Append("XSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
-        return Results.Ok();
-    }
+    var token = antiforgery.GetAndStoreTokens(ctx);
+    ctx.Response.Cookies.Append("XSRF-TOKEN", token.RequestToken!, new CookieOptions { HttpOnly = false });
+    return Results.Ok();
+});
 
+// POST https://localhost:55471/validateToken
+// XSRF-TOKEN: <token retrieved from /auth>
+app.MapPost("/validateToken", async (HttpContext ctx, IAntiforgery antiforgery) =>
+{
     await antiforgery.ValidateRequestAsync(ctx);
     return Results.Ok();
 });
