@@ -91,6 +91,15 @@ parameters:
   - displayName: Json 10k
     arguments: --scenario json_middleware --variable singleStringJsonSize=10000 --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml --property scenario=Json10k
 
+# Antiforgery
+
+  - displayName: Antiforgery No Operation
+    arguments: --scenario antiforgery-noop $(antiforgeryJobs) --property scenario=AntiforgeryNoOp
+  - displayName: Antiforgery Token Validation
+    arguments: --scenario antiforgery-validation $(antiforgeryJobs) --property scenario=AntiforgeryTokenValidation
+  - displayName: Antiforgery Token Generation
+    arguments: --scenario antiforgery-generation $(antiforgeryJobs) --property scenario=AntiforgeryTokenGeneration
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@2
