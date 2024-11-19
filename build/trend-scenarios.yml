@@ -93,6 +93,8 @@ parameters:
 
 # Antiforgery
 
+  - displayName: Antiforgery No Operation
+    arguments: --scenario antiforgery-noop $(antiforgeryJobs) --property scenario=AntiforgeryNoOp
   - displayName: Antiforgery Token Validation
     arguments: --scenario antiforgery-validation $(antiforgeryJobs) --property scenario=AntiforgeryTokenValidation
   - displayName: Antiforgery Token Generation

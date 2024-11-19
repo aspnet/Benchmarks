@@ -38,3 +38,13 @@ scenarios:
       job: wrk
       variables:
         path: /auth
+
+  antiforgery-noop:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: antiforgery
+    load:
+      job: wrk
+      variables:
+        path: /noOp
