@@ -1,6 +1,4 @@
-﻿# usage: crank --config https://raw.githubusercontent.com/DeagleGross/Benchmarks/refs/heads/dmkorolev/antiforgery-sample/scenarios/antiforgery.benchmarks.yml --scenario antiforgery --profile aspnet-perf-win --application.source.branchOrCommit dmkorolev/antiforgery-sample --application.source.repository https://github.com/DeagleGross/Benchmarks.git
-
-imports:
+﻿imports:
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
 
