@@ -8,7 +8,7 @@ var app = builder.Build();
 app.UseAntiforgery();
 
 app.MapGet("/", () => Results.Ok("hello world!"));
-app.MapPost("/noOp", (HttpContext ctx, IAntiforgery antiforgery) => Results.Ok());
+app.MapGet("/noOp", (HttpContext ctx, IAntiforgery antiforgery) => Results.Ok());
 
 // GET https://localhost:55471/auth
 app.MapGet("/auth", (HttpContext ctx, IAntiforgery antiforgery) =>
