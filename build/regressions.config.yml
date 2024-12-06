@@ -6,7 +6,7 @@ sources:
       - include: Mvc # custom include for the extra-label
         labels: 
           - area-mvc
-      - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex
+      - exclude: drogon|fasthttp|actix|gin|express|node|netty|spring|vertx|ntex|Siryn
       - exclude: '[aA]zure'
       - exclude: Arm\s80
     daysToLoad: 60
