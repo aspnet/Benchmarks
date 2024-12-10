@@ -1,6 +1,8 @@
 using System;
 using System.Net;
+using System.Runtime;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
@@ -38,6 +40,7 @@ builder.WebHost.UseKestrel(options =>
                 listenOptions.Protocols = HttpProtocols.Http2;
             }
 
+            Console.WriteLine("Setting the https");
             listenOptions.UseHttps("testCert.pfx", "testPassword");
         });
     }

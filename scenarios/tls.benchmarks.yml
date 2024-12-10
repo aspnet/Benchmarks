@@ -24,6 +24,9 @@ jobs:
     arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
 
 scenarios:
+
+# HTTP.SYS
+
   tls-handshakes-httpsys:
     application:
       job: httpSysServer
@@ -35,6 +38,8 @@ scenarios:
         connections: 32
         serverScheme: https
 
+# Kestrel
+  
   tls-handshakes-kestrel:
     application:
       job: kestrelServer
