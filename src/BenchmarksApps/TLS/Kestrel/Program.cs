@@ -29,8 +29,8 @@ builder.WebHost.UseKestrel(options =>
 
         options.Listen(endpoint, listenOptions =>
         {
-            // always https to have TLS enabled
-            listenOptions.UseHttps();
+            // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
+            listenOptions.UseHttps("testCert.pfx", "testPassword");
 
             // configure protocols
             var protocol = config["protocol"] ?? "";
