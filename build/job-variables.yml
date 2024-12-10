@@ -65,6 +65,8 @@ variables:
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/json.benchmarks.yml
 - name: antiforgeryJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/antiforgery.benchmarks.yml  
+- name: tlsJobs
+  value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/tls.benchmarks.yml  
 - name: goldilocksJobs
   value: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/goldilocks.benchmarks.yml
 - name: monoJobs

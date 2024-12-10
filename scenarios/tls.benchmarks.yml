@@ -1,0 +1,47 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+
+jobs:
+  httpSysServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
+    readyStateText: Application started.
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
+
+  kestrelServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/TLS/Kestrel/Kestrel.csproj
+    readyStateText: Application started.
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
+
+scenarios:
+  tls-handshakes-httpsys:
+    application:
+      job: httpSysServer
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+
+  tls-handshakes-kestrel:
+    application:
+      job: kestrelServer
+    load:
+      job: wrk
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https

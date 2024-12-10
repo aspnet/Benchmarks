@@ -1,0 +1,6 @@
+@Kestrel_HostAddress = http://localhost:5044
+
+GET {{Kestrel_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
