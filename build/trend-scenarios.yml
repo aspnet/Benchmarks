@@ -100,6 +100,14 @@ parameters:
   - displayName: Antiforgery Token Generation
     arguments: --scenario antiforgery-generation $(antiforgeryJobs) --property scenario=AntiforgeryTokenGeneration
 
+# TLS
+
+  - displayName: "HttpSys Windows: TLS Handshakes"
+    arguments: --scenario tls-handshakes-httpsys $(tlsJobs) --property scenario=HttpSysTLSHandshakes --application.options.requiredOperatingSystem windows
+
+  - displayName: "Kestrel Linux: TLS Handshakes"
+    arguments: --scenario tls-handshakes-kestrel $(tlsJobs) --property scenario=KestrelTLSHandshakes --application.options.requiredOperatingSystem linux
+
 steps:
 - ${{ each s in parameters.scenarios }}:
   - task: PublishToAzureServiceBus@2
