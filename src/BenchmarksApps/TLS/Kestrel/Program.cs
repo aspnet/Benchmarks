@@ -1,10 +1,9 @@
-using System;
 using System.Net;
-using System.Runtime;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -12,27 +11,39 @@ builder.Logging.ClearProviders();
 var config = new ConfigurationBuilder()
     .AddEnvironmentVariables(prefix: "ASPNETCORE_")
     .AddCommandLine(args)
+    .AddJsonFile("appsettings.json")
+#if DEBUG
+    .AddJsonFile($"appsettings.Development.json")
+#endif
     .Build();
+
+var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
 
 builder.WebHost.UseKestrel(options =>
 {
-    var urls = config["urls"] ?? "https://localhost:5000/";
-    foreach (var value in urls.Split([';'], StringSplitOptions.RemoveEmptyEntries))
+    foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
     {
-        Listen(options, config, value);
+        ConfigureListen(options, config, value);
     }
 
-    void Listen(KestrelServerOptions options, IConfigurationRoot config, string url)
+    void ConfigureListen(KestrelServerOptions serverOptions, IConfigurationRoot config, string url)
     {
         var urlPrefix = UrlPrefix.Create(url);
         var endpoint = CreateIPEndPoint(urlPrefix);
 
-        options.Listen(endpoint, listenOptions =>
+        serverOptions.Listen(endpoint, listenOptions =>
         {
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-            listenOptions.UseHttps("testCert.pfx", "testPassword");
+            listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
+            {
+                if (mTlsEnabled)
+                {
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                }
+            });
 
-            // configure protocols
             var protocol = config["protocol"] ?? "";
             if (protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
             {
@@ -46,6 +57,48 @@ builder.WebHost.UseKestrel(options =>
     }
 });
 
+if (mTlsEnabled)
+{
+    builder.Services
+        .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+        .AddCertificate(options =>
+        {
+            // for test purposes, we are not strict with the client certificate
+            options.AllowedCertificateTypes = CertificateTypes.All;
+            options.RevocationMode = X509RevocationMode.NoCheck;
+
+            options.Events = new CertificateAuthenticationEvents()
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    if (writeCertValidationEventsToConsole)
+                    {
+                        Console.WriteLine($"[Cert Validation] Failed: {context.Exception}");
+                    }
+                    
+                    return Task.CompletedTask;
+                },
+                OnCertificateValidated = context =>
+                {
+                    // You should implement a service that confirms the certificate passed in
+                    // was signed by the root CA.
+
+                    // Otherwise, a certificate that is valid to one of the other trusted CAs on the webserver,
+                    // would be valid in this case as well.
+                    // https://blog.kritner.com/2020/07/22/setting-up-mtls-and-kestrel-cont/
+
+                    if (writeCertValidationEventsToConsole)
+                    {
+                        Console.WriteLine($"[Cert Validation] Success: {context.ClientCertificate.Thumbprint}");
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+}
+
+
 var app = builder.Build();
 
 app.MapGet("/hello-world", () =>
@@ -54,6 +107,13 @@ app.MapGet("/hello-world", () =>
 });
 
 await app.StartAsync();
+
+Console.WriteLine("Application Info:");
+if (mTlsEnabled) Console.WriteLine($"\tmTLS is enabled (client cert is required)");
+if (writeCertValidationEventsToConsole) Console.WriteLine($"\tenabled logging certificate validation events to console");
+Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
+Console.WriteLine("--------------------------------");
+
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
 
