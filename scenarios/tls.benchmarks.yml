@@ -68,4 +68,5 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
-        certPath: 
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        certPwd: testPassword
