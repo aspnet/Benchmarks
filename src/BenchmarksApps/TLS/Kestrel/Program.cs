@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
+// builder.Logging.ClearProviders();
 
 var config = new ConfigurationBuilder()
     .AddEnvironmentVariables(prefix: "ASPNETCORE_")
