@@ -25,8 +25,6 @@ var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
 Func<X509Certificate, X509Chain, SslPolicyErrors, bool> ValidateClientCertficate =
     delegate (X509Certificate serviceCertificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
     {
-        X509Certificate2 clientCertificate;
-
         return true;
         //clientCertificate = new X509Certificate2("client.crt");
 
@@ -41,45 +39,46 @@ Func<X509Certificate, X509Chain, SslPolicyErrors, bool> ValidateClientCertficate
 
 builder.WebHost.UseKestrel(options =>
 {
-    options.ConfigureHttpsDefaults(o =>
+    foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
     {
-        o.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-        o.ClientCertificateValidation = ValidateClientCertficate;
-    });
+        ConfigureListen(options, config, value);
+    }
 
-    //foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
-    //{
-    //    ConfigureListen(options, config, value);
-    //}
+    void ConfigureListen(KestrelServerOptions serverOptions, IConfigurationRoot config, string url)
+    {
+        var urlPrefix = UrlPrefix.Create(url);
+        var endpoint = CreateIPEndPoint(urlPrefix);
 
-    //void ConfigureListen(KestrelServerOptions serverOptions, IConfigurationRoot config, string url)
-    //{
-    //    var urlPrefix = UrlPrefix.Create(url);
-    //    var endpoint = CreateIPEndPoint(urlPrefix);
+        serverOptions.Listen(endpoint, listenOptions =>
+        {
+            options.ConfigureHttpsDefaults(o =>
+            {
+                o.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                
+            });
 
-    //    serverOptions.Listen(endpoint, listenOptions =>
-    //    {
-    //        // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
-    //        listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
-    //        {
-    //            if (mTlsEnabled)
-    //            {
-    //                options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-    //                options.AllowAnyClientCertificate();
-    //            }
-    //        });
+            // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
+            listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
+            {
+                if (mTlsEnabled)
+                {
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.AllowAnyClientCertificate();
+                    options.ClientCertificateValidation = ValidateClientCertficate;
+                }
+            });
 
-    //        var protocol = config["protocol"] ?? "";
-    //        if (protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
-    //        {
-    //            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-    //        }
-    //        else if (protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
-    //        {
-    //            listenOptions.Protocols = HttpProtocols.Http2;
-    //        }
-    //    });
-    //}
+            var protocol = config["protocol"] ?? "";
+            if (protocol.Equals("h2", StringComparison.OrdinalIgnoreCase))
+            {
+                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+            }
+            else if (protocol.Equals("h2c", StringComparison.OrdinalIgnoreCase))
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+            }
+        });
+    }
 });
 
 //if (mTlsEnabled)
