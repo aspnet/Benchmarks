@@ -60,7 +60,7 @@ scenarios:
       job: kestrelServer
       variables:
         mTLS: true
-        certValidationConsoleEnabled: true
+        certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient
       variables:

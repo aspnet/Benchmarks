@@ -22,21 +22,6 @@ var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationCon
 var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
 
-Func<X509Certificate, X509Chain, SslPolicyErrors, bool> ValidateClientCertficate =
-    delegate (X509Certificate serviceCertificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-    {
-        return true;
-        //clientCertificate = new X509Certificate2("client.crt");
-
-        //if (serviceCertificate.GetCertHashString().Equals(clientCertificate.Thumbprint))
-        //{
-        //    return true;
-        //}
-
-        // return false;
-    };
-
-
 builder.WebHost.UseKestrel(options =>
 {
     foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
@@ -63,8 +48,7 @@ builder.WebHost.UseKestrel(options =>
                 if (mTlsEnabled)
                 {
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                    options.AllowAnyClientCertificate();
-                    options.ClientCertificateValidation = ValidateClientCertficate;
+                    options.ClientCertificateValidation = writeCertValidationEventsToConsole ? AllowAnyCertificateValidationWithLogging : AllowAnyCertificateValidation;
                 }
             });
 
@@ -81,47 +65,22 @@ builder.WebHost.UseKestrel(options =>
     }
 });
 
-//if (mTlsEnabled)
-//{
-//    builder.Services
-//        .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-//        .AddCertificate(options =>
-//        {
-//            // for test purposes, we are not strict with the client certificate
-//            options.AllowedCertificateTypes = CertificateTypes.All;
-//            options.RevocationMode = X509RevocationMode.NoCheck;
+bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
+{
+    if (writeCertValidationEventsToConsole)
+    {
+        Console.WriteLine($"Certificate validation: {certificate.Subject} {certificate.Thumbprint}");
+    }
 
-//            options.Events = new CertificateAuthenticationEvents()
-//            {
-//                OnAuthenticationFailed = context =>
-//                {
-//                    if (writeCertValidationEventsToConsole)
-//                    {
-//                        Console.WriteLine($"[Cert Validation] Failed: {context.Exception}");
-//                    }
-                    
-//                    return Task.CompletedTask;
-//                },
-//                OnCertificateValidated = context =>
-//                {
-//                    // You should implement a service that confirms the certificate passed in
-//                    // was signed by the root CA.
+    return AllowAnyCertificateValidation(certificate, chain, errors);
+}
 
-//                    // Otherwise, a certificate that is valid to one of the other trusted CAs on the webserver,
-//                    // would be valid in this case as well.
-//                    // https://blog.kritner.com/2020/07/22/setting-up-mtls-and-kestrel-cont/
-
-//                    if (writeCertValidationEventsToConsole)
-//                    {
-//                        Console.WriteLine($"[Cert Validation] Success: {context.ClientCertificate.Thumbprint}");
-//                    }
-
-//                    return Task.CompletedTask;
-//                }
-//            };
-//        });
-//}
-
+static bool AllowAnyCertificateValidation(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
+{
+    // Not interested in measuring actual certificate validation code:
+    // we only need to measure the work of getting to the point where certificate is accessible and can be validated
+    return true;
+}
 
 var app = builder.Build();
 
