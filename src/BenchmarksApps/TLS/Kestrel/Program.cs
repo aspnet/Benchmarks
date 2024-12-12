@@ -82,46 +82,46 @@ builder.WebHost.UseKestrel(options =>
     //}
 });
 
-if (mTlsEnabled)
-{
-    builder.Services
-        .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-        .AddCertificate(options =>
-        {
-            // for test purposes, we are not strict with the client certificate
-            options.AllowedCertificateTypes = CertificateTypes.All;
-            options.RevocationMode = X509RevocationMode.NoCheck;
+//if (mTlsEnabled)
+//{
+//    builder.Services
+//        .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+//        .AddCertificate(options =>
+//        {
+//            // for test purposes, we are not strict with the client certificate
+//            options.AllowedCertificateTypes = CertificateTypes.All;
+//            options.RevocationMode = X509RevocationMode.NoCheck;
 
-            options.Events = new CertificateAuthenticationEvents()
-            {
-                OnAuthenticationFailed = context =>
-                {
-                    if (writeCertValidationEventsToConsole)
-                    {
-                        Console.WriteLine($"[Cert Validation] Failed: {context.Exception}");
-                    }
+//            options.Events = new CertificateAuthenticationEvents()
+//            {
+//                OnAuthenticationFailed = context =>
+//                {
+//                    if (writeCertValidationEventsToConsole)
+//                    {
+//                        Console.WriteLine($"[Cert Validation] Failed: {context.Exception}");
+//                    }
                     
-                    return Task.CompletedTask;
-                },
-                OnCertificateValidated = context =>
-                {
-                    // You should implement a service that confirms the certificate passed in
-                    // was signed by the root CA.
+//                    return Task.CompletedTask;
+//                },
+//                OnCertificateValidated = context =>
+//                {
+//                    // You should implement a service that confirms the certificate passed in
+//                    // was signed by the root CA.
 
-                    // Otherwise, a certificate that is valid to one of the other trusted CAs on the webserver,
-                    // would be valid in this case as well.
-                    // https://blog.kritner.com/2020/07/22/setting-up-mtls-and-kestrel-cont/
+//                    // Otherwise, a certificate that is valid to one of the other trusted CAs on the webserver,
+//                    // would be valid in this case as well.
+//                    // https://blog.kritner.com/2020/07/22/setting-up-mtls-and-kestrel-cont/
 
-                    if (writeCertValidationEventsToConsole)
-                    {
-                        Console.WriteLine($"[Cert Validation] Success: {context.ClientCertificate.Thumbprint}");
-                    }
+//                    if (writeCertValidationEventsToConsole)
+//                    {
+//                        Console.WriteLine($"[Cert Validation] Success: {context.ClientCertificate.Thumbprint}");
+//                    }
 
-                    return Task.CompletedTask;
-                }
-            };
-        });
-}
+//                    return Task.CompletedTask;
+//                }
+//            };
+//        });
+//}
 
 
 var app = builder.Build();
