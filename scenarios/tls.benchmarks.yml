@@ -17,7 +17,8 @@ jobs:
     variables:
       mTLS: false
       certValidationConsoleEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}}"
+      statsEnabled: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}}"
 
   kestrelServer:
     source:
@@ -28,7 +29,8 @@ jobs:
     variables:
       mTLS: false
       certValidationConsoleEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}}"
+      statsEnabled: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}}"
 
 scenarios:
 
