@@ -8,9 +8,7 @@ builder.WebHost.UseHttpSys(options =>
 {
     // meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
     options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
-
-    options.Authentication.AllowAnonymous = false;
-    options.UrlPrefixes.Add("https://*:5000");
+    // options.UrlPrefixes.Add("https://*:5000");
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 

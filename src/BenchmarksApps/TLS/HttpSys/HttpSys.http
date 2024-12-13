@@ -1,6 +1,10 @@
 @HttpSys_HostAddress_Http = http://localhost:5001
 @HttpSys_HostAddress_Https = https://localhost:5000
 
-GET {{HttpSys_HostAddress_Http}}/hello-world
+GET {{HttpSys_HostAddress_Https}}/hello-world
+
+###
+
+GET {{HttpSys_HostAddress_Http}}/hello-world  
 
 ###
