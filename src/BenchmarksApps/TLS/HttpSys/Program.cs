@@ -29,11 +29,16 @@ var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
 
 var app = builder.Build();
 
+app.MapGet("/hello-world", () =>
+{
+    return Results.Ok("Hello World!");
+});
+
 if (mTlsEnabled)
 {
     // this is an http.sys middleware to get a cert
-
     Console.WriteLine("Registered client cert validation middleware");
+
     app.Use(async (context, next) => {
         var clientCert = context.Connection.ClientCertificate;
         if (clientCert is null)
@@ -52,11 +57,6 @@ if (mTlsEnabled)
         await next();
     });
 }
-
-app.MapGet("/hello-world", () =>
-{
-    return Results.Ok("Hello World!");
-});
 
 await app.StartAsync();
 Console.WriteLine("Application Info:");
