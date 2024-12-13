@@ -52,5 +52,11 @@ app.MapGet("/hello-world", (HttpContext context) =>
 });
 
 await app.StartAsync();
+Console.WriteLine("Application Info:");
+if (mTlsEnabled) Console.WriteLine($"\tmTLS is enabled (client cert is required)");
+if (writeCertValidationEventsToConsole) Console.WriteLine($"\tenabled logging certificate validation events to console");
+Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
+Console.WriteLine("--------------------------------");
+
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
