@@ -14,7 +14,10 @@ jobs:
       branchOrCommit: main
       project: src/BenchmarksApps/TLS/HttpSys/HttpSys.csproj
     readyStateText: Application started.
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}}"
+    variables:
+      mTLS: false
+      certValidationConsoleEnabled: false
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}}"
 
   kestrelServer:
     source:
@@ -41,6 +44,22 @@ scenarios:
         presetHeaders: connectionclose
         connections: 32
         serverScheme: https
+
+  mTls-handshakes-httpsys:
+    application:
+      job: httpSysServer
+      variables:
+        mTLS: true
+        certValidationConsoleEnabled: false # only for debug purposes
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        certPwd: testPassword
 
 # Kestrel
   
