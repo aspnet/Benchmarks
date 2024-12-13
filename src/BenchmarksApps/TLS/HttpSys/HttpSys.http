@@ -1,6 +1,6 @@
-@HttpSys_HostAddress_Http = http://localhost:55472
-@HttpSys_HostAddress_Https = https://localhost:55471
+@HttpSys_HostAddress_Http = http://localhost:5001
+@HttpSys_HostAddress_Https = https://localhost:5000
 
-GET {{HttpSys_HostAddress_Http}}/hello
+GET {{HttpSys_HostAddress_Http}}/hello-world
 
 ###

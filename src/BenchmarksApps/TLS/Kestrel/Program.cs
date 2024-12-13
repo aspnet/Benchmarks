@@ -36,12 +36,6 @@ builder.WebHost.UseKestrel(options =>
 
         serverOptions.Listen(endpoint, listenOptions =>
         {
-            options.ConfigureHttpsDefaults(o =>
-            {
-                o.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                
-            });
-
             // [SuppressMessage("Microsoft.Security", "CSCAN0220.DefaultPasswordContexts", Justification="Benchmark code, not a secret")]
             listenOptions.UseHttps("testCert.pfx", "testPassword", options =>
             {
