@@ -32,6 +32,8 @@ var app = builder.Build();
 if (mTlsEnabled)
 {
     // this is an http.sys middleware to get a cert
+
+    Console.WriteLine("Registered client cert validation middleware");
     app.Use(async (context, next) => {
         var clientCert = context.Connection.ClientCertificate;
         if (clientCert is null)
@@ -51,7 +53,7 @@ if (mTlsEnabled)
     });
 }
 
-app.MapGet("/hello-world", (HttpContext context) =>
+app.MapGet("/hello-world", () =>
 {
     return Results.Ok("Hello World!");
 });
