@@ -39,9 +39,14 @@ if (mTlsEnabled)
             if (writeCertValidationEventsToConsole) Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
             clientCert = await context.Connection.GetClientCertificateAsync(CancellationToken.None);
         }
+        else
+        {
+            if (writeCertValidationEventsToConsole) Console.WriteLine($"client certificate ({clientCert.Thumbprint}) already exists on the connection {context.Connection.Id}");
+        }
 
-        // now we have a client cert and lets imagine we do the validation here
+        // we have a client cert here, and lets imagine we do the validation here
         // if (clientCert.Thumbprint != "1234567890") throw new NotImplementedException();
+
         await next();
     });
 }
