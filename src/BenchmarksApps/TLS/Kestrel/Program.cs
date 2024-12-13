@@ -20,7 +20,11 @@ var config = new ConfigurationBuilder()
 
 var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var statsEnabled = bool.TryParse(config["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
+
+var connectionIds = new HashSet<string>();
+var fetchedCertsCounter = 0;
 
 builder.WebHost.UseKestrel(options =>
 {
@@ -42,7 +46,7 @@ builder.WebHost.UseKestrel(options =>
                 if (mTlsEnabled)
                 {
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                    options.ClientCertificateValidation = writeCertValidationEventsToConsole ? AllowAnyCertificateValidationWithLogging : AllowAnyCertificateValidation;
+                    options.ClientCertificateValidation = AllowAnyCertificateValidationWithLogging;
                 }
             });
 
@@ -59,24 +63,32 @@ builder.WebHost.UseKestrel(options =>
     }
 });
 
+var app = builder.Build();
+
 bool AllowAnyCertificateValidationWithLogging(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
 {
+    fetchedCertsCounter++;
     if (writeCertValidationEventsToConsole)
     {
         Console.WriteLine($"Certificate validation: {certificate.Subject} {certificate.Thumbprint}");
     }
 
-    return AllowAnyCertificateValidation(certificate, chain, errors);
-}
-
-static bool AllowAnyCertificateValidation(X509Certificate2 certificate, X509Chain? chain, SslPolicyErrors errors)
-{
     // Not interested in measuring actual certificate validation code:
     // we only need to measure the work of getting to the point where certificate is accessible and can be validated
     return true;
 }
 
-var app = builder.Build();
+if (statsEnabled)
+{
+    Console.WriteLine("Registered stats middleware");
+    app.Use(async (context, next) =>
+    {
+        connectionIds.Add(context.Connection.Id);
+        Console.WriteLine($"[stats] unique connections established: {connectionIds.Count}; fetched certificates: {fetchedCertsCounter}");
+
+        await next();
+    });
+}
 
 app.MapGet("/hello-world", () =>
 {
