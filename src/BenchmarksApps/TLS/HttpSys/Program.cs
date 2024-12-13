@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,6 @@ builder.WebHost.UseHttpSys(options =>
 {
     // meaning client can send a certificate, but it can be explicitly requested by server as well (renegotiation)
     options.ClientCertificateMethod = ClientCertificateMethod.AllowRenegotation;
-    // options.UrlPrefixes.Add("https://*:5000");
 });
 #pragma warning restore CA1416 // Can be launched only on Windows (HttpSys)
 
@@ -22,6 +22,7 @@ var config = new ConfigurationBuilder()
     .Build();
 
 var writeCertValidationEventsToConsole = bool.TryParse(config["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
+var statsEnabled = bool.TryParse(config["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var mTlsEnabled = bool.TryParse(config["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var listeningEndpoints = config["urls"] ?? "https://localhost:5000/";
 
@@ -31,6 +32,21 @@ app.MapGet("/hello-world", () =>
 {
     return Results.Ok("Hello World!");
 });
+
+var connectionIds = new HashSet<string>();
+var fetchedCertsCounter = 0;
+
+if (statsEnabled)
+{
+    Console.WriteLine("Registered stats middleware");
+    app.Use(async (context, next) =>
+    {
+        connectionIds.Add(context.Connection.Id);
+        Console.WriteLine($"[stats] unique connections established: {connectionIds.Count}; fetched certificates: {fetchedCertsCounter}");
+
+        await next();
+    });
+}
 
 if (mTlsEnabled)
 {
@@ -43,6 +59,7 @@ if (mTlsEnabled)
         {
             if (writeCertValidationEventsToConsole) Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
             clientCert = await context.Connection.GetClientCertificateAsync(CancellationToken.None);
+            fetchedCertsCounter++;
         }
         else
         {
@@ -60,6 +77,7 @@ await app.StartAsync();
 Console.WriteLine("Application Info:");
 if (mTlsEnabled) Console.WriteLine($"\tmTLS is enabled (client cert is required)");
 if (writeCertValidationEventsToConsole) Console.WriteLine($"\tenabled logging certificate validation events to console");
+if (statsEnabled) Console.WriteLine($"\tenabled logging stats to console");
 Console.WriteLine($"\tlistening endpoints: {listeningEndpoints}");
 Console.WriteLine("--------------------------------");
 
