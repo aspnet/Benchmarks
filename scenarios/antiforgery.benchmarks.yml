@@ -1,0 +1,48 @@
+﻿imports:
+  - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Wrk/wrk.yml
+  - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
+
+variables:
+  serverPort: 5000
+  serverScheme: http
+
+jobs:
+  antiforgerybenchmarks:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/BenchmarksApps/Antiforgery/Antiforgery.csproj
+    readyStateText: Application started.
+    arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
+
+scenarios:
+
+  antiforgery-validation:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: antiforgery
+    load:
+      job: wrk
+      variables:
+        script: https://raw.githubusercontent.com/aspnet/Benchmarks/main/src/BenchmarksApps/Antiforgery/scripts/wrk-auth-token.lua
+
+  antiforgery-generation:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: antiforgery
+    load:
+      job: wrk
+      variables:
+        path: /auth
+
+  antiforgery-noop:
+    application:
+      job: antiforgerybenchmarks
+      variables:
+        scenario: antiforgery
+    load:
+      job: wrk
+      variables:
+        path: /noOp

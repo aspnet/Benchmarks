@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -49,18 +55,20 @@ parameters:
 
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@2
     condition: succeededOrFailed()
     timeoutInMinutes: 30
     displayName: ${{ s.displayName }}
     inputs:
       connectedServiceName: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true
       useDataContractSerializer: "false"
       messageBody: |
         {
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
-          "args": [ "--command-line-property --table EfCoreCrank --sql SQL_CONNECTION_STRING --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
+          "args": [ "--command-line-property --table EfCoreCrank --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements ${{ s.arguments }} --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\"" ],
           "timeout": "00:30:00"
         }

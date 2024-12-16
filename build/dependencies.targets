@@ -16,4 +16,7 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <MicrosoftAspNetCoreAppPackageVersion>9.0.*-*</MicrosoftAspNetCoreAppPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <MicrosoftAspNetCoreAppPackageVersion>10.0.*-*</MicrosoftAspNetCoreAppPackageVersion>
+  </PropertyGroup>
 </Project>

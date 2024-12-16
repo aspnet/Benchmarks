@@ -7,9 +7,19 @@ parameters:
   - name: connection
     type: string
     default: ""
+  - name: serviceBusQueueName
+    type: string
+    default: ''
+  - name: serviceBusNamespace
+    type: string
+    default: ''
   - name: condition
     type: string
     default: "true"
+
+  - name: tfm
+    type: string
+    default: "--client.framework net10.0 --server.framework net10.0"
 
   - name: sslstreamTransport
     type: object
@@ -102,38 +112,42 @@ steps:
           - ${{ each version in parameters.tlsVersion }}:
               - ${{ each c in parameters.connections }}:
                   - ${{ each res in parameters.tlsResume }}:
-                      - task: PublishToAzureServiceBus@1
+                      - task: PublishToAzureServiceBus@2
                         condition: succeededOrFailed()
                         timeoutInMinutes: 10
                         displayName: ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }}
                         inputs:
                           connectedServiceName: ${{ parameters.connection }}
+                          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                           waitForCompletion: true
                           useDataContractSerializer: "false"
                           messageBody: |
                             {
                               "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                               "name": "crank",
-                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
+                              "args": [ "${{ parameters.tfm }} --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ c.displayName }} ${{ res.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ res.arguments }} ${{ c.arguments }}" ]
                             }
 
   # handshake scenarios -- QUIC
   - ${{ each t in parameters.quicTransport }}:
       - ${{ each s in parameters.handshakeScenarios }}:
           - ${{ each c in parameters.connections }}:
-              - task: PublishToAzureServiceBus@1
+              - task: PublishToAzureServiceBus@2
                 condition: succeededOrFailed()
                 timeoutInMinutes: 10
                 displayName: ${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }}
                 inputs:
                   connectedServiceName: ${{ parameters.connection }}
+                  serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                  serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                   waitForCompletion: true
                   useDataContractSerializer: "false"
                   messageBody: |
                     {
                       "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                       "name": "crank",
-                      "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ c.arguments }}" ]
+                      "args": [ "${{ parameters.tfm }} --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ c.arguments }}" ]
                     }
 
   # read-write scenarios -- SslStream
@@ -143,19 +157,21 @@ steps:
               - ${{ each recvbuf in parameters.receiveBuffers }}:
                   - ${{ each version in parameters.tlsVersion }}:
                       - ${{ each c in parameters.singleStreamConnections }}:
-                          - task: PublishToAzureServiceBus@1
+                          - task: PublishToAzureServiceBus@2
                             condition: succeededOrFailed()
                             timeoutInMinutes: 10
                             displayName:  ${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}
                             inputs:
                               connectedServiceName: ${{ parameters.connection }}
+                              serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                              serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                               waitForCompletion: true
                               useDataContractSerializer: "false"
                               messageBody: |
                                 {
                                   "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                                   "name": "crank",
-                                  "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
+                                  "args": [ "${{ parameters.tfm }} --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --description \"${{ t.displayName }} ${{ version.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ version.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
                                 }
 
   # read-write scenarios -- QUIC
@@ -164,17 +180,19 @@ steps:
           - ${{ each sendbuf in parameters.sendBuffers }}:
               - ${{ each recvbuf in parameters.receiveBuffers }}:
                   - ${{ each c in parameters.multiplexedConnections }}:
-                      - task: PublishToAzureServiceBus@1
+                      - task: PublishToAzureServiceBus@2
                         condition: succeededOrFailed()
                         timeoutInMinutes: 10
                         displayName:  ${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }}
                         inputs:
                           connectedServiceName: ${{ parameters.connection }}
+                          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+                          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
                           waitForCompletion: true
                           useDataContractSerializer: "false"
                           messageBody: |
                             {
                               "condition": "(${{ parameters.condition }}) && (Math.round(Date.now() / 43200000) % 2 == 0 )",  
                               "name": "crank",
-                              "args": [ "--client.framework net9.0 --server.framework net9.0 --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
+                              "args": [ "${{ parameters.tfm }} --client.options.collectCounters true --command-line-property --table SystemNet_TlsBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) --description \"${{ t.displayName }} ${{ s.displayName }} ${{ sendbuf.displayName }} ${{ recvbuf.displayName }} ${{ c.displayName }} $(System.JobDisplayName)\" ${{ parameters.arguments }} --no-metadata --no-measurements ${{ t.arguments }} ${{ s.arguments }} ${{ sendbuf.arguments }} ${{ recvbuf.arguments }} ${{ c.arguments }}" ]
                             }

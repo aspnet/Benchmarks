@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -17,7 +23,7 @@ parameters:
   default: 
   - displayName: YARP
     scenario: proxy-yarp
-    arguments: $(proxyJobs) --property proxy=yarp --application.framework net9.0
+    arguments: $(proxyJobs) --property proxy=yarp --application.framework net10.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
@@ -25,7 +31,7 @@ parameters:
     condition: 'true'
   - displayName: YARP gRPC
     scenario: proxy-yarp-grpc
-    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net9.0
+    arguments: $(proxyGRPCJobs) --property proxy=yarp --application.framework net10.0
     supportsGRPC: true
     condition: 'true'
   - displayName: YARP-net80
@@ -38,7 +44,7 @@ parameters:
     condition: Math.round(Date.now() / 43200000) % 4 == 0 # once every 4 half-days
   - displayName: HttpClient
     scenario: proxy-httpclient
-    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net9.0
+    arguments: $(proxyJobs) --property proxy=httpclient --application.framework net10.0
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
@@ -140,12 +146,14 @@ steps:
     - ${{ each protocol in parameters.protocols }}:
       # doesn't (requiresServerHttps or supportsServerHttps) AND (doesn't requiresServerHttp2 or supportsServerHttp2)
       - ${{ if and( not( protocol.requiresGRPC), or( not( protocol.requiresHttp), s.supportsHttp), or( not( protocol.requiresServerHttps), s.supportsServerHttps), or( ne( protocol.scenarioSuffix, '-h2load'), s.supportsServerHttp2), or( not( protocol.requiresDownstreamHttp2), s.supportsDownstreamHttp2) ) }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
@@ -153,7 +161,7 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }
 
 # GRPC only: requiresServerGRPC and supportsGRPC
@@ -163,12 +171,14 @@ steps:
   - ${{ each payload in parameters.payloads }}:
     - ${{ each protocol in parameters.protocols }}:
       - ${{ if and( protocol.requiresGRPC, s.supportsGRPC, eq( payload.displayName, '0 B - 100 B - No Headers' ) ) }}:
-        - task: PublishToAzureServiceBus@1
+        - task: PublishToAzureServiceBus@2
           condition: succeededOrFailed()
           timeoutInMinutes: 10
           displayName: ${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }}
           inputs:
             connectedServiceName: ${{ parameters.connection }}
+            serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+            serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
             waitForCompletion: true
             useDataContractSerializer: "false"
             messageBody: |
@@ -176,5 +186,5 @@ steps:
                 "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
                 "timeout": "00:03:00",
                 "name": "crank",
-                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
+                "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true --scenario ${{ s.scenario }}${{ protocol.scenarioSuffix }} ${{ s.arguments }} ${{ payload.arguments }} ${{ protocol.arguments }} --property rate=0 --property cpu=0 --description \"${{ s.displayName }} ${{ payload.displayName }} ${{ protocol.displayName }} $(System.JobDisplayName)\"" ]
               }

@@ -15,6 +15,7 @@ jobs:
       project: src/OrchardCore.Cms.Web/OrchardCore.Cms.Web.csproj
     readyStateText: Application started.
     framework: net8.0
+    noGlobalJson: true
     arguments: "--urls {{serverScheme}}://{{serverAddress}}:{{serverPort}}"
     buildFiles: 
       - https://raw.githubusercontent.com/aspnet/Benchmarks/main/NuGet.Config

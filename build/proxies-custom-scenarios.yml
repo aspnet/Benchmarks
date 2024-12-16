@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: '(new Date().getUTCHours() - 7 + 24) % 24 < 13'
@@ -15,7 +21,7 @@ parameters:
   type: object
   default: 
   - displayName: Yarp
-    arguments: --scenario proxy-yarp $(proxyJobs) --property proxy=yarp-pgo --application.framework net9.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
+    arguments: --scenario proxy-yarp $(proxyJobs) --property proxy=yarp-pgo --application.framework net10.0 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_ReadyToRun=0 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1
     supportsHttp: true
     supportsServerHttps: true
     supportsServerHttp2: true
@@ -40,12 +46,14 @@ parameters:
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each p in parameters.proxies }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       condition: succeededOrFailed()
       timeoutInMinutes: 10
       displayName: ${{ p.displayName }} ${{ s.displayName }}
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |
@@ -53,5 +61,5 @@ steps:
             "condition": "(${{ parameters.condition }}) && (${{ s.condition }})",
             "timeout": "00:03:00",
             "name": "crank",
-            "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true ${{ s.arguments }} ${{ p.arguments }} --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --variable serverScheme=https --variable serverScheme=https --variable downstreamScheme=https --property serverProtocol=https --property downstreamProtocol=https" ]
+            "args": [ "--command-line-property --table ProxyBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --session $(session) ${{ parameters.arguments }} --no-metadata --no-measurements --load.options.reuseBuild true --downstream.options.reuseBuild true ${{ s.arguments }} ${{ p.arguments }} --description \"${{ s.displayName }} ${{ p.displayName }} $(System.JobDisplayName)\" --variable serverScheme=https --variable serverScheme=https --variable downstreamScheme=https --property serverProtocol=https --property downstreamProtocol=https" ]
           }

@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -16,14 +22,14 @@ parameters:
   type: object
   default: 
   
-  - displayName: "7.0"
-    arguments: --application.framework net7.0 --property framework=net7.0
-
   - displayName: "8.0"
     arguments: --application.framework net8.0 --property framework=net8.0
 
   - displayName: "9.0"
     arguments: --application.framework net9.0 --property framework=net9.0
+
+  - displayName: "10.0"
+    arguments: --application.framework net10.0 --property framework=net10.0 --application.noGlobalJson false
 
 # Scenarios
 - name: scenarios 
@@ -32,28 +38,18 @@ parameters:
 
   # Platform
   - displayName: Plaintext Platform
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatform
+    arguments: --scenario plaintext $(platformJobs) --load.connections 1024 --property scenario=PlaintextPlatform
 
   - displayName: Json Platform
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatform
-
-  # PGO Inline
-  - displayName: Plaintext Platform PGO Inline
-    arguments: --scenario plaintext $(platformJobs) --property scenario=PlaintextPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
-
-  - displayName: Json Platform PGO Inline
-    arguments: --scenario json $(platformJobs) --property scenario=JsonPlatformPgoInline --application.environmentVariables DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS=1 --application.environmentVariables DOTNET_TieredPGO=1 --application.environmentVariables DOTNET_TC_QuickJitForLoops=1 --application.environmentVariables DOTNET_ReadyToRun=0
+    arguments: --scenario json $(platformJobs) --load.connections 512 --property scenario=JsonPlatform
 
   # Plaintext
-  - displayName: Plaintext
-    arguments: --scenario plaintext $(plaintextJobs) --property scenario=Plaintext
-
-  - displayName: Plaintext endpoint
-    arguments: --scenario endpoint $(plaintextJobs) --property scenario=PlaintextEndpoint
+  - displayName: Plaintext Minimal Apis
+    arguments: --scenario plaintext $(minimalJobs) --load.connections 1024 --property scenario=Plaintext
 
   # JSon
-  - displayName: Json
-    arguments: --scenario json $(jsonJobs) --property scenario=Json
+  - displayName: Json Minimal Apis
+    arguments: --scenario json $(minimalJobs) --load.connections 512 --property scenario=Json
 
   - displayName: Json Mvc
     arguments: --scenario mvc $(jsonJobs) --property scenario=JsonMvc
@@ -65,16 +61,22 @@ parameters:
   - displayName: Json Https
     arguments: --scenario https $(jsonJobs) --property scenario=JsonHttps
 
+  # Orchard Core
+
+  - displayName: Orchard - About - Sqlite
+    arguments: --scenario about-sqlite $(orchardJobs) --property scenario=OrchardAboutSqlite --property protocol=http
   
 steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each b in parameters.baselines }}:
-    - task: PublishToAzureServiceBus@1
+    - task: PublishToAzureServiceBus@2
       condition: succeededOrFailed()
       timeoutInMinutes: 10
       displayName: "${{ s.displayName }} - ${{ b.displayName }}"
       inputs:
         connectedServiceName: ${{ parameters.connection }}
+        serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+        serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
         waitForCompletion: true
         useDataContractSerializer: "false"
         messageBody: |
@@ -82,5 +84,5 @@ steps:
             "name": "crank",
             "condition": "(${{ parameters.condition }})",
             "retries": 1,
-            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --load.options.reuseBuild true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING  --chart" ]
+            "args": [ "${{ s.arguments }} ${{ b.arguments }} ${{ parameters.arguments }} $(azureProfile) --load.options.reuseBuild true --no-metadata --no-measurements --session $(session) --command-line-property --table BaselineBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
           }

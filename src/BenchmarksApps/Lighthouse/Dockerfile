@@ -15,7 +15,7 @@ RUN apt-get update \
     && apt-get clean
 
 # Install node packages
-RUN npm install
+RUN npm ci
 
 ENV SCENARIO_SCRIPT=
 ENV SCENARIO_SCRIPT_ARGS=

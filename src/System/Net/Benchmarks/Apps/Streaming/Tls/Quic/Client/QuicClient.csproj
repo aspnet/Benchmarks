@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <NoWarn>$(NoWarn);CA1416</NoWarn> <!-- "This call site is reachable on all platforms. It is only supported on: 'linux', 'macOS/OSX', 'windows'." -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Client/*.cs"
+             LinkBase="Common" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Shared/*.cs"
+             LinkBase="Common" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/Client/*.cs"
+             LinkBase="Common/Tls" />
+    <Compile Include="$(SystemNetBenchmarksCommonPath)Tls/Shared/*.cs"
+             LinkBase="Common/Tls" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+    <PackageReference Include="Microsoft.Crank.EventSources" Version="$(MicrosoftCrankEventSourcesVersion)" />
+  </ItemGroup>
+
+</Project>

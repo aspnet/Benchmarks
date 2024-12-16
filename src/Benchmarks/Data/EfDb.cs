@@ -18,6 +18,8 @@ namespace Benchmarks.Data
         private readonly IRandom _random;
         private readonly ApplicationDbContext _dbContext;
 
+        private readonly byte[] AdditionalFortune = "Additional fortune added at request time."u8.ToArray();
+
         public EfDb(IRandom random, ApplicationDbContext dbContext, IOptions<AppSettings> appSettings)
         {
             _random = random;
@@ -83,7 +85,7 @@ namespace Benchmarks.Data
                 result.Add(fortune);
             }
 
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
+            result.Add(new Fortune { Message = AdditionalFortune });
             
             result.Sort();
 

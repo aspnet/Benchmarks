@@ -9,7 +9,7 @@ components:
             --application.options.outputFiles .\artifacts\bin\EFCore.Sqlite.Benchmarks\Release\net8.0\
 
 # default arguments that are always used on crank commands
-defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net8.0 --relay AZURE_RELAY 
+defaults: --config https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true --application.framework net8.0 --relay 
 
 # the first value is the default if none is specified
 profiles:

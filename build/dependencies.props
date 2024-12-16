@@ -1,37 +1,50 @@
 <Project>
   <PropertyGroup Label="Package Versions">
-    <NpgsqlVersion60>6.0.0</NpgsqlVersion60>
-    <NpgsqlVersion70>7.0.6</NpgsqlVersion70>
-    <NpgsqlVersion80>8.0.1</NpgsqlVersion80>
+    <NpgsqlVersion60>6.0.12</NpgsqlVersion60>
+    <NpgsqlVersion70>7.0.8</NpgsqlVersion70>
+    <NpgsqlVersion80>8.0.5</NpgsqlVersion80>
+    <NpgsqlVersion90>8.0.5</NpgsqlVersion90>
 
-    <MicrosoftDataSqlClientVersion60>5.1.5</MicrosoftDataSqlClientVersion60>
-    <MicrosoftDataSqlClientVersion70>5.1.5</MicrosoftDataSqlClientVersion70>
-    <MicrosoftDataSqlClientVersion80>5.1.5</MicrosoftDataSqlClientVersion80>
+    <MicrosoftDataSqlClientVersion60>5.2.2</MicrosoftDataSqlClientVersion60>
+    <MicrosoftDataSqlClientVersion70>5.2.2</MicrosoftDataSqlClientVersion70>
+    <MicrosoftDataSqlClientVersion80>5.2.2</MicrosoftDataSqlClientVersion80>
+    <MicrosoftDataSqlClientVersion90>5.2.2</MicrosoftDataSqlClientVersion90>
 
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.8</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.4</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
-    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.0</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion60>6.0.29</NpgsqlEntityFrameworkCorePostgreSQLVersion60>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion70>7.0.18</NpgsqlEntityFrameworkCorePostgreSQLVersion70>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion80>8.0.10</NpgsqlEntityFrameworkCorePostgreSQLVersion80>
+    <NpgsqlEntityFrameworkCorePostgreSQLVersion90>9.0.0-rc.2</NpgsqlEntityFrameworkCorePostgreSQLVersion90>
 
-    <PomeloEntityFrameworkCoreMySqlVersion60>6.0.2</PomeloEntityFrameworkCoreMySqlVersion60>
+    <PomeloEntityFrameworkCoreMySqlVersion60>6.0.3</PomeloEntityFrameworkCoreMySqlVersion60>
     <PomeloEntityFrameworkCoreMySqlVersion70>7.0.0</PomeloEntityFrameworkCoreMySqlVersion70>
-    <PomeloEntityFrameworkCoreMySqlVersion80>7.0.0</PomeloEntityFrameworkCoreMySqlVersion80>
+    <PomeloEntityFrameworkCoreMySqlVersion80>8.0.2</PomeloEntityFrameworkCoreMySqlVersion80>
+    <PomeloEntityFrameworkCoreMySqlVersion90>8.0.2</PomeloEntityFrameworkCoreMySqlVersion90>
 
-    <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqlServerVersion60>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqlServerVersion70>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.0</MicrosoftEntityFrameworkCoreSqlServerVersion80>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion60>6.0.35</MicrosoftEntityFrameworkCoreSqlServerVersion60>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion70>7.0.20</MicrosoftEntityFrameworkCoreSqlServerVersion70>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion80>8.0.10</MicrosoftEntityFrameworkCoreSqlServerVersion80>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion90>9.0.0-rc.2.24474.1</MicrosoftEntityFrameworkCoreSqlServerVersion90>
 
-    <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.21</MicrosoftEntityFrameworkCoreSqliteVersion60>
-    <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.10</MicrosoftEntityFrameworkCoreSqliteVersion70>
-    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.0</MicrosoftEntityFrameworkCoreSqliteVersion80>
+    <MicrosoftEntityFrameworkCoreSqliteVersion60>6.0.35</MicrosoftEntityFrameworkCoreSqliteVersion60>
+    <MicrosoftEntityFrameworkCoreSqliteVersion70>7.0.20</MicrosoftEntityFrameworkCoreSqliteVersion70>
+    <MicrosoftEntityFrameworkCoreSqliteVersion80>8.0.10</MicrosoftEntityFrameworkCoreSqliteVersion80>
+    <MicrosoftEntityFrameworkCoreSqliteVersion90>9.0.0-rc.2.24474.1</MicrosoftEntityFrameworkCoreSqliteVersion90>
 
+    <!-- 
+      Don't follow ASPNETCORE version for this package since it only exists as servicing builds 
+      which won't be considered stable during restore.
+      Use in Benchmarks.csproj only
+    -->
     <MicrosoftIISTestingVersion60>6.0.0-*</MicrosoftIISTestingVersion60>
     <MicrosoftIISTestingVersion70>7.0.0-*</MicrosoftIISTestingVersion70>
-    <MicrosoftIISTestingVersion80>8.0.0-preview.5.23252.25</MicrosoftIISTestingVersion80>
+    <MicrosoftIISTestingVersion80>8.0.0-*</MicrosoftIISTestingVersion80>
     <MicrosoftIISTestingVersion90>9.0.0-*</MicrosoftIISTestingVersion90>
+    <MicrosoftIISTestingVersion100>10.0.0-*</MicrosoftIISTestingVersion100>
 
-    <DapperVersion>2.1.24</DapperVersion>
+    <DapperVersion>2.1.35</DapperVersion>
     <RazorSlicesVersion>0.7.0</RazorSlicesVersion>
     <SystemCommandLineVersion>2.0.0-beta4.22272.1</SystemCommandLineVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24114.2</MicrosoftCrankEventSourcesVersion>
+    <OpenTelemetryVersion>1.9.0</OpenTelemetryVersion>
   </PropertyGroup>
 </Project>
