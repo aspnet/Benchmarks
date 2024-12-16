@@ -28,9 +28,10 @@ jobs:
     readyStateText: Application started.
     variables:
       mTLS: false
+      tlsRenegotiation: false
       certValidationConsoleEnabled: false
       statsEnabled: false
-    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}}"
+    arguments: "--urls https://{{serverAddress}}:{{serverPort}} --mTLS {{mTLS}} --certValidationConsoleEnabled {{certValidationConsoleEnabled}} --statsEnabled {{statsEnabled}} --tlsRenegotiation {{tlsRenegotiation}}"
 
 scenarios:
 
@@ -81,6 +82,23 @@ scenarios:
       job: kestrelServer
       variables:
         mTLS: true
+        certValidationConsoleEnabled: false # only for debug purposes
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        certPath: https://raw.githubusercontent.com/aspnet/Benchmarks/refs/heads/main/src/BenchmarksApps/TLS/Kestrel/testCert.pfx
+        certPwd: testPassword
+
+  tls-renegotiation-kestrel:
+    application:
+      job: kestrelServer
+      variables:
+        mTLS: false
+        tlsRenegotiation: true
         certValidationConsoleEnabled: false # only for debug purposes
     load:
       job: httpclient

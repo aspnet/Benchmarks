@@ -20,8 +20,14 @@ var config = new ConfigurationBuilder()
 
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
+var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
 var statsEnabled = bool.TryParse(builder.Configuration["statsEnabled"], out var connectionStatsEnabledConfig) && connectionStatsEnabledConfig;
 var listeningEndpoints = builder.Configuration["urls"] ?? "https://localhost:5000/";
+
+if (mTlsEnabled && tlsRenegotiationEnabled)
+{
+    Console.WriteLine("mTLS and tlsRenegotiation require different clientCertMode setup. Using TLS Renegotiation by default.");
+}
 
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
@@ -46,6 +52,12 @@ builder.WebHost.UseKestrel(options =>
                 if (mTlsEnabled)
                 {
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.ClientCertificateValidation = AllowAnyCertificateValidationWithLogging;
+                }
+
+                if (tlsRenegotiationEnabled)
+                {
+                    options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
                     options.ClientCertificateValidation = AllowAnyCertificateValidationWithLogging;
                 }
             });
@@ -90,6 +102,26 @@ if (statsEnabled)
     });
 }
 
+if (tlsRenegotiationEnabled)
+{
+    Console.WriteLine("Registered TLS renegotiation middleware");
+    app.Use(async (context, next) =>
+    {
+        var clientCert = context.Connection.ClientCertificate;
+        if (clientCert is null)
+        {
+            Console.WriteLine($"No client certificate provided. Fetching for connection {context.Connection.Id}");
+            clientCert = await context.Connection.GetClientCertificateAsync();
+        }
+        else
+        {
+            Console.WriteLine($"client certificate ({clientCert.Thumbprint}) already exists on the connection {context.Connection.Id}");
+        }
+
+        await next();
+    });
+}
+
 app.MapGet("/hello-world", () =>
 {
     return Results.Ok("Hello World!");
@@ -101,6 +133,10 @@ Console.WriteLine("Application Info:");
 if (mTlsEnabled)
 {
     Console.WriteLine($"\tmTLS is enabled (client cert is required)");
+}
+if (tlsRenegotiationEnabled)
+{
+    Console.WriteLine($"\tlsRenegotiationEnabled is enabled (client cert is allowed)");
 }
 if (writeCertValidationEventsToConsole)
 {
