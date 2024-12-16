@@ -11,7 +11,8 @@ internal class AppSettings
     public bool SuppressDbInitialization { get; set; }
 }
 
-// Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
+// Changing this to use the Options Validation source generator increases the app size significantly.
+// See https://github.com/dotnet/runtime/issues/106366
 internal class AppSettingsValidator : IValidateOptions<AppSettings>
 {
     public ValidateOptionsResult Validate(string? name, AppSettings options)
@@ -41,12 +42,6 @@ internal static class AppSettingsExtensions
             services.AddSingleton<IValidateOptions<AppSettings>, AppSettingsValidator>();
             optionsBuilder.ValidateOnStart();
         }
-
-        // Change to using ValidateDataAnnotations once https://github.com/dotnet/runtime/issues/77412 is complete
-        //services.AddOptions<AppSettings>()
-        //    .BindConfiguration(nameof(AppSettings))
-        //    .ValidateDataAnnotations()
-        //    .ValidateOnStart();
 
         return services;
     }

@@ -8,7 +8,7 @@ Continuous benchmarking results are available on [this PowerBI dashboard](https:
 
 ## Requirements
 
-These jobs can be executed using the .NET Crank global tool. 
+These jobs can be executed using the .NET Crank global tool.
 [.NET Core](<http://dot.net>) is required to install the global tool.
 
 Install `crank` with the following command:
@@ -37,8 +37,8 @@ Each profile defines a set of machines, private IPs and ports that are used to r
 |  `aspnet-citrine-amd` | AMD, logical 48 cores, 1 socket, 64GB, 1 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-amd2` | AMD, logical 48 cores, 1 socket, 64GB, 4 NUMA | Ubuntu 20.04, Kernel 5.4.0 | AMD EPYC 7402P 24-Core Processor |
 |  `aspnet-citrine-arm-lin` | ARM64, 80 logical cores, 1 socket, 1 NUMA, 128 GB | Ubuntu 20.04, Kernel 5.4.0 | Neoverse-N1 |
-|  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
-|  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 5.15.0 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-gold-lin` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Ubuntu 22.04, Kernel 6.8.0-45-generic | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
+|  `aspnet-gold-win` | INTEL, 56 logical cores, 1 socket, 1 NUMA, 64 GB | Windows Server 2022 | Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz |
 |  `aspnet-siryn-arm-lin` | ARM64, 128 logical cores, 1 socket, 1 NUMA, 250GB | Ubuntu 20.04, Kernel 5.4.0 | Ampere(R) AmpereOne(TM) |
 
 For testing purpose only, the __local__ profile requires a local agent to run:
@@ -62,7 +62,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
-- `plaintext`: Middleware implementation 
+- `plaintext`: Middleware implementation
 - `https`: Middleware implementation, using HTTPS
 - `endpoint`: Middleware implementation with Endpoint routing
 - `mvc`: Controller implementation
@@ -85,7 +85,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
-- `json`: Middleware implementation 
+- `json`: Middleware implementation
 - `https`: Middleware implementation, using HTTPS
 - `mvc`: Controller implementation
 - `mapaction`: Endpoint routing implementation
@@ -125,8 +125,8 @@ The following scenarios are using ASP.NET CORE MVC
 - `fortunes_ef_mvc_https`
 
 The suffixes represent different database access strategies:
- 
-- No suffix: Raw ADO.NET 
+
+- No suffix: Raw ADO.NET
 - "ef" suffix: Entity Framework Core
 - "dapper" suffix: Dapper
 
@@ -159,7 +159,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 These scenarios are running several web proxies, including [YARP](https://github.com/microsoft/reverse-proxy).
 
-The downstream service returns a variable size content. By default the result is 10 bytes. 
+The downstream service returns a variable size content. By default the result is 10 bytes.
 
 ### Sample
 
@@ -230,7 +230,7 @@ These scenarios measure the performance of different other frameworks
 - Xitca (Rust)
 - FastHttp (Go)
 - Netty (Java)
-- Drogon (C++)
+- Vertx (Java)
 - Wizzardo (Java)
 - Spring (Java)
 - Gin (Go)
@@ -244,14 +244,15 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 ### Available scenarios
 
+- `plaintext_aspnetcore`, `json_aspnetcore`, `fortunes_aspnetcore`
 - `plaintext_nodejs`, `json_nodejs`, `fortunes_nodejs`
 - `plaintext_bun`, `json_bun`
 - `plaintext_actix`, `json_actix`, `fortunes_actix`
 - `plaintext_xitca`, `json_xitca`, `fortunes_xitca`
 - `plaintext_fasthttp`, `json_fasthttp`, `fortunes_fasthttp`
 - `plaintext_netty`, `json_netty`
-- `plaintext_drogon`, `json_drogon`, `fortunes_drogon`
 - `plaintext_wizzardo`, `json_wizzardo`, `single_query_wizzardo`, `multiple_queries_wizzardo`, `updates_wizzardo`, `cached_queries_wizzardo`
+- `plaintext_vertx`, `json_vertx`, `single_query_vertx`, `multiple_queries_vertx`, `updates_vertx`, `cached_queries_vertx`
 - `plaintext_spring`, `json_spring`, `single_query_spring`, `multiple_queries_spring`, `updates_spring`
 - `plaintext_gin`, `json_gin`, `fortunes_gin`
 - `plaintext_express`, `json_express`, `fortunes_express`
@@ -261,7 +262,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 These scenarios measure the performance of different Grpc  server and clients implementations.
 
 - Go
-- Native (C) 
+- Native (C)
 - ASP.NET
 
 ### Sample
@@ -287,13 +288,13 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 #### Arguments
 
-- Number of streams: 
+- Number of streams:
   - `--variable streams=1`
   - `--variable streams=70`
-- Number of connections: 
+- Number of connections:
   - `--variable connections=1`
   - `--variable connections=28`
-- Protocol: 
+- Protocol:
   - `--variable protocol=h2`
   - `--variable protocol=h3`
   - `--variable protocol=h2c`
@@ -345,15 +346,15 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 #### Arguments
 
-- Scenario: 
+- Scenario:
   - `--variable scenario=broadcast`
   - `--variable scenario=echo`
   - `--variable scenario=echoAll`
-- Transport: 
+- Transport:
   - `--variable transport=websockets`
   - `--variable transport=serversentevents`
   - `--variable transport=longpolling`
-- Protocol: 
+- Protocol:
   - `--variable protocol=json`
   - `--variable protocol=messagepack`
 
@@ -397,7 +398,7 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 
 These scenarios are running various distributed cache benchmarks.
 
-For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio` 
+For all the scenarios, the store is initialized with `CacheCount` cache entries. Each request will issue a read or a write based on the `WriteRatio`
 argument choosing a key randomly. The HTTP response won't contain the cache entry data so that it doesn't impact the raw store perf measurement.
 
 ### Sample
@@ -512,6 +513,9 @@ crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenario
 - Enable multiple HTTP/2.0 connections:
   - `--variable http20EnableMultipleConnections=true` (default)
   - `--variable http20EnableMultipleConnections=false`
+- Enable multiple HTTP/3.0 connections (from .NET 9.0):
+  - `--variable http30EnableMultipleConnections=true` (default)
+  - `--variable http30EnableMultipleConnections=false`
 - Whether to use WinHttpHandler instead of SocketsHttpHandler:
   - `--variable useWinHttpHandler=false` (default)
   - `--variable useWinHttpHandler=true` -- *requires Windows*
@@ -538,7 +542,7 @@ These scenarios provide benchmarks to help improve the performance of the .NET G
 ### Sample
 
 ```
-crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net9.0 
+crank --config https://raw.githubusercontent.com/dotnet/performance/main/src/benchmarks/gc/scenarios/CrankConfiguration.yaml --scenario 2gb-pinning --profile aspnet-citrine-win --application.framework net10.0
 ```
 ### Available scenarios
 
@@ -585,7 +589,7 @@ Example:
 Using the daily builds of .NET by targeting net9.0 for the `application` service.
 
 ```
---application.framework net9.0
+--application.framework net10.0
 ```
 
 ### How to benchmark a custom fork and/or branch?

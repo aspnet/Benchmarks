@@ -19,10 +19,10 @@ namespace Benchmarks.Data
         public int _Id { get; set; }
 
         [Column("message")]
-        [StringLength(2048)]
+        [MaxLength(2048)]
         [IgnoreDataMember]
         [Required]
-        public string Message { get; set; }
+        public byte[] Message { get; set; }
         
         public int CompareTo(object obj)
         {
@@ -31,7 +31,7 @@ namespace Benchmarks.Data
 
         public int CompareTo(Fortune other)
         {
-            return String.CompareOrdinal(Message, other.Message);
+            return Message.AsSpan().SequenceCompareTo(other.Message.AsSpan());
         }
     }
 }

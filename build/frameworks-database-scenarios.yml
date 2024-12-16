@@ -1,4 +1,5 @@
-# Frameworks trend scenarios
+# Frameworks database trend scenarios
+# Some plaintext/json scenarios are in this file when they still require a db instance to run
 
 parameters:
 - name: arguments
@@ -7,9 +8,18 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
+- name: config
+  type: string
+  default: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/te.benchmarks.yml
 
 # Scenarios
 - name: scenarios 
@@ -21,65 +31,63 @@ parameters:
   # NodeJS (JavaScript)
 
   - displayName: NodeJS Fortunes
-    arguments: --scenario fortunes_nodejs $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesNodeJS --property protocol=http
+    arguments: --scenario fortunes_nodejs --load.variables.connections 512 --property scenario=FortunesNodeJS
   - displayName: NodeJS Plaintext
-    arguments: --scenario plaintext_nodejs $(frameworksJobs) --load.variables.connections 1024 --property scenario=PlaintextNodeJS --property protocol=http
+    arguments: --scenario plaintext_nodejs --load.variables.connections 1024 --property scenario=PlaintextNodeJS
   - displayName: NodeJS Json
-    arguments: --scenario json_nodejs $(frameworksJobs) --load.variables.connections 256 --property scenario=JsonNodeJS --property protocol=http
+    arguments: --scenario json_nodejs --load.variables.connections 256 --property scenario=JsonNodeJS
 
   # Express (JavaScript)
 
   - displayName: Express Fortunes
-    arguments: --scenario fortunes_express $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesExpress --property protocol=http
+    arguments: --scenario fortunes_express --load.variables.connections 512 --property scenario=FortunesExpress
 
   # Gin (Go)
 
   - displayName: Gin Fortunes
-    arguments: --scenario fortunes_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesGin --property protocol=http
+    arguments: --scenario fortunes_gin --load.variables.connections 512 --property scenario=FortunesGin
   - displayName: Gin Plaintext
-    arguments: --scenario plaintext_gin $(frameworksJobs) --load.variables.connections 4096 --property scenario=PlaintextGin --property protocol=http
+    arguments: --scenario plaintext_gin --load.variables.connections 4096 --property scenario=PlaintextGin
   - displayName: Gin Json
-    arguments: --scenario json_gin $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonGin --property protocol=http
+    arguments: --scenario json_gin --load.variables.connections 512 --property scenario=JsonGin
 
-  # Actix (Rust)
-  # Actix is disable as the build is currently broken
-  # - displayName: Actix Fortunes
-  #   arguments: --scenario fortunes_actix $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesActix --property protocol=http
+  #  Ntex (Rust)
 
-  # Drogon (C++)
-  # Drogon is disable as currently it takes 10 minutes to build
-  # - displayName: Drogon Plaintext
-  #   arguments: --scenario plaintext_drogon $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextDrogon --property protocol=http
-  # - displayName: Drogon Json
-  #   arguments: --scenario json_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonDrogon --property protocol=http
-  # - displayName: Drogon Fortunes
-  #   arguments: --scenario fortunes_drogon $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesDrogon --property protocol=http
+  - displayName: Ntex Fortunes
+    arguments: --scenario fortunes_ntex --load.variables.connections 512 --property scenario=FortunesNtex
+
+  #  Vertx (Java)
+
+  - displayName: Vertx Fortunes
+    arguments: --scenario fortunes_vertx --load.variables.connections 512 --property scenario=FortunesVertx 
 
   # Spring (Java)
   
   - displayName: Spring Plaintext
-    arguments: --scenario plaintext_spring $(frameworksJobs) --load.variables.connections 256 --property scenario=PlaintextSpring --property protocol=http
+    arguments: --scenario plaintext_spring --load.variables.connections 256 --property scenario=PlaintextSpring
   - displayName: Spring Json
-    arguments: --scenario json_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=JsonSpring --property protocol=http
+    arguments: --scenario json_spring --load.variables.connections 512 --property scenario=JsonSpring
   - displayName: Spring Fortunes
-    arguments: --scenario fortunes_spring $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesSpring --property protocol=http
+    arguments: --scenario fortunes_spring --load.variables.connections 512 --property scenario=FortunesSpring
 
   # FastHttp (Go)
 
   - displayName: Go Fortunes
-    arguments: --scenario fortunes_fasthttp $(frameworksJobs) --load.variables.connections 512 --property scenario=FortunesFastHttp --property protocol=http
+    arguments: --scenario fortunes_fasthttp --load.variables.connections 512 --property scenario=FortunesFastHttp
 
   # Netty
   # No db scenarios
   
 steps:
 - ${{ each s in parameters.scenarios }}:
-  - task: PublishToAzureServiceBus@1
+  - task: PublishToAzureServiceBus@2
     condition: succeededOrFailed()
     displayName: ${{ s.displayName }}
     timeoutInMinutes: 10
     inputs:
       connectedServiceName: ${{ parameters.connection }}
+      serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+      serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
       waitForCompletion: true
       useDataContractSerializer: "false"
       messageBody: |
@@ -87,5 +95,5 @@ steps:
           "name": "crank",
           "condition": "(${{ parameters.condition }})",
           "retries": 1,
-          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --chart" ] 
+          "args": [ "${{ s.arguments }} ${{ parameters.arguments }} ${{ parameters.config }} --application.noClean true --no-metadata --no-measurements --load.options.reuseBuild true --session $(session) --description \"${{ s.displayName }} $(System.JobDisplayName)\" --property buildId=\"$(buildId)\" --property buildNumber=\"$(buildNumber)\" --command-line-property --table TrendBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ] 
         }

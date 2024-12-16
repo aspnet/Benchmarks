@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -43,12 +49,14 @@ steps:
 - ${{ each s in parameters.scenarios }}:
   - ${{ each size in parameters.sizes }}:
     - ${{ each compress in parameters.compress }}:
-      - task: PublishToAzureServiceBus@1
+      - task: PublishToAzureServiceBus@2
         condition: succeededOrFailed()
         displayName: ${{ s.displayName }} ${{ size.displayName }} ${{ compress.displayName }}
         timeoutInMinutes: 10
         inputs:
           connectedServiceName: ${{ parameters.connection }}
+          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
           waitForCompletion: true
           useDataContractSerializer: "false"
           messageBody: |
@@ -57,5 +65,5 @@ steps:
               "condition": "(${{ parameters.condition }})",
               "retries": 1,
               "name": "crank",
-              "args": [ "${{ s.arguments }} ${{ size.arguments }} ${{ compress.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net9.0 --application.framework net9.0 --session $(session) --command-line-property --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --chart --no-measurements --load.options.reuseBuild true --no-metadata " ]
+              "args": [ "${{ s.arguments }} ${{ size.arguments }} ${{ compress.arguments }} --application.options.collectCounters true --load.options.collectCounters true ${{ parameters.arguments }} --load.framework net10.0 --application.framework net10.0 --session $(session) --command-line-property --table WebsocketBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart --no-measurements --load.options.reuseBuild true --no-metadata " ]
             }

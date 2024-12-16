@@ -7,6 +7,12 @@ parameters:
 - name: connection
   type: string
   default: ''
+- name: serviceBusQueueName
+  type: string
+  default: ''
+- name: serviceBusNamespace
+  type: string
+  default: ''
 - name: condition
   type: string
   default: 'true'
@@ -52,7 +58,7 @@ parameters:
     arguments: --scenario json_aspnet --property scenario=JsonAspNet
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET
-    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet
+    arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNet --application.environmentVariables DOTNET_gcServer=1 --application.environmentVariables DOTNET_GCDynamicAdaptationMode=0
     condition: Math.round(Date.now() / 43200000) % 8 == 0 # once every 8 half-days
   - displayName: Fortunes ASP.NET - DATAS
     arguments: --scenario fortunes_aspnet --property scenario=FortunesAspNetDATAS --application.environmentVariables DOTNET_GCDynamicAdaptationMode=1
@@ -79,14 +85,6 @@ parameters:
     arguments: --scenario fortunes_aspnet_current --property scenario=FortunesAspNet80
     condition: Math.round(Date.now() / 43200000) % 8 == 6 # once every 8 half-days
 
-  # Actix is disable as the build is currently broken
-  # - displayName: Json Actix
-  #   arguments: --scenario json_actix --property scenario=JsonActix
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 0 # once every 10 half-days
-  # - displayName: Fortunes Actix
-  #   arguments: --scenario fortunes_actix --property scenario=FortunesActix
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 1 # once every 10 half-days
-
   - displayName: Json NodeJS
     arguments: --scenario json_nodejs --property scenario=JsonNodeJs
     condition: Math.round(Date.now() / 43200000) % 10 == 2 # once every 10 half-days
@@ -101,37 +99,38 @@ parameters:
     arguments: --scenario fortunes_fasthttp --property scenario=FortunesFastHttp
     condition: Math.round(Date.now() / 43200000) % 10 == 5 # once every 10 half-days
 
-  # Drogon is disable as currently it takes 10 minutes to build
-  # - displayName: Json Drogon
-  #   arguments: --scenario json_drogon --property scenario=JsonDrogon
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 6 # once every 10 half-days
-  # - displayName: Fortunes Drogon
-  #   arguments: --scenario fortunes_drogon --property scenario=FortunesDrogon
-  #   condition: Math.round(Date.now() / 43200000) % 10 == 7 # once every 10 half-days
-
-  - displayName: Json Wizzardo
-    arguments: --scenario json_wizzardo --property scenario=JsonWizzardo
+  - displayName: Json Vertx
+    arguments: --scenario json_vertx --property scenario=JsonVertx
     condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
-  - displayName: Fortunes Wizzardo
-    arguments: --scenario fortunes_wizzardo --property scenario=FortunesWizzardo
+  - displayName: Fortunes Vertx
+    arguments: --scenario fortunes_vertx --property scenario=FortunesVertx
+    condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
+
+  - displayName: Json NTex
+    arguments: --scenario json_ntex --property scenario=JsonNTex
+    condition: Math.round(Date.now() / 43200000) % 10 == 8 # once every 10 half-days
+  - displayName: Fortunes NTex
+    arguments: --scenario fortunes_ntext --property scenario=FortunesNTex
     condition: Math.round(Date.now() / 43200000) % 10 == 9 # once every 10 half-days
 
 steps:
 - ${{ each scenario in parameters.scenarios }}:
   - ${{ each size in parameters.sizes }}:
     - ${{ each rate in parameters.rates }}:
-      - task: PublishToAzureServiceBus@1
+      - task: PublishToAzureServiceBus@2
         condition: succeededOrFailed()
         displayName: ${{ scenario.displayName }} ${{ size.displayName }} ${{ rate.displayName }} RPS
         timeoutInMinutes: 10
         inputs:
           connectedServiceName: ${{ parameters.connection }}
+          serviceBusQueueName: ${{ parameters.serviceBusQueueName }}
+          serviceBusNamespace: ${{ parameters.serviceBusNamespace }}
           waitForCompletion: true
           useDataContractSerializer: "false"
           messageBody: |
             {
               "name": "crank",
               "condition": "(${{ parameters.condition }}) && (${{ scenario.condition }})",
-              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --chart" ]
+              "args": [ "--session $(session) $(containerMatrixJobs) ${{ scenario.arguments }} ${{ size.arguments }} ${{ rate.arguments }} ${{ parameters.arguments }} $(azureProfile) --no-metadata --no-measurements --load.options.reuseBuild true --command-line-property --table ContainerBenchmarks --sql SQL_CONNECTION_STRING --cert-tenant-id SQL_SERVER_TENANTID --cert-client-id SQL_SERVER_CLIENTID --cert-path SQL_SERVER_CERT_PATH --cert-sni --chart" ]
             }
             

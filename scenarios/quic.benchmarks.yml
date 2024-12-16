@@ -113,7 +113,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Server/QuicServer.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/Tls/Quic/Server/QuicServer.csproj
     readyStateText: Listening on # app should write this line to output when ready
     # note: send and receive sizes are swapped for server side
     arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --cert-selection {{serverCertSelection}}"
@@ -122,7 +122,7 @@ jobs:
     source:
       repository: https://github.com/aspnet/benchmarks.git
       branchOrCommit: main
-      project: src/System/Net/Benchmarks/Apps/Tls/Quic/Client/QuicClient.csproj
+      project: src/System/Net/Benchmarks/Apps/Streaming/Tls/Quic/Client/QuicClient.csproj
     isConsoleApp: true
     waitForExit: true
     timeout: 300 #seconds

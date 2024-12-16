@@ -1,0 +1,134 @@
+# Example:
+# crank --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/networkstream.benchmarks.yml --scenario read-write --profile aspnet-perf-lin
+
+imports:
+  - https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/aspnet.profiles.standard.yml
+
+variables:
+  # common parameters
+  serverPort: 5000
+  sendBufferSize: 32768 # bytes
+  receiveBufferSize: 32768 # bytes
+
+  # client-specific parameters
+  connections: 1 #number of parallel connections
+  warmup: 15 #seconds
+  duration: 15 #seconds
+
+scenarios:
+  read-write:
+    server:
+      job: networkStreamServer
+      agent: secondary
+      variables:
+        scenario: ReadWrite
+    client:
+      job: networkStreamClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+
+  client-read:
+    server:
+      job: networkStreamServer
+      agent: secondary
+      variables:
+        sendBufferSize: 0 # server's receive buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+    client:
+      job: networkStreamClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        sendBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.sendBufferSize) != "0")
+          {
+            throw "Incorrect sendBufferSize for client-read scenario. Expected: 0, got: " + job.Variables.sendBufferSize;
+          }
+          '
+
+  client-write:
+    server:
+      job: networkStreamServer
+      agent: secondary
+      variables:
+        receiveBufferSize: 0 # server's write buffer size -- send and receive sizes are swapped for server side
+        scenario: ReadWrite
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+    client:
+      job: networkStreamClient
+      agent: main
+      variables:
+        scenario: ReadWrite
+        host: "{{secondaryAddress}}"
+        receiveBufferSize: 0
+      onConfigure:
+        - '
+          if (String(job.Variables.receiveBufferSize) != "0")
+          {
+            throw "Incorrect receiveBufferSize for client-write scenario. Expected: 0, got: " + job.Variables.receiveBufferSize;
+          }
+          '
+
+  connect:
+    server:
+      job: networkStreamServer
+      agent: secondary
+      variables:
+        scenario: Connect
+    client:
+      job: networkStreamClient
+      agent: main
+      variables:
+        scenario: Connect
+        host: "{{secondaryAddress}}"
+
+  rps:
+    server:
+      job: networkStreamServer
+      agent: secondary
+      variables:
+        scenario: Rps
+    client:
+      job: networkStreamClient
+      agent: main
+      variables:
+        scenario: Rps
+        host: "{{secondaryAddress}}"
+
+jobs:
+  networkStreamServer:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Server/NetworkStreamServer.csproj
+    readyStateText: Listening on # app should write this line to output when ready
+    # note: send and receive sizes are swapped for server side
+    arguments: "--port {{serverPort}} --receive-buffer-size {{sendBufferSize}} --send-buffer-size {{receiveBufferSize}} --scenario {{scenario}}"
+
+  networkStreamClient:
+    source:
+      repository: https://github.com/aspnet/benchmarks.git
+      branchOrCommit: main
+      project: src/System/Net/Benchmarks/Apps/Streaming/NetworkStream/Client/NetworkStreamClient.csproj
+    isConsoleApp: true
+    waitForExit: true
+    timeout: 300 #seconds
+    arguments: "--address {{host}} --port {{serverPort}} --receive-buffer-size {{receiveBufferSize}} --send-buffer-size {{sendBufferSize}} --scenario {{scenario}} --connections {{connections}} --warmup {{warmup}} --duration {{duration}}"

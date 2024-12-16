@@ -16,7 +16,7 @@ components:
         arguments: '--{{job}}.options.outputFiles .\artifacts\tests\coreclr\windows.x64.Release\tests\Core_Root\'
 
 # default arguments that are always used on crank commands
-defaults: '--{{job}}.framework net9.0 --relay AZURE_RELAY'
+defaults: '--{{job}}.framework net10.0 --relay'
 
 variables:
     job: application
@@ -55,6 +55,6 @@ benchmarks:
 
     httpclient:
       description: 'HttpClient Benchmark (change HTTP version by adding e.g. `--variable httpVersion=3.0`; change response size by adding e.g. `--variable responseSize=256`; default: HTTP/1.1 GET 8K)'
-      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net9.0 --scenario httpclient-kestrel-configured
+      arguments: --config https://raw.githubusercontent.com/aspnet/Benchmarks/main/scenarios/httpclient.benchmarks.yml --server.framework net10.0 --scenario httpclient-kestrel-configured
       variables:
           job: client

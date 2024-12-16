@@ -13,4 +13,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion80)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
   </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))">
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlEntityFrameworkCorePostgreSQLVersion90)" />
+  </ItemGroup>
 </Project>

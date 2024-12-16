@@ -13,7 +13,5 @@ namespace Benchmarks.Data
         Task<World[]> LoadMultipleQueriesRows(int count);
 
         Task<World[]> LoadMultipleUpdatesRows(int count);
-
-        Task<IEnumerable<Fortune>> LoadFortunesRows();
     }
 }

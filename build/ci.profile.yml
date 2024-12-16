@@ -112,7 +112,7 @@ profiles:
       serverAddress: 10.0.0.105
       cores: 28
     agents:
-      load:
+      application:
         endpoints: 
           - http://asp-citrine-load:5001
         aliases:

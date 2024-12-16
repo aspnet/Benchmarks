@@ -2,8 +2,8 @@
 # It generates the file benchmarks.yml. See this file for instructions.
 
 queues:
-  - ASP.NET Benchmarks Azure Queue
-  - ASP.NET Benchmarks Azure Queue 2
+  - azure
+  - azurearm64
 
 schedule: "0 9/12 * * *"
 

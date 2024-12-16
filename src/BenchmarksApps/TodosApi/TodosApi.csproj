@@ -1,34 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <LangVersion>preview</LangVersion>
     <UserSecretsId>b8ffb8d3-b768-460b-ac1f-ef267c954c85</UserSecretsId>
     <PublishAot>true</PublishAot>
     <OpenApiDocumentsDirectory>.\</OpenApiDocumentsDirectory>
-    <!--<OpenApiEnabled>false</OpenApiEnabled>-->
     <EnableLogging Condition=" '$(EnableLogging)' == '' and $(Configuration.StartsWith('Debug')) ">true</EnableLogging>
     <DefineConstants Condition=" '$(EnableLogging)' == 'true' ">$(DefineConstants);ENABLE_LOGGING</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\AspNetCore.OpenApi\AspNetCore.OpenApi.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Npgsql" Version="$(NpgsqlVersion80)" />
-    <PackageReference Include="Nanorm.Npgsql" Version="0.0.5" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Nanorm.Npgsql" Version="0.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="$(MicrosoftAspNetCoreAppPackageVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryVersion)" />
   </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '9.0'))">
+    <PackageReference Include="Npgsql" Version="$(NpgsqlVersion90)" />
+  </ItemGroup>      
 
   <ItemGroup>
     <Content Update="appSettings.Development.json" CopyToPublishDirectory="false" />
   </ItemGroup>
 
-  <Import Project="..\AspNetCore.OpenApi\build\AspNetCore.OpenApi.targets" />
 </Project>
