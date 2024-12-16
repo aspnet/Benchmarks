@@ -9,15 +9,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 
-var config = new ConfigurationBuilder()
-    .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-    .AddCommandLine(args)
-    .AddJsonFile("appsettings.json")
-#if DEBUG
-    .AddJsonFile($"appsettings.Development.json")
-#endif
-    .Build();
-
 var writeCertValidationEventsToConsole = bool.TryParse(builder.Configuration["certValidationConsoleEnabled"], out var certValidationConsoleEnabled) && certValidationConsoleEnabled;
 var mTlsEnabled = bool.TryParse(builder.Configuration["mTLS"], out var mTlsEnabledConfig) && mTlsEnabledConfig;
 var tlsRenegotiationEnabled = bool.TryParse(builder.Configuration["tlsRenegotiation"], out var tlsRenegotiationEnabledConfig) && tlsRenegotiationEnabledConfig;
@@ -36,7 +27,7 @@ builder.WebHost.UseKestrel(options =>
 {
     foreach (var value in listeningEndpoints.Split([';'], StringSplitOptions.RemoveEmptyEntries))
     {
-        ConfigureListen(options, config, value);
+        ConfigureListen(options, builder.Configuration, value);
     }
 
     void ConfigureListen(KestrelServerOptions serverOptions, IConfigurationRoot config, string url)
