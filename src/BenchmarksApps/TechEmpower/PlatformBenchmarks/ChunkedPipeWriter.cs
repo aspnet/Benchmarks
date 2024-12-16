@@ -84,7 +84,6 @@ internal sealed class ChunkedPipeWriter : PipeWriter
 
         CommitCurrentChunk(isFinal: true);
 
-        _output.Complete(exception);
         _ended = true;
     }
 
