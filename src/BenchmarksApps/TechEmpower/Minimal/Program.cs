@@ -5,6 +5,7 @@ using RazorSlices;
 using Minimal;
 using Minimal.Database;
 using Minimal.Models;
+using Minimal.Templates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,12 +38,11 @@ app.MapGet("/db", async (Db db) => await db.LoadSingleQueryRow());
 
 app.MapGet("/db/result", async (Db db) => Results.Json(await db.LoadSingleQueryRow()));
 
-var createFortunesTemplate = RazorSlice.ResolveSliceFactory<List<Fortune>>("/Templates/Fortunes.cshtml");
 var htmlEncoder = CreateHtmlEncoder();
 
 app.MapGet("/fortunes", async (HttpContext context, Db db) => {
     var fortunes = await db.LoadFortunesRows();
-    var template = (RazorSliceHttpResult<List<Fortune>>)createFortunesTemplate(fortunes);
+    var template = (RazorSliceHttpResult<List<Fortune>>)Fortunes.Create(fortunes);
     template.HtmlEncoder = htmlEncoder;
     return template;
 });
